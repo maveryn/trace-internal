@@ -9,12 +9,16 @@ Each generated instance should include:
 - metadata-grounded verifier payload
 
 Canonical architecture and contracts live in `docs/DSL_BLUEPRINT.md`.
-Canonical versioned requirements live in `REQUIREMENTS.md`.
+Python package dependencies live in `requirements.txt`.
+Task creation instructions live in `docs/TASK_AUTHORING.md`.
+Lessons/pitfalls log lives in `docs/LESSONS_LEARNED.md`.
 
 ## Scope and boundaries
 - Work in this repository unless the user explicitly asks otherwise.
 - Treat `docs/DSL_BLUEPRINT.md` as the source of truth for architecture decisions.
-- Treat `REQUIREMENTS.md` as the source of truth for project requirements and requirement versioning.
+- Treat `requirements.txt` as the source of truth for Python dependency installation.
+- Treat `docs/TASK_AUTHORING.md` as the source of truth for task authoring procedure.
+- Treat `docs/LESSONS_LEARNED.md` as the source of truth for cross-task pitfalls and reusable fixes.
 - Prefer additive, reusable infrastructure over one-off task code.
 
 ## Core engineering rules
@@ -38,6 +42,13 @@ Canonical versioned requirements live in `REQUIREMENTS.md`.
 - Before adding new logic, search for reusable helpers and extend shared modules when possible.
 - Do not duplicate utilities across tasks/domains unless there is a strong reason.
 - If a helper is missing, add it once in a shared place and reuse it.
+
+## Code documentation standards
+- Add concise docstrings for new modules, classes, and non-trivial functions.
+- Document assumptions, invariants, and tie-breaking/canonicalization rules where they are implemented.
+- Prefer comments that explain *why* a decision exists, not line-by-line restatements of obvious code.
+- Keep public API docs and type hints aligned with behavior.
+- When behavior changes, update both inline docs/docstrings and relevant files under `docs/`.
 
 ## Output and metadata requirements
 - Every task must emit one canonical instance record shape (per `InstanceRecordSpec`).
@@ -67,8 +78,8 @@ Canonical versioned requirements live in `REQUIREMENTS.md`.
 ## Documentation discipline
 - Update docs when behavior/contracts change.
 - Keep `docs/DSL_BLUEPRINT.md` aligned with implementation decisions.
-- Keep `REQUIREMENTS.md` updated whenever requirements are added/changed/removed.
-- Every requirement change must include an explicit `requirements_version` bump and `Change Log` entry in `REQUIREMENTS.md`.
+- Keep `docs/TASK_AUTHORING.md` updated with tips and rules that apply across multiple tasks.
+- Keep `docs/LESSONS_LEARNED.md` updated whenever new pitfalls, regressions, or reusable fixes are discovered.
 - Document new reusable helpers and new verifier edge cases when discovered.
 
 ## Workflow guidelines

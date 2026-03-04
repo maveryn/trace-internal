@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections import Counter, defaultdict
+from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -135,6 +135,8 @@ def validate_dataset(
     *,
     staging_root: str | Path,
     expected_task_counts: Mapping[str, int],
+    expected_query_counts: Mapping[str, Mapping[str, int]] | None,
+    observed_query_counts: Mapping[str, Mapping[str, int]] | None,
     dataset_id: str,
     expected_instance_version: str,
 ) -> Dict[str, Any]:
@@ -333,6 +335,24 @@ def validate_dataset(
                     actual_count=int(have),
                 )
             )
+
+    if expected_query_counts:
+        observed_query_counts = observed_query_counts or {}
+        for task_id, expected_map in sorted(expected_query_counts.items()):
+            observed_map = observed_query_counts.get(task_id, {})
+            for query_type, expected_count in sorted(expected_map.items()):
+                actual_count = int(observed_map.get(query_type, 0))
+                if actual_count < int(expected_count):
+                    errors.append(
+                        _err(
+                            error_codes.COUNT_PER_TASK_SHORTFALL,
+                            "query-type accepted count below expectation",
+                            task=task_id,
+                            query_type=query_type,
+                            expected_count=int(expected_count),
+                            actual_count=actual_count,
+                        )
+                    )
 
     ordered = sorted(
         errors,

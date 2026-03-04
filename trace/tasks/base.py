@@ -23,6 +23,7 @@ class TaskOutput:
     trace_payload: Dict[str, Any]
     complexity: TaskComplexity
     task_versions: Dict[str, str]
+    query_type: str = "default"
 
 
 class Task(Protocol):

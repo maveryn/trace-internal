@@ -205,6 +205,11 @@ class TileShortestPathTask:
     domain = "tile"
     task_group = "path"
 
+    @staticmethod
+    def supported_query_types(_params: Dict[str, Any] | None = None) -> List[str]:
+        """Return query types supported by this task."""
+        return ["shortest_path"]
+
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         rows = int(params.get("rows", _DEFAULTS.rows))
         cols = int(params.get("cols", _DEFAULTS.cols))
@@ -214,8 +219,11 @@ class TileShortestPathTask:
         canvas_size = int(params.get("canvas_size", _DEFAULTS.canvas_size))
         margin = int(params.get("margin", _DEFAULTS.margin))
         evidence_type = str(params.get("evidence_type", _DEFAULTS.evidence_type))
+        query_type = str(params.get("query_type", "shortest_path"))
         if evidence_type not in {"point_path", "bbox_set"}:
             raise ValueError(f"unsupported evidence_type: {evidence_type}")
+        if query_type != "shortest_path":
+            raise ValueError(f"unsupported query_type: {query_type}")
 
         task_rng = spawn_rng(instance_seed, "task")
         blocked, start, goal, path, shortest_len = _sample_maze(
@@ -312,6 +320,7 @@ class TileShortestPathTask:
                 "relations": {"adjacency_open": adjacency_open},
             },
             "query_spec": {
+                "query_type": query_type,
                 "template_id": "shortest_path_v1",
                 "dsl_program": [
                     {"out": "cells", "op": "select", "entity_type": "tile_cell"},
@@ -378,4 +387,5 @@ class TileShortestPathTask:
                 "domain_capability_version": "v1",
                 "renderer_version": "v1",
             },
+            query_type=query_type,
         )

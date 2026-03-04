@@ -34,10 +34,14 @@ It is the implementation-facing architecture reference, while `docs/DSL_BLUEPRIN
 - write image artifact,
 - write sidecar trace record,
 - emit `TrainInstance` with `trace_ref`.
-6. Run pre-finalize validation.
-7. Emit `validation_report.json` and `build_report.json`.
-8. On success: atomic finalize from staging to final dataset path.
-9. On failure: keep staging for debugging and persist failure bundle.
+6. If strict reproducibility is enabled, run an additional staging pass and compare:
+- ordered canonical `TrainInstance` records,
+- decompressed sidecar trace content,
+- image bytes/hashes.
+7. Run pre-finalize validation.
+8. Emit `validation_report.json` and `build_report.json`.
+9. On success: atomic finalize from staging to final dataset path.
+10. On failure: keep staging for debugging and persist failure bundle.
 
 ## Component responsibilities
 1. `trace/core/types.py`
@@ -58,7 +62,9 @@ It is the implementation-facing architecture reference, while `docs/DSL_BLUEPRIN
 - Pre-finalize validation and structured validation report generation.
 9. `trace/core/builder.py`
 - End-to-end dataset build orchestration.
-10. `trace/tasks/*`
+10. `trace/core/strict_repro.py`
+- strict reproducibility comparisons for train records, traces, and images.
+11. `trace/tasks/*`
 - Domain/task-specific scene generation, query execution, evidence projection, and task trace payloads.
 
 ## Sampling architecture

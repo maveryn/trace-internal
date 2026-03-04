@@ -11,23 +11,6 @@ Use it to track what is actively being built, what is next, and what is intentio
 4. If a decision is deferred, note why and where it will be handled later.
 
 ## Now (P0)
-1. Add strict reproducibility checker:
-- run identical configs twice,
-- compare canonical `TrainInstance` records,
-- compare decompressed sidecar trace content,
-- compare image bytes/hashes,
-- fail with first mismatch summary.
-2. Implement task-level global sampling policy in builder:
-- equal task weight default,
-- configurable task weights,
-- derived domain/task-group probabilities in reporting.
-3. Implement per-task query-type sampling:
-- default uniform within task,
-- optional task-level query-weight override,
-- emit selected `query_type` in trace metadata and build report summaries.
-4. Add query-type count validation hooks for multi-query tasks.
-
-## Next (P1)
 1. Implement `geometry_angle_value_query` task with variants:
 - `min`, `max`, `median`,
 - `kth_smallest`, `kth_largest`,
@@ -40,7 +23,7 @@ Use it to track what is actively being built, what is next, and what is intentio
 - task/query-specific slot filling with consistent contracts.
 4. Add shared query helper module(s) for order-stat and threshold queries where reusable.
 
-## Later (P2)
+## Next (P1)
 1. Add additional geometry/chart task families using the same answer+evidence pattern.
 2. Add verifier scaffolding for structural answer/evidence checks (no reward tolerance tuning yet).
 3. Expand failure-path tests:
@@ -48,6 +31,10 @@ Use it to track what is actively being built, what is next, and what is intentio
 - validation-report error-code coverage,
 - cleanup command behavior (`dry-run` vs `--apply`).
 4. Add richer build telemetry dashboards/reports.
+
+## Later (P2)
+1. Add split-artifact generation with deterministic split policies and metadata.
+2. Add richer dataset inspection/diagnostics tooling around build reports and trace manifests.
 
 ## Deferred decisions
 1. Verifier tolerance presets and reward design:
@@ -66,3 +53,8 @@ Use it to track what is actively being built, what is next, and what is intentio
 3. Sampling policy documented:
 - task-level global sampling,
 - per-task internal query sampling.
+4. P0 builder/runtime upgrades completed:
+- strict reproducibility checker with first-mismatch summaries,
+- weighted task-level global sampler (with `num_instances` mode),
+- per-task query-type sampling (uniform default, optional weights),
+- query-type accepted-count validation hooks.

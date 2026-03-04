@@ -14,8 +14,11 @@ class BuildTaskConfig:
     """Task request descriptor inside a build configuration."""
 
     task_id: str
-    count: int
+    count: int | None = None
+    weight: float | None = None
     params: Dict[str, Any] = field(default_factory=dict)
+    query_weights: Dict[str, float] = field(default_factory=dict)
+    expected_query_counts: Dict[str, int] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -27,6 +30,7 @@ class BuildConfig:
     instance_version: str
     image_format: str
     tasks: List[BuildTaskConfig]
+    num_instances: int | None = None
     strict_repro: bool = False
     max_attempts_per_instance: int = 100
     sampling_seed: int = 0
@@ -38,8 +42,11 @@ def load_build_config(path: str | Path) -> BuildConfig:
     tasks = [
         BuildTaskConfig(
             task_id=str(item["task_id"]),
-            count=int(item["count"]),
+            count=(int(item["count"]) if item.get("count") is not None else None),
+            weight=(float(item["weight"]) if item.get("weight") is not None else None),
             params=dict(item.get("params", {})),
+            query_weights={str(key): float(val) for key, val in dict(item.get("query_weights", {})).items()},
+            expected_query_counts={str(key): int(val) for key, val in dict(item.get("expected_query_counts", {})).items()},
         )
         for item in data.get("tasks", [])
     ]
@@ -49,6 +56,7 @@ def load_build_config(path: str | Path) -> BuildConfig:
         instance_version=str(data.get("instance_version", "v1")),
         image_format=str(data.get("image_format", "png")).lower(),
         tasks=tasks,
+        num_instances=(int(data["num_instances"]) if data.get("num_instances") is not None else None),
         strict_repro=bool(data.get("strict_repro", False)),
         max_attempts_per_instance=int(data.get("max_attempts_per_instance", 100)),
         sampling_seed=int(data.get("sampling_seed", 0)),

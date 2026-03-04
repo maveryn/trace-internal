@@ -35,6 +35,8 @@ Use it to prevent duplicate implementations across tasks/domains.
 - Build config parsing and typed config models.
 11. `trace/core/builder.py`
 - Shared dataset build lifecycle orchestration.
+12. `trace/core/strict_repro.py`
+- Strict reproducibility comparisons across staging outputs (train records, traces, images).
 
 ## Task framework shared modules (`trace/tasks`)
 1. `trace/tasks/registry.py`

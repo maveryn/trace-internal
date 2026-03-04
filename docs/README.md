@@ -4,7 +4,7 @@
 This folder contains the project contracts, architecture references, and implementation playbooks.
 
 ## Read order
-1. `DSL_BLUEPRINT.md`: normative architecture and ABI contracts.
+1. `BLUEPRINT.md`: normative architecture and ABI contracts.
 2. `SYSTEM_ARCHITECTURE.md`: code/module layout and runtime flow.
 3. `STATUS.md`: current implementation snapshot and immediate next steps.
 4. `QUICKSTART_NEW_TASK.md`: one-page implementation quickstart with exact commands.

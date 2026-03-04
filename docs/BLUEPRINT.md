@@ -67,6 +67,10 @@ Minimal shape:
   "task_group": "measurement",
   "task": "geometry_angle",
   "prompt": "...",
+  "prompt_variants": {
+    "answer_only": "...",
+    "answer_and_evidence": "..."
+  },
   "images": [{"image_id": "img0", "format": "png", "image_hash": "blake3:3ac4...", "path": "images/geometry/geometry_angle/000001.png"}],
   "answer_gt": {"type": "integer", "value": 7},
   "evidence_gt": {"type": "point_set", "value": [[10.5, 20.0], [15.0, 18.0]]},
@@ -182,15 +186,17 @@ Prompt templates are external assets (no hardcoded task prompts).
 `prompt_bundle_id` resolves to a versioned prompt bundle with:
 1. task-type template lists (`task_type_key -> [templates]`),
 2. query-type template lists (`query_type -> [templates]`),
-3. required placeholder definitions per key,
-4. optional shared answer/evidence instruction templates.
+3. answer/evidence output-mode template lists (`answer_or_evidence_templates`, including `answer_only` and `answer_and_evidence`),
+4. required placeholder definitions per key.
 
 Rules:
 1. task-type template list must have at least 10 variants,
 2. each query-type template list must have at least 10 variants,
-3. prompt selection is deterministic from prompt seed namespaces,
-4. prompt variant metadata (`bundle/key/index/count`) is recorded in trace payload,
-5. slot-value snapshots are recorded in prompt metadata when required slots are declared by the selected keys.
+3. each answer/evidence mode template list must have at least 10 variants,
+4. prompt selection is deterministic from prompt seed namespaces,
+5. prompt variant metadata (`bundle/key/index/count`) is recorded in trace payload,
+6. slot-value snapshots are recorded in prompt metadata when required slots are declared by the selected keys,
+7. training records store both output-mode prompts in `prompt_variants` for training-time mode selection/mixing.
 
 ## 8. Domain plugin contract
 Each domain registers:
@@ -311,6 +317,8 @@ Sampling policy:
 5. each task samples `query_type` internally; default is uniform over that task's supported query types.
 6. task-level query-type weights may override uniform defaults when needed.
 7. number of query types does not change a task's global sampling probability.
+8. inside each `query_type`, tasks should sample final answers as close to feasible-uniform as constraints allow; avoid unnecessary answer-shape bias.
+9. curriculum may reduce feasible answer support, but sampling should remain near-uniform over the active support unless explicitly documented otherwise.
 
 Formal factorization:
 1. `P(sample=t,q) = P_task(t) * P_query(q | t)`

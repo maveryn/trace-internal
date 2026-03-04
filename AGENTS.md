@@ -11,7 +11,7 @@ Each generated instance should include:
 ## Source-of-truth docs
 - Docs index and reading order: `docs/README.md`
 - New-task one-page quickstart: `docs/QUICKSTART_NEW_TASK.md`
-- Architecture and ABI contracts: `docs/DSL_BLUEPRINT.md`
+- Architecture and ABI contracts: `docs/BLUEPRINT.md`
 - Prompt system and template composition: `docs/PROMPT_SYSTEM.md`
 - System module/lifecycle architecture: `docs/SYSTEM_ARCHITECTURE.md`
 - Current implementation snapshot: `docs/STATUS.md`
@@ -65,7 +65,7 @@ Each generated instance should include:
 - Ensure validation errors map to cataloged codes in `docs/VALIDATION_ERROR_CODES.md`.
 
 ## Documentation discipline
-- Keep `docs/DSL_BLUEPRINT.md` aligned with architecture/contract decisions.
+- Keep `docs/BLUEPRINT.md` aligned with architecture/contract decisions.
 - Keep `docs/PROMPT_SYSTEM.md` aligned with prompt-template architecture and implementation status.
 - Keep `docs/SYSTEM_ARCHITECTURE.md` aligned with module boundaries, data flow, and lifecycle behavior.
 - Keep `docs/TASK_AUTHORING.md` aligned with reusable task authoring guidance.

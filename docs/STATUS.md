@@ -19,6 +19,7 @@ TRACE is a deterministic grounded visual reasoning data-generation environment w
 3. Prompt infrastructure:
 - external prompt bundles under `prompts/`,
 - deterministic task/query template variant selection,
+- deterministic output-mode prompt variant selection (`answer_only`, `answer_and_evidence`) with per-instance storage of both prompt forms,
 - strict placeholder rendering,
 - prompt variant metadata emission in task trace payloads.
 4. Visual variation foundation:
@@ -28,10 +29,12 @@ TRACE is a deterministic grounded visual reasoning data-generation environment w
 5. Implemented tasks:
 - `tile_shortest_path` (`domain=tile`, `task_group=path`),
 - `geometry_angle_value_query` (`domain=geometry`, `task_group=measurement`).
+  - geometry measurement value queries now use feasible-uniform answer-conditioned sampling per `query_type` to reduce answer-shape bias.
+  - geometry angle layouts enforce explicit non-overlap/touch clearance (>= one graph-paper square) via shared layout-constraint helpers.
 6. Task/sample tooling:
-- sample generation CLI (`scripts/generate_task_samples.py`) with images, per-sample JSON, summaries, and combined Excel output.
+- sample generation CLI (`scripts/generate_task_samples.py`) with images, per-sample JSON, per-task summaries, per-task distribution reports, per-task Excel files (embedded preview image, max side 384 px), and combined Excel output (one sheet per task).
 7. Test baseline:
-- repository tests currently pass (`22 passed`).
+- repository tests currently pass (`24 passed`).
 
 ## Not yet implemented
 1. Additional domain/task coverage beyond the first two tasks.
@@ -44,7 +47,7 @@ TRACE is a deterministic grounded visual reasoning data-generation environment w
 
 ## Keep in sync
 If architecture or contracts change, update this file together with:
-1. `DSL_BLUEPRINT.md`,
+1. `BLUEPRINT.md`,
 2. `SYSTEM_ARCHITECTURE.md`,
 3. `TASK_AUTHORING.md`,
 4. `CODE_DOCUMENTATION.md`,

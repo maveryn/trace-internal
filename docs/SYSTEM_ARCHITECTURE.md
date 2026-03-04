@@ -2,7 +2,7 @@
 
 ## Purpose
 This document defines how TRACE is structured in code and how data flows through the system.
-It is the implementation-facing architecture reference, while `docs/DSL_BLUEPRINT.md` remains the normative contract/ABI document.
+It is the implementation-facing architecture reference, while `docs/BLUEPRINT.md` remains the normative contract/ABI document.
 
 ## Architectural principles
 1. Deterministic generation from explicit config, versions, and seeds.
@@ -16,6 +16,7 @@ It is the implementation-facing architecture reference, while `docs/DSL_BLUEPRIN
 2. `trace/tasks/`
 - Task registry/framework plus task packages organized as `trace/tasks/<domain>/<task_group>/...`.
 - Domain-shared helpers live under `trace/tasks/<domain>/shared/`.
+- Cross-domain task helpers live under `trace/tasks/shared/` (for example reusable layout-constraint checks).
 3. `trace/core/visual/`
 - Shared visual-variation helpers (deterministic background styles + post-image noise).
 4. `trace/core/prompts/`
@@ -39,6 +40,7 @@ It is the implementation-facing architecture reference, while `docs/DSL_BLUEPRIN
 5. For each accepted instance:
 - generate prompt/answer/evidence/image from task,
 - resolve prompt templates from external bundle assets,
+- store both prompt output-mode variants (`answer_only`, `answer_and_evidence`) while keeping one active `prompt`,
 - apply deterministic visual variations (for example post-image noise),
 - write image artifact,
 - write sidecar trace record,
@@ -106,6 +108,7 @@ It is the implementation-facing architecture reference, while `docs/DSL_BLUEPRIN
 3. No auto-relaxation of semantic constraints during generation.
 4. Image paths are dataset-root-relative and image hashes are required.
 5. Identity hashes must use shared canonicalization + `blake3`.
+6. Geometry/measurement tasks use graph-paper backgrounds with geometry anchors aligned to graph intersections.
 
 ## Documentation maintenance rule
 Update this file whenever architecture-level behavior changes, including:

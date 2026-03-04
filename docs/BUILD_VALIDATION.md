@@ -5,7 +5,7 @@ This document is the source of truth for dataset build lifecycle, pre-finalize v
 failure handling, cleanup behavior, and CI strict reproducibility checks.
 
 Use this together with:
-1. `docs/DSL_BLUEPRINT.md` for architecture and ABI contracts.
+1. `docs/BLUEPRINT.md` for architecture and ABI contracts.
 2. `docs/TASK_AUTHORING.md` for task-specific authoring guidance.
 
 ## Build lifecycle
@@ -35,6 +35,25 @@ Before atomic finalize, validate all of:
 9. required prompt-slot metadata conformance checks.
 10. unresolved placeholder token checks on rendered prompt text.
 11. template-list cardinality checks (10+ variants per required key) and metadata count/index consistency checks.
+12. when bundle output modes are defined, `prompt_variants` presence/consistency checks for all required modes.
+
+## Task distribution review (required for new or distribution-changing task work)
+Before signing off task logic changes that can affect answer distributions:
+1. generate review samples with per-query coverage (recommended: `100` per query type):
+   - `PYTHONPATH=. python scripts/generate_task_samples.py --tasks <task_id> --count-per-query 100 --clean`
+2. inspect `samples/<domain>/<task_group>/<task_id>/distribution_report.json`.
+3. for query types that emit feasible-answer support metadata, require no obvious skew:
+   - low mean drift (`mean_z`),
+   - bounded count concentration (`max_bin_count_z`),
+   - bounded total variation distance (`tv_distance`),
+   - reasonable spread ratio (`std_ratio`).
+Default skew-check thresholds (from sample tooling):
+- minimum samples per query for checks: `80`,
+- `mean_z <= 3.0`,
+- `max_bin_count_z <= 4.0`,
+- `tv_distance <= 0.20`,
+- `0.60 <= std_ratio <= 1.40`.
+4. if skew fails checks, fix generation policy (answer-conditioned sampling, constraints, or curriculum spec) before finalizing.
 
 Validation behavior:
 1. collect all detected errors.

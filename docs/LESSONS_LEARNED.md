@@ -16,6 +16,30 @@ Keep entries concise and general enough to apply beyond a single task.
 
 ## Entries
 
+### 2026-03-04: Single prompt format reduced training-control flexibility
+- Symptom: Tasks emitted only one prompt wording, preventing training-time choice between answer-only and answer+evidence supervision.
+- Root cause: Prompt system composition had only task/query layers with one rendered output text.
+- Fix: Added reusable `answer_or_evidence` prompt layer, rendered/stored both modes per instance, and validated mode metadata/variant consistency.
+- Preventive rule: For tasks that may train with different supervision styles, emit and store all required prompt output modes at generation time.
+
+### 2026-03-04: Implicit geometry overlap created ambiguous visuals
+- Symptom: Multi-angle scenes could contain touching/crossing primitives, making target evidence harder to localize.
+- Root cause: Vertex spacing alone did not guarantee line-level clearance between different entities.
+- Fix: Added explicit point/segment minimum-clearance checks, rejected violating layouts, and moved checks into shared layout-constraint helpers.
+- Preventive rule: When overlap/touch is disallowed for multi-entity tasks, define and enforce a minimum-clearance policy in generation and assert it in tests.
+
+### 2026-03-04: Order-statistics answer bias in value queries
+- Symptom: Even with valid scenes, answer distributions skewed by query type (for example `min` toward low values, `median` toward center).
+- Root cause: Candidate sets were sampled first, so final answers inherited order-statistics bias.
+- Fix: Use answer-conditioned generation: sample from feasible answers first, then construct distractors around that answer while preserving uniqueness constraints.
+- Preventive rule: For multi-query value tasks, keep per-query final-answer sampling close to feasible-uniform unless an explicit curriculum policy documents a different target distribution.
+
+### 2026-03-04: Measurement prompt/visual ambiguity
+- Symptom: Measurement prompts said "numeric answer" and geometry measurements could render on non-graph backgrounds with off-grid vertices.
+- Root cause: Prompt wording and visual defaults were not strict enough for integer-only measurement policy.
+- Fix: Updated measurement templates to require integer-only answers, enforced exact-integer query semantics, and forced graph-paper backgrounds with grid-aligned vertices.
+- Preventive rule: For geometry measurement tasks, keep integer-answer wording, integer query semantics, and graph-intersection anchor alignment as hard invariants.
+
 ### 2026-03-03: Template tag without true execution
 - Symptom: A task declared a template ID but answer/witness were produced by bespoke logic.
 - Root cause: `query_spec.template_id` was treated as metadata annotation rather than executable contract.
@@ -50,4 +74,4 @@ Keep entries concise and general enough to apply beyond a single task.
 Whenever a new pitfall appears in debugging, review, or testing:
 1. Add a new lesson entry here.
 2. Add/update a reusable guidance bullet in `docs/TASK_AUTHORING.md`.
-3. If architecture-level, update `docs/DSL_BLUEPRINT.md`.
+3. If architecture-level, update `docs/BLUEPRINT.md`.

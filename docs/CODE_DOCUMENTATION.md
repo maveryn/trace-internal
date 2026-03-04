@@ -3,7 +3,7 @@
 ## Purpose
 Define the expected standard for documenting TRACE code and related contracts.
 Use this together with:
-1. `docs/DSL_BLUEPRINT.md` for ABI/contract truth,
+1. `docs/BLUEPRINT.md` for ABI/contract truth,
 2. `docs/SYSTEM_ARCHITECTURE.md` for module boundaries and lifecycle,
 3. `docs/TASK_AUTHORING.md` for task implementation workflow.
 
@@ -26,7 +26,7 @@ Use this together with:
 
 ## Documentation update triggers (same change)
 When behavior changes, update the relevant source-of-truth docs in the same PR:
-1. ABI/schema/contract changes -> `docs/DSL_BLUEPRINT.md`
+1. ABI/schema/contract changes -> `docs/BLUEPRINT.md`
 2. Module/dataflow/lifecycle changes -> `docs/SYSTEM_ARCHITECTURE.md`
 3. Prompt asset/composition rules -> `docs/PROMPT_SYSTEM.md`
 4. Shared helper placement or API changes -> `docs/SHARED_UTILITIES.md`

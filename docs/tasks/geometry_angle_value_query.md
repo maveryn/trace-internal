@@ -50,10 +50,10 @@
 3. No auto-relaxation of semantic constraints.
 
 ## Visual Variation
-1. Task-family default post-image noise policy (`geometry/measurement`):
+1. Task-group default post-image noise policy (`geometry/measurement`):
 - `apply_prob = 0.75`,
 - edit types: `blur`, `downsample`, `jpeg`, `noise`,
 - edit-count range: `[1, 2]`.
-Defaults are defined in task-family config (`configs/task_groups/geometry/measurement.yaml`) and loaded through `trace/tasks/geometry/measurement/noise_defaults.py`.
+Defaults are defined in task-group config (`configs/task_groups/geometry/measurement.yaml`) and loaded through `trace/tasks/geometry/measurement/noise_defaults.py`.
 2. Task-level overrides can be passed via `params.visual.noise` (or flat compatibility keys).
 3. Applied noise metadata is emitted in `trace_payload.render_spec.post_image_noise`.

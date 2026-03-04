@@ -235,9 +235,9 @@ Rules:
 
 ## 10.1 Visual variation policy
 Visual variation is also fixed at dataset build time, with deterministic metadata:
-1. scene/background style defaults may be defined at task-family scope (`domain/task_group`),
+1. scene/background style defaults may be defined at task-group scope (`domain/task_group`),
 2. task-level overrides are allowed,
-3. post-image noise defaults may be defined at task-family scope.
+3. post-image noise defaults may be defined at task-group scope.
 
 Rules:
 1. post-image noise must preserve evidence coordinate validity (photometric/non-geometric edits only by default),

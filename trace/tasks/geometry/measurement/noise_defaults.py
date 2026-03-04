@@ -1,4 +1,4 @@
-"""Visual-variation defaults for the geometry/measurement task family."""
+"""Visual-variation defaults for the geometry/measurement task group."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from copy import deepcopy
 from typing import Any, Dict
 
 from ....core.task_group_config import get_task_group_defaults
-from ....core.visual.noise import PRISM_STYLE_VALUE_RANGES
+from ....core.visual.noise import TRACE_DEFAULT_NOISE_VALUE_RANGES
 
 
 def _fallback_noise_defaults() -> Dict[str, Any]:
@@ -15,11 +15,11 @@ def _fallback_noise_defaults() -> Dict[str, Any]:
         "apply_prob": 0.75,
         "edit_types": ["blur", "downsample", "jpeg", "noise"],
         "edit_count_range": [1, 2],
-        "value_ranges": deepcopy(PRISM_STYLE_VALUE_RANGES),
+        "value_ranges": deepcopy(TRACE_DEFAULT_NOISE_VALUE_RANGES),
     }
 
 
-def _load_family_noise_defaults() -> Dict[str, Any]:
+def _load_task_group_noise_defaults() -> Dict[str, Any]:
     cfg = get_task_group_defaults("geometry", "measurement")
     visual = cfg.get("visual", {})
     if not isinstance(visual, dict):
@@ -30,5 +30,5 @@ def _load_family_noise_defaults() -> Dict[str, Any]:
     return dict(noise)
 
 
-# Family-level post-image noise defaults shared by geometry/measurement tasks.
-POST_IMAGE_NOISE_DEFAULTS: Dict[str, Any] = _load_family_noise_defaults()
+# Task-group-level post-image noise defaults shared by geometry/measurement tasks.
+POST_IMAGE_NOISE_DEFAULTS: Dict[str, Any] = _load_task_group_noise_defaults()

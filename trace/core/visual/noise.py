@@ -1,7 +1,7 @@
 """Deterministic post-image noise augmentation helpers for TRACE tasks.
 
 This module applies simple post-render noise edits (blur/downsample/jpeg/noise)
-with deterministic sampling. Task families provide their own default config;
+with deterministic sampling. Task groups provide their own default config;
 this module only merges defaults with per-task/per-instance override keys.
 """
 
@@ -19,7 +19,7 @@ from ..seed import spawn_rng
 
 _ALLOWED_EDIT_TYPES = {"blur", "downsample", "jpeg", "noise"}
 
-PRISM_STYLE_VALUE_RANGES: Dict[str, Dict[str, Tuple[float, float]]] = {
+TRACE_DEFAULT_NOISE_VALUE_RANGES: Dict[str, Dict[str, Tuple[float, float]]] = {
     "blur": {"radius": (0.2, 0.6)},
     "downsample": {"scale": (0.85, 0.95)},
     "jpeg": {"quality": (70.0, 90.0)},
@@ -30,7 +30,7 @@ _DEFAULT_NOISE_CONFIG: Dict[str, Any] = {
     "apply_prob": 0.0,
     "edit_types": ["blur", "downsample", "jpeg", "noise"],
     "edit_count_range": [1, 2],
-    "value_ranges": deepcopy(PRISM_STYLE_VALUE_RANGES),
+    "value_ranges": deepcopy(TRACE_DEFAULT_NOISE_VALUE_RANGES),
 }
 
 
@@ -140,7 +140,7 @@ def _serialize_edits(edits: Sequence[Tuple[str, Mapping[str, float]]]) -> List[D
 
 
 def _normalize_default_config(default_config: Mapping[str, Any] | None) -> Dict[str, Any]:
-    """Normalize caller-provided task-family defaults against global fallback."""
+    """Normalize caller-provided task-group defaults against global fallback."""
     base = deepcopy(_DEFAULT_NOISE_CONFIG)
     if not isinstance(default_config, Mapping):
         return base

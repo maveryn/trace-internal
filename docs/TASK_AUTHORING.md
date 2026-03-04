@@ -32,9 +32,9 @@ rules live in `docs/BUILD_VALIDATION.md`.
 - one query-type template layer (10+ variants per query type).
 13. Use deterministic prompt variant sampling with explicit prompt seed namespaces.
 14. Emit prompt-variant provenance metadata in trace payload (`bundle/key/index/count` fields).
-15. Define visual-variation policy at task-family level (domain/task_group), with task-level overrides only when needed.
-16. Store shared task-family defaults (generation/rendering/visual variation) in per-group files under `configs/task_groups/<domain>/<task_group>.yaml`.
-17. For post-image noise, load task-family defaults via family modules and call shared deterministic noise helpers; keep evidence coordinates valid (no geometric warps).
+15. Define visual-variation policy at task-group level (domain/task_group), with task-level overrides only when needed.
+16. Store shared task-group defaults (generation/rendering/visual variation) in per-group files under `configs/task_groups/<domain>/<task_group>.yaml`.
+17. For post-image noise, load task-group defaults via group modules and call shared deterministic noise helpers; keep evidence coordinates valid (no geometric warps).
 18. Record selected visual variation metadata in trace payload (for example `render_spec.post_image_noise`).
 19. Implement deterministic scene/query/render execution with explicit seeds and no hidden RNG.
 20. Emit canonical instance output per `InstanceRecordSpec`.

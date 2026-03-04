@@ -80,7 +80,7 @@ It is the implementation-facing architecture reference, while `docs/DSL_BLUEPRIN
 13. `trace/core/prompts/*`
 - Prompt bundle parsing/cache, deterministic variant selection, placeholder validation, and composition helpers.
 14. `trace/core/visual/noise.py`
-- Task-family-aware deterministic post-image noise sampling/application and metadata emission.
+- Task-group-aware deterministic post-image noise sampling/application and metadata emission.
 15. `trace/core/task_group_config.py`
 - Cached loader for domain/task-group defaults from `configs/task_groups/<domain>/<task_group>.yaml`.
 

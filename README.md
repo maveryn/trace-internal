@@ -2,6 +2,11 @@
 
 TRACE is a grounded visual reasoning task environment for RLVR.
 
+## Docs
+
+Start with [docs/README.md](/home/jovyan/work/trace/docs/README.md).  
+Current implementation snapshot is in [docs/STATUS.md](/home/jovyan/work/trace/docs/STATUS.md).
+
 ## Setup
 
 ```bash

@@ -1,0 +1,45 @@
+{
+  "bundle_id": "dummy_query_v1",
+  "schema_version": "v1",
+  "task_type_templates": {
+    "query_task": [
+      "Dummy query task prompt variant 1.",
+      "Dummy query task prompt variant 2.",
+      "Dummy query task prompt variant 3.",
+      "Dummy query task prompt variant 4.",
+      "Dummy query task prompt variant 5.",
+      "Dummy query task prompt variant 6.",
+      "Dummy query task prompt variant 7.",
+      "Dummy query task prompt variant 8.",
+      "Dummy query task prompt variant 9.",
+      "Dummy query task prompt variant 10."
+    ]
+  },
+  "query_type_templates": {
+    "q1": [
+      "Dummy q1 template 1.",
+      "Dummy q1 template 2.",
+      "Dummy q1 template 3.",
+      "Dummy q1 template 4.",
+      "Dummy q1 template 5.",
+      "Dummy q1 template 6.",
+      "Dummy q1 template 7.",
+      "Dummy q1 template 8.",
+      "Dummy q1 template 9.",
+      "Dummy q1 template 10."
+    ],
+    "q2": [
+      "Dummy q2 template 1.",
+      "Dummy q2 template 2.",
+      "Dummy q2 template 3.",
+      "Dummy q2 template 4.",
+      "Dummy q2 template 5.",
+      "Dummy q2 template 6.",
+      "Dummy q2 template 7.",
+      "Dummy q2 template 8.",
+      "Dummy q2 template 9.",
+      "Dummy q2 template 10."
+    ]
+  },
+  "required_slots_by_key": {}
+}

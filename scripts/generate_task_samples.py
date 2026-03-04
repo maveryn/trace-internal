@@ -18,6 +18,7 @@ from trace.tasks import TASK_REGISTRY, create_task
 
 
 def _to_json_file(path: Path, payload: Any) -> None:
+    """Write JSON payload with deterministic formatting."""
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         json.dumps(payload, indent=2, ensure_ascii=False, allow_nan=False, sort_keys=True) + "\n",
@@ -26,6 +27,7 @@ def _to_json_file(path: Path, payload: Any) -> None:
 
 
 def _parse_json_dict(raw: str, *, arg_name: str) -> Dict[str, Any]:
+    """Parse CLI JSON object argument into a dictionary."""
     if not raw:
         return {}
     value = json.loads(raw)
@@ -35,6 +37,7 @@ def _parse_json_dict(raw: str, *, arg_name: str) -> Dict[str, Any]:
 
 
 def _resolve_task_ids(raw_tasks: str) -> List[str]:
+    """Resolve target task ids from CLI input or registry defaults."""
     if not raw_tasks.strip():
         return sorted(TASK_REGISTRY.keys())
     task_ids = [item.strip() for item in raw_tasks.split(",") if item.strip()]
@@ -47,6 +50,7 @@ def _resolve_task_ids(raw_tasks: str) -> List[str]:
 
 
 def _resolve_query_types(task: Any, params: Dict[str, Any]) -> List[str]:
+    """Resolve query types for sample generation with deterministic ordering."""
     if "query_type" in params:
         return [str(params["query_type"])]
 
@@ -65,6 +69,7 @@ def _resolve_query_types(task: Any, params: Dict[str, Any]) -> List[str]:
 
 
 def _json_cell(value: Any) -> str:
+    """Serialize nested values for spreadsheet cells."""
     if isinstance(value, (dict, list)):
         return json.dumps(value, ensure_ascii=False, allow_nan=False, sort_keys=True)
     return "" if value is None else str(value)
@@ -80,6 +85,7 @@ def _generate_samples_for_task(
     image_format: str,
     params: Dict[str, Any],
 ) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
+    """Generate image/data sample artifacts for one task id."""
     task = create_task(task_id)
     task_dir = out_root / task.domain / task.task_group / task.task_id
     image_dir = task_dir / "images"
@@ -176,6 +182,7 @@ def _generate_samples_for_task(
 
 
 def _write_combined_excel(rows: List[Dict[str, Any]], path: Path) -> None:
+    """Write combined sample summary workbook for manual review."""
     workbook = Workbook()
     sheet = workbook.active
     sheet.title = "samples"
@@ -242,6 +249,7 @@ def _write_combined_excel(rows: List[Dict[str, Any]], path: Path) -> None:
 
 
 def main() -> int:
+    """Parse CLI args and generate task sample artifacts."""
     parser = argparse.ArgumentParser(description="Generate TRACE task sample images/data and a combined Excel sheet")
     parser.add_argument("--out", default="samples", help="Output root directory")
     parser.add_argument("--tasks", default="", help="Comma-separated task ids (default: all registered tasks)")

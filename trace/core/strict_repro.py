@@ -12,6 +12,7 @@ from .trace_store import read_trace_shard
 
 
 def _read_jsonl(path: Path) -> List[Dict[str, Any]]:
+    """Read JSONL records from a file, returning an empty list if absent."""
     if not path.exists():
         return []
     lines = [line for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
@@ -19,6 +20,7 @@ def _read_jsonl(path: Path) -> List[Dict[str, Any]]:
 
 
 def _first_diff_path(left: Any, right: Any, prefix: str = "") -> str:
+    """Return the first field-path where two nested structures differ."""
     if type(left) is not type(right):
         return prefix or "<root>"
     if isinstance(left, dict):
@@ -47,6 +49,7 @@ def _first_diff_path(left: Any, right: Any, prefix: str = "") -> str:
 
 
 def _list_files(root: Path) -> List[Path]:
+    """List all regular files under `root` using deterministic ordering."""
     if not root.exists():
         return []
     return sorted(path for path in root.rglob("*") if path.is_file())

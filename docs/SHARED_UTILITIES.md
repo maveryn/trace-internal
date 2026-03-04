@@ -42,9 +42,12 @@ Use it to prevent duplicate implementations across tasks/domains.
 14. `trace/core/visual/noise.py`
 - Deterministic post-image noise application with caller-supplied defaults and per-task overrides.
 - Task families should define defaults in their own modules and pass them into the shared applier.
-15. `trace/core/prompts/*`
+15. `trace/core/visual/background.py`
+- Deterministic task-group background-style selection/rendering with caller-supplied defaults and per-task overrides.
+- Emits structured background-style metadata for trace payloads.
+16. `trace/core/prompts/*`
 - Shared prompt bundle loading, deterministic variant sampling, schema checks, and strict placeholder rendering.
-16. `prompts/*`
+17. `prompts/*`
 - External prompt bundle assets organized by domain/task_group.
 
 ## Task framework shared modules (`trace/tasks`)

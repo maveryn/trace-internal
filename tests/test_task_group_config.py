@@ -9,6 +9,8 @@ def test_geometry_measurement_defaults_loaded() -> None:
     cfg = get_task_group_defaults("geometry", "measurement")
     assert int(cfg["generation"]["candidate_count"]) == 7
     assert int(cfg["rendering"]["canvas_size"]) == 768
+    assert bool(cfg["visual"]["background"]["enabled"]) is True
+    assert "graph_paper" in cfg["visual"]["background"]["styles"]
     assert float(cfg["visual"]["noise"]["apply_prob"]) == 0.75
 
 
@@ -16,6 +18,8 @@ def test_tile_path_defaults_loaded() -> None:
     cfg = get_task_group_defaults("tile", "path")
     assert int(cfg["generation"]["rows"]) == 8
     assert int(cfg["rendering"]["canvas_size"]) == 640
+    assert bool(cfg["visual"]["background"]["enabled"]) is True
+    assert "grid_light" in cfg["visual"]["background"]["styles"]
     assert float(cfg["visual"]["noise"]["apply_prob"]) == 0.0
 
 

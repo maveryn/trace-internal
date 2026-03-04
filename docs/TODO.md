@@ -1,16 +1,7 @@
 # TRACE TODO
 
 ## Now (P0)
-1. Extend pre-finalize validation with prompt checks:
-- prompt bundle metadata presence on each instance,
-- bundle/key existence checks,
-- required-slot/cardinality conformance checks.
-2. Expand tests for failure paths:
-- geometry-angle edge conditions (invalid threshold, tie rejection),
-- query-weight edge cases in builder,
-- validation error-code coverage.
-3. Add shared scene/background-style variation presets by task group (deterministic + recorded in trace).
-4. Regenerate full review samples (default 50) for tasks after logic/prompt/render updates.
+1. Regenerate full review samples (default 50) for tasks after logic/prompt/render updates.
 
 ## Next (P1)
 1. Add additional measurement-style tasks (for example geometry area value query) reusing value-query and prompt infrastructure.
@@ -34,3 +25,6 @@
 - `tile_shortest_path`
 - `geometry_angle_value_query`
 6. Sample-generation CLI with per-task artifacts and combined Excel.
+7. Pre-finalize prompt validation checks for metadata/bundle/key/placeholder/cardinality conformance.
+8. Expanded failure-path tests for geometry-angle edge cases, builder query-weight edge cases, and validation error-code assertions.
+9. Added deterministic task-group background-style presets and trace metadata wiring.

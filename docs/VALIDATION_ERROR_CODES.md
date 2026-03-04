@@ -19,6 +19,7 @@ Use lowercase snake case with category prefix:
 6. `identity_*`
 7. `io_*`
 8. `config_*`
+9. `prompt_*`
 
 ## Initial code set
 ### Schema
@@ -67,6 +68,16 @@ Use lowercase snake case with category prefix:
 2. `config_registry_file_missing`
 3. `config_registry_hash_mismatch`
 4. `config_build_report_schema_mismatch`
+
+### Prompt validation
+1. `prompt_metadata_missing`
+2. `prompt_bundle_not_found`
+3. `prompt_bundle_invalid`
+4. `prompt_key_missing`
+5. `prompt_variant_count_mismatch`
+6. `prompt_variant_index_out_of_range`
+7. `prompt_required_slot_missing`
+8. `prompt_unresolved_placeholder`
 
 ## Evolution policy
 Codes may be renamed when needed, but changes should be reflected in:

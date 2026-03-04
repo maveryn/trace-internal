@@ -20,6 +20,7 @@ def _fallback_noise_defaults() -> Dict[str, Any]:
 
 
 def _load_task_group_noise_defaults() -> Dict[str, Any]:
+    """Load geometry/measurement noise defaults from task-group config."""
     cfg = get_task_group_defaults("geometry", "measurement")
     visual = cfg.get("visual", {})
     if not isinstance(visual, dict):

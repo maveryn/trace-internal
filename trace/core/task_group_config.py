@@ -18,6 +18,7 @@ _CACHE_BY_PATH: Dict[str, Dict[str, Any]] = {}
 
 
 def _config_root() -> Path:
+    """Resolve task-group config root with optional environment override."""
     override = os.getenv("TRACE_TASK_GROUP_CONFIG_ROOT")
     if override:
         return Path(override)
@@ -25,10 +26,12 @@ def _config_root() -> Path:
 
 
 def _config_path(domain: str, task_group: str) -> Path:
+    """Build config path for one domain/task-group pair."""
     return _config_root() / str(domain) / f"{str(task_group)}.yaml"
 
 
 def _load_group_config(path: Path) -> Dict[str, Any]:
+    """Load and cache one task-group config file as a plain mapping."""
     key = str(path.resolve())
     if key in _CACHE_BY_PATH:
         return _CACHE_BY_PATH[key]

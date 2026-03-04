@@ -30,6 +30,7 @@ def supported_value_query_types() -> list[str]:
 
 
 def _ensure_unique_mapping(values_by_id: Mapping[str, int]) -> None:
+    """Enforce one-to-one id/value mapping for unique-answer query semantics."""
     seen: Dict[int, str] = {}
     for entity_id, value in values_by_id.items():
         ivalue = int(value)
@@ -41,6 +42,7 @@ def _ensure_unique_mapping(values_by_id: Mapping[str, int]) -> None:
 
 
 def _id_for_value(values_by_id: Mapping[str, int], value: int) -> str:
+    """Return the unique candidate id associated with a concrete value."""
     matches = [entity_id for entity_id, candidate_value in values_by_id.items() if int(candidate_value) == int(value)]
     if len(matches) != 1:
         raise ValueError(f"expected exactly one id for value {value}, found {len(matches)}")

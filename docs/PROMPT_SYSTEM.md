@@ -51,7 +51,8 @@ Prompt variant metadata should be emitted under `trace_payload.query_spec.prompt
 4. `task_type_variant_index`
 5. `query_type_variant_index`
 6. `variant_count_by_key`
-7. optional slot snapshot / asset path references
+7. `slot_values` (required when the selected task/query keys declare required slots)
+8. optional asset path references
 
 ## Shared implementation
 1. `trace/core/prompts/assets.py`: bundle loading + cache
@@ -70,10 +71,15 @@ Implemented:
 3. migrated tasks:
 - `geometry_angle_value_query`
 - `tile_shortest_path`
+4. pre-finalize prompt validation checks:
+- prompt metadata presence per instance,
+- prompt bundle/key existence checks,
+- required-slot metadata conformance checks,
+- unresolved placeholder checks,
+- variant-cardinality/count/index consistency checks.
 
 Pending enforcement:
-1. pre-finalize validation checks for prompt bundle metadata conformance across all emitted instances.
-2. CI guardrails for prompt-cardinality regressions and unresolved-placeholder regressions at dataset-validation level.
+1. CI guardrails for prompt-cardinality regressions and unresolved-placeholder regressions at dataset-validation level.
 
 ## Task-doc requirement
 Each `docs/tasks/<task_id>.md` must include:

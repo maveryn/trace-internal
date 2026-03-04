@@ -35,6 +35,7 @@ _DEFAULT_NOISE_CONFIG: Dict[str, Any] = {
 
 
 def _clamp_prob(value: Any, default: float) -> float:
+    """Clamp a probability-like value to [0, 1] with fallback."""
     try:
         prob = float(value)
     except Exception:
@@ -43,6 +44,7 @@ def _clamp_prob(value: Any, default: float) -> float:
 
 
 def _normalize_edit_count_range(value: Any, default_pair: Sequence[int]) -> Tuple[int, int]:
+    """Normalize edit-count range into non-negative ordered integer bounds."""
     if not isinstance(value, (list, tuple)) or len(value) < 2:
         lo, hi = int(default_pair[0]), int(default_pair[1])
     else:
@@ -53,6 +55,7 @@ def _normalize_edit_count_range(value: Any, default_pair: Sequence[int]) -> Tupl
 
 
 def _normalize_value_ranges(raw: Any, fallback: Mapping[str, Mapping[str, Tuple[float, float]]]) -> Dict[str, Dict[str, Tuple[float, float]]]:
+    """Normalize per-edit parameter ranges from config-like mappings."""
     out: Dict[str, Dict[str, Tuple[float, float]]] = {}
     if not isinstance(raw, Mapping):
         raw = fallback
@@ -77,6 +80,7 @@ def _sample_edit_params(
     rng: random.Random,
     value_ranges: Mapping[str, Mapping[str, Tuple[float, float]]],
 ) -> Dict[str, float]:
+    """Sample parameter values for one edit type from configured ranges."""
     params: Dict[str, float] = {}
     for param_name, (lo, hi) in value_ranges.get(edit_type, {}).items():
         value = float(rng.uniform(float(lo), float(hi)))
@@ -88,6 +92,7 @@ def _sample_edit_params(
 
 
 def _apply_noise_blend(image: Image.Image, rng: random.Random, alpha: float) -> Image.Image:
+    """Blend grayscale random noise with an image using alpha mixing."""
     base = image.convert("RGB")
     width, height = base.size
     noise = Image.new("RGB", (width, height))
@@ -100,6 +105,7 @@ def _apply_noise_blend(image: Image.Image, rng: random.Random, alpha: float) -> 
 
 
 def _apply_single_edit(image: Image.Image, edit_type: str, params: Mapping[str, float], rng: random.Random) -> Image.Image:
+    """Apply one supported post-image edit and return the transformed image."""
     base = image.convert("RGB")
     if edit_type == "blur":
         radius = float(params.get("radius", 0.4))
@@ -125,6 +131,7 @@ def _apply_single_edit(image: Image.Image, edit_type: str, params: Mapping[str, 
 
 
 def _serialize_edits(edits: Sequence[Tuple[str, Mapping[str, float]]]) -> List[Dict[str, Any]]:
+    """Serialize sampled edit operations to trace-friendly metadata rows."""
     rows: List[Dict[str, Any]] = []
     for edit_type, params in edits:
         rows.append(
@@ -171,6 +178,7 @@ def _normalize_default_config(default_config: Mapping[str, Any] | None) -> Dict[
 
 
 def _resolve_noise_overrides(params: Mapping[str, Any]) -> Dict[str, Any]:
+    """Collect noise overrides from nested visual config and flat compat keys."""
     merged: Dict[str, Any] = {}
     visual = params.get("visual")
     if isinstance(visual, Mapping):
@@ -192,6 +200,7 @@ def _resolve_noise_overrides(params: Mapping[str, Any]) -> Dict[str, Any]:
 
 
 def _resolve_post_noise_config(params: Mapping[str, Any], *, default_config: Mapping[str, Any] | None) -> Dict[str, Any]:
+    """Merge default and override noise config into a normalized payload."""
     base = _normalize_default_config(default_config)
     overrides = _resolve_noise_overrides(params)
 
@@ -233,6 +242,7 @@ def _sample_noise_edits(
     value_ranges: Mapping[str, Mapping[str, Tuple[float, float]]],
     edit_count_range: Sequence[int],
 ) -> List[Tuple[str, Dict[str, float]]]:
+    """Sample edit operations and parameters for one image augmentation pass."""
     if not edit_types:
         return []
     lo = max(0, int(edit_count_range[0]))

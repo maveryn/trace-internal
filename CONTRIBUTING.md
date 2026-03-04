@@ -7,7 +7,7 @@ This file is the short developer workflow and pre-commit checklist for day-to-da
 1. Start from repo root:
 
 ```bash
-cd /home/jovyan/work/trace
+cd trace
 ```
 
 2. Install dependencies:
@@ -27,9 +27,12 @@ pip install -r requirements.txt
 - `trace/tasks/<domain>/shared/`
 - `docs/SHARED_UTILITIES.md`
 
-5. Keep prompts externalized (no hardcoded prompt strings in task modules).
+5. Follow code documentation standards while implementing:
+- `docs/CODE_DOCUMENTATION.md`
 
-6. Update docs when behavior/contracts change:
+6. Keep prompts externalized (no hardcoded prompt strings in task modules).
+
+7. Update docs when behavior/contracts change:
 - `docs/STATUS.md`
 - `docs/TODO.md`
 - `docs/TASK_AUTHORING.md`

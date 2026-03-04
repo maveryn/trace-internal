@@ -22,6 +22,7 @@ class PromptBundle:
 
 
 def _parse_template_map(raw: Any, *, field_name: str) -> Dict[str, Tuple[str, ...]]:
+    """Validate and normalize a template-map field from bundle JSON."""
     if not isinstance(raw, Mapping):
         raise ValueError(f"{field_name} must be a mapping")
     parsed: Dict[str, Tuple[str, ...]] = {}
@@ -39,6 +40,7 @@ def _parse_template_map(raw: Any, *, field_name: str) -> Dict[str, Tuple[str, ..
 
 
 def _parse_required_slots(raw: Any) -> Dict[str, Tuple[str, ...]]:
+    """Validate and normalize required-slot declarations by template key."""
     if raw is None:
         return {}
     if not isinstance(raw, Mapping):
@@ -74,4 +76,3 @@ def parse_prompt_bundle(raw: Mapping[str, Any], *, source_path: str) -> PromptBu
         required_slots_by_key=required_slots_by_key,
         source_path=str(source_path),
     )
-

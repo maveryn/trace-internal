@@ -189,7 +189,8 @@ Rules:
 1. task-type template list must have at least 10 variants,
 2. each query-type template list must have at least 10 variants,
 3. prompt selection is deterministic from prompt seed namespaces,
-4. prompt variant metadata (`bundle/key/index/count`) is recorded in trace payload.
+4. prompt variant metadata (`bundle/key/index/count`) is recorded in trace payload,
+5. slot-value snapshots are recorded in prompt metadata when required slots are declared by the selected keys.
 
 ## 8. Domain plugin contract
 Each domain registers:

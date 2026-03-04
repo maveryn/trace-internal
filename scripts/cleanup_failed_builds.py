@@ -10,6 +10,7 @@ from typing import List
 
 
 def _collect_targets(output_root: Path) -> List[Path]:
+    """Collect cleanup targets from temp and failed-build directories."""
     targets: List[Path] = []
     tmp_root = output_root / "tmp"
     failed_root = output_root / "failed_builds"
@@ -21,6 +22,7 @@ def _collect_targets(output_root: Path) -> List[Path]:
 
 
 def main() -> int:
+    """Parse CLI args and run dry-run or applied cleanup."""
     parser = argparse.ArgumentParser(description="Cleanup failed TRACE build artifacts")
     parser.add_argument("--output-root", default="./out", help="Build output root")
     parser.add_argument("--apply", action="store_true", help="Actually delete targets")

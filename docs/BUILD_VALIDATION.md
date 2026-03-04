@@ -30,12 +30,11 @@ Before atomic finalize, validate all of:
 4. per-task accepted-count expectations for current build mode.
 5. single `instance_version` consistency across dataset.
 6. if configured for a multi-query task, per-task query-type accepted-count expectations.
-
-Pending prompt-validation extensions:
-1. validate prompt bundle/key metadata exists for each instance.
-2. validate referenced prompt assets exist.
-3. validate required placeholders resolve with no unresolved tokens.
-4. validate required template-list cardinality constraints (10+ variants per required key).
+7. prompt metadata presence for each instance (`trace.query_spec.prompt_variant`).
+8. referenced prompt bundle/key existence checks.
+9. required prompt-slot metadata conformance checks.
+10. unresolved placeholder token checks on rendered prompt text.
+11. template-list cardinality checks (10+ variants per required key) and metadata count/index consistency checks.
 
 Validation behavior:
 1. collect all detected errors.

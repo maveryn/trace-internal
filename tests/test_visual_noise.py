@@ -10,7 +10,7 @@ from trace.tasks.tile.path.shortest_path import TileShortestPathTask
 
 def test_geometry_measurement_default_noise_prob() -> None:
     task = GeometryAngleValueQueryTask()
-    out = task.generate(
+    out_a = task.generate(
         4242,
         params={
             "query_type": "closest_to_x",
@@ -20,9 +20,23 @@ def test_geometry_measurement_default_noise_prob() -> None:
         },
         max_attempts=200,
     )
-    noise_meta = out.trace_payload["render_spec"]["post_image_noise"]
+    out_b = task.generate(
+        4242,
+        params={
+            "query_type": "closest_to_x",
+            "candidate_count": 7,
+            "angle_step": 15,
+            "target_x": 90,
+        },
+        max_attempts=200,
+    )
+    noise_meta = out_a.trace_payload["render_spec"]["post_image_noise"]
+    background_meta_a = out_a.trace_payload["render_spec"]["background_style"]
+    background_meta_b = out_b.trace_payload["render_spec"]["background_style"]
     assert noise_meta["enabled"] is True
     assert float(noise_meta["apply_prob"]) == pytest.approx(0.75, rel=1e-9)
+    assert background_meta_a["enabled"] is True
+    assert background_meta_a == background_meta_b
 
 
 def test_tile_post_noise_override_is_deterministic_and_changes_pixels() -> None:
@@ -37,6 +51,7 @@ def test_tile_post_noise_override_is_deterministic_and_changes_pixels() -> None:
     clean = task.generate(7777, params={**common, "noise_apply_prob": 0.0}, max_attempts=200)
     noisy_params = {
         **common,
+        "background_style": "grid_light",
         "noise_apply_prob": 1.0,
         "noise_edit_types": ["downsample"],
         "noise_edit_count_range": [1, 1],
@@ -51,7 +66,9 @@ def test_tile_post_noise_override_is_deterministic_and_changes_pixels() -> None:
     assert noisy_a.image.tobytes() != clean.image.tobytes()
 
     noise_meta = noisy_a.trace_payload["render_spec"]["post_image_noise"]
+    background_meta = noisy_a.trace_payload["render_spec"]["background_style"]
     assert noise_meta["applied"] is True
     assert len(noise_meta["edits"]) == 1
     assert noise_meta["edits"][0]["type"] == "downsample"
     assert float(noise_meta["edits"][0]["params"]["scale"]) == pytest.approx(0.65, rel=1e-9)
+    assert background_meta["selected_style"] == "grid_light"

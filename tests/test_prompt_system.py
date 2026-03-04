@@ -28,6 +28,7 @@ def test_render_prompt_is_deterministic() -> None:
     )
     assert a.prompt == b.prompt
     assert a.metadata == b.metadata
+    assert a.metadata["slot_values"]["target_x"] == 90
 
 
 def test_required_prompt_slots_enforced() -> None:
@@ -47,4 +48,3 @@ def test_bundle_contains_required_variant_counts() -> None:
     bundle = load_prompt_bundle("tile", "path", "tile_path_v1")
     assert len(bundle.task_type_templates["maze_path"]) >= 10
     assert len(bundle.query_type_templates["shortest_path"]) >= 10
-

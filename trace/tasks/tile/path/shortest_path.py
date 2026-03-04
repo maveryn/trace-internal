@@ -12,9 +12,11 @@ from ....core.prompts import render_prompt
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TaskComplexity, TypedValue
+from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
+from .background_defaults import POST_IMAGE_BACKGROUND_DEFAULTS
 from .noise_defaults import POST_IMAGE_NOISE_DEFAULTS
 
 
@@ -53,6 +55,7 @@ def _group_default(mapping: Dict[str, Any], key: str, fallback: Any) -> Any:
 
 
 def _neighbors(cell: Coord, rows: int, cols: int) -> Iterable[Coord]:
+    """Yield valid 4-neighbor cells for one grid coordinate."""
     r, c = cell
     if r > 0:
         yield (r - 1, c)
@@ -65,6 +68,7 @@ def _neighbors(cell: Coord, rows: int, cols: int) -> Iterable[Coord]:
 
 
 def _bfs_dist_count(rows: int, cols: int, blocked: Sequence[Sequence[bool]], start: Coord) -> Tuple[List[List[int]], List[List[int]]]:
+    """Compute BFS distance and shortest-path count from a start cell."""
     dist = [[-1 for _ in range(cols)] for _ in range(rows)]
     count = [[0 for _ in range(cols)] for _ in range(rows)]
     sr, sc = start
@@ -95,6 +99,7 @@ def _reconstruct_unique_path(
     dist_start: Sequence[Sequence[int]],
     dist_goal: Sequence[Sequence[int]],
 ) -> List[Coord] | None:
+    """Reconstruct the unique shortest path when exactly one exists."""
     shortest = dist_start[goal[0]][goal[1]]
     if shortest < 0:
         return None
@@ -120,6 +125,7 @@ def _reconstruct_unique_path(
 
 
 def _cell_id(rc: Coord) -> str:
+    """Build stable symbolic cell id for row/column coordinates."""
     return f"cell_{rc[0]}_{rc[1]}"
 
 
@@ -133,6 +139,7 @@ def _sample_maze(
     obstacle_prob_max: float,
     max_attempts: int,
 ) -> Tuple[List[List[bool]], Coord, Coord, List[Coord], int]:
+    """Sample a maze instance satisfying unique-shortest-path constraints."""
     cells = [(r, c) for r in range(rows) for c in range(cols)]
     for _ in range(max_attempts):
         obstacle_prob = rng.uniform(obstacle_prob_min, obstacle_prob_max)
@@ -173,9 +180,12 @@ def _render_maze(
     goal: Coord,
     path: Sequence[Coord],
     *,
+    image: Image.Image,
+    draw: ImageDraw.ImageDraw,
     canvas_size: int,
     margin: int,
 ) -> Tuple[Image.Image, Dict[str, Tuple[float, float, float, float]]]:
+    """Render maze cells and return per-cell bounding-box anchors."""
     usable_w = max(8, canvas_size - 2 * margin)
     usable_h = max(8, canvas_size - 2 * margin)
     cell_size = max(8, min(usable_w // cols, usable_h // rows))
@@ -183,9 +193,6 @@ def _render_maze(
     board_h = cell_size * rows
     ox = (canvas_size - board_w) // 2
     oy = (canvas_size - board_h) // 2
-
-    image = Image.new("RGB", (canvas_size, canvas_size), (246, 246, 246))
-    draw = ImageDraw.Draw(image)
 
     path_set = set(path)
     bbox_map: Dict[str, Tuple[float, float, float, float]] = {}
@@ -254,6 +261,14 @@ class TileShortestPathTask:
             max_attempts=max_attempts,
         )
 
+        base_image, background_meta = make_background_canvas(
+            canvas_size=canvas_size,
+            instance_seed=instance_seed,
+            params=params,
+            default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+            fallback_color=(246, 246, 246),
+        )
+        draw = ImageDraw.Draw(base_image)
         image, bbox_map = _render_maze(
             rows,
             cols,
@@ -261,6 +276,8 @@ class TileShortestPathTask:
             start,
             goal,
             path,
+            image=base_image,
+            draw=draw,
             canvas_size=canvas_size,
             margin=margin,
         )
@@ -382,6 +399,7 @@ class TileShortestPathTask:
                 "rows": rows,
                 "cols": cols,
                 "coord_space": "pixel",
+                "background_style": dict(background_meta),
                 "post_image_noise": dict(post_noise_meta),
             },
             "render_map": render_map,

@@ -4,9 +4,9 @@ TRACE is a grounded visual reasoning task environment for RLVR.
 
 ## Docs
 
-Start with [docs/README.md](/home/jovyan/work/trace/docs/README.md).  
-Current implementation snapshot is in [docs/STATUS.md](/home/jovyan/work/trace/docs/STATUS.md).
-Contribution workflow/checklists are in [CONTRIBUTING.md](/home/jovyan/work/trace/CONTRIBUTING.md).
+Start with [docs/README.md](docs/README.md).  
+Current implementation snapshot is in [docs/STATUS.md](docs/STATUS.md).
+Contribution workflow/checklists are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Setup
 

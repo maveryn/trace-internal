@@ -12,10 +12,12 @@ from ....core.prompts import render_prompt
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TaskComplexity, TypedValue
+from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ..shared.value_queries import QueryOutcome, run_value_query, supported_value_query_types
+from .background_defaults import POST_IMAGE_BACKGROUND_DEFAULTS
 from .noise_defaults import POST_IMAGE_NOISE_DEFAULTS
 
 
@@ -54,10 +56,12 @@ def _group_default(mapping: Mapping[str, Any], key: str, fallback: Any) -> Any:
 
 
 def _deg_to_rad(angle_deg: float) -> float:
+    """Convert degrees to radians."""
     return math.radians(float(angle_deg))
 
 
 def _ray_endpoint(vertex: Point, angle_deg: float, length: float) -> Point:
+    """Compute endpoint of a ray emitted from `vertex` at `angle_deg`."""
     rad = _deg_to_rad(angle_deg)
     x = float(vertex[0]) + float(length) * math.cos(rad)
     y = float(vertex[1]) + float(length) * math.sin(rad)
@@ -65,17 +69,20 @@ def _ray_endpoint(vertex: Point, angle_deg: float, length: float) -> Point:
 
 
 def _inside_canvas(point: Point, canvas_size: int, padding: float = 2.0) -> bool:
+    """Check whether a point lies inside canvas bounds with padding."""
     x, y = point
     return padding <= x <= float(canvas_size) - padding and padding <= y <= float(canvas_size) - padding
 
 
 def _distance_sq(a: Point, b: Point) -> float:
+    """Return squared Euclidean distance between two points."""
     dx = float(a[0]) - float(b[0])
     dy = float(a[1]) - float(b[1])
     return dx * dx + dy * dy
 
 
 def _sample_vertices(rng, *, count: int, canvas_size: int, margin: int, min_dist: float) -> List[Point]:
+    """Sample separated vertex points for angle entities on the canvas."""
     vertices: List[Point] = []
     min_dist_sq = float(min_dist * min_dist)
     for _ in range(count):
@@ -95,6 +102,7 @@ def _sample_vertices(rng, *, count: int, canvas_size: int, margin: int, min_dist
 
 
 def _draw_angle(draw: ImageDraw.ImageDraw, *, vertex: Point, end1: Point, end2: Point, line_width: int) -> None:
+    """Draw one angle primitive (two rays + highlighted vertex marker)."""
     vx, vy = vertex
     draw.line([vx, vy, end1[0], end1[1]], fill=(22, 22, 22), width=line_width)
     draw.line([vx, vy, end2[0], end2[1]], fill=(22, 22, 22), width=line_width)
@@ -108,6 +116,7 @@ def _draw_angle(draw: ImageDraw.ImageDraw, *, vertex: Point, end1: Point, end2: 
 
 
 def _complexity_score(*, candidate_count: int, min_gap: int, step: int) -> float:
+    """Compute a task-local complexity proxy from candidate density/gap."""
     # Heuristic task-local complexity proxy for curriculum/debug only.
     density = min(1.0, float(candidate_count) / 9.0)
     gap_component = 1.0 - min(1.0, float(min_gap) / max(1.0, float(step * 2)))
@@ -215,7 +224,13 @@ class GeometryAngleValueQueryTask:
         if outcome is None or not entities:
             raise RuntimeError("failed to generate geometry_angle_value_query instance")
 
-        image = Image.new("RGB", (canvas_size, canvas_size), (248, 248, 248))
+        image, background_meta = make_background_canvas(
+            canvas_size=canvas_size,
+            instance_seed=instance_seed,
+            params=params,
+            default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+            fallback_color=(248, 248, 248),
+        )
         draw = ImageDraw.Draw(image)
         for entity in entities.values():
             vertex = (float(entity["vertex"][0]), float(entity["vertex"][1]))
@@ -296,6 +311,7 @@ class GeometryAngleValueQueryTask:
             "render_spec": {
                 "canvas_size": int(canvas_size),
                 "coord_space": "pixel",
+                "background_style": dict(background_meta),
                 "post_image_noise": dict(post_noise_meta),
             },
             "render_map": {

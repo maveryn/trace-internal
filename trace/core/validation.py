@@ -6,12 +6,15 @@ from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
+import re
 from typing import Any, Dict, Iterable, List, Mapping
 
 from . import error_codes
 from .canonical import canonical_json_bytes
 from .hash_utils import blake3_file, blake3_hex
 from .identity import compute_instance_id
+from .prompts import load_prompt_bundle
+from .prompts.schema import MIN_PROMPT_VARIANTS
 from .trace_store import read_trace_shard
 
 
@@ -35,10 +38,12 @@ class ValidationError:
 
 
 def _category_for_code(code: str) -> str:
+    """Derive top-level error category prefix from an error code string."""
     return code.split("_", 1)[0]
 
 
 def _err(code: str, message: str, **context: Any) -> ValidationError:
+    """Build a structured validation error with derived category metadata."""
     return ValidationError(
         error_code=code,
         message=message,
@@ -63,8 +68,319 @@ _REQUIRED_INSTANCE_FIELDS = [
     "versions",
 ]
 
+_PROMPT_PLACEHOLDER_PATTERN = re.compile(r"\{[^{}]+\}")
+
+
+def _to_int(value: Any) -> int | None:
+    """Best-effort integer coercion used for metadata validation checks."""
+    try:
+        return int(value)
+    except Exception:
+        return None
+
+
+def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping[str, Any]) -> List[ValidationError]:
+    """Validate prompt metadata/bundle conformance for one train/trace pair."""
+    errors: List[ValidationError] = []
+    iid = instance.get("instance_id", "<missing>")
+    prompt_text = instance.get("prompt")
+
+    if isinstance(prompt_text, str):
+        unresolved_tokens = sorted({match.group(0) for match in _PROMPT_PLACEHOLDER_PATTERN.finditer(prompt_text)})
+        if unresolved_tokens:
+            errors.append(
+                _err(
+                    error_codes.PROMPT_UNRESOLVED_PLACEHOLDER,
+                    "prompt contains unresolved template placeholder(s)",
+                    instance_id=iid,
+                    field_path="prompt",
+                    unresolved_tokens=unresolved_tokens,
+                )
+            )
+
+    query_spec = trace_record.get("query_spec")
+    if not isinstance(query_spec, Mapping):
+        errors.append(
+            _err(
+                error_codes.PROMPT_METADATA_MISSING,
+                "trace query_spec is missing or invalid for prompt validation",
+                instance_id=iid,
+                field_path="query_spec",
+            )
+        )
+        return errors
+
+    prompt_variant = query_spec.get("prompt_variant")
+    if not isinstance(prompt_variant, Mapping):
+        errors.append(
+            _err(
+                error_codes.PROMPT_METADATA_MISSING,
+                "trace query_spec.prompt_variant is missing or invalid",
+                instance_id=iid,
+                field_path="query_spec.prompt_variant",
+            )
+        )
+        return errors
+
+    required_meta_fields = (
+        "prompt_bundle_id",
+        "task_type_key",
+        "query_type_key",
+        "task_type_variant_index",
+        "query_type_variant_index",
+        "variant_count_by_key",
+    )
+    for field in required_meta_fields:
+        if field not in prompt_variant:
+            errors.append(
+                _err(
+                    error_codes.PROMPT_METADATA_MISSING,
+                    f"missing required prompt metadata field '{field}'",
+                    instance_id=iid,
+                    field_path=f"query_spec.prompt_variant.{field}",
+                )
+            )
+
+    bundle_id = str(prompt_variant.get("prompt_bundle_id", "")).strip()
+    task_type_key = str(prompt_variant.get("task_type_key", "")).strip()
+    query_type_key = str(prompt_variant.get("query_type_key", "")).strip()
+    variant_count_by_key = prompt_variant.get("variant_count_by_key")
+
+    if not bundle_id:
+        errors.append(
+            _err(
+                error_codes.PROMPT_METADATA_MISSING,
+                "prompt bundle id is empty",
+                instance_id=iid,
+                field_path="query_spec.prompt_variant.prompt_bundle_id",
+            )
+        )
+    if not task_type_key:
+        errors.append(
+            _err(
+                error_codes.PROMPT_METADATA_MISSING,
+                "task_type_key is empty",
+                instance_id=iid,
+                field_path="query_spec.prompt_variant.task_type_key",
+            )
+        )
+    if not query_type_key:
+        errors.append(
+            _err(
+                error_codes.PROMPT_METADATA_MISSING,
+                "query_type_key is empty",
+                instance_id=iid,
+                field_path="query_spec.prompt_variant.query_type_key",
+            )
+        )
+    if not isinstance(variant_count_by_key, Mapping):
+        errors.append(
+            _err(
+                error_codes.PROMPT_METADATA_MISSING,
+                "variant_count_by_key must be a mapping",
+                instance_id=iid,
+                field_path="query_spec.prompt_variant.variant_count_by_key",
+            )
+        )
+
+    if errors:
+        return errors
+
+    domain = str(instance.get("domain", ""))
+    task_group = str(instance.get("task_group", ""))
+    try:
+        bundle = load_prompt_bundle(domain=domain, task_group=task_group, bundle_id=bundle_id)
+    except FileNotFoundError as exc:
+        errors.append(
+            _err(
+                error_codes.PROMPT_BUNDLE_NOT_FOUND,
+                str(exc),
+                instance_id=iid,
+                prompt_bundle_id=bundle_id,
+                domain=domain,
+                task_group=task_group,
+            )
+        )
+        return errors
+    except Exception as exc:
+        errors.append(
+            _err(
+                error_codes.PROMPT_BUNDLE_INVALID,
+                f"invalid prompt bundle: {exc}",
+                instance_id=iid,
+                prompt_bundle_id=bundle_id,
+                domain=domain,
+                task_group=task_group,
+            )
+        )
+        return errors
+
+    if task_type_key not in bundle.task_type_templates:
+        errors.append(
+            _err(
+                error_codes.PROMPT_KEY_MISSING,
+                "prompt task_type key not found in bundle",
+                instance_id=iid,
+                prompt_bundle_id=bundle_id,
+                task_type_key=task_type_key,
+            )
+        )
+    if query_type_key not in bundle.query_type_templates:
+        errors.append(
+            _err(
+                error_codes.PROMPT_KEY_MISSING,
+                "prompt query_type key not found in bundle",
+                instance_id=iid,
+                prompt_bundle_id=bundle_id,
+                query_type_key=query_type_key,
+            )
+        )
+    if errors:
+        return errors
+
+    task_variants = bundle.task_type_templates[task_type_key]
+    query_variants = bundle.query_type_templates[query_type_key]
+    if len(task_variants) < MIN_PROMPT_VARIANTS:
+        errors.append(
+            _err(
+                error_codes.PROMPT_BUNDLE_INVALID,
+                "task_type template variant count is below minimum",
+                instance_id=iid,
+                prompt_bundle_id=bundle_id,
+                task_type_key=task_type_key,
+                required_min_count=MIN_PROMPT_VARIANTS,
+                actual_count=len(task_variants),
+            )
+        )
+    if len(query_variants) < MIN_PROMPT_VARIANTS:
+        errors.append(
+            _err(
+                error_codes.PROMPT_BUNDLE_INVALID,
+                "query_type template variant count is below minimum",
+                instance_id=iid,
+                prompt_bundle_id=bundle_id,
+                query_type_key=query_type_key,
+                required_min_count=MIN_PROMPT_VARIANTS,
+                actual_count=len(query_variants),
+            )
+        )
+
+    task_count_key = f"task_type:{task_type_key}"
+    query_count_key = f"query_type:{query_type_key}"
+    observed_task_count = _to_int(variant_count_by_key.get(task_count_key))
+    observed_query_count = _to_int(variant_count_by_key.get(query_count_key))
+    expected_task_count = len(task_variants)
+    expected_query_count = len(query_variants)
+
+    if observed_task_count is None:
+        errors.append(
+            _err(
+                error_codes.PROMPT_METADATA_MISSING,
+                "missing task_type variant count in prompt metadata",
+                instance_id=iid,
+                field_path=f"query_spec.prompt_variant.variant_count_by_key.{task_count_key}",
+            )
+        )
+    elif observed_task_count != expected_task_count:
+        errors.append(
+            _err(
+                error_codes.PROMPT_VARIANT_COUNT_MISMATCH,
+                "task_type variant count mismatch between metadata and bundle",
+                instance_id=iid,
+                prompt_bundle_id=bundle_id,
+                task_type_key=task_type_key,
+                expected_count=expected_task_count,
+                actual_count=observed_task_count,
+            )
+        )
+
+    if observed_query_count is None:
+        errors.append(
+            _err(
+                error_codes.PROMPT_METADATA_MISSING,
+                "missing query_type variant count in prompt metadata",
+                instance_id=iid,
+                field_path=f"query_spec.prompt_variant.variant_count_by_key.{query_count_key}",
+            )
+        )
+    elif observed_query_count != expected_query_count:
+        errors.append(
+            _err(
+                error_codes.PROMPT_VARIANT_COUNT_MISMATCH,
+                "query_type variant count mismatch between metadata and bundle",
+                instance_id=iid,
+                prompt_bundle_id=bundle_id,
+                query_type_key=query_type_key,
+                expected_count=expected_query_count,
+                actual_count=observed_query_count,
+            )
+        )
+
+    task_variant_index = _to_int(prompt_variant.get("task_type_variant_index"))
+    query_variant_index = _to_int(prompt_variant.get("query_type_variant_index"))
+    if task_variant_index is None or task_variant_index < 0 or task_variant_index >= expected_task_count:
+        errors.append(
+            _err(
+                error_codes.PROMPT_VARIANT_INDEX_OUT_OF_RANGE,
+                "task_type variant index out of range",
+                instance_id=iid,
+                prompt_bundle_id=bundle_id,
+                task_type_key=task_type_key,
+                variant_index=prompt_variant.get("task_type_variant_index"),
+                variant_count=expected_task_count,
+            )
+        )
+    if query_variant_index is None or query_variant_index < 0 or query_variant_index >= expected_query_count:
+        errors.append(
+            _err(
+                error_codes.PROMPT_VARIANT_INDEX_OUT_OF_RANGE,
+                "query_type variant index out of range",
+                instance_id=iid,
+                prompt_bundle_id=bundle_id,
+                query_type_key=query_type_key,
+                variant_index=prompt_variant.get("query_type_variant_index"),
+                variant_count=expected_query_count,
+            )
+        )
+
+    required_slots = list(bundle.required_slots_by_key.get(f"task_type:{task_type_key}", ()))
+    required_slots.extend(bundle.required_slots_by_key.get(f"query_type:{query_type_key}", ()))
+    if required_slots:
+        slot_values = prompt_variant.get("slot_values")
+        if not isinstance(slot_values, Mapping):
+            errors.append(
+                _err(
+                    error_codes.PROMPT_REQUIRED_SLOT_MISSING,
+                    "prompt metadata is missing slot_values for required slots",
+                    instance_id=iid,
+                    field_path="query_spec.prompt_variant.slot_values",
+                    required_slots=sorted(set(str(slot) for slot in required_slots)),
+                )
+            )
+        else:
+            missing_slots = sorted(
+                {
+                    str(slot)
+                    for slot in required_slots
+                    if str(slot) not in slot_values or slot_values.get(str(slot)) in (None, "")
+                }
+            )
+            if missing_slots:
+                errors.append(
+                    _err(
+                        error_codes.PROMPT_REQUIRED_SLOT_MISSING,
+                        "required prompt slot values are missing in metadata",
+                        instance_id=iid,
+                        field_path="query_spec.prompt_variant.slot_values",
+                        missing_slots=missing_slots,
+                    )
+                )
+
+    return errors
+
 
 def _validate_schema(instance: Mapping[str, Any]) -> List[ValidationError]:
+    """Validate required TrainInstance fields and envelope-schema invariants."""
     errors: List[ValidationError] = []
     iid = instance.get("instance_id", "<missing>")
 
@@ -249,6 +565,8 @@ def validate_dataset(
                     trace_instance_id=record.get("instance_id"),
                 )
             )
+
+        errors.extend(_validate_prompt_contract(inst, record))
 
         for i, image in enumerate(inst.get("images", [])):
             rel_path = image.get("path")

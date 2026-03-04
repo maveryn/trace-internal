@@ -11,6 +11,7 @@ from trace.core.config import load_build_config
 
 
 def main() -> int:
+    """Parse CLI args and run one dataset build."""
     parser = argparse.ArgumentParser(description="Build TRACE dataset from YAML config")
     parser.add_argument("--config", required=True, help="Path to build config YAML")
     parser.add_argument("--code-hash", default="local", help="Code provenance hash")

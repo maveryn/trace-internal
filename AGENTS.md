@@ -16,6 +16,7 @@ Each generated instance should include:
 - System module/lifecycle architecture: `docs/SYSTEM_ARCHITECTURE.md`
 - Current implementation snapshot: `docs/STATUS.md`
 - Task creation procedure: `docs/TASK_AUTHORING.md`
+- Code documentation guidelines: `docs/CODE_DOCUMENTATION.md`
 - Shared reusable helpers and anti-duplication policy: `docs/SHARED_UTILITIES.md`
 - Build/validation/CI policy: `docs/BUILD_VALIDATION.md`
 - Validation error catalog: `docs/VALIDATION_ERROR_CODES.md`
@@ -56,6 +57,7 @@ Each generated instance should include:
 - Add concise docstrings for new modules, classes, and non-trivial functions.
 - Document assumptions, invariants, and non-obvious canonicalization behavior where implemented.
 - Prefer comments that explain *why* a decision exists.
+- Follow `docs/CODE_DOCUMENTATION.md` for the canonical checklist and doc-update triggers.
 
 ## Testing and validation expectations
 - Add/maintain tests for schema validity, answer/evidence/verifier consistency, and determinism.

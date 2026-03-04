@@ -5,6 +5,7 @@ This is the canonical guide for creating new tasks in TRACE.
 Use this file as the task-level implementation playbook on top of `docs/DSL_BLUEPRINT.md`.
 Use `docs/SYSTEM_ARCHITECTURE.md` for module/lifecycle context and `docs/SHARED_UTILITIES.md` before adding new helpers.
 Use `docs/PROMPT_SYSTEM.md` for prompt-template architecture and external prompt-bundle rules.
+Use `docs/CODE_DOCUMENTATION.md` for code-level docstring/comment standards.
 
 Platform build lifecycle, pre-finalize validation, failure handling, cleanup, and CI strict-repro
 rules live in `docs/BUILD_VALIDATION.md`.
@@ -49,7 +50,7 @@ rules live in `docs/BUILD_VALIDATION.md`.
 29. Use shared canonical JSON serializer utility for all identity hashes; no task-level canonicalization overrides.
 30. Treat canonicalization failures as hard errors (unsupported types, non-string keys, non-finite numbers).
 31. Use PNG as default image output format unless explicitly overridden by build config.
-32. Update docs (`DSL_BLUEPRINT.md`, `PROMPT_SYSTEM.md`, `SYSTEM_ARCHITECTURE.md`, `SHARED_UTILITIES.md`, this file, and `LESSONS_LEARNED.md`) when reusable guidance changes.
+32. Update docs (`DSL_BLUEPRINT.md`, `PROMPT_SYSTEM.md`, `SYSTEM_ARCHITECTURE.md`, `CODE_DOCUMENTATION.md`, `SHARED_UTILITIES.md`, this file, and `LESSONS_LEARNED.md`) when reusable guidance changes.
 
 ## Task and query sampling policy (required)
 1. Global sampling is task-level only: `task` is the primary sampling unit.

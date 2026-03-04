@@ -50,6 +50,7 @@ class _BuildStageResult:
 
 
 def _to_json_file(path: Path, payload: Any) -> None:
+    """Write one JSON file with deterministic formatting and key ordering."""
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         json.dumps(payload, indent=2, ensure_ascii=False, allow_nan=False, sort_keys=True) + "\n",
@@ -58,6 +59,7 @@ def _to_json_file(path: Path, payload: Any) -> None:
 
 
 def _to_jsonl(path: Path, records: List[Dict[str, Any]]) -> None:
+    """Write JSONL records with deterministic key ordering per row."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as handle:
         for record in records:
@@ -66,6 +68,7 @@ def _to_jsonl(path: Path, records: List[Dict[str, Any]]) -> None:
 
 
 def _normalize_weights(weights: Mapping[str, float]) -> Dict[str, float]:
+    """Normalize positive weights to a probability map."""
     positive = {key: float(value) for key, value in weights.items() if float(value) > 0.0}
     total = sum(positive.values())
     if total <= 0.0:
@@ -74,6 +77,7 @@ def _normalize_weights(weights: Mapping[str, float]) -> Dict[str, float]:
 
 
 def _weighted_choice(rng: random.Random, probabilities: Mapping[str, float]) -> str:
+    """Sample one key from a probability map using cumulative weights."""
     roll = rng.random()
     cumulative = 0.0
     last_key = None
@@ -88,6 +92,7 @@ def _weighted_choice(rng: random.Random, probabilities: Mapping[str, float]) -> 
 
 
 def _serialize_task_config(task: BuildTaskConfig) -> Dict[str, Any]:
+    """Serialize task config into dataset-id/report-friendly mapping."""
     return {
         "task_id": task.task_id,
         "count": task.count,
@@ -99,6 +104,7 @@ def _serialize_task_config(task: BuildTaskConfig) -> Dict[str, Any]:
 
 
 def _dataset_id_from_config(config: BuildConfig, type_registry: TypeRegistry, type_registry_hash: str) -> str:
+    """Compute deterministic dataset id from build-critical configuration."""
     payload = {
         "dataset_name": config.dataset_name,
         "instance_version": config.instance_version,
@@ -115,11 +121,13 @@ def _dataset_id_from_config(config: BuildConfig, type_registry: TypeRegistry, ty
 
 
 def _save_image(image: Image.Image, path: Path, image_format: str) -> None:
+    """Persist an image artifact in the requested build output format."""
     path.parent.mkdir(parents=True, exist_ok=True)
     image.save(path, format=image_format.upper())
 
 
 def _serialize_config(config: BuildConfig) -> Dict[str, Any]:
+    """Serialize build config for failure bundles and diagnostics."""
     return {
         "output_root": config.output_root,
         "dataset_name": config.dataset_name,
@@ -140,6 +148,7 @@ def _write_failure_bundle(
     resolved_build_config: Dict[str, Any],
     warning_messages: List[str],
 ) -> None:
+    """Persist failure diagnostics under `failed_builds/<dataset_id>/`."""
     failure_root.mkdir(parents=True, exist_ok=True)
     if validation_report is not None:
         _to_json_file(failure_root / "validation_report.json", validation_report)
@@ -148,6 +157,7 @@ def _write_failure_bundle(
 
 
 def _ensure_unique_task_ids(tasks: List[BuildTaskConfig]) -> None:
+    """Fail fast when build config contains duplicate task identifiers."""
     seen: set[str] = set()
     for task in tasks:
         if task.task_id in seen:
@@ -156,6 +166,7 @@ def _ensure_unique_task_ids(tasks: List[BuildTaskConfig]) -> None:
 
 
 def _resolve_task_targets(config: BuildConfig) -> tuple[Dict[str, int], Dict[str, float], str]:
+    """Resolve per-task target counts and global task probabilities."""
     _ensure_unique_task_ids(config.tasks)
     has_explicit_counts = all(task.count is not None for task in config.tasks)
 
@@ -194,6 +205,7 @@ def _resolve_task_targets(config: BuildConfig) -> tuple[Dict[str, int], Dict[str
 
 
 def _resolve_query_types(task: Any, params: Mapping[str, Any]) -> List[str]:
+    """Resolve supported query types for one task configuration."""
     if hasattr(task, "supported_query_types"):
         values = getattr(task, "supported_query_types")(dict(params))
         out = [str(v) for v in values]
@@ -214,6 +226,7 @@ def _resolve_query_types(task: Any, params: Mapping[str, Any]) -> List[str]:
 
 
 def _resolve_query_probabilities(query_types: List[str], configured: Mapping[str, float]) -> Dict[str, float]:
+    """Resolve per-task query-type probabilities with optional overrides."""
     if not configured:
         p = 1.0 / float(len(query_types))
         return {query_type: p for query_type in query_types}
@@ -225,6 +238,7 @@ def _resolve_query_probabilities(query_types: List[str], configured: Mapping[str
 
 
 def _expected_query_counts(tasks: List[BuildTaskConfig]) -> Dict[str, Dict[str, int]]:
+    """Extract expected query-type counts for validation checks."""
     out: Dict[str, Dict[str, int]] = {}
     for task in tasks:
         if task.expected_query_counts:
@@ -236,6 +250,7 @@ def _expected_query_counts(tasks: List[BuildTaskConfig]) -> Dict[str, Dict[str, 
 
 
 def _aggregate_sampling_probabilities(task_probabilities: Mapping[str, float]) -> tuple[Dict[str, float], Dict[str, float]]:
+    """Aggregate domain/task-group probabilities from task-level weights."""
     domain_probs: Dict[str, float] = {}
     task_group_probs: Dict[str, float] = {}
     for task_id, probability in task_probabilities.items():
@@ -254,6 +269,7 @@ def _build_staging(
     code_hash: str,
     type_registry: TypeRegistry,
 ) -> _BuildStageResult:
+    """Generate one staging dataset pass and return in-memory build summary."""
     if stage_root.exists():
         shutil.rmtree(stage_root)
     stage_root.mkdir(parents=True, exist_ok=True)

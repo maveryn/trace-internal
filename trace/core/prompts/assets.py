@@ -14,6 +14,7 @@ _CACHE: Dict[str, PromptBundle] = {}
 
 
 def _prompt_root() -> Path:
+    """Resolve the prompt-bundle root directory."""
     override = os.getenv("TRACE_PROMPT_ROOT")
     if override:
         return Path(override)
@@ -21,10 +22,12 @@ def _prompt_root() -> Path:
 
 
 def _bundle_rel_path(domain: str, task_group: str, bundle_id: str) -> Path:
+    """Build bundle path relative to the prompt root."""
     return Path(str(domain)) / str(task_group) / f"{str(bundle_id)}.json"
 
 
 def _bundle_abs_path(domain: str, task_group: str, bundle_id: str) -> Path:
+    """Build absolute bundle path for one domain/task-group/bundle id."""
     return _prompt_root() / _bundle_rel_path(domain, task_group, bundle_id)
 
 
@@ -42,4 +45,3 @@ def load_prompt_bundle(domain: str, task_group: str, bundle_id: str) -> PromptBu
     bundle = parse_prompt_bundle(raw, source_path=str(_bundle_rel_path(domain, task_group, bundle_id)))
     _CACHE[cache_key] = bundle
     return bundle
-

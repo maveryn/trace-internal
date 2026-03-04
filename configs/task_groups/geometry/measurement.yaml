@@ -16,6 +16,25 @@ prompt:
   entity_plural: angles
 
 visual:
+  background:
+    enabled: true
+    styles:
+      solid_light:
+        kind: solid
+        color: [248, 248, 248]
+      graph_paper:
+        kind: grid
+        base_color: [246, 247, 248]
+        line_color: [224, 229, 236]
+        spacing: 28
+        line_width: 1
+      warm_paper:
+        kind: solid
+        color: [250, 246, 240]
+    weights:
+      solid_light: 0.5
+      graph_paper: 0.35
+      warm_paper: 0.15
   noise:
     apply_prob: 0.75
     edit_types:

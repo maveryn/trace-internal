@@ -44,9 +44,13 @@
 3. No auto-relaxation of semantic constraints.
 
 ## Visual Variation
-1. Task-group default post-image noise policy (`tile/path`):
+1. Task-group default background-style policy (`tile/path`):
+- deterministic style sampling with weighted presets (for example `solid_light`, `grid_light`),
+- defaults are defined in `configs/task_groups/tile/path.yaml` and loaded through `trace/tasks/tile/path/background_defaults.py`,
+- applied style metadata is emitted in `trace_payload.render_spec.background_style`.
+2. Task-group default post-image noise policy (`tile/path`):
 - `apply_prob = 0.0` (disabled by default),
 - edit types and ranges follow shared noise presets when enabled.
 Defaults are defined in task-group config (`configs/task_groups/tile/path.yaml`) and loaded through `trace/tasks/tile/path/noise_defaults.py`.
-2. Task-level overrides can be passed via `params.visual.noise` (or flat compatibility keys).
-3. Applied noise metadata is emitted in `trace_payload.render_spec.post_image_noise`.
+3. Task-level overrides can be passed via `params.visual.background` / `params.visual.noise` (or flat compatibility keys).
+4. Applied noise metadata is emitted in `trace_payload.render_spec.post_image_noise`.

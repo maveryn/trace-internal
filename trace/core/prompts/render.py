@@ -25,6 +25,7 @@ class _StrictSlotMap(dict):
 
 
 def _render_template(template: str, slots: Mapping[str, Any]) -> str:
+    """Render one prompt template with strict placeholder requirements."""
     rendered = str(template).format_map(_StrictSlotMap({str(k): v for k, v in dict(slots).items()})).strip()
     if not rendered:
         raise ValueError("rendered prompt template is empty")
@@ -38,6 +39,7 @@ def _validate_required_slots(
     query_type: str,
     slots: Mapping[str, Any],
 ) -> None:
+    """Ensure all slots declared by the selected task/query keys are present."""
     required_task = required_slots_by_key.get(f"task_type:{task_type_key}", ())
     required_query = required_slots_by_key.get(f"query_type:{query_type}", ())
     missing = [name for name in list(required_task) + list(required_query) if str(name) not in slots]
@@ -96,7 +98,7 @@ def render_prompt(
             f"task_type:{task_type_key}": int(task_count),
             f"query_type:{query_type}": int(query_count),
         },
+        "slot_values": {str(key): slots[key] for key in sorted(slots.keys(), key=str)},
         "template_paths": [bundle.source_path],
     }
     return PromptRenderResult(prompt=prompt, metadata=metadata)
-

@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.geometry.measurement.angle_value_query import GeometryAngleValueQueryTask
@@ -110,3 +112,38 @@ def test_geometry_angle_build_integration(tmp_path: Path) -> None:
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0
+
+
+def test_geometry_angle_failure_edge_conditions() -> None:
+    task = GeometryAngleValueQueryTask()
+    failure_cases = [
+        (
+            321,
+            {
+                "query_type": "smallest_above_x",
+                "candidate_count": 5,
+                "min_angle": 15,
+                "max_angle": 75,
+                "angle_step": 15,
+                "target_x": 200,
+            },
+        ),
+        (
+            654,
+            {
+                "query_type": "closest_to_x",
+                "candidate_count": 2,
+                "min_angle": 45,
+                "max_angle": 135,
+                "angle_step": 90,
+                "target_x": 90,
+            },
+        ),
+    ]
+    for instance_seed, params in failure_cases:
+        with pytest.raises(RuntimeError, match="failed to generate geometry_angle_value_query instance"):
+            task.generate(
+                instance_seed,
+                params=params,
+                max_attempts=25,
+            )

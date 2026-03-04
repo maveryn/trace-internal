@@ -47,7 +47,23 @@ def _register_dummy_tasks() -> None:
                     image_rel_path=f"images/dummy/{self.task_id}/{instance_seed}.png",
                     trace_payload={
                         "scene_ir": {"entities": []},
-                        "query_spec": {"query_type": "default", "template_id": "dummy"},
+                        "query_spec": {
+                            "query_type": "default",
+                            "template_id": "dummy",
+                            "prompt_variant": {
+                                "prompt_bundle_id": "dummy_weights_v1",
+                                "task_type_key": "weighted_task",
+                                "query_type_key": "default",
+                                "task_type_variant_index": 0,
+                                "query_type_variant_index": 0,
+                                "variant_count_by_key": {
+                                    "task_type:weighted_task": 10,
+                                    "query_type:default": 10,
+                                },
+                                "slot_values": {},
+                                "template_paths": ["dummy/weights/dummy_weights_v1.json"],
+                            },
+                        },
                         "render_spec": {"coord_space": "pixel"},
                         "render_map": {"image_id": "img0", "anchors": {}},
                         "execution_trace": {"answer": 1},
@@ -89,7 +105,23 @@ def _register_dummy_tasks() -> None:
                     image_rel_path=f"images/dummy/{self.task_id}/{instance_seed}.png",
                     trace_payload={
                         "scene_ir": {"entities": []},
-                        "query_spec": {"query_type": "default", "template_id": "dummy"},
+                        "query_spec": {
+                            "query_type": "default",
+                            "template_id": "dummy",
+                            "prompt_variant": {
+                                "prompt_bundle_id": "dummy_weights_v1",
+                                "task_type_key": "weighted_task",
+                                "query_type_key": "default",
+                                "task_type_variant_index": 1,
+                                "query_type_variant_index": 1,
+                                "variant_count_by_key": {
+                                    "task_type:weighted_task": 10,
+                                    "query_type:default": 10,
+                                },
+                                "slot_values": {},
+                                "template_paths": ["dummy/weights/dummy_weights_v1.json"],
+                            },
+                        },
                         "render_spec": {"coord_space": "pixel"},
                         "render_map": {"image_id": "img0", "anchors": {}},
                         "execution_trace": {"answer": 2},
@@ -136,7 +168,23 @@ def _register_dummy_tasks() -> None:
                     image_rel_path=f"images/dummy/{self.task_id}/{instance_seed}.png",
                     trace_payload={
                         "scene_ir": {"entities": []},
-                        "query_spec": {"query_type": query_type, "template_id": "dummy_query"},
+                        "query_spec": {
+                            "query_type": query_type,
+                            "template_id": "dummy_query",
+                            "prompt_variant": {
+                                "prompt_bundle_id": "dummy_query_v1",
+                                "task_type_key": "query_task",
+                                "query_type_key": query_type,
+                                "task_type_variant_index": 0,
+                                "query_type_variant_index": 0,
+                                "variant_count_by_key": {
+                                    "task_type:query_task": 10,
+                                    f"query_type:{query_type}": 10,
+                                },
+                                "slot_values": {},
+                                "template_paths": ["dummy/query/dummy_query_v1.json"],
+                            },
+                        },
                         "render_spec": {"coord_space": "pixel"},
                         "render_map": {"image_id": "img0", "anchors": {}},
                         "execution_trace": {"query_type": query_type, "answer": value},
@@ -319,3 +367,185 @@ def test_query_type_expected_counts_validation_failure(tmp_path: Path) -> None:
     report = json.loads(report_path.read_text(encoding="utf-8"))
     assert report["total_errors"] > 0
     assert any("query-type accepted count below expectation" in err.get("message", "") for err in report["errors"])
+    assert "count_per_task_shortfall" in report["error_counts_by_code"]
+
+
+def test_query_weights_edge_cases_fail(tmp_path: Path) -> None:
+    _register_dummy_tasks()
+    cases = [
+        ("test_query_weights_zero_sum", {"q1": 0.0, "q2": 0.0}, 3),
+        ("test_query_weights_unknown_only", {"unknown_query": 1.0}, 9),
+    ]
+    for dataset_name, query_weights, sampling_seed in cases:
+        output_root = tmp_path / dataset_name
+        config = BuildConfig(
+            output_root=str(output_root),
+            dataset_name=dataset_name,
+            instance_version="v1",
+            image_format="png",
+            tasks=[
+                BuildTaskConfig(
+                    task_id="dummy_query_task",
+                    count=4,
+                    params={},
+                    query_weights=query_weights,
+                )
+            ],
+            strict_repro=False,
+            max_attempts_per_instance=20,
+            sampling_seed=sampling_seed,
+        )
+
+        with pytest.raises(BuildError, match="configured query_weights must have at least one positive weight"):
+            build_dataset(config, code_hash="query-weights-edge")
+
+
+def test_prompt_metadata_missing_validation_failure(tmp_path: Path) -> None:
+    if "dummy_prompt_missing_task" not in TASK_REGISTRY:
+
+        @register_task
+        class DummyPromptMissingTask:
+            task_id = "dummy_prompt_missing_task"
+            domain = "dummy"
+            task_group = "query"
+
+            @staticmethod
+            def supported_query_types(_params=None):
+                return ["default"]
+
+            def generate(self, instance_seed: int, *, params, max_attempts: int) -> TaskOutput:
+                image = Image.new("RGB", (32, 32), (230, 230, 230))
+                point = [[12.0, 12.0]]
+                return TaskOutput(
+                    prompt="dummy prompt without metadata",
+                    answer_gt=TypedValue(type="integer", value=3),
+                    evidence_gt=TypedValue(type="point_set", value=point),
+                    image=image,
+                    image_id="img0",
+                    image_rel_path=f"images/dummy/{self.task_id}/{instance_seed}.png",
+                    trace_payload={
+                        "scene_ir": {"entities": []},
+                        "query_spec": {"query_type": "default", "template_id": "dummy_query"},
+                        "render_spec": {"coord_space": "pixel"},
+                        "render_map": {"image_id": "img0", "anchors": {}},
+                        "execution_trace": {"answer": 3},
+                        "witness_symbolic": {"type": "id_set", "ids": []},
+                        "projected_evidence": {"point_set": point},
+                    },
+                    complexity=TaskComplexity(complexity_score=0.1, complexity_components={}),
+                    task_versions={
+                        "dsl_spec_version": "v1",
+                        "template_version": "v1",
+                        "operator_bundle_version": "v1",
+                        "domain_capability_version": "v1",
+                        "renderer_version": "v1",
+                    },
+                    query_type="default",
+                )
+
+    output_root = tmp_path / "out"
+    config = BuildConfig(
+        output_root=str(output_root),
+        dataset_name="test_prompt_metadata_missing",
+        instance_version="v1",
+        image_format="png",
+        tasks=[BuildTaskConfig(task_id="dummy_prompt_missing_task", count=1, params={})],
+        strict_repro=False,
+        max_attempts_per_instance=20,
+        sampling_seed=17,
+    )
+
+    with pytest.raises(BuildError):
+        build_dataset(config, code_hash="prompt-missing")
+
+    failure_dirs = sorted((output_root / "failed_builds").glob("*"))
+    assert failure_dirs, "expected a persisted failure bundle"
+    report_path = failure_dirs[0] / "validation_report.json"
+    assert report_path.exists()
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    assert report["total_errors"] > 0
+    assert any(err.get("error_code") == "prompt_metadata_missing" for err in report["errors"])
+    assert "prompt_metadata_missing" in report["error_counts_by_code"]
+
+
+def test_prompt_unresolved_placeholder_validation_error_code(tmp_path: Path) -> None:
+    if "dummy_prompt_unresolved_task" not in TASK_REGISTRY:
+
+        @register_task
+        class DummyPromptUnresolvedTask:
+            task_id = "dummy_prompt_unresolved_task"
+            domain = "dummy"
+            task_group = "weights"
+
+            @staticmethod
+            def supported_query_types(_params=None):
+                return ["default"]
+
+            def generate(self, instance_seed: int, *, params, max_attempts: int) -> TaskOutput:
+                image = Image.new("RGB", (32, 32), (225, 225, 225))
+                point = [[5.0, 5.0]]
+                return TaskOutput(
+                    prompt="dummy unresolved prompt {missing_token}",
+                    answer_gt=TypedValue(type="integer", value=4),
+                    evidence_gt=TypedValue(type="point_set", value=point),
+                    image=image,
+                    image_id="img0",
+                    image_rel_path=f"images/dummy/{self.task_id}/{instance_seed}.png",
+                    trace_payload={
+                        "scene_ir": {"entities": []},
+                        "query_spec": {
+                            "query_type": "default",
+                            "template_id": "dummy_query",
+                            "prompt_variant": {
+                                "prompt_bundle_id": "dummy_weights_v1",
+                                "task_type_key": "weighted_task",
+                                "query_type_key": "default",
+                                "task_type_variant_index": 0,
+                                "query_type_variant_index": 0,
+                                "variant_count_by_key": {
+                                    "task_type:weighted_task": 10,
+                                    "query_type:default": 10,
+                                },
+                                "slot_values": {},
+                                "template_paths": ["dummy/weights/dummy_weights_v1.json"],
+                            },
+                        },
+                        "render_spec": {"coord_space": "pixel"},
+                        "render_map": {"image_id": "img0", "anchors": {}},
+                        "execution_trace": {"answer": 4},
+                        "witness_symbolic": {"type": "id_set", "ids": []},
+                        "projected_evidence": {"point_set": point},
+                    },
+                    complexity=TaskComplexity(complexity_score=0.1, complexity_components={}),
+                    task_versions={
+                        "dsl_spec_version": "v1",
+                        "template_version": "v1",
+                        "operator_bundle_version": "v1",
+                        "domain_capability_version": "v1",
+                        "renderer_version": "v1",
+                    },
+                    query_type="default",
+                )
+
+    output_root = tmp_path / "out"
+    config = BuildConfig(
+        output_root=str(output_root),
+        dataset_name="test_prompt_unresolved_placeholder",
+        instance_version="v1",
+        image_format="png",
+        tasks=[BuildTaskConfig(task_id="dummy_prompt_unresolved_task", count=1, params={})],
+        strict_repro=False,
+        max_attempts_per_instance=20,
+        sampling_seed=21,
+    )
+
+    with pytest.raises(BuildError):
+        build_dataset(config, code_hash="prompt-unresolved")
+
+    failure_dirs = sorted((output_root / "failed_builds").glob("*"))
+    assert failure_dirs, "expected a persisted failure bundle"
+    report_path = failure_dirs[0] / "validation_report.json"
+    assert report_path.exists()
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    assert report["total_errors"] > 0
+    assert "prompt_unresolved_placeholder" in report["error_counts_by_code"]

@@ -1,0 +1,33 @@
+{
+  "bundle_id": "dummy_weights_v1",
+  "schema_version": "v1",
+  "task_type_templates": {
+    "weighted_task": [
+      "Dummy weighted task prompt variant 1.",
+      "Dummy weighted task prompt variant 2.",
+      "Dummy weighted task prompt variant 3.",
+      "Dummy weighted task prompt variant 4.",
+      "Dummy weighted task prompt variant 5.",
+      "Dummy weighted task prompt variant 6.",
+      "Dummy weighted task prompt variant 7.",
+      "Dummy weighted task prompt variant 8.",
+      "Dummy weighted task prompt variant 9.",
+      "Dummy weighted task prompt variant 10."
+    ]
+  },
+  "query_type_templates": {
+    "default": [
+      "Dummy weighted query template 1.",
+      "Dummy weighted query template 2.",
+      "Dummy weighted query template 3.",
+      "Dummy weighted query template 4.",
+      "Dummy weighted query template 5.",
+      "Dummy weighted query template 6.",
+      "Dummy weighted query template 7.",
+      "Dummy weighted query template 8.",
+      "Dummy weighted query template 9.",
+      "Dummy weighted query template 10."
+    ]
+  },
+  "required_slots_by_key": {}
+}

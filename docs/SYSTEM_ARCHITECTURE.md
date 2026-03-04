@@ -17,7 +17,7 @@ It is the implementation-facing architecture reference, while `docs/DSL_BLUEPRIN
 - Task registry/framework plus task packages organized as `trace/tasks/<domain>/<task_group>/...`.
 - Domain-shared helpers live under `trace/tasks/<domain>/shared/`.
 3. `trace/core/visual/`
-- Shared visual-variation helpers (currently deterministic post-image noise).
+- Shared visual-variation helpers (deterministic background styles + post-image noise).
 4. `trace/core/prompts/`
 - Shared prompt bundle loading, deterministic variant selection, and strict template rendering.
 5. `prompts/`
@@ -68,7 +68,7 @@ It is the implementation-facing architecture reference, while `docs/DSL_BLUEPRIN
 7. `trace/core/trace_store.py`
 - Sidecar trace shard append/read utilities.
 8. `trace/core/validation.py`
-- Pre-finalize validation and structured validation report generation.
+- Pre-finalize validation (including prompt metadata/bundle/key/placeholder checks) and structured validation report generation.
 9. `trace/core/builder.py`
 - End-to-end dataset build orchestration.
 10. `trace/core/strict_repro.py`
@@ -81,7 +81,9 @@ It is the implementation-facing architecture reference, while `docs/DSL_BLUEPRIN
 - Prompt bundle parsing/cache, deterministic variant selection, placeholder validation, and composition helpers.
 14. `trace/core/visual/noise.py`
 - Task-group-aware deterministic post-image noise sampling/application and metadata emission.
-15. `trace/core/task_group_config.py`
+15. `trace/core/visual/background.py`
+- Task-group-aware deterministic background-style sampling/rendering and metadata emission.
+16. `trace/core/task_group_config.py`
 - Cached loader for domain/task-group defaults from `configs/task_groups/<domain>/<task_group>.yaml`.
 
 ## Sampling architecture

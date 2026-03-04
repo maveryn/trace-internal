@@ -12,7 +12,7 @@ Add a new grounded task with:
 Run from repo root:
 
 ```bash
-cd /home/jovyan/work/trace
+cd trace
 pip install -r requirements.txt
 ```
 

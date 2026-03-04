@@ -40,6 +40,13 @@ All generation and export are defined through explicit specs:
 6. `SamplerSpec`
 7. `InstanceRecordSpec` (output ABI)
 
+`PromptSpec` minimum contract:
+1. `prompt_bundle_id` (external asset identifier),
+2. `task_type_key` (shared composition bucket),
+3. `query_type_key` (query-specific composition bucket),
+4. slot schema for template placeholders,
+5. deterministic prompt seed namespaces.
+
 ## 4. Output contracts (sidecar ABI)
 `InstanceRecordSpec` is the compatibility contract for dataset writers, dataloaders, trainers, evaluators, and debuggers.
 
@@ -169,6 +176,21 @@ Generation fails fast on:
 5. `evidence_projection_policy`
 6. optional `consistency_checker`
 
+### 7.1 Prompt template bundles
+Prompt templates are external assets (no hardcoded task prompts).
+
+`prompt_bundle_id` resolves to a versioned prompt bundle with:
+1. task-type template lists (`task_type_key -> [templates]`),
+2. query-type template lists (`query_type -> [templates]`),
+3. required placeholder definitions per key,
+4. optional shared answer/evidence instruction templates.
+
+Rules:
+1. task-type template list must have at least 10 variants,
+2. each query-type template list must have at least 10 variants,
+3. prompt selection is deterministic from prompt seed namespaces,
+4. prompt variant metadata (`bundle/key/index/count`) is recorded in trace payload.
+
 ## 8. Domain plugin contract
 Each domain registers:
 1. entity schemas
@@ -210,6 +232,17 @@ Rules:
 1. no instance-level override.
 2. dataloader does not choose evidence form at read time.
 3. resolved mapping must be saved in `build_report.json`.
+
+## 10.1 Visual variation policy
+Visual variation is also fixed at dataset build time, with deterministic metadata:
+1. scene/background style defaults may be defined at task-family scope (`domain/task_group`),
+2. task-level overrides are allowed,
+3. post-image noise defaults may be defined at task-family scope.
+
+Rules:
+1. post-image noise must preserve evidence coordinate validity (photometric/non-geometric edits only by default),
+2. applied visual edits are recorded in trace payload (for example `render_spec.post_image_noise`),
+3. visual variation sampling uses explicit seed namespaces.
 
 ## 11. Answer uniqueness and constraint hardness
 Every generated instance must have exactly one valid final answer.
@@ -375,6 +408,8 @@ Coordinate standards are global:
 1. implement IR parser/validator.
 2. implement op typing and capability checks.
 3. implement versioned template registry.
+4. implement versioned prompt-bundle registry and loader.
+5. implement strict placeholder validation and deterministic prompt composition.
 
 ### Phase C: domains and deterministic engine
 1. register domain plugins.
@@ -409,6 +444,8 @@ A task is accepted only if:
 6. determinism/replay checks pass.
 7. required build telemetry/report fields are present.
 8. complexity score/components are emitted.
+9. prompts are externalized via bundle assets (no hardcoded task prompt strings).
+10. prompt bundle variant cardinality and placeholder validation checks pass.
 
 ## 22. Open questions
 1. Which verifier tolerance presets should be standardized first per domain?

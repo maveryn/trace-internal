@@ -11,4 +11,6 @@ requires-python = ">=3.10"
 dependencies = []
 
 [tool.setuptools]
-packages = ["trace", "trace.core", "trace.tasks"]
+
+[tool.setuptools.packages.find]
+include = ["trace*"]

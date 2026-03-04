@@ -10,6 +10,7 @@ Each generated instance should include:
 
 ## Source-of-truth docs
 - Docs index and reading order: `docs/README.md`
+- New-task one-page quickstart: `docs/QUICKSTART_NEW_TASK.md`
 - Architecture and ABI contracts: `docs/DSL_BLUEPRINT.md`
 - Prompt system and template composition: `docs/PROMPT_SYSTEM.md`
 - System module/lifecycle architecture: `docs/SYSTEM_ARCHITECTURE.md`

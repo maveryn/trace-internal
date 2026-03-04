@@ -7,13 +7,14 @@ This folder contains the project contracts, architecture references, and impleme
 1. `DSL_BLUEPRINT.md`: normative architecture and ABI contracts.
 2. `SYSTEM_ARCHITECTURE.md`: code/module layout and runtime flow.
 3. `STATUS.md`: current implementation snapshot and immediate next steps.
-4. `TASK_AUTHORING.md`: required process for adding tasks.
-5. `PROMPT_SYSTEM.md`: external prompt-bundle rules and shared prompt APIs.
-6. `BUILD_VALIDATION.md`: build lifecycle, validation policy, strict-repro policy.
-7. `VALIDATION_ERROR_CODES.md`: validation/build error code catalog.
-8. `SHARED_UTILITIES.md`: reusable helper inventory and anti-duplication policy.
-9. `LESSONS_LEARNED.md`: cross-task pitfalls and preventive rules.
-10. `TODO.md`: active backlog.
+4. `QUICKSTART_NEW_TASK.md`: one-page implementation quickstart with exact commands.
+5. `TASK_AUTHORING.md`: required process for adding tasks.
+6. `PROMPT_SYSTEM.md`: external prompt-bundle rules and shared prompt APIs.
+7. `BUILD_VALIDATION.md`: build lifecycle, validation policy, strict-repro policy.
+8. `VALIDATION_ERROR_CODES.md`: validation/build error code catalog.
+9. `SHARED_UTILITIES.md`: reusable helper inventory and anti-duplication policy.
+10. `LESSONS_LEARNED.md`: cross-task pitfalls and preventive rules.
+11. `TODO.md`: active backlog.
 
 ## Task docs
 1. `docs/tasks/README.md`: task-doc entry rules.

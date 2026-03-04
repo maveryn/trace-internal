@@ -29,6 +29,7 @@ Before atomic finalize, validate all of:
 3. image path/hash integrity for every image entry.
 4. per-task accepted-count expectations for current build mode.
 5. single `instance_version` consistency across dataset.
+6. if configured for a multi-query task, per-task query-type accepted-count expectations.
 
 Validation behavior:
 1. collect all detected errors.

@@ -3,6 +3,7 @@
 ## Purpose
 This is the canonical guide for creating new tasks in TRACE.
 Use this file as the task-level implementation playbook on top of `docs/DSL_BLUEPRINT.md`.
+Use `docs/SYSTEM_ARCHITECTURE.md` for module/lifecycle context and `docs/SHARED_UTILITIES.md` before adding new helpers.
 
 Platform build lifecycle, pre-finalize validation, failure handling, cleanup, and CI strict-repro
 rules live in `docs/BUILD_VALIDATION.md`.
@@ -19,21 +20,30 @@ rules live in `docs/BUILD_VALIDATION.md`.
 3. Confirm required domain capabilities (`relations`, `ops`) before implementation.
 4. Define evidence forms the task supports and the default evidence type for dataset builds.
 5. Ensure evidence resolution uses config precedence `domain -> task_group -> task` (no per-instance override).
-6. Reuse an existing `TemplateBundle` when possible; add a new bundle only if necessary.
-7. Implement deterministic scene/query/render execution with explicit seeds and no hidden RNG.
-8. Emit canonical instance output per `InstanceRecordSpec`.
-9. Ensure `answer_gt`, `evidence_gt`, and `execution_trace` come from the same query execution.
-10. Emit typed envelopes in `answer_gt` and `evidence_gt` as `{type, value}`.
-11. Use only registered global type IDs for `answer_gt.type` and `evidence_gt.type`; namespace task-specific extensions.
-12. Enforce unique-answer-by-construction in generation logic for the task; if ambiguity appears, reject/resample or redesign.
-13. Use bounded resampling (`max_attempts`) and reject/replace candidates when exhausted; never auto-relax task constraints.
-14. Emit `task_complexity.complexity_score` (shared key) and task-defined `complexity_components`.
-15. Use sidecar trace payload export and require `trace_ref` on every emitted `TrainInstance`.
-16. Ensure `instance_id` is deterministic from canonical training-facing fields.
-17. Use shared canonical JSON serializer utility for all identity hashes; no task-level canonicalization overrides.
-18. Treat canonicalization failures as hard errors (unsupported types, non-string keys, non-finite numbers).
-19. Use PNG as default image output format unless explicitly overridden by build config.
-20. Update docs (`DSL_BLUEPRINT.md`, this file, and `LESSONS_LEARNED.md`) when reusable guidance changes.
+6. Check `docs/SHARED_UTILITIES.md` and reuse existing shared helpers before creating new task-local utilities.
+7. Reuse an existing `TemplateBundle` when possible; add a new bundle only if necessary.
+8. Implement deterministic scene/query/render execution with explicit seeds and no hidden RNG.
+9. Emit canonical instance output per `InstanceRecordSpec`.
+10. Ensure `answer_gt`, `evidence_gt`, and `execution_trace` come from the same query execution.
+11. Emit typed envelopes in `answer_gt` and `evidence_gt` as `{type, value}`.
+12. Use only registered global type IDs for `answer_gt.type` and `evidence_gt.type`; namespace task-specific extensions.
+13. Enforce unique-answer-by-construction in generation logic for the task; if ambiguity appears, reject/resample or redesign.
+14. Use bounded resampling (`max_attempts`) and reject/replace candidates when exhausted; never auto-relax task constraints.
+15. Emit `task_complexity.complexity_score` (shared key) and task-defined `complexity_components`.
+16. Use sidecar trace payload export and require `trace_ref` on every emitted `TrainInstance`.
+17. Ensure `instance_id` is deterministic from canonical training-facing fields.
+18. Use shared canonical JSON serializer utility for all identity hashes; no task-level canonicalization overrides.
+19. Treat canonicalization failures as hard errors (unsupported types, non-string keys, non-finite numbers).
+20. Use PNG as default image output format unless explicitly overridden by build config.
+21. Update docs (`DSL_BLUEPRINT.md`, `SYSTEM_ARCHITECTURE.md`, `SHARED_UTILITIES.md`, this file, and `LESSONS_LEARNED.md`) when reusable guidance changes.
+
+## Task and query sampling policy (required)
+1. Global sampling is task-level only: `task` is the primary sampling unit.
+2. Domain/task-group probabilities are derived by aggregating task-level probabilities.
+3. For tasks with multiple question variants, define explicit `query_type` values in task contract/query spec.
+4. Default query-type sampling inside a task is uniform unless task config overrides weights.
+5. Query-type multiplicity must not change global task probability; it only affects `P(query_type | task)`.
+6. Record selected `query_type` in trace/query metadata for every instance.
 
 ## Definition of done
 A task is done only when:
@@ -70,6 +80,7 @@ A task is done only when:
 18. Canonical-error-code test: serializer failures return cataloged `schema_*` codes.
 19. Multi-image contract test: task prompt/render contract defines panel semantics without global image-role metadata.
 20. Choice/distractor semantic-distinctness tests (if applicable).
+21. Query-sampling test for multi-query tasks: default query-type distribution is uniform unless explicit task-level weights are configured.
 
 ## Sampling and quality checklist
 1. Validate required metadata presence (`instance_id`, `instance_seed`, taxonomy fields, versions, answer/evidence fields).
@@ -78,6 +89,7 @@ A task is done only when:
 4. For choice tasks, verify distractor uniqueness and semantic distinctness.
 5. Verify trace shard manifest and `trace_ref` consistency.
 6. Flag suspicious skews and resample/fix before finalizing.
+7. For tasks with multiple query types, report per-task query-type accepted counts/distribution.
 
 ## Cross-task tips (living)
 Use this section for practical rules that apply to many tasks.

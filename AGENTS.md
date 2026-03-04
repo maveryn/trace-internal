@@ -10,7 +10,9 @@ Each generated instance should include:
 
 ## Source-of-truth docs
 - Architecture and ABI contracts: `docs/DSL_BLUEPRINT.md`
+- System module/lifecycle architecture: `docs/SYSTEM_ARCHITECTURE.md`
 - Task creation procedure: `docs/TASK_AUTHORING.md`
+- Shared reusable helpers and anti-duplication policy: `docs/SHARED_UTILITIES.md`
 - Build/validation/CI policy: `docs/BUILD_VALIDATION.md`
 - Validation error catalog: `docs/VALIDATION_ERROR_CODES.md`
 - Reusable pitfalls and fixes: `docs/LESSONS_LEARNED.md`
@@ -23,6 +25,7 @@ Each generated instance should include:
 
 ## Core engineering rules
 - Use taxonomy consistently: `domain -> task_group -> task`.
+- Sampling policy is task-level globally (equal task weights by default); domain/task_group probabilities are derived by aggregation, and query sampling happens inside each task (uniform by default unless task-config override).
 - Keep generation factorized into explicit specs (`SceneSpec`, `QuerySpec`, `RenderSpec`, `PromptSpec`, `VerifierSpec`, `SamplerSpec`, `InstanceRecordSpec`).
 - Generators must be deterministic given seeds/specs/versions.
 - No hidden randomness: all random sources must be explicit and recorded.
@@ -36,6 +39,7 @@ Each generated instance should include:
 - Before adding new logic, search for reusable helpers and extend shared modules when possible.
 - Do not duplicate utilities across tasks/domains unless there is a strong reason.
 - If a helper is missing, add it once in a shared place and reuse it.
+- Follow `docs/SHARED_UTILITIES.md` strictly when deciding helper placement and reuse.
 
 ## Code documentation standards
 - Add concise docstrings for new modules, classes, and non-trivial functions.
@@ -49,9 +53,12 @@ Each generated instance should include:
 
 ## Documentation discipline
 - Keep `docs/DSL_BLUEPRINT.md` aligned with architecture/contract decisions.
+- Keep `docs/SYSTEM_ARCHITECTURE.md` aligned with module boundaries, data flow, and lifecycle behavior.
 - Keep `docs/TASK_AUTHORING.md` aligned with reusable task authoring guidance.
+- Keep `docs/SHARED_UTILITIES.md` aligned with shared helper inventory and anti-duplication guidance.
 - Keep `docs/BUILD_VALIDATION.md` aligned with build/validation/CI behavior.
 - Keep `docs/LESSONS_LEARNED.md` updated when new cross-task pitfalls are discovered.
+- After any change to architecture, module boundaries, shared utilities, or helper placement, update the relevant docs above in the same change.
 
 ## Workflow guidelines
 - After any code edit, ask whether to commit before creating a commit.

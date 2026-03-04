@@ -16,6 +16,7 @@ Each generated instance should include:
 - Build/validation/CI policy: `docs/BUILD_VALIDATION.md`
 - Validation error catalog: `docs/VALIDATION_ERROR_CODES.md`
 - Reusable pitfalls and fixes: `docs/LESSONS_LEARNED.md`
+- Active backlog and priorities: `docs/TODO.md`
 - Python dependencies: `requirements.txt`
 
 ## Scope and boundaries
@@ -58,6 +59,7 @@ Each generated instance should include:
 - Keep `docs/SHARED_UTILITIES.md` aligned with shared helper inventory and anti-duplication guidance.
 - Keep `docs/BUILD_VALIDATION.md` aligned with build/validation/CI behavior.
 - Keep `docs/LESSONS_LEARNED.md` updated when new cross-task pitfalls are discovered.
+- Keep `docs/TODO.md` updated so active, next, and deferred work stays explicit.
 - After any change to architecture, module boundaries, shared utilities, or helper placement, update the relevant docs above in the same change.
 
 ## Workflow guidelines

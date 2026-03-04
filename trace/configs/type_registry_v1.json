@@ -1,0 +1,15 @@
+{
+  "type_registry_version": "v1",
+  "answer_types": [
+    "integer",
+    "index_list",
+    "matrix"
+  ],
+  "evidence_types": [
+    "id_set",
+    "id_path",
+    "point_set",
+    "point_path",
+    "bbox_set"
+  ]
+}

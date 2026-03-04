@@ -1,0 +1,16 @@
+output_root: ./out
+
+dataset_name: strict_repro_smoke
+instance_version: v1
+image_format: png
+strict_repro: true
+max_attempts_per_instance: 100
+sampling_seed: 0
+tasks:
+  - task_id: tile_shortest_path
+    count: 5
+    params:
+      rows: 8
+      cols: 8
+      min_shortest_len: 6
+      evidence_type: point_path

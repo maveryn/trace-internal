@@ -1,0 +1,41 @@
+"""Deterministic identity helpers for TRACE records."""
+
+from __future__ import annotations
+
+from typing import Any, Dict
+
+from .canonical import canonical_json_bytes
+from .hash_utils import blake3_hex
+
+
+def build_instance_identity_payload(train_instance: Dict[str, Any]) -> Dict[str, Any]:
+    """Construct canonical identity payload from training-facing fields.
+
+    Note: image file paths are excluded by design; only image content identity is included.
+    """
+    images = [
+        {
+            "image_id": image.get("image_id"),
+            "format": image.get("format"),
+            "image_hash": image.get("image_hash"),
+        }
+        for image in train_instance.get("images", [])
+    ]
+    return {
+        "instance_version": train_instance.get("instance_version"),
+        "instance_seed": train_instance.get("instance_seed"),
+        "domain": train_instance.get("domain"),
+        "task_group": train_instance.get("task_group"),
+        "task": train_instance.get("task"),
+        "prompt": train_instance.get("prompt"),
+        "images": images,
+        "answer_gt": train_instance.get("answer_gt"),
+        "evidence_gt": train_instance.get("evidence_gt"),
+        "versions": train_instance.get("versions", {}),
+    }
+
+
+def compute_instance_id(train_instance: Dict[str, Any]) -> str:
+    """Compute deterministic instance id from canonical training-facing payload."""
+    payload = build_instance_identity_payload(train_instance)
+    return blake3_hex(canonical_json_bytes(payload))

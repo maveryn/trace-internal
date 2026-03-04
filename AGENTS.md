@@ -10,6 +10,7 @@ Each generated instance should include:
 
 ## Source-of-truth docs
 - Architecture and ABI contracts: `docs/DSL_BLUEPRINT.md`
+- Prompt system and template composition: `docs/PROMPT_SYSTEM.md`
 - System module/lifecycle architecture: `docs/SYSTEM_ARCHITECTURE.md`
 - Task creation procedure: `docs/TASK_AUTHORING.md`
 - Shared reusable helpers and anti-duplication policy: `docs/SHARED_UTILITIES.md`
@@ -18,6 +19,7 @@ Each generated instance should include:
 - Reusable pitfalls and fixes: `docs/LESSONS_LEARNED.md`
 - Active backlog and priorities: `docs/TODO.md`
 - Python dependencies: `requirements.txt`
+- Task-family defaults (generation/rendering/visual): `configs/task_groups/<domain>/<task_group>.yaml`
 
 ## Scope and boundaries
 - Work in this repository unless the user explicitly asks otherwise.
@@ -28,6 +30,10 @@ Each generated instance should include:
 - Use taxonomy consistently: `domain -> task_group -> task`.
 - Keep `task_group` broad by reasoning style; for geometry value-style tasks use `task_group=measurement` and keep variants in `query_type`.
 - Sampling policy is task-level globally (equal task weights by default); domain/task_group probabilities are derived by aggregation, and query sampling happens inside each task (uniform by default unless task-config override).
+- Task-family defaults (generation/rendering/visual variation) should be defined in per-group files under `configs/task_groups/<domain>/<task_group>.yaml` and loaded through task-family modules, with optional task-level overrides.
+- Do not hardcode user-facing prompt text in task modules; prompts must come from external template assets.
+- Prompt composition must be reusable: one task-type layer and one query-type layer, each with deterministic variant selection.
+- Keep prompt templates versioned and recorded in trace metadata (`prompt_bundle_id`, keys, variant indices).
 - Keep generation factorized into explicit specs (`SceneSpec`, `QuerySpec`, `RenderSpec`, `PromptSpec`, `VerifierSpec`, `SamplerSpec`, `InstanceRecordSpec`).
 - Generators must be deterministic given seeds/specs/versions.
 - No hidden randomness: all random sources must be explicit and recorded.
@@ -55,6 +61,7 @@ Each generated instance should include:
 
 ## Documentation discipline
 - Keep `docs/DSL_BLUEPRINT.md` aligned with architecture/contract decisions.
+- Keep `docs/PROMPT_SYSTEM.md` aligned with prompt-template architecture and implementation status.
 - Keep `docs/SYSTEM_ARCHITECTURE.md` aligned with module boundaries, data flow, and lifecycle behavior.
 - Keep `docs/TASK_AUTHORING.md` aligned with reusable task authoring guidance.
 - Keep `docs/SHARED_UTILITIES.md` aligned with shared helper inventory and anti-duplication guidance.

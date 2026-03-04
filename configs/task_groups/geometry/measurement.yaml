@@ -1,0 +1,35 @@
+generation:
+  candidate_count: 7
+  min_angle: 15
+  max_angle: 165
+  angle_step: 15
+  target_x: 90
+
+rendering:
+  canvas_size: 768
+  ray_length: 84
+  line_width: 4
+
+prompt:
+  bundle_id: geometry_measurement_v1
+  task_type_key: angle_measurement
+  entity_plural: angles
+
+visual:
+  noise:
+    apply_prob: 0.75
+    edit_types:
+      - blur
+      - downsample
+      - jpeg
+      - noise
+    edit_count_range: [1, 2]
+    value_ranges:
+      blur:
+        radius: [0.2, 0.6]
+      downsample:
+        scale: [0.85, 0.95]
+      jpeg:
+        quality: [70.0, 90.0]
+      noise:
+        alpha: [0.03, 0.08]

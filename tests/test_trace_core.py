@@ -15,7 +15,7 @@ from trace.core.identity import compute_instance_id
 from trace.core.types import TaskComplexity, TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import TASK_REGISTRY, register_task
-from trace.tasks.tile_shortest_path import TileShortestPathTask
+from trace.tasks.tile.path.shortest_path import TileShortestPathTask
 
 
 def _read_jsonl(path: Path):
@@ -173,6 +173,8 @@ def test_tile_shortest_path_deterministic() -> None:
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
     assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
     assert out_a.trace_payload["witness_symbolic"] == out_b.trace_payload["witness_symbolic"]
+    assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
+    assert out_a.trace_payload["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "tile_path_v1"
     assert out_a.image.tobytes() == out_b.image.tobytes()
 
 

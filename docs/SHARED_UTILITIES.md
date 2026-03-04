@@ -37,23 +37,39 @@ Use it to prevent duplicate implementations across tasks/domains.
 - Shared dataset build lifecycle orchestration.
 12. `trace/core/strict_repro.py`
 - Strict reproducibility comparisons across staging outputs (train records, traces, images).
+13. `trace/core/task_group_config.py`
+- Cached loader for domain/task-group defaults from per-group files under `configs/task_groups/<domain>/<task_group>.yaml`.
+14. `trace/core/visual/noise.py`
+- Deterministic post-image noise application with caller-supplied defaults and per-task overrides.
+- Task families should define defaults in their own modules and pass them into the shared applier.
+15. `trace/core/prompts/*`
+- Shared prompt bundle loading, deterministic variant sampling, schema checks, and strict placeholder rendering.
+16. `prompts/*`
+- External prompt bundle assets organized by domain/task_group.
 
 ## Task framework shared modules (`trace/tasks`)
 1. `trace/tasks/registry.py`
 - Shared task registration and lookup.
 2. `trace/tasks/base.py`
 - Shared task protocol and `TaskOutput` container.
+3. `trace/tasks/geometry/shared/value_queries.py`
+- Domain-shared value-query operators for candidate sets (`min`, `max`, `median`, `closest_to_x`, threshold variants, and `difference_max_min`).
+- Reuse for geometry/chart tasks that share answer-from-candidate-value semantics.
+4. `trace/tasks/shared/value_queries.py`
+- Backward-compatible shim that re-exports geometry shared value-query operators while imports migrate.
 
 ## Domain/task-group shared utility guidance
 1. If 2+ tasks in one domain/task_group need the same logic, create a domain-shared module under:
 - `trace/tasks/<domain>/shared/` or
 - `trace/tasks/shared/` for cross-domain reuse.
-2. Typical candidates:
+2. Place concrete task modules under `trace/tasks/<domain>/<task_group>/` so related tasks stay co-located.
+3. Typical candidates:
 - geometry primitives and constraints,
 - chart candidate extraction,
 - evidence anchor projection,
 - common prompt slot/render helpers.
-3. Keep module APIs deterministic and seed-driven.
+4. Keep module APIs deterministic and seed-driven.
+5. Prompt text assets live outside task modules under `prompts/`; task code should call shared prompt helpers.
 
 ## What should not be duplicated
 1. Canonical serialization and hashing logic.

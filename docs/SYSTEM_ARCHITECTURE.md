@@ -14,14 +14,21 @@ It is the implementation-facing architecture reference, while `docs/DSL_BLUEPRIN
 1. `trace/core/`
 - Shared infrastructure: ABI types, canonical JSON, hashing, seed derivation, identity, type registry, trace store, validation, builder.
 2. `trace/tasks/`
-- Task implementations and task registry.
-3. `trace/configs/`
+- Task registry/framework plus task packages organized as `trace/tasks/<domain>/<task_group>/...`.
+- Domain-shared helpers live under `trace/tasks/<domain>/shared/`.
+3. `trace/core/visual/`
+- Shared visual-variation helpers (currently deterministic post-image noise).
+4. `trace/core/prompts/`
+- Shared prompt bundle loading, deterministic variant selection, and strict template rendering.
+5. `prompts/`
+- External prompt bundle assets grouped by domain/task_group.
+6. `trace/configs/`
 - Internal registry/config assets (for example type registry).
-4. `configs/`
-- Build/runtime configs (for example CI strict-repro profile).
-5. `scripts/`
+7. `configs/`
+- Build/runtime configs (for example CI strict-repro profile, task-group defaults in `configs/task_groups/<domain>/<task_group>.yaml`).
+8. `scripts/`
 - Operational CLIs (build, cleanup, etc.).
-6. `tests/`
+9. `tests/`
 - Determinism, schema, validation, and end-to-end build checks.
 
 ## Runtime build pipeline
@@ -31,6 +38,8 @@ It is the implementation-facing architecture reference, while `docs/DSL_BLUEPRIN
 4. Sample tasks by task-level policy.
 5. For each accepted instance:
 - generate prompt/answer/evidence/image from task,
+- resolve prompt templates from external bundle assets,
+- apply deterministic visual variations (for example post-image noise),
 - write image artifact,
 - write sidecar trace record,
 - emit `TrainInstance` with `trace_ref`.
@@ -66,6 +75,14 @@ It is the implementation-facing architecture reference, while `docs/DSL_BLUEPRIN
 - strict reproducibility comparisons for train records, traces, and images.
 11. `trace/tasks/*`
 - Domain/task-specific scene generation, query execution, evidence projection, and task trace payloads.
+12. `trace/tasks/<domain>/<task_group>/*`
+- Canonical placement for concrete task modules (for example `trace/tasks/geometry/measurement/angle_value_query.py`).
+13. `trace/core/prompts/*`
+- Prompt bundle parsing/cache, deterministic variant selection, placeholder validation, and composition helpers.
+14. `trace/core/visual/noise.py`
+- Task-family-aware deterministic post-image noise sampling/application and metadata emission.
+15. `trace/core/task_group_config.py`
+- Cached loader for domain/task-group defaults from `configs/task_groups/<domain>/<task_group>.yaml`.
 
 ## Sampling architecture
 1. Global sampling unit is `task`.

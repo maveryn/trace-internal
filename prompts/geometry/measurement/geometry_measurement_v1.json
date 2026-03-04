@@ -1,0 +1,119 @@
+{
+  "bundle_id": "geometry_measurement_v1",
+  "schema_version": "v1",
+  "task_type_templates": {
+    "angle_measurement": [
+      "A single image shows {candidate_count} {entity_plural}.",
+      "You are given one image containing {candidate_count} distinct {entity_plural}.",
+      "Inspect one figure with {candidate_count} {entity_plural} drawn on it.",
+      "In this image there are {candidate_count} labeled-by-position {entity_plural}.",
+      "The visual contains {candidate_count} separate {entity_plural} on one canvas.",
+      "Review the image with {candidate_count} geometric {entity_plural}.",
+      "This problem uses one diagram with {candidate_count} candidate {entity_plural}.",
+      "Observe the single panel: it includes {candidate_count} {entity_plural}.",
+      "A geometry sketch presents {candidate_count} {entity_plural} in one frame.",
+      "The scene is one image populated by {candidate_count} {entity_plural}."
+    ]
+  },
+  "query_type_templates": {
+    "min": [
+      "Return the smallest angle value in degrees and provide the selected angle vertex as evidence.",
+      "Find the minimum angle in degrees; include the corresponding vertex point as evidence.",
+      "Identify the least angle measure (degrees) and report that angle's vertex point as evidence.",
+      "Output the smallest degree value among the angles, with that angle vertex as evidence.",
+      "Give the minimum angle value in degrees and include the matching vertex location as evidence.",
+      "Choose the smallest angle by degree value, then provide its vertex point as evidence.",
+      "Report the lowest angle measure in degrees and attach the chosen vertex point as evidence.",
+      "What is the minimum angle value (degrees)? Provide the selected vertex point as evidence.",
+      "Return the least angle degree and include the corresponding angle vertex as evidence.",
+      "Find the angle with smallest degree value; report that value and its vertex evidence point."
+    ],
+    "max": [
+      "Return the largest angle value in degrees and provide the selected angle vertex as evidence.",
+      "Find the maximum angle in degrees; include the corresponding vertex point as evidence.",
+      "Identify the greatest angle measure (degrees) and report that angle's vertex point as evidence.",
+      "Output the largest degree value among the angles, with that angle vertex as evidence.",
+      "Give the maximum angle value in degrees and include the matching vertex location as evidence.",
+      "Choose the largest angle by degree value, then provide its vertex point as evidence.",
+      "Report the highest angle measure in degrees and attach the chosen vertex point as evidence.",
+      "What is the maximum angle value (degrees)? Provide the selected vertex point as evidence.",
+      "Return the greatest angle degree and include the corresponding angle vertex as evidence.",
+      "Find the angle with largest degree value; report that value and its vertex evidence point."
+    ],
+    "median": [
+      "Return the median angle value in degrees and provide the median angle vertex point as evidence.",
+      "Find the median angle (degrees); include the corresponding vertex point as evidence.",
+      "Identify the middle angle measure in degrees and report that angle's vertex as evidence.",
+      "Output the median degree value among the angles, with the median angle vertex as evidence.",
+      "Give the median angle value (degrees) and include the matching vertex location as evidence.",
+      "Choose the angle at the median degree rank, then provide its vertex point as evidence.",
+      "Report the central angle measure in degrees and attach the selected vertex point as evidence.",
+      "What is the median angle value in degrees? Provide the selected vertex point as evidence.",
+      "Return the middle angle degree and include the corresponding angle vertex as evidence.",
+      "Find the angle with median degree value; report that value and its vertex evidence point."
+    ],
+    "closest_to_x": [
+      "Return the angle value closest to {target_x} degrees and provide that angle's vertex point as evidence.",
+      "Find which angle is nearest to {target_x} degrees; report its value and vertex evidence point.",
+      "Identify the angle closest to {target_x}\u00b0, then output its degree value with vertex evidence.",
+      "Choose the angle whose value is closest to {target_x} degrees and include its vertex as evidence.",
+      "Give the angle degree nearest to {target_x} and provide the selected vertex point as evidence.",
+      "Output the value of the angle closest to {target_x}\u00b0 and attach that vertex point as evidence.",
+      "Report the angle measure nearest {target_x} degrees; include the corresponding vertex evidence.",
+      "What angle is closest to {target_x} degrees? Return its value and vertex point evidence.",
+      "Return the nearest-to-{target_x} angle value and include the chosen angle vertex as evidence.",
+      "Find the closest angle to {target_x} degrees, report that value, and provide vertex evidence."
+    ],
+    "smallest_above_x": [
+      "Return the smallest angle strictly greater than {target_x} degrees and provide its vertex as evidence.",
+      "Find the least angle above {target_x}\u00b0; report its value and vertex point evidence.",
+      "Identify the minimum degree angle that is greater than {target_x}, with vertex evidence.",
+      "Choose the smallest angle exceeding {target_x} degrees and include its vertex as evidence.",
+      "Give the lowest angle value above {target_x} and provide the selected vertex point as evidence.",
+      "Output the smallest angle > {target_x}\u00b0 and attach that angle's vertex evidence.",
+      "Report the least angle measure over {target_x} degrees; include corresponding vertex evidence.",
+      "What is the smallest angle above {target_x} degrees? Return value plus vertex evidence point.",
+      "Return the minimum-above-{target_x} angle value and include the chosen vertex as evidence.",
+      "Find the smallest angle greater than {target_x}, report that value, and provide vertex evidence."
+    ],
+    "largest_below_x": [
+      "Return the largest angle strictly less than {target_x} degrees and provide its vertex as evidence.",
+      "Find the greatest angle below {target_x}\u00b0; report its value and vertex point evidence.",
+      "Identify the maximum degree angle that is less than {target_x}, with vertex evidence.",
+      "Choose the largest angle under {target_x} degrees and include its vertex as evidence.",
+      "Give the highest angle value below {target_x} and provide the selected vertex point as evidence.",
+      "Output the largest angle < {target_x}\u00b0 and attach that angle's vertex evidence.",
+      "Report the greatest angle measure under {target_x} degrees; include corresponding vertex evidence.",
+      "What is the largest angle below {target_x} degrees? Return value plus vertex evidence point.",
+      "Return the maximum-below-{target_x} angle value and include the chosen vertex as evidence.",
+      "Find the largest angle less than {target_x}, report that value, and provide vertex evidence."
+    ],
+    "difference_max_min": [
+      "Return (largest angle minus smallest angle) in degrees and provide evidence as ordered vertices [largest, smallest].",
+      "Compute max-minus-min angle (degrees); include ordered vertex evidence [max, min].",
+      "Output the degree difference between greatest and least angles, with ordered vertex evidence [largest, smallest].",
+      "Report (max angle - min angle) in degrees and attach ordered vertex evidence [largest, smallest].",
+      "Give the largest-minus-smallest angle value (degrees) and include ordered vertices [largest, smallest] as evidence.",
+      "Find the spread between maximum and minimum angles in degrees; provide ordered evidence [max, min].",
+      "Return the angle range in degrees (largest minus smallest) with ordered vertex evidence [largest, smallest].",
+      "Compute the difference between top and bottom angle values in degrees; include [largest, smallest] vertex evidence.",
+      "What is max angle minus min angle (degrees)? Provide ordered vertex evidence [largest, smallest].",
+      "Report the degree gap from biggest to smallest angle and include ordered vertices [largest, smallest] as evidence."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_type:angle_measurement": [
+      "candidate_count",
+      "entity_plural"
+    ],
+    "query_type:closest_to_x": [
+      "target_x"
+    ],
+    "query_type:smallest_above_x": [
+      "target_x"
+    ],
+    "query_type:largest_below_x": [
+      "target_x"
+    ]
+  }
+}

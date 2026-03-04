@@ -4,6 +4,7 @@
 This is the canonical guide for creating new tasks in TRACE.
 Use this file as the task-level implementation playbook on top of `docs/DSL_BLUEPRINT.md`.
 Use `docs/SYSTEM_ARCHITECTURE.md` for module/lifecycle context and `docs/SHARED_UTILITIES.md` before adding new helpers.
+Use `docs/PROMPT_SYSTEM.md` for prompt-template architecture and external prompt-bundle rules.
 
 Platform build lifecycle, pre-finalize validation, failure handling, cleanup, and CI strict-repro
 rules live in `docs/BUILD_VALIDATION.md`.
@@ -25,20 +26,30 @@ rules live in `docs/BUILD_VALIDATION.md`.
 8. Ensure evidence resolution uses config precedence `domain -> task_group -> task` (no per-instance override).
 9. Check `docs/SHARED_UTILITIES.md` and reuse existing shared helpers before creating new task-local utilities.
 10. Reuse an existing `TemplateBundle` when possible; add a new bundle only if necessary.
-11. Implement deterministic scene/query/render execution with explicit seeds and no hidden RNG.
-12. Emit canonical instance output per `InstanceRecordSpec`.
-13. Ensure `answer_gt`, `evidence_gt`, and `execution_trace` come from the same query execution.
-14. Emit typed envelopes in `answer_gt` and `evidence_gt` as `{type, value}`.
-15. Use only registered global type IDs for `answer_gt.type` and `evidence_gt.type`; namespace task-specific extensions.
-16. Enforce unique-answer-by-construction in generation logic for the task; if ambiguity appears, reject/resample or redesign.
-17. Use bounded resampling (`max_attempts`) and reject/replace candidates when exhausted; never auto-relax task constraints.
-18. Emit `task_complexity.complexity_score` (shared key) and task-defined `complexity_components`.
-19. Use sidecar trace payload export and require `trace_ref` on every emitted `TrainInstance`.
-20. Ensure `instance_id` is deterministic from canonical training-facing fields.
-21. Use shared canonical JSON serializer utility for all identity hashes; no task-level canonicalization overrides.
-22. Treat canonicalization failures as hard errors (unsupported types, non-string keys, non-finite numbers).
-23. Use PNG as default image output format unless explicitly overridden by build config.
-24. Update docs (`DSL_BLUEPRINT.md`, `SYSTEM_ARCHITECTURE.md`, `SHARED_UTILITIES.md`, this file, and `LESSONS_LEARNED.md`) when reusable guidance changes.
+11. Define prompt assets in external bundles under `prompts/` (no hardcoded prompt literals in task modules).
+12. Use layered prompt composition:
+- one task-type template layer (10+ variants),
+- one query-type template layer (10+ variants per query type).
+13. Use deterministic prompt variant sampling with explicit prompt seed namespaces.
+14. Emit prompt-variant provenance metadata in trace payload (`bundle/key/index/count` fields).
+15. Define visual-variation policy at task-family level (domain/task_group), with task-level overrides only when needed.
+16. Store shared task-family defaults (generation/rendering/visual variation) in per-group files under `configs/task_groups/<domain>/<task_group>.yaml`.
+17. For post-image noise, load task-family defaults via family modules and call shared deterministic noise helpers; keep evidence coordinates valid (no geometric warps).
+18. Record selected visual variation metadata in trace payload (for example `render_spec.post_image_noise`).
+19. Implement deterministic scene/query/render execution with explicit seeds and no hidden RNG.
+20. Emit canonical instance output per `InstanceRecordSpec`.
+21. Ensure `answer_gt`, `evidence_gt`, and `execution_trace` come from the same query execution.
+22. Emit typed envelopes in `answer_gt` and `evidence_gt` as `{type, value}`.
+23. Use only registered global type IDs for `answer_gt.type` and `evidence_gt.type`; namespace task-specific extensions.
+24. Enforce unique-answer-by-construction in generation logic for the task; if ambiguity appears, reject/resample or redesign.
+25. Use bounded resampling (`max_attempts`) and reject/replace candidates when exhausted; never auto-relax task constraints.
+26. Emit `task_complexity.complexity_score` (shared key) and task-defined `complexity_components`.
+27. Use sidecar trace payload export and require `trace_ref` on every emitted `TrainInstance`.
+28. Ensure `instance_id` is deterministic from canonical training-facing fields.
+29. Use shared canonical JSON serializer utility for all identity hashes; no task-level canonicalization overrides.
+30. Treat canonicalization failures as hard errors (unsupported types, non-string keys, non-finite numbers).
+31. Use PNG as default image output format unless explicitly overridden by build config.
+32. Update docs (`DSL_BLUEPRINT.md`, `PROMPT_SYSTEM.md`, `SYSTEM_ARCHITECTURE.md`, `SHARED_UTILITIES.md`, this file, and `LESSONS_LEARNED.md`) when reusable guidance changes.
 
 ## Task and query sampling policy (required)
 1. Global sampling is task-level only: `task` is the primary sampling unit.
@@ -61,6 +72,7 @@ A task is done only when:
 9. No duplicate contract fields are emitted (`answer_space` absent, no per-instance `schema_version`).
 10. All emitted instances in a dataset share the same `instance_version`.
 11. `images[*].path` is dataset-root-relative and `images[*].image_hash` is present (`blake3`).
+12. Prompt is rendered from external templates with deterministic variant metadata captured in trace payload.
 
 ## Task-level testing checklist
 1. Schema validity test for emitted instance records.
@@ -84,6 +96,12 @@ A task is done only when:
 19. Multi-image contract test: task prompt/render contract defines panel semantics without global image-role metadata.
 20. Choice/distractor semantic-distinctness tests (if applicable).
 21. Query-sampling test for multi-query tasks: default query-type distribution is uniform unless explicit task-level weights are configured.
+22. Prompt bundle resolution test: bundle exists and required keys are present.
+23. Prompt variant-count test: task-type and query-type template lists satisfy minimum cardinality (10+ each).
+24. Prompt placeholder test: all required placeholders are resolved and no unresolved placeholders remain in rendered prompts.
+25. Prompt determinism test: same seed/spec yields identical rendered prompt and variant indices.
+26. Visual-noise determinism test: same seed/spec yields identical post-noise image and edit metadata.
+27. Visual-noise safety test: enabled noise modes do not invalidate evidence coordinate semantics.
 
 ## Sampling and quality checklist
 1. Validate required metadata presence (`instance_id`, `instance_seed`, taxonomy fields, versions, answer/evidence fields).
@@ -105,6 +123,16 @@ Use this section for practical rules that apply to many tasks.
 6. If max attempts are exhausted, reject and replace the sample; never weaken semantic constraints.
 7. Keep full replay metadata in trace payload; keep training-facing records lightweight.
 8. Evidence/witness ordering semantics are task-defined (no global rule); each task must document whether order matters and keep emission deterministic.
+9. Keep prompt text in external assets; task modules should assemble prompts via shared prompt renderer only.
+
+## Task documentation requirement
+Every new task must add `docs/tasks/<task_id>.md` using `docs/tasks/TASK_DOC_TEMPLATE.md`.
+Required fields include:
+1. prompt bundle id,
+2. task-type key,
+3. query-type template mapping,
+4. placeholder slot schema,
+5. prompt examples and variant counts.
 
 ## Maintenance rule
 Whenever you discover guidance that applies to more than one task:

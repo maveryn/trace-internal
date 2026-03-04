@@ -1,0 +1,41 @@
+{
+  "bundle_id": "tile_path_v1",
+  "schema_version": "v1",
+  "task_type_templates": {
+    "maze_path": [
+      "A single tile-maze image is shown as a {rows} by {cols} grid.",
+      "You are given one maze board with {rows} rows and {cols} columns.",
+      "Inspect the maze image arranged on a {rows}x{cols} grid.",
+      "This instance contains one {rows}-row, {cols}-column tile maze.",
+      "The puzzle is a single tile maze with dimensions {rows} by {cols}.",
+      "Review one maze panel built on a {rows}x{cols} lattice.",
+      "You will solve path reasoning on a {rows} by {cols} tile board.",
+      "The scene shows one grid maze of size {rows}x{cols}.",
+      "A single maze canvas is provided with {rows} rows and {cols} columns.",
+      "Work with the one-image maze whose grid is {rows} by {cols}."
+    ]
+  },
+  "query_type_templates": {
+    "shortest_path": [
+      "Black tiles are blocked, green marks start, and red marks goal. Moves are edge-adjacent only (no diagonals). Return the shortest-path length in steps and provide {evidence_hint} as evidence.",
+      "Use 4-neighbor movement through non-black tiles only. Output the unique shortest-path step length and include {evidence_hint} evidence.",
+      "Treat black cells as walls, with green=start and red=goal. Return shortest path length (steps) and provide {evidence_hint} evidence.",
+      "Find the shortest route from start (green) to goal (red) using only edge-adjacent open cells, then report step length and {evidence_hint} evidence.",
+      "Compute the shortest-path distance in steps under no-diagonal movement, and include {evidence_hint} for the chosen path.",
+      "Return the number of steps on the shortest valid path from green to red through open cells only, plus {evidence_hint} evidence.",
+      "Using up/down/left/right moves only, report shortest-path step count and provide {evidence_hint} corresponding to that path.",
+      "Determine the shortest open-cell path between start and goal, output its length in steps, and include {evidence_hint} evidence.",
+      "Report shortest path length (step count) with 4-connected movement constraints, and provide {evidence_hint} for grounding.",
+      "Find the shortest legal path from the green tile to the red tile, return its step length, and include {evidence_hint} evidence."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_type:maze_path": [
+      "rows",
+      "cols"
+    ],
+    "query_type:shortest_path": [
+      "evidence_hint"
+    ]
+  }
+}

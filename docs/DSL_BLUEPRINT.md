@@ -17,6 +17,12 @@ Use this hierarchy everywhere:
 2. `task_group` (for example inside `tile`: `path`, `count`, `measurement`)
 3. `task` (for example: `tile_shortest_path`)
 
+Task-group policy:
+1. use `task_group` for broad shared reasoning style, not for every query variant.
+2. keep query variation inside a task via `query_type` when answer/evidence contracts remain compatible.
+3. for geometry value-style tasks, default to `task_group = measurement` (for example angle/area value queries).
+4. create isolated task groups only when a task does not fit existing group semantics cleanly.
+
 Config precedence (lowest to highest):
 1. domain default
 2. task_group override

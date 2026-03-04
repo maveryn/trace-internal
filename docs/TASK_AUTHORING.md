@@ -17,25 +17,28 @@ rules live in `docs/BUILD_VALIDATION.md`.
 - `VerifierSpec`
 - optional `SamplerSpec` and `choice_spec`
 2. Assign task taxonomy explicitly: `domain`, `task_group`, `task`.
-3. Confirm required domain capabilities (`relations`, `ops`) before implementation.
-4. Define evidence forms the task supports and the default evidence type for dataset builds.
-5. Ensure evidence resolution uses config precedence `domain -> task_group -> task` (no per-instance override).
-6. Check `docs/SHARED_UTILITIES.md` and reuse existing shared helpers before creating new task-local utilities.
-7. Reuse an existing `TemplateBundle` when possible; add a new bundle only if necessary.
-8. Implement deterministic scene/query/render execution with explicit seeds and no hidden RNG.
-9. Emit canonical instance output per `InstanceRecordSpec`.
-10. Ensure `answer_gt`, `evidence_gt`, and `execution_trace` come from the same query execution.
-11. Emit typed envelopes in `answer_gt` and `evidence_gt` as `{type, value}`.
-12. Use only registered global type IDs for `answer_gt.type` and `evidence_gt.type`; namespace task-specific extensions.
-13. Enforce unique-answer-by-construction in generation logic for the task; if ambiguity appears, reject/resample or redesign.
-14. Use bounded resampling (`max_attempts`) and reject/replace candidates when exhausted; never auto-relax task constraints.
-15. Emit `task_complexity.complexity_score` (shared key) and task-defined `complexity_components`.
-16. Use sidecar trace payload export and require `trace_ref` on every emitted `TrainInstance`.
-17. Ensure `instance_id` is deterministic from canonical training-facing fields.
-18. Use shared canonical JSON serializer utility for all identity hashes; no task-level canonicalization overrides.
-19. Treat canonicalization failures as hard errors (unsupported types, non-string keys, non-finite numbers).
-20. Use PNG as default image output format unless explicitly overridden by build config.
-21. Update docs (`DSL_BLUEPRINT.md`, `SYSTEM_ARCHITECTURE.md`, `SHARED_UTILITIES.md`, this file, and `LESSONS_LEARNED.md`) when reusable guidance changes.
+3. Choose `task_group` by shared reasoning style; do not split groups by every query variant.
+4. For geometry value-style tasks, default `task_group` to `measurement` and express variant logic through `query_type`.
+5. Use isolated task groups only when the task does not cleanly fit existing group semantics.
+6. Confirm required domain capabilities (`relations`, `ops`) before implementation.
+7. Define evidence forms the task supports and the default evidence type for dataset builds.
+8. Ensure evidence resolution uses config precedence `domain -> task_group -> task` (no per-instance override).
+9. Check `docs/SHARED_UTILITIES.md` and reuse existing shared helpers before creating new task-local utilities.
+10. Reuse an existing `TemplateBundle` when possible; add a new bundle only if necessary.
+11. Implement deterministic scene/query/render execution with explicit seeds and no hidden RNG.
+12. Emit canonical instance output per `InstanceRecordSpec`.
+13. Ensure `answer_gt`, `evidence_gt`, and `execution_trace` come from the same query execution.
+14. Emit typed envelopes in `answer_gt` and `evidence_gt` as `{type, value}`.
+15. Use only registered global type IDs for `answer_gt.type` and `evidence_gt.type`; namespace task-specific extensions.
+16. Enforce unique-answer-by-construction in generation logic for the task; if ambiguity appears, reject/resample or redesign.
+17. Use bounded resampling (`max_attempts`) and reject/replace candidates when exhausted; never auto-relax task constraints.
+18. Emit `task_complexity.complexity_score` (shared key) and task-defined `complexity_components`.
+19. Use sidecar trace payload export and require `trace_ref` on every emitted `TrainInstance`.
+20. Ensure `instance_id` is deterministic from canonical training-facing fields.
+21. Use shared canonical JSON serializer utility for all identity hashes; no task-level canonicalization overrides.
+22. Treat canonicalization failures as hard errors (unsupported types, non-string keys, non-finite numbers).
+23. Use PNG as default image output format unless explicitly overridden by build config.
+24. Update docs (`DSL_BLUEPRINT.md`, `SYSTEM_ARCHITECTURE.md`, `SHARED_UTILITIES.md`, this file, and `LESSONS_LEARNED.md`) when reusable guidance changes.
 
 ## Task and query sampling policy (required)
 1. Global sampling is task-level only: `task` is the primary sampling unit.

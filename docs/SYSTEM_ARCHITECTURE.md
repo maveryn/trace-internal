@@ -72,6 +72,8 @@ It is the implementation-facing architecture reference, while `docs/DSL_BLUEPRIN
 2. Domain/task-group probabilities are derived from task probabilities.
 3. Tasks may define internal `query_type` sampling.
 4. `P(sample=t,q) = P_task(t) * P_query(q|t)`.
+5. `task_group` should stay broad (shared reasoning style); query variants stay inside task-level `query_type`.
+6. For geometry value-style tasks, use `task_group = measurement` by default.
 
 ## Extension points
 1. Add a new task under `trace/tasks/` and register it.

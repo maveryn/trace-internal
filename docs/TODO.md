@@ -58,3 +58,7 @@ Use it to track what is actively being built, what is next, and what is intentio
 - weighted task-level global sampler (with `num_instances` mode),
 - per-task query-type sampling (uniform default, optional weights),
 - query-type accepted-count validation hooks.
+5. Taxonomy decision locked:
+- keep `task_group` broad by reasoning style,
+- use `task_group = measurement` for geometry value-style tasks,
+- keep most variation in per-task `query_type`.

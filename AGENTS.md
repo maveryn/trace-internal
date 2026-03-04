@@ -26,6 +26,7 @@ Each generated instance should include:
 
 ## Core engineering rules
 - Use taxonomy consistently: `domain -> task_group -> task`.
+- Keep `task_group` broad by reasoning style; for geometry value-style tasks use `task_group=measurement` and keep variants in `query_type`.
 - Sampling policy is task-level globally (equal task weights by default); domain/task_group probabilities are derived by aggregation, and query sampling happens inside each task (uniform by default unless task-config override).
 - Keep generation factorized into explicit specs (`SceneSpec`, `QuerySpec`, `RenderSpec`, `PromptSpec`, `VerifierSpec`, `SamplerSpec`, `InstanceRecordSpec`).
 - Generators must be deterministic given seeds/specs/versions.

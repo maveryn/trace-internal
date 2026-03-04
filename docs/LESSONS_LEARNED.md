@@ -26,7 +26,7 @@ Keep entries concise and general enough to apply beyond a single task.
 - Symptom: Replays produced equivalent semantics but different serialized outputs.
 - Root cause: Unordered iteration in set/map traversal.
 - Fix: Canonicalize ordering (entity-id sort or deterministic traversal).
-- Preventive rule: All emitted lists used for verification/fingerprints must have deterministic ordering.
+- Preventive rule: Each task must define ordering semantics explicitly and ensure emitted outputs are deterministic under that task contract.
 
 ### 2026-03-03: Multi-solution witness reward noise
 - Symptom: Correct answers received unstable evidence rewards on tasks with multiple valid witnesses.

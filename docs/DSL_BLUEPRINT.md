@@ -1,403 +1,393 @@
 # Grounded Visual DSL Project Blueprint
 
-Date: 2026-03-03  
+Date: 2026-03-03
 Status: Project requirement and implementation blueprint
 
 ## 1. Project goal
-Build a modular, deterministic visual reasoning gym for RLVR where each generated instance includes:
+Build a modular, deterministic visual reasoning environment for RLVR where each generated instance includes:
 1. prompt,
 2. typed answer,
 3. image(s),
-4. metadata-grounded verifier payload.
+4. grounded evidence,
+5. deterministic metadata for verification and replay.
 
-The DSL must make task authoring compositional and extensible across domains while preserving deterministic replay.
+## 2. Taxonomy and config scopes
+Use this hierarchy everywhere:
+1. `domain` (for example: `tile`, `geometry`, `icon`)
+2. `task_group` (for example inside `tile`: `path`, `count`, `measurement`)
+3. `task` (for example: `tile_shortest_path`)
 
-## 2. First-class artifacts
-All task generation and export must be defined through explicit first-class specs:
+Config precedence (lowest to highest):
+1. domain default
+2. task_group override
+3. task override
 
+No instance-level override for semantic policies such as evidence format.
+
+## 3. First-class artifacts
+All generation and export are defined through explicit specs:
 1. `SceneSpec`
-- Defines world entities, attributes, relations, and sampling knobs.
-- Replay key: `(scene_seed, scene_spec_version, generator_version)`.
-
 2. `QuerySpec`
-- Defines executable reasoning program over `SceneIR`.
-- Replay key: `(scene_ir, query_seed(optional), query_spec_version, template/operator versions)`.
-
 3. `RenderSpec`
-- Defines image packaging (single image, multi-panel, options grid), resolution, style, annotation policy.
-- Must produce `RenderMapIR`.
-
 4. `PromptSpec`
-- Defines natural language wrapper and output schema/format constraints.
-- May include optional glossary/definitions blocks.
-
 5. `VerifierSpec`
-- Defines answer equivalence, evidence equivalence, tolerances, cardinality policy, and multi-witness acceptance semantics.
-
 6. `SamplerSpec`
-- Defines dataset distribution controls (task-family weights, motif/layout weights, difficulty knobs, anti-degenerate constraints).
+7. `InstanceRecordSpec` (output ABI)
 
-7. `InstanceRecordSpec` (canonical output ABI)
-- Defines the single versioned instance record shape all tasks must emit.
-- Prevents per-task export-format drift and keeps downstream tooling reusable.
+## 4. Output contracts (sidecar ABI)
+`InstanceRecordSpec` is the compatibility contract for dataset writers, dataloaders, trainers, evaluators, and debuggers.
 
-## 3. Canonical instance record (ABI)
-Each instance must conform to one versioned record schema.
+The system has three data layers:
+1. `TrainInstance` (always present, lightweight, training-facing)
+2. `TraceInstance` (heavy replay/debug payload, sidecar)
+3. `CurriculumIndex` (sampling metadata for curriculum)
 
+### 4.1 TrainInstance v1 (required)
 Minimal shape:
 
 ```json
 {
   "instance_version": "v1",
+  "instance_id": "blake3:9f2c...",
+  "instance_seed": 123456789,
+  "domain": "geometry",
+  "task_group": "measurement",
+  "task": "geometry_angle",
   "prompt": "...",
-  "images": [{"image_id": "img0", "format": "png", "path": "..."}],
-  "answer_gt": 7,
-  "evidence_gt": {"type": "id_path", "ids": ["cell_0_1", "..."]},
-  "payload": {
-    "scene_ir": {...},
-    "query_spec": {...},
-    "render_spec": {...},
-    "render_map": {...},
-    "execution_trace": {...},
-    "canonicalization": {...},
-    "versions": {...},
-    "seeds": {...}
+  "images": [{"image_id": "img0", "format": "png", "image_hash": "blake3:3ac4...", "path": "images/geometry/geometry_angle/000001.png"}],
+  "answer_gt": {"type": "integer", "value": 7},
+  "evidence_gt": {"type": "point_set", "value": [[10.5, 20.0], [15.0, 18.0]]},
+  "task_complexity": {
+    "complexity_score": 0.62,
+    "complexity_components": {"num_vertices": 8, "num_candidates": 5}
   },
-  "descriptors": {...}
+  "trace_ref": {
+    "shard_id": "trace_shard_0001.jsonl.zst",
+    "line_index": 1823,
+    "trace_record_hash": "blake3:ab12..."
+  },
+  "versions": {
+    "dsl_spec_version": "v1",
+    "template_version": "v3",
+    "operator_bundle_version": "v5",
+    "domain_capability_version": "v2",
+    "renderer_version": "v4",
+    "code_hash": "..."
+  }
 }
 ```
 
-`InstanceRecordSpec` is the compatibility contract for:
-- dataset writers,
-- training pipelines,
-- evaluation harnesses,
-- debuggers.
+Rules:
+1. `answer_gt` and `evidence_gt` are always required in `TrainInstance`.
+2. Training and dataloaders should not require joining `TraceInstance` to access final answer/evidence targets.
+3. `answer_gt` uses a typed envelope: `{type, value}`.
+4. `evidence_gt` uses a typed envelope: `{type, value}`.
+5. `answer_gt.type` and `evidence_gt.type` must come from a versioned global type registry.
+6. Task-specific type extensions must be namespaced (for example `task.geometry_angle.special_form`).
+7. Default image output format is PNG unless explicitly overridden by build config.
+8. Do not emit `answer_space` in `TrainInstance` (avoid duplicate schema information).
+9. Do not emit a separate per-instance `schema_version`; use `instance_version` only.
+10. `images[*].path` must be dataset-root-relative (not absolute).
+11. `images[*].image_hash` is required and uses `blake3`.
+12. Do not add a shared generic image `role` field in `TrainInstance`.
+13. For multi-image tasks, image semantics/presentation are task-defined via `RenderSpec` + prompt contract (not global image-role metadata).
+14. `trace_ref` is required on every `TrainInstance`.
 
-## 4. Core IR contracts
-## 4.1 SceneIR core (domain-agnostic)
+### 4.2 TraceInstance v1 (required sidecar payload)
+Heavy replay/debug metadata is stored as sidecar payload referenced from `TrainInstance`.
+Sidecar trace export is mandatory for every dataset build.
+
+Default sidecar storage policy:
+1. shard by dataset chunk.
+2. one compressed JSONL trace shard per chunk (`.jsonl.zst`).
+3. `TrainInstance.trace_ref` points to the trace record (`shard_id`, `line_index`, `trace_record_hash`).
+4. `trace_record_hash` uses `blake3` over canonical serialized trace-record bytes.
+
+Trace payload should include:
+1. `scene_ir`
+2. `query_spec`
+3. `render_spec`
+4. `render_map`
+5. `execution_trace`
+6. symbolic witness (task-defined semantics)
+7. all supported projected evidence forms
+8. optional debug `seed_map`
+9. optional duplicated `answer_gt` and `evidence_gt` for audit/replay consistency checks
+
+### 4.3 CurriculumIndex v1
+May be embedded or exported as a separate table keyed by `instance_id`.
+Required fields:
+1. `instance_id`
+2. `domain`
+3. `task_group`
+4. `task`
+5. `task_complexity.complexity_score`
+6. `task_complexity.complexity_components`
+
+## 5. Core IR contracts
+### 5.1 SceneIR core (domain-agnostic)
 Required core fields:
-1. `entities`: table of `{entity_id, entity_type, attrs}`
-2. `relations`: named relation tables (edge lists and/or typed relation tables)
-3. `frames`: coordinate systems used by the scene
+1. `entities`: `{entity_id, entity_type, attrs}`
+2. `relations`: named relation tables
+3. `frames`: coordinate systems
 4. `provenance`: seeds, versions, hashes
 
-Domain-specific details may live in extension blocks, but core structure remains stable.
-
-## 4.2 RenderMapIR core (domain-agnostic)
+### 5.2 RenderMapIR core (domain-agnostic)
 Required core shape:
 1. `image_id -> panels -> anchors`
-2. Anchor geometry kinds: `bbox`, `polygon`, `polyline`, `point`
-3. Explicit `coord_space`: `pixel`, `normalized`, or `panel_normalized`
-4. Optional: `z_order`, `occlusion_flags`
+2. anchor kinds: `bbox`, `polygon`, `polyline`, `point`
+3. explicit `coord_space`: `pixel` or panel-local variants
+4. optional `z_order`, `occlusion_flags`
 
-Render maps are projection artifacts, not semantic truth sources.
+`RenderMapIR` is a projection artifact, not semantic truth.
 
-## 5. Query program representation
-Query programs must use typed SSA-like IR with named outputs.
-
-Example:
-
-```json
-{
-  "template_id": "shortest_path_v1",
-  "program": [
-    {"out": "cells", "op": "select", "entity_type": "tile_cell"},
-    {"out": "open_cells", "op": "filter", "in": "cells", "predicate": {"blocked": false}},
-    {
-      "out": "path",
-      "op": "shortest_path",
-      "cells": "open_cells",
-      "relation": "adjacency_open",
-      "start": {"entity_id": "cell_0_1"},
-      "goal": {"entity_id": "cell_5_4"}
-    },
-    {"out": "answer", "op": "path_length", "in": "path"}
-  ]
-}
-```
-
-Minimum type system:
-- `Set[tile_cell]`, `Path[tile_cell]`, `Int`, `Bool`, `BBox`, `Point`, `Polygon`, `ImageRef`, `ChoiceSet`
+## 6. Query program representation
+Query programs use typed SSA-like IR with named outputs.
 
 Each op declares:
 1. input types
 2. output type
 3. required domain capabilities
 
-Generation must fail fast on:
+Generation fails fast on:
 1. type mismatch
 2. arity mismatch
 3. missing capability
 
-## 6. Template bundles
-`template_id` must resolve to a versioned `TemplateBundle`, not only a raw op list.
-
-A bundle should include:
+## 7. Template bundles
+`template_id` resolves to a versioned `TemplateBundle` with:
 1. `program_skeleton`
 2. `input_schema`
-3. `canonicalization_policy`
+3. `canonicalization_policy` (deterministic ordering/serialization only)
 4. `witness_policy`
 5. `evidence_projection_policy`
-6. optional `consistency_checker` definition
+6. optional `consistency_checker`
 
-This makes template versioning semantic and replay-safe.
-
-## 7. Domain plugin contract
-Domain is operational via plugins, not a label.
-
-Each domain module must register:
+## 8. Domain plugin contract
+Each domain registers:
 1. entity schemas
 2. relation schemas
 3. operator implementations
 4. anchor projection logic
-5. canonicalizers (ordering/tie-break rules)
-6. renderer adapters (`RenderSpec` -> image + `RenderMapIR`)
+5. canonicalizers (stable ordering/serialization)
+6. renderer adapters
 7. capability version
 
-Tasks must declare required capabilities explicitly:
+Tasks must declare required capabilities explicitly.
 
-```json
-"capabilities_required": {
-  "relations": ["adjacency_open", "contains", "overlaps"],
-  "ops": ["shortest_path", "path_length"]
-}
-```
+## 9. Evidence contract and verification
+Evidence operates in two spaces:
+1. authoritative witness space (symbolic): `id_set`, `id_path`, `pair_set`, ...
+2. prompt evidence space: `point_set`, `bbox_set`, `point_path`, ...
 
-## 8. Evidence contract and verification model
-Evidence is defined in two spaces:
+Policy:
+1. store symbolic witness in trace payload, with ordering semantics defined by the task contract.
+2. store all supported projected evidence forms in trace payload.
+3. expose one default evidence form in `TrainInstance.evidence_gt`.
+4. do not duplicate evidence type in a separate top-level field; use `TrainInstance.evidence_gt.type` as the single source of truth.
+5. no global evidence-order canonicalization rule; each task defines whether order is significant and how equality should be interpreted.
 
-1. authoritative witness space (symbolic):
-- `id_set`, `id_path`, `pair_set`, ...
+Unsupported requested evidence form must return a hard validation error, including:
+1. requested type
+2. task default type
+3. supported types
 
-2. prompt surface evidence space:
-- `id_set`, `point_set`, `bbox_set`, `point_path`, ...
+## 10. Evidence format resolution policy
+Evidence output format is fixed at dataset build time.
 
-Example:
+Resolution order:
+1. domain default
+2. task_group override
+3. task override
 
-```json
-"evidence_contract": {
-  "required": true,
-  "witness_type": "id_path",
-  "prompt_evidence_type": "point_path",
-  "allowed_prompt_types": ["point_path", "bbox_set"],
-  "verification": {
-    "policy": "exact_on_ids | iou_on_boxes | dist_on_points",
-    "tolerances": {"iou": 0.7, "dist_px": 8},
-    "cardinality_policy": "exact | subset_ok | superset_ok | min_k",
-    "dedupe_policy": "canonical",
-    "matching_policy": "hungarian | greedy"
-  }
-}
-```
+Rules:
+1. no instance-level override.
+2. dataloader does not choose evidence form at read time.
+3. resolved mapping must be saved in `build_report.json`.
 
-Evidence normalization rules must be explicit in `PromptSpec`:
-1. ID encoding
-2. point encoding
-3. bbox encoding
-4. parsing/rounding policy
+## 11. Answer uniqueness and constraint hardness
+Every generated instance must have exactly one valid final answer.
 
-## 9. Consistency checker contract
-`reward_consistency` must be mechanically defined per task family using a `ConsistencyChecker`.
+Rules:
+1. if an instance is ambiguous, reject/resample or redesign the task.
+2. never use output formatting to break semantic ties.
+3. canonicalization is for deterministic serialization, not semantic tie resolution.
+4. never auto-relax semantic constraints to force acceptance.
 
-Required interface:
+## 12. Determinism and seed derivation
+Use one required seed per instance:
+1. `instance_seed`
 
-```text
-consistency_checker(answer_pred, evidence_pred, payload) -> [0,1]
-```
+All component seeds are derived deterministically via namespace-based derivation:
+1. `subseed = hash64(instance_seed, seed_derivation_version, namespace, index)`
 
-Typical implementations:
-1. witness reconstruction then answer re-derivation
-2. constraint satisfaction checks
-3. equivalence-class membership for multi-witness tasks
+Rules:
+1. derivation is namespace-based, not call-order-based.
+2. include `seed_derivation_version` in metadata.
+3. `seed_map` is optional debug payload only.
+4. `instance_id` is deterministic and derived from canonical training-facing fields (including `instance_seed`, taxonomy, prompt, image content hashes, answer, and evidence payload).
+5. deterministic hash inputs must use RFC 8785 JCS canonical JSON serialization.
+6. image file paths are excluded from `instance_id` hash input (use image content identity only).
 
-## 10. Choice and distractor model
-Choice tasks must be first-class via `choice_spec` and `choice_semantics`.
+## 13. Versioning and replay contract
+ABI policy:
+1. treat `instance_version` as stable contract.
+2. breaking field changes require version bump.
+3. do not silently change field semantics in-place.
+4. enforce one `instance_version` per dataset build; mixed instance versions in one dataset are disallowed.
 
-Supported regimes:
-1. `delta_from_base`
-- options are generated by applying deltas to a base scene
-- store per-option `choice_delta_trace`
+Canonical serialization policy:
+1. use one shared canonical JSON serializer utility for all identity hashes (`instance_id`, `trace_record_hash`, `dataset_id`).
+2. serializer API is strict and shared (for example `canonical_json_bytes(obj) -> bytes`); no task-level override hooks.
+3. canonicalization failures are hard errors (unsupported type, non-serializable object, non-string key).
+4. non-finite numeric values (`NaN`, `Inf`, `-Inf`) are forbidden in serialized outputs.
+5. numeric precision normalization is fixed globally.
+6. UTF-8 string literals are allowed (no forced ASCII-only escaping).
+7. emitted JSON files use canonical object-key ordering (not just hash inputs).
 
-2. `independent_scene`
-- each option has its own scene/render map
-- store per-option scene payloads
+Replay-critical versions must be recorded:
+1. DSL/schema version
+2. template and operator versions
+3. domain capability version
+4. renderer version
+5. code hash
 
-Common requirements:
-1. explicit layout/labeling
-2. distractor uniqueness checks
-3. semantic distinctness check (`verifier_equivalence_distinct`)
-4. option-local anchor export (`choice_render_map`) when evidence can reference option contents
+Dataset-level registry versions must be recorded in build metadata (not per-instance), including type registry version.
 
-## 11. Determinism and purity contracts
-Determinism requires more than seeds.
+## 14. Sampling and build behavior
+`SamplerSpec` controls distributions without code edits.
 
-Purity constraints:
-1. operators are pure over explicit inputs (+ explicit RNG handle if needed)
-2. renderers are pure over `(SceneIR, RenderSpec, render_seed)`
-3. all iteration over sets/maps is canonicalized
+Minimum controls:
+1. weighted mixture over domains
+2. weighted mixture over task_groups
+3. weighted mixture over tasks
+4. difficulty/control knob distributions
+5. anti-degenerate constraints
 
-Determinism CI gate:
-1. regenerate fixed seed suites
-2. compare hashes of `answer_gt`, canonical witness, projected evidence
-3. optionally compare `render_map` and image hashes
+Build-policy summary:
+1. use bounded resampling (`max_attempts`) per candidate; if exhausted, reject and sample replacement.
+2. do not auto-relax semantic constraints.
+3. sidecar trace write failures are hard build failures.
+4. finalize outputs atomically (temp staging -> final path).
+5. run required pre-finalize validation before finalize.
+6. on failure, preserve failure artifacts for debugging.
+7. CI strict reproducibility uses fixed, pinned settings.
 
-## 12. Versioning and replay contract
-All outputs must be derivable from specs + seeds + versions; no hidden randomness.
+Normative operational details (validation report shape, failure bundles, cleanup behavior, and CI strict-repro defaults such as `K=5` and `max_attempts_per_instance_ci=100`) are defined in `docs/BUILD_VALIDATION.md`.
 
-Minimum per-instance metadata:
-1. `dsl_spec_version`
-2. `scene_spec_version`
-3. `query_spec_version`
-4. `render_spec_version`
-5. `prompt_spec_version`
-6. `verifier_spec_version`
-7. `template_id` + `template_version`
-8. `operator_bundle_version`
-9. `domain_capability_version`
-10. `renderer_version`
-11. `code_hash`
-12. `scene_seed`
-13. `query_seed` (if used)
-14. `render_seed` (if used)
+## 15. Build telemetry and reports
+Every build must emit telemetry in both:
+1. logs, and
+2. `<dataset_root>/build_report.json`.
 
-If an operator/template change can alter answer, witness, projection, or verifier semantics, it must be versioned.
+`build_report.json` must include:
+1. `build_report_schema_version` (required top-level, bump on breaking report-schema changes)
+2. `dataset_id` (required top-level, deterministic ID from manifest-critical fields)
+3. per-task accepted counts
+4. per-task rejected counts
+5. rejection reason breakdown by task
+6. final rejection rate
+7. resolved evidence format map (domain/task_group/task resolution)
+8. trace shard manifest summary
+9. trace hash algorithm (`blake3`) and canonicalization/version info used for hashing
+10. type registry metadata (`type_registry_version`, registry file path, registry file hash)
+11. code provenance metadata (for example commit/hash), explicitly marked as non-identity input
+12. split metadata (if split artifacts are generated): split ratios/method and split seed
+13. image encoding metadata (`image_format`, compression params, color mode, and resolution policy)
 
-## 13. Execution trace policy
-Execution trace is first-class.
+`dataset_id` policy:
+1. compute from canonical hash of dataset-critical configuration only.
+2. include full resolved task set with task versions and enabled/disabled status.
+3. include dataset-level sampling seed configuration.
+4. include requested dataset size (`num_instances` or equivalent requested count).
+5. include sampler/evidence-format/type-registry/schema-critical versions and configs.
+6. include image encoding configuration (`image_format`, compression settings, color mode, resolution policy).
+7. include split configuration and split seed when split artifacts are generated by this build.
+8. exclude run diagnostics and outcomes (for example rejection counts, warnings, timing).
+9. exclude environment/provenance-only fields such as output path, generation timestamp, and code commit/hash.
+10. use RFC 8785 JCS canonical JSON + `blake3`.
 
-Default storage policy:
-1. always store compact summary trace
-2. optionally store full trace via debug/config flags (or sidecar files)
+Builds continue with warnings by default (no hard fail on rejection-rate threshold).
 
-Trace content:
-1. op-by-op outputs (IDs/scalars)
-2. key stats
-3. empty/error flags
-4. canonicalization decisions
-
-## 14. Distribution control and split integrity
-`SamplerSpec` must control generation distributions without code edits.
-
-At minimum:
-1. weighted mixture over task families
-2. weighted mixture over appearance/layout families
-3. difficulty knob distributions
-4. anti-degenerate constraints
-
-Fingerprinting policy:
-1. `instance_fingerprint` (scene + query + canonical witness)
-2. optional `render_fingerprint`
-3. optional `semantic_fingerprint`
-
-Use fingerprints for:
-1. deduplication
-2. split integrity and leakage checks
-
-## 15. RLVR reward contract
-Verifier should expose:
+## 16. RLVR reward contract
+Verifier exposes:
 1. `reward_answer`
 2. `reward_evidence`
 3. `reward_consistency`
 
-Anti-hack constraints:
-1. evidence verification must be symbolic or anchor-projected, never loose string plausibility
-2. strict vs lenient witness acceptance should be a training-stage knob
-3. open-ended answer mode should be available when feasible to reduce MC guessability bias
+Evidence verification should be symbolic or anchor-projected, not loose string plausibility.
 
-## 16. Difficulty and curriculum descriptors
-No subjective fixed complexity score is required.
+## 17. Complexity and curriculum contract
+Each task must emit:
+1. shared scalar `task_complexity.complexity_score`
+2. task-defined `task_complexity.complexity_components`
 
-Log objective structural descriptors:
-1. entity counts by type
-2. relation counts/sparsity
-3. graph stats
-4. program stats (`#ops`, op mix, dependency depth)
-5. witness stats
-6. rendering stats (panel count/options/occlusion where applicable)
+Rules:
+1. `complexity_score` is per-task normalized scale (task-local semantics).
+2. raw complexity scores are not globally comparable across tasks.
+3. curriculum sampling using score must respect task boundaries.
+4. components are mainly for analysis/debugging.
 
-Use these descriptors for performance-driven curriculum analysis.
-
-## 17. Authoring SDK requirements
-The authoring SDK is a core deliverable.
-
+## 18. Authoring SDK requirements
 Required tooling:
-1. Python builder API -> compiles to spec + typed IR
-2. linter for schema/type/capability/evidence errors
-3. visual debugger with overlay + step-through
-4. macro/subprogram library support
-5. auto-generated docs from registries:
-- operator catalog
-- domain capability catalog
-- evidence policy catalog
-- template catalog
+1. Python builder API for specs and typed IR
+2. linter for schema/type/capability/evidence checks
+3. visual debugger with overlays + step-through
+4. macro/subprogram support
+5. docs auto-generation from registries
 
-## 18. Global coordinate conventions
-Coordinate conventions and tolerances must be globally standardized:
-1. bbox format `(x1,y1,x2,y2)` with `0 <= x1 < x2 <= 1` and `0 <= y1 < y2 <= 1` (normalized space default)
-2. point format `(x,y)` with `0 <= x <= 1` and `0 <= y <= 1` (normalized space default)
-3. rounding rules
-4. default tolerances by domain family
+## 19. Global coordinate conventions
+Coordinate standards are global:
+1. full-image pixel coordinates with top-left `(0,0)`.
+2. points are floats: `(x, y)` with `0.0 <= x <= image_width`, `0.0 <= y <= image_height`.
+3. boxes are floats: `(x1, y1, x2, y2)` with `0.0 <= x1 < x2 <= image_width`, `0.0 <= y1 < y2 <= image_height`.
+4. rounding/parsing policy must be explicit in verifier/prompt contracts.
+5. default tolerances are domain/task specific and versioned.
 
-This prevents verifier drift across tasks.
+## 20. Implementation plan
+### Phase A: schemas and ABI
+1. define `TrainInstance`, `TraceInstance`, `CurriculumIndex` schemas.
+2. define `SceneIR` and `RenderMapIR` contracts.
+3. add schema validators.
 
-## 19. Implementation plan
-## Phase A: schemas and ABI
-1. Define `SceneSpec`, `QuerySpec`, `RenderSpec`, `PromptSpec`, `VerifierSpec`, `SamplerSpec`, `InstanceRecordSpec`.
-2. Define `SceneIR`/`RenderMapIR` core contracts.
-3. Add schema validators.
+### Phase B: typed IR and template bundles
+1. implement IR parser/validator.
+2. implement op typing and capability checks.
+3. implement versioned template registry.
 
-## Phase B: typed IR and template bundles
-1. Implement SSA IR parser/validator.
-2. Implement op typing + capability checks.
-3. Implement `TemplateBundle` registry with semantic versioning.
+### Phase C: domains and deterministic engine
+1. register domain plugins.
+2. enforce purity and canonical iteration.
+3. implement seed-derivation library + tests.
 
-## Phase C: domain plugins and deterministic engine
-1. Register domain bundles.
-2. Implement purity enforcement and canonical iteration requirements.
-3. Add determinism CI harness.
+### Phase D: evidence and verifier stack
+1. implement witness projection to all supported forms.
+2. implement evidence-format resolver (domain/task_group/task).
+3. enforce hard-error behavior for unsupported requested format.
 
-## Phase D: evidence/verifier/consistency layer
-1. Implement witness projection and normalization rules.
-2. Implement `ConsistencyChecker` per task family.
-3. Implement cardinality/matching/minimality policies.
+### Phase E: sampler and build pipeline
+1. implement bounded resampling with rejection replacement.
+2. emit mandatory telemetry + `build_report.json`.
+3. support sidecar trace payload export.
 
-## Phase E: rendering, prompting, and choice framework
-1. Implement render/prompt families.
-2. Implement `choice_semantics` regimes and distractor framework.
-3. Add open-ended vs MC controls.
+### Phase F: curriculum integration
+1. implement complexity score/components interface per task.
+2. provide curriculum index export and task-bounded sampler hooks.
 
-## Phase F: sampler, fingerprints, and rollout
-1. Implement `SamplerSpec` distribution controller.
-2. Implement fingerprint-based dedupe/split guards.
-3. Enforce blueprint path for all new tasks and migrate legacy wrappers with parity/replay gates.
+### Phase G: docs and review tooling
+1. task authoring/review checklist automation.
+2. regression suites for determinism, uniqueness, and constraint hardness.
 
-## Phase G: authoring SDK and documentation
-1. Ship Python builder + macro/subprogram library.
-2. Ship linter and visual debugger.
-3. Auto-generate operator/domain/evidence/template documentation from registries.
+## 21. Quality gates
+A task is accepted only if:
+1. it emits valid ABI records.
+2. typed IR and capability checks pass.
+3. answer/witness/evidence come from one execution trace.
+4. uniqueness-by-construction is enforced.
+5. constraint hardness is enforced (no auto-relaxation).
+6. determinism/replay checks pass.
+7. required build telemetry/report fields are present.
+8. complexity score/components are emitted.
 
-## 20. Quality gates
-A new DSL task is accepted only if:
-1. it emits valid `InstanceRecordSpec`,
-2. query program is typed and validated,
-3. answer/witness/evidence are derivable from one execution trace,
-4. canonicalization is recorded when needed,
-5. determinism tests pass,
-6. verifier consistency checks pass,
-7. required descriptors and fingerprints are present.
-
-## 21. Open questions
-1. Should full traces be persisted inline or always sidecar for large-scale datasets?
-2. What exact semantic-distinctness checks should be mandatory for each choice family?
-3. Which descriptors are mandatory in every export versus optional diagnostics?
-4. What migration threshold should gate deprecation of compatibility wrappers?
-5. Which domain-specific default tolerances should ship in the first release?
-
-## 22. Recommended defaults
-Unless a task family explicitly overrides them:
-1. Primary evidence type is fixed per family; alternate prompt evidence types are opt-in overrides.
-2. Canonical witness is always stored; strict mode requires canonical match, lenient mode accepts any valid witness under policy.
-3. Output envelope is standardized as `{answer, evidence}`; `evidence=null` is valid only when `required=false`.
-4. Execution trace storage defaults to compact summary; full traces are enabled via debug config or sidecar outputs.
-5. Distractor filtering uses a tiered pipeline: cheap uniqueness checks, then semantic equivalence checks, then bounded resampling.
-6. Wrapper deprecation requires policy gates: parity tests, replay stability across releases, migration coverage threshold, and no new wrapper additions.
+## 22. Open questions
+1. Which verifier tolerance presets should be standardized first per domain?

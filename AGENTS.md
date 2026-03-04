@@ -8,35 +8,29 @@ Each generated instance should include:
 - image(s)
 - metadata-grounded verifier payload
 
-Canonical architecture and contracts live in `docs/DSL_BLUEPRINT.md`.
-Python package dependencies live in `requirements.txt`.
-Task creation instructions live in `docs/TASK_AUTHORING.md`.
-Lessons/pitfalls log lives in `docs/LESSONS_LEARNED.md`.
+## Source-of-truth docs
+- Architecture and ABI contracts: `docs/DSL_BLUEPRINT.md`
+- Task creation procedure: `docs/TASK_AUTHORING.md`
+- Build/validation/CI policy: `docs/BUILD_VALIDATION.md`
+- Validation error catalog: `docs/VALIDATION_ERROR_CODES.md`
+- Reusable pitfalls and fixes: `docs/LESSONS_LEARNED.md`
+- Python dependencies: `requirements.txt`
 
 ## Scope and boundaries
 - Work in this repository unless the user explicitly asks otherwise.
-- Treat `docs/DSL_BLUEPRINT.md` as the source of truth for architecture decisions.
-- Treat `requirements.txt` as the source of truth for Python dependency installation.
-- Treat `docs/TASK_AUTHORING.md` as the source of truth for task authoring procedure.
-- Treat `docs/LESSONS_LEARNED.md` as the source of truth for cross-task pitfalls and reusable fixes.
 - Prefer additive, reusable infrastructure over one-off task code.
+- If behavior/contracts change, update the relevant source-of-truth docs above.
 
 ## Core engineering rules
-- Keep generation factorized into explicit specs:
-  - `SceneSpec`
-  - `QuerySpec`
-  - `RenderSpec`
-  - `PromptSpec`
-  - `VerifierSpec`
-  - `SamplerSpec`
-  - `InstanceRecordSpec`
+- Use taxonomy consistently: `domain -> task_group -> task`.
+- Keep generation factorized into explicit specs (`SceneSpec`, `QuerySpec`, `RenderSpec`, `PromptSpec`, `VerifierSpec`, `SamplerSpec`, `InstanceRecordSpec`).
 - Generators must be deterministic given seeds/specs/versions.
 - No hidden randomness: all random sources must be explicit and recorded.
-- Verifiers must rely on metadata contracts and projections, not pixel heuristics as source of truth.
-- Query programs must be typed IR with named intermediate outputs.
-- Answers and evidence must be derived from the same query execution trace.
-- Multi-solution tasks must use explicit canonicalization and record the policy.
-- Domain requirements must be capability-driven (relations/ops declared explicitly).
+- Verifiers must rely on metadata contracts and projections, not pixels as source of truth.
+- Answers and evidence must come from the same execution trace.
+- Task instances must have unique final answers by construction.
+- Never auto-relax semantic constraints to force acceptance.
+- Sidecar trace export is mandatory; each `TrainInstance` must include `trace_ref`.
 
 ## Reuse and code organization
 - Before adding new logic, search for reusable helpers and extend shared modules when possible.
@@ -45,42 +39,19 @@ Lessons/pitfalls log lives in `docs/LESSONS_LEARNED.md`.
 
 ## Code documentation standards
 - Add concise docstrings for new modules, classes, and non-trivial functions.
-- Document assumptions, invariants, and tie-breaking/canonicalization rules where they are implemented.
-- Prefer comments that explain *why* a decision exists, not line-by-line restatements of obvious code.
-- Keep public API docs and type hints aligned with behavior.
-- When behavior changes, update both inline docs/docstrings and relevant files under `docs/`.
+- Document assumptions, invariants, and non-obvious canonicalization behavior where implemented.
+- Prefer comments that explain *why* a decision exists.
 
-## Output and metadata requirements
-- Every task must emit one canonical instance record shape (per `InstanceRecordSpec`).
-- Payload should include, at minimum:
-  - scene IR
-  - query spec
-  - render spec
-  - render map
-  - execution trace
-  - canonicalization metadata
-  - seeds and version bundle
-- Include structural descriptors for curriculum analysis.
-- Use globally consistent coordinate conventions and tolerance policies.
-
-## Testing and validation
-- Add tests for:
-  - schema/contract validity
-  - answer/evidence/verifier consistency
-  - determinism/replay stability
-- Maintain a determinism harness for fixed seed suites.
-- For generated samples, verify:
-  - answer type and verifier alignment
-  - evidence contract alignment
-  - required metadata presence
-- Report distribution summaries for generated datasets (target metric, answer shape, key sampling axes).
+## Testing and validation expectations
+- Add/maintain tests for schema validity, answer/evidence/verifier consistency, and determinism.
+- Follow `docs/BUILD_VALIDATION.md` for pre-finalize validation, failure handling, cleanup, and CI strict-repro rules.
+- Ensure validation errors map to cataloged codes in `docs/VALIDATION_ERROR_CODES.md`.
 
 ## Documentation discipline
-- Update docs when behavior/contracts change.
-- Keep `docs/DSL_BLUEPRINT.md` aligned with implementation decisions.
-- Keep `docs/TASK_AUTHORING.md` updated with tips and rules that apply across multiple tasks.
-- Keep `docs/LESSONS_LEARNED.md` updated whenever new pitfalls, regressions, or reusable fixes are discovered.
-- Document new reusable helpers and new verifier edge cases when discovered.
+- Keep `docs/DSL_BLUEPRINT.md` aligned with architecture/contract decisions.
+- Keep `docs/TASK_AUTHORING.md` aligned with reusable task authoring guidance.
+- Keep `docs/BUILD_VALIDATION.md` aligned with build/validation/CI behavior.
+- Keep `docs/LESSONS_LEARNED.md` updated when new cross-task pitfalls are discovered.
 
 ## Workflow guidelines
 - After any code edit, ask whether to commit before creating a commit.

@@ -1,63 +1,42 @@
 # `geometry_angle_value_query`
 
-## Overview
+## 1) Identity
 1. Domain: `geometry`
 2. Task group: `measurement`
 3. Task id: `geometry_angle_value_query`
-4. Objective: return an angle value based on query type and provide grounded vertex evidence.
+4. Objective: answer an angle-value query and return grounded vertex evidence.
 
-## Scene and Query
-1. Scene entities: multiple angle entities with unique degree values.
-2. Supported query types:
-- `min`,
-- `max`,
-- `median`,
-- `closest_to_x`,
-- `smallest_above_x`,
-- `largest_below_x`,
-- `difference_max_min`.
-3. Answer type: `integer`.
-4. Default evidence type: `point_set` (or `point_path` for `difference_max_min`).
-5. Alternate evidence forms: both `point_set` and `point_path` are available in projected trace payload.
+## 2) Scene + query contract
+1. Query types:
+   - `min`, `max`, `median`, `closest_to_x`, `smallest_above_x`, `largest_below_x`, `difference_max_min`
+2. `answer_gt.type`: `integer`
+3. Default evidence:
+   - `grid_point_set` (single-target queries)
+   - `grid_point_path` (`difference_max_min`)
+4. Trace also stores pixel projections (`point_set`, `point_path`).
+5. Candidate count is sampled from `3..7` (odd-only for `median`).
+6. Layout policy: non-overlap/touch with minimum one graph-square clearance.
 
-## Prompt Bundle
-1. `prompt_bundle_id`: `geometry_measurement_v1`.
-2. `task_type_key`: `angle_measurement`.
-3. Query type template keys:
-- one key per supported `query_type` above.
-4. Required slot schema:
-- `candidate_count`,
-- `entity_plural` (for example `angles`),
-- `target_x` for threshold/closest variants.
-5. Variant counts:
-- task-type variants >= 10,
-- each query-type variants >= 10.
-6. Bundle asset path:
-- `prompts/geometry/measurement/geometry_measurement_v1.json`.
+## 3) Prompt contract
+1. Bundle: `geometry_measurement_v1`
+2. Task type key: `measurement_value_query`
+3. Modes: `answer_only`, `answer_and_evidence`
+4. Required slots include:
+   - `candidate_count`, `entity_plural`, `value_name_singular`, `unit_name`,
+   - `evidence_hint`,
+   - `target_x` (threshold/closest queries)
+5. Variant policy: at least 10 templates per required task/query/mode key.
 
-## Determinism and Metadata
-1. Prompt seed namespaces:
-- `prompt.task_type`,
-- `prompt.query_type.<query_type>`.
-2. Prompt metadata in trace (`trace_payload.query_spec.prompt_variant`):
-- bundle id,
-- task/query keys,
-- variant index and count.
+## 4) Determinism + constraints
+1. Deterministic generation from `instance_seed`.
+2. Answer target sampled uniformly over feasible answers for selected `query_type`.
+3. Distractors may duplicate, but final selected answer witness is unique.
+4. One ray per angle is axis-aligned (horizontal/vertical).
+5. No semantic auto-relaxation; invalid layouts/queries are rejected and resampled.
 
-## Generation Constraints
-1. Unique-answer-by-construction enforced; duplicate angle values are rejected.
-2. Invalid query conditions (for example no value above threshold) are rejected and resampled.
-3. No auto-relaxation of semantic constraints.
-
-## Visual Variation
-1. Task-group default background-style policy (`geometry/measurement`):
-- deterministic style sampling with weighted presets (for example `solid_light`, `graph_paper`, `warm_paper`),
-- defaults are defined in `configs/task_groups/geometry/measurement.yaml` and loaded through `trace/tasks/geometry/measurement/background_defaults.py`,
-- applied style metadata is emitted in `trace_payload.render_spec.background_style`.
-2. Task-group default post-image noise policy (`geometry/measurement`):
-- `apply_prob = 0.75`,
-- edit types: `blur`, `downsample`, `jpeg`, `noise`,
-- edit-count range: `[1, 2]`.
-Defaults are defined in task-group config (`configs/task_groups/geometry/measurement.yaml`) and loaded through `trace/tasks/geometry/measurement/noise_defaults.py`.
-3. Task-level overrides can be passed via `params.visual.background` / `params.visual.noise` (or flat compatibility keys).
-4. Applied noise metadata is emitted in `trace_payload.render_spec.post_image_noise`.
+## 5) Visual policy
+1. Graph-paper background is enforced.
+2. Vertices snap to graph intersections.
+3. Canvas size sampled from `[512, 1024]`; graph cells sampled from `[12, 24]`.
+4. Center axes + origin marker are rendered and frame metadata is stored in trace.
+5. Post-image noise default apply probability: `0.5`.

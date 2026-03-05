@@ -17,13 +17,14 @@ Each generated instance should include:
 - Current implementation snapshot: `docs/STATUS.md`
 - Task creation procedure: `docs/TASK_AUTHORING.md`
 - Code documentation guidelines: `docs/CODE_DOCUMENTATION.md`
+- Code review guidelines/checklist: `docs/CODE_REVIEW_GUIDELINES.md`
 - Shared reusable helpers and anti-duplication policy: `docs/SHARED_UTILITIES.md`
 - Build/validation/CI policy: `docs/BUILD_VALIDATION.md`
 - Validation error catalog: `docs/VALIDATION_ERROR_CODES.md`
 - Reusable pitfalls and fixes: `docs/LESSONS_LEARNED.md`
 - Active backlog and priorities: `docs/TODO.md`
 - Python dependencies: `requirements.txt`
-- Task-group defaults (generation/rendering/visual): `configs/task_groups/<domain>/<task_group>.yaml`
+- Domain/task-group defaults (generation/rendering/visual): `configs/domains/<domain>.yaml` and `configs/task_groups/<domain>/<task_group>.yaml`
 
 ## Scope and boundaries
 - Work in this repository unless the user explicitly asks otherwise.
@@ -34,7 +35,7 @@ Each generated instance should include:
 - Use taxonomy consistently: `domain -> task_group -> task`.
 - Keep `task_group` broad by reasoning style; for geometry value-style tasks use `task_group=measurement` and keep variants in `query_type`.
 - Sampling policy is task-level globally (equal task weights by default); domain/task_group probabilities are derived by aggregation, and query sampling happens inside each task (uniform by default unless task-config override).
-- Task-group defaults (generation/rendering/visual variation) should be defined in per-group files under `configs/task_groups/<domain>/<task_group>.yaml` and loaded through task-group modules, with optional task-level overrides.
+- Domain/task-group defaults (generation/rendering/visual variation) should follow precedence `domain -> task_group -> task/params`: shared domain defaults under `configs/domains/<domain>.yaml`, group overrides under `configs/task_groups/<domain>/<task_group>.yaml`, then optional task-level overrides.
 - Do not hardcode user-facing prompt text in task modules; prompts must come from external template assets.
 - Prompt composition must be reusable: one task-type layer and one query-type layer, each with deterministic variant selection.
 - Keep prompt templates versioned and recorded in trace metadata (`prompt_bundle_id`, keys, variant indices).
@@ -52,6 +53,14 @@ Each generated instance should include:
 - Do not duplicate utilities across tasks/domains unless there is a strong reason.
 - If a helper is missing, add it once in a shared place and reuse it.
 - Follow `docs/SHARED_UTILITIES.md` strictly when deciding helper placement and reuse.
+- Before introducing or moving helpers, review `docs/LESSONS_LEARNED.md` for prior placement mistakes (for example task-named modules containing non-task-specific helpers).
+- When implementing any task, review existing helpers across layers first (`trace/core`, `trace/tasks/shared`, `trace/tasks/<domain>/shared`, then task-local modules) before writing new logic.
+- For every new helper/function, explicitly choose the narrowest reusable layer that fits and place it there:
+  - cross-domain infrastructure -> `trace/core` or `trace/tasks/shared`,
+  - domain-wide/task-family logic -> `trace/tasks/<domain>/shared`,
+  - truly task-specific logic -> task module.
+- If a function starts task-local but is reusable for 2+ tasks, promote it to the appropriate shared layer in the same change (or immediately when adding the second consumer).
+- If the same deterministic utility appears in more than one module, consolidate it into a shared helper immediately (do not keep parallel copies).
 
 ## Code documentation standards
 - Add concise docstrings for new modules, classes, and non-trivial functions.
@@ -70,10 +79,12 @@ Each generated instance should include:
 - Keep `docs/SYSTEM_ARCHITECTURE.md` aligned with module boundaries, data flow, and lifecycle behavior.
 - Keep `docs/TASK_AUTHORING.md` aligned with reusable task authoring guidance.
 - Keep `docs/SHARED_UTILITIES.md` aligned with shared helper inventory and anti-duplication guidance.
+- Keep `docs/CODE_REVIEW_GUIDELINES.md` aligned with reusable review checks and newly discovered review findings.
 - Keep `docs/BUILD_VALIDATION.md` aligned with build/validation/CI behavior.
 - Keep `docs/LESSONS_LEARNED.md` updated when new cross-task pitfalls are discovered.
 - Keep `docs/TODO.md` updated so active, next, and deferred work stays explicit.
 - After any change to architecture, module boundaries, shared utilities, or helper placement, update the relevant docs above in the same change.
+- After each substantial review/refactor pass, add at least one reusable guideline to `docs/CODE_REVIEW_GUIDELINES.md` based on what was discovered.
 
 ## Workflow guidelines
 - After any code edit, ask whether to commit before creating a commit.

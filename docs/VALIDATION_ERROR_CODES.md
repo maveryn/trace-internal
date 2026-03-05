@@ -1,86 +1,69 @@
 # TRACE Validation Error Codes
 
-## Purpose
-This document catalogs machine-readable `error_code` values used in
-`validation_report.json` produced by pre-finalize validation.
+Catalog of `validation_report.json` `error_code` values.
 
-Each validation error entry should include:
-1. `error_code` (machine-readable)
-2. `message` (human-readable)
-3. concise context references (for example `instance_id`, `field_path`, `trace_ref`, `image_path`)
+## Naming
+Use lowercase snake case with category prefixes:
+`schema_*`, `trace_ref_*`, `image_*`, `count_*`, `version_*`, `identity_*`, `io_*`, `config_*`, `prompt_*`.
 
-## Naming conventions
-Use lowercase snake case with category prefix:
-1. `schema_*`
-2. `trace_ref_*`
-3. `image_*`
-4. `count_*`
-5. `version_*`
-6. `identity_*`
-7. `io_*`
-8. `config_*`
-9. `prompt_*`
-
-## Initial code set
+## Codes by category
 ### Schema
-1. `schema_missing_field`
-2. `schema_type_mismatch`
-3. `schema_invalid_value`
-
-### Schema/Canonical Serializer
-1. `schema_non_string_key`
-2. `schema_non_finite_number`
-3. `schema_unsupported_type`
-4. `schema_canonicalization_failed`
+- `schema_missing_field`
+- `schema_type_mismatch`
+- `schema_invalid_value`
+- `schema_non_string_key`
+- `schema_non_finite_number`
+- `schema_unsupported_type`
+- `schema_canonicalization_failed`
 
 ### Trace reference
-1. `trace_ref_missing`
-2. `trace_ref_not_found`
-3. `trace_ref_hash_mismatch`
-4. `trace_ref_index_out_of_range`
+- `trace_ref_missing`
+- `trace_ref_not_found`
+- `trace_ref_hash_mismatch`
+- `trace_ref_index_out_of_range`
 
 ### Image integrity
-1. `image_path_not_relative`
-2. `image_file_not_found`
-3. `image_hash_missing`
-4. `image_hash_mismatch`
+- `image_path_not_relative`
+- `image_file_not_found`
+- `image_hash_missing`
+- `image_hash_mismatch`
 
-### Count/expectation
-1. `count_per_task_shortfall`
-2. `count_unexpected_task_present`
+### Counts
+- `count_per_task_shortfall`
+- `count_unexpected_task_present`
 
-### Version consistency
-1. `version_mixed_instance_version`
-2. `version_unsupported_instance_version`
+### Version
+- `version_mixed_instance_version`
+- `version_unsupported_instance_version`
 
-### Identity/determinism
-1. `identity_instance_id_mismatch`
-2. `identity_non_deterministic_order`
+### Identity
+- `identity_instance_id_mismatch`
+- `identity_non_deterministic_order`
 
-### I/O/finalization
-1. `io_trace_write_failed`
-2. `io_atomic_finalize_failed`
-3. `io_validation_report_write_failed`
-4. `io_failure_bundle_write_failed`
+### I/O
+- `io_trace_write_failed`
+- `io_atomic_finalize_failed`
+- `io_validation_report_write_failed`
+- `io_failure_bundle_write_failed`
 
 ### Config/registry
-1. `config_task_not_registered`
-2. `config_registry_file_missing`
-3. `config_registry_hash_mismatch`
-4. `config_build_report_schema_mismatch`
+- `config_task_not_registered`
+- `config_registry_file_missing`
+- `config_registry_hash_mismatch`
+- `config_build_report_schema_mismatch`
 
 ### Prompt validation
-1. `prompt_metadata_missing`
-2. `prompt_bundle_not_found`
-3. `prompt_bundle_invalid`
-4. `prompt_key_missing`
-5. `prompt_variant_count_mismatch`
-6. `prompt_variant_index_out_of_range`
-7. `prompt_required_slot_missing`
-8. `prompt_unresolved_placeholder`
+- `prompt_metadata_missing`
+- `prompt_bundle_not_found`
+- `prompt_bundle_invalid`
+- `prompt_key_missing`
+- `prompt_variant_count_mismatch`
+- `prompt_variant_index_out_of_range`
+- `prompt_required_slot_missing`
+- `prompt_unresolved_placeholder`
 
-## Evolution policy
-Codes may be renamed when needed, but changes should be reflected in:
+## Maintenance
+If a code is added/renamed, update:
 1. validator implementation,
 2. this catalog,
-3. release/change notes if consumers depend on code names.
+3. related tests.

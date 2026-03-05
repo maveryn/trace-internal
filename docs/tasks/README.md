@@ -1,12 +1,11 @@
 # TRACE Task Docs
 
-Use [TASK_DOC_TEMPLATE.md](TASK_DOC_TEMPLATE.md) for every new task-specific document.
+For each task, add `docs/tasks/<task_id>.md` using `TASK_DOC_TEMPLATE.md`.
 
-Required naming:
-1. `docs/tasks/<task_id>.md`
-
-Minimum requirement:
-1. include the `Prompt Bundle` section and fill all fields.
+Required content:
+1. scene/query/answer/evidence contract,
+2. prompt bundle keys + mode/variant requirements,
+3. determinism and rejection constraints.
 
 Current task docs:
 1. [geometry_angle_value_query.md](geometry_angle_value_query.md)

@@ -1,90 +1,50 @@
 # TRACE Prompt System
 
-## Purpose
-Define the reusable prompt architecture for TRACE so task modules do not hardcode user-facing prompt strings.
+Prompt text is externalized and deterministic.
 
-## Contract
-1. Prompt text is externalized in versioned bundle assets under `prompts/`.
-2. Prompt composition is layered:
-- task-type template layer (shared composition),
-- query-type template layer (query-specific instruction).
-3. Deterministic variant selection uses fixed seed namespaces.
-4. Prompt provenance metadata is emitted per instance in trace payload.
+## 1) Core contract
+1. Task modules must not hardcode user-facing prompt strings.
+2. Bundles live under `prompts/<domain>/<task_group>/<bundle_id>.json`.
+3. Composition layers:
+   - task type,
+   - query type,
+   - output mode (`answer_only`, `answer_and_evidence`).
+4. Selection is deterministic from seed namespaces.
+5. Each required template list must have at least 10 variants.
 
-## Bundle layout
-Path:
-1. `prompts/<domain>/<task_group>/<bundle_id>.json`
-
-Minimum bundle schema (v1):
+## 2) Bundle schema (v1)
+Required fields:
 1. `bundle_id`
 2. `schema_version`
-3. `task_type_templates`: `task_type_key -> [templates]`
-4. `query_type_templates`: `query_type -> [templates]`
-5. optional `answer_or_evidence_templates`
+3. `task_type_templates`
+4. `query_type_templates`
+5. `answer_or_evidence_templates`
 6. `required_slots_by_key`
 
-Variant cardinality rule:
-1. task-type template list: at least 10 variants
-2. each query-type template list: at least 10 variants
+## 3) Metadata requirements
+Trace `query_spec.prompt_variant` should include:
+1. bundle/key identifiers,
+2. selected variant indices,
+3. variant counts,
+4. slot values for declared required slots,
+5. output-mode key/index when mode templates exist.
 
-## Composition and determinism
-Composition order:
-1. task-type sentence
-2. query-type sentence
-3. optional answer/evidence instruction sentence
+Train records should store:
+1. active `prompt`,
+2. all rendered mode variants in `prompt_variants`.
 
-Seed namespaces:
-1. `prompt.task_type`
-2. `prompt.query_type.<query_type>`
-3. `prompt.answer_or_evidence` (if used)
+## 4) Shared implementation
+1. `trace/core/prompts/assets.py` — bundle loading/cache.
+2. `trace/core/prompts/schema.py` — schema validation.
+3. `trace/core/prompts/select.py` — deterministic variant selection.
+4. `trace/core/prompts/render.py` — strict rendering and composition.
+5. `trace/tasks/shared/prompt_variants.py` — task-level dual-mode orchestration.
 
-Rules:
-1. no hidden global RNG state,
-2. no call-order-dependent randomness,
-3. strict placeholder rendering (missing required slot is a hard error).
+## 5) Active bundles/tasks
+Bundles:
+1. `prompts/geometry/measurement/geometry_measurement_v1.json`
+2. `prompts/tile/path/tile_path_v1.json`
 
-## Trace metadata
-Prompt variant metadata should be emitted under `trace_payload.query_spec.prompt_variant` with:
-1. `prompt_bundle_id`
-2. `task_type_key`
-3. `query_type_key`
-4. `task_type_variant_index`
-5. `query_type_variant_index`
-6. `variant_count_by_key`
-7. `slot_values` (required when the selected task/query keys declare required slots)
-8. optional asset path references
-
-## Shared implementation
-1. `trace/core/prompts/assets.py`: bundle loading + cache
-2. `trace/core/prompts/schema.py`: bundle schema checks
-3. `trace/core/prompts/select.py`: deterministic variant selection
-4. `trace/core/prompts/render.py`: strict placeholder render + composition
-
-Task modules should call shared rendering APIs (for example `render_prompt(...)`), not local prompt concatenation logic.
-
-## Current implementation status
-Implemented:
-1. shared prompt modules under `trace/core/prompts/`
-2. active bundle assets:
-- `prompts/geometry/measurement/geometry_measurement_v1.json`
-- `prompts/tile/path/tile_path_v1.json`
-3. migrated tasks:
-- `geometry_angle_value_query`
-- `tile_shortest_path`
-4. pre-finalize prompt validation checks:
-- prompt metadata presence per instance,
-- prompt bundle/key existence checks,
-- required-slot metadata conformance checks,
-- unresolved placeholder checks,
-- variant-cardinality/count/index consistency checks.
-
-Pending enforcement:
-1. CI guardrails for prompt-cardinality regressions and unresolved-placeholder regressions at dataset-validation level.
-
-## Task-doc requirement
-Each `docs/tasks/<task_id>.md` must include:
-1. `prompt_bundle_id`
-2. `task_type_key`
-3. query-type mapping
-4. required slot schema
-5. variant counts
+Tasks:
+1. `geometry_angle_value_query`
+2. `tile_shortest_path`

@@ -91,8 +91,6 @@ def enforce_graph_paper_background(params: Mapping[str, Any], *, graph_style: Ma
     )
     visual_dict["background"] = background_dict
     forced["visual"] = visual_dict
-    forced["background_enabled"] = True
-    forced["background_style"] = "graph_paper"
     return forced
 
 

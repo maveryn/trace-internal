@@ -188,24 +188,13 @@ def _normalize_default_config(default_config: Mapping[str, Any] | None) -> Dict[
 
 
 def _resolve_noise_overrides(params: Mapping[str, Any]) -> Dict[str, Any]:
-    """Collect noise overrides from nested visual config and flat compat keys."""
+    """Collect noise overrides from nested visual config."""
     merged: Dict[str, Any] = {}
     visual = params.get("visual")
     if isinstance(visual, Mapping):
         noise_cfg = visual.get("noise")
         if isinstance(noise_cfg, Mapping):
             merged.update(dict(noise_cfg))
-
-    # Flat-key compatibility for easier one-off overrides.
-    flat_map = {
-        "noise_apply_prob": "apply_prob",
-        "noise_edit_types": "edit_types",
-        "noise_edit_count_range": "edit_count_range",
-        "noise_edit_value_ranges": "value_ranges",
-    }
-    for flat_key, target_key in flat_map.items():
-        if flat_key in params and target_key not in merged:
-            merged[target_key] = params.get(flat_key)
     return merged
 
 

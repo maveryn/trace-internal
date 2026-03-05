@@ -54,15 +54,30 @@ def test_tile_post_noise_override_is_deterministic_and_changes_pixels() -> None:
         "evidence_type": "point_path",
     }
 
-    clean = task.generate(7777, params={**common, "noise_apply_prob": 0.0}, max_attempts=200)
+    clean = task.generate(
+        7777,
+        params={
+            **common,
+            "visual": {
+                "noise": {"apply_prob": 0.0},
+            },
+        },
+        max_attempts=200,
+    )
     noisy_params = {
         **common,
-        "background_style": "grid_light",
-        "noise_apply_prob": 1.0,
-        "noise_edit_types": ["downsample"],
-        "noise_edit_count_range": [1, 1],
-        "noise_edit_value_ranges": {
-            "downsample": {"scale": [0.65, 0.65]},
+        "visual": {
+            "background": {
+                "style_name": "grid_light",
+            },
+            "noise": {
+                "apply_prob": 1.0,
+                "edit_types": ["downsample"],
+                "edit_count_range": [1, 1],
+                "value_ranges": {
+                    "downsample": {"scale": [0.65, 0.65]},
+                },
+            },
         },
     }
     noisy_a = task.generate(7777, params=noisy_params, max_attempts=200)

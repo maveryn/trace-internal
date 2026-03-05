@@ -182,21 +182,13 @@ def _normalize_default_config(default_config: Mapping[str, Any] | None) -> Dict[
 
 
 def _resolve_background_overrides(params: Mapping[str, Any]) -> Dict[str, Any]:
-    """Collect background overrides from nested and flat task params."""
+    """Collect background overrides from nested task params."""
     merged: Dict[str, Any] = {}
     visual = params.get("visual")
     if isinstance(visual, Mapping):
         background_cfg = visual.get("background")
         if isinstance(background_cfg, Mapping):
             merged.update(dict(background_cfg))
-
-    flat_map = {
-        "background_enabled": "enabled",
-        "background_style": "style_name",
-    }
-    for flat_key, target_key in flat_map.items():
-        if flat_key in params and target_key not in merged:
-            merged[target_key] = params.get(flat_key)
     return merged
 
 

@@ -16,10 +16,7 @@ from trace.core.types import TaskComplexity, TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import TASK_REGISTRY, register_task
 from trace.tasks.tile.path.shortest_path import TileShortestPathTask
-
-
-def _read_jsonl(path: Path):
-    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+from tests.helpers import read_jsonl
 
 
 def _register_dummy_tasks() -> None:
@@ -44,7 +41,6 @@ def _register_dummy_tasks() -> None:
                     evidence_gt=TypedValue(type="point_set", value=point),
                     image=image,
                     image_id="img0",
-                    image_rel_path=f"images/dummy/{self.task_id}/{instance_seed}.png",
                     trace_payload={
                         "scene_ir": {"entities": []},
                         "query_spec": {
@@ -102,7 +98,6 @@ def _register_dummy_tasks() -> None:
                     evidence_gt=TypedValue(type="point_set", value=point),
                     image=image,
                     image_id="img0",
-                    image_rel_path=f"images/dummy/{self.task_id}/{instance_seed}.png",
                     trace_payload={
                         "scene_ir": {"entities": []},
                         "query_spec": {
@@ -165,7 +160,6 @@ def _register_dummy_tasks() -> None:
                     evidence_gt=TypedValue(type="point_set", value=point),
                     image=image,
                     image_id="img0",
-                    image_rel_path=f"images/dummy/{self.task_id}/{instance_seed}.png",
                     trace_payload={
                         "scene_ir": {"entities": []},
                         "query_spec": {
@@ -223,6 +217,8 @@ def test_tile_shortest_path_deterministic() -> None:
     assert out_a.trace_payload["witness_symbolic"] == out_b.trace_payload["witness_symbolic"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "tile_path_v1"
+    assert sorted(out_a.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert out_a.prompt == out_a.prompt_variants["answer_and_evidence"]
     assert out_a.image.tobytes() == out_b.image.tobytes()
 
 
@@ -234,6 +230,7 @@ def test_instance_id_ignores_image_path() -> None:
         "task_group": "path",
         "task": "tile_shortest_path",
         "prompt": "p",
+        "prompt_variants": {"answer_only": "p0", "answer_and_evidence": "p1"},
         "images": [{"image_id": "img0", "format": "png", "image_hash": "blake3:abc", "path": "a.png"}],
         "answer_gt": {"type": "integer", "value": 5},
         "evidence_gt": {"type": "point_path", "value": [[1.0, 2.0]]},
@@ -266,13 +263,15 @@ def test_build_dataset_end_to_end(tmp_path: Path) -> None:
     final_path = build_dataset(config, code_hash="test")
     assert final_path.exists()
 
-    train_instances = _read_jsonl(final_path / "train_instances.jsonl")
+    train_instances = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_instances) == 4
     for instance in train_instances:
         assert instance["trace_ref"]["shard_id"] == "trace_shard_0001.jsonl.zst"
         assert not Path(instance["images"][0]["path"]).is_absolute()
         assert instance["answer_gt"]["type"] == "integer"
         assert instance["evidence_gt"]["type"] == "point_path"
+        assert sorted(instance["prompt_variants"].keys()) == ["answer_and_evidence", "answer_only"]
+        assert instance["prompt"] == instance["prompt_variants"]["answer_and_evidence"]
 
     validation_report = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation_report["total_errors"] == 0
@@ -422,7 +421,6 @@ def test_prompt_metadata_missing_validation_failure(tmp_path: Path) -> None:
                     evidence_gt=TypedValue(type="point_set", value=point),
                     image=image,
                     image_id="img0",
-                    image_rel_path=f"images/dummy/{self.task_id}/{instance_seed}.png",
                     trace_payload={
                         "scene_ir": {"entities": []},
                         "query_spec": {"query_type": "default", "template_id": "dummy_query"},
@@ -490,7 +488,6 @@ def test_prompt_unresolved_placeholder_validation_error_code(tmp_path: Path) -> 
                     evidence_gt=TypedValue(type="point_set", value=point),
                     image=image,
                     image_id="img0",
-                    image_rel_path=f"images/dummy/{self.task_id}/{instance_seed}.png",
                     trace_payload={
                         "scene_ir": {"entities": []},
                         "query_spec": {

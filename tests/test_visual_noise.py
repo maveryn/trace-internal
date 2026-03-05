@@ -34,8 +34,14 @@ def test_geometry_measurement_default_noise_prob() -> None:
     background_meta_a = out_a.trace_payload["render_spec"]["background_style"]
     background_meta_b = out_b.trace_payload["render_spec"]["background_style"]
     assert noise_meta["enabled"] is True
-    assert float(noise_meta["apply_prob"]) == pytest.approx(0.75, rel=1e-9)
+    assert float(noise_meta["apply_prob"]) == pytest.approx(0.5, rel=1e-9)
     assert background_meta_a["enabled"] is True
+    assert background_meta_a["selected_style"] == "graph_paper"
+    style_spec = background_meta_a["style_spec"]
+    assert list(style_spec["base_color"]) == [255, 255, 255]
+    assert bool(style_spec["axis_enabled"]) is True
+    assert int(style_spec["axis_line_width"]) >= 2
+    assert bool(style_spec["center_point_enabled"]) is True
     assert background_meta_a == background_meta_b
 
 

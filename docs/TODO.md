@@ -11,6 +11,7 @@
 ## Later (P2)
 1. Add split-artifact generation with deterministic split policy metadata.
 2. Add richer dataset inspection tooling around trace shards and build reports.
+3. Refactor tile domain config layering: add `configs/domains/tile/base.yaml` for shared defaults and keep task-group files override-only.
 
 ## Deferred
 1. Reward/tolerance policy tuning for RLVR scoring.

@@ -36,6 +36,9 @@ Compact history of recurring pitfalls and the reusable fix for each.
 11. **Shared type alias drift**  
    Reuse canonical shared aliases (for example `Point`) instead of duplicating equivalent local type aliases across modules.
 
+12. **Config-layer drift**  
+   Keep default values in section `shared`, move only task-specific deltas to `task_overrides`, and remove legacy/flat-key config paths once migrations are complete.
+
 ## Maintenance rule
 When a new cross-task issue is found:
 1. Add one short lesson here.

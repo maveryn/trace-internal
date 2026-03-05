@@ -18,6 +18,6 @@ tasks:
       max: 1.0
       median: 1.0
       closest_to_x: 1.0
-      smallest_above_x: 1.0
-      largest_below_x: 1.0
+      smallest_above_x: 0.5
+      largest_below_x: 0.5
       difference_max_min: 1.0

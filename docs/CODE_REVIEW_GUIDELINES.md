@@ -22,6 +22,7 @@ Use this checklist during implementation and refactor reviews.
 8. Keep intermediate helper steps private until imported by another module.
 9. After refactors, audit public symbols again and demote externally unused public helpers/types to private names.
 10. Reuse canonical shared type aliases (for example `geometry_primitives.Point`) instead of redefining equivalent local aliases.
+11. Enforce strict config schema usage: defaults belong in `shared`, task-specific deltas in `task_overrides`, and unsupported legacy/flat keys should not be reintroduced.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

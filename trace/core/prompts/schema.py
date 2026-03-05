@@ -17,6 +17,7 @@ class PromptBundle:
     schema_version: str
     task_type_templates: Dict[str, Tuple[str, ...]]
     query_type_templates: Dict[str, Tuple[str, ...]]
+    answer_or_evidence_templates: Dict[str, Tuple[str, ...]]
     required_slots_by_key: Dict[str, Tuple[str, ...]]
     source_path: str
 
@@ -66,6 +67,12 @@ def parse_prompt_bundle(raw: Mapping[str, Any], *, source_path: str) -> PromptBu
 
     task_type_templates = _parse_template_map(raw.get("task_type_templates"), field_name="task_type_templates")
     query_type_templates = _parse_template_map(raw.get("query_type_templates"), field_name="query_type_templates")
+    answer_or_evidence_raw = raw.get("answer_or_evidence_templates")
+    answer_or_evidence_templates = (
+        _parse_template_map(answer_or_evidence_raw, field_name="answer_or_evidence_templates")
+        if answer_or_evidence_raw is not None
+        else {}
+    )
     required_slots_by_key = _parse_required_slots(raw.get("required_slots_by_key"))
 
     return PromptBundle(
@@ -73,6 +80,7 @@ def parse_prompt_bundle(raw: Mapping[str, Any], *, source_path: str) -> PromptBu
         schema_version=schema_version,
         task_type_templates=task_type_templates,
         query_type_templates=query_type_templates,
+        answer_or_evidence_templates=answer_or_evidence_templates,
         required_slots_by_key=required_slots_by_key,
         source_path=str(source_path),
     )

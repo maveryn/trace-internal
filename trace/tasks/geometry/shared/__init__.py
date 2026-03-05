@@ -1,5 +1,3 @@
-"""Geometry-shared task utilities."""
+"""Geometry-domain shared package marker."""
 
-from .value_queries import QueryOutcome, run_value_query, supported_value_query_types
-
-__all__ = ["QueryOutcome", "run_value_query", "supported_value_query_types"]
+__all__: list[str] = []

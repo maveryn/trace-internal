@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, List, Mapping, Tuple
+from typing import Any, Dict, List, Mapping
 
 from PIL import Image, ImageDraw
 
-from ....core.prompts import render_prompt
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TaskComplexity, TypedValue
@@ -16,108 +14,74 @@ from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
-from ..shared.value_queries import QueryOutcome, run_value_query, supported_value_query_types
+from ...shared.config_defaults import (
+    group_default,
+    split_generation_rendering_prompt_defaults,
+)
+from ...shared.prompt_variants import (
+    PROMPT_OUTPUT_MODES,
+    build_prompt_trace_artifacts,
+    render_task_prompt_variants,
+)
+from ...shared.output_metadata import default_task_versions
+from ...shared.value_queries import QueryOutcome, supported_value_query_types
+from ...shared.value_query_sampling import (
+    feasible_answer_values,
+    resolve_candidate_count,
+    sample_values_and_outcome_for_answer,
+)
+from ..shared.angle_geometry import (
+    build_angle_evidence_artifacts,
+    build_angle_render_anchors,
+    build_angle_scene_entities,
+    draw_angle,
+    sample_angle_entities_layout,
+)
+from ..shared.graph_paper import (
+    graph_spacing_from_cells,
+    resolve_graph_cells_per_side,
+    resolve_square_canvas_size,
+)
+from ..shared.graph_rendering import (
+    FALLBACK_GRAPH_STYLE,
+    build_graph_coordinate_frame,
+    enforce_graph_paper_background,
+    graph_paper_grid_from_frame,
+    resolve_graph_style_from_params,
+    scale_point,
+    scaled_graph_style_for_scene,
+)
 from .background_defaults import POST_IMAGE_BACKGROUND_DEFAULTS
 from .noise_defaults import POST_IMAGE_NOISE_DEFAULTS
-
-
-Point = Tuple[float, float]
 
 
 @dataclass(frozen=True)
 class _TaskDefaults:
     """Stable defaults for geometry angle value queries."""
 
-    canvas_size: int = 768
-    candidate_count: int = 7
+    canvas_size_min: int = 512
+    canvas_size_max: int = 1024
+    graph_cells_min: int = 12
+    graph_cells_max: int = 24
+    candidate_count_min: int = 3
+    candidate_count_max: int = 7
     min_angle: int = 15
     max_angle: int = 165
     angle_step: int = 15
     target_x: int = 90
     ray_length: int = 84
     line_width: int = 4
+    allow_duplicate_distractors: bool = True
 
 
 _DEFAULTS = _TaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("geometry", "measurement")
-_RAW_GEN_DEFAULTS = _TASK_GROUP_DEFAULTS.get("generation", {}) if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {}
-_RAW_RENDER_DEFAULTS = _TASK_GROUP_DEFAULTS.get("rendering", {}) if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {}
-_RAW_PROMPT_DEFAULTS = _TASK_GROUP_DEFAULTS.get("prompt", {}) if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {}
-_GEN_DEFAULTS: Mapping[str, Any] = _RAW_GEN_DEFAULTS if isinstance(_RAW_GEN_DEFAULTS, Mapping) else {}
-_RENDER_DEFAULTS: Mapping[str, Any] = _RAW_RENDER_DEFAULTS if isinstance(_RAW_RENDER_DEFAULTS, Mapping) else {}
-_PROMPT_DEFAULTS: Mapping[str, Any] = _RAW_PROMPT_DEFAULTS if isinstance(_RAW_PROMPT_DEFAULTS, Mapping) else {}
-
-
-def _group_default(mapping: Mapping[str, Any], key: str, fallback: Any) -> Any:
-    """Return task-group config value when present, otherwise fallback."""
-    if key in mapping:
-        return mapping.get(key)
-    return fallback
-
-
-def _deg_to_rad(angle_deg: float) -> float:
-    """Convert degrees to radians."""
-    return math.radians(float(angle_deg))
-
-
-def _ray_endpoint(vertex: Point, angle_deg: float, length: float) -> Point:
-    """Compute endpoint of a ray emitted from `vertex` at `angle_deg`."""
-    rad = _deg_to_rad(angle_deg)
-    x = float(vertex[0]) + float(length) * math.cos(rad)
-    y = float(vertex[1]) + float(length) * math.sin(rad)
-    return (x, y)
-
-
-def _inside_canvas(point: Point, canvas_size: int, padding: float = 2.0) -> bool:
-    """Check whether a point lies inside canvas bounds with padding."""
-    x, y = point
-    return padding <= x <= float(canvas_size) - padding and padding <= y <= float(canvas_size) - padding
-
-
-def _distance_sq(a: Point, b: Point) -> float:
-    """Return squared Euclidean distance between two points."""
-    dx = float(a[0]) - float(b[0])
-    dy = float(a[1]) - float(b[1])
-    return dx * dx + dy * dy
-
-
-def _sample_vertices(rng, *, count: int, canvas_size: int, margin: int, min_dist: float) -> List[Point]:
-    """Sample separated vertex points for angle entities on the canvas."""
-    vertices: List[Point] = []
-    min_dist_sq = float(min_dist * min_dist)
-    for _ in range(count):
-        placed = False
-        for _attempt in range(300):
-            point = (
-                float(rng.uniform(margin, canvas_size - margin)),
-                float(rng.uniform(margin, canvas_size - margin)),
-            )
-            if all(_distance_sq(point, existing) >= min_dist_sq for existing in vertices):
-                vertices.append(point)
-                placed = True
-                break
-        if not placed:
-            raise ValueError("failed to place non-overlapping angle vertices")
-    return vertices
-
-
-def _draw_angle(draw: ImageDraw.ImageDraw, *, vertex: Point, end1: Point, end2: Point, line_width: int) -> None:
-    """Draw one angle primitive (two rays + highlighted vertex marker)."""
-    vx, vy = vertex
-    draw.line([vx, vy, end1[0], end1[1]], fill=(22, 22, 22), width=line_width)
-    draw.line([vx, vy, end2[0], end2[1]], fill=(22, 22, 22), width=line_width)
-    radius = max(3, line_width)
-    draw.ellipse(
-        [vx - radius, vy - radius, vx + radius, vy + radius],
-        fill=(35, 89, 154),
-        outline=(18, 18, 18),
-        width=1,
-    )
-
+_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
+    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {}
+)
 
 def _complexity_score(*, candidate_count: int, min_gap: int, step: int) -> float:
     """Compute a task-local complexity proxy from candidate density/gap."""
-    # Heuristic task-local complexity proxy for curriculum/debug only.
     density = min(1.0, float(candidate_count) / 9.0)
     gap_component = 1.0 - min(1.0, float(min_gap) / max(1.0, float(step * 2)))
     return max(0.0, min(1.0, 0.55 * density + 0.45 * gap_component))
@@ -136,142 +100,231 @@ class GeometryAngleValueQueryTask:
         return list(supported_value_query_types())
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        """Generate one deterministic angle-value instance for a seed/param tuple."""
         query_type = str(params.get("query_type", "closest_to_x"))
         if query_type not in set(self.supported_query_types(params)):
             raise ValueError(f"unsupported query_type: {query_type}")
 
-        canvas_size = int(params.get("canvas_size", _group_default(_RENDER_DEFAULTS, "canvas_size", _DEFAULTS.canvas_size)))
-        candidate_count = int(params.get("candidate_count", _group_default(_GEN_DEFAULTS, "candidate_count", _DEFAULTS.candidate_count)))
-        min_angle = int(params.get("min_angle", _group_default(_GEN_DEFAULTS, "min_angle", _DEFAULTS.min_angle)))
-        max_angle = int(params.get("max_angle", _group_default(_GEN_DEFAULTS, "max_angle", _DEFAULTS.max_angle)))
-        angle_step = int(params.get("angle_step", _group_default(_GEN_DEFAULTS, "angle_step", _DEFAULTS.angle_step)))
-        target_x = int(params.get("target_x", _group_default(_GEN_DEFAULTS, "target_x", _DEFAULTS.target_x)))
-        ray_length = int(params.get("ray_length", _group_default(_RENDER_DEFAULTS, "ray_length", _DEFAULTS.ray_length)))
-        line_width = int(params.get("line_width", _group_default(_RENDER_DEFAULTS, "line_width", _DEFAULTS.line_width)))
+        scene_rng = spawn_rng(instance_seed, "scene")
+        canvas_size = resolve_square_canvas_size(
+            scene_rng,
+            params=params,
+            render_defaults=_RENDER_DEFAULTS,
+            fallback_min=_DEFAULTS.canvas_size_min,
+            fallback_max=_DEFAULTS.canvas_size_max,
+        )
+        candidate_count = resolve_candidate_count(
+            scene_rng,
+            query_type=query_type,
+            params=params,
+            generation_defaults=_GEN_DEFAULTS,
+            fallback_min=_DEFAULTS.candidate_count_min,
+            fallback_max=_DEFAULTS.candidate_count_max,
+        )
+        min_angle = int(params.get("min_angle", group_default(_GEN_DEFAULTS, "min_angle", _DEFAULTS.min_angle)))
+        max_angle = int(params.get("max_angle", group_default(_GEN_DEFAULTS, "max_angle", _DEFAULTS.max_angle)))
+        angle_step = int(params.get("angle_step", group_default(_GEN_DEFAULTS, "angle_step", _DEFAULTS.angle_step)))
+        target_x = int(params.get("target_x", group_default(_GEN_DEFAULTS, "target_x", _DEFAULTS.target_x)))
+        allow_duplicate_distractors = bool(
+            params.get(
+                "allow_duplicate_distractors",
+                group_default(_GEN_DEFAULTS, "allow_duplicate_distractors", _DEFAULTS.allow_duplicate_distractors),
+            )
+        )
+        ray_length = int(params.get("ray_length", group_default(_RENDER_DEFAULTS, "ray_length", _DEFAULTS.ray_length)))
+        line_width = int(params.get("line_width", group_default(_RENDER_DEFAULTS, "line_width", _DEFAULTS.line_width)))
+        base_graph_style = resolve_graph_style_from_params(
+            params,
+            default_background_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+            fallback_style=FALLBACK_GRAPH_STYLE,
+        )
+        scene_scale = int(base_graph_style.get("scene_supersample_scale", 1))
 
         if candidate_count < 2:
             raise ValueError("candidate_count must be >= 2")
 
         candidates = list(range(min_angle, max_angle + 1, angle_step))
-        if len(candidates) < candidate_count:
+        if (not allow_duplicate_distractors) and len(candidates) < candidate_count:
             raise ValueError("angle candidate space too small for requested candidate_count")
 
         if query_type == "median" and candidate_count % 2 == 0:
             raise ValueError("median query requires odd candidate_count")
 
-        scene_rng = spawn_rng(instance_seed, "scene")
+        ids = [f"angle_{idx + 1}" for idx in range(candidate_count)]
+        feasible_answers = feasible_answer_values(
+            query_type=query_type,
+            candidates=candidates,
+            candidate_count=candidate_count,
+            target_x=target_x,
+            allow_duplicate_distractors=allow_duplicate_distractors,
+        )
+        if not feasible_answers:
+            raise RuntimeError("failed to generate geometry_angle_value_query instance")
+        answer_target = int(scene_rng.choice(feasible_answers))
+
         entities: Dict[str, Dict[str, Any]] = {}
         outcome: QueryOutcome | None = None
+        values_by_id: Dict[str, int] = {}
+        selected_graph_cell_count: int | None = None
+        selected_graph_spacing: int | None = None
 
         margin = ray_length + 40
         min_vertex_dist = float(max(70, int(ray_length * 1.6)))
 
         for _ in range(max_attempts):
-            angle_values = scene_rng.sample(candidates, candidate_count)
-            ids = [f"angle_{idx + 1}" for idx in range(candidate_count)]
-            values_by_id = {entity_id: int(value) for entity_id, value in zip(ids, angle_values)}
-
+            graph_cell_count = resolve_graph_cells_per_side(
+                scene_rng,
+                params=params,
+                render_defaults=_RENDER_DEFAULTS,
+                canvas_size=int(canvas_size),
+                fallback_min=_DEFAULTS.graph_cells_min,
+                fallback_max=_DEFAULTS.graph_cells_max,
+            )
+            graph_spacing = graph_spacing_from_cells(
+                canvas_size=int(canvas_size),
+                graph_cells=int(graph_cell_count),
+                min_spacing_px=4,
+            )
+            min_layout_clearance = float(graph_spacing)
             try:
-                outcome = run_value_query(
-                    values_by_id,
-                    query_type=query_type,
-                    target_x=(target_x if query_type in {"closest_to_x", "smallest_above_x", "largest_below_x"} else None),
-                )
-            except ValueError:
-                continue
-
-            try:
-                vertices = _sample_vertices(
+                sampled = sample_values_and_outcome_for_answer(
                     scene_rng,
-                    count=candidate_count,
-                    canvas_size=canvas_size,
-                    margin=margin,
-                    min_dist=min_vertex_dist,
+                    ids=ids,
+                    query_type=query_type,
+                    answer_value=answer_target,
+                    candidates=candidates,
+                    candidate_count=candidate_count,
+                    target_x=target_x,
+                    allow_duplicate_distractors=allow_duplicate_distractors,
                 )
             except ValueError:
                 continue
+            if sampled is None:
+                continue
+            values_by_id, outcome = sampled
 
-            local_entities: Dict[str, Dict[str, Any]] = {}
-            valid_layout = True
-            for entity_id, vertex in zip(ids, vertices):
-                angle_value = int(values_by_id[entity_id])
-                placed = False
-                for _orient_attempt in range(120):
-                    bisector = float(scene_rng.uniform(0.0, 360.0))
-                    theta1 = bisector - (float(angle_value) / 2.0)
-                    theta2 = bisector + (float(angle_value) / 2.0)
-                    end1 = _ray_endpoint(vertex, theta1, ray_length)
-                    end2 = _ray_endpoint(vertex, theta2, ray_length)
-                    if _inside_canvas(end1, canvas_size) and _inside_canvas(end2, canvas_size):
-                        local_entities[entity_id] = {
-                            "value": angle_value,
-                            "vertex": [float(vertex[0]), float(vertex[1])],
-                            "ray_1": [float(end1[0]), float(end1[1])],
-                            "ray_2": [float(end2[0]), float(end2[1])],
-                        }
-                        placed = True
-                        break
-                if not placed:
-                    valid_layout = False
-                    break
-
-            if not valid_layout:
+            local_entities = sample_angle_entities_layout(
+                scene_rng,
+                ids=ids,
+                values_by_id=values_by_id,
+                canvas_size=int(canvas_size),
+                margin=int(margin),
+                min_vertex_dist=float(min_vertex_dist),
+                graph_spacing=int(graph_spacing),
+                ray_length=int(ray_length),
+                min_layout_clearance=float(min_layout_clearance),
+            )
+            if not local_entities:
                 continue
 
             entities = local_entities
+            selected_graph_cell_count = int(graph_cell_count)
+            selected_graph_spacing = int(graph_spacing)
             break
 
-        if outcome is None or not entities:
+        if outcome is None or not entities or not values_by_id or selected_graph_cell_count is None or selected_graph_spacing is None:
             raise RuntimeError("failed to generate geometry_angle_value_query instance")
 
+        graph_cell_count = int(selected_graph_cell_count)
+        graph_spacing = int(selected_graph_spacing)
+        graph_frame = build_graph_coordinate_frame(
+            canvas_size=int(canvas_size),
+            spacing=int(graph_spacing),
+            target_cells=int(graph_cell_count),
+        )
+        graph_origin = (
+            float(graph_frame["origin_pixel"][0]),
+            float(graph_frame["origin_pixel"][1]),
+        )
+        graph_style = dict(base_graph_style)
+        graph_style["spacing"] = int(graph_spacing)
+        render_graph_style = scaled_graph_style_for_scene(graph_style, scene_scale=scene_scale)
+        render_params = enforce_graph_paper_background(params, graph_style=render_graph_style)
+
+        render_canvas_size = int(canvas_size) * int(scene_scale)
         image, background_meta = make_background_canvas(
-            canvas_size=canvas_size,
+            canvas_size=render_canvas_size,
             instance_seed=instance_seed,
-            params=params,
+            params=render_params,
             default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
             fallback_color=(248, 248, 248),
         )
+        if str(background_meta.get("selected_style", "")) != "graph_paper":
+            raise RuntimeError("geometry measurement tasks must render on graph_paper backgrounds")
         draw = ImageDraw.Draw(image)
+        render_line_width = max(1, int(line_width) * int(scene_scale))
         for entity in entities.values():
-            vertex = (float(entity["vertex"][0]), float(entity["vertex"][1]))
-            end1 = (float(entity["ray_1"][0]), float(entity["ray_1"][1]))
-            end2 = (float(entity["ray_2"][0]), float(entity["ray_2"][1]))
-            _draw_angle(draw, vertex=vertex, end1=end1, end2=end2, line_width=line_width)
+            vertex = scale_point((float(entity["vertex"][0]), float(entity["vertex"][1])), scene_scale)
+            end1 = scale_point((float(entity["ray_1"][0]), float(entity["ray_1"][1])), scene_scale)
+            end2 = scale_point((float(entity["ray_2"][0]), float(entity["ray_2"][1])), scene_scale)
+            draw_angle(draw, vertex=vertex, end1=end1, end2=end2, line_width=render_line_width)
+
+        if scene_scale > 1:
+            image = image.resize((int(canvas_size), int(canvas_size)), resample=Image.Resampling.LANCZOS)
+
+        background_meta = dict(background_meta)
+        background_meta["style_spec"] = dict(graph_style)
+        background_meta["render_scale"] = int(scene_scale)
 
         image, post_noise_meta = apply_post_image_noise(
             image,
             instance_seed=instance_seed,
-            params=params,
+            params=render_params,
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
 
-        selected_vertices = [[float(entities[sid]["vertex"][0]), float(entities[sid]["vertex"][1])] for sid in outcome.selected_ids]
-        if query_type == "difference_max_min":
-            evidence_type = "point_path"
-            evidence_value: Any = selected_vertices
-            witness_symbolic = {"type": "id_path", "ids": list(outcome.selected_ids)}
-        else:
-            evidence_type = "point_set"
-            evidence_value = [selected_vertices[0]]
-            witness_symbolic = {"type": "id_set", "ids": [outcome.selected_ids[0]]}
+        evidence_artifacts = build_angle_evidence_artifacts(
+            query_type=query_type,
+            selected_ids=outcome.selected_ids,
+            entities=entities,
+            graph_origin=graph_origin,
+            graph_spacing=int(graph_spacing),
+        )
+        evidence_type = str(evidence_artifacts.evidence_type)
+        evidence_value: Any = evidence_artifacts.evidence_value
 
-        prompt_bundle_id = str(_group_default(_PROMPT_DEFAULTS, "bundle_id", "geometry_measurement_v1"))
-        prompt_task_type_key = str(_group_default(_PROMPT_DEFAULTS, "task_type_key", "angle_measurement"))
-        entity_plural = str(_group_default(_PROMPT_DEFAULTS, "entity_plural", "angles"))
-        prompt_result = render_prompt(
+        prompt_bundle_id = str(group_default(_PROMPT_DEFAULTS, "bundle_id", "geometry_measurement_v1"))
+        prompt_task_type_key = str(group_default(_PROMPT_DEFAULTS, "task_type_key", "measurement_value_query"))
+        entity_plural = str(group_default(_PROMPT_DEFAULTS, "entity_plural", "angles"))
+        value_name_singular = str(group_default(_PROMPT_DEFAULTS, "value_name_singular", "angle"))
+        unit_name = str(group_default(_PROMPT_DEFAULTS, "unit_name", "degrees"))
+        evidence_single = str(
+            group_default(
+                _PROMPT_DEFAULTS,
+                "evidence_single",
+                "the selected angle vertex coordinate (x, y) in graph units with origin at the center point",
+            )
+        )
+        evidence_pair = str(
+            group_default(
+                _PROMPT_DEFAULTS,
+                "evidence_pair",
+                "ordered vertex coordinates [largest, smallest] in graph units with origin at the center point",
+            )
+        )
+        evidence_hint = evidence_pair if query_type == "difference_max_min" else evidence_single
+        prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=prompt_bundle_id,
             task_type_key=prompt_task_type_key,
             query_type=query_type,
+            answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "candidate_count": int(candidate_count),
                 "entity_plural": entity_plural,
+                "value_name_singular": value_name_singular,
+                "unit_name": unit_name,
+                "evidence_single": evidence_single,
+                "evidence_pair": evidence_pair,
+                "evidence_hint": evidence_hint,
                 "target_x": int(target_x),
             },
             instance_seed=instance_seed,
         )
-        prompt = prompt_result.prompt
+        prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
+        prompt = str(prompt_artifacts.prompt)
+        prompt_variants = dict(prompt_artifacts.prompt_variants)
 
         values_by_id_sorted = {entity_id: int(entities[entity_id]["value"]) for entity_id in sorted(entities.keys())}
         sorted_values = sorted(values_by_id_sorted.values())
@@ -283,29 +336,33 @@ class GeometryAngleValueQueryTask:
         trace_payload = {
             "scene_ir": {
                 "scene_kind": "geometry_angles",
-                "entities": [
-                    {
-                        "entity_id": entity_id,
-                        "entity_type": "angle",
-                        "attrs": {
-                            "angle_degrees": int(entity["value"]),
-                            "vertex": list(entity["vertex"]),
-                            "ray_1": list(entity["ray_1"]),
-                            "ray_2": list(entity["ray_2"]),
-                        },
-                    }
-                    for entity_id, entity in sorted(entities.items())
-                ],
+                "entities": build_angle_scene_entities(entities),
                 "relations": {},
+                "frames": {
+                    "pixel": {
+                        "origin": [0.0, 0.0],
+                        "x_positive": "right",
+                        "y_positive": "down",
+                    },
+                    "graph_unit": {
+                        "origin_pixel": list(graph_frame["origin_pixel"]),
+                        "spacing_px": int(graph_frame["spacing_px"]),
+                        "x_positive": str(graph_frame["x_positive"]),
+                        "y_positive": str(graph_frame["y_positive"]),
+                    },
+                },
             },
             "query_spec": {
                 "query_type": query_type,
                 "template_id": "geometry_angle_value_query_v1",
-                "prompt_variant": dict(prompt_result.metadata),
+                "prompt_variant": dict(prompt_artifacts.prompt_variant),
+                "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
+                "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
                     "target_x": int(target_x),
                     "candidate_count": int(candidate_count),
                     "angle_step": int(angle_step),
+                    "allow_duplicate_distractors": bool(allow_duplicate_distractors),
                 },
             },
             "render_spec": {
@@ -313,35 +370,25 @@ class GeometryAngleValueQueryTask:
                 "coord_space": "pixel",
                 "background_style": dict(background_meta),
                 "post_image_noise": dict(post_noise_meta),
+                "graph_coordinate_frame": dict(graph_frame),
+                "graph_paper_grid": graph_paper_grid_from_frame(graph_frame),
             },
             "render_map": {
                 "image_id": "img0",
-                "anchors": {
-                    entity_id: {
-                        "point": list(entity["vertex"]),
-                        "polyline": [
-                            list(entity["vertex"]),
-                            list(entity["ray_1"]),
-                            list(entity["vertex"]),
-                            list(entity["ray_2"]),
-                        ],
-                        "coord_space": "pixel",
-                    }
-                    for entity_id, entity in sorted(entities.items())
-                },
+                "anchors": build_angle_render_anchors(entities),
             },
             "execution_trace": {
                 "candidate_values_by_id": values_by_id_sorted,
                 "selected_ids": list(outcome.selected_ids),
                 "selected_values": list(outcome.selected_values),
                 "answer_value": int(outcome.answer_value),
+                "answer_sampling_policy": "uniform_feasible_by_query",
+                "answer_target": int(answer_target),
+                "feasible_answer_values": [int(value) for value in feasible_answers],
                 "query_aux": dict(outcome.aux),
             },
-            "witness_symbolic": witness_symbolic,
-            "projected_evidence": {
-                "point_set": [list(point) for point in selected_vertices],
-                "point_path": [list(point) for point in selected_vertices],
-            },
+            "witness_symbolic": dict(evidence_artifacts.witness_symbolic),
+            "projected_evidence": dict(evidence_artifacts.projected_evidence),
         }
 
         complexity = TaskComplexity(
@@ -359,15 +406,9 @@ class GeometryAngleValueQueryTask:
             evidence_gt=TypedValue(type=evidence_type, value=evidence_value),
             image=image,
             image_id="img0",
-            image_rel_path=f"images/{self.domain}/{self.task_id}/{int(instance_seed)}.png",
             trace_payload=trace_payload,
             complexity=complexity,
-            task_versions={
-                "dsl_spec_version": "v1",
-                "template_version": "v1",
-                "operator_bundle_version": "v1",
-                "domain_capability_version": "v1",
-                "renderer_version": "v1",
-            },
+            task_versions=default_task_versions(),
             query_type=query_type,
+            prompt_variants=prompt_variants,
         )

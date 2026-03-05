@@ -17,6 +17,9 @@ from .canonical import canonical_json_bytes
 from .config import BuildConfig, BuildTaskConfig
 from .hash_utils import blake3_file, blake3_hex
 from .identity import compute_instance_id
+from .json_io import write_json_file
+from .query_types import resolve_query_types
+from .sampling import normalize_positive_weights, weighted_choice
 from .seed import SEED_DERIVATION_VERSION, hash64
 from .strict_repro import compare_staging_dirs
 from .trace_store import TraceShardWriter
@@ -49,15 +52,6 @@ class _BuildStageResult:
     warnings: List[str]
 
 
-def _to_json_file(path: Path, payload: Any) -> None:
-    """Write one JSON file with deterministic formatting and key ordering."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(payload, indent=2, ensure_ascii=False, allow_nan=False, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
-
-
 def _to_jsonl(path: Path, records: List[Dict[str, Any]]) -> None:
     """Write JSONL records with deterministic key ordering per row."""
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -65,30 +59,6 @@ def _to_jsonl(path: Path, records: List[Dict[str, Any]]) -> None:
         for record in records:
             handle.write(json.dumps(record, ensure_ascii=False, allow_nan=False, sort_keys=True))
             handle.write("\n")
-
-
-def _normalize_weights(weights: Mapping[str, float]) -> Dict[str, float]:
-    """Normalize positive weights to a probability map."""
-    positive = {key: float(value) for key, value in weights.items() if float(value) > 0.0}
-    total = sum(positive.values())
-    if total <= 0.0:
-        raise BuildError("at least one positive weight is required")
-    return {key: value / total for key, value in sorted(positive.items())}
-
-
-def _weighted_choice(rng: random.Random, probabilities: Mapping[str, float]) -> str:
-    """Sample one key from a probability map using cumulative weights."""
-    roll = rng.random()
-    cumulative = 0.0
-    last_key = None
-    for key, prob in probabilities.items():
-        cumulative += float(prob)
-        last_key = key
-        if roll <= cumulative:
-            return key
-    if last_key is None:
-        raise BuildError("cannot sample from an empty probability map")
-    return last_key
 
 
 def _serialize_task_config(task: BuildTaskConfig) -> Dict[str, Any]:
@@ -151,9 +121,9 @@ def _write_failure_bundle(
     """Persist failure diagnostics under `failed_builds/<dataset_id>/`."""
     failure_root.mkdir(parents=True, exist_ok=True)
     if validation_report is not None:
-        _to_json_file(failure_root / "validation_report.json", validation_report)
-    _to_json_file(failure_root / "resolved_build_config.json", resolved_build_config)
-    _to_json_file(failure_root / "log_reference.json", {"warnings": warning_messages})
+        write_json_file(failure_root / "validation_report.json", validation_report)
+    write_json_file(failure_root / "resolved_build_config.json", resolved_build_config)
+    write_json_file(failure_root / "log_reference.json", {"warnings": warning_messages})
 
 
 def _ensure_unique_task_ids(tasks: List[BuildTaskConfig]) -> None:
@@ -193,36 +163,18 @@ def _resolve_task_targets(config: BuildConfig) -> tuple[Dict[str, int], Dict[str
         task.task_id: (float(task.weight) if task.weight is not None else 1.0)
         for task in config.tasks
     }
-    task_probabilities = _normalize_weights(configured_weights)
+    try:
+        task_probabilities = normalize_positive_weights(configured_weights)
+    except ValueError as exc:
+        raise BuildError(str(exc)) from exc
     target_counts = {task.task_id: 0 for task in config.tasks}
 
     sampler_rng = random.Random(hash64(config.sampling_seed, "global_task_sampler", 0))
     for _ in range(int(config.num_instances)):
-        sampled_task = _weighted_choice(sampler_rng, task_probabilities)
+        sampled_task = weighted_choice(sampler_rng, task_probabilities)
         target_counts[sampled_task] += 1
 
     return target_counts, task_probabilities, "weighted_task_sampler"
-
-
-def _resolve_query_types(task: Any, params: Mapping[str, Any]) -> List[str]:
-    """Resolve supported query types for one task configuration."""
-    if hasattr(task, "supported_query_types"):
-        values = getattr(task, "supported_query_types")(dict(params))
-        out = [str(v) for v in values]
-    elif "query_type" in params:
-        out = [str(params["query_type"])]
-    else:
-        out = ["default"]
-
-    deduped: List[str] = []
-    seen: set[str] = set()
-    for item in out:
-        if item not in seen:
-            deduped.append(item)
-            seen.add(item)
-    if not deduped:
-        deduped = ["default"]
-    return deduped
 
 
 def _resolve_query_probabilities(query_types: List[str], configured: Mapping[str, float]) -> Dict[str, float]:
@@ -234,7 +186,10 @@ def _resolve_query_probabilities(query_types: List[str], configured: Mapping[str
     selected = {query_type: float(configured.get(query_type, 0.0)) for query_type in query_types}
     if sum(selected.values()) <= 0.0:
         raise BuildError("configured query_weights must have at least one positive weight for supported query types")
-    return _normalize_weights(selected)
+    try:
+        return normalize_positive_weights(selected)
+    except ValueError as exc:
+        raise BuildError(str(exc)) from exc
 
 
 def _expected_query_counts(tasks: List[BuildTaskConfig]) -> Dict[str, Dict[str, int]]:
@@ -299,14 +254,14 @@ def _build_staging(
             seed_index = 0
             max_candidates = max(1, task_target * 20)
 
-            query_types = _resolve_query_types(task, task_cfg.params)
+            query_types = resolve_query_types(task, task_cfg.params)
             query_probabilities = _resolve_query_probabilities(query_types, task_cfg.query_weights)
             query_sampling_probabilities_by_task[task_cfg.task_id] = dict(sorted(query_probabilities.items()))
 
             while accepted < task_target and seed_index < max_candidates:
                 instance_seed = hash64(config.sampling_seed, f"{task_cfg.task_id}:instance_seed", seed_index)
                 query_rng = random.Random(hash64(config.sampling_seed, f"{task_cfg.task_id}:query_sampler", seed_index))
-                sampled_query_type = _weighted_choice(query_rng, query_probabilities)
+                sampled_query_type = weighted_choice(query_rng, query_probabilities)
                 seed_index += 1
 
                 params = dict(task_cfg.params)
@@ -348,6 +303,7 @@ def _build_staging(
                     "task_group": task.task_group,
                     "task": task.task_id,
                     "prompt": generated.prompt,
+                    "prompt_variants": dict(getattr(generated, "prompt_variants", {}) or {}),
                     "images": [image_record.to_dict()],
                     "answer_gt": generated.answer_gt.to_dict(),
                     "evidence_gt": generated.evidence_gt.to_dict(),
@@ -386,6 +342,7 @@ def _build_staging(
                     task_group=task.task_group,
                     task=task.task_id,
                     prompt=generated.prompt,
+                    prompt_variants=dict(getattr(generated, "prompt_variants", {}) or {}),
                     images=[image_record],
                     answer_gt=generated.answer_gt,
                     evidence_gt=generated.evidence_gt,
@@ -481,7 +438,7 @@ def build_dataset(config: BuildConfig, *, code_hash: str = "local") -> Path:
         warning_messages.extend(primary.warnings)
 
         if config.strict_repro:
-            repro = _build_staging(
+            _build_staging(
                 config,
                 stage_root=repro_root,
                 code_hash=code_hash,
@@ -503,7 +460,7 @@ def build_dataset(config: BuildConfig, *, code_hash: str = "local") -> Path:
             dataset_id=dataset_id,
             expected_instance_version=config.instance_version,
         )
-        _to_json_file(temp_root / "validation_report.json", validation_report)
+        write_json_file(temp_root / "validation_report.json", validation_report)
 
         total_accepted = sum(primary.accepted_by_task.values())
         total_rejected = sum(primary.rejected_by_task.values())
@@ -561,7 +518,7 @@ def build_dataset(config: BuildConfig, *, code_hash: str = "local") -> Path:
             },
             "warnings": warning_messages,
         }
-        _to_json_file(temp_root / "build_report.json", build_report)
+        write_json_file(temp_root / "build_report.json", build_report)
 
         if int(validation_report.get("total_errors", 0)) > 0:
             raise BuildError(f"validation failed with {validation_report['total_errors']} errors")

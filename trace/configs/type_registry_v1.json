@@ -10,6 +10,8 @@
     "id_path",
     "point_set",
     "point_path",
-    "bbox_set"
+    "bbox_set",
+    "grid_point_set",
+    "grid_point_path"
   ]
 }

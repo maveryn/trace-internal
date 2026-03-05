@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from copy import deepcopy
 from typing import Any, Dict
 
-from ....core.task_group_config import get_task_group_defaults
+from ...shared.visual_defaults import load_task_group_background_defaults
 
 
 def _fallback_background_defaults() -> Dict[str, Any]:
@@ -24,16 +23,12 @@ def _fallback_background_defaults() -> Dict[str, Any]:
 
 def _load_task_group_background_defaults() -> Dict[str, Any]:
     """Load tile/path background defaults from task-group config."""
-    cfg = get_task_group_defaults("tile", "path")
-    visual = cfg.get("visual", {})
-    if not isinstance(visual, dict):
-        return _fallback_background_defaults()
-    background = visual.get("background", {})
-    if not isinstance(background, dict):
-        return _fallback_background_defaults()
-    merged = _fallback_background_defaults()
-    merged.update(dict(background))
-    return deepcopy(merged)
+    return load_task_group_background_defaults(
+        domain="tile",
+        task_group="path",
+        fallback=_fallback_background_defaults(),
+        merge_with_fallback=True,
+    )
 
 
 POST_IMAGE_BACKGROUND_DEFAULTS: Dict[str, Any] = _load_task_group_background_defaults()

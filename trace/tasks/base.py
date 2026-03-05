@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Dict, Protocol
 
 from PIL import Image
@@ -19,11 +19,11 @@ class TaskOutput:
     evidence_gt: TypedValue
     image: Image.Image
     image_id: str
-    image_rel_path: str
     trace_payload: Dict[str, Any]
     complexity: TaskComplexity
     task_versions: Dict[str, str]
     query_type: str = "default"
+    prompt_variants: Dict[str, str] = field(default_factory=dict)
 
 
 class Task(Protocol):

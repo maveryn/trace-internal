@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 import re
-from typing import Any, Dict, Iterable, List, Mapping
+from typing import Any, Dict, List, Mapping
 
 from . import error_codes
 from .canonical import canonical_json_bytes
@@ -19,7 +19,7 @@ from .trace_store import read_trace_shard
 
 
 @dataclass(frozen=True)
-class ValidationError:
+class _ValidationError:
     """Structured validation error for machine/human reporting."""
 
     error_code: str
@@ -42,9 +42,9 @@ def _category_for_code(code: str) -> str:
     return code.split("_", 1)[0]
 
 
-def _err(code: str, message: str, **context: Any) -> ValidationError:
+def _err(code: str, message: str, **context: Any) -> _ValidationError:
     """Build a structured validation error with derived category metadata."""
-    return ValidationError(
+    return _ValidationError(
         error_code=code,
         message=message,
         category=_category_for_code(code),
@@ -60,6 +60,7 @@ _REQUIRED_INSTANCE_FIELDS = [
     "task_group",
     "task",
     "prompt",
+    "prompt_variants",
     "images",
     "answer_gt",
     "evidence_gt",
@@ -79,9 +80,9 @@ def _to_int(value: Any) -> int | None:
         return None
 
 
-def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping[str, Any]) -> List[ValidationError]:
+def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping[str, Any]) -> List[_ValidationError]:
     """Validate prompt metadata/bundle conformance for one train/trace pair."""
-    errors: List[ValidationError] = []
+    errors: List[_ValidationError] = []
     iid = instance.get("instance_id", "<missing>")
     prompt_text = instance.get("prompt")
 
@@ -97,6 +98,43 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
                     unresolved_tokens=unresolved_tokens,
                 )
             )
+
+    prompt_variants = instance.get("prompt_variants")
+    if prompt_variants is not None:
+        if not isinstance(prompt_variants, Mapping):
+            errors.append(
+                _err(
+                    error_codes.SCHEMA_TYPE_MISMATCH,
+                    "prompt_variants must be a mapping when present",
+                    instance_id=iid,
+                    field_path="prompt_variants",
+                )
+            )
+        else:
+            for variant_key, variant_prompt in prompt_variants.items():
+                if not isinstance(variant_prompt, str):
+                    errors.append(
+                        _err(
+                            error_codes.SCHEMA_TYPE_MISMATCH,
+                            "prompt_variants values must be strings",
+                            instance_id=iid,
+                            field_path=f"prompt_variants.{variant_key}",
+                        )
+                    )
+                    continue
+                unresolved_tokens = sorted(
+                    {match.group(0) for match in _PROMPT_PLACEHOLDER_PATTERN.finditer(variant_prompt)}
+                )
+                if unresolved_tokens:
+                    errors.append(
+                        _err(
+                            error_codes.PROMPT_UNRESOLVED_PLACEHOLDER,
+                            "prompt_variants contains unresolved template placeholder(s)",
+                            instance_id=iid,
+                            field_path=f"prompt_variants.{variant_key}",
+                            unresolved_tokens=unresolved_tokens,
+                        )
+                    )
 
     query_spec = trace_record.get("query_spec")
     if not isinstance(query_spec, Mapping):
@@ -240,6 +278,7 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
 
     task_variants = bundle.task_type_templates[task_type_key]
     query_variants = bundle.query_type_templates[query_type_key]
+    mode_templates = dict(bundle.answer_or_evidence_templates)
     if len(task_variants) < MIN_PROMPT_VARIANTS:
         errors.append(
             _err(
@@ -271,6 +310,9 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
     observed_query_count = _to_int(variant_count_by_key.get(query_count_key))
     expected_task_count = len(task_variants)
     expected_query_count = len(query_variants)
+    mode_key = str(prompt_variant.get("answer_or_evidence_key", "")).strip() if mode_templates else ""
+    mode_variant_index = _to_int(prompt_variant.get("answer_or_evidence_variant_index")) if mode_templates else None
+    expected_mode_count = len(mode_templates[mode_key]) if mode_key in mode_templates else None
 
     if observed_task_count is None:
         errors.append(
@@ -316,6 +358,51 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
             )
         )
 
+    if mode_templates:
+        if not mode_key:
+            errors.append(
+                _err(
+                    error_codes.PROMPT_METADATA_MISSING,
+                    "missing answer_or_evidence key in prompt metadata",
+                    instance_id=iid,
+                    field_path="query_spec.prompt_variant.answer_or_evidence_key",
+                )
+            )
+        elif mode_key not in mode_templates:
+            errors.append(
+                _err(
+                    error_codes.PROMPT_KEY_MISSING,
+                    "prompt answer_or_evidence key not found in bundle",
+                    instance_id=iid,
+                    prompt_bundle_id=bundle_id,
+                    answer_or_evidence_key=mode_key,
+                )
+            )
+        else:
+            mode_count_key = f"answer_or_evidence:{mode_key}"
+            observed_mode_count = _to_int(variant_count_by_key.get(mode_count_key))
+            if observed_mode_count is None:
+                errors.append(
+                    _err(
+                        error_codes.PROMPT_METADATA_MISSING,
+                        "missing answer_or_evidence variant count in prompt metadata",
+                        instance_id=iid,
+                        field_path=f"query_spec.prompt_variant.variant_count_by_key.{mode_count_key}",
+                    )
+                )
+            elif observed_mode_count != expected_mode_count:
+                errors.append(
+                    _err(
+                        error_codes.PROMPT_VARIANT_COUNT_MISMATCH,
+                        "answer_or_evidence variant count mismatch between metadata and bundle",
+                        instance_id=iid,
+                        prompt_bundle_id=bundle_id,
+                        answer_or_evidence_key=mode_key,
+                        expected_count=expected_mode_count,
+                        actual_count=observed_mode_count,
+                    )
+                )
+
     task_variant_index = _to_int(prompt_variant.get("task_type_variant_index"))
     query_variant_index = _to_int(prompt_variant.get("query_type_variant_index"))
     if task_variant_index is None or task_variant_index < 0 or task_variant_index >= expected_task_count:
@@ -342,9 +429,24 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
                 variant_count=expected_query_count,
             )
         )
+    if mode_templates and mode_key in mode_templates and expected_mode_count is not None:
+        if mode_variant_index is None or mode_variant_index < 0 or mode_variant_index >= expected_mode_count:
+            errors.append(
+                _err(
+                    error_codes.PROMPT_VARIANT_INDEX_OUT_OF_RANGE,
+                    "answer_or_evidence variant index out of range",
+                    instance_id=iid,
+                    prompt_bundle_id=bundle_id,
+                    answer_or_evidence_key=mode_key,
+                    variant_index=prompt_variant.get("answer_or_evidence_variant_index"),
+                    variant_count=expected_mode_count,
+                )
+            )
 
     required_slots = list(bundle.required_slots_by_key.get(f"task_type:{task_type_key}", ()))
     required_slots.extend(bundle.required_slots_by_key.get(f"query_type:{query_type_key}", ()))
+    if mode_templates and mode_key:
+        required_slots.extend(bundle.required_slots_by_key.get(f"answer_or_evidence:{mode_key}", ()))
     if required_slots:
         slot_values = prompt_variant.get("slot_values")
         if not isinstance(slot_values, Mapping):
@@ -376,12 +478,50 @@ def _validate_prompt_contract(instance: Mapping[str, Any], trace_record: Mapping
                     )
                 )
 
+    if mode_templates:
+        if not isinstance(prompt_variants, Mapping):
+            errors.append(
+                _err(
+                    error_codes.PROMPT_METADATA_MISSING,
+                    "prompt_variants is required when bundle defines answer_or_evidence templates",
+                    instance_id=iid,
+                    field_path="prompt_variants",
+                )
+            )
+        else:
+            missing_modes = sorted(
+                [
+                    mode_name
+                    for mode_name in mode_templates.keys()
+                    if str(prompt_variants.get(mode_name, "")).strip() == ""
+                ]
+            )
+            if missing_modes:
+                errors.append(
+                    _err(
+                        error_codes.PROMPT_METADATA_MISSING,
+                        "prompt_variants is missing required answer_or_evidence prompts",
+                        instance_id=iid,
+                        field_path="prompt_variants",
+                        missing_modes=missing_modes,
+                    )
+                )
+            elif mode_key and isinstance(prompt_text, str) and prompt_text.strip() and str(prompt_variants.get(mode_key, "")).strip() != prompt_text.strip():
+                errors.append(
+                    _err(
+                        error_codes.PROMPT_METADATA_MISSING,
+                        "prompt text does not match active prompt_variants entry",
+                        instance_id=iid,
+                        field_path=f"prompt_variants.{mode_key}",
+                    )
+                )
+
     return errors
 
 
-def _validate_schema(instance: Mapping[str, Any]) -> List[ValidationError]:
+def _validate_schema(instance: Mapping[str, Any]) -> List[_ValidationError]:
     """Validate required TrainInstance fields and envelope-schema invariants."""
-    errors: List[ValidationError] = []
+    errors: List[_ValidationError] = []
     iid = instance.get("instance_id", "<missing>")
 
     for field in _REQUIRED_INSTANCE_FIELDS:
@@ -458,7 +598,7 @@ def validate_dataset(
 ) -> Dict[str, Any]:
     """Run required pre-finalize checks and return a full validation report."""
     root = Path(staging_root)
-    errors: List[ValidationError] = []
+    errors: List[_ValidationError] = []
 
     for inst in instances:
         errors.extend(_validate_schema(inst))

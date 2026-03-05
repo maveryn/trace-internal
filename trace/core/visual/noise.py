@@ -75,6 +75,22 @@ def _normalize_value_ranges(raw: Any, fallback: Mapping[str, Mapping[str, Tuple[
     return out
 
 
+def _normalize_edit_types(
+    raw_types: Any,
+    *,
+    value_ranges: Mapping[str, Mapping[str, Tuple[float, float]]],
+) -> List[str]:
+    """Normalize edit-type list and keep only edits with declared ranges."""
+    if not isinstance(raw_types, (list, tuple)):
+        return []
+    edit_types = [
+        str(item).strip().lower()
+        for item in raw_types
+        if str(item).strip().lower() in _ALLOWED_EDIT_TYPES
+    ]
+    return [edit_type for edit_type in edit_types if edit_type in value_ranges]
+
+
 def _sample_edit_params(
     edit_type: str,
     rng: random.Random,
@@ -158,16 +174,10 @@ def _normalize_default_config(default_config: Mapping[str, Any] | None) -> Dict[
     value_ranges = _normalize_value_ranges(default_config.get("value_ranges", base["value_ranges"]), fallback=base["value_ranges"])
     base["value_ranges"] = value_ranges
 
-    raw_types = default_config.get("edit_types", base["edit_types"])
-    if isinstance(raw_types, (list, tuple)):
-        edit_types = [
-            str(item).strip().lower()
-            for item in raw_types
-            if str(item).strip().lower() in _ALLOWED_EDIT_TYPES
-        ]
-    else:
-        edit_types = []
-    base["edit_types"] = [edit_type for edit_type in edit_types if edit_type in value_ranges]
+    base["edit_types"] = _normalize_edit_types(
+        default_config.get("edit_types", base["edit_types"]),
+        value_ranges=value_ranges,
+    )
 
     edit_count_range = _normalize_edit_count_range(
         default_config.get("edit_count_range", base["edit_count_range"]),
@@ -210,17 +220,10 @@ def _resolve_post_noise_config(params: Mapping[str, Any], *, default_config: Map
         fallback=base.get("value_ranges", {}),
     )
 
-    raw_types = overrides.get("edit_types", base.get("edit_types", []))
-    if isinstance(raw_types, (list, tuple)):
-        edit_types = [
-            str(item).strip().lower()
-            for item in raw_types
-            if str(item).strip().lower() in _ALLOWED_EDIT_TYPES
-        ]
-    else:
-        edit_types = []
-    # Keep only types with declared parameter ranges.
-    edit_types = [edit_type for edit_type in edit_types if edit_type in value_ranges]
+    edit_types = _normalize_edit_types(
+        overrides.get("edit_types", base.get("edit_types", [])),
+        value_ranges=value_ranges,
+    )
 
     edit_count_range = _normalize_edit_count_range(
         overrides.get("edit_count_range", base.get("edit_count_range", [1, 1])),

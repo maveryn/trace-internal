@@ -67,9 +67,3 @@ def read_trace_shard(path: str | Path) -> List[Dict[str, Any]]:
         raw = reader.read()
     lines = [line for line in raw.splitlines() if line.strip()]
     return [json.loads(line.decode("utf-8")) for line in lines]
-
-
-def read_trace_record(path: str | Path, line_index: int) -> Dict[str, Any]:
-    """Read a single trace record by index from a compressed shard."""
-    records = read_trace_shard(path)
-    return records[int(line_index)]

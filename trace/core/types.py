@@ -73,6 +73,7 @@ class TrainInstance:
     task_complexity: TaskComplexity
     trace_ref: TraceRef
     versions: Dict[str, str]
+    prompt_variants: Dict[str, str] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -83,6 +84,7 @@ class TrainInstance:
             "task_group": self.task_group,
             "task": self.task,
             "prompt": self.prompt,
+            "prompt_variants": dict(self.prompt_variants),
             "images": [image.to_dict() for image in self.images],
             "answer_gt": self.answer_gt.to_dict(),
             "evidence_gt": self.evidence_gt.to_dict(),

@@ -8,7 +8,7 @@ from .canonical import canonical_json_bytes
 from .hash_utils import blake3_hex
 
 
-def build_instance_identity_payload(train_instance: Dict[str, Any]) -> Dict[str, Any]:
+def _build_instance_identity_payload(train_instance: Dict[str, Any]) -> Dict[str, Any]:
     """Construct canonical identity payload from training-facing fields.
 
     Note: image file paths are excluded by design; only image content identity is included.
@@ -28,6 +28,7 @@ def build_instance_identity_payload(train_instance: Dict[str, Any]) -> Dict[str,
         "task_group": train_instance.get("task_group"),
         "task": train_instance.get("task"),
         "prompt": train_instance.get("prompt"),
+        "prompt_variants": dict(train_instance.get("prompt_variants", {})),
         "images": images,
         "answer_gt": train_instance.get("answer_gt"),
         "evidence_gt": train_instance.get("evidence_gt"),
@@ -37,5 +38,5 @@ def build_instance_identity_payload(train_instance: Dict[str, Any]) -> Dict[str,
 
 def compute_instance_id(train_instance: Dict[str, Any]) -> str:
     """Compute deterministic instance id from canonical training-facing payload."""
-    payload = build_instance_identity_payload(train_instance)
+    payload = _build_instance_identity_payload(train_instance)
     return blake3_hex(canonical_json_bytes(payload))

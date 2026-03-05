@@ -17,16 +17,16 @@
   },
   "query_type_templates": {
     "shortest_path": [
-      "Black tiles are blocked, green marks start, and red marks goal. Moves are edge-adjacent only (no diagonals). Return the shortest-path length in steps and provide {evidence_hint} as evidence.",
-      "Use 4-neighbor movement through non-black tiles only. Output the unique shortest-path step length and include {evidence_hint} evidence.",
-      "Treat black cells as walls, with green=start and red=goal. Return shortest path length (steps) and provide {evidence_hint} evidence.",
-      "Find the shortest route from start (green) to goal (red) using only edge-adjacent open cells, then report step length and {evidence_hint} evidence.",
-      "Compute the shortest-path distance in steps under no-diagonal movement, and include {evidence_hint} for the chosen path.",
-      "Return the number of steps on the shortest valid path from green to red through open cells only, plus {evidence_hint} evidence.",
-      "Using up/down/left/right moves only, report shortest-path step count and provide {evidence_hint} corresponding to that path.",
-      "Determine the shortest open-cell path between start and goal, output its length in steps, and include {evidence_hint} evidence.",
-      "Report shortest path length (step count) with 4-connected movement constraints, and provide {evidence_hint} for grounding.",
-      "Find the shortest legal path from the green tile to the red tile, return its step length, and include {evidence_hint} evidence."
+      "Black tiles are blocked, green marks start, and red marks goal. Moves are edge-adjacent only (no diagonals). Find the shortest path length in steps.",
+      "Use 4-neighbor movement through non-black tiles only. Determine the unique shortest-path step length.",
+      "Treat black cells as walls, with green=start and red=goal. Find the shortest path length in steps.",
+      "Find the shortest route from start (green) to goal (red) using only edge-adjacent open cells.",
+      "Compute the shortest-path distance in steps under no-diagonal movement.",
+      "Find the number of steps on the shortest valid path from green to red through open cells only.",
+      "Using up/down/left/right moves only, determine the shortest-path step count.",
+      "Determine the shortest open-cell path length between start and goal.",
+      "Find shortest path length (step count) with 4-connected movement constraints.",
+      "Find the shortest legal path length from the green tile to the red tile in steps."
     ]
   },
   "required_slots_by_key": {
@@ -34,8 +34,35 @@
       "rows",
       "cols"
     ],
-    "query_type:shortest_path": [
+    "query_type:shortest_path": [],
+    "answer_or_evidence:answer_and_evidence": [
       "evidence_hint"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "Return only the integer answer.",
+      "Output only the integer answer.",
+      "Respond with only the integer answer.",
+      "Provide only the integer answer.",
+      "Give only the integer answer.",
+      "Report only the integer answer.",
+      "Write only the integer answer.",
+      "Return just the integer answer.",
+      "Respond with the integer answer only.",
+      "Output the integer answer only."
+    ],
+    "answer_and_evidence": [
+      "Return only the integer answer and provide {evidence_hint} as evidence.",
+      "Output only the integer answer and include {evidence_hint} as evidence.",
+      "Respond with only the integer answer and provide {evidence_hint} for evidence.",
+      "Provide only the integer answer, then give {evidence_hint} as evidence.",
+      "Give only the integer answer and include {evidence_hint} evidence.",
+      "Report only the integer answer and provide {evidence_hint} as grounding evidence.",
+      "Write only the integer answer and include {evidence_hint} as evidence.",
+      "Return just the integer answer and provide {evidence_hint} evidence.",
+      "Respond with the integer answer only and add {evidence_hint} as evidence.",
+      "Output the integer answer only and provide {evidence_hint} as evidence."
     ]
   }
 }

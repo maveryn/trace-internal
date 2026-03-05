@@ -1,42 +1,50 @@
 generation:
-  candidate_count: 7
+  candidate_count_min: 3
+  candidate_count_max: 7
   min_angle: 15
   max_angle: 165
   angle_step: 15
   target_x: 90
+  allow_duplicate_distractors: true
 
 rendering:
-  canvas_size: 768
   ray_length: 84
   line_width: 4
 
 prompt:
   bundle_id: geometry_measurement_v1
-  task_type_key: angle_measurement
+  task_type_key: measurement_value_query
   entity_plural: angles
+  value_name_singular: angle
+  unit_name: degrees
+  evidence_single: the selected angle vertex coordinate (x, y) in graph units with origin at the center point
+  evidence_pair: ordered vertex coordinates [largest, smallest] in graph units with origin at the center point
 
 visual:
   background:
     enabled: true
     styles:
-      solid_light:
-        kind: solid
-        color: [248, 248, 248]
       graph_paper:
         kind: grid
-        base_color: [246, 247, 248]
-        line_color: [224, 229, 236]
-        spacing: 28
+        base_color: [255, 255, 255]
+        line_color: [232, 236, 242]
+        spacing: 24
         line_width: 1
-      warm_paper:
-        kind: solid
-        color: [250, 246, 240]
+        major_every: 0
+        major_line_color: [214, 220, 230]
+        major_line_width: 1
+        axis_enabled: true
+        axis_color: [176, 184, 198]
+        axis_line_width: 2
+        center_point_enabled: true
+        center_point_color: [126, 134, 148]
+        center_point_radius: 2
+        supersample_scale: 1
+        scene_supersample_scale: 3
     weights:
-      solid_light: 0.5
-      graph_paper: 0.35
-      warm_paper: 0.15
+      graph_paper: 1.0
   noise:
-    apply_prob: 0.75
+    apply_prob: 0.5
     edit_types:
       - blur
       - downsample

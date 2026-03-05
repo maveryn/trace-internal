@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Mapping
+from typing import Any, Dict, List
 
 from .canonical import canonical_json_bytes
 from .hash_utils import blake3_file

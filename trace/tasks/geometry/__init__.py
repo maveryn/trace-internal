@@ -1,5 +1,3 @@
-"""Geometry task packages."""
+"""Geometry task package marker."""
 
-from .measurement.angle_value_query import GeometryAngleValueQueryTask
-
-__all__ = ["GeometryAngleValueQueryTask"]
+__all__: list[str] = []

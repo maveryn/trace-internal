@@ -1,0 +1,86 @@
+"""Cross-domain graph algorithm helpers.
+
+This module hosts representation-agnostic graph algorithms that operate on
+adjacency mappings. Representation-specific adapters (for example blocked
+grids or explicit node/edge scene graphs) should stay in separate modules.
+"""
+
+from __future__ import annotations
+
+from collections import deque
+from typing import Dict, Hashable, List, Mapping, Sequence, TypeVar
+
+
+NodeT = TypeVar("NodeT", bound=Hashable)
+
+
+def bfs_dist_count_by_adjacency(
+    adjacency: Mapping[NodeT, Sequence[NodeT]],
+    *,
+    start: NodeT,
+) -> tuple[Dict[NodeT, int], Dict[NodeT, int]]:
+    """Compute BFS distance and shortest-path count from one start node."""
+    if start not in adjacency:
+        return {}, {}
+
+    dist: Dict[NodeT, int] = {start: 0}
+    count: Dict[NodeT, int] = {start: 1}
+    queue: deque[NodeT] = deque([start])
+
+    while queue:
+        node = queue.popleft()
+        node_dist = int(dist[node])
+        node_count = int(count[node])
+        for neighbor in adjacency.get(node, ()):
+            next_dist = int(node_dist + 1)
+            if neighbor not in dist:
+                dist[neighbor] = next_dist
+                count[neighbor] = node_count
+                queue.append(neighbor)
+            elif int(dist[neighbor]) == next_dist:
+                count[neighbor] = int(count.get(neighbor, 0) + node_count)
+
+    return dist, count
+
+
+def reconstruct_unique_shortest_path_by_adjacency(
+    adjacency: Mapping[NodeT, Sequence[NodeT]],
+    *,
+    start: NodeT,
+    goal: NodeT,
+    dist_start: Mapping[NodeT, int],
+    dist_goal: Mapping[NodeT, int],
+) -> List[NodeT] | None:
+    """Reconstruct a shortest path when exactly one witness path exists."""
+    if start not in dist_start or goal not in dist_start:
+        return None
+    shortest = int(dist_start[goal])
+    if shortest < 0:
+        return None
+
+    path: List[NodeT] = [start]
+    current = start
+    while current != goal:
+        if current not in dist_start:
+            return None
+        current_dist = int(dist_start[current])
+        candidates: List[NodeT] = []
+        for neighbor in adjacency.get(current, ()):
+            if neighbor not in dist_start or neighbor not in dist_goal:
+                continue
+            if int(dist_start[neighbor]) != int(current_dist + 1):
+                continue
+            if int(dist_start[neighbor]) + int(dist_goal[neighbor]) != shortest:
+                continue
+            candidates.append(neighbor)
+        if len(candidates) != 1:
+            return None
+        current = candidates[0]
+        path.append(current)
+    return path
+
+
+__all__ = [
+    "bfs_dist_count_by_adjacency",
+    "reconstruct_unique_shortest_path_by_adjacency",
+]

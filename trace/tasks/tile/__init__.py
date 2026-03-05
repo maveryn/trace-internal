@@ -1,5 +1,3 @@
-"""Tile task packages."""
+"""Tile task package marker."""
 
-from .path.shortest_path import TileShortestPathTask
-
-__all__ = ["TileShortestPathTask"]
+__all__: list[str] = []

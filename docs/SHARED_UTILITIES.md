@@ -18,6 +18,7 @@ Promote helpers when a second consumer appears.
 3. `trace/core/type_registry.py`, `trace/core/validation.py`
 4. `trace/core/builder.py`, `trace/core/strict_repro.py`
 5. `trace/core/task_group_config.py`, `trace/core/json_io.py`, `trace/core/query_types.py`
+   - `task_group_config` resolves merged defaults and section-level `shared` + `task_overrides` composition.
 6. `trace/core/prompts/*` and `trace/core/visual/*`
 
 ### Task-shared
@@ -28,6 +29,7 @@ Promote helpers when a second consumer appears.
 5. `trace/tasks/shared/bbox_projection.py`
 6. `trace/tasks/shared/graph_algorithms.py`
 7. `trace/tasks/shared/config_defaults.py`
+   - Resolves effective `generation`/`rendering`/`prompt` defaults from task-group config by merging section `shared` + `task_overrides.<task_id>`.
 8. `trace/tasks/shared/visual_defaults.py`
 9. `trace/tasks/shared/prompt_variants.py`
 10. `trace/tasks/shared/output_metadata.py`

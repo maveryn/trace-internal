@@ -17,6 +17,7 @@ Implementation map for the contracts in `docs/BLUEPRINT.md`.
 2. Resolve deterministic `dataset_id`.
 3. Generate staged instances:
    - task sampling,
+   - query-type sampling (build overrides, then task-group sampling defaults, then uniform),
    - prompt rendering,
    - image rendering + visual variation,
    - trace write,
@@ -37,7 +38,7 @@ Implementation map for the contracts in `docs/BLUEPRINT.md`.
 7. `trace/core/validation.py` — pre-finalize dataset validation.
 8. `trace/core/builder.py` — build orchestration.
 9. `trace/core/strict_repro.py` — strict reproducibility comparisons.
-10. `trace/core/task_group_config.py` — merged domain/task-group defaults.
+10. `trace/core/task_group_config.py` — merged domain/task-group defaults and section resolution (`shared` + `task_overrides`).
 11. `trace/core/query_types.py` + `trace/core/sampling.py` — shared sampling primitives.
 12. `trace/core/json_io.py` — deterministic JSON writing.
 

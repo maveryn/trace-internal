@@ -24,7 +24,7 @@ Each generated instance should include:
 - Reusable pitfalls and fixes: `docs/LESSONS_LEARNED.md`
 - Active backlog and priorities: `docs/TODO.md`
 - Python dependencies: `requirements.txt`
-- Domain/task-group defaults (generation/rendering/visual): `configs/domains/<domain>.yaml` and `configs/task_groups/<domain>/<task_group>.yaml`
+- Domain/task-group defaults (generation/rendering/visual): `configs/domains/<domain>/base.yaml` and `configs/domains/<domain>/<task_group>.yaml`
 
 ## Scope and boundaries
 - Work in this repository unless the user explicitly asks otherwise.
@@ -35,7 +35,7 @@ Each generated instance should include:
 - Use taxonomy consistently: `domain -> task_group -> task`.
 - Keep `task_group` broad by reasoning style; for geometry value-style tasks use `task_group=measurement` and keep variants in `query_type`.
 - Sampling policy is task-level globally (equal task weights by default); domain/task_group probabilities are derived by aggregation, and query sampling happens inside each task (uniform by default unless task-config override).
-- Domain/task-group defaults (generation/rendering/visual variation) should follow precedence `domain -> task_group -> task/params`: shared domain defaults under `configs/domains/<domain>.yaml`, group overrides under `configs/task_groups/<domain>/<task_group>.yaml`, then optional task-level overrides.
+- Domain/task-group defaults (generation/rendering/visual variation) should follow precedence `domain -> task_group -> task/params`: shared domain defaults under `configs/domains/<domain>/base.yaml`, group overrides under `configs/domains/<domain>/<task_group>.yaml`, then optional task-level overrides.
 - Do not hardcode user-facing prompt text in task modules; prompts must come from external template assets.
 - Prompt composition must be reusable: one task-type layer and one query-type layer, each with deterministic variant selection.
 - Keep prompt templates versioned and recorded in trace metadata (`prompt_bundle_id`, keys, variant indices).

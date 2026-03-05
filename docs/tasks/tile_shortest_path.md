@@ -28,6 +28,6 @@
 3. No semantic auto-relaxation.
 
 ## 5) Visual policy
-1. Background defaults come from `configs/task_groups/tile/path.yaml`.
+1. Background defaults come from `configs/domains/tile/path.yaml`.
 2. Post-image noise defaults are disabled (`apply_prob = 0.0`).
 3. Applied background/noise metadata is emitted in trace.

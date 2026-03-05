@@ -1,18 +1,28 @@
 generation:
-  rows: 8
-  cols: 8
-  min_shortest_len: 6
-  obstacle_prob_min: 0.16
-  obstacle_prob_max: 0.36
-  evidence_type: point_path
+  task_overrides:
+    tile_shortest_path:
+      rows: 8
+      cols: 8
+      min_shortest_len: 6
+      obstacle_prob_min: 0.16
+      obstacle_prob_max: 0.36
+      evidence_type: point_path
 
 rendering:
-  canvas_size: 640
-  margin: 24
+  task_overrides:
+    tile_shortest_path:
+      canvas_size: 640
+      margin: 24
 
 prompt:
-  bundle_id: tile_path_v1
-  task_type_key: maze_path
+  shared:
+    bundle_id: tile_path_v1
+    task_type_key: maze_path
+
+sampling:
+  shared:
+    query_weights:
+      shortest_path: 1.0
 
 visual:
   background:

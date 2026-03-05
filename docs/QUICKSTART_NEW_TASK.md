@@ -23,9 +23,12 @@ This is the shortest safe path for adding a task.
    - `projected_evidence`
 
 ## 3) Configure defaults
-1. Domain defaults (optional): `configs/domains/<domain>.yaml`
-2. Task-group defaults: `configs/task_groups/<domain>/<task_group>.yaml`
+1. Domain defaults (optional): `configs/domains/<domain>/base.yaml`
+   - put broadly shared visual/style policy here when it applies across task groups.
+2. Task-group defaults: `configs/domains/<domain>/<task_group>.yaml`
 3. Keep precedence: `domain -> task_group -> task/params`
+4. In `generation`/`rendering`/`prompt`/`sampling`, place defaults under `shared` and add `task_overrides.<task_id>` only for task-specific deltas; legacy flat section keys are unsupported.
+5. Query-weight fallback is: build config `query_weights` -> task-group `sampling.task_overrides` -> task-group `sampling.shared` -> uniform.
 
 ## 4) Add prompt bundle
 1. Add `prompts/<domain>/<task_group>/<bundle_id>.json`

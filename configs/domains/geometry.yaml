@@ -1,5 +1,0 @@
-rendering:
-  canvas_size_min: 512
-  canvas_size_max: 1024
-  graph_cells_min: 12
-  graph_cells_max: 24

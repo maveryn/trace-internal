@@ -1,24 +1,9 @@
-generation:
-  candidate_count_min: 3
-  candidate_count_max: 7
-  min_angle: 15
-  max_angle: 165
-  angle_step: 15
-  target_x: 90
-  allow_duplicate_distractors: true
-
 rendering:
-  ray_length: 84
-  line_width: 4
-
-prompt:
-  bundle_id: geometry_measurement_v1
-  task_type_key: measurement_value_query
-  entity_plural: angles
-  value_name_singular: angle
-  unit_name: degrees
-  evidence_single: the selected angle vertex coordinate (x, y) in graph units with origin at the center point
-  evidence_pair: ordered vertex coordinates [largest, smallest] in graph units with origin at the center point
+  shared:
+    canvas_size_min: 512
+    canvas_size_max: 1024
+    graph_cells_min: 12
+    graph_cells_max: 24
 
 visual:
   background:

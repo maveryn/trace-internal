@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-
 import pytest
 from PIL import Image
 
@@ -395,8 +394,47 @@ def test_query_weights_edge_cases_fail(tmp_path: Path) -> None:
             sampling_seed=sampling_seed,
         )
 
-        with pytest.raises(BuildError, match="configured query_weights must have at least one positive weight"):
+        with pytest.raises(BuildError, match="query_weights must have at least one positive weight"):
             build_dataset(config, code_hash="query-weights-edge")
+
+
+def test_query_weights_fallback_to_task_group_defaults(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _register_dummy_tasks()
+    domain_root = tmp_path / "domains"
+    (domain_root / "dummy").mkdir(parents=True, exist_ok=True)
+    (domain_root / "dummy" / "query.yaml").write_text(
+        "\n".join(
+            [
+                "sampling:",
+                "  shared:",
+                "    query_weights:",
+                "      q1: 0.0",
+                "      q2: 1.0",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("TRACE_DOMAIN_CONFIG_ROOT", str(domain_root))
+
+    output_root = tmp_path / "out"
+    config = BuildConfig(
+        output_root=str(output_root),
+        dataset_name="test_query_weight_fallback",
+        instance_version="v1",
+        image_format="png",
+        tasks=[BuildTaskConfig(task_id="dummy_query_task", count=6, params={})],
+        strict_repro=False,
+        max_attempts_per_instance=20,
+        sampling_seed=123,
+    )
+
+    final_path = build_dataset(config, code_hash="query-weight-defaults")
+    build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
+    sampler_probs = build_report["sampler"]["query_sampling_probabilities_by_task"]["dummy_query_task"]
+    accepted = build_report["query_type_accepted_counts_by_task"]["dummy_query_task"]
+    assert sampler_probs == {"q2": 1.0}
+    assert accepted == {"q2": 6}
 
 
 def test_prompt_metadata_missing_validation_failure(tmp_path: Path) -> None:

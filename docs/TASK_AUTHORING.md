@@ -44,8 +44,11 @@ Use this as the implementation checklist for new or modified tasks.
 ## 4) Config/defaults rules
 1. Precedence: `domain -> task_group -> task/params`.
 2. Use shared defaults helpers; avoid local parsing duplicates.
-3. Visual defaults/noise should route through shared visual modules.
-4. Geometry measurement tasks should keep graph-paper/anchor alignment policy consistent.
+3. In task-group files, separate shared keys (`shared`) from task-specific keys (`task_overrides.<task_id>`) for `generation`/`rendering`/`prompt`/`sampling`; default to `shared` and use `task_overrides` only for task-specific deltas (legacy flat section keys are unsupported).
+4. Keep broadly shared domain visual policy in `configs/domains/<domain>/base.yaml`; use task-group visual only for group-specific overrides.
+5. Query-weight fallback is: build task `query_weights` -> task-group `sampling.task_overrides` -> task-group `sampling.shared` -> uniform.
+6. Visual defaults/noise should route through shared visual modules.
+7. Geometry measurement tasks should keep graph-paper/anchor alignment policy consistent.
 
 ## 5) Sampling rules
 1. Global sampling unit is `task`.

@@ -22,6 +22,7 @@ from .query_types import resolve_query_types
 from .sampling import normalize_positive_weights, weighted_choice
 from .seed import SEED_DERIVATION_VERSION, hash64
 from .strict_repro import compare_staging_dirs
+from .task_group_config import get_task_group_defaults, resolve_task_group_section_defaults
 from .trace_store import TraceShardWriter
 from .type_registry import DEFAULT_REGISTRY_PATH, TypeRegistry, load_type_registry
 from .types import CurriculumIndex, ImageRecord, TraceInstance, TrainInstance
@@ -185,11 +186,25 @@ def _resolve_query_probabilities(query_types: List[str], configured: Mapping[str
 
     selected = {query_type: float(configured.get(query_type, 0.0)) for query_type in query_types}
     if sum(selected.values()) <= 0.0:
-        raise BuildError("configured query_weights must have at least one positive weight for supported query types")
+        raise BuildError("resolved query_weights must have at least one positive weight for supported query types")
     try:
         return normalize_positive_weights(selected)
     except ValueError as exc:
         raise BuildError(str(exc)) from exc
+
+
+def _resolve_task_group_query_weight_defaults(*, task_id: str, domain: str, task_group: str) -> Dict[str, float]:
+    """Resolve task-group query-weight defaults for one task id."""
+    merged_defaults = get_task_group_defaults(str(domain), str(task_group))
+    sampling_defaults = resolve_task_group_section_defaults(
+        merged_defaults,
+        "sampling",
+        task_id=str(task_id),
+    )
+    query_weights = sampling_defaults.get("query_weights", {})
+    if not isinstance(query_weights, Mapping):
+        return {}
+    return {str(query_type): float(weight) for query_type, weight in query_weights.items()}
 
 
 def _expected_query_counts(tasks: List[BuildTaskConfig]) -> Dict[str, Dict[str, int]]:
@@ -255,7 +270,15 @@ def _build_staging(
             max_candidates = max(1, task_target * 20)
 
             query_types = resolve_query_types(task, task_cfg.params)
-            query_probabilities = _resolve_query_probabilities(query_types, task_cfg.query_weights)
+            if task_cfg.query_weights:
+                query_weights = {str(query_type): float(weight) for query_type, weight in task_cfg.query_weights.items()}
+            else:
+                query_weights = _resolve_task_group_query_weight_defaults(
+                    task_id=task_cfg.task_id,
+                    domain=str(getattr(task, "domain")),
+                    task_group=str(getattr(task, "task_group")),
+                )
+            query_probabilities = _resolve_query_probabilities(query_types, query_weights)
             query_sampling_probabilities_by_task[task_cfg.task_id] = dict(sorted(query_probabilities.items()))
 
             while accepted < task_target and seed_index < max_candidates:

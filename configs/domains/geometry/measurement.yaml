@@ -1,40 +1,64 @@
 generation:
   shared:
-    candidate_count_min: 3
-    candidate_count_max: 7
-    allow_duplicate_distractors: true
+    allowed_sides: [3, 4, 5]
+    answer_min: 8
   task_overrides:
-    geometry_angle_value_query:
-      min_angle: 15
-      max_angle: 165
-      angle_step: 15
-      target_x: 90
+    task_geometry_measurement_angle:
+      min_angle: 30
+      max_angle: 150
+      angle_step: 1
+      quantization_tolerance_degrees: 0.05
+      max_abs_vector_component: 20
+      min_ray_length_units: 2
+      balanced_sampling: true
+      mcq_option_count: 5
+      mcq_min_delta: 5
+      mcq_max_delta: 30
+      polygon_allowed_sides: [3, 4]
+      source_kind_weights:
+        primitive_angle: 1.0
+        triangle: 1.0
+        quadrilateral: 1.0
+        intersection_lines: 1.0
+    task_geometry_measurement_polygon_area:
+      answer_max: 32
+    task_geometry_measurement_polygon_perimeter:
+      answer_max: 24
 
 rendering:
-  task_overrides:
-    geometry_angle_value_query:
-      ray_length: 84
-      line_width: 4
+  shared:
+    canvas_size_min: 256
+    canvas_size_max: 512
+    graph_cells_min: 6
+    graph_cells_max: 12
+    line_width: 4
+    label_offset_px: 14
+    label_font_size_min: 14
+    label_font_size_max: 32
+    label_stroke_width: 1
 
 prompt:
   shared:
-    bundle_id: geometry_measurement_v1
-    task_type_key: measurement_value_query
+    bundle_id: geometry_measurement_v2
+    task_type_key: measurement_single_object
+    json_output_contract: Return a valid JSON object with keys "evidence" and "answer" in that order.
+    evidence_hint: the polygon vertex coordinates as an unordered graph-unit point list
   task_overrides:
-    geometry_angle_value_query:
-      entity_plural: angles
-      value_name_singular: angle
-      unit_name: degrees
-      evidence_single: the selected angle vertex coordinate (x, y) in graph units with origin at the center point
-      evidence_pair: ordered vertex coordinates [largest, smallest] in graph units with origin at the center point
+    task_geometry_measurement_angle:
+      bundle_id: geometry_angle_measure_v1
+      evidence_hint: provide three points [ray endpoint A, vertex, ray endpoint B], each as the nearest integer graph coordinate [x, y] for the queried angle
+      answer_hint: set "answer" to the selected option letter (A, B, C, D, or E)
+      json_example: '{"evidence":[[2,1],[0,0],[3,-1]],"answer":"B"}'
+    task_geometry_measurement_polygon_area:
+      question_text: What is the area of the polygon in square units?
+      answer_hint: set "answer" to the polygon area as an integer value
+      json_example: '{"evidence":[[0,0],[4,0],[4,2],[0,2]],"answer":8}'
+    task_geometry_measurement_polygon_perimeter:
+      question_text: What is the perimeter of the polygon in graph units?
+      answer_hint: set "answer" to the polygon perimeter as an integer value
+      json_example: '{"evidence":[[0,0],[4,0],[4,2],[0,2]],"answer":12}'
 
 sampling:
   shared:
     query_weights:
-      min: 1.0
-      max: 1.0
-      median: 1.0
-      closest_to_x: 1.0
-      smallest_above_x: 0.5
-      largest_below_x: 0.5
-      difference_max_min: 1.0
+      measure: 1.0

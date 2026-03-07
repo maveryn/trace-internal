@@ -20,6 +20,8 @@ from ...shared.bbox_projection import (
 )
 from ...shared.config_defaults import (
     group_default,
+    required_group_default,
+    resolve_required_float_bounds,
     split_generation_rendering_prompt_defaults,
 )
 from ...shared.prompt_variants import (
@@ -57,7 +59,7 @@ _DEFAULTS = _TaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("tile", "path")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, dict) else {},
-    task_id="tile_shortest_path",
+    task_id="task_tile_path_shortest_path",
 )
 
 
@@ -65,7 +67,7 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 class TileShortestPathTask:
     """Task emitting shortest-path length with grounded path evidence."""
 
-    task_id = "tile_shortest_path"
+    task_id = "task_tile_path_shortest_path"
     domain = "tile"
     task_group = "path"
 
@@ -78,8 +80,15 @@ class TileShortestPathTask:
         rows = int(params.get("rows", group_default(_GEN_DEFAULTS, "rows", _DEFAULTS.rows)))
         cols = int(params.get("cols", group_default(_GEN_DEFAULTS, "cols", _DEFAULTS.cols)))
         min_shortest_len = int(params.get("min_shortest_len", group_default(_GEN_DEFAULTS, "min_shortest_len", _DEFAULTS.min_shortest_len)))
-        obstacle_prob_min = float(params.get("obstacle_prob_min", group_default(_GEN_DEFAULTS, "obstacle_prob_min", _DEFAULTS.obstacle_prob_min)))
-        obstacle_prob_max = float(params.get("obstacle_prob_max", group_default(_GEN_DEFAULTS, "obstacle_prob_max", _DEFAULTS.obstacle_prob_max)))
+        obstacle_prob_min, obstacle_prob_max = resolve_required_float_bounds(
+            params,
+            _GEN_DEFAULTS,
+            min_key="obstacle_prob_min",
+            max_key="obstacle_prob_max",
+            fallback_min=float(_DEFAULTS.obstacle_prob_min),
+            fallback_max=float(_DEFAULTS.obstacle_prob_max),
+            context=f"generation defaults for {self.task_id}",
+        )
         canvas_size = int(params.get("canvas_size", group_default(_RENDER_DEFAULTS, "canvas_size", _DEFAULTS.canvas_size)))
         margin = int(params.get("margin", group_default(_RENDER_DEFAULTS, "margin", _DEFAULTS.margin)))
         evidence_type = str(params.get("evidence_type", group_default(_GEN_DEFAULTS, "evidence_type", _DEFAULTS.evidence_type)))
@@ -145,8 +154,20 @@ class TileShortestPathTask:
         else:
             evidence_value = path_bboxes
 
-        prompt_bundle_id = str(group_default(_PROMPT_DEFAULTS, "bundle_id", "tile_path_v1"))
-        prompt_task_type_key = str(group_default(_PROMPT_DEFAULTS, "task_type_key", "maze_path"))
+        prompt_bundle_id = str(
+            required_group_default(
+                _PROMPT_DEFAULTS,
+                "bundle_id",
+                context=f"prompt defaults for {self.task_id}",
+            )
+        )
+        prompt_task_type_key = str(
+            required_group_default(
+                _PROMPT_DEFAULTS,
+                "task_type_key",
+                context=f"prompt defaults for {self.task_id}",
+            )
+        )
         evidence_hint = "ordered path points" if evidence_type == "point_path" else "path-cell bounding boxes"
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,

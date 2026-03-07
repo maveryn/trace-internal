@@ -4,20 +4,39 @@ dataset_name: strict_repro_geometry
 instance_version: v1
 image_format: png
 strict_repro: true
-max_attempts_per_instance: 150
+max_attempts_per_instance: 180
 sampling_seed: 0
 tasks:
-  - task_id: geometry_angle_value_query
-    count: 5
+  - task_id: task_geometry_measurement_angle
+    count: 8
     params:
-      candidate_count: 7
-      angle_step: 15
-      target_x: 90
+      query_type: measure
+      min_angle: 30
+      max_angle: 150
+      angle_step: 1
+      quantization_tolerance_degrees: 0.05
+      max_abs_vector_component: 20
+      min_ray_length_units: 2
+      balanced_sampling: true
+      source_kind_weights:
+        primitive_angle: 1.0
+        triangle: 1.0
+        quadrilateral: 1.0
+        intersection_lines: 1.0
+      polygon_allowed_sides: [3, 4]
     query_weights:
-      min: 1.0
-      max: 1.0
-      median: 1.0
-      closest_to_x: 1.0
-      smallest_above_x: 0.5
-      largest_below_x: 0.5
-      difference_max_min: 1.0
+      measure: 1.0
+  - task_id: task_geometry_measurement_polygon_area
+    count: 8
+    params:
+      query_type: measure
+      allowed_sides: [3, 4, 5]
+    query_weights:
+      measure: 1.0
+  - task_id: task_geometry_measurement_polygon_perimeter
+    count: 8
+    params:
+      query_type: measure
+      allowed_sides: [3, 4, 5]
+    query_weights:
+      measure: 1.0

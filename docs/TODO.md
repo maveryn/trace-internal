@@ -1,11 +1,12 @@
 # TRACE TODO
 
 ## Now (P0)
-1. Regenerate full review samples (default 50) for tasks after logic/prompt/render updates.
+1. Regenerate review samples for `task_geometry_measurement_angle`, `task_geometry_measurement_polygon_area`, and `task_geometry_measurement_polygon_perimeter`.
+2. Complete post-refactor cleanup review (remove stale references and dead helper paths).
 
 ## Next (P1)
-1. Add additional measurement-style tasks (for example geometry area value query) reusing value-query and prompt infrastructure.
-2. Add additional tile/path-adjacent task(s) that require grounded evidence.
+1. Extend objective-first measurement pattern to additional domains.
+2. Add cross-domain `scene_variant` + role-binding spec in architecture/ABI docs.
 3. Improve dataset QA diagnostics/report summaries.
 
 ## Later (P2)
@@ -15,7 +16,10 @@
 
 ## Deferred
 1. Reward/tolerance policy tuning for RLVR scoring.
-- Dataset ABI stores exact float evidence values; tolerance strategy is deferred to training/reward stage.
+- Dataset ABI stores exact evidence values; tolerance policy remains training/reward-stage configurable.
+2. Polygon measurement variants not in current scope:
+- polygon diameter
+- polygon min-side / max-side
 
 ## Done (high level)
 1. Core deterministic build/ABI/trace pipeline and strict-repro framework.
@@ -23,7 +27,9 @@
 3. External prompt-bundle system and migration of active tasks.
 4. Domain/task-group config loader and deterministic visual-variation infrastructure.
 5. Initial grounded tasks:
-- `tile_shortest_path`
-- `geometry_angle_value_query`
+- `task_tile_path_shortest_path`
+- `task_geometry_measurement_angle`
+- `task_geometry_measurement_polygon_area`
+- `task_geometry_measurement_polygon_perimeter`
 6. Sample-generation CLI with per-task artifacts and combined Excel.
 7. Pre-finalize prompt validation checks (metadata/bundle/key/placeholder/cardinality).

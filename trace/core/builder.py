@@ -289,6 +289,7 @@ def _build_staging(
 
                 params = dict(task_cfg.params)
                 params["query_type"] = sampled_query_type
+                params["_sampling_index"] = int(seed_index - 1)
                 try:
                     generated = task.generate(
                         instance_seed,

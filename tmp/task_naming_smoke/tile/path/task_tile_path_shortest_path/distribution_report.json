@@ -1,0 +1,39 @@
+{
+  "checks_failed": 0,
+  "checks_run": 0,
+  "checks_skipped": 1,
+  "per_query_type": {
+    "shortest_path": {
+      "accepted_samples": 1,
+      "answer_counts": {
+        "10": 1
+      },
+      "answer_numeric": {
+        "count": 1,
+        "mean": 10.0,
+        "std": 0.0
+      },
+      "uniformity_check": {
+        "reason": "missing_feasible_support_metadata",
+        "status": "skipped",
+        "thresholds": {
+          "max_bin_count_z_max": 4.0,
+          "mean_z_max": 3.0,
+          "min_samples_per_query": 80.0,
+          "std_ratio_max": 1.4,
+          "std_ratio_min": 0.6,
+          "tv_distance_max": 0.2
+        }
+      },
+      "unique_answers": 1
+    }
+  },
+  "thresholds": {
+    "max_bin_count_z_max": 4.0,
+    "mean_z_max": 3.0,
+    "min_samples_per_query": 80.0,
+    "std_ratio_max": 1.4,
+    "std_ratio_min": 0.6,
+    "tv_distance_max": 0.2
+  }
+}

@@ -69,7 +69,7 @@ _REQUIRED_INSTANCE_FIELDS = [
     "versions",
 ]
 
-_PROMPT_PLACEHOLDER_PATTERN = re.compile(r"\{[^{}]+\}")
+_PROMPT_PLACEHOLDER_PATTERN = re.compile(r"\{[A-Za-z_][A-Za-z0-9_]*\}")
 
 
 def _to_int(value: Any) -> int | None:

@@ -1,223 +1,317 @@
-"""Shared angle-geometry primitives and layout samplers."""
+"""Shared angle-geometry helpers for single-object measurement tasks."""
 
 from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import ImageDraw
 
 from ...shared.geometry_primitives import Point, point_inside_square_canvas
-from ...shared.layout_constraints import mapping_entities_have_min_clearance
-from .graph_paper import sample_vertices_on_graph_paper
+from ...shared.text_rendering import draw_text_centered, load_font, resolve_text_label_center
+from .graph_paper import offset_point_by_grid_vector, sample_lattice_point_with_offsets
 from .graph_rendering import pixel_point_to_graph_units
 
-_AXIS_DIRECTIONS_DEG: Tuple[float, ...] = (0.0, 90.0, 180.0, 270.0)
-_ANGLE_POINT_KEYS: Tuple[str, ...] = ("vertex", "ray_1", "ray_2")
-_ANGLE_SEGMENT_KEYS: Tuple[Tuple[str, str], ...] = (("vertex", "ray_1"), ("vertex", "ray_2"))
+Vector = Tuple[int, int]
 
 
 @dataclass(frozen=True)
-class _AngleEvidenceArtifacts:
-    """Resolved evidence/witness payloads for one sampled angle query outcome."""
+class PrimitiveAngleSample:
+    """One sampled primitive-angle specification on graph-paper coordinates."""
 
-    evidence_type: str
-    evidence_value: Any
-    witness_symbolic: Dict[str, Any]
-    selected_vertices: List[List[float]]
-    selected_vertices_graph: List[List[int]]
-    projected_evidence: Dict[str, Any]
-
-
-def _ray_endpoint(vertex: Point, angle_deg: float, length: float) -> Point:
-    """Compute endpoint of a ray emitted from `vertex` at `angle_deg`."""
-    radians = math.radians(float(angle_deg))
-    x = float(vertex[0]) + float(length) * math.cos(radians)
-    y = float(vertex[1]) + float(length) * math.sin(radians)
-    return (x, y)
+    angle_degrees: int
+    raw_angle_degrees: float
+    vertex: Point
+    point_a: Point
+    point_b: Point
+    labels: Tuple[str, str, str]
 
 
-def _sample_axis_anchored_rays(
+def _vector_angle_degrees(vec_a: Vector, vec_b: Vector) -> float:
+    """Return interior angle in degrees between two integer vectors."""
+    ax, ay = float(vec_a[0]), float(vec_a[1])
+    bx, by = float(vec_b[0]), float(vec_b[1])
+    mag_a = math.hypot(ax, ay)
+    mag_b = math.hypot(bx, by)
+    if mag_a <= 1e-9 or mag_b <= 1e-9:
+        raise ValueError("angle vectors must be non-zero")
+    dot = (ax * bx) + (ay * by)
+    cos_value = max(-1.0, min(1.0, dot / (mag_a * mag_b)))
+    return float(math.degrees(math.acos(cos_value)))
+
+
+@lru_cache(maxsize=16)
+def primitive_angle_pair_catalog(
+    *,
+    angle_step: int,
+    min_angle: int,
+    max_angle: int,
+    max_abs_vector_component: int = 6,
+    max_quantization_error: float = 2.0,
+    min_vector_length_units: float = 1.0,
+) -> Dict[int, Tuple[Tuple[Vector, Vector, float], ...]]:
+    """Build a cached map from snapped angle value to feasible integer-vector pairs.
+
+    Catalog policy:
+    - one arm is axis-aligned (horizontal/vertical),
+    - the other arm is any non-zero integer vector in the search window,
+    - both vectors must have length >= `min_vector_length_units`,
+    - raw angle must snap to `angle_step` within `max_quantization_error`.
+    """
+    step = int(angle_step)
+    if step <= 0:
+        raise ValueError("angle_step must be > 0")
+    min_value = int(min_angle)
+    max_value = int(max_angle)
+    if min_value < step or min_value > max_value:
+        raise ValueError("invalid angle range")
+    min_vector_length = float(min_vector_length_units)
+    if min_vector_length < 0.0:
+        raise ValueError("min_vector_length_units must be >= 0")
+
+    vectors: List[Vector] = [
+        (dx, dy)
+        for dx in range(-int(max_abs_vector_component), int(max_abs_vector_component) + 1)
+        for dy in range(-int(max_abs_vector_component), int(max_abs_vector_component) + 1)
+        if not (dx == 0 and dy == 0)
+    ]
+    axis_vectors = [vector for vector in vectors if (vector[0] == 0 or vector[1] == 0)]
+
+    by_angle: Dict[int, List[Tuple[Vector, Vector, float]]] = {}
+    for axis_vector in axis_vectors:
+        if math.hypot(float(axis_vector[0]), float(axis_vector[1])) < float(min_vector_length):
+            continue
+        for other_vector in vectors:
+            if (other_vector[0] == 0 and other_vector[1] == 0) or other_vector == axis_vector:
+                continue
+            if math.hypot(float(other_vector[0]), float(other_vector[1])) < float(min_vector_length):
+                continue
+            raw = _vector_angle_degrees(axis_vector, other_vector)
+            snapped = int(round(raw / float(step))) * int(step)
+            if snapped < min_value or snapped > max_value:
+                continue
+            if abs(raw - float(snapped)) > float(max_quantization_error):
+                continue
+            if snapped in {0, 180}:
+                continue
+            by_angle.setdefault(int(snapped), []).append((axis_vector, other_vector, float(raw)))
+
+    out: Dict[int, Tuple[Tuple[Vector, Vector, float], ...]] = {}
+    for angle_value, pairs in sorted(by_angle.items()):
+        # deterministic ordering for reproducible RNG choices downstream
+        ordered = sorted(
+            {
+                (
+                    int(pair[0][0]),
+                    int(pair[0][1]),
+                    int(pair[1][0]),
+                    int(pair[1][1]),
+                    round(float(pair[2]), 6),
+                )
+                for pair in pairs
+            }
+        )
+        out[int(angle_value)] = tuple(
+            ((int(item[0]), int(item[1])), (int(item[2]), int(item[3])), float(item[4]))
+            for item in ordered
+        )
+    if not out:
+        raise ValueError("primitive angle catalog resolved empty")
+    return out
+
+
+def _sample_letters(rng) -> Tuple[str, str, str]:
+    """Sample deterministic triplet labels from `A..Z` without replacement."""
+    letters = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+    rng.shuffle(letters)
+    selected = sorted(letters[:3])
+    # keep middle letter as vertex label for stable `A,B,C` ordering in prompts
+    return (str(selected[0]), str(selected[1]), str(selected[2]))
+
+
+def sample_primitive_angle(
     rng,
+    *,
+    canvas_size: int,
+    graph_spacing: int,
+    graph_origin: Point | None = None,
+    min_angle: int,
+    max_angle: int,
+    angle_step: int,
+    max_abs_vector_component: int = 6,
+    max_quantization_error: float = 2.0,
+    min_vector_length_units: float = 1.0,
+    margin_padding_units: int = 2,
+    target_angle: int | None = None,
+) -> PrimitiveAngleSample:
+    """Sample one primitive angle whose answer snaps to `angle_step` multiples."""
+    catalog = primitive_angle_pair_catalog(
+        angle_step=int(angle_step),
+        min_angle=int(min_angle),
+        max_angle=int(max_angle),
+        max_abs_vector_component=int(max_abs_vector_component),
+        max_quantization_error=float(max_quantization_error),
+        min_vector_length_units=float(min_vector_length_units),
+    )
+    feasible_angles = sorted(catalog.keys())
+    if not feasible_angles:
+        raise ValueError("no feasible primitive angles for requested range")
+    if target_angle is not None and int(target_angle) not in set(feasible_angles):
+        raise ValueError("target_angle is not feasible for primitive-angle catalog")
+
+    for _ in range(220):
+        angle_target = int(target_angle) if target_angle is not None else int(rng.choice(feasible_angles))
+        pairs = list(catalog[angle_target])
+        rng.shuffle(pairs)
+        if not pairs:
+            continue
+
+        for vector_a, vector_b, raw_angle in pairs:
+            try:
+                vertex = sample_lattice_point_with_offsets(
+                    rng,
+                    canvas_size=int(canvas_size),
+                    spacing=int(graph_spacing),
+                    x_offsets=(0, int(vector_a[0]), int(vector_b[0])),
+                    y_offsets=(0, int(vector_a[1]), int(vector_b[1])),
+                    lattice_origin=(
+                        (float(graph_origin[0]), float(graph_origin[1]))
+                        if graph_origin is not None
+                        else None
+                    ),
+                    padding=int(max(0, int(margin_padding_units)) * int(graph_spacing)),
+                )
+            except ValueError:
+                continue
+            point_a = offset_point_by_grid_vector(vertex, vector_a, spacing=int(graph_spacing))
+            point_b = offset_point_by_grid_vector(vertex, vector_b, spacing=int(graph_spacing))
+            if not (
+                point_inside_square_canvas(point_a, canvas_size=int(canvas_size))
+                and point_inside_square_canvas(point_b, canvas_size=int(canvas_size))
+            ):
+                continue
+            labels = _sample_letters(rng)
+            return PrimitiveAngleSample(
+                angle_degrees=int(angle_target),
+                raw_angle_degrees=float(raw_angle),
+                vertex=vertex,
+                point_a=point_a,
+                point_b=point_b,
+                labels=labels,
+            )
+    raise ValueError("failed to sample primitive angle on graph paper")
+
+
+def draw_labeled_angle(
+    draw: ImageDraw.ImageDraw,
     *,
     vertex: Point,
-    angle_value: int,
-    ray_length: int,
-    canvas_size: int,
-) -> Tuple[Point, Point] | None:
-    """Sample ray endpoints while forcing one angle arm to be axis-aligned."""
-    for _orient_attempt in range(120):
-        axis_theta = float(rng.choice(_AXIS_DIRECTIONS_DEG))
-        signed_delta = float(angle_value) if rng.random() < 0.5 else -float(angle_value)
-        axis_is_first = rng.random() < 0.5
+    point_a: Point,
+    point_b: Point,
+    labels: Sequence[str],
+    line_width: int,
+    label_offset_px: float,
+    font_size_px: int,
+    text_stroke_width: int | None = None,
+    line_color: Tuple[int, int, int] = (24, 24, 24),
+    label_color: Tuple[int, int, int] = (24, 24, 24),
+    label_stroke_color: Tuple[int, int, int] = (252, 252, 252),
+    blocked_segments: Sequence[Tuple[Point, Point]] | None = None,
+    canvas_size: int | None = None,
+) -> None:
+    """Draw one angle with overlap-aware endpoint/vertex labels."""
+    vx, vy = float(vertex[0]), float(vertex[1])
+    ax, ay = float(point_a[0]), float(point_a[1])
+    bx, by = float(point_b[0]), float(point_b[1])
+    draw.line([ax, ay, vx, vy], fill=tuple(int(value) for value in line_color), width=max(1, int(line_width)))
+    draw.line([bx, by, vx, vy], fill=tuple(int(value) for value in line_color), width=max(1, int(line_width)))
 
-        theta_axis = axis_theta
-        theta_other = axis_theta + signed_delta
-        theta1 = theta_axis if axis_is_first else theta_other
-        theta2 = theta_other if axis_is_first else theta_axis
-
-        end1 = _ray_endpoint(vertex, theta1, ray_length)
-        end2 = _ray_endpoint(vertex, theta2, ray_length)
-        if point_inside_square_canvas(end1, canvas_size=canvas_size) and point_inside_square_canvas(
-            end2,
-            canvas_size=canvas_size,
-        ):
-            return end1, end2
-    return None
-
-
-def draw_angle(draw: ImageDraw.ImageDraw, *, vertex: Point, end1: Point, end2: Point, line_width: int) -> None:
-    """Draw one angle primitive (two rays + highlighted vertex marker)."""
-    vx, vy = vertex
-    draw.line([vx, vy, end1[0], end1[1]], fill=(22, 22, 22), width=line_width)
-    draw.line([vx, vy, end2[0], end2[1]], fill=(22, 22, 22), width=line_width)
-    radius = max(3, line_width)
-    draw.ellipse(
-        [vx - radius, vy - radius, vx + radius, vy + radius],
-        fill=(35, 89, 154),
-        outline=(18, 18, 18),
-        width=1,
-    )
-
-
-def sample_angle_entities_layout(
-    rng,
-    *,
-    ids: Sequence[str],
-    values_by_id: Mapping[str, int],
-    canvas_size: int,
-    margin: int,
-    min_vertex_dist: float,
-    graph_spacing: int,
-    ray_length: int,
-    min_layout_clearance: float,
-) -> Dict[str, Dict[str, Any]] | None:
-    """Sample one non-overlapping angle layout keyed by stable entity ids."""
-    try:
-        vertices = sample_vertices_on_graph_paper(
-            rng,
-            count=len(ids),
-            canvas_size=int(canvas_size),
-            margin=int(margin),
-            min_dist=float(min_vertex_dist),
-            spacing=int(graph_spacing),
-        )
-    except ValueError:
-        return None
-
-    entities: Dict[str, Dict[str, Any]] = {}
-    for entity_id, vertex in zip(ids, vertices):
-        angle_value = int(values_by_id[str(entity_id)])
-        ray_pair = _sample_axis_anchored_rays(
-            rng,
-            vertex=vertex,
-            angle_value=angle_value,
-            ray_length=int(ray_length),
-            canvas_size=int(canvas_size),
-        )
-        if ray_pair is None:
-            return None
-        end1, end2 = ray_pair
-        entities[str(entity_id)] = {
-            "value": int(angle_value),
-            "vertex": [float(vertex[0]), float(vertex[1])],
-            "ray_1": [float(end1[0]), float(end1[1])],
-            "ray_2": [float(end2[0]), float(end2[1])],
-        }
-        if len(entities) > 1 and (
-            not mapping_entities_have_min_clearance(
-                entities,
-                point_keys=_ANGLE_POINT_KEYS,
-                segment_keys=_ANGLE_SEGMENT_KEYS,
-                min_clearance=float(min_layout_clearance),
-            )
-        ):
-            return None
-    return entities
-
-
-def build_angle_scene_entities(entities: Mapping[str, Mapping[str, Any]]) -> List[Dict[str, Any]]:
-    """Build `scene_ir.entities` entries for angle scenes."""
-    return [
-        {
-            "entity_id": entity_id,
-            "entity_type": "angle",
-            "attrs": {
-                "angle_degrees": int(entity["value"]),
-                "vertex": list(entity["vertex"]),
-                "ray_1": list(entity["ray_1"]),
-                "ray_2": list(entity["ray_2"]),
-            },
-        }
-        for entity_id, entity in sorted(entities.items())
+    points = [point_a, vertex, point_b]
+    segments: List[Tuple[Point, Point]] = [
+        ((float(point_a[0]), float(point_a[1])), (float(vertex[0]), float(vertex[1]))),
+        ((float(vertex[0]), float(vertex[1])), (float(point_b[0]), float(point_b[1]))),
     ]
+    if blocked_segments:
+        segments.extend(
+            (
+                (float(seg_a[0]), float(seg_a[1])),
+                (float(seg_b[0]), float(seg_b[1])),
+            )
+            for seg_a, seg_b in blocked_segments
+        )
+    centroid_x = float(sum(point[0] for point in points) / 3.0)
+    centroid_y = float(sum(point[1] for point in points) / 3.0)
+    offset = float(max(8.0, float(label_offset_px)))
+    font = load_font(int(font_size_px), bold=True)
+    stroke_width = (
+        int(text_stroke_width)
+        if text_stroke_width is not None
+        else max(1, int(round(0.08 * float(max(8, int(font_size_px))))))
+    )
+    occupied_boxes: List[Tuple[float, float, float, float]] = []
+    for label, point in zip(labels, points):
+        px, py = float(point[0]), float(point[1])
+        dx, dy = px - centroid_x, py - centroid_y
+        center, label_bbox = resolve_text_label_center(
+            draw,
+            text=str(label),
+            anchor=(float(px), float(py)),
+            base_direction=(float(dx), float(dy)),
+            offset_px=float(offset),
+            font=font,
+            blocked_segments=segments,
+            occupied_boxes=occupied_boxes,
+            stroke_width=int(stroke_width),
+            line_clearance_px=max(2.0, 0.8 * float(max(1, int(line_width)))),
+            canvas_size=int(canvas_size) if canvas_size is not None else None,
+        )
+        draw_text_centered(
+            draw,
+            text=str(label),
+            center=(float(center[0]), float(center[1])),
+            font=font,
+            fill=tuple(int(value) for value in label_color),
+            stroke_fill=tuple(int(value) for value in label_stroke_color),
+            stroke_width=int(stroke_width),
+        )
+        occupied_boxes.append(label_bbox)
 
 
-def build_angle_render_anchors(entities: Mapping[str, Mapping[str, Any]]) -> Dict[str, Dict[str, Any]]:
-    """Build deterministic render-map anchor payloads for angle entities."""
-    return {
-        entity_id: {
-            "point": list(entity["vertex"]),
-            "polyline": [
-                list(entity["vertex"]),
-                list(entity["ray_1"]),
-                list(entity["vertex"]),
-                list(entity["ray_2"]),
-            ],
-            "coord_space": "pixel",
-        }
-        for entity_id, entity in sorted(entities.items())
-    }
-
-
-def build_angle_evidence_artifacts(
+def angle_triplet_evidence_artifacts(
     *,
-    query_type: str,
-    selected_ids: Sequence[str],
-    entities: Mapping[str, Mapping[str, Any]],
+    point_a: Point,
+    vertex: Point,
+    point_b: Point,
     graph_origin: Point,
     graph_spacing: int,
-) -> _AngleEvidenceArtifacts:
-    """Resolve evidence/witness payloads from selected angle ids and graph frame."""
-    ids = [str(entity_id) for entity_id in selected_ids]
-    if not ids:
-        raise ValueError("selected_ids must be non-empty")
-
-    selected_vertices = [
-        [float(entities[entity_id]["vertex"][0]), float(entities[entity_id]["vertex"][1])]
-        for entity_id in ids
+) -> Dict[str, Any]:
+    """Build evidence/witness/projection payloads for one ordered angle-point triplet."""
+    pixel_points = [
+        [float(point_a[0]), float(point_a[1])],
+        [float(vertex[0]), float(vertex[1])],
+        [float(point_b[0]), float(point_b[1])],
     ]
-    selected_vertices_graph = [
+    grid_points = [
         pixel_point_to_graph_units(
             (float(point[0]), float(point[1])),
             origin=(float(graph_origin[0]), float(graph_origin[1])),
             spacing=int(graph_spacing),
         )
-        for point in selected_vertices
+        for point in pixel_points
     ]
-
-    if str(query_type) == "difference_max_min":
-        evidence_type = "grid_point_path"
-        evidence_value: Any = [list(point) for point in selected_vertices_graph]
-        witness_symbolic = {"type": "id_path", "ids": list(ids)}
-    else:
-        evidence_type = "grid_point_set"
-        evidence_value = [list(selected_vertices_graph[0])]
-        witness_symbolic = {"type": "id_set", "ids": [ids[0]]}
-
-    projected_evidence = {
-        "point_set": [list(point) for point in selected_vertices],
-        "point_path": [list(point) for point in selected_vertices],
-        "grid_point_set": [list(point) for point in selected_vertices_graph],
-        "grid_point_path": [list(point) for point in selected_vertices_graph],
+    return {
+        "evidence_type": "grid_point_set",
+        "evidence_value": [list(point) for point in grid_points],
+        "witness_symbolic": {
+            "type": "angle_triplet",
+            "roles": ["ray_endpoint_a", "vertex", "ray_endpoint_b"],
+        },
+        "projected_evidence": {
+            "point_set": [list(point) for point in pixel_points],
+            "point_path": [list(point) for point in pixel_points],
+            "grid_point_set": [list(point) for point in grid_points],
+            "grid_point_path": [list(point) for point in grid_points],
+        },
     }
-
-    return _AngleEvidenceArtifacts(
-        evidence_type=evidence_type,
-        evidence_value=evidence_value,
-        witness_symbolic=witness_symbolic,
-        selected_vertices=selected_vertices,
-        selected_vertices_graph=selected_vertices_graph,
-        projected_evidence=projected_evidence,
-    )

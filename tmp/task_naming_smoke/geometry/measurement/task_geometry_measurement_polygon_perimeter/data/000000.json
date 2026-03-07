@@ -1,0 +1,460 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 12
+  },
+  "complexity": {
+    "complexity_components": {
+      "perimeter_units": 12,
+      "polygon_sides": 3
+    },
+    "complexity_score": 0.48857142857142855
+  },
+  "domain": "geometry",
+  "evidence_gt": {
+    "type": "grid_point_set",
+    "value": [
+      [
+        -2,
+        -3
+      ],
+      [
+        -2,
+        0
+      ],
+      [
+        2,
+        -3
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/measurement/task_geometry_measurement_polygon_perimeter/images/000000.png"
+  },
+  "instance_seed": 7562730722583201,
+  "prompt": "One graph-paper figure is shown: a single polygon. Inspect the polygon and answer: What is the perimeter of the polygon in graph units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: the polygon vertex coordinates as an unordered graph-unit point list.\nAnswer: set \"answer\" to the polygon perimeter as an integer value.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":12}",
+  "prompt_variants": {
+    "answer_and_evidence": "One graph-paper figure is shown: a single polygon. Inspect the polygon and answer: What is the perimeter of the polygon in graph units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: the polygon vertex coordinates as an unordered graph-unit point list.\nAnswer: set \"answer\" to the polygon perimeter as an integer value.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":12}",
+    "answer_only": "One graph-paper figure is shown: a single polygon. Inspect the polygon and answer: What is the perimeter of the polygon in graph units?"
+  },
+  "query_type": "measure",
+  "sample_index": 0,
+  "task": "task_geometry_measurement_polygon_perimeter",
+  "task_group": "measurement",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 12,
+      "area_square_units": 6,
+      "perimeter_units": 12,
+      "polygon_sides": 3,
+      "template_id": "procedural_3_07f3b7f1c55c"
+    },
+    "projected_evidence": {
+      "grid_point_path": [
+        [
+          -2,
+          -3
+        ],
+        [
+          -2,
+          0
+        ],
+        [
+          2,
+          -3
+        ]
+      ],
+      "grid_point_set": [
+        [
+          -2,
+          -3
+        ],
+        [
+          -2,
+          0
+        ],
+        [
+          2,
+          -3
+        ]
+      ],
+      "point_path": [
+        [
+          94.0,
+          404.0
+        ],
+        [
+          94.0,
+          218.0
+        ],
+        [
+          342.0,
+          404.0
+        ]
+      ],
+      "point_set": [
+        [
+          94.0,
+          404.0
+        ],
+        [
+          94.0,
+          218.0
+        ],
+        [
+          342.0,
+          404.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "allowed_sides": [
+          3,
+          4,
+          5
+        ],
+        "answer_max": 24,
+        "answer_min": 8
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "geometry_measurement_v2",
+        "query_type_key": "measure",
+        "query_type_variant_index": 3,
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the polygon perimeter as an integer value",
+          "evidence_hint": "the polygon vertex coordinates as an unordered graph-unit point list",
+          "json_example": "{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":12}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "object_description": "a single polygon",
+          "question_text": "What is the perimeter of the polygon in graph units?"
+        },
+        "task_type_key": "measurement_single_object",
+        "task_type_variant_index": 2,
+        "template_paths": [
+          "geometry/measurement/geometry_measurement_v2.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 10,
+          "query_type:measure": 10,
+          "task_type:measurement_single_object": 10
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_measurement_v2",
+            "query_type_key": "measure",
+            "query_type_variant_index": 3,
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the polygon perimeter as an integer value",
+              "evidence_hint": "the polygon vertex coordinates as an unordered graph-unit point list",
+              "json_example": "{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":12}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "object_description": "a single polygon",
+              "question_text": "What is the perimeter of the polygon in graph units?"
+            },
+            "task_type_key": "measurement_single_object",
+            "task_type_variant_index": 2,
+            "template_paths": [
+              "geometry/measurement/geometry_measurement_v2.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 10,
+              "query_type:measure": 10,
+              "task_type:measurement_single_object": 10
+            }
+          },
+          "prompt": "One graph-paper figure is shown: a single polygon. Inspect the polygon and answer: What is the perimeter of the polygon in graph units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: the polygon vertex coordinates as an unordered graph-unit point list.\nAnswer: set \"answer\" to the polygon perimeter as an integer value.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":12}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 5,
+            "prompt_bundle_id": "geometry_measurement_v2",
+            "query_type_key": "measure",
+            "query_type_variant_index": 3,
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the polygon perimeter as an integer value",
+              "evidence_hint": "the polygon vertex coordinates as an unordered graph-unit point list",
+              "json_example": "{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":12}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "object_description": "a single polygon",
+              "question_text": "What is the perimeter of the polygon in graph units?"
+            },
+            "task_type_key": "measurement_single_object",
+            "task_type_variant_index": 2,
+            "template_paths": [
+              "geometry/measurement/geometry_measurement_v2.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 10,
+              "query_type:measure": 10,
+              "task_type:measurement_single_object": 10
+            }
+          },
+          "prompt": "One graph-paper figure is shown: a single polygon. Inspect the polygon and answer: What is the perimeter of the polygon in graph units?"
+        }
+      },
+      "query_type": "measure",
+      "template_id": "geometry_polygon_perimeter_measure_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "polygon_1": {
+          "coord_space": "pixel",
+          "point": [
+            94.0,
+            404.0
+          ],
+          "polyline": [
+            [
+              94.0,
+              404.0
+            ],
+            [
+              94.0,
+              218.0
+            ],
+            [
+              342.0,
+              404.0
+            ],
+            [
+              94.0,
+              404.0
+            ]
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "graph_paper",
+        "style_spec": {
+          "axis_arrow_size": 10,
+          "axis_arrows_enabled": true,
+          "axis_color": [
+            189,
+            194,
+            201
+          ],
+          "axis_darken_range": [
+            32,
+            48
+          ],
+          "axis_enabled": true,
+          "axis_line_width": 2,
+          "axis_scale_label_max_abs": 0,
+          "axis_scale_labels_enabled": true,
+          "base_color": [
+            255,
+            255,
+            255
+          ],
+          "base_color_jitter": [
+            0,
+            0
+          ],
+          "center_point_color": [
+            181,
+            186,
+            193
+          ],
+          "center_point_darken_extra_range": [
+            8,
+            14
+          ],
+          "center_point_enabled": true,
+          "center_point_radius": 2,
+          "color_variation_applied": true,
+          "color_variation_enabled": true,
+          "color_variation_sampled": {
+            "axis_darken": 36,
+            "base_color_delta": 0,
+            "center_point_darken_extra": 8,
+            "line_color_delta": 1,
+            "major_line_darken": 11,
+            "origin_label_darken_extra": 8
+          },
+          "kind": "grid",
+          "line_color": [
+            225,
+            230,
+            237
+          ],
+          "line_color_jitter": [
+            -5,
+            5
+          ],
+          "line_width": 1,
+          "major_every": 0,
+          "major_line_color": [
+            214,
+            219,
+            226
+          ],
+          "major_line_darken_range": [
+            6,
+            14
+          ],
+          "major_line_width": 1,
+          "origin_label_color": [
+            181,
+            186,
+            193
+          ],
+          "origin_label_darken_extra_range": [
+            6,
+            12
+          ],
+          "origin_label_enabled": false,
+          "origin_label_text": "0",
+          "outer_margin_px": 16,
+          "scene_supersample_scale": 3,
+          "spacing": 62,
+          "supersample_scale": 1
+        }
+      },
+      "canvas_size": 437,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 6,
+        "full_cells_y": 6,
+        "origin_pixel": [
+          218,
+          218
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 62,
+        "target_cells_x": 7,
+        "target_cells_y": 7,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 6,
+        "full_cells_y": 6,
+        "partial_edge_cells": true,
+        "spacing_px": 62,
+        "target_cells_x": 7,
+        "target_cells_y": 7
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          26,
+          26,
+          26
+        ],
+        "label_stroke_color": [
+          249,
+          249,
+          249
+        ],
+        "line_color": [
+          23,
+          23,
+          23
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "area_square_units": 6,
+            "labels": [
+              "W",
+              "X",
+              "Y"
+            ],
+            "perimeter_units": 12,
+            "polygon_sides": 3,
+            "template_id": "procedural_3_07f3b7f1c55c",
+            "vertices": [
+              [
+                94.0,
+                404.0
+              ],
+              [
+                94.0,
+                218.0
+              ],
+              [
+                342.0,
+                404.0
+              ]
+            ]
+          },
+          "entity_id": "polygon_1",
+          "entity_type": "polygon"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            218,
+            218
+          ],
+          "spacing_px": 62,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_polygon_perimeter_measurement"
+    },
+    "witness_symbolic": {
+      "entity_id": "polygon_1",
+      "type": "polygon_vertex_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

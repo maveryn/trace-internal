@@ -1,9 +1,9 @@
-# `tile_shortest_path`
+# `task_tile_path_shortest_path`
 
 ## 1) Identity
 1. Domain: `tile`
 2. Task group: `path`
-3. Task id: `tile_shortest_path`
+3. Task id: `task_tile_path_shortest_path`
 4. Objective: return shortest-path length with grounded path evidence.
 
 ## 2) Scene + query contract

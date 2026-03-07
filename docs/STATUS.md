@@ -10,18 +10,27 @@ Date: 2026-03-05
 5. External prompt-bundle system with dual output modes.
 6. Deterministic background/noise visual variation helpers.
 7. Domain + task-group default config loading with section-level `shared` + `task_overrides` composition.
-8. Shared helper layers for value queries, layout constraints, graph adapters, prompt variants, and output metadata.
-9. Query-weight default fallback chain (`build override -> task-group sampling defaults -> uniform`).
+8. Shared geometry single-object scene helpers (`graph_paper`, `graph_rendering`, `single_object_scene`, `angle_geometry`, `polygon_geometry`).
+9. Objective-style geometry measurement tasks (single shape/object per image):
+   - angle measure (primitive-angle, triangle/quadrilateral polygon-angle, or line-intersection source) with deterministic balanced source/answer sampling defaults, minimum ray length constraints, and MCQ query formatting,
+   - polygon area measure,
+   - polygon perimeter measure.
+   - angle measure now uses option-letter (`A..E`) ground-truth answers for MCQ output mode.
+10. Geometry graph-paper backgrounds now render center-origin cues by default: axis arrows + signed integer scale labels across the full visible axis range (no origin text label).
+11. Geometry graph-paper colors now vary within configured ranges per instance; axis lines are sampled darker than minor/major grid lines by construction.
+12. Geometry shape ink style is now sampled from shared domain-config ranges (line/text/stroke grayscale), and polygon area/perimeter tasks reuse one shared task-group base pipeline.
 
 ## Active tasks
-1. `tile_shortest_path` (`domain=tile`, `task_group=path`)
-2. `geometry_angle_value_query` (`domain=geometry`, `task_group=measurement`)
+1. `task_tile_path_shortest_path` (`domain=tile`, `task_group=path`)
+2. `task_geometry_measurement_angle` (`domain=geometry`, `task_group=measurement`)
+3. `task_geometry_measurement_polygon_area` (`domain=geometry`, `task_group=measurement`)
+4. `task_geometry_measurement_polygon_perimeter` (`domain=geometry`, `task_group=measurement`)
 
 ## Current quality baseline
-1. Tests currently pass (`27 passed`).
-2. Sample tooling supports per-task artifacts, per-query distribution reports, and combined Excel output.
+1. Tests are required to pass before finalize.
+2. Sample tooling supports per-task artifacts, per-query distribution reports, and per-domain combined Excel workbooks with embedded image previews.
 
 ## Next priorities
-1. Add another geometry measurement task (for example area value query).
-2. Add another tile/path-adjacent task to stress shared abstractions.
-3. Continue trimming duplication as new task families arrive.
+1. Continue objective-first refactor for additional domains (tile/icons/charts/graphs/documents).
+2. Introduce cross-domain `scene_variant` and role-binding schema in architecture docs/contracts.
+3. Add future polygon variants as deferred tasks (diameter, min-side, max-side) after current scope stabilizes.

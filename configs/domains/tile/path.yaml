@@ -1,6 +1,6 @@
 generation:
   task_overrides:
-    tile_shortest_path:
+    task_tile_path_shortest_path:
       rows: 8
       cols: 8
       min_shortest_len: 6
@@ -10,7 +10,7 @@ generation:
 
 rendering:
   task_overrides:
-    tile_shortest_path:
+    task_tile_path_shortest_path:
       canvas_size: 640
       margin: 24
 

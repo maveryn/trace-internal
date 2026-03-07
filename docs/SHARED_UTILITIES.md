@@ -20,23 +20,35 @@ Promote helpers when a second consumer appears.
 5. `trace/core/task_group_config.py`, `trace/core/json_io.py`, `trace/core/query_types.py`
    - `task_group_config` resolves merged defaults and section-level `shared` + `task_overrides` composition.
 6. `trace/core/prompts/*` and `trace/core/visual/*`
+   - `trace/core/visual/ranges.py` is the canonical visual-layer range parser for integer min/max normalization.
 
 ### Task-shared
-1. `trace/tasks/shared/value_queries.py`
-2. `trace/tasks/shared/value_query_sampling.py`
-3. `trace/tasks/shared/layout_constraints.py`
-4. `trace/tasks/shared/geometry_primitives.py`
-5. `trace/tasks/shared/bbox_projection.py`
-6. `trace/tasks/shared/graph_algorithms.py`
-7. `trace/tasks/shared/config_defaults.py`
+1. `trace/tasks/shared/geometry_primitives.py`
+2. `trace/tasks/shared/bbox_projection.py`
+3. `trace/tasks/shared/graph_algorithms.py`
+4. `trace/tasks/shared/config_defaults.py`
    - Resolves effective `generation`/`rendering`/`prompt` defaults from task-group config by merging section `shared` + `task_overrides.<task_id>`.
-8. `trace/tasks/shared/visual_defaults.py`
-9. `trace/tasks/shared/prompt_variants.py`
-10. `trace/tasks/shared/output_metadata.py`
+   - `required_group_default` / `required_group_defaults` are the canonical fail-fast helpers for required config keys (avoid hardcoded in-code fallback literals for required prompt/config slots).
+   - `resolve_optional_int_bounds` is the canonical helper for optional inclusive integer bounds (for example `answer_min`/`answer_max`).
+   - `resolve_required_int_bounds` / `resolve_required_float_bounds` are the canonical helpers for required numeric min/max pairs.
+5. `trace/tasks/shared/visual_defaults.py`
+6. `trace/tasks/shared/prompt_variants.py`
+7. `trace/tasks/shared/output_metadata.py`
+8. `trace/tasks/shared/text_rendering.py`
+   - Canonical text/font helpers plus overlap-aware label placement (`resolve_text_label_center`) for geometry annotations.
+9. `trace/tasks/shared/mcq.py`
+10. `trace/tasks/shared/sequence.py`
+   - Canonical deterministic sequence transforms (for example rotation) used by multiple tasks/domains.
 
 ### Domain-shared (current)
-1. Geometry: `trace/tasks/geometry/shared/graph_paper.py`, `graph_rendering.py`, `angle_geometry.py`
-2. Tile: `trace/tasks/tile/shared/path_grid.py`, `maze_sampling.py`, `grid_layout.py`, `maze_scene.py`, `maze_rendering.py`
+1. Geometry: `trace/tasks/geometry/shared/graph_paper.py`, `graph_rendering.py`, `single_object_scene.py`, `angle_geometry.py`, `polygon_geometry.py`, `shape_style.py`, `background_defaults.py`, `noise_defaults.py`
+   - `graph_paper.offset_point_by_grid_vector` is the canonical pixel-space translation helper for lattice vector offsets.
+   - `background_defaults.load_geometry_background_defaults(...)` is the canonical geometry-domain loader for graph-paper background defaults (domain baseline with optional task-group override).
+   - `noise_defaults.load_geometry_noise_defaults(...)` is the canonical geometry-domain loader for post-image noise defaults (domain baseline with optional task-group override).
+2. Geometry measurement task-group: `trace/tasks/geometry/measurement/defaults.py`, `polygon_measure_base.py`
+   - `defaults.py` centralizes task-group fallback defaults reused by measurement tasks.
+   - `polygon_measure_base.py` provides shared generation/output pipeline for polygon area/perimeter tasks (task-specific logic stays in thin subclasses).
+3. Tile: `trace/tasks/tile/shared/path_grid.py`, `maze_sampling.py`, `grid_layout.py`, `maze_scene.py`, `maze_rendering.py`
 
 ## 3) Reuse rules
 1. Do not duplicate deterministic utilities.

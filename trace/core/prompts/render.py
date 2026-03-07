@@ -24,10 +24,15 @@ class _StrictSlotMap(dict):
         raise KeyError(f"missing prompt slot: {key}")
 
 
-def _render_template(template: str, slots: Mapping[str, Any]) -> str:
+def _render_template(
+    template: str,
+    slots: Mapping[str, Any],
+    *,
+    allow_empty: bool = False,
+) -> str:
     """Render one prompt template with strict placeholder requirements."""
     rendered = str(template).format_map(_StrictSlotMap({str(k): v for k, v in dict(slots).items()})).strip()
-    if not rendered:
+    if not rendered and not bool(allow_empty):
         raise ValueError("rendered prompt template is empty")
     return rendered
 
@@ -119,11 +124,13 @@ def render_prompt(
             instance_seed=instance_seed,
             namespace=f"prompt.answer_or_evidence.{resolved_mode_key}",
         )
-        mode_text = _render_template(mode_template, slots)
+        mode_text = _render_template(mode_template, slots, allow_empty=True)
 
     task_text = _render_template(task_template, slots)
     query_text = _render_template(query_template, slots)
-    prompt = " ".join(text for text in (task_text, query_text, mode_text) if text).strip()
+    prompt = " ".join(text for text in (task_text, query_text) if text).strip()
+    if mode_text:
+        prompt = f"{prompt}\n{mode_text}".strip()
 
     metadata = {
         "prompt_bundle_id": bundle.bundle_id,

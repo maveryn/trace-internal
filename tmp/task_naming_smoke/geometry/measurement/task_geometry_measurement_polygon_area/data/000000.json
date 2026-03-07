@@ -1,0 +1,467 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 24
+  },
+  "complexity": {
+    "complexity_components": {
+      "area_square_units": 24,
+      "polygon_sides": 3
+    },
+    "complexity_score": 0.4685714285714286
+  },
+  "domain": "geometry",
+  "evidence_gt": {
+    "type": "grid_point_set",
+    "value": [
+      [
+        2,
+        4
+      ],
+      [
+        2,
+        -4
+      ],
+      [
+        -4,
+        4
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/measurement/task_geometry_measurement_polygon_area/images/000000.png"
+  },
+  "instance_seed": 1034094451228364,
+  "prompt": "Use the graph-paper scene that shows a single polygon. Work from the displayed polygon and answer: What is the area of the polygon in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence value rule: the polygon vertex coordinates as an unordered graph-unit point list.\nAnswer value rule: set \"answer\" to the polygon area as an integer value.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the graph-paper scene that shows a single polygon. Work from the displayed polygon and answer: What is the area of the polygon in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence value rule: the polygon vertex coordinates as an unordered graph-unit point list.\nAnswer value rule: set \"answer\" to the polygon area as an integer value.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":8}",
+    "answer_only": "Use the graph-paper scene that shows a single polygon. Work from the displayed polygon and answer: What is the area of the polygon in square units?"
+  },
+  "query_type": "measure",
+  "sample_index": 0,
+  "task": "task_geometry_measurement_polygon_area",
+  "task_group": "measurement",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 24,
+      "area_square_units": 24,
+      "perimeter_units": 24,
+      "polygon_sides": 3,
+      "template_id": "procedural_3_60f2795e4a95"
+    },
+    "projected_evidence": {
+      "grid_point_path": [
+        [
+          2,
+          4
+        ],
+        [
+          2,
+          -4
+        ],
+        [
+          -4,
+          4
+        ]
+      ],
+      "grid_point_set": [
+        [
+          2,
+          4
+        ],
+        [
+          2,
+          -4
+        ],
+        [
+          -4,
+          4
+        ]
+      ],
+      "point_path": [
+        [
+          184.0,
+          46.0
+        ],
+        [
+          184.0,
+          230.0
+        ],
+        [
+          46.0,
+          46.0
+        ]
+      ],
+      "point_set": [
+        [
+          184.0,
+          46.0
+        ],
+        [
+          184.0,
+          230.0
+        ],
+        [
+          46.0,
+          46.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "allowed_sides": [
+          3,
+          4,
+          5
+        ],
+        "answer_max": 32,
+        "answer_min": 8
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 6,
+        "prompt_bundle_id": "geometry_measurement_v2",
+        "query_type_key": "measure",
+        "query_type_variant_index": 8,
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the polygon area as an integer value",
+          "evidence_hint": "the polygon vertex coordinates as an unordered graph-unit point list",
+          "json_example": "{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "object_description": "a single polygon",
+          "question_text": "What is the area of the polygon in square units?"
+        },
+        "task_type_key": "measurement_single_object",
+        "task_type_variant_index": 5,
+        "template_paths": [
+          "geometry/measurement/geometry_measurement_v2.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 10,
+          "query_type:measure": 10,
+          "task_type:measurement_single_object": 10
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 6,
+            "prompt_bundle_id": "geometry_measurement_v2",
+            "query_type_key": "measure",
+            "query_type_variant_index": 8,
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the polygon area as an integer value",
+              "evidence_hint": "the polygon vertex coordinates as an unordered graph-unit point list",
+              "json_example": "{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "object_description": "a single polygon",
+              "question_text": "What is the area of the polygon in square units?"
+            },
+            "task_type_key": "measurement_single_object",
+            "task_type_variant_index": 5,
+            "template_paths": [
+              "geometry/measurement/geometry_measurement_v2.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 10,
+              "query_type:measure": 10,
+              "task_type:measurement_single_object": 10
+            }
+          },
+          "prompt": "Use the graph-paper scene that shows a single polygon. Work from the displayed polygon and answer: What is the area of the polygon in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence value rule: the polygon vertex coordinates as an unordered graph-unit point list.\nAnswer value rule: set \"answer\" to the polygon area as an integer value.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 9,
+            "prompt_bundle_id": "geometry_measurement_v2",
+            "query_type_key": "measure",
+            "query_type_variant_index": 8,
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the polygon area as an integer value",
+              "evidence_hint": "the polygon vertex coordinates as an unordered graph-unit point list",
+              "json_example": "{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "object_description": "a single polygon",
+              "question_text": "What is the area of the polygon in square units?"
+            },
+            "task_type_key": "measurement_single_object",
+            "task_type_variant_index": 5,
+            "template_paths": [
+              "geometry/measurement/geometry_measurement_v2.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 10,
+              "query_type:measure": 10,
+              "task_type:measurement_single_object": 10
+            }
+          },
+          "prompt": "Use the graph-paper scene that shows a single polygon. Work from the displayed polygon and answer: What is the area of the polygon in square units?"
+        }
+      },
+      "query_type": "measure",
+      "template_id": "geometry_polygon_area_measure_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "polygon_1": {
+          "coord_space": "pixel",
+          "point": [
+            184.0,
+            46.0
+          ],
+          "polyline": [
+            [
+              184.0,
+              46.0
+            ],
+            [
+              184.0,
+              230.0
+            ],
+            [
+              46.0,
+              46.0
+            ],
+            [
+              184.0,
+              46.0
+            ]
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "graph_paper",
+        "style_spec": {
+          "axis_arrow_size": 10,
+          "axis_arrows_enabled": true,
+          "axis_color": [
+            181,
+            186,
+            193
+          ],
+          "axis_darken_range": [
+            32,
+            48
+          ],
+          "axis_enabled": true,
+          "axis_line_width": 2,
+          "axis_scale_label_max_abs": 0,
+          "axis_scale_labels_enabled": true,
+          "base_color": [
+            255,
+            255,
+            255
+          ],
+          "base_color_jitter": [
+            0,
+            0
+          ],
+          "center_point_color": [
+            172,
+            177,
+            184
+          ],
+          "center_point_darken_extra_range": [
+            8,
+            14
+          ],
+          "center_point_enabled": true,
+          "center_point_radius": 2,
+          "color_variation_applied": true,
+          "color_variation_enabled": true,
+          "color_variation_sampled": {
+            "axis_darken": 48,
+            "base_color_delta": 0,
+            "center_point_darken_extra": 9,
+            "line_color_delta": 5,
+            "major_line_darken": 9,
+            "origin_label_darken_extra": 12
+          },
+          "kind": "grid",
+          "line_color": [
+            229,
+            234,
+            241
+          ],
+          "line_color_jitter": [
+            -5,
+            5
+          ],
+          "line_width": 1,
+          "major_every": 0,
+          "major_line_color": [
+            220,
+            225,
+            232
+          ],
+          "major_line_darken_range": [
+            6,
+            14
+          ],
+          "major_line_width": 1,
+          "origin_label_color": [
+            169,
+            174,
+            181
+          ],
+          "origin_label_darken_extra_range": [
+            6,
+            12
+          ],
+          "origin_label_enabled": false,
+          "origin_label_text": "0",
+          "outer_margin_px": 16,
+          "scene_supersample_scale": 3,
+          "spacing": 23,
+          "supersample_scale": 1
+        }
+      },
+      "canvas_size": 278,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "origin_pixel": [
+          138,
+          138
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 23,
+        "target_cells_x": 12,
+        "target_cells_y": 12,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "partial_edge_cells": true,
+        "spacing_px": 23,
+        "target_cells_x": 12,
+        "target_cells_y": 12
+      },
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "quality": 90.0
+            },
+            "type": "jpeg"
+          }
+        ],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          23,
+          23,
+          23
+        ],
+        "label_stroke_color": [
+          249,
+          249,
+          249
+        ],
+        "line_color": [
+          19,
+          19,
+          19
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "area_square_units": 24,
+            "labels": [
+              "F",
+              "D",
+              "E"
+            ],
+            "perimeter_units": 24,
+            "polygon_sides": 3,
+            "template_id": "procedural_3_60f2795e4a95",
+            "vertices": [
+              [
+                184.0,
+                46.0
+              ],
+              [
+                184.0,
+                230.0
+              ],
+              [
+                46.0,
+                46.0
+              ]
+            ]
+          },
+          "entity_id": "polygon_1",
+          "entity_type": "polygon"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            138,
+            138
+          ],
+          "spacing_px": 23,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_polygon_area_measurement"
+    },
+    "witness_symbolic": {
+      "entity_id": "polygon_1",
+      "type": "polygon_vertex_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

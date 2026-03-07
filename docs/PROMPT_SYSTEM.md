@@ -11,6 +11,8 @@ Prompt text is externalized and deterministic.
    - output mode (`answer_only`, `answer_and_evidence`).
 4. Selection is deterministic from seed namespaces.
 5. Each required template list must have at least 10 variants.
+6. `answer_or_evidence` templates may be intentionally empty for modes where query templates already encode response format.
+7. Prefer slot-based composition for reusable format rules (e.g., shared JSON output contract in task-group `prompt.shared`, with task-level `evidence_hint`/`answer_hint`/example overrides).
 
 ## 2) Bundle schema (v1)
 Required fields:
@@ -42,9 +44,12 @@ Train records should store:
 
 ## 5) Active bundles/tasks
 Bundles:
-1. `prompts/geometry/measurement/geometry_measurement_v1.json`
-2. `prompts/tile/path/tile_path_v1.json`
+1. `prompts/geometry/measurement/geometry_angle_measure_v1.json`
+2. `prompts/geometry/measurement/geometry_measurement_v2.json`
+3. `prompts/tile/path/tile_path_v1.json`
 
 Tasks:
-1. `geometry_angle_value_query`
-2. `tile_shortest_path`
+1. `task_geometry_measurement_angle` (bundle override: `geometry_angle_measure_v1`)
+2. `task_geometry_measurement_polygon_area` (bundle: `geometry_measurement_v2`)
+3. `task_geometry_measurement_polygon_perimeter` (bundle: `geometry_measurement_v2`)
+4. `task_tile_path_shortest_path`

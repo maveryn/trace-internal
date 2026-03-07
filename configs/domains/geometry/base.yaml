@@ -4,6 +4,12 @@ rendering:
     canvas_size_max: 1024
     graph_cells_min: 12
     graph_cells_max: 24
+    shape_line_gray_min: 10
+    shape_line_gray_max: 28
+    shape_label_gray_min: 14
+    shape_label_gray_max: 36
+    shape_label_stroke_gray_min: 248
+    shape_label_stroke_gray_max: 255
 
 visual:
   background:
@@ -12,18 +18,33 @@ visual:
       graph_paper:
         kind: grid
         base_color: [255, 255, 255]
-        line_color: [232, 236, 242]
+        line_color: [224, 229, 236]
         spacing: 24
+        outer_margin_px: 16
         line_width: 1
         major_every: 0
-        major_line_color: [214, 220, 230]
+        major_line_color: [202, 209, 220]
         major_line_width: 1
         axis_enabled: true
-        axis_color: [176, 184, 198]
+        axis_color: [118, 128, 146]
         axis_line_width: 2
+        axis_arrows_enabled: true
+        axis_arrow_size: 10
         center_point_enabled: true
-        center_point_color: [126, 134, 148]
+        center_point_color: [102, 112, 130]
         center_point_radius: 2
+        color_variation_enabled: true
+        base_color_jitter: [0, 0]
+        line_color_jitter: [-5, 5]
+        major_line_darken_range: [6, 14]
+        axis_darken_range: [32, 48]
+        center_point_darken_extra_range: [8, 14]
+        origin_label_darken_extra_range: [6, 12]
+        axis_scale_labels_enabled: true
+        axis_scale_label_max_abs: 0
+        origin_label_enabled: false
+        origin_label_text: "0"
+        origin_label_color: [88, 98, 116]
         supersample_scale: 1
         scene_supersample_scale: 3
     weights:
@@ -35,13 +56,13 @@ visual:
       - downsample
       - jpeg
       - noise
-    edit_count_range: [1, 2]
+    edit_count_range: [1, 1]
     value_ranges:
       blur:
-        radius: [0.2, 0.6]
+        radius: [0.15, 0.4]
       downsample:
-        scale: [0.85, 0.95]
+        scale: [0.92, 0.97]
       jpeg:
-        quality: [70.0, 90.0]
+        quality: [82, 94]
       noise:
-        alpha: [0.03, 0.08]
+        alpha: [0.01, 0.04]

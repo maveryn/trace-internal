@@ -26,7 +26,7 @@ Use the sample generator to export review artifacts for tasks under `samples/`.
 Treat this folder as the persistent verification store during task development.
 
 ```bash
-PYTHONPATH=. python scripts/generate_task_samples.py --tasks tile_shortest_path --clean
+PYTHONPATH=. python scripts/generate_task_samples.py --tasks task_tile_path_shortest_path --clean
 ```
 
 Default behavior:
@@ -36,15 +36,15 @@ Default behavior:
 - writes per-task summary files (`summary.json`),
 - writes per-task distribution reports (`distribution_report.json`) with per-query answer-shape metrics and feasible-uniform skew checks when supported by task trace metadata,
 - writes per-task review workbooks at `samples/<domain>/<task_group>/<task>/samples.xlsx` with embedded preview images (max side `384` px, source files unchanged),
-- writes a combined Excel file at `samples/combined_samples.xlsx` with one sheet per task.
+- writes one domain-combined workbook at `samples/<domain>/combined_samples.xlsx` with one sheet per task (same image/evidence preview columns as per-task sheets).
 
 Useful options:
-- `--tasks geometry_angle_value_query,tile_shortest_path`
+- `--tasks task_geometry_measurement_angle,task_tile_path_shortest_path`
 - `--count 50`
 - `--count-per-query 100` (recommended for distribution checks on new/changed multi-query tasks)
 - `--seed 123`
 - `--params '{"canvas_size":640}'`
-- `--task-params '{"geometry_angle_value_query":{"candidate_count":9}}'`
+- `--task-params '{"task_geometry_measurement_angle":{"scene_variant":"primitive_angle"}}'`
 - `--clean` (safe mode: only allowed with `--tasks`; removes those task folders before regeneration)
 - `--clean-all` (explicit full wipe of `samples/`, use sparingly)
 

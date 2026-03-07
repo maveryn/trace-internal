@@ -15,18 +15,33 @@ from ...shared.geometry_primitives import Point
 FALLBACK_GRAPH_STYLE: Dict[str, Any] = {
     "kind": "grid",
     "base_color": [255, 255, 255],
-    "line_color": [232, 236, 242],
+    "line_color": [224, 229, 236],
     "spacing": 24,
+    "outer_margin_px": 16,
     "line_width": 1,
     "major_every": 0,
-    "major_line_color": [214, 220, 230],
+    "major_line_color": [202, 209, 220],
     "major_line_width": 1,
     "axis_enabled": True,
-    "axis_color": [176, 184, 198],
+    "axis_color": [118, 128, 146],
     "axis_line_width": 2,
+    "axis_arrows_enabled": True,
+    "axis_arrow_size": 10,
     "center_point_enabled": True,
-    "center_point_color": [126, 134, 148],
+    "center_point_color": [102, 112, 130],
     "center_point_radius": 2,
+    "color_variation_enabled": True,
+    "base_color_jitter": [0, 0],
+    "line_color_jitter": [-5, 5],
+    "major_line_darken_range": [6, 14],
+    "axis_darken_range": [32, 48],
+    "center_point_darken_extra_range": [8, 14],
+    "origin_label_darken_extra_range": [6, 12],
+    "axis_scale_labels_enabled": True,
+    "axis_scale_label_max_abs": 0,
+    "origin_label_enabled": False,
+    "origin_label_text": "0",
+    "origin_label_color": [88, 98, 116],
     "supersample_scale": 1,
     "scene_supersample_scale": 3,
 }
@@ -68,8 +83,8 @@ def resolve_graph_style_from_params(
         if isinstance(background, Mapping):
             user_styles = background.get("styles", {})
             if isinstance(user_styles, Mapping):
-                graph_spec = user_styles.get("graph_paper", {})
-                if isinstance(graph_spec, Mapping):
+                graph_spec = user_styles.get("graph_paper")
+                if "graph_paper" in user_styles and isinstance(graph_spec, Mapping):
                     style = _coerce_graph_style(graph_spec, fallback_style=fallback)
     return style
 
@@ -98,9 +113,18 @@ def scaled_graph_style_for_scene(graph_style: Mapping[str, Any], *, scene_scale:
     """Scale graph-style line geometry into high-resolution scene render space."""
     scaled = dict(graph_style)
     scale = max(1, int(scene_scale))
-    for key in ("spacing", "line_width", "major_line_width", "axis_line_width", "center_point_radius"):
+    for key in (
+        "spacing",
+        "outer_margin_px",
+        "line_width",
+        "major_line_width",
+        "axis_line_width",
+        "axis_arrow_size",
+        "center_point_radius",
+    ):
         if key in scaled:
-            scaled[key] = max(1, int(scaled[key]) * scale)
+            min_value = 0 if str(key) == "outer_margin_px" else 1
+            scaled[key] = max(int(min_value), int(scaled[key]) * scale)
     scaled["supersample_scale"] = 1
     return scaled
 
@@ -133,21 +157,38 @@ def build_graph_coordinate_frame(
     canvas_size: int,
     spacing: int,
     target_cells: int,
+    outer_margin_px: int = 0,
 ) -> Dict[str, Any]:
     """Build graph-unit coordinate-frame metadata for trace payloads."""
     spacing_px = max(1, int(spacing))
     size_px = int(canvas_size)
-    origin = compute_grid_axis_origin(canvas_size=size_px, spacing=spacing_px)
-    full_cells = size_px // spacing_px
-    partial_cells = bool(size_px % spacing_px)
+    inset_px = max(0, int(outer_margin_px))
+    origin = compute_grid_axis_origin(canvas_size=size_px, spacing=spacing_px, inset=int(inset_px))
+    left = max(0, int(inset_px))
+    top = max(0, int(inset_px))
+    right = max(int(left), int(size_px) - 1 - int(inset_px))
+    bottom = max(int(top), int(size_px) - 1 - int(inset_px))
+    x_neg_steps = max(0, int((int(origin[0]) - int(left)) // int(spacing_px)))
+    x_pos_steps = max(0, int((int(right) - int(origin[0])) // int(spacing_px)))
+    y_neg_steps = max(0, int((int(origin[1]) - int(top)) // int(spacing_px)))
+    y_pos_steps = max(0, int((int(bottom) - int(origin[1])) // int(spacing_px)))
+    full_cells_x = max(0, int(x_neg_steps + x_pos_steps))
+    full_cells_y = max(0, int(y_neg_steps + y_pos_steps))
+    partial_cells = bool(
+        ((int(origin[0]) - int(left)) % int(spacing_px))
+        or ((int(right) - int(origin[0])) % int(spacing_px))
+        or ((int(origin[1]) - int(top)) % int(spacing_px))
+        or ((int(bottom) - int(origin[1])) % int(spacing_px))
+    )
     return {
         "coord_space": "graph_unit",
         "origin_pixel": [int(origin[0]), int(origin[1])],
+        "outer_margin_px": int(inset_px),
         "spacing_px": int(spacing_px),
         "target_cells_x": int(target_cells),
         "target_cells_y": int(target_cells),
-        "full_cells_x": int(full_cells),
-        "full_cells_y": int(full_cells),
+        "full_cells_x": int(full_cells_x),
+        "full_cells_y": int(full_cells_y),
         "partial_edge_cells": bool(partial_cells),
         "x_positive": "right",
         "y_positive": "up",

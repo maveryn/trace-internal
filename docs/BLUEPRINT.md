@@ -19,6 +19,9 @@ Rules:
 3. Config precedence: `domain defaults -> task_group defaults -> task/params`.
 4. In task-group config sections (`generation`, `rendering`, `prompt`, `sampling`), keep shared keys under `shared` and task-specific keys under `task_overrides.<task_id>` (legacy flat section keys are unsupported).
 5. Query-weight precedence: `build task query_weights -> task_group sampling.task_overrides -> task_group sampling.shared -> uniform`.
+6. Task-id naming is mandatory: `task_<domain>_<task_group>_<task_name>` (all lowercase snake_case).
+7. `task_id` domain/task_group segments must match class `domain` and `task_group`.
+8. Task module naming is mandatory: file path `trace/tasks/<domain>/<task_group>/<task_name>.py` (do not repeat full `task_id` in filename).
 
 ## 3) Required artifacts
 ### 3.1 Train instance (lightweight)

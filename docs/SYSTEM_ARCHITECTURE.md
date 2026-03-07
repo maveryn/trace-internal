@@ -18,6 +18,7 @@ Implementation map for the contracts in `docs/BLUEPRINT.md`.
 3. Generate staged instances:
    - task sampling,
    - query-type sampling (build overrides, then task-group sampling defaults, then uniform),
+   - inject deterministic `_sampling_index` into task params for balance-aware task samplers,
    - prompt rendering,
    - image rendering + visual variation,
    - trace write,
@@ -59,7 +60,9 @@ Implementation map for the contracts in `docs/BLUEPRINT.md`.
 
 ## 4) Current active tasks
 1. `trace/tasks/tile/path/shortest_path.py`
-2. `trace/tasks/geometry/measurement/angle_value_query.py`
+2. `trace/tasks/geometry/measurement/angle.py`
+3. `trace/tasks/geometry/measurement/polygon_area.py`
+4. `trace/tasks/geometry/measurement/polygon_perimeter.py`
 
 ## 5) Architecture invariants
 1. Determinism from config + seeds + versions.

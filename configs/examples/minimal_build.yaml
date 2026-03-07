@@ -1,13 +1,13 @@
 output_root: ./out
 
-dataset_name: demo_tile_shortest_path
+dataset_name: demo_task_tile_path_shortest_path
 instance_version: v1
 image_format: png
 strict_repro: false
 max_attempts_per_instance: 100
 sampling_seed: 0
 tasks:
-  - task_id: tile_shortest_path
+  - task_id: task_tile_path_shortest_path
     count: 10
     params:
       rows: 8

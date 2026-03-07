@@ -7,7 +7,7 @@ strict_repro: true
 max_attempts_per_instance: 100
 sampling_seed: 0
 tasks:
-  - task_id: tile_shortest_path
+  - task_id: task_tile_path_shortest_path
     count: 5
     params:
       rows: 8

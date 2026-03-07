@@ -19,11 +19,11 @@ from tests.helpers import read_jsonl
 
 
 def _register_dummy_tasks() -> None:
-    if "dummy_weighted_task_a" not in TASK_REGISTRY:
+    if "task_dummy_weights_weighted_a" not in TASK_REGISTRY:
 
         @register_task
         class DummyWeightedTaskA:
-            task_id = "dummy_weighted_task_a"
+            task_id = "task_dummy_weights_weighted_a"
             domain = "dummy"
             task_group = "weights"
 
@@ -76,11 +76,11 @@ def _register_dummy_tasks() -> None:
                     query_type="default",
                 )
 
-    if "dummy_weighted_task_b" not in TASK_REGISTRY:
+    if "task_dummy_weights_weighted_b" not in TASK_REGISTRY:
 
         @register_task
         class DummyWeightedTaskB:
-            task_id = "dummy_weighted_task_b"
+            task_id = "task_dummy_weights_weighted_b"
             domain = "dummy"
             task_group = "weights"
 
@@ -133,11 +133,11 @@ def _register_dummy_tasks() -> None:
                     query_type="default",
                 )
 
-    if "dummy_query_task" not in TASK_REGISTRY:
+    if "task_dummy_query_query_task" not in TASK_REGISTRY:
 
         @register_task
         class DummyQueryTask:
-            task_id = "dummy_query_task"
+            task_id = "task_dummy_query_query_task"
             domain = "dummy"
             task_group = "query"
 
@@ -227,7 +227,7 @@ def test_instance_id_ignores_image_path() -> None:
         "instance_seed": 42,
         "domain": "tile",
         "task_group": "path",
-        "task": "tile_shortest_path",
+        "task": "task_tile_path_shortest_path",
         "prompt": "p",
         "prompt_variants": {"answer_only": "p0", "answer_and_evidence": "p1"},
         "images": [{"image_id": "img0", "format": "png", "image_hash": "blake3:abc", "path": "a.png"}],
@@ -240,7 +240,7 @@ def test_instance_id_ignores_image_path() -> None:
     assert compute_instance_id(base) == compute_instance_id(variant)
 
 
-def test_build_dataset_end_to_end(tmp_path: Path) -> None:
+def test_build_dataset_end_to_end_and_strict_repro(tmp_path: Path) -> None:
     output_root = tmp_path / "out"
     config = BuildConfig(
         output_root=str(output_root),
@@ -249,7 +249,7 @@ def test_build_dataset_end_to_end(tmp_path: Path) -> None:
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="tile_shortest_path",
+                task_id="task_tile_path_shortest_path",
                 count=4,
                 params={"rows": 7, "cols": 7, "min_shortest_len": 5, "evidence_type": "point_path"},
             )
@@ -277,19 +277,17 @@ def test_build_dataset_end_to_end(tmp_path: Path) -> None:
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert build_report["dataset_id"].startswith("blake3:")
-    assert build_report["accepted_counts_by_task"]["tile_shortest_path"] == 4
+    assert build_report["accepted_counts_by_task"]["task_tile_path_shortest_path"] == 4
 
-
-def test_strict_repro_mode_passes(tmp_path: Path) -> None:
-    output_root = tmp_path / "out"
-    config = BuildConfig(
-        output_root=str(output_root),
+    strict_output_root = tmp_path / "strict_out"
+    strict_config = BuildConfig(
+        output_root=str(strict_output_root),
         dataset_name="test_strict_repro",
         instance_version="v1",
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="tile_shortest_path",
+                task_id="task_tile_path_shortest_path",
                 count=3,
                 params={"rows": 6, "cols": 6, "min_shortest_len": 4, "evidence_type": "point_path"},
             )
@@ -299,9 +297,9 @@ def test_strict_repro_mode_passes(tmp_path: Path) -> None:
         sampling_seed=19,
     )
 
-    final_path = build_dataset(config, code_hash="strict-test")
-    assert final_path.exists()
-    tmp_dirs = [path.name for path in (output_root / "tmp").glob("*")] if (output_root / "tmp").exists() else []
+    strict_final_path = build_dataset(strict_config, code_hash="strict-test")
+    assert strict_final_path.exists()
+    tmp_dirs = [path.name for path in (strict_output_root / "tmp").glob("*")] if (strict_output_root / "tmp").exists() else []
     assert all(not name.endswith("__strict_repro") for name in tmp_dirs)
 
 
@@ -315,8 +313,8 @@ def test_weighted_task_sampler_and_query_counts(tmp_path: Path) -> None:
         image_format="png",
         num_instances=30,
         tasks=[
-            BuildTaskConfig(task_id="dummy_weighted_task_a", weight=3.0, params={}),
-            BuildTaskConfig(task_id="dummy_weighted_task_b", weight=1.0, params={}),
+            BuildTaskConfig(task_id="task_dummy_weights_weighted_a", weight=3.0, params={}),
+            BuildTaskConfig(task_id="task_dummy_weights_weighted_b", weight=1.0, params={}),
         ],
         strict_repro=False,
         max_attempts_per_instance=20,
@@ -328,14 +326,14 @@ def test_weighted_task_sampler_and_query_counts(tmp_path: Path) -> None:
 
     sampler = build_report["sampler"]
     assert sampler["mode"] == "weighted_task_sampler"
-    assert pytest.approx(sampler["task_sampling_probabilities"]["dummy_weighted_task_a"], rel=1e-9) == 0.75
-    assert pytest.approx(sampler["task_sampling_probabilities"]["dummy_weighted_task_b"], rel=1e-9) == 0.25
-    assert build_report["accepted_counts_by_task"]["dummy_weighted_task_a"] + build_report["accepted_counts_by_task"]["dummy_weighted_task_b"] == 30
+    assert pytest.approx(sampler["task_sampling_probabilities"]["task_dummy_weights_weighted_a"], rel=1e-9) == 0.75
+    assert pytest.approx(sampler["task_sampling_probabilities"]["task_dummy_weights_weighted_b"], rel=1e-9) == 0.25
+    assert build_report["accepted_counts_by_task"]["task_dummy_weights_weighted_a"] + build_report["accepted_counts_by_task"]["task_dummy_weights_weighted_b"] == 30
 
 
-def test_query_type_expected_counts_validation_failure(tmp_path: Path) -> None:
+def test_query_sampling_validation_failures(tmp_path: Path) -> None:
     _register_dummy_tasks()
-    output_root = tmp_path / "out"
+    output_root = tmp_path / "query_count_validation"
     config = BuildConfig(
         output_root=str(output_root),
         dataset_name="test_query_count_validation",
@@ -343,7 +341,7 @@ def test_query_type_expected_counts_validation_failure(tmp_path: Path) -> None:
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="dummy_query_task",
+                task_id="task_dummy_query_query_task",
                 count=8,
                 params={},
                 query_weights={"q1": 1.0, "q2": 1.0},
@@ -367,23 +365,20 @@ def test_query_type_expected_counts_validation_failure(tmp_path: Path) -> None:
     assert any("query-type accepted count below expectation" in err.get("message", "") for err in report["errors"])
     assert "count_per_task_shortfall" in report["error_counts_by_code"]
 
-
-def test_query_weights_edge_cases_fail(tmp_path: Path) -> None:
-    _register_dummy_tasks()
-    cases = [
+    edge_cases = [
         ("test_query_weights_zero_sum", {"q1": 0.0, "q2": 0.0}, 3),
         ("test_query_weights_unknown_only", {"unknown_query": 1.0}, 9),
     ]
-    for dataset_name, query_weights, sampling_seed in cases:
-        output_root = tmp_path / dataset_name
-        config = BuildConfig(
-            output_root=str(output_root),
+    for dataset_name, query_weights, sampling_seed in edge_cases:
+        edge_output_root = tmp_path / dataset_name
+        edge_config = BuildConfig(
+            output_root=str(edge_output_root),
             dataset_name=dataset_name,
             instance_version="v1",
             image_format="png",
             tasks=[
                 BuildTaskConfig(
-                    task_id="dummy_query_task",
+                    task_id="task_dummy_query_query_task",
                     count=4,
                     params={},
                     query_weights=query_weights,
@@ -395,7 +390,7 @@ def test_query_weights_edge_cases_fail(tmp_path: Path) -> None:
         )
 
         with pytest.raises(BuildError, match="query_weights must have at least one positive weight"):
-            build_dataset(config, code_hash="query-weights-edge")
+            build_dataset(edge_config, code_hash="query-weights-edge")
 
 
 def test_query_weights_fallback_to_task_group_defaults(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -423,7 +418,7 @@ def test_query_weights_fallback_to_task_group_defaults(tmp_path: Path, monkeypat
         dataset_name="test_query_weight_fallback",
         instance_version="v1",
         image_format="png",
-        tasks=[BuildTaskConfig(task_id="dummy_query_task", count=6, params={})],
+        tasks=[BuildTaskConfig(task_id="task_dummy_query_query_task", count=6, params={})],
         strict_repro=False,
         max_attempts_per_instance=20,
         sampling_seed=123,
@@ -431,18 +426,18 @@ def test_query_weights_fallback_to_task_group_defaults(tmp_path: Path, monkeypat
 
     final_path = build_dataset(config, code_hash="query-weight-defaults")
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    sampler_probs = build_report["sampler"]["query_sampling_probabilities_by_task"]["dummy_query_task"]
-    accepted = build_report["query_type_accepted_counts_by_task"]["dummy_query_task"]
+    sampler_probs = build_report["sampler"]["query_sampling_probabilities_by_task"]["task_dummy_query_query_task"]
+    accepted = build_report["query_type_accepted_counts_by_task"]["task_dummy_query_query_task"]
     assert sampler_probs == {"q2": 1.0}
     assert accepted == {"q2": 6}
 
 
-def test_prompt_metadata_missing_validation_failure(tmp_path: Path) -> None:
-    if "dummy_prompt_missing_task" not in TASK_REGISTRY:
+def test_prompt_validation_error_codes(tmp_path: Path) -> None:
+    if "task_dummy_query_prompt_missing" not in TASK_REGISTRY:
 
         @register_task
         class DummyPromptMissingTask:
-            task_id = "dummy_prompt_missing_task"
+            task_id = "task_dummy_query_prompt_missing"
             domain = "dummy"
             task_group = "query"
 
@@ -479,37 +474,11 @@ def test_prompt_metadata_missing_validation_failure(tmp_path: Path) -> None:
                     query_type="default",
                 )
 
-    output_root = tmp_path / "out"
-    config = BuildConfig(
-        output_root=str(output_root),
-        dataset_name="test_prompt_metadata_missing",
-        instance_version="v1",
-        image_format="png",
-        tasks=[BuildTaskConfig(task_id="dummy_prompt_missing_task", count=1, params={})],
-        strict_repro=False,
-        max_attempts_per_instance=20,
-        sampling_seed=17,
-    )
-
-    with pytest.raises(BuildError):
-        build_dataset(config, code_hash="prompt-missing")
-
-    failure_dirs = sorted((output_root / "failed_builds").glob("*"))
-    assert failure_dirs, "expected a persisted failure bundle"
-    report_path = failure_dirs[0] / "validation_report.json"
-    assert report_path.exists()
-    report = json.loads(report_path.read_text(encoding="utf-8"))
-    assert report["total_errors"] > 0
-    assert any(err.get("error_code") == "prompt_metadata_missing" for err in report["errors"])
-    assert "prompt_metadata_missing" in report["error_counts_by_code"]
-
-
-def test_prompt_unresolved_placeholder_validation_error_code(tmp_path: Path) -> None:
-    if "dummy_prompt_unresolved_task" not in TASK_REGISTRY:
+    if "task_dummy_weights_prompt_unresolved" not in TASK_REGISTRY:
 
         @register_task
         class DummyPromptUnresolvedTask:
-            task_id = "dummy_prompt_unresolved_task"
+            task_id = "task_dummy_weights_prompt_unresolved"
             domain = "dummy"
             task_group = "weights"
 
@@ -562,25 +531,36 @@ def test_prompt_unresolved_placeholder_validation_error_code(tmp_path: Path) -> 
                     query_type="default",
                 )
 
-    output_root = tmp_path / "out"
-    config = BuildConfig(
-        output_root=str(output_root),
-        dataset_name="test_prompt_unresolved_placeholder",
-        instance_version="v1",
-        image_format="png",
-        tasks=[BuildTaskConfig(task_id="dummy_prompt_unresolved_task", count=1, params={})],
-        strict_repro=False,
-        max_attempts_per_instance=20,
-        sampling_seed=21,
-    )
+    cases = [
+        ("test_prompt_metadata_missing", "task_dummy_query_prompt_missing", 17, "prompt-missing", "prompt_metadata_missing"),
+        (
+            "test_prompt_unresolved_placeholder",
+            "task_dummy_weights_prompt_unresolved",
+            21,
+            "prompt-unresolved",
+            "prompt_unresolved_placeholder",
+        ),
+    ]
+    for dataset_name, task_id, sampling_seed, code_hash, expected_error_code in cases:
+        output_root = tmp_path / dataset_name
+        config = BuildConfig(
+            output_root=str(output_root),
+            dataset_name=dataset_name,
+            instance_version="v1",
+            image_format="png",
+            tasks=[BuildTaskConfig(task_id=str(task_id), count=1, params={})],
+            strict_repro=False,
+            max_attempts_per_instance=20,
+            sampling_seed=int(sampling_seed),
+        )
 
-    with pytest.raises(BuildError):
-        build_dataset(config, code_hash="prompt-unresolved")
+        with pytest.raises(BuildError):
+            build_dataset(config, code_hash=str(code_hash))
 
-    failure_dirs = sorted((output_root / "failed_builds").glob("*"))
-    assert failure_dirs, "expected a persisted failure bundle"
-    report_path = failure_dirs[0] / "validation_report.json"
-    assert report_path.exists()
-    report = json.loads(report_path.read_text(encoding="utf-8"))
-    assert report["total_errors"] > 0
-    assert "prompt_unresolved_placeholder" in report["error_counts_by_code"]
+        failure_dirs = sorted((output_root / "failed_builds").glob("*"))
+        assert failure_dirs, "expected a persisted failure bundle"
+        report_path = failure_dirs[0] / "validation_report.json"
+        assert report_path.exists()
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+        assert report["total_errors"] > 0
+        assert str(expected_error_code) in report["error_counts_by_code"]

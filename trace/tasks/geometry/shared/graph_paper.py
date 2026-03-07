@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import math
-from typing import Any, List, Mapping
+from typing import Any, List, Mapping, Sequence
 
-from ...shared.geometry_primitives import Point, distance_sq
-from ...shared.config_defaults import group_default
+from ...shared.geometry_primitives import Point
+from ...shared.config_defaults import group_default, resolve_required_int_bounds
 
 
 def resolve_square_canvas_size(
@@ -25,10 +25,15 @@ def resolve_square_canvas_size(
             raise ValueError("canvas_size must be >= 64")
         return int(value)
 
-    size_min = int(params.get("canvas_size_min", group_default(render_defaults, "canvas_size_min", fallback_min)))
-    size_max = int(params.get("canvas_size_max", group_default(render_defaults, "canvas_size_max", fallback_max)))
-    if size_min > size_max:
-        raise ValueError("canvas_size_min must be <= canvas_size_max")
+    size_min, size_max = resolve_required_int_bounds(
+        params,
+        render_defaults,
+        min_key="canvas_size_min",
+        max_key="canvas_size_max",
+        fallback_min=int(fallback_min),
+        fallback_max=int(fallback_max),
+        context="graph-paper canvas size defaults",
+    )
     if size_min < 64:
         raise ValueError("canvas_size_min must be >= 64")
     return int(rng.randint(int(size_min), int(size_max)))
@@ -63,10 +68,15 @@ def resolve_graph_cells_per_side(
             raise ValueError("graph_cells is too large for current canvas_size")
         return int(value)
 
-    cells_min = int(params.get("graph_cells_min", group_default(render_defaults, "graph_cells_min", fallback_min)))
-    cells_max = int(params.get("graph_cells_max", group_default(render_defaults, "graph_cells_max", fallback_max)))
-    if cells_min > cells_max:
-        raise ValueError("graph_cells_min must be <= graph_cells_max")
+    cells_min, cells_max = resolve_required_int_bounds(
+        params,
+        render_defaults,
+        min_key="graph_cells_min",
+        max_key="graph_cells_max",
+        fallback_min=int(fallback_min),
+        fallback_max=int(fallback_max),
+        context="graph-paper cell-count defaults",
+    )
     feasible = [
         cells
         for cells in range(max(2, int(cells_min)), int(cells_max) + 1)
@@ -78,35 +88,89 @@ def resolve_graph_cells_per_side(
     return int(rng.choice(feasible))
 
 
-def sample_vertices_on_graph_paper(
+def lattice_axis_coordinates_for_offsets(
+    *,
+    canvas_size: int,
+    spacing: int,
+    offsets: Sequence[int],
+    lattice_origin: float = 0.0,
+    padding: int = 0,
+) -> List[float]:
+    """Return feasible lattice coordinates for one axis under offset constraints.
+
+    Each sampled anchor coordinate `c` must satisfy:
+      `padding <= c + (offset * spacing) <= canvas_size - padding`
+    for every provided integer `offset`.
+
+    Candidate anchor coordinates are restricted to one lattice
+    `lattice_origin + k * spacing`, where `k` is an integer.
+    """
+    spacing_px = max(1, int(spacing))
+    canvas_px = int(canvas_size)
+    pad_px = max(0, int(padding))
+    origin_px = float(lattice_origin)
+    offset_values = [int(value) for value in offsets]
+    if not offset_values:
+        raise ValueError("offsets must be non-empty")
+
+    lower_bound = max(pad_px - (offset * spacing_px) for offset in offset_values)
+    upper_bound = min((canvas_px - pad_px) - (offset * spacing_px) for offset in offset_values)
+    if lower_bound > upper_bound:
+        return []
+
+    k_lo = int(math.ceil((float(lower_bound) - float(origin_px)) / float(spacing_px)))
+    k_hi = int(math.floor((float(upper_bound) - float(origin_px)) / float(spacing_px)))
+    if int(k_lo) > int(k_hi):
+        return []
+    return [float(origin_px + (int(k) * int(spacing_px))) for k in range(int(k_lo), int(k_hi) + 1)]
+
+
+def sample_lattice_point_with_offsets(
     rng,
     *,
-    count: int,
     canvas_size: int,
-    margin: int,
-    min_dist: float,
     spacing: int,
-) -> List[Point]:
-    """Sample separated points constrained to graph-paper lattice intersections."""
-    spacing_px = max(4, int(spacing))
-    lo = int(math.ceil(float(margin) / float(spacing_px))) * spacing_px
-    hi = int(math.floor((float(canvas_size) - float(margin)) / float(spacing_px))) * spacing_px
-    if lo > hi:
-        raise ValueError("graph-paper intersection range is empty")
+    x_offsets: Sequence[int],
+    y_offsets: Sequence[int],
+    lattice_origin: Point | None = None,
+    padding: int = 0,
+) -> Point:
+    """Sample one graph-lattice point that keeps all offset points inside canvas."""
+    origin = (
+        (float(lattice_origin[0]), float(lattice_origin[1]))
+        if lattice_origin is not None
+        else (0.0, 0.0)
+    )
+    x_values = lattice_axis_coordinates_for_offsets(
+        canvas_size=int(canvas_size),
+        spacing=int(spacing),
+        offsets=list(x_offsets),
+        lattice_origin=float(origin[0]),
+        padding=int(padding),
+    )
+    y_values = lattice_axis_coordinates_for_offsets(
+        canvas_size=int(canvas_size),
+        spacing=int(spacing),
+        offsets=list(y_offsets),
+        lattice_origin=float(origin[1]),
+        padding=int(padding),
+    )
+    if not x_values or not y_values:
+        raise ValueError("no feasible lattice anchor for provided offsets")
+    return (float(rng.choice(x_values)), float(rng.choice(y_values)))
 
-    coords = list(range(lo, hi + 1, spacing_px))
-    lattice = [(float(x), float(y)) for x in coords for y in coords]
-    if len(lattice) < count:
-        raise ValueError("not enough graph-paper intersections for requested candidate_count")
 
-    min_dist_sq = float(min_dist * min_dist)
-    for _attempt in range(240):
-        vertices: List[Point] = []
-        shuffled = list(lattice)
-        rng.shuffle(shuffled)
-        for point in shuffled:
-            if all(distance_sq(point, existing) >= min_dist_sq for existing in vertices):
-                vertices.append(point)
-                if len(vertices) == count:
-                    return vertices
-    raise ValueError("failed to place non-overlapping graph-paper vertices")
+def offset_point_by_grid_vector(
+    point: Point,
+    offset: Sequence[int],
+    *,
+    spacing: int,
+) -> Point:
+    """Translate one point by an integer-grid vector scaled by `spacing` pixels."""
+    dx = int(offset[0])
+    dy = int(offset[1])
+    spacing_px = int(spacing)
+    return (
+        float(point[0]) + float(dx * spacing_px),
+        float(point[1]) + float(dy * spacing_px),
+    )

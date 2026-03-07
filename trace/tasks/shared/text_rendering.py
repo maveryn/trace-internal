@@ -1,0 +1,259 @@
+"""Shared text/font rendering helpers for task overlays and annotations."""
+
+from __future__ import annotations
+
+import math
+from functools import lru_cache
+from typing import Sequence, Tuple
+
+from PIL import ImageDraw, ImageFont
+
+from .geometry_primitives import Point
+
+Color = Tuple[int, int, int]
+BBox = Tuple[float, float, float, float]
+Segment = Tuple[Point, Point]
+
+_FONT_CANDIDATES_BOLD: Sequence[str] = (
+    "DejaVuSans-Bold.ttf",
+    "DejaVuSans.ttf",
+    "LiberationSans-Bold.ttf",
+    "LiberationSans-Regular.ttf",
+)
+_FONT_CANDIDATES_REGULAR: Sequence[str] = (
+    "DejaVuSans.ttf",
+    "LiberationSans-Regular.ttf",
+    "DejaVuSans-Bold.ttf",
+    "LiberationSans-Bold.ttf",
+)
+
+
+@lru_cache(maxsize=128)
+def load_font(size_px: int, *, bold: bool = True) -> ImageFont.ImageFont:
+    """Load a cached TrueType font with robust fallback behavior."""
+    size = max(6, int(size_px))
+    candidates = _FONT_CANDIDATES_BOLD if bool(bold) else _FONT_CANDIDATES_REGULAR
+    for name in candidates:
+        try:
+            return ImageFont.truetype(str(name), size=size)
+        except Exception:
+            continue
+    return ImageFont.load_default()
+
+
+def resolve_label_font_size_px(
+    *,
+    canvas_size: int,
+    graph_spacing: int,
+    min_px: int = 14,
+    max_px: int = 32,
+) -> int:
+    """Resolve base label font size from canvas and graph scale."""
+    size_from_canvas = 0.05 * float(max(1, int(canvas_size)))
+    size_from_spacing = 0.55 * float(max(1, int(graph_spacing)))
+    resolved = int(round(max(size_from_canvas, size_from_spacing)))
+    return max(int(min_px), min(int(max_px), int(resolved)))
+
+
+def resolve_scene_label_font_size_px(
+    *,
+    canvas_size: int,
+    graph_spacing: int,
+    scene_scale: int,
+    min_px: int = 14,
+    max_px: int = 32,
+) -> int:
+    """Resolve render-space label font size with scene supersample scale."""
+    base = resolve_label_font_size_px(
+        canvas_size=int(canvas_size),
+        graph_spacing=int(graph_spacing),
+        min_px=int(min_px),
+        max_px=int(max_px),
+    )
+    return int(base * max(1, int(scene_scale)))
+
+
+def _text_size(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.ImageFont) -> Tuple[float, float]:
+    """Return text width/height in pixels."""
+    try:
+        bbox = draw.textbbox((0, 0), str(text), font=font)
+        return float(bbox[2] - bbox[0]), float(bbox[3] - bbox[1])
+    except Exception:
+        width, height = draw.textsize(str(text), font=font)
+        return float(width), float(height)
+
+
+def _normalize_direction(direction: Point) -> Point:
+    """Return one normalized 2D direction, falling back to a stable default."""
+    dx, dy = float(direction[0]), float(direction[1])
+    norm = math.hypot(dx, dy)
+    if norm <= 1e-9:
+        default = 1.0 / math.sqrt(2.0)
+        return (float(default), float(-default))
+    return (float(dx / norm), float(dy / norm))
+
+
+def _rotate_direction(direction: Point, angle_degrees: float) -> Point:
+    """Return one direction rotated by `angle_degrees` around the origin."""
+    rad = math.radians(float(angle_degrees))
+    cos_v, sin_v = math.cos(rad), math.sin(rad)
+    dx, dy = float(direction[0]), float(direction[1])
+    return (float((dx * cos_v) - (dy * sin_v)), float((dx * sin_v) + (dy * cos_v)))
+
+
+def _point_segment_distance(point: Point, seg_a: Point, seg_b: Point) -> float:
+    """Return Euclidean distance from one point to one closed segment."""
+    px, py = float(point[0]), float(point[1])
+    ax, ay = float(seg_a[0]), float(seg_a[1])
+    bx, by = float(seg_b[0]), float(seg_b[1])
+    vx, vy = float(bx - ax), float(by - ay)
+    wx, wy = float(px - ax), float(py - ay)
+    vv = float((vx * vx) + (vy * vy))
+    if vv <= 1e-12:
+        return float(math.hypot(px - ax, py - ay))
+    t = float(((wx * vx) + (wy * vy)) / vv)
+    if t <= 0.0:
+        closest_x, closest_y = ax, ay
+    elif t >= 1.0:
+        closest_x, closest_y = bx, by
+    else:
+        closest_x = float(ax + (t * vx))
+        closest_y = float(ay + (t * vy))
+    return float(math.hypot(px - closest_x, py - closest_y))
+
+
+def _bbox_from_center(center: Point, width: float, height: float, padding: float) -> BBox:
+    """Return axis-aligned bounding box around centered text plus padding."""
+    cx, cy = float(center[0]), float(center[1])
+    half_w = 0.5 * float(width)
+    half_h = 0.5 * float(height)
+    pad = max(0.0, float(padding))
+    return (
+        float(cx - half_w - pad),
+        float(cy - half_h - pad),
+        float(cx + half_w + pad),
+        float(cy + half_h + pad),
+    )
+
+
+def _bbox_overlaps(a: BBox, b: BBox) -> bool:
+    """Return whether two axis-aligned bboxes overlap with non-zero area."""
+    return not (
+        float(a[2]) <= float(b[0])
+        or float(a[0]) >= float(b[2])
+        or float(a[3]) <= float(b[1])
+        or float(a[1]) >= float(b[3])
+    )
+
+
+def _bbox_within_square_canvas(bbox: BBox, canvas_size: int, margin: float = 1.0) -> bool:
+    """Return whether one bbox stays inside a square canvas with margin."""
+    side = float(max(1, int(canvas_size)))
+    m = max(0.0, float(margin))
+    return (
+        float(bbox[0]) >= m
+        and float(bbox[1]) >= m
+        and float(bbox[2]) <= (side - m)
+        and float(bbox[3]) <= (side - m)
+    )
+
+
+def resolve_text_label_center(
+    draw: ImageDraw.ImageDraw,
+    *,
+    text: str,
+    anchor: Point,
+    base_direction: Point,
+    offset_px: float,
+    font: ImageFont.ImageFont,
+    blocked_segments: Sequence[Segment] | None = None,
+    occupied_boxes: Sequence[BBox] | None = None,
+    stroke_width: int | None = None,
+    line_clearance_px: float = 2.0,
+    canvas_size: int | None = None,
+) -> Tuple[Point, BBox]:
+    """Choose one nearby text center that minimizes overlap with line segments.
+
+    Determinism note:
+    - Candidate directions/radii are fixed and iterated in stable order.
+    - No randomness is used; same inputs always return the same center.
+    """
+    width, height = _text_size(draw, str(text), font)
+    size_hint = int(getattr(font, "size", 14))
+    outline = int(stroke_width) if stroke_width is not None else max(1, int(round(0.08 * float(size_hint))))
+    padding = float(max(1, int(outline)))
+    base = _normalize_direction((float(base_direction[0]), float(base_direction[1])))
+    anchor_x, anchor_y = float(anchor[0]), float(anchor[1])
+    offset = float(max(4.0, float(offset_px)))
+    min_required = float(0.5 * math.hypot(width, height) + max(1.0, float(line_clearance_px)))
+    segments = list(blocked_segments or ())
+    occupied = list(occupied_boxes or ())
+
+    angle_offsets = (0, 20, -20, 35, -35, 50, -50, 70, -70, 90, -90, 120, -120, 150, -150, 180)
+    radius_scales = (1.0, 1.3, 1.6, 2.0, 2.4)
+    best: Tuple[Tuple[float, ...], Point, BBox] | None = None
+
+    for radius_scale in radius_scales:
+        radius = float(offset * float(radius_scale))
+        for angle in angle_offsets:
+            direction = _rotate_direction(base, float(angle))
+            center = (
+                float(anchor_x + (radius * float(direction[0]))),
+                float(anchor_y + (radius * float(direction[1]))),
+            )
+            bbox = _bbox_from_center(center, float(width), float(height), float(padding))
+            out_of_bounds = 0
+            if canvas_size is not None and not _bbox_within_square_canvas(bbox, int(canvas_size), margin=1.0):
+                out_of_bounds = 1
+            label_overlap = 1 if any(_bbox_overlaps(bbox, existing) for existing in occupied) else 0
+            if segments:
+                min_distance = min(
+                    _point_segment_distance(center, (float(seg_a[0]), float(seg_a[1])), (float(seg_b[0]), float(seg_b[1])))
+                    for seg_a, seg_b in segments
+                )
+            else:
+                min_distance = float("inf")
+            clearance_deficit = float(max(0.0, min_required - float(min_distance)))
+            line_overlap = 1 if float(clearance_deficit) > 1e-6 else 0
+            score = (
+                float(out_of_bounds),
+                float(line_overlap),
+                float(label_overlap),
+                float(clearance_deficit),
+                float(radius),
+                float(abs(angle)),
+            )
+            if best is None or score < best[0]:
+                best = (score, center, bbox)
+
+    if best is None:
+        center = (float(anchor_x + (offset * base[0])), float(anchor_y + (offset * base[1])))
+        return center, _bbox_from_center(center, float(width), float(height), float(padding))
+    return best[1], best[2]
+
+
+def draw_text_centered(
+    draw: ImageDraw.ImageDraw,
+    *,
+    text: str,
+    center: Tuple[float, float],
+    font: ImageFont.ImageFont,
+    fill: Color = (30, 30, 30),
+    stroke_fill: Color = (255, 255, 255),
+    stroke_width: int | None = None,
+) -> None:
+    """Draw text centered around a point with optional outline stroke."""
+    width, height = _text_size(draw, str(text), font)
+    center_x, center_y = float(center[0]), float(center[1])
+    tx = center_x - (0.5 * width)
+    ty = center_y - (0.5 * height)
+    size_hint = int(getattr(font, "size", 14))
+    outline_width = int(stroke_width) if stroke_width is not None else max(1, int(round(0.08 * float(size_hint))))
+    draw.text(
+        (float(tx), float(ty)),
+        str(text),
+        fill=tuple(int(value) for value in fill),
+        font=font,
+        stroke_width=max(0, int(outline_width)),
+        stroke_fill=tuple(int(value) for value in stroke_fill),
+    )

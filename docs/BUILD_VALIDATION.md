@@ -24,6 +24,7 @@ Operational policy for build lifecycle and pre-finalize validation.
 6. Prompt metadata/bundle/key validity.
 7. Required slot conformance and unresolved placeholder checks.
 8. Prompt variant-count/index consistency.
+9. Task-doc consistency: every registered task has `docs/tasks/<task_id>.md`, and `docs/tasks/README.md` links match active tasks.
 
 ## 4) Distribution review policy
 For new or distribution-changing task logic:
@@ -46,3 +47,9 @@ Run CI with a pinned strict-repro config and fail on:
 2. trace mismatches,
 3. image-byte/hash mismatches,
 4. missing pinned tasks or attempt-limit exhaustion.
+
+## 7) Test-scaling policy
+1. Keep shared invariants in family-level contract tests.
+2. Keep per-task tests focused on task-specific constraints and edge cases.
+3. Avoid duplicating the same determinism/build smoke assertions across every task file.
+4. For config-loading tests, validate merge/wiring/schema behavior (for example `shared` vs `task_overrides`) instead of asserting every literal default value per task.

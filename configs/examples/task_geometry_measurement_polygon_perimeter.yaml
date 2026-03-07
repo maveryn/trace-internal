@@ -1,0 +1,16 @@
+output_root: ./out
+
+dataset_name: demo_task_geometry_measurement_polygon_perimeter
+instance_version: v1
+image_format: png
+strict_repro: false
+max_attempts_per_instance: 180
+sampling_seed: 0
+tasks:
+  - task_id: task_geometry_measurement_polygon_perimeter
+    count: 24
+    params:
+      query_type: measure
+      allowed_sides: [3, 4, 5]
+    query_weights:
+      measure: 1.0

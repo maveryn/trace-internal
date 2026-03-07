@@ -10,18 +10,16 @@ Each generated instance should include:
 
 ## Source-of-truth docs
 - Docs index and reading order: `docs/README.md`
-- New-task one-page quickstart: `docs/QUICKSTART_NEW_TASK.md`
 - Architecture and ABI contracts: `docs/BLUEPRINT.md`
 - Prompt system and template composition: `docs/PROMPT_SYSTEM.md`
 - System module/lifecycle architecture: `docs/SYSTEM_ARCHITECTURE.md`
 - Current implementation snapshot: `docs/STATUS.md`
-- Task creation procedure: `docs/TASK_AUTHORING.md`
+- Task creation + quickstart procedure: `docs/TASK_AUTHORING.md`
 - Code documentation guidelines: `docs/CODE_DOCUMENTATION.md`
 - Code review guidelines/checklist: `docs/CODE_REVIEW_GUIDELINES.md`
 - Shared reusable helpers and anti-duplication policy: `docs/SHARED_UTILITIES.md`
 - Build/validation/CI policy: `docs/BUILD_VALIDATION.md`
 - Validation error catalog: `docs/VALIDATION_ERROR_CODES.md`
-- Reusable pitfalls and fixes: `docs/LESSONS_LEARNED.md`
 - Active backlog and priorities: `docs/TODO.md`
 - Python dependencies: `requirements.txt`
 - Domain/task-group defaults (generation/rendering/visual): `configs/domains/<domain>/base.yaml` and `configs/domains/<domain>/<task_group>.yaml`
@@ -33,6 +31,7 @@ Each generated instance should include:
 
 ## Core engineering rules
 - Use taxonomy consistently: `domain -> task_group -> task`.
+- Task ids must follow `task_<domain>_<task_group>_<task_name>` (lowercase snake_case), and task module filenames must be `<task_name>.py` under `trace/tasks/<domain>/<task_group>/`.
 - Keep `task_group` broad by reasoning style; for geometry value-style tasks use `task_group=measurement` and keep variants in `query_type`.
 - Sampling policy is task-level globally (equal task weights by default); domain/task_group probabilities are derived by aggregation, and query sampling happens inside each task (uniform by default unless task-config override).
 - Domain/task-group defaults (generation/rendering/visual variation) should follow precedence `domain -> task_group -> task/params`: shared domain defaults under `configs/domains/<domain>/base.yaml`, group overrides under `configs/domains/<domain>/<task_group>.yaml`, then optional task-level overrides.
@@ -53,7 +52,7 @@ Each generated instance should include:
 - Do not duplicate utilities across tasks/domains unless there is a strong reason.
 - If a helper is missing, add it once in a shared place and reuse it.
 - Follow `docs/SHARED_UTILITIES.md` strictly when deciding helper placement and reuse.
-- Before introducing or moving helpers, review `docs/LESSONS_LEARNED.md` for prior placement mistakes (for example task-named modules containing non-task-specific helpers).
+- Before introducing or moving helpers, review `docs/CODE_REVIEW_GUIDELINES.md` for prior placement mistakes (for example task-named modules containing non-task-specific helpers).
 - When implementing any task, review existing helpers across layers first (`trace/core`, `trace/tasks/shared`, `trace/tasks/<domain>/shared`, then task-local modules) before writing new logic.
 - For every new helper/function, explicitly choose the narrowest reusable layer that fits and place it there:
   - cross-domain infrastructure -> `trace/core` or `trace/tasks/shared`,
@@ -78,10 +77,10 @@ Each generated instance should include:
 - Keep `docs/PROMPT_SYSTEM.md` aligned with prompt-template architecture and implementation status.
 - Keep `docs/SYSTEM_ARCHITECTURE.md` aligned with module boundaries, data flow, and lifecycle behavior.
 - Keep `docs/TASK_AUTHORING.md` aligned with reusable task authoring guidance.
+- Keep `docs/tasks/README.md` and `docs/tasks/<task_id>.md` aligned with active task ids.
 - Keep `docs/SHARED_UTILITIES.md` aligned with shared helper inventory and anti-duplication guidance.
 - Keep `docs/CODE_REVIEW_GUIDELINES.md` aligned with reusable review checks and newly discovered review findings.
 - Keep `docs/BUILD_VALIDATION.md` aligned with build/validation/CI behavior.
-- Keep `docs/LESSONS_LEARNED.md` updated when new cross-task pitfalls are discovered.
 - Keep `docs/TODO.md` updated so active, next, and deferred work stays explicit.
 - After any change to architecture, module boundaries, shared utilities, or helper placement, update the relevant docs above in the same change.
 - After each substantial review/refactor pass, add at least one reusable guideline to `docs/CODE_REVIEW_GUIDELINES.md` based on what was discovered.

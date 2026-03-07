@@ -10,22 +10,30 @@ Use this checklist during implementation and refactor reviews.
 5. Determinism holds for fixed seeds and emitted ordering.
 6. Public API surfaces (`__all__`, package exports) only include active consumers.
 7. Docs were updated for changed contracts or module boundaries.
+8. Task naming contract holds: `task_id` matches `task_<domain>_<task_group>_<task_name>` and module filename is `<task_name>.py` in the corresponding domain/task-group path.
+9. Task docs stay in sync: each active `task_id` has `docs/tasks/<task_id>.md` and `docs/tasks/README.md` links match active tasks.
 
 ## 2) Distilled recurring findings
-1. Do not promote representation adapters to cross-domain shared without a second real consumer.
-2. Keep representation-agnostic graph algorithms separate from representation adapters.
-3. Remove pass-through wrappers once canonical shared helpers exist.
-4. Keep `TaskOutput` and trace contracts minimal; remove fields unused by build/validation.
-5. Remove migration shims/re-export wrappers once call sites are migrated.
-6. Keep package/module export surfaces narrow; avoid dead re-exports.
-7. Avoid speculative shared helpers with zero consumers.
-8. Keep intermediate helper steps private until imported by another module.
-9. After refactors, audit public symbols again and demote externally unused public helpers/types to private names.
-10. Reuse canonical shared type aliases (for example `geometry_primitives.Point`) instead of redefining equivalent local aliases.
-11. Enforce strict config schema usage: defaults belong in `shared`, task-specific deltas in `task_overrides`, and unsupported legacy/flat keys should not be reintroduced.
+1. Promote helpers only when reuse is real (second consumer), and keep representation adapters separate from representation-agnostic algorithms.
+2. Remove pass-through wrappers/migration shims after call sites migrate; keep module exports narrow and avoid dead re-exports.
+3. Keep task contracts minimal (`TaskOutput`, trace fields, public types/functions) and demote private-only symbols after refactors.
+4. Reuse canonical shared aliases/helpers instead of duplicating equivalent local utilities or normalization logic.
+5. Keep prompt text externalized; verify deterministic variant selection and complete emitted prompt metadata for all output modes.
+6. Source static prompt slot text from prompt config/templates; enforce required prompt/config keys with fail-fast shared helpers.
+7. Enforce strict config schema usage: defaults in `shared`, task-specific deltas in `task_overrides`, no legacy flat-key reintroduction.
+8. Keep tests behavior-focused: shared-family invariant tests first, task tests for task-specific behavior, and avoid brittle literal-default assertions.
+9. For geometry feasibility, compute bounds from selected candidates (not global worst-case margins) and validate acceptance under default ranges.
+10. Require overlap-aware label placement for labeled geometry; reject fixed/radial placements that ignore line/label collisions.
+11. For mixed source-category + target-answer tasks, sample both distributions explicitly and validate realized distributions.
+12. When sibling tasks share most generation/prompt/trace flow, extract a shared base/helper and keep task modules objective-specific.
+13. Keep visual style ranges in domain/task-group config rather than hardcoded task-module constants.
+14. After contract changes, remove deprecated helper paths and stale trace fields in the same patch.
+15. If sibling tasks repeat the same fallback constants, centralize them in a task-group shared defaults helper instead of duplicating per-task literals.
+16. Keep docs indexes contract-driven: avoid stale links/references after renames by updating docs in the same patch as code/config changes.
+17. Remove orphaned helpers immediately when no call sites remain, and promote repeated generic transforms (for example sequence rotation) into task-shared utilities.
+18. For visual/background/noise config parsing, consolidate repeated min/max normalization into `trace/core/visual` shared helpers instead of re-implementing range parsing per module.
 
 ## 3) Process rule
 When a new reusable issue is discovered:
 1. Add one distilled rule here.
-2. Add one matching entry in `docs/LESSONS_LEARNED.md`.
-3. Update `docs/TASK_AUTHORING.md` if authoring behavior should change.
+2. Update `docs/TASK_AUTHORING.md` if authoring behavior should change.

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 import pytest
 
 from trace.core.prompts import load_prompt_bundle, render_prompt, render_prompt_variants
@@ -11,55 +13,57 @@ def test_render_prompt_is_deterministic() -> None:
     a = render_prompt(
         domain="geometry",
         task_group="measurement",
-        bundle_id="geometry_measurement_v1",
-        task_type_key="measurement_value_query",
-        query_type="closest_to_x",
+        bundle_id="geometry_measurement_v2",
+        task_type_key="measurement_single_object",
+        query_type="measure",
         slots={
-            "candidate_count": 7,
-            "entity_plural": "angles",
-            "value_name_singular": "angle",
-            "unit_name": "degrees",
-            "evidence_single": "the selected angle vertex",
-            "evidence_pair": "ordered vertices [largest, smallest]",
-            "evidence_hint": "the selected angle vertex",
-            "target_x": 90,
+            "object_description": "a single labeled angle",
+            "question_text": "What is the measure of angle ABC in degrees?",
+            "json_output_contract": 'Return a valid JSON object with keys "evidence" and "answer" in that order.',
+            "evidence_hint": "the angle vertex [x, y] as integer graph-unit coordinates",
+            "answer_hint": 'set "answer" to the angle measure as an integer value',
+            "json_example": '{"evidence":[[2,1],[0,0],[3,-1]],"answer":45}',
         },
         instance_seed=4242,
     )
     b = render_prompt(
         domain="geometry",
         task_group="measurement",
-        bundle_id="geometry_measurement_v1",
-        task_type_key="measurement_value_query",
-        query_type="closest_to_x",
+        bundle_id="geometry_measurement_v2",
+        task_type_key="measurement_single_object",
+        query_type="measure",
         slots={
-            "candidate_count": 7,
-            "entity_plural": "angles",
-            "value_name_singular": "angle",
-            "unit_name": "degrees",
-            "evidence_single": "the selected angle vertex",
-            "evidence_pair": "ordered vertices [largest, smallest]",
-            "evidence_hint": "the selected angle vertex",
-            "target_x": 90,
+            "object_description": "a single labeled angle",
+            "question_text": "What is the measure of angle ABC in degrees?",
+            "json_output_contract": 'Return a valid JSON object with keys "evidence" and "answer" in that order.',
+            "evidence_hint": "the angle vertex [x, y] as integer graph-unit coordinates",
+            "answer_hint": 'set "answer" to the angle measure as an integer value',
+            "json_example": '{"evidence":[[2,1],[0,0],[3,-1]],"answer":45}',
         },
         instance_seed=4242,
     )
     assert a.prompt == b.prompt
     assert a.metadata == b.metadata
-    assert a.metadata["slot_values"]["target_x"] == 90
+    assert a.metadata["slot_values"]["object_description"] == "a single labeled angle"
     assert a.metadata["answer_or_evidence_key"] == "answer_and_evidence"
-    assert "integer answer" in a.prompt
+    assert "Example JSON" in a.prompt
 
 
-def test_required_prompt_slots_enforced() -> None:
+def test_prompt_bundle_contract_and_required_slots() -> None:
+    bundle = load_prompt_bundle("geometry", "measurement", "geometry_measurement_v2")
+    assert len(bundle.task_type_templates["measurement_single_object"]) >= 10
+    assert len(bundle.query_type_templates["measure"]) >= 10
+    assert len(bundle.answer_or_evidence_templates["answer_only"]) >= 10
+    assert len(bundle.answer_or_evidence_templates["answer_and_evidence"]) >= 10
+
     with pytest.raises(ValueError):
         render_prompt(
             domain="geometry",
             task_group="measurement",
-            bundle_id="geometry_measurement_v1",
-            task_type_key="measurement_value_query",
-            query_type="closest_to_x",
-            slots={"candidate_count": 7, "entity_plural": "angles"},
+            bundle_id="geometry_measurement_v2",
+            task_type_key="measurement_single_object",
+            query_type="measure",
+            slots={"object_description": "a single polygon"},
             instance_seed=9999,
         )
 
@@ -68,16 +72,17 @@ def test_render_prompt_variants_contains_answer_only_and_answer_and_evidence() -
     results = render_prompt_variants(
         domain="geometry",
         task_group="measurement",
-        bundle_id="geometry_measurement_v1",
-        task_type_key="measurement_value_query",
-        query_type="min",
+        bundle_id="geometry_measurement_v2",
+        task_type_key="measurement_single_object",
+        query_type="measure",
         answer_or_evidence_keys=("answer_only", "answer_and_evidence"),
         slots={
-            "candidate_count": 7,
-            "entity_plural": "angles",
-            "value_name_singular": "angle",
-            "unit_name": "degrees",
-            "evidence_hint": "the selected angle vertex",
+            "object_description": "a single polygon",
+            "question_text": "What is the area of the polygon in square units?",
+            "json_output_contract": 'Return a valid JSON object with keys "evidence" and "answer" in that order.',
+            "evidence_hint": "the polygon vertex coordinates as an unordered graph-unit point list",
+            "answer_hint": 'set "answer" to the polygon area as an integer value',
+            "json_example": '{"evidence":[[0,0],[4,0],[4,2],[0,2]],"answer":8}',
         },
         instance_seed=4242,
     )
@@ -88,9 +93,44 @@ def test_render_prompt_variants_contains_answer_only_and_answer_and_evidence() -
     assert results["answer_and_evidence"].metadata["answer_or_evidence_key"] == "answer_and_evidence"
 
 
-def test_bundle_contains_required_variant_counts() -> None:
-    bundle = load_prompt_bundle("tile", "path", "tile_path_v1")
-    assert len(bundle.task_type_templates["maze_path"]) >= 10
-    assert len(bundle.query_type_templates["shortest_path"]) >= 10
-    assert len(bundle.answer_or_evidence_templates["answer_only"]) >= 10
-    assert len(bundle.answer_or_evidence_templates["answer_and_evidence"]) >= 10
+def test_angle_prompt_bundle_answer_only_is_format_focused() -> None:
+    bundle = load_prompt_bundle("geometry", "measurement", "geometry_angle_measure_v1")
+    answer_only_templates = bundle.answer_or_evidence_templates["answer_only"]
+    assert len(answer_only_templates) >= 10
+    assert all(str(template).strip() == "" for template in answer_only_templates)
+
+    measure_templates = bundle.query_type_templates["measure"]
+    assert len(measure_templates) >= 10
+    assert all("option" in str(template).lower() for template in measure_templates)
+    assert any("option letter" in str(template).lower() for template in measure_templates)
+
+    evidence_templates = bundle.answer_or_evidence_templates["answer_and_evidence"]
+    assert len(evidence_templates) >= 10
+    banned = re.compile(r"\b(only|just)\b", flags=re.IGNORECASE)
+    assert all(banned.search(str(template)) is None for template in evidence_templates)
+    assert all("{json_output_contract}" in str(template) for template in evidence_templates)
+    assert all("{evidence_hint}" in str(template) for template in evidence_templates)
+    assert all("{answer_hint}" in str(template) for template in evidence_templates)
+    assert all("{json_example}" in str(template) for template in evidence_templates)
+
+
+def test_geometry_measurement_bundle_answer_templates_avoid_only_just() -> None:
+    bundle = load_prompt_bundle("geometry", "measurement", "geometry_measurement_v2")
+    banned = re.compile(r"\b(only|just)\b", flags=re.IGNORECASE)
+
+    measure_templates = bundle.query_type_templates["measure"]
+    answer_only_templates = bundle.answer_or_evidence_templates["answer_only"]
+    evidence_templates = bundle.answer_or_evidence_templates["answer_and_evidence"]
+
+    assert len(measure_templates) >= 10
+    assert len({str(template) for template in measure_templates}) >= 10
+    assert all("{question_text}" in str(template) for template in measure_templates)
+    assert len(answer_only_templates) >= 10
+    assert len(evidence_templates) >= 10
+    assert all(str(template).strip() == "" for template in answer_only_templates)
+    assert all(banned.search(str(template)) is None for template in answer_only_templates)
+    assert all(banned.search(str(template)) is None for template in evidence_templates)
+    assert all("{json_output_contract}" in str(template) for template in evidence_templates)
+    assert all("{evidence_hint}" in str(template) for template in evidence_templates)
+    assert all("{answer_hint}" in str(template) for template in evidence_templates)
+    assert all("{json_example}" in str(template) for template in evidence_templates)

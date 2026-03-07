@@ -1,0 +1,59 @@
+{
+  "accepted_samples": 1,
+  "accepted_samples_by_query_type": {
+    "measure": 1
+  },
+  "answer_distribution": {
+    "checks_failed": 0,
+    "checks_run": 0,
+    "checks_skipped": 1,
+    "per_query_type": {
+      "measure": {
+        "accepted_samples": 1,
+        "answer_counts": {
+          "12": 1
+        },
+        "answer_numeric": {
+          "count": 1,
+          "mean": 12.0,
+          "std": 0.0
+        },
+        "uniformity_check": {
+          "reason": "missing_feasible_support_metadata",
+          "status": "skipped",
+          "thresholds": {
+            "max_bin_count_z_max": 4.0,
+            "mean_z_max": 3.0,
+            "min_samples_per_query": 80.0,
+            "std_ratio_max": 1.4,
+            "std_ratio_min": 0.6,
+            "tv_distance_max": 0.2
+          }
+        },
+        "unique_answers": 1
+      }
+    },
+    "thresholds": {
+      "max_bin_count_z_max": 4.0,
+      "mean_z_max": 3.0,
+      "min_samples_per_query": 80.0,
+      "std_ratio_max": 1.4,
+      "std_ratio_min": 0.6,
+      "tv_distance_max": 0.2
+    }
+  },
+  "attempted_candidates": 1,
+  "attempted_candidates_by_query_type": {
+    "measure": 1
+  },
+  "domain": "geometry",
+  "max_candidates": 20,
+  "query_types": [
+    "measure"
+  ],
+  "rejections_by_error": {},
+  "requested_samples": 1,
+  "requested_samples_by_query_type": null,
+  "task": "task_geometry_measurement_polygon_perimeter",
+  "task_group": "measurement"
+}

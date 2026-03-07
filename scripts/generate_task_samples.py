@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate task sample images/data plus per-task and combined Excel review files."""
+"""Generate task sample images/data plus per-task and per-domain combined review workbooks."""
 
 from __future__ import annotations
 
@@ -44,23 +44,6 @@ _FIELD_LABELS: Dict[str, str] = {
     "evidence_type": "evidence_type",
     "evidence_value": "evidence_value",
 }
-
-_COMBINED_SHEET_FIELDS: List[str] = [
-    "image_path",
-    "task",
-    "query_type",
-    "prompt",
-    "prompt_answer_only",
-    "answer_value",
-    "evidence_value",
-    "domain",
-    "task_group",
-    "sample_index",
-    "instance_seed",
-    "data_path",
-    "answer_type",
-    "evidence_type",
-]
 
 _TASK_SHEET_FIELDS: List[str] = [
     "task",
@@ -313,65 +296,15 @@ def _configure_sheet_columns(sheet: Any, fields: List[str], *, start_col: int = 
         sheet.column_dimensions[letter].width = _COLUMN_WIDTHS_BY_FIELD.get(field, 20)
 
 
-def _populate_review_sheet(sheet: Any, rows: List[Dict[str, Any]], *, fields: List[str]) -> None:
-    """Fill one workbook sheet with sample rows and stable formatting."""
-    headers = [_FIELD_LABELS[field] for field in fields]
-    sheet.append(headers)
-
-    bold = Font(bold=True)
-    for column in range(1, len(headers) + 1):
-        sheet.cell(row=1, column=column).font = bold
-
-    _configure_sheet_columns(sheet, fields)
-
-    wrap_top = Alignment(wrap_text=True, vertical="top")
-    for row_idx, row in enumerate(rows, start=2):
-        for col_idx, field in enumerate(fields, start=1):
-            cell = sheet.cell(row=row_idx, column=col_idx, value=_field_value_for_sheet(row, field))
-            if field in _WRAP_FIELDS:
-                cell.alignment = wrap_top
-        sheet.row_dimensions[row_idx].height = 60
-
-    sheet.freeze_panes = "A2"
-
-
-def _sanitize_sheet_title(raw: str) -> str:
-    """Return an Excel-safe sheet title."""
-    title = re.sub(r"[\\/*?:\[\]]+", "_", str(raw).strip())
-    if not title:
-        return "task"
-    return title[:31]
-
-
-def _dedupe_sheet_title(base: str, used: set[str]) -> str:
-    """Return a unique sheet title under Excel's 31-character limit."""
-    candidate = _sanitize_sheet_title(base)
-    if candidate not in used:
-        used.add(candidate)
-        return candidate
-
-    suffix_index = 2
-    while True:
-        suffix = f"_{suffix_index}"
-        trimmed = candidate[: max(1, 31 - len(suffix))]
-        attempt = f"{trimmed}{suffix}"
-        if attempt not in used:
-            used.add(attempt)
-            return attempt
-        suffix_index += 1
-
-
-def _write_task_excel(
-    rows: List[Dict[str, Any]],
-    path: Path,
+def _populate_task_review_sheet(
+    sheet: Any,
     *,
+    rows: List[Dict[str, Any]],
     out_root: Path,
-    max_image_side: int = _TASK_PREVIEW_MAX_SIDE,
+    max_image_side: int,
+    image_buffers: List[io.BytesIO],
 ) -> None:
-    """Write per-task sample review workbook with embedded preview images."""
-    workbook = Workbook()
-    sheet = workbook.active
-    sheet.title = "samples"
+    """Fill one task-style review sheet with preview image columns and row metadata."""
     headers = ["image", "evidence_image", *[_FIELD_LABELS[field] for field in _TASK_SHEET_FIELDS]]
     sheet.append(headers)
 
@@ -384,7 +317,6 @@ def _write_task_excel(
     _configure_sheet_columns(sheet, _TASK_SHEET_FIELDS, start_col=3)
 
     wrap_top = Alignment(wrap_text=True, vertical="top")
-    image_buffers: List[io.BytesIO] = []
     for row_idx, row in enumerate(rows, start=2):
         preview_height = 0
         image_path = out_root / str(row["image_path"])
@@ -425,14 +357,68 @@ def _write_task_excel(
         sheet.row_dimensions[row_idx].height = max(60, float(preview_height) * 0.75)
 
     sheet.freeze_panes = "C2"
+
+
+def _sanitize_sheet_title(raw: str) -> str:
+    """Return an Excel-safe sheet title."""
+    title = re.sub(r"[\\/*?:\[\]]+", "_", str(raw).strip())
+    if not title:
+        return "task"
+    return title[:31]
+
+
+def _dedupe_sheet_title(base: str, used: set[str]) -> str:
+    """Return a unique sheet title under Excel's 31-character limit."""
+    candidate = _sanitize_sheet_title(base)
+    if candidate not in used:
+        used.add(candidate)
+        return candidate
+
+    suffix_index = 2
+    while True:
+        suffix = f"_{suffix_index}"
+        trimmed = candidate[: max(1, 31 - len(suffix))]
+        attempt = f"{trimmed}{suffix}"
+        if attempt not in used:
+            used.add(attempt)
+            return attempt
+        suffix_index += 1
+
+
+def _write_task_excel(
+    rows: List[Dict[str, Any]],
+    path: Path,
+    *,
+    out_root: Path,
+    max_image_side: int = _TASK_PREVIEW_MAX_SIDE,
+) -> None:
+    """Write per-task sample review workbook with embedded preview images."""
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "samples"
+    image_buffers: List[io.BytesIO] = []
+    _populate_task_review_sheet(
+        sheet,
+        rows=rows,
+        out_root=out_root,
+        max_image_side=int(max_image_side),
+        image_buffers=image_buffers,
+    )
     path.parent.mkdir(parents=True, exist_ok=True)
     workbook.save(path)
 
 
-def _write_combined_excel(rows_by_task: Dict[str, List[Dict[str, Any]]], path: Path) -> None:
-    """Write combined sample workbook with one sheet per task."""
+def _write_domain_combined_excel(
+    rows_by_task: Dict[str, List[Dict[str, Any]]],
+    path: Path,
+    *,
+    out_root: Path,
+    max_image_side: int = _TASK_PREVIEW_MAX_SIDE,
+) -> None:
+    """Write one domain-level combined workbook with one task-format sheet per task."""
     workbook = Workbook()
     used_titles: set[str] = set()
+    image_buffers: List[io.BytesIO] = []
     sorted_task_ids = sorted(rows_by_task.keys())
     for idx, task_id in enumerate(sorted_task_ids):
         title = _dedupe_sheet_title(task_id, used_titles)
@@ -441,7 +427,13 @@ def _write_combined_excel(rows_by_task: Dict[str, List[Dict[str, Any]]], path: P
             sheet.title = title
         else:
             sheet = workbook.create_sheet(title=title)
-        _populate_review_sheet(sheet, rows_by_task[task_id], fields=_COMBINED_SHEET_FIELDS)
+        _populate_task_review_sheet(
+            sheet,
+            rows=rows_by_task[task_id],
+            out_root=out_root,
+            max_image_side=int(max_image_side),
+            image_buffers=image_buffers,
+        )
 
     path.parent.mkdir(parents=True, exist_ok=True)
     workbook.save(path)
@@ -670,6 +662,7 @@ def _generate_samples_for_task(
         instance_seed = hash64(int(base_seed), seed_namespace, int(seed_index))
         task_params = dict(params)
         task_params["query_type"] = str(query_type)
+        task_params["_sampling_index"] = int(seed_index)
 
         try:
             output = task.generate(
@@ -809,7 +802,7 @@ def _generate_samples_for_task(
 def main() -> int:
     """Parse CLI args and generate task sample artifacts."""
     parser = argparse.ArgumentParser(
-        description="Generate TRACE task sample images/data, per-task Excel files, and a combined Excel workbook"
+        description="Generate TRACE task sample images/data, per-task Excel files, and per-domain combined workbooks"
     )
     parser.add_argument("--out", default="samples", help="Output root directory")
     parser.add_argument("--tasks", default="", help="Comma-separated task ids (default: all registered tasks)")
@@ -825,7 +818,11 @@ def main() -> int:
     parser.add_argument("--image-format", default="png", choices=["png", "jpeg", "jpg"], help="Saved image format")
     parser.add_argument("--params", default="", help="Global task params JSON object")
     parser.add_argument("--task-params", default="", help="Per-task params JSON object mapping task_id -> params object")
-    parser.add_argument("--combined-excel", default="combined_samples.xlsx", help="Combined Excel filename under --out")
+    parser.add_argument(
+        "--combined-excel",
+        default="combined_samples.xlsx",
+        help="Combined Excel filename written under each domain directory",
+    )
     parser.add_argument("--clean", action="store_true", help="Clean only selected task directories before generation")
     parser.add_argument("--clean-all", action="store_true", help="Dangerous: remove entire --out before generation")
     args = parser.parse_args()
@@ -859,7 +856,7 @@ def main() -> int:
                 shutil.rmtree(task_dir)
 
     all_rows: List[Dict[str, Any]] = []
-    rows_by_task: Dict[str, List[Dict[str, Any]]] = {}
+    rows_by_domain_task: Dict[str, Dict[str, List[Dict[str, Any]]]] = defaultdict(dict)
     all_summaries: List[Dict[str, Any]] = []
     shortfall_tasks: List[str] = []
 
@@ -878,7 +875,7 @@ def main() -> int:
         )
         all_summaries.append(summary)
         all_rows.extend(rows)
-        rows_by_task[str(summary["task"])] = list(rows)
+        rows_by_domain_task[str(summary["domain"])][str(summary["task"])] = list(rows)
 
         task_dir = out_root / str(summary["domain"]) / str(summary["task_group"]) / str(summary["task"])
         task_excel_path = task_dir / "samples.xlsx"
@@ -891,15 +888,23 @@ def main() -> int:
             f"attempts={summary['attempted_candidates']}"
         )
 
-    combined_excel_path = out_root / args.combined_excel
-    _write_combined_excel(rows_by_task, combined_excel_path)
+    domain_combined_excels: Dict[str, str] = {}
+    for domain in sorted(rows_by_domain_task.keys()):
+        combined_excel_path = out_root / str(domain) / str(args.combined_excel)
+        _write_domain_combined_excel(
+            rows_by_domain_task[str(domain)],
+            combined_excel_path,
+            out_root=out_root,
+        )
+        domain_combined_excels[str(domain)] = combined_excel_path.relative_to(out_root).as_posix()
+        print(f"[done] combined excel ({domain}): {combined_excel_path}")
 
     summary_payload = {
         "num_tasks": len(task_ids),
         "samples_per_task": (None if int(args.count_per_query) > 0 else int(args.count)),
         "samples_per_query_type": (int(args.count_per_query) if int(args.count_per_query) > 0 else None),
         "total_rows": len(all_rows),
-        "combined_excel": combined_excel_path.relative_to(out_root).as_posix(),
+        "domain_combined_excels": dict(sorted(domain_combined_excels.items())),
         "tasks": all_summaries,
     }
     write_json_file(out_root / "summary_all_tasks.json", summary_payload)
@@ -913,7 +918,6 @@ def main() -> int:
         return 1
 
     print(f"[done] wrote {len(all_rows)} samples to {out_root}")
-    print(f"[done] combined excel: {combined_excel_path}")
     return 0
 
 

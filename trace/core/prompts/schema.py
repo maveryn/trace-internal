@@ -22,7 +22,12 @@ class PromptBundle:
     source_path: str
 
 
-def _parse_template_map(raw: Any, *, field_name: str) -> Dict[str, Tuple[str, ...]]:
+def _parse_template_map(
+    raw: Any,
+    *,
+    field_name: str,
+    allow_empty_templates: bool = False,
+) -> Dict[str, Tuple[str, ...]]:
     """Validate and normalize a template-map field from bundle JSON."""
     if not isinstance(raw, Mapping):
         raise ValueError(f"{field_name} must be a mapping")
@@ -31,7 +36,10 @@ def _parse_template_map(raw: Any, *, field_name: str) -> Dict[str, Tuple[str, ..
         entry_key = str(key)
         if not isinstance(values, list):
             raise ValueError(f"{field_name}.{entry_key} must be a list")
-        templates = tuple(str(item).strip() for item in values if str(item).strip())
+        if bool(allow_empty_templates):
+            templates = tuple(str(item) for item in values)
+        else:
+            templates = tuple(str(item).strip() for item in values if str(item).strip())
         if len(templates) < MIN_PROMPT_VARIANTS:
             raise ValueError(
                 f"{field_name}.{entry_key} must contain at least {MIN_PROMPT_VARIANTS} prompt variants"
@@ -69,7 +77,11 @@ def parse_prompt_bundle(raw: Mapping[str, Any], *, source_path: str) -> PromptBu
     query_type_templates = _parse_template_map(raw.get("query_type_templates"), field_name="query_type_templates")
     answer_or_evidence_raw = raw.get("answer_or_evidence_templates")
     answer_or_evidence_templates = (
-        _parse_template_map(answer_or_evidence_raw, field_name="answer_or_evidence_templates")
+        _parse_template_map(
+            answer_or_evidence_raw,
+            field_name="answer_or_evidence_templates",
+            allow_empty_templates=True,
+        )
         if answer_or_evidence_raw is not None
         else {}
     )

@@ -15,6 +15,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageFilter
 
 from ..seed import spawn_rng
+from .ranges import normalize_non_negative_int_range
 
 
 _ALLOWED_EDIT_TYPES = {"blur", "downsample", "jpeg", "noise"}
@@ -41,17 +42,6 @@ def _clamp_prob(value: Any, default: float) -> float:
     except Exception:
         prob = float(default)
     return max(0.0, min(1.0, prob))
-
-
-def _normalize_edit_count_range(value: Any, default_pair: Sequence[int]) -> Tuple[int, int]:
-    """Normalize edit-count range into non-negative ordered integer bounds."""
-    if not isinstance(value, (list, tuple)) or len(value) < 2:
-        lo, hi = int(default_pair[0]), int(default_pair[1])
-    else:
-        lo, hi = int(value[0]), int(value[1])
-    lo_n = max(0, min(lo, hi))
-    hi_n = max(0, max(lo, hi))
-    return lo_n, hi_n
 
 
 def _normalize_value_ranges(raw: Any, fallback: Mapping[str, Mapping[str, Tuple[float, float]]]) -> Dict[str, Dict[str, Tuple[float, float]]]:
@@ -179,9 +169,10 @@ def _normalize_default_config(default_config: Mapping[str, Any] | None) -> Dict[
         value_ranges=value_ranges,
     )
 
-    edit_count_range = _normalize_edit_count_range(
+    edit_count_range = normalize_non_negative_int_range(
         default_config.get("edit_count_range", base["edit_count_range"]),
-        default_pair=base["edit_count_range"],
+        fallback_min=int(base["edit_count_range"][0]),
+        fallback_max=int(base["edit_count_range"][1]),
     )
     base["edit_count_range"] = [int(edit_count_range[0]), int(edit_count_range[1])]
     return base
@@ -214,9 +205,10 @@ def _resolve_post_noise_config(params: Mapping[str, Any], *, default_config: Map
         value_ranges=value_ranges,
     )
 
-    edit_count_range = _normalize_edit_count_range(
+    edit_count_range = normalize_non_negative_int_range(
         overrides.get("edit_count_range", base.get("edit_count_range", [1, 1])),
-        default_pair=base.get("edit_count_range", [1, 1]),
+        fallback_min=int(base.get("edit_count_range", [1, 1])[0]),
+        fallback_max=int(base.get("edit_count_range", [1, 1])[1]),
     )
 
     return {

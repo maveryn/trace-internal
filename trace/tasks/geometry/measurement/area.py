@@ -14,11 +14,11 @@ from .shape_measure_base import GeometryShapeMeasureBase
 class GeometryAreaMeasure2DTask(GeometryShapeMeasureBase):
     """Measure 2D area for one polygon/ellipse on graph paper."""
 
-    task_id = "task_geometry_measurement_2d_area"
+    task_id = "task_geometry_measurement_area"
     scene_kind = "geometry_2d_area_measurement"
     query_template_id = "geometry_2d_area_measure_v1"
     answer_component_key = "area_square_units"
-    supported_shape_variants = ("triangle", "quadrilateral", "pentagon", "ellipse")
+    supported_shape_variants = ("triangle", "quadrilateral", "ellipse")
 
     def _answer_scalar_from_polygon_instance(self, instance: PolygonInstance) -> int:
         """Return polygon area answer value."""

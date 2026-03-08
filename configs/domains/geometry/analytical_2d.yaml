@@ -1,0 +1,112 @@
+generation:
+  shared:
+    answer_min: 8
+    answer_max: 64
+    shape_weights:
+      rectangle: 1.0
+      triangle: 1.0
+      parallelogram: 1.0
+      trapezoid: 1.0
+      rhombus: 1.0
+      circle: 1.0
+      ellipse: 1.0
+    mode_weights:
+      explicit: 1.0
+      derived: 1.0
+    balanced_shape_sampling: true
+    balanced_mode_sampling: true
+  task_overrides:
+    task_geometry_analytical_2d_area:
+      side_min: 2
+      side_max: 12
+      right_triangle_max_component: 18
+      circle_radius_min: 2
+      circle_radius_max: 10
+      ellipse_axis_min: 2
+      ellipse_axis_max: 10
+
+rendering:
+  shared:
+    canvas_size_min: 256
+    canvas_size_max: 512
+    graph_cells_min: 6
+    graph_cells_max: 12
+    line_width: 4
+    line_width_min: 2
+    line_width_max: 6
+    helper_line_width: 2
+    helper_line_width_min: 1
+    helper_line_width_max: 4
+    label_offset_px: 14
+    label_font_size_min: 14
+    label_font_size_max: 30
+    label_stroke_width: 1
+    label_stroke_width_min: 1
+    label_stroke_width_max: 2
+
+visual:
+  background:
+    enabled: true
+    styles:
+      solid_offwhite:
+        kind: solid
+        color: [252, 252, 252]
+      solid_cool:
+        kind: solid
+        color: [246, 248, 252]
+      solid_warm:
+        kind: solid
+        color: [252, 249, 245]
+    weights:
+      graph_paper: 0.0
+      solid_offwhite: 0.5
+      solid_cool: 0.25
+      solid_warm: 0.25
+
+prompt:
+  shared:
+    bundle_id: geometry_analytical_area_v1
+    task_type_key: analytical_single_shape
+    object_description: a single annotated geometric shape
+    evidence_hint_measurement_map: set "evidence" to a JSON object that maps each required annotation label to its shown measurement value
+    answer_hint_integer: set "answer" to the area value as an integer
+    answer_hint_pi: set "answer" to the area value in the form kπ (for example 12π)
+    json_example_integer: '{"evidence":{"AB":8,"CD":6},"answer":24}'
+    json_example_pi: '{"evidence":{"AB":6,"CD":4},"answer":"24π"}'
+    json_example_answer_only_integer: '{"answer":24}'
+    json_example_answer_only_pi: '{"answer":"24π"}'
+  task_overrides:
+    task_geometry_analytical_2d_area:
+      question_text_rectangle_explicit: The shape is a rectangle. Use the annotated side lengths to compute its area in square units.
+      question_text_rectangle_derived: The shape is a rectangle. One side length and the diagonal are annotated. Compute the area in square units.
+      question_text_triangle_explicit: The shape is a right triangle. Use the annotated base and height to compute its area in square units.
+      question_text_triangle_derived: The shape is a right triangle. A leg length and the hypotenuse are annotated. Compute the area in square units.
+      question_text_parallelogram_explicit: The shape is a parallelogram. Use the annotated base and height to compute its area in square units.
+      question_text_parallelogram_derived: The shape is a parallelogram. The base, one side, and the horizontal offset are annotated. Compute the area in square units.
+      question_text_trapezoid_explicit: The shape is a trapezoid. Use the annotated bases and height to compute its area in square units.
+      question_text_trapezoid_derived: The shape is an isosceles trapezoid. Both bases and one leg length are annotated. Compute the area in square units.
+      question_text_rhombus_explicit: The shape is a rhombus. Both diagonals are annotated. Compute its area in square units.
+      question_text_rhombus_derived: The shape is a rhombus. One side length and one diagonal are annotated. Compute its area in square units.
+      question_text_circle_explicit: The shape is a circle. The radius is annotated. Compute the area and express the result in kπ form.
+      question_text_circle_derived: The shape is a circle. The circumference is annotated in π units. Compute the area and express the result in kπ form.
+      question_text_ellipse_explicit: The shape is an ellipse. The semimajor axis and semiminor axis are annotated. Compute the area and express the result in kπ form.
+      question_text_ellipse_derived: The shape is an ellipse. The semimajor axis and focal distance are annotated. Compute the area and express the result in kπ form.
+      json_example_rectangle_explicit: '{"evidence":{"AB":6,"CD":4},"answer":24}'
+      json_example_rectangle_derived: '{"evidence":{"AB":3,"CD":5},"answer":12}'
+      json_example_triangle_explicit: '{"evidence":{"AB":4,"CD":6},"answer":12}'
+      json_example_triangle_derived: '{"evidence":{"AB":6,"CD":10},"answer":24}'
+      json_example_parallelogram_explicit: '{"evidence":{"AB":6,"CD":5},"answer":30}'
+      json_example_parallelogram_derived: '{"evidence":{"AB":8,"CD":5,"EF":3},"answer":32}'
+      json_example_trapezoid_explicit: '{"evidence":{"AB":10,"CD":6,"EF":4},"answer":32}'
+      json_example_trapezoid_derived: '{"evidence":{"AB":9,"CD":3,"EF":5},"answer":30}'
+      json_example_rhombus_explicit: '{"evidence":{"AB":10,"CD":6},"answer":30}'
+      json_example_rhombus_derived: '{"evidence":{"AB":5,"CD":8},"answer":24}'
+      json_example_circle_explicit: '{"evidence":{"AB":4},"answer":"16π"}'
+      json_example_circle_derived: '{"evidence":{"AB":"10π"},"answer":"25π"}'
+      json_example_ellipse_explicit: '{"evidence":{"AB":6,"CD":4},"answer":"24π"}'
+      json_example_ellipse_derived: '{"evidence":{"AB":5,"CD":3},"answer":"20π"}'
+
+sampling:
+  shared:
+    query_weights:
+      measure: 1.0

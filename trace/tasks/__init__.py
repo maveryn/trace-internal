@@ -1,10 +1,11 @@
 """TRACE task implementations."""
 
 from .registry import TASK_REGISTRY, create_task
-from .geometry.measurement_2d import angle as _task_geometry_measurement_2d_angle
-from .geometry.measurement_2d import area as _task_geometry_measurement_2d_area
-from .geometry.measurement_2d import length as _task_geometry_measurement_2d_length
-from .geometry.measurement_2d import perimeter as _task_geometry_measurement_2d_perimeter
+from .geometry.analytical_2d import area as _task_geometry_analytical_2d_area
+from .geometry.measurement import angle as _task_geometry_measurement_angle
+from .geometry.measurement import area as _task_geometry_measurement_area
+from .geometry.measurement import length as _task_geometry_measurement_length
+from .geometry.measurement import perimeter as _task_geometry_measurement_perimeter
 from .tile.path import shortest_path as _task_tile_path_shortest_path
 
 __all__ = [

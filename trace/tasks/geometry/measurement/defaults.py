@@ -1,4 +1,4 @@
-"""Shared fallback defaults for geometry/measurement_2d task-group modules."""
+"""Shared fallback defaults for geometry/measurement task-group modules."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from typing import Tuple
 
 @dataclass(frozen=True)
 class GeometryMeasurementSharedDefaults:
-    """Common fallback defaults reused across geometry/measurement_2d tasks."""
+    """Common fallback defaults reused across geometry/measurement tasks."""
 
     canvas_size_min: int = 256
     canvas_size_max: int = 512

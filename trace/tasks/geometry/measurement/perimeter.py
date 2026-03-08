@@ -12,11 +12,11 @@ from .shape_measure_base import GeometryShapeMeasureBase
 class GeometryPerimeterMeasure2DTask(GeometryShapeMeasureBase):
     """Measure 2D perimeter/circumference for one polygon/circle on graph paper."""
 
-    task_id = "task_geometry_measurement_2d_perimeter"
+    task_id = "task_geometry_measurement_perimeter"
     scene_kind = "geometry_2d_perimeter_measurement"
     query_template_id = "geometry_2d_perimeter_measure_v1"
     answer_component_key = "perimeter_units"
-    supported_shape_variants = ("triangle", "quadrilateral", "pentagon", "circle")
+    supported_shape_variants = ("triangle", "quadrilateral", "circle")
 
     def _answer_scalar_from_polygon_instance(self, instance: PolygonInstance) -> int:
         """Return polygon perimeter answer value."""

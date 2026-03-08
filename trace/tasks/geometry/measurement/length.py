@@ -18,6 +18,7 @@ from ...shared.config_defaults import (
     split_generation_rendering_prompt_defaults,
 )
 from ...shared.output_metadata import default_task_versions
+from ...shared.prompt_json_example import build_prompt_json_examples
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
     build_prompt_trace_artifacts,
@@ -28,7 +29,6 @@ from ..shared.background_defaults import POST_IMAGE_BACKGROUND_DEFAULTS
 from ..shared.conic_geometry import (
     CircleInstance,
     EllipseInstance,
-    center_point_evidence_artifacts,
     circle_scene_entity,
     draw_circle_outline,
     draw_ellipse_outline,
@@ -40,15 +40,16 @@ from ..shared.conic_geometry import (
     sample_ellipse_instance_on_graph_paper,
 )
 from ..shared.graph_rendering import graph_paper_grid_from_frame, scale_point
+from ..shared.labeled_point_evidence import labeled_grid_point_evidence_artifacts
 from ..shared.length_geometry import (
     draw_labeled_segment,
     sample_segment_instance_on_graph_paper,
     segment_length_units,
     segment_render_anchor,
     segment_scene_entity,
-    two_point_evidence_artifacts,
 )
 from ..shared.noise_defaults import POST_IMAGE_NOISE_DEFAULTS
+from ..shared.point_labels import draw_labeled_points
 from ..shared.polygon_geometry import (
     alphabetic_labels,
     draw_polygon_labels,
@@ -57,14 +58,15 @@ from ..shared.polygon_geometry import (
     polygon_scene_entity,
     sample_polygon_instance_on_graph_paper,
 )
-from ..shared.shape_style import sample_geometry_shape_style
+from ..shared.render_variation import sample_int_render_param
+from ..shared.shape_style import extract_background_anchor_colors, sample_geometry_shape_style
 from ..shared.single_object_scene import (
     finalize_graph_scene_image,
     make_graph_scene_canvas,
     resolve_graph_scene_context,
 )
+from ..shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from .defaults import MEASUREMENT_SHARED_DEFAULTS
-from .variant_sampling import apply_balanced_variant_sampling, resolve_shape_variant
 
 _QUERY_TYPE = "measure"
 _POLYGON_VARIANT_TO_SIDES: Dict[str, int] = {
@@ -104,10 +106,10 @@ class _TaskDefaults:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("geometry", "measurement_2d")
+_TASK_GROUP_DEFAULTS = get_task_group_defaults("geometry", "measurement")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id="task_geometry_measurement_2d_length",
+    task_id="task_geometry_measurement_length",
 )
 
 
@@ -154,7 +156,7 @@ def _answer_bounds(
         gen_defaults,
         min_key="answer_min",
         max_key="answer_max",
-        context="generation defaults for task_geometry_measurement_2d_length",
+        context="generation defaults for task_geometry_measurement_length",
     )
     resolved_min = int(_DEFAULTS.answer_min if answer_min is None else answer_min)
     resolved_max = int(_DEFAULTS.answer_max if answer_max is None else answer_max)
@@ -284,16 +286,24 @@ def _question_key_candidates_for_variant(variant_kind: str) -> Tuple[str, ...]:
 
 def _evidence_hint_key_candidates_for_variant(variant_kind: str) -> Tuple[str, ...]:
     """Return ordered evidence-hint key candidates for one length variant."""
-    if str(variant_kind) in _CIRCLE_VARIANTS:
-        return ("evidence_hint_center", "evidence_hint")
-    return ("evidence_hint_endpoints", "evidence_hint")
+    variant = str(variant_kind)
+    if variant == "segment":
+        return ("evidence_hint_segment", "evidence_hint_point_map", "evidence_hint")
+    if variant in _POLYGON_VARIANTS:
+        return ("evidence_hint_polygon_side", "evidence_hint_point_map", "evidence_hint")
+    if variant in _CIRCLE_VARIANTS:
+        return ("evidence_hint_circle_center", "evidence_hint_point_map", "evidence_hint")
+    if variant in _ELLIPSE_VARIANTS:
+        return ("evidence_hint_ellipse_axis", "evidence_hint_point_map", "evidence_hint")
+    return ("evidence_hint_point_map", "evidence_hint")
 
 
-def _json_example_key_candidates_for_variant(variant_kind: str) -> Tuple[str, ...]:
-    """Return ordered JSON-example key candidates for one length variant."""
-    if str(variant_kind) in _CIRCLE_VARIANTS:
-        return ("json_example_center_integer", "json_example_integer", "json_example")
-    return ("json_example_integer", "json_example")
+def _required_labels_text(labels: Sequence[str]) -> str:
+    """Render deterministic required-label suffix for prompt evidence hint."""
+    normalized = [str(label) for label in labels if str(label).strip()]
+    if not normalized:
+        return ""
+    return f" Required labels: {', '.join(normalized)}"
 
 
 def _format_question(template: str, *, label_a: str | None = None, label_b: str | None = None) -> str:
@@ -353,9 +363,9 @@ def _all_points_inside_bounds(points: Sequence[Sequence[float]], *, bounds: Sequ
 class GeometryLengthMeasure2DTask:
     """Measure one integer length from a single geometry object on graph paper."""
 
-    task_id = "task_geometry_measurement_2d_length"
+    task_id = "task_geometry_measurement_length"
     domain = "geometry"
-    task_group = "measurement_2d"
+    task_group = "measurement"
     scene_kind = "geometry_2d_length_measurement"
     query_template_id = "geometry_2d_length_measure_v1"
 
@@ -373,7 +383,7 @@ class GeometryLengthMeasure2DTask:
         scene_rng = spawn_rng(instance_seed, "scene")
         allowed_polygon_sides = _resolve_supported_polygon_sides(params, gen_defaults=_GEN_DEFAULTS)
         supported_variants = _supported_variants_for_allowed_sides(allowed_polygon_sides)
-        selected_variant, variant_probabilities = resolve_shape_variant(
+        selected_variant, variant_probabilities = resolve_variant(
             scene_rng,
             params=params,
             gen_defaults=_GEN_DEFAULTS,
@@ -428,7 +438,16 @@ class GeometryLengthMeasure2DTask:
             fallback_cells_min=_DEFAULTS.graph_cells_min,
             fallback_cells_max=_DEFAULTS.graph_cells_max,
         )
-        line_width = int(params.get("line_width", group_default(_RENDER_DEFAULTS, "line_width", _DEFAULTS.line_width)))
+        line_width = sample_int_render_param(
+            scene_rng,
+            params=context_params,
+            render_defaults=_RENDER_DEFAULTS,
+            key="line_width",
+            fallback=int(_DEFAULTS.line_width),
+            min_key="line_width_min",
+            max_key="line_width_max",
+            minimum_value=1,
+        )
         label_offset_px = float(
             params.get("label_offset_px", group_default(_RENDER_DEFAULTS, "label_offset_px", _DEFAULTS.label_offset_px))
         )
@@ -439,18 +458,27 @@ class GeometryLengthMeasure2DTask:
             min_px=int(group_default(_RENDER_DEFAULTS, "label_font_size_min", _DEFAULTS.label_font_size_min)),
             max_px=int(group_default(_RENDER_DEFAULTS, "label_font_size_max", _DEFAULTS.label_font_size_max)),
         )
-        label_stroke_width = int(
-            params.get(
-                "label_stroke_width",
-                group_default(_RENDER_DEFAULTS, "label_stroke_width", _DEFAULTS.label_stroke_width),
-            )
+        label_stroke_width = sample_int_render_param(
+            scene_rng,
+            params=context_params,
+            render_defaults=_RENDER_DEFAULTS,
+            key="label_stroke_width",
+            fallback=int(_DEFAULTS.label_stroke_width),
+            min_key="label_stroke_width_min",
+            max_key="label_stroke_width_max",
+            minimum_value=1,
         )
 
-        shape_style = sample_geometry_shape_style(scene_rng, params=context_params, render_defaults=_RENDER_DEFAULTS)
         image, draw, background_meta = make_graph_scene_canvas(
             instance_seed=int(instance_seed),
             context=context,
             background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,
+        )
+        shape_style = sample_geometry_shape_style(
+            scene_rng,
+            params=context_params,
+            render_defaults=_RENDER_DEFAULTS,
+            anchor_colors=extract_background_anchor_colors(background_meta),
         )
         graph_bounds = _graph_draw_bounds(
             canvas_size=int(context.canvas_size),
@@ -513,13 +541,16 @@ class GeometryLengthMeasure2DTask:
                     answer_scalar = int(candidate.length_units)
                     entity = segment_scene_entity(candidate, segment_kind="segment")
                     anchor = segment_render_anchor(candidate)
-                    evidence = two_point_evidence_artifacts(
-                        point_a=candidate.endpoint_a,
-                        point_b=candidate.endpoint_b,
+                    evidence_labels = [str(candidate.labels[0]), str(candidate.labels[1])]
+                    evidence = labeled_grid_point_evidence_artifacts(
+                        points_by_label={
+                            str(candidate.labels[0]): (float(candidate.endpoint_a[0]), float(candidate.endpoint_a[1])),
+                            str(candidate.labels[1]): (float(candidate.endpoint_b[0]), float(candidate.endpoint_b[1])),
+                        },
                         graph_origin=context.graph_origin,
                         graph_spacing=int(context.graph_spacing),
                         witness_type="segment_endpoints",
-                        roles=("endpoint_a", "endpoint_b"),
+                        ordered_labels=evidence_labels,
                     )
                     object_description = _required_prompt_text(
                         _PROMPT_DEFAULTS,
@@ -598,13 +629,17 @@ class GeometryLengthMeasure2DTask:
                     ]
                     entity["attrs"]["target_side_length_units"] = int(candidate_answer)
                     anchor = polygon_render_anchor(polygon_instance)
-                    evidence = two_point_evidence_artifacts(
-                        point_a=(float(point_a[0]), float(point_a[1])),
-                        point_b=(float(point_b[0]), float(point_b[1])),
+                    side_label_a = str(polygon_instance.labels[int(side_idx)])
+                    side_label_b = str(polygon_instance.labels[int(next_idx)])
+                    evidence = labeled_grid_point_evidence_artifacts(
+                        points_by_label={
+                            str(side_label_a): (float(point_a[0]), float(point_a[1])),
+                            str(side_label_b): (float(point_b[0]), float(point_b[1])),
+                        },
                         graph_origin=context.graph_origin,
                         graph_spacing=int(context.graph_spacing),
                         witness_type="polygon_side_endpoints",
-                        roles=("side_endpoint_a", "side_endpoint_b"),
+                        ordered_labels=[str(side_label_a), str(side_label_b)],
                     )
                     object_description = _required_prompt_text(
                         _PROMPT_DEFAULTS,
@@ -618,14 +653,14 @@ class GeometryLengthMeasure2DTask:
                     )
                     question_text = _format_question(
                         question_template,
-                        label_a=str(polygon_instance.labels[int(side_idx)]),
-                        label_b=str(polygon_instance.labels[int(next_idx)]),
+                        label_a=str(side_label_a),
+                        label_b=str(side_label_b),
                     )
                     variant_detail = {
                         "target_side_indices": [int(side_idx), int(next_idx)],
                         "target_side_labels": [
-                            str(polygon_instance.labels[int(side_idx)]),
-                            str(polygon_instance.labels[int(next_idx)]),
+                            str(side_label_a),
+                            str(side_label_b),
                         ],
                     }
                     break
@@ -693,6 +728,20 @@ class GeometryLengthMeasure2DTask:
                         line_width=max(1, int(line_width) * int(context.scene_scale)),
                         line_color=tuple(int(value) for value in shape_style.line_color),
                     )
+                    center_label = str(alphabetic_labels(1, start_index=int(scene_rng.randrange(26)))[0])
+                    draw_labeled_points(
+                        draw,
+                        points=[scale_point((float(cx), float(cy)), int(context.scene_scale))],
+                        labels=[str(center_label)],
+                        label_offset_px=float(label_offset_px) * float(context.scene_scale),
+                        font_size_px=int(label_font_size_px),
+                        text_stroke_width=max(1, int(label_stroke_width)),
+                        marker_radius_px=max(1, int(context.scene_scale)),
+                        marker_color=tuple(int(value) for value in shape_style.line_color),
+                        label_color=tuple(int(value) for value in shape_style.label_color),
+                        label_stroke_color=tuple(int(value) for value in shape_style.label_stroke_color),
+                        canvas_size=int(context.canvas_size) * int(context.scene_scale),
+                    )
                     answer_scalar = int(candidate_answer)
                     entity = circle_scene_entity(circle_instance)
                     entity["attrs"]["measurement_kind"] = (
@@ -703,13 +752,14 @@ class GeometryLengthMeasure2DTask:
                         [float(point_a[0]), float(point_a[1])],
                         [float(point_b[0]), float(point_b[1])],
                     ]
+                    entity["attrs"]["evidence_labels"] = {"center": str(center_label)}
                     anchor = _segment_anchor(point_a, point_b)
-                    evidence = center_point_evidence_artifacts(
-                        center=(float(circle_instance.center[0]), float(circle_instance.center[1])),
+                    evidence = labeled_grid_point_evidence_artifacts(
+                        points_by_label={str(center_label): (float(circle_instance.center[0]), float(circle_instance.center[1]))},
                         graph_origin=context.graph_origin,
                         graph_spacing=int(context.graph_spacing),
-                        entity_id="circle_1",
                         witness_type="circle_center",
+                        ordered_labels=[str(center_label)],
                     )
                     object_description = _required_prompt_text(
                         _PROMPT_DEFAULTS,
@@ -792,6 +842,23 @@ class GeometryLengthMeasure2DTask:
                         line_width=max(1, int(line_width) * int(context.scene_scale)),
                         line_color=tuple(int(value) for value in shape_style.line_color),
                     )
+                    endpoint_labels = list(alphabetic_labels(2, start_index=int(scene_rng.randrange(26))))
+                    draw_labeled_points(
+                        draw,
+                        points=[
+                            scale_point((float(point_a[0]), float(point_a[1])), int(context.scene_scale)),
+                            scale_point((float(point_b[0]), float(point_b[1])), int(context.scene_scale)),
+                        ],
+                        labels=endpoint_labels,
+                        label_offset_px=float(label_offset_px) * float(context.scene_scale),
+                        font_size_px=int(label_font_size_px),
+                        text_stroke_width=max(1, int(label_stroke_width)),
+                        marker_radius_px=max(1, int(context.scene_scale)),
+                        marker_color=tuple(int(value) for value in shape_style.line_color),
+                        label_color=tuple(int(value) for value in shape_style.label_color),
+                        label_stroke_color=tuple(int(value) for value in shape_style.label_stroke_color),
+                        canvas_size=int(context.canvas_size) * int(context.scene_scale),
+                    )
                     answer_scalar = int(candidate_answer)
                     entity = ellipse_scene_entity(ellipse_instance)
                     entity["attrs"]["measurement_kind"] = (
@@ -802,14 +869,20 @@ class GeometryLengthMeasure2DTask:
                         [float(point_a[0]), float(point_a[1])],
                         [float(point_b[0]), float(point_b[1])],
                     ]
+                    entity["attrs"]["evidence_labels"] = {
+                        "endpoint_a": str(endpoint_labels[0]),
+                        "endpoint_b": str(endpoint_labels[1]),
+                    }
                     anchor = _segment_anchor(point_a, point_b)
-                    evidence = two_point_evidence_artifacts(
-                        point_a=point_a,
-                        point_b=point_b,
+                    evidence = labeled_grid_point_evidence_artifacts(
+                        points_by_label={
+                            str(endpoint_labels[0]): (float(point_a[0]), float(point_a[1])),
+                            str(endpoint_labels[1]): (float(point_b[0]), float(point_b[1])),
+                        },
                         graph_origin=context.graph_origin,
                         graph_spacing=int(context.graph_spacing),
                         witness_type="ellipse_measure_segment",
-                        roles=("endpoint_a", "endpoint_b"),
+                        ordered_labels=[str(endpoint_labels[0]), str(endpoint_labels[1])],
                     )
                     object_description = _required_prompt_text(
                         _PROMPT_DEFAULTS,
@@ -868,20 +941,16 @@ class GeometryLengthMeasure2DTask:
             preferred_keys=_evidence_hint_key_candidates_for_variant(str(variant_kind)),
             context=f"prompt defaults for {self.task_id}",
         )
+        required_labels = [str(label) for label in evidence.get("required_labels", []) if str(label).strip()]
+        evidence_hint = f"{str(evidence_hint).rstrip().rstrip('.')}{_required_labels_text(required_labels)}"
         answer_hint = _required_prompt_text(
             _PROMPT_DEFAULTS,
             preferred_keys=("answer_hint_integer", "answer_hint"),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example = _required_prompt_text(
-            _PROMPT_DEFAULTS,
-            preferred_keys=_json_example_key_candidates_for_variant(str(variant_kind)),
-            context=f"prompt defaults for {self.task_id}",
-        )
-        json_example_answer_only = _required_prompt_text(
-            _PROMPT_DEFAULTS,
-            preferred_keys=("json_example_answer_only_integer", "json_example_answer_only"),
-            context=f"prompt defaults for {self.task_id}",
+        json_example, json_example_answer_only = build_prompt_json_examples(
+            evidence_value=evidence.get("evidence_value", {}),
+            answer_type="integer",
         )
 
         prompt_selection = render_task_prompt_variants(
@@ -982,6 +1051,7 @@ class GeometryLengthMeasure2DTask:
                 "answer_format": "integer",
                 "variant_probabilities": dict(variant_probabilities),
                 "required_graph_cells": int(required_graph_cells),
+                "required_evidence_labels": [str(label) for label in evidence.get("required_labels", [])],
                 "question_text": str(question_text),
                 **dict(variant_detail),
             },

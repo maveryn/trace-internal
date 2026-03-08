@@ -26,22 +26,28 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.mcq import build_integer_mcq_options, format_lettered_options, option_label_for_index
+from ...shared.prompt_json_example import build_prompt_json_examples
 from ...shared.sequence import rotate_sequence
 from ...shared.text_rendering import resolve_scene_label_font_size_px
 from ..shared.angle_geometry import (
-    angle_triplet_evidence_artifacts,
     draw_labeled_angle,
     primitive_angle_pair_catalog,
     sample_primitive_angle,
 )
 from ..shared.graph_paper import offset_point_by_grid_vector, sample_lattice_point_with_offsets
 from ..shared.graph_rendering import graph_paper_grid_from_frame, scale_point
+from ..shared.labeled_point_evidence import labeled_grid_point_evidence_artifacts
 from ..shared.polygon_geometry import (
     alphabetic_labels,
     draw_polygon_labels,
     draw_polygon_outline,
 )
-from ..shared.shape_style import GeometryShapeStyle, sample_geometry_shape_style
+from ..shared.render_variation import sample_int_render_param
+from ..shared.shape_style import (
+    GeometryShapeStyle,
+    extract_background_anchor_colors,
+    sample_geometry_shape_style,
+)
 from ..shared.single_object_scene import (
     finalize_graph_scene_image,
     make_graph_scene_canvas,
@@ -84,10 +90,10 @@ class _TaskDefaults:
 
 
 _DEFAULTS = _TaskDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("geometry", "measurement_2d")
+_TASK_GROUP_DEFAULTS = get_task_group_defaults("geometry", "measurement")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id="task_geometry_measurement_2d_angle",
+    task_id="task_geometry_measurement_angle",
 )
 
 
@@ -1063,9 +1069,9 @@ def _build_intersection_scene(
 class GeometryAngleMeasure2DTask:
     """Measure one 2D angle from primitive, polygon, or intersection sources."""
 
-    task_id = "task_geometry_measurement_2d_angle"
+    task_id = "task_geometry_measurement_angle"
     domain = "geometry"
-    task_group = "measurement_2d"
+    task_group = "measurement"
 
     @staticmethod
     def supported_query_types(_params: Dict[str, Any] | None = None) -> List[str]:
@@ -1109,7 +1115,16 @@ class GeometryAngleMeasure2DTask:
         mcq_max_delta = int(
             params.get("mcq_max_delta", group_default(_GEN_DEFAULTS, "mcq_max_delta", _DEFAULTS.mcq_max_delta))
         )
-        line_width = int(params.get("line_width", group_default(_RENDER_DEFAULTS, "line_width", _DEFAULTS.line_width)))
+        line_width = sample_int_render_param(
+            scene_rng,
+            params=params,
+            render_defaults=_RENDER_DEFAULTS,
+            key="line_width",
+            fallback=int(_DEFAULTS.line_width),
+            min_key="line_width_min",
+            max_key="line_width_max",
+            minimum_value=1,
+        )
         label_offset_px = float(
             params.get("label_offset_px", group_default(_RENDER_DEFAULTS, "label_offset_px", _DEFAULTS.label_offset_px))
         )
@@ -1122,11 +1137,15 @@ class GeometryAngleMeasure2DTask:
             fallback_max=int(_DEFAULTS.label_font_size_max),
             context=f"rendering defaults for {self.task_id}",
         )
-        label_stroke_width = int(
-            params.get(
-                "label_stroke_width",
-                group_default(_RENDER_DEFAULTS, "label_stroke_width", _DEFAULTS.label_stroke_width),
-            )
+        label_stroke_width = sample_int_render_param(
+            scene_rng,
+            params=params,
+            render_defaults=_RENDER_DEFAULTS,
+            key="label_stroke_width",
+            fallback=int(_DEFAULTS.label_stroke_width),
+            min_key="label_stroke_width_min",
+            max_key="label_stroke_width_max",
+            minimum_value=1,
         )
         if float(quantization_tolerance_degrees) < 0.0:
             raise ValueError("quantization_tolerance_degrees must be >= 0")
@@ -1294,15 +1313,10 @@ class GeometryAngleMeasure2DTask:
             resolved_max_cells = max(int(current_max_cells), int(resolved_min_cells))
             context_params["graph_cells_min"] = int(resolved_min_cells)
             context_params["graph_cells_max"] = int(resolved_max_cells)
-        shape_style = sample_geometry_shape_style(
-            scene_rng,
-            params=context_params,
-            render_defaults=_RENDER_DEFAULTS,
-        )
-
         context = None
         image = None
         background_meta = None
+        shape_style = None
         label_font_size_px = None
         label_stroke_width_scene = None
         scene_payload: Dict[str, Any] | None = None
@@ -1338,6 +1352,12 @@ class GeometryAngleMeasure2DTask:
                 context=context_attempt,
                 background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,
             )
+            shape_style_attempt = sample_geometry_shape_style(
+                scene_rng,
+                params=context_params,
+                render_defaults=_RENDER_DEFAULTS,
+                anchor_colors=extract_background_anchor_colors(background_meta_attempt),
+            )
             try:
                 if str(source_kind) == "primitive_angle":
                     scene_payload = _build_primitive_scene(
@@ -1358,7 +1378,7 @@ class GeometryAngleMeasure2DTask:
                         label_stroke_width=int(label_stroke_width_scene_attempt),
                         draw=draw_attempt,
                         scene_scale=int(context_attempt.scene_scale),
-                        shape_style=shape_style,
+                        shape_style=shape_style_attempt,
                     )
                 elif str(source_kind) == _INTERSECTION_SOURCE_KIND:
                     scene_payload = _build_intersection_scene(
@@ -1379,7 +1399,7 @@ class GeometryAngleMeasure2DTask:
                         label_stroke_width=int(label_stroke_width_scene_attempt),
                         draw=draw_attempt,
                         scene_scale=int(context_attempt.scene_scale),
-                        shape_style=shape_style,
+                        shape_style=shape_style_attempt,
                     )
                 else:
                     polygon_sides = int(_SOURCE_KIND_TO_POLYGON_SIDE[str(source_kind)])
@@ -1402,19 +1422,20 @@ class GeometryAngleMeasure2DTask:
                         label_stroke_width=int(label_stroke_width_scene_attempt),
                         draw=draw_attempt,
                         scene_scale=int(context_attempt.scene_scale),
-                        shape_style=shape_style,
+                        shape_style=shape_style_attempt,
                     )
                 context = context_attempt
                 image = image_attempt
                 background_meta = background_meta_attempt
+                shape_style = shape_style_attempt
                 label_font_size_px = int(label_font_size_px_attempt)
                 label_stroke_width_scene = int(label_stroke_width_scene_attempt)
                 break
             except Exception as exc:  # bounded retry path
                 last_error = exc
                 continue
-        if scene_payload is None or context is None or image is None or background_meta is None:
-            raise RuntimeError("failed to generate task_geometry_measurement_2d_angle instance") from last_error
+        if scene_payload is None or context is None or image is None or background_meta is None or shape_style is None:
+            raise RuntimeError("failed to generate task_geometry_measurement_angle instance") from last_error
 
         mcq_rng = spawn_rng(instance_seed, "angle_measure.mcq")
         mcq_payload = build_integer_mcq_options(
@@ -1435,21 +1456,29 @@ class GeometryAngleMeasure2DTask:
         evidence_points = scene_payload.get("evidence_points", [])
         if not isinstance(evidence_points, list) or len(evidence_points) != 3:
             raise RuntimeError("angle evidence points must include [ray_endpoint_a, vertex, ray_endpoint_b]")
-        evidence = angle_triplet_evidence_artifacts(
-            point_a=evidence_points[0],
-            vertex=evidence_points[1],
-            point_b=evidence_points[2],
+        target_labels = [str(label) for label in scene_payload.get("target_labels", [])]
+        if len(target_labels) != 3:
+            raise RuntimeError("angle evidence labels must include exactly three labels")
+        evidence_points_by_label = {
+            str(target_labels[0]): evidence_points[0],
+            str(target_labels[1]): evidence_points[1],
+            str(target_labels[2]): evidence_points[2],
+        }
+        evidence = labeled_grid_point_evidence_artifacts(
+            points_by_label=evidence_points_by_label,
             graph_origin=context.graph_origin,
             graph_spacing=int(context.graph_spacing),
+            witness_type="angle_triplet",
+            ordered_labels=list(target_labels),
         )
         evidence_value = evidence.get("evidence_value", [])
         if (
-            not isinstance(evidence_value, list)
-            or len(evidence_value) != 3
-            or any(not isinstance(point, list) or len(point) != 2 for point in evidence_value)
-            or any(not isinstance(coord, int) for point in evidence_value for coord in point)
+            not isinstance(evidence_value, dict)
+            or set(evidence_value.keys()) != set(target_labels)
+            or any(not isinstance(point, list) or len(point) != 2 for point in evidence_value.values())
+            or any(not isinstance(coord, int) for point in evidence_value.values() for coord in point)
         ):
-            raise RuntimeError("angle triplet evidence must include three integer graph-lattice points")
+            raise RuntimeError("angle triplet evidence must include labeled integer graph-lattice points")
 
         image, background_meta_final, post_noise_meta = finalize_graph_scene_image(
             image,
@@ -1477,10 +1506,15 @@ class GeometryAngleMeasure2DTask:
         prompt_task_type_key = str(prompt_defaults["task_type_key"])
         json_output_contract = str(prompt_defaults["json_output_contract"])
         json_output_contract_answer_only = str(prompt_defaults["json_output_contract_answer_only"])
-        evidence_hint = str(prompt_defaults["evidence_hint"])
+        evidence_hint_base = str(prompt_defaults["evidence_hint"])
+        evidence_hint = (
+            f"{evidence_hint_base.rstrip().rstrip('.')} Required labels: {', '.join(target_labels)}"
+        )
         answer_hint = str(prompt_defaults["answer_hint"])
-        json_example = str(prompt_defaults["json_example"])
-        json_example_answer_only = str(prompt_defaults["json_example_answer_only"])
+        json_example, json_example_answer_only = build_prompt_json_examples(
+            evidence_value=evidence.get("evidence_value", {}),
+            answer_type="option_letter",
+        )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -1576,6 +1610,7 @@ class GeometryAngleMeasure2DTask:
                 "raw_angle_degrees": float(raw_angle_degrees),
                 "angle_degrees": int(answer_value),
                 "target_labels": list(scene_payload["target_labels"]),
+                "required_evidence_labels": list(target_labels),
                 "question_format": "mcq",
                 "choices": [int(value) for value in option_values],
                 "correct_option_index": int(correct_option_index),

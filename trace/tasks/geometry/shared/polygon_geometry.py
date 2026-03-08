@@ -13,7 +13,6 @@ from ...shared.geometry_primitives import Point, point_inside_square_canvas
 from ...shared.sequence import rotate_sequence
 from ...shared.text_rendering import draw_text_centered, load_font, resolve_text_label_center
 from .graph_paper import sample_lattice_point_with_offsets
-from .graph_rendering import pixel_point_to_graph_units
 from .length_geometry import integer_length_vectors
 
 UnitPoint = Tuple[int, int]
@@ -488,35 +487,6 @@ def polygon_render_anchor(instance: PolygonInstance) -> Dict[str, Any]:
         "point": list(vertices[0]),
         "polyline": [*vertices, list(vertices[0])],
         "coord_space": "pixel",
-    }
-
-
-def polygon_vertices_evidence_artifacts(
-    *,
-    instance: PolygonInstance,
-    graph_origin: Point,
-    graph_spacing: int,
-) -> Dict[str, Any]:
-    """Build evidence/witness/projection payload for polygon-vertex-set evidence."""
-    pixel_vertices = [[float(point[0]), float(point[1])] for point in instance.vertices]
-    grid_vertices = [
-        pixel_point_to_graph_units(
-            (float(point[0]), float(point[1])),
-            origin=(float(graph_origin[0]), float(graph_origin[1])),
-            spacing=int(graph_spacing),
-        )
-        for point in pixel_vertices
-    ]
-    return {
-        "evidence_type": "grid_point_set",
-        "evidence_value": [list(point) for point in grid_vertices],
-        "witness_symbolic": {"type": "polygon_vertex_set", "entity_id": "polygon_1"},
-        "projected_evidence": {
-            "point_set": [list(point) for point in pixel_vertices],
-            "point_path": [list(point) for point in pixel_vertices],
-            "grid_point_set": [list(point) for point in grid_vertices],
-            "grid_point_path": [list(point) for point in grid_vertices],
-        },
     }
 
 

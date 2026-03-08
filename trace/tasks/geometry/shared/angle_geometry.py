@@ -12,7 +12,6 @@ from PIL import ImageDraw
 from ...shared.geometry_primitives import Point, point_inside_square_canvas
 from ...shared.text_rendering import draw_text_centered, load_font, resolve_text_label_center
 from .graph_paper import offset_point_by_grid_vector, sample_lattice_point_with_offsets
-from .graph_rendering import pixel_point_to_graph_units
 
 Vector = Tuple[int, int]
 
@@ -277,41 +276,3 @@ def draw_labeled_angle(
             stroke_width=int(stroke_width),
         )
         occupied_boxes.append(label_bbox)
-
-
-def angle_triplet_evidence_artifacts(
-    *,
-    point_a: Point,
-    vertex: Point,
-    point_b: Point,
-    graph_origin: Point,
-    graph_spacing: int,
-) -> Dict[str, Any]:
-    """Build evidence/witness/projection payloads for one ordered angle-point triplet."""
-    pixel_points = [
-        [float(point_a[0]), float(point_a[1])],
-        [float(vertex[0]), float(vertex[1])],
-        [float(point_b[0]), float(point_b[1])],
-    ]
-    grid_points = [
-        pixel_point_to_graph_units(
-            (float(point[0]), float(point[1])),
-            origin=(float(graph_origin[0]), float(graph_origin[1])),
-            spacing=int(graph_spacing),
-        )
-        for point in pixel_points
-    ]
-    return {
-        "evidence_type": "grid_point_set",
-        "evidence_value": [list(point) for point in grid_points],
-        "witness_symbolic": {
-            "type": "angle_triplet",
-            "roles": ["ray_endpoint_a", "vertex", "ray_endpoint_b"],
-        },
-        "projected_evidence": {
-            "point_set": [list(point) for point in pixel_points],
-            "point_path": [list(point) for point in pixel_points],
-            "grid_point_set": [list(point) for point in grid_points],
-            "grid_point_path": [list(point) for point in grid_points],
-        },
-    }

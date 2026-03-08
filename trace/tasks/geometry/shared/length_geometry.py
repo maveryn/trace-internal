@@ -12,7 +12,6 @@ from PIL import ImageDraw
 from ...shared.geometry_primitives import Point
 from ...shared.text_rendering import draw_text_centered, load_font, resolve_text_label_center
 from .graph_paper import offset_point_by_grid_vector, sample_lattice_point_with_offsets
-from .graph_rendering import pixel_point_to_graph_units
 
 UnitVector = Tuple[int, int]
 
@@ -227,42 +226,3 @@ def segment_render_anchor(instance: SegmentInstance) -> Dict[str, Any]:
         "polyline": [list(point_a), list(point_b)],
         "coord_space": "pixel",
     }
-
-
-def two_point_evidence_artifacts(
-    *,
-    point_a: Point,
-    point_b: Point,
-    graph_origin: Point,
-    graph_spacing: int,
-    witness_type: str,
-    roles: Sequence[str] = ("point_a", "point_b"),
-) -> Dict[str, Any]:
-    """Build evidence/witness/projection payloads for one ordered 2-point segment."""
-    pixel_points = [
-        [float(point_a[0]), float(point_a[1])],
-        [float(point_b[0]), float(point_b[1])],
-    ]
-    grid_points = [
-        pixel_point_to_graph_units(
-            (float(point[0]), float(point[1])),
-            origin=(float(graph_origin[0]), float(graph_origin[1])),
-            spacing=int(graph_spacing),
-        )
-        for point in pixel_points
-    ]
-    return {
-        "evidence_type": "grid_point_set",
-        "evidence_value": [list(point) for point in grid_points],
-        "witness_symbolic": {
-            "type": str(witness_type),
-            "roles": [str(role) for role in roles],
-        },
-        "projected_evidence": {
-            "point_set": [list(point) for point in pixel_points],
-            "point_path": [list(point) for point in pixel_points],
-            "grid_point_set": [list(point) for point in grid_points],
-            "grid_point_path": [list(point) for point in grid_points],
-        },
-    }
-

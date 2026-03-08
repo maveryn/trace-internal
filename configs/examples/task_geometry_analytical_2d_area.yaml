@@ -1,14 +1,14 @@
 output_root: ./out
 
-dataset_name: demo_task_geometry_measurement_2d_length
+dataset_name: demo_task_geometry_analytical_2d_area
 instance_version: v1
 image_format: png
 strict_repro: false
 max_attempts_per_instance: 220
 sampling_seed: 0
 tasks:
-  - task_id: task_geometry_measurement_2d_length
-    count: 24
+  - task_id: task_geometry_analytical_2d_area
+    count: 28
     params:
       query_type: measure
     query_weights:

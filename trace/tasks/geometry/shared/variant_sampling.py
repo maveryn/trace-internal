@@ -1,4 +1,4 @@
-"""Shared variant-sampling helpers for geometry/measurement_2d tasks."""
+"""Shared deterministic variant-sampling helpers for geometry task groups."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ def has_non_null_param(params: Mapping[str, Any], key: str) -> bool:
     return key in params and params.get(key) is not None
 
 
-def resolve_shape_variant(
+def resolve_variant(
     rng,
     *,
     params: Mapping[str, Any],
@@ -30,7 +30,7 @@ def resolve_shape_variant(
     explicit_key: str = "shape_variant",
     weights_key: str = "variant_weights",
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve shape variant with weighted sampling and explicit override support."""
+    """Resolve one variant with optional explicit override + weighted sampling."""
     supported = [str(item) for item in supported_variants]
     supported_set = set(supported)
     explicit_variant = params.get(str(explicit_key))
@@ -80,4 +80,3 @@ def apply_balanced_variant_sampling(
         return str(selected_variant)
     sampling_index = params.get("_sampling_index", instance_seed)
     return str(values[abs(int(sampling_index)) % len(values)])
-

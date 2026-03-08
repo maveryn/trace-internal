@@ -9,7 +9,6 @@ from PIL import ImageDraw
 
 from ...shared.geometry_primitives import Point
 from .graph_paper import lattice_axis_coordinates_for_offsets, sample_lattice_point_with_offsets
-from .graph_rendering import pixel_point_to_graph_units
 
 
 @dataclass(frozen=True)
@@ -341,35 +340,4 @@ def conic_render_anchor(
         "point": [float(cx), float(cy)],
         "bbox": [float(cx - rx), float(cy - ry), float(cx + rx), float(cy + ry)],
         "coord_space": "pixel",
-    }
-
-
-def center_point_evidence_artifacts(
-    *,
-    center: Point,
-    graph_origin: Point,
-    graph_spacing: int,
-    entity_id: str,
-    witness_type: str,
-) -> Dict[str, Any]:
-    """Build evidence/witness/projection payload for one center-point evidence."""
-    pixel_center = [float(center[0]), float(center[1])]
-    grid_center = pixel_point_to_graph_units(
-        (float(center[0]), float(center[1])),
-        origin=(float(graph_origin[0]), float(graph_origin[1])),
-        spacing=int(graph_spacing),
-    )
-    return {
-        "evidence_type": "grid_point_set",
-        "evidence_value": [list(grid_center)],
-        "witness_symbolic": {
-            "type": str(witness_type),
-            "entity_id": str(entity_id),
-        },
-        "projected_evidence": {
-            "point_set": [list(pixel_center)],
-            "point_path": [list(pixel_center)],
-            "grid_point_set": [list(grid_center)],
-            "grid_point_path": [list(grid_center)],
-        },
     }

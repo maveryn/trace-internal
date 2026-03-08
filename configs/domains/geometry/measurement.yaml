@@ -2,7 +2,7 @@ generation:
   shared:
     answer_min: 8
   task_overrides:
-    task_geometry_measurement_2d_angle:
+    task_geometry_measurement_angle:
       min_angle: 30
       max_angle: 150
       angle_step: 1
@@ -19,28 +19,26 @@ generation:
         triangle: 1.0
         quadrilateral: 1.0
         intersection_lines: 1.0
-    task_geometry_measurement_2d_area:
+    task_geometry_measurement_area:
       answer_max: 32
       balanced_variant_sampling: true
       variant_weights:
         triangle: 1.0
         quadrilateral: 1.0
-        pentagon: 1.0
         ellipse: 1.0
       ellipse_axis_min: 2
       ellipse_axis_max: 6
       ellipse_allow_circle: false
-    task_geometry_measurement_2d_perimeter:
+    task_geometry_measurement_perimeter:
       answer_max: 24
       balanced_variant_sampling: true
       variant_weights:
         triangle: 1.0
         quadrilateral: 1.0
-        pentagon: 1.0
         circle: 1.0
       circle_radius_min: 4
       circle_radius_max: 6
-    task_geometry_measurement_2d_length:
+    task_geometry_measurement_length:
       answer_min: 2
       answer_max: 8
       balanced_variant_sampling: true
@@ -70,10 +68,14 @@ rendering:
     graph_cells_min: 6
     graph_cells_max: 12
     line_width: 4
+    line_width_min: 2
+    line_width_max: 5
     label_offset_px: 14
     label_font_size_min: 14
     label_font_size_max: 32
     label_stroke_width: 1
+    label_stroke_width_min: 1
+    label_stroke_width_max: 2
 
 prompt:
   shared:
@@ -83,46 +85,52 @@ prompt:
     object_description_polygon: a single polygon
     object_description_ellipse: a single ellipse
     object_description_circle: a single circle
-    evidence_hint_endpoints: provide exactly two graph-unit points [endpoint A, endpoint B] for the measured segment
-    evidence_hint_polygon: provide the polygon vertex coordinates as an unordered graph-unit point list
-    evidence_hint_center: provide the center point as one graph-unit coordinate [x, y]
+    evidence_hint_point_map: set "evidence" to a JSON object mapping each required label to one graph-unit coordinate [x, y]
+    evidence_hint_segment: provide exactly two labels for the measured segment endpoints
+    evidence_hint_polygon_side: provide exactly two labels for the measured polygon side endpoints
+    evidence_hint_circle_center: provide exactly one label for the circle center point
+    evidence_hint_ellipse_axis: provide exactly two labels for the measured ellipse-axis endpoints
     answer_hint_integer: set "answer" to the measurement value as an integer
     answer_hint_pi: set "answer" to the measurement value in the form kπ (for example 12π)
-    json_example_integer: '{"evidence":[[0,0],[4,0],[4,2],[0,2]],"answer":8}'
-    json_example_center_integer: '{"evidence":[[0,0]],"answer":4}'
-    json_example_pi: '{"evidence":[[1,-2]],"answer":"12π"}'
+    json_example_integer: '{"evidence":{"A":[0,0],"B":[4,0]},"answer":4}'
+    json_example_pi: '{"evidence":{"A":[0,0],"B":[3,0]},"answer":"6π"}'
     json_example_answer_only_integer: '{"answer":8}'
     json_example_answer_only_pi: '{"answer":"12π"}'
   task_overrides:
-    task_geometry_measurement_2d_angle:
+    task_geometry_measurement_angle:
       bundle_id: geometry_angle_measure_v1
-      evidence_hint: provide three points [ray endpoint A, vertex, ray endpoint B], each as the nearest integer graph coordinate [x, y] for the queried angle
+      evidence_hint: set "evidence" to a JSON object with three labeled points [ray endpoint A, vertex, ray endpoint B] in graph-unit coordinates
       answer_hint: set "answer" to the selected option letter (A, B, C, D, or E)
-      json_example: '{"evidence":[[2,1],[0,0],[3,-1]],"answer":"B"}'
+      json_example: '{"evidence":{"P":[2,1],"Q":[0,0],"R":[3,-1]},"answer":"B"}'
       json_example_answer_only: '{"answer":"B"}'
-    task_geometry_measurement_2d_area:
+    task_geometry_measurement_area:
       question_text_polygon: What is the area of the polygon in square units?
       question_text_ellipse: What is the area of the ellipse in square units? Express the answer in the form kπ.
-      json_example_triangle: '{"evidence":[[0,0],[4,0],[0,3]],"answer":6}'
-      json_example_quadrilateral: '{"evidence":[[0,0],[4,0],[4,2],[0,2]],"answer":8}'
-      json_example_pentagon: '{"evidence":[[0,0],[3,4],[7,1],[3,-2],[0,2]],"answer":18}'
-      json_example_integer: '{"evidence":[[0,0],[4,0],[4,2],[0,2]],"answer":8}'
-    task_geometry_measurement_2d_perimeter:
+      json_example_triangle: '{"evidence":{"A":[0,0],"B":[4,0],"C":[0,3]},"answer":6}'
+      json_example_quadrilateral: '{"evidence":{"A":[0,0],"B":[4,0],"C":[4,2],"D":[0,2]},"answer":8}'
+      json_example_ellipse: '{"evidence":{"A":[0,0],"B":[3,0],"C":[0,2]},"answer":"6π"}'
+      json_example_integer: '{"evidence":{"A":[0,0],"B":[4,0],"C":[0,3]},"answer":6}'
+    task_geometry_measurement_perimeter:
       question_text_polygon: What is the perimeter of the polygon in graph units?
       question_text_circle: What is the circumference of the circle in graph units? Express the answer in the form kπ.
-      json_example_triangle: '{"evidence":[[0,0],[4,0],[0,3]],"answer":12}'
-      json_example_quadrilateral: '{"evidence":[[0,0],[4,0],[4,2],[0,2]],"answer":12}'
-      json_example_pentagon: '{"evidence":[[0,0],[3,4],[7,1],[3,-2],[0,2]],"answer":22}'
-      json_example_integer: '{"evidence":[[0,0],[4,0],[4,2],[0,2]],"answer":12}'
-    task_geometry_measurement_2d_length:
+      json_example_triangle: '{"evidence":{"A":[0,0],"B":[4,0],"C":[0,3]},"answer":12}'
+      json_example_quadrilateral: '{"evidence":{"A":[0,0],"B":[4,0],"C":[4,2],"D":[0,2]},"answer":12}'
+      json_example_circle: '{"evidence":{"A":[0,0],"B":[4,0]},"answer":"8π"}'
+      json_example_integer: '{"evidence":{"A":[0,0],"B":[4,0],"C":[0,3]},"answer":12}'
+    task_geometry_measurement_length:
       question_template_segment: What is the length of segment {label_a}{label_b} in graph units?
       question_template_polygon_side: What is the length of side {label_a}{label_b} in graph units?
       question_text_circle_radius: What is the radius of the circle in graph units?
       question_text_circle_diameter: What is the diameter of the circle in graph units?
       question_text_ellipse_major_axis: What is the length of the major axis of the ellipse in graph units?
       question_text_ellipse_minor_axis: What is the length of the minor axis of the ellipse in graph units?
-      json_example_integer: '{"evidence":[[1,2],[6,2]],"answer":5}'
-      json_example_center_integer: '{"evidence":[[0,0]],"answer":4}'
+      json_example_segment_integer: '{"evidence":{"M":[1,2],"N":[6,2]},"answer":5}'
+      json_example_polygon_side_integer: '{"evidence":{"A":[0,0],"B":[3,4]},"answer":5}'
+      json_example_circle_radius_integer: '{"evidence":{"O":[0,0]},"answer":4}'
+      json_example_circle_diameter_integer: '{"evidence":{"O":[0,0]},"answer":8}'
+      json_example_ellipse_major_axis_integer: '{"evidence":{"A":[-4,0],"B":[4,0]},"answer":8}'
+      json_example_ellipse_minor_axis_integer: '{"evidence":{"C":[0,-3],"D":[0,3]},"answer":6}'
+      json_example_integer: '{"evidence":{"M":[1,2],"N":[6,2]},"answer":5}'
 
 sampling:
   shared:

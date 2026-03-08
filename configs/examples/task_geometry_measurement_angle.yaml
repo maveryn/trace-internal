@@ -1,13 +1,13 @@
 output_root: ./out
 
-dataset_name: demo_task_geometry_measurement_2d_angle
+dataset_name: demo_task_geometry_measurement_angle
 instance_version: v1
 image_format: png
 strict_repro: false
 max_attempts_per_instance: 180
 sampling_seed: 0
 tasks:
-  - task_id: task_geometry_measurement_2d_angle
+  - task_id: task_geometry_measurement_angle
     count: 24
     params:
       query_type: measure

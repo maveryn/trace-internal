@@ -1,4 +1,4 @@
-"""Reusable graph-paper scene setup helpers for single-object geometry tasks."""
+"""Reusable scene setup helpers for single-object geometry tasks."""
 
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ from .graph_rendering import (
 
 @dataclass(frozen=True)
 class GraphSceneContext:
-    """Resolved render/grid context for one graph-paper scene."""
+    """Resolved render/grid context for one single-object geometry scene."""
 
     canvas_size: int
     graph_cells: int
@@ -44,8 +44,9 @@ def resolve_graph_scene_context(
     fallback_canvas_max: int,
     fallback_cells_min: int,
     fallback_cells_max: int,
+    require_graph_paper_background: bool = True,
 ) -> GraphSceneContext:
-    """Resolve deterministic graph-paper scene parameters for one instance."""
+    """Resolve deterministic graph-space scene parameters for one instance."""
     canvas_size = resolve_square_canvas_size(
         rng,
         params=params,
@@ -87,7 +88,10 @@ def resolve_graph_scene_context(
         float(graph_frame["origin_pixel"][1]),
     )
     render_graph_style = scaled_graph_style_for_scene(graph_style, scene_scale=int(scene_scale))
-    render_params = enforce_graph_paper_background(params, graph_style=render_graph_style)
+    if bool(require_graph_paper_background):
+        render_params = enforce_graph_paper_background(params, graph_style=render_graph_style)
+    else:
+        render_params = dict(params)
     return GraphSceneContext(
         canvas_size=int(canvas_size),
         graph_cells=int(graph_cells),
@@ -105,8 +109,9 @@ def make_graph_scene_canvas(
     instance_seed: int,
     context: GraphSceneContext,
     background_defaults: Mapping[str, Any],
+    require_graph_paper: bool = True,
 ) -> Tuple[Image.Image, ImageDraw.ImageDraw, Dict[str, Any]]:
-    """Create graph-paper background image + draw handle for one context."""
+    """Create one background image + draw handle for one resolved scene context."""
     render_canvas_size = int(context.canvas_size) * int(context.scene_scale)
     image, background_meta = make_background_canvas(
         canvas_size=int(render_canvas_size),
@@ -115,7 +120,7 @@ def make_graph_scene_canvas(
         default_config=background_defaults,
         fallback_color=(248, 248, 248),
     )
-    if str(background_meta.get("selected_style", "")) != "graph_paper":
+    if bool(require_graph_paper) and str(background_meta.get("selected_style", "")) != "graph_paper":
         raise RuntimeError("geometry measurement tasks must render on graph_paper backgrounds")
     return image, ImageDraw.Draw(image), dict(background_meta)
 
@@ -137,27 +142,31 @@ def finalize_graph_scene_image(
         )
     background = dict(background_meta)
     render_style_spec = background.get("style_spec", {})
-    resolved_style_spec = dict(context.graph_style)
-    if isinstance(render_style_spec, Mapping):
-        for key in (
-            "base_color",
-            "line_color",
-            "major_line_color",
-            "axis_color",
-            "center_point_color",
-            "origin_label_color",
-            "color_variation_enabled",
-            "color_variation_applied",
-            "color_variation_sampled",
-            "base_color_jitter",
-            "line_color_jitter",
-            "major_line_darken_range",
-            "axis_darken_range",
-            "center_point_darken_extra_range",
-            "origin_label_darken_extra_range",
-        ):
-            if key in render_style_spec:
-                resolved_style_spec[key] = render_style_spec[key]
+    selected_style = str(background.get("selected_style", ""))
+    if str(selected_style) == "graph_paper":
+        resolved_style_spec = dict(context.graph_style)
+        if isinstance(render_style_spec, Mapping):
+            for key in (
+                "base_color",
+                "line_color",
+                "major_line_color",
+                "axis_color",
+                "center_point_color",
+                "origin_label_color",
+                "color_variation_enabled",
+                "color_variation_applied",
+                "color_variation_sampled",
+                "base_color_jitter",
+                "line_color_jitter",
+                "major_line_darken_range",
+                "axis_darken_range",
+                "center_point_darken_extra_range",
+                "origin_label_darken_extra_range",
+            ):
+                if key in render_style_spec:
+                    resolved_style_spec[key] = render_style_spec[key]
+    else:
+        resolved_style_spec = dict(render_style_spec) if isinstance(render_style_spec, Mapping) else {}
     background["style_spec"] = resolved_style_spec
     background["render_scale"] = int(context.scene_scale)
     out_image, noise_meta = apply_post_image_noise(

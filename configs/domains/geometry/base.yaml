@@ -4,6 +4,12 @@ rendering:
     canvas_size_max: 1024
     graph_cells_min: 12
     graph_cells_max: 24
+    shape_color_mode: rgb_constrained
+    shape_include_white_anchor: true
+    shape_include_black_anchor: false
+    shape_line_channel_min: 12
+    shape_line_channel_max: 172
+    shape_label_stroke_min_distance: 36.0
     shape_line_gray_min: 10
     shape_line_gray_max: 28
     shape_label_gray_min: 14

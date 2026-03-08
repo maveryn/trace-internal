@@ -39,10 +39,11 @@ _FIELD_LABELS: Dict[str, str] = {
     "data_path": "data_path",
     "prompt": "prompt",
     "prompt_answer_only": "prompt_answer_only",
+    "answer": "answer",
     "answer_type": "answer_type",
     "answer_value": "answer_value",
     "evidence_type": "evidence_type",
-    "evidence_value": "evidence_value",
+    "answer_evidence": "answer_evidence",
 }
 
 _TASK_SHEET_FIELDS: List[str] = [
@@ -50,8 +51,8 @@ _TASK_SHEET_FIELDS: List[str] = [
     "query_type",
     "prompt",
     "prompt_answer_only",
-    "answer_value",
-    "evidence_value",
+    "answer",
+    "answer_evidence",
     "domain",
     "task_group",
     "sample_index",
@@ -73,23 +74,25 @@ _COLUMN_WIDTHS_BY_FIELD: Dict[str, float] = {
     "data_path": 38,
     "prompt": 34,
     "prompt_answer_only": 34,
+    "answer": 20,
     "answer_type": 14,
     "answer_value": 12,
     "evidence_type": 14,
-    "evidence_value": 16,
+    "answer_evidence": 18,
 }
 
 _PREVIEW_COLUMN_WIDTH = 56
 _INT_FIELDS = {"sample_index", "instance_seed"}
-_JSON_FIELDS = {"answer_value", "evidence_value"}
+_JSON_FIELDS = {"answer", "answer_value", "answer_evidence"}
 _WRAP_FIELDS = {
     "task",
     "image_path",
     "data_path",
     "prompt",
     "prompt_answer_only",
+    "answer",
     "answer_value",
-    "evidence_value",
+    "answer_evidence",
 }
 _TASK_WRAP_MAX_CHARS = 20
 
@@ -215,7 +218,27 @@ def _extract_points(value: Any) -> List[Tuple[float, float]]:
             if parsed is not None:
                 out.append(parsed)
         return out
+    if isinstance(value, dict):
+        out: List[Tuple[float, float]] = []
+        for item in value.values():
+            parsed = _parse_point(item)
+            if parsed is not None:
+                out.append(parsed)
+        return out
     return []
+
+
+def _extract_point_map(value: Any) -> Dict[str, Tuple[float, float]]:
+    """Extract label->point mapping from evidence payload when possible."""
+    if not isinstance(value, dict):
+        return {}
+    out: Dict[str, Tuple[float, float]] = {}
+    for key, raw_point in value.items():
+        parsed = _parse_point(raw_point)
+        if parsed is None:
+            continue
+        out[str(key)] = (float(parsed[0]), float(parsed[1]))
+    return out
 
 
 def _extract_bboxes(value: Any) -> List[Tuple[float, float, float, float]]:
@@ -241,6 +264,24 @@ def _render_evidence_overlay(source: PILImage.Image, *, evidence_type: str, evid
     radius = max(3, int(round(min(width, height) * 0.009)))
     line_width = max(2, int(round(min(width, height) * 0.006)))
     query_type = str(evidence_type)
+
+    if query_type in {"point_map", "grid_point_map", "annotation_centers"}:
+        point_map = _extract_point_map(evidence_value)
+        for idx, (label, point) in enumerate(point_map.items()):
+            x, y = float(point[0]), float(point[1])
+            color = _EVIDENCE_COLORS[idx % len(_EVIDENCE_COLORS)]
+            draw.ellipse(
+                [x - radius, y - radius, x + radius, y + radius],
+                fill=(color[0], color[1], color[2], 255),
+                outline=(0, 0, 0, 255),
+                width=1,
+            )
+            draw.text(
+                (x + float(radius) + 2.0, y - float(radius) - 1.0),
+                str(label),
+                fill=(color[0], color[1], color[2], 255),
+            )
+        return image
 
     if query_type in {"point", "point_set", "point_path"}:
         points = _extract_points(evidence_value)
@@ -327,7 +368,7 @@ def _populate_task_review_sheet(
                 evidence_overlay = _render_evidence_overlay(
                     source_rgb,
                     evidence_type=str(row.get("_overlay_evidence_type", row.get("evidence_type", ""))),
-                    evidence_value=row.get("_overlay_evidence_value", row.get("evidence_value")),
+                    evidence_value=row.get("_overlay_evidence_value", row.get("answer_evidence")),
                 )
                 evidence_preview = _build_preview_image(evidence_overlay, max_image_side=max_image_side)
                 preview_height = max(int(preview.height), int(evidence_preview.height))
@@ -713,11 +754,22 @@ def _generate_samples_for_task(
         projected_evidence = output.trace_payload.get("projected_evidence", {}) if isinstance(output.trace_payload, dict) else {}
         overlay_evidence_type = str(output.evidence_gt.type)
         overlay_evidence_value = output.evidence_gt.value
-        if isinstance(projected_evidence, dict) and overlay_evidence_type in {"grid_point_set", "grid_point_path"}:
-            pixel_key = "point_path" if overlay_evidence_type == "grid_point_path" else "point_set"
-            if pixel_key in projected_evidence:
-                overlay_evidence_type = pixel_key
-                overlay_evidence_value = projected_evidence.get(pixel_key)
+        if isinstance(projected_evidence, dict):
+            if overlay_evidence_type in {"grid_point_set", "grid_point_path"}:
+                pixel_key = "point_path" if overlay_evidence_type == "grid_point_path" else "point_set"
+                if pixel_key in projected_evidence:
+                    overlay_evidence_type = pixel_key
+                    overlay_evidence_value = projected_evidence.get(pixel_key)
+            elif overlay_evidence_type == "grid_point_map" and "point_map" in projected_evidence:
+                overlay_evidence_type = "point_map"
+                overlay_evidence_value = projected_evidence.get("point_map")
+            elif overlay_evidence_type == "measurement_ref_map" and "annotation_centers" in projected_evidence:
+                overlay_evidence_type = "annotation_centers"
+                overlay_evidence_value = projected_evidence.get("annotation_centers")
+        canonical_answer = {
+            "evidence": output.evidence_gt.value,
+            "answer": output.answer_gt.value,
+        }
         rows.append(
             {
                 "domain": task.domain,
@@ -730,10 +782,11 @@ def _generate_samples_for_task(
                 "data_path": rel_data_path,
                 "prompt": prompt_answer_and_evidence,
                 "prompt_answer_only": prompt_answer_only,
+                "answer": canonical_answer,
                 "answer_type": output.answer_gt.type,
                 "answer_value": output.answer_gt.value,
                 "evidence_type": output.evidence_gt.type,
-                "evidence_value": output.evidence_gt.value,
+                "answer_evidence": output.evidence_gt.value,
                 "_overlay_evidence_type": overlay_evidence_type,
                 "_overlay_evidence_value": overlay_evidence_value,
                 "_feasible_answer_values": list(feasible_values) if isinstance(feasible_values, list) else [],

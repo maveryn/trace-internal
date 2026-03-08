@@ -33,6 +33,6 @@ def load_geometry_noise_defaults(*, task_group: str | None = None) -> Dict[str, 
     )
 
 
-# Geometry measurement_2d post-image noise defaults, sourced from domain config
+# Geometry measurement post-image noise defaults, sourced from domain config
 # unless a task-group override is defined.
-POST_IMAGE_NOISE_DEFAULTS: Dict[str, Any] = load_geometry_noise_defaults(task_group="measurement_2d")
+POST_IMAGE_NOISE_DEFAULTS: Dict[str, Any] = load_geometry_noise_defaults(task_group="measurement")

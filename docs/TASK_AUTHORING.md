@@ -54,7 +54,12 @@ Use this as the implementation checklist for new or modified tasks.
 3. Deterministic variant selection only.
 4. Record prompt metadata in trace payload.
 5. Keep variant cardinality at least 10 per required template list.
-6. If a prompt slot value is static for a task (for example a fixed question stem), store it in prompt config/template data rather than task-module constants.
+6. Both output modes must include explicit JSON response-format instructions via slots:
+   - `answer_only`: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
+   - `answer_and_evidence`: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
+7. Every JSON example shown in prompts (both `answer_only` and `answer_and_evidence`) must itself be a valid answer for that task/query/variant contract (key order, value type, and evidence cardinality/semantics).
+8. If evidence cardinality/shape differs by variant (for example triangle vs quadrilateral), provide variant-specific `json_example_*` slots and select them deterministically from variant context.
+9. If a prompt slot value is static for a task (for example a fixed question stem), store it in prompt config/template data rather than task-module constants.
 
 ## 4) Config/defaults rules
 1. Precedence: `domain -> task_group -> task/params`.

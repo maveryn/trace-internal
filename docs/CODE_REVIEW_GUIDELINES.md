@@ -32,6 +32,8 @@ Use this checklist during implementation and refactor reviews.
 16. Keep docs indexes contract-driven: avoid stale links/references after renames by updating docs in the same patch as code/config changes.
 17. Remove orphaned helpers immediately when no call sites remain, and promote repeated generic transforms (for example sequence rotation) into task-shared utilities.
 18. For visual/background/noise config parsing, consolidate repeated min/max normalization into `trace/core/visual` shared helpers instead of re-implementing range parsing per module.
+19. Prompt JSON examples must be contract-valid for the active task/query/output-mode variant (correct keys, answer type, and evidence cardinality/semantics); reject mismatched examples.
+20. If one task supports multiple evidence cardinalities across variants, require variant-aware prompt example selection (not one static example for all variants).
 
 ## 3) Process rule
 When a new reusable issue is discovered:

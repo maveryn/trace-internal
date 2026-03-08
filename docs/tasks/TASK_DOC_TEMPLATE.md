@@ -19,8 +19,11 @@
 2. `task_type_key`:
 3. Query-type mapping:
 4. Required slots:
-5. Variant counts (task/query/mode):
-6. Output modes:
+   - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
+   - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
+5. JSON example validity rule: every documented prompt JSON example must be a valid response for the active task/query/output mode (keys, value types, and evidence cardinality/semantics).
+6. Variant counts (task/query/mode):
+7. Output modes:
    - `answer_only`
    - `answer_and_evidence`
 

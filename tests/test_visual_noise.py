@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from trace.tasks.geometry.measurement_2d.angle import GeometryAngleMeasure2DTask
+from trace.tasks.geometry.measurement.angle import GeometryAngleMeasure2DTask
 from trace.tasks.tile.path.shortest_path import TileShortestPathTask
 
 

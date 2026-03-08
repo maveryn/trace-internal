@@ -1,24 +1,24 @@
-# `task_geometry_measurement_2d_area`
+# `task_geometry_measurement_area`
 
 ## 1) Identity
 1. Domain: `geometry`
-2. Task group: `measurement_2d`
-3. Task id: `task_geometry_measurement_2d_area`
+2. Task group: `measurement`
+3. Task id: `task_geometry_measurement_area`
 4. Objective: measure single-shape area from one graph-paper scene.
 
 ## 2) Scene + query contract
 1. Entities/relations: exactly one target shape.
-   - Polygon variants: triangle/quadrilateral/pentagon.
+   - Polygon variants: triangle/quadrilateral.
    - Conic variant: axis-aligned ellipse with integer center + integer semiaxes.
 2. Supported `query_type` values: `measure`.
 3. `answer_gt.type`:
    - polygons: `integer` (square units),
    - ellipse: `pi_expression` (`kπ`).
-4. Default `evidence_gt.type`: `grid_point_set`.
+4. Default `evidence_gt.type`: `grid_point_map`.
 5. Evidence value semantics:
-   - polygons: unordered vertex list in graph units,
-   - ellipse: one center point in graph units.
-6. Alternate evidence forms: projected `point_set`/`point_path` and `grid_point_path` in trace.
+   - polygons: labeled vertex map in graph units,
+   - ellipse: labeled 3-point map (`center`, `axis-x endpoint`, `axis-y endpoint`) in graph units.
+6. Alternate evidence forms: projected `point_map` + `grid_point_map` and derived set/path projections in trace.
 7. Overlap/touch policy: single object only.
 
 ## 3) Prompt contract
@@ -31,8 +31,8 @@
    - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`.
 5. Slot source:
    - shared JSON-format contracts from `configs/domains/geometry/base.yaml` (`prompt.shared`),
-   - measurement-family prompt slots from `configs/domains/geometry/measurement_2d.yaml` (`prompt.shared`),
-   - shape-specific question/example slots from `prompt.task_overrides.task_geometry_measurement_2d_area` (`question_text_polygon`, `question_text_ellipse`, and polygon side-count matched `json_example_triangle|quadrilateral|pentagon`).
+   - measurement-family prompt slots from `configs/domains/geometry/measurement.yaml` (`prompt.shared`),
+   - shape-specific question/example slots from `prompt.task_overrides.task_geometry_measurement_area` (`question_text_polygon`, `question_text_ellipse`, and polygon side-count matched `json_example_triangle|quadrilateral`).
 6. Answer-only JSON shape: `{"answer":<value>}` where `<value>` is integer or `kπ` per variant.
 7. Variant counts (task/query/mode): minimum 10 templates per required key.
 8. Output modes:
@@ -48,7 +48,7 @@
 6. Graph-paper reference cues: center-origin marker includes axis arrows plus signed integer scale labels across the full visible axis range (no origin text label).
 7. Graph-paper color variation: minor/major/axis colors are sampled from constrained ranges per instance, with axis lines always darker than grid lines.
 8. Answer bounds: area target scalar `k` is constrained to `[8, 32]` by task-group config (`integer` for polygons, `kπ` coefficient for ellipse).
-9. Default variant sampling weights: triangle/quadrilateral/pentagon/ellipse = 1:1:1:1.
+9. Default variant sampling weights: triangle/quadrilateral/ellipse = 1:1:1.
 
 ## 5) Complexity + tests
 1. Complexity definition/components: shape variant + area magnitude.

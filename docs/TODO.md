@@ -1,19 +1,20 @@
 # TRACE TODO
 
 ## Now (P0)
-1. Regenerate review samples for `task_geometry_measurement_2d_angle`, `task_geometry_measurement_2d_area`, `task_geometry_measurement_2d_perimeter`, and `task_geometry_measurement_2d_length`.
+1. Regenerate review samples for `task_geometry_measurement_angle`, `task_geometry_measurement_area`, `task_geometry_measurement_perimeter`, and `task_geometry_measurement_length`.
 2. Complete post-refactor cleanup review (remove stale references and dead helper paths).
 
 ## Next (P1)
 1. Extend objective-first measurement pattern to additional domains.
 2. Add cross-domain `scene_variant` + role-binding spec in architecture/ABI docs.
 3. Improve dataset QA diagnostics/report summaries.
+4. Extend `task_geometry_analytical_2d_area` to additional analytical objectives (`perimeter`, `length`, composite/shaded-region area).
 
 ## Later (P2)
 1. Add split-artifact generation with deterministic split policy metadata.
 2. Add richer dataset inspection tooling around trace shards and build reports.
 3. Keep future tile task groups aligned with `configs/domains/tile/base.yaml` shared defaults.
-4. Add geometry `analytic` task-group track (labeled/shaded/composite-region reasoning), separate from graph-paper `measurement`.
+4. Expand geometry analytical task suite with multi-step composite-region and shaded-area reasoning.
 5. Add geometry `estimate` task track for non-exact quantitative reasoning (for example count graph squares, count angles `< 90°`).
 
 ## Deferred
@@ -30,9 +31,10 @@
 4. Domain/task-group config loader and deterministic visual-variation infrastructure.
 5. Initial grounded tasks:
 - `task_tile_path_shortest_path`
-- `task_geometry_measurement_2d_angle`
-- `task_geometry_measurement_2d_area`
-- `task_geometry_measurement_2d_perimeter`
-- `task_geometry_measurement_2d_length`
+- `task_geometry_measurement_angle`
+- `task_geometry_measurement_area`
+- `task_geometry_measurement_perimeter`
+- `task_geometry_measurement_length`
+- `task_geometry_analytical_2d_area`
 6. Sample-generation CLI with per-task artifacts and combined Excel.
 7. Pre-finalize prompt validation checks (metadata/bundle/key/placeholder/cardinality).

@@ -9,34 +9,34 @@ from typing import Any, Dict, Type
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.core.task_group_config import get_task_group_defaults
-from trace.tasks.geometry.measurement_2d.angle import GeometryAngleMeasure2DTask
-from trace.tasks.geometry.measurement_2d.area import GeometryAreaMeasure2DTask
-from trace.tasks.geometry.measurement_2d.length import GeometryLengthMeasure2DTask
-from trace.tasks.geometry.measurement_2d.perimeter import GeometryPerimeterMeasure2DTask
+from trace.tasks.geometry.measurement.angle import GeometryAngleMeasure2DTask
+from trace.tasks.geometry.measurement.area import GeometryAreaMeasure2DTask
+from trace.tasks.geometry.measurement.length import GeometryLengthMeasure2DTask
+from trace.tasks.geometry.measurement.perimeter import GeometryPerimeterMeasure2DTask
 from tests.helpers import read_jsonl
 
 
 _TASK_CASES: list[tuple[str, Type[Any], Dict[str, Any], int]] = [
     (
-        "task_geometry_measurement_2d_angle",
+        "task_geometry_measurement_angle",
         GeometryAngleMeasure2DTask,
         {"query_type": "measure"},
         180,
     ),
     (
-        "task_geometry_measurement_2d_area",
+        "task_geometry_measurement_area",
         GeometryAreaMeasure2DTask,
         {"query_type": "measure"},
         180,
     ),
     (
-        "task_geometry_measurement_2d_perimeter",
+        "task_geometry_measurement_perimeter",
         GeometryPerimeterMeasure2DTask,
         {"query_type": "measure"},
         180,
     ),
     (
-        "task_geometry_measurement_2d_length",
+        "task_geometry_measurement_length",
         GeometryLengthMeasure2DTask,
         {"query_type": "measure"},
         180,
@@ -45,7 +45,7 @@ _TASK_CASES: list[tuple[str, Type[Any], Dict[str, Any], int]] = [
 
 
 def test_geometry_measurement_task_contract_deterministic() -> None:
-    group_cfg = get_task_group_defaults("geometry", "measurement_2d")
+    group_cfg = get_task_group_defaults("geometry", "measurement")
     render_shared = (
         group_cfg.get("rendering", {}).get("shared", {})
         if isinstance(group_cfg, dict)
@@ -64,7 +64,7 @@ def test_geometry_measurement_task_contract_deterministic() -> None:
         out_b = task.generate(53123, params=dict(params), max_attempts=int(max_attempts))
 
         assert out_a.query_type == "measure"
-        if str(task_id) == "task_geometry_measurement_2d_angle":
+        if str(task_id) == "task_geometry_measurement_angle":
             assert out_a.answer_gt.type == "option_letter"
             assert str(out_a.answer_gt.value) in {"A", "B", "C", "D", "E"}
         else:
@@ -136,7 +136,7 @@ def test_geometry_measurement_task_build_smoke(tmp_path: Path) -> None:
 
         train_records = read_jsonl(final_path / "train_instances.jsonl")
         assert len(train_records) == 4
-        assert all(record["task_group"] == "measurement_2d" for record in train_records)
+        assert all(record["task_group"] == "measurement" for record in train_records)
 
         build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
         query_counts = build_report["query_type_accepted_counts_by_task"][str(task_id)]

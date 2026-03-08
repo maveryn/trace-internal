@@ -32,7 +32,7 @@ Each generated instance should include:
 ## Core engineering rules
 - Use taxonomy consistently: `domain -> task_group -> task`.
 - Task ids must follow `task_<domain>_<task_group>_<task_name>` (lowercase snake_case), and task module filenames must be `<task_name>.py` under `trace/tasks/<domain>/<task_group>/`.
-- Keep `task_group` broad by reasoning style; for geometry value-style tasks use `task_group=measurement_2d` and keep variants in `query_type`.
+- Keep `task_group` broad by reasoning style; for geometry value-style tasks use `task_group=measurement` and keep variants in `query_type`.
 - Sampling policy is task-level globally (equal task weights by default); domain/task_group probabilities are derived by aggregation, and query sampling happens inside each task (uniform by default unless task-config override).
 - Domain/task-group defaults (generation/rendering/visual variation) should follow precedence `domain -> task_group -> task/params`: shared domain defaults under `configs/domains/<domain>/base.yaml`, group overrides under `configs/domains/<domain>/<task_group>.yaml`, then optional task-level overrides.
 - Do not hardcode user-facing prompt text in task modules; prompts must come from external template assets.

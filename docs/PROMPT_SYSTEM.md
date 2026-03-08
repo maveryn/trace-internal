@@ -47,13 +47,15 @@ Train records should store:
 
 ## 5) Active bundles/tasks
 Bundles:
-1. `prompts/geometry/measurement_2d/geometry_angle_measure_v1.json`
-2. `prompts/geometry/measurement_2d/geometry_measurement_v1.json`
-3. `prompts/tile/path/tile_path_v1.json`
+1. `prompts/geometry/measurement/geometry_angle_measure_v1.json`
+2. `prompts/geometry/measurement/geometry_measurement_v1.json`
+3. `prompts/geometry/analytical_2d/geometry_analytical_area_v1.json`
+4. `prompts/tile/path/tile_path_v1.json`
 
 Tasks:
-1. `task_geometry_measurement_2d_angle` (bundle override: `geometry_angle_measure_v1`)
-2. `task_geometry_measurement_2d_area` (bundle: `geometry_measurement_v1`)
-3. `task_geometry_measurement_2d_perimeter` (bundle: `geometry_measurement_v1`)
-4. `task_geometry_measurement_2d_length` (bundle: `geometry_measurement_v1`)
-5. `task_tile_path_shortest_path`
+1. `task_geometry_measurement_angle` (bundle override: `geometry_angle_measure_v1`)
+2. `task_geometry_measurement_area` (bundle: `geometry_measurement_v1`)
+3. `task_geometry_measurement_perimeter` (bundle: `geometry_measurement_v1`)
+4. `task_geometry_measurement_length` (bundle: `geometry_measurement_v1`)
+5. `task_geometry_analytical_2d_area` (bundle: `geometry_analytical_area_v1`)
+6. `task_tile_path_shortest_path`

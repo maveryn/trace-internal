@@ -15,7 +15,7 @@ Use: `domain -> task_group -> task`.
 
 Rules:
 1. `task_group` is broad reasoning style; query variants stay inside task via `query_type`.
-2. For geometry value-style tasks, default `task_group=measurement_2d`.
+2. For geometry graph-paper readout tasks, use `task_group=measurement`; for formula/relationship-based geometry with numeric annotations, use `task_group=analytical_2d`.
 3. Config precedence: `domain defaults -> task_group defaults -> task/params`.
 4. In task-group config sections (`generation`, `rendering`, `prompt`, `sampling`), keep shared keys under `shared` and task-specific keys under `task_overrides.<task_id>` (legacy flat section keys are unsupported).
 5. Query-weight precedence: `build task query_weights -> task_group sampling.task_overrides -> task_group sampling.shared -> uniform`.

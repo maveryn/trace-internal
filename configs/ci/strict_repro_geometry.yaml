@@ -7,7 +7,7 @@ strict_repro: true
 max_attempts_per_instance: 180
 sampling_seed: 0
 tasks:
-  - task_id: task_geometry_measurement_2d_angle
+  - task_id: task_geometry_measurement_angle
     count: 8
     params:
       query_type: measure
@@ -26,19 +26,25 @@ tasks:
       polygon_allowed_sides: [3, 4]
     query_weights:
       measure: 1.0
-  - task_id: task_geometry_measurement_2d_area
+  - task_id: task_geometry_measurement_area
     count: 8
     params:
       query_type: measure
     query_weights:
       measure: 1.0
-  - task_id: task_geometry_measurement_2d_perimeter
+  - task_id: task_geometry_measurement_perimeter
     count: 8
     params:
       query_type: measure
     query_weights:
       measure: 1.0
-  - task_id: task_geometry_measurement_2d_length
+  - task_id: task_geometry_measurement_length
+    count: 8
+    params:
+      query_type: measure
+    query_weights:
+      measure: 1.0
+  - task_id: task_geometry_analytical_2d_area
     count: 8
     params:
       query_type: measure

@@ -34,6 +34,10 @@ Use this checklist during implementation and refactor reviews.
 18. For visual/background/noise config parsing, consolidate repeated min/max normalization into `trace/core/visual` shared helpers instead of re-implementing range parsing per module.
 19. Prompt JSON examples must be contract-valid for the active task/query/output-mode variant (correct keys, answer type, and evidence cardinality/semantics); reject mismatched examples.
 20. If one task supports multiple evidence cardinalities across variants, require variant-aware prompt example selection (not one static example for all variants).
+21. For domain-agnostic shared helpers (for example color sampling), keep primary behavior tests in shared test modules rather than domain-specific task tests.
+22. Keep test suites compact by merging overlapping assertions into behavior-centric tests; avoid parallel tests that validate the same contract surface.
+23. Treat prompt-slot values as punctuation-neutral fragments; keep sentence punctuation in template variants to avoid duplicated punctuation in rendered prompts.
+24. For task-group visual defaults, remove zero-weight/no-op style keys and avoid fallback style merge when a family requires a strict style subset.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

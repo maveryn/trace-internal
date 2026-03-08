@@ -1,24 +1,24 @@
-# `task_geometry_measurement_2d_angle`
+# `task_geometry_measurement_angle`
 
 ## 1) Identity
 1. Domain: `geometry`
-2. Task group: `measurement_2d`
-3. Task id: `task_geometry_measurement_2d_angle`
+2. Task group: `measurement`
+3. Task id: `task_geometry_measurement_angle`
 4. Objective: measure one target angle from a single-object scene.
 
 ## 2) Scene + query contract
 1. Entities/relations: one entity (`angle`, `polygon`, or `line_intersection` source variant); no inter-entity relations.
 2. Supported `query_type` values: `measure`.
 3. `answer_gt.type`: `option_letter` (selected MCQ option label `A..E`; underlying target angle degrees remain in trace metadata).
-4. Default `evidence_gt.type`: `grid_point_set` (ordered 3-point set `[ray endpoint A, vertex, ray endpoint B]` in integer graph units).
-5. Alternate evidence forms: projected `point_set`/`point_path` and `grid_point_path` in trace.
+4. Default `evidence_gt.type`: `grid_point_map` (3 labeled points for `[ray endpoint A, vertex, ray endpoint B]` in integer graph units).
+5. Alternate evidence forms: projected `point_map` + `grid_point_map` and derived set/path projections in trace.
 6. Overlap/touch policy: single object only (no multi-object overlap constraints needed).
 
 ## 3) Prompt contract
 1. `prompt_bundle_id`: `geometry_angle_measure_v1`
 2. `task_type_key`: `measurement_single_object`
 3. Query-type mapping: `measure -> angle question text + 5-option MCQ list + option-letter selection instruction`; answer+evidence mode uses evidence-first JSON with shared contract text plus task-specific rules.
-4. Answer+evidence JSON shape: `{"evidence":[[x1,y1],[x2,y2],[x3,y3]],"answer":"<OPTION_LETTER>"}` where evidence holds the angle-point triplet.
+4. Answer+evidence JSON shape: `{"evidence":{"A":[x1,y1],"B":[x2,y2],"C":[x3,y3]},"answer":"<OPTION_LETTER>"}` where evidence holds the labeled angle-point triplet.
 5. Answer-only JSON shape: `{"answer":"<OPTION_LETTER>"}`.
 6. Required slots:
    - shared: `object_description`, `question_text`, `options_text`,

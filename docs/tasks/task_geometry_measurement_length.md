@@ -1,19 +1,19 @@
-# `task_geometry_measurement_2d_length`
+# `task_geometry_measurement_length`
 
 ## 1) Identity
 1. Domain: `geometry`
-2. Task group: `measurement_2d`
-3. Task id: `task_geometry_measurement_2d_length`
+2. Task group: `measurement`
+3. Task id: `task_geometry_measurement_length`
 4. Objective: measure one target segment length from a single-object scene.
 
 ## 2) Scene + query contract
 1. Entities/relations: one entity (`segment`, `polygon`, `circle`, or `ellipse` variant); no inter-entity relations.
 2. Supported `query_type` values: `measure`.
 3. `answer_gt.type`: `integer`.
-4. Default `evidence_gt.type`: `grid_point_set` with variant-specific cardinality:
-   - circle variants (`circle_radius`, `circle_diameter`): one center point `[[x,y]]`,
-   - non-circle variants: ordered 2-point set `[endpoint A, endpoint B]`.
-5. Alternate evidence forms: projected `point_set`/`point_path` and `grid_point_path` in trace.
+4. Default `evidence_gt.type`: `grid_point_map` with variant-specific cardinality:
+   - circle variants (`circle_radius`, `circle_diameter`): one labeled center point,
+   - non-circle variants: two labeled endpoints.
+5. Alternate evidence forms: projected `point_map` + `grid_point_map` and derived set/path projections in trace.
 6. Overlap/touch policy: single object only (no multi-object overlap constraints needed).
 
 ## 3) Prompt contract
@@ -24,9 +24,9 @@
    - polygon: labeled side pair,
    - circle: radius or diameter,
    - ellipse: major/minor axis.
-4. Answer+evidence JSON shape is variant-specific:
-   - circle variants: `{"evidence":[[x,y]],"answer":<integer>}`,
-   - non-circle variants: `{"evidence":[[x1,y1],[x2,y2]],"answer":<integer>}`.
+4. Answer+evidence JSON shape is variant-specific via labeled point maps:
+   - circle variants: `{"evidence":{"O":[x,y]},"answer":<integer>}`,
+   - non-circle variants: `{"evidence":{"A":[x1,y1],"B":[x2,y2]},"answer":<integer>}`.
 5. Answer-only JSON shape: `{"answer":<integer>}`.
 6. Required slots:
    - shared: `object_description`, `question_text`,
@@ -34,7 +34,7 @@
    - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`.
 7. Slot source:
    - shared JSON-format contracts from `configs/domains/geometry/base.yaml` (`prompt.shared`),
-   - measurement-family prompt slots from `configs/domains/geometry/measurement_2d.yaml` (`prompt.shared` + `prompt.task_overrides.task_geometry_measurement_2d_length`).
+   - measurement-family prompt slots from `configs/domains/geometry/measurement.yaml` (`prompt.shared` + `prompt.task_overrides.task_geometry_measurement_length`).
 8. Variant counts (task/query/mode): minimum 10 templates per required key.
 9. Output modes:
    - `answer_only`

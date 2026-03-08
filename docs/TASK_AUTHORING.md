@@ -68,10 +68,11 @@ Use this as the implementation checklist for new or modified tasks.
 4. Keep broadly shared domain visual policy in `configs/domains/<domain>/base.yaml`; use task-group visual only for group-specific overrides.
 5. Query-weight fallback is: build task `query_weights` -> task-group `sampling.task_overrides` -> task-group `sampling.shared` -> uniform.
 6. Visual defaults/noise should route through shared visual modules.
-7. Geometry measurement tasks should keep graph-paper/anchor alignment policy consistent.
+7. Geometry `measurement` tasks should keep graph-paper/anchor alignment policy consistent; geometry `analytical_2d` tasks should use non-graph-paper backgrounds unless a task explicitly requires visible grid cues.
 8. For sibling variants of one objective family (for example area/perimeter), keep shared generation/prompt/trace flow in one task-group shared base helper and keep task modules thin.
 9. Required prompt/config slots should be enforced with fail-fast shared helpers (no hardcoded fallback prompt literals in task code).
 10. If the same fallback constants are used by multiple sibling tasks, move them to a task-group shared defaults module.
+11. For cross-domain shared utilities, keep global fallback constants in the shared utility module and treat domain/task-group config keys as optional overrides.
 
 ## 5) Sampling rules
 1. Global sampling unit is `task`.
@@ -92,6 +93,7 @@ Use this as the implementation checklist for new or modified tasks.
 5. Constraint-specific tests (for example non-overlap, uniqueness).
 6. Feasibility sanity at max candidate count under default render ranges (for geometry/layout-heavy tasks).
 7. Prefer extending shared family contract tests instead of duplicating full contract checks in every task file.
+8. Keep tests behavior-focused and compact: merge overlapping checks rather than adding parallel literal-default tests for the same contract.
 
 Run:
 ```bash

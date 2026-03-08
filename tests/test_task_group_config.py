@@ -42,7 +42,7 @@ def _polygon_perimeter(points: list[list[int]]) -> int:
 
 
 def test_geometry_measurement_defaults_loaded() -> None:
-    cfg = get_task_group_defaults("geometry", "measurement_2d")
+    cfg = get_task_group_defaults("geometry", "measurement")
     for section in ("generation", "rendering", "prompt", "sampling"):
         assert isinstance(cfg.get(section), dict)
 
@@ -51,9 +51,13 @@ def test_geometry_measurement_defaults_loaded() -> None:
     assert int(render_shared["canvas_size_max"]) >= int(render_shared["canvas_size_min"])
     assert int(render_shared["graph_cells_min"]) > 0
     assert int(render_shared["graph_cells_max"]) >= int(render_shared["graph_cells_min"])
+    assert int(render_shared["line_width_min"]) >= 1
+    assert int(render_shared["line_width_max"]) >= int(render_shared["line_width_min"])
+    assert int(render_shared["label_stroke_width_min"]) >= 1
+    assert int(render_shared["label_stroke_width_max"]) >= int(render_shared["label_stroke_width_min"])
 
     generation_overrides = cfg["generation"]["task_overrides"]
-    assert "task_geometry_measurement_2d_angle" in generation_overrides
+    assert "task_geometry_measurement_angle" in generation_overrides
     assert int(cfg["generation"]["shared"]["answer_min"]) >= 0
 
     prompt_shared = cfg["prompt"]["shared"]
@@ -65,7 +69,7 @@ def test_geometry_measurement_defaults_loaded() -> None:
 
     angle_generation, angle_rendering, angle_prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_geometry_measurement_2d_angle",
+        task_id="task_geometry_measurement_angle",
     )
     for key in ("min_angle", "max_angle", "angle_step", "mcq_option_count"):
         assert key in angle_generation
@@ -80,21 +84,20 @@ def test_geometry_measurement_defaults_loaded() -> None:
 
     area_generation, area_rendering, area_prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_geometry_measurement_2d_area",
+        task_id="task_geometry_measurement_area",
     )
-    assert sorted(area_generation["variant_weights"].keys()) == ["ellipse", "pentagon", "quadrilateral", "triangle"]
+    assert sorted(area_generation["variant_weights"].keys()) == ["ellipse", "quadrilateral", "triangle"]
     assert bool(area_generation["balanced_variant_sampling"]) is True
     assert bool(area_generation["ellipse_allow_circle"]) is False
     assert int(area_rendering["line_width"]) > 0
     assert str(area_prompt["question_text_polygon"]).strip()
     assert str(area_prompt["question_text_ellipse"]).strip()
-    assert str(area_prompt["evidence_hint_polygon"]).strip()
-    assert str(area_prompt["evidence_hint_center"]).strip()
+    assert str(area_prompt["evidence_hint_point_map"]).strip()
     assert str(area_prompt["answer_hint_integer"]).strip()
     assert str(area_prompt["answer_hint_pi"]).strip()
     assert str(area_prompt["json_example_triangle"]).strip()
     assert str(area_prompt["json_example_quadrilateral"]).strip()
-    assert str(area_prompt["json_example_pentagon"]).strip()
+    assert str(area_prompt["json_example_ellipse"]).strip()
     assert str(area_prompt["json_example_integer"]).strip()
     assert str(area_prompt["json_example_pi"]).strip()
     assert str(area_prompt["json_example_answer_only_integer"]).strip()
@@ -102,22 +105,21 @@ def test_geometry_measurement_defaults_loaded() -> None:
 
     perim_generation, perim_rendering, perim_prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_geometry_measurement_2d_perimeter",
+        task_id="task_geometry_measurement_perimeter",
     )
-    assert sorted(perim_generation["variant_weights"].keys()) == ["circle", "pentagon", "quadrilateral", "triangle"]
+    assert sorted(perim_generation["variant_weights"].keys()) == ["circle", "quadrilateral", "triangle"]
     assert bool(perim_generation["balanced_variant_sampling"]) is True
     assert int(perim_generation["circle_radius_min"]) >= 1
     assert int(perim_generation["circle_radius_max"]) >= int(perim_generation["circle_radius_min"])
     assert int(perim_rendering["line_width"]) > 0
     assert str(perim_prompt["question_text_polygon"]).strip()
     assert str(perim_prompt["question_text_circle"]).strip()
-    assert str(perim_prompt["evidence_hint_polygon"]).strip()
-    assert str(perim_prompt["evidence_hint_center"]).strip()
+    assert str(perim_prompt["evidence_hint_point_map"]).strip()
     assert str(perim_prompt["answer_hint_integer"]).strip()
     assert str(perim_prompt["answer_hint_pi"]).strip()
     assert str(perim_prompt["json_example_triangle"]).strip()
     assert str(perim_prompt["json_example_quadrilateral"]).strip()
-    assert str(perim_prompt["json_example_pentagon"]).strip()
+    assert str(perim_prompt["json_example_circle"]).strip()
     assert str(perim_prompt["json_example_integer"]).strip()
     assert str(perim_prompt["json_example_pi"]).strip()
     assert str(perim_prompt["json_example_answer_only_integer"]).strip()
@@ -125,7 +127,7 @@ def test_geometry_measurement_defaults_loaded() -> None:
 
     length_generation, length_rendering, length_prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_geometry_measurement_2d_length",
+        task_id="task_geometry_measurement_length",
     )
     assert sorted(length_generation["variant_weights"].keys()) == [
         "circle_diameter",
@@ -148,12 +150,98 @@ def test_geometry_measurement_defaults_loaded() -> None:
     assert str(length_prompt["question_text_circle_diameter"]).strip()
     assert str(length_prompt["question_text_ellipse_major_axis"]).strip()
     assert str(length_prompt["question_text_ellipse_minor_axis"]).strip()
-    assert str(length_prompt["evidence_hint_endpoints"]).strip()
-    assert str(length_prompt["evidence_hint_center"]).strip()
+    assert str(length_prompt["evidence_hint_segment"]).strip()
+    assert str(length_prompt["evidence_hint_polygon_side"]).strip()
+    assert str(length_prompt["evidence_hint_circle_center"]).strip()
+    assert str(length_prompt["evidence_hint_ellipse_axis"]).strip()
     assert str(length_prompt["answer_hint_integer"]).strip()
+    assert str(length_prompt["json_example_segment_integer"]).strip()
+    assert str(length_prompt["json_example_polygon_side_integer"]).strip()
+    assert str(length_prompt["json_example_circle_radius_integer"]).strip()
+    assert str(length_prompt["json_example_circle_diameter_integer"]).strip()
+    assert str(length_prompt["json_example_ellipse_major_axis_integer"]).strip()
+    assert str(length_prompt["json_example_ellipse_minor_axis_integer"]).strip()
     assert str(length_prompt["json_example_integer"]).strip()
-    assert str(length_prompt["json_example_center_integer"]).strip()
     assert str(length_prompt["json_example_answer_only_integer"]).strip()
+
+
+def test_geometry_analytical_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("geometry", "analytical_2d")
+    for section in ("generation", "rendering", "prompt", "sampling"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["answer_min"]) >= 0
+    assert int(generation_shared["answer_max"]) >= int(generation_shared["answer_min"])
+    assert sorted(generation_shared["shape_weights"].keys()) == [
+        "circle",
+        "ellipse",
+        "parallelogram",
+        "rectangle",
+        "rhombus",
+        "trapezoid",
+        "triangle",
+    ]
+    assert sorted(generation_shared["mode_weights"].keys()) == ["derived", "explicit"]
+    assert bool(generation_shared["balanced_shape_sampling"]) is True
+    assert bool(generation_shared["balanced_mode_sampling"]) is True
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_size_min"]) > 0
+    assert int(render_shared["canvas_size_max"]) >= int(render_shared["canvas_size_min"])
+    assert int(render_shared["graph_cells_min"]) > 0
+    assert int(render_shared["graph_cells_max"]) >= int(render_shared["graph_cells_min"])
+    assert int(render_shared["line_width_min"]) >= 1
+    assert int(render_shared["line_width_max"]) >= int(render_shared["line_width_min"])
+    assert int(render_shared["helper_line_width_min"]) >= 1
+    assert int(render_shared["helper_line_width_max"]) >= int(render_shared["helper_line_width_min"])
+    assert int(render_shared["label_stroke_width_min"]) >= 1
+    assert int(render_shared["label_stroke_width_max"]) >= int(render_shared["label_stroke_width_min"])
+    visual_background = cfg["visual"]["background"]
+    assert bool(visual_background["enabled"]) is True
+    assert {"solid_cool", "solid_offwhite", "solid_warm"}.issubset(set(visual_background["styles"].keys()))
+    assert float(visual_background["weights"]["graph_paper"]) == 0.0
+    assert float(visual_background["weights"]["solid_offwhite"]) > 0.0
+
+    prompt_generation, prompt_rendering, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_analytical_2d_area",
+    )
+    assert int(prompt_generation["side_min"]) > 0
+    assert int(prompt_generation["side_max"]) >= int(prompt_generation["side_min"])
+    assert int(prompt_generation["circle_radius_min"]) > 0
+    assert int(prompt_generation["circle_radius_max"]) >= int(prompt_generation["circle_radius_min"])
+    assert int(prompt_generation["ellipse_axis_min"]) > 0
+    assert int(prompt_generation["ellipse_axis_max"]) >= int(prompt_generation["ellipse_axis_min"])
+    assert int(prompt_rendering["line_width"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip()
+    assert str(prompt_defaults["task_type_key"]).strip()
+    assert str(prompt_defaults["object_description"]).strip()
+    assert str(prompt_defaults["evidence_hint_measurement_map"]).strip()
+    assert str(prompt_defaults["answer_hint_integer"]).strip()
+    assert str(prompt_defaults["answer_hint_pi"]).strip()
+    assert str(prompt_defaults["json_example_answer_only_integer"]).strip()
+    assert str(prompt_defaults["json_example_answer_only_pi"]).strip()
+    for key in (
+        "rectangle_explicit",
+        "rectangle_derived",
+        "triangle_explicit",
+        "triangle_derived",
+        "parallelogram_explicit",
+        "parallelogram_derived",
+        "trapezoid_explicit",
+        "trapezoid_derived",
+        "rhombus_explicit",
+        "rhombus_derived",
+        "circle_explicit",
+        "circle_derived",
+        "ellipse_explicit",
+        "ellipse_derived",
+    ):
+        assert str(prompt_defaults[f"question_text_{key}"]).strip()
+        assert str(prompt_defaults[f"json_example_{key}"]).strip()
+
+    assert float(cfg["sampling"]["shared"]["query_weights"]["measure"]) > 0.0
 
 
 def test_tile_path_defaults_loaded() -> None:
@@ -191,11 +279,11 @@ def test_domain_defaults_and_missing_group_behavior() -> None:
 
 
 def test_measurement_prompt_examples_are_task_valid() -> None:
-    cfg = get_task_group_defaults("geometry", "measurement_2d")
+    cfg = get_task_group_defaults("geometry", "measurement")
 
     _angle_generation, _angle_rendering, angle_prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_geometry_measurement_2d_angle",
+        task_id="task_geometry_measurement_angle",
     )
     angle_example = json.loads(str(angle_prompt["json_example"]))
     assert list(angle_example.keys()) == ["evidence", "answer"]
@@ -207,26 +295,28 @@ def test_measurement_prompt_examples_are_task_valid() -> None:
 
     _area_generation, _area_rendering, area_prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_geometry_measurement_2d_area",
+        task_id="task_geometry_measurement_area",
     )
     area_example = json.loads(str(area_prompt["json_example_integer"]))
     assert list(area_example.keys()) == ["evidence", "answer"]
-    area_points = [[int(point[0]), int(point[1])] for point in area_example["evidence"]]
+    assert isinstance(area_example["evidence"], dict)
+    area_points = [[int(point[0]), int(point[1])] for point in area_example["evidence"].values()]
     assert len(area_points) >= 3
     assert int(area_example["answer"]) == int(_polygon_area(area_points))
     for key, expected_points in (
         ("json_example_triangle", 3),
         ("json_example_quadrilateral", 4),
-        ("json_example_pentagon", 5),
     ):
         polygon_example = json.loads(str(area_prompt[key]))
         assert list(polygon_example.keys()) == ["evidence", "answer"]
-        polygon_points = [[int(point[0]), int(point[1])] for point in polygon_example["evidence"]]
+        assert isinstance(polygon_example["evidence"], dict)
+        polygon_points = [[int(point[0]), int(point[1])] for point in polygon_example["evidence"].values()]
         assert len(polygon_points) == int(expected_points)
         assert int(polygon_example["answer"]) == int(_polygon_area(polygon_points))
     area_pi_example = json.loads(str(area_prompt["json_example_pi"]))
     assert list(area_pi_example.keys()) == ["evidence", "answer"]
-    assert len(area_pi_example["evidence"]) == 1
+    assert isinstance(area_pi_example["evidence"], dict)
+    assert len(area_pi_example["evidence"]) >= 1
     assert str(area_pi_example["answer"]).endswith("π")
     area_answer_only_integer = json.loads(str(area_prompt["json_example_answer_only_integer"]))
     assert list(area_answer_only_integer.keys()) == ["answer"]
@@ -237,26 +327,28 @@ def test_measurement_prompt_examples_are_task_valid() -> None:
 
     _perim_generation, _perim_rendering, perim_prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_geometry_measurement_2d_perimeter",
+        task_id="task_geometry_measurement_perimeter",
     )
     perim_example = json.loads(str(perim_prompt["json_example_integer"]))
     assert list(perim_example.keys()) == ["evidence", "answer"]
-    perim_points = [[int(point[0]), int(point[1])] for point in perim_example["evidence"]]
+    assert isinstance(perim_example["evidence"], dict)
+    perim_points = [[int(point[0]), int(point[1])] for point in perim_example["evidence"].values()]
     assert len(perim_points) >= 3
     assert int(perim_example["answer"]) == int(_polygon_perimeter(perim_points))
     for key, expected_points in (
         ("json_example_triangle", 3),
         ("json_example_quadrilateral", 4),
-        ("json_example_pentagon", 5),
     ):
         polygon_example = json.loads(str(perim_prompt[key]))
         assert list(polygon_example.keys()) == ["evidence", "answer"]
-        polygon_points = [[int(point[0]), int(point[1])] for point in polygon_example["evidence"]]
+        assert isinstance(polygon_example["evidence"], dict)
+        polygon_points = [[int(point[0]), int(point[1])] for point in polygon_example["evidence"].values()]
         assert len(polygon_points) == int(expected_points)
         assert int(polygon_example["answer"]) == int(_polygon_perimeter(polygon_points))
     perim_pi_example = json.loads(str(perim_prompt["json_example_pi"]))
     assert list(perim_pi_example.keys()) == ["evidence", "answer"]
-    assert len(perim_pi_example["evidence"]) == 1
+    assert isinstance(perim_pi_example["evidence"], dict)
+    assert len(perim_pi_example["evidence"]) >= 1
     assert str(perim_pi_example["answer"]).endswith("π")
     perim_answer_only_integer = json.loads(str(perim_prompt["json_example_answer_only_integer"]))
     assert list(perim_answer_only_integer.keys()) == ["answer"]
@@ -267,23 +359,69 @@ def test_measurement_prompt_examples_are_task_valid() -> None:
 
     _length_generation, _length_rendering, length_prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_geometry_measurement_2d_length",
+        task_id="task_geometry_measurement_length",
     )
     length_example = json.loads(str(length_prompt["json_example_integer"]))
     assert list(length_example.keys()) == ["evidence", "answer"]
-    length_points = [[int(point[0]), int(point[1])] for point in length_example["evidence"]]
+    assert isinstance(length_example["evidence"], dict)
+    length_points = [[int(point[0]), int(point[1])] for point in length_example["evidence"].values()]
     assert len(length_points) == 2
     dx = int(length_points[1][0]) - int(length_points[0][0])
     dy = int(length_points[1][1]) - int(length_points[0][1])
     assert int(length_example["answer"]) == int(round(math.hypot(float(dx), float(dy))))
-
-    center_example = json.loads(str(length_prompt["json_example_center_integer"]))
+    center_example = json.loads(str(length_prompt["json_example_circle_radius_integer"]))
     assert list(center_example.keys()) == ["evidence", "answer"]
+    assert isinstance(center_example["evidence"], dict)
     assert len(center_example["evidence"]) == 1
-    assert len(center_example["evidence"][0]) == 2
+    only_point = next(iter(center_example["evidence"].values()))
+    assert isinstance(only_point, list) and len(only_point) == 2
     length_answer_only_example = json.loads(str(length_prompt["json_example_answer_only_integer"]))
     assert list(length_answer_only_example.keys()) == ["answer"]
     assert int(length_answer_only_example["answer"]) >= 0
+
+
+def test_analytical_prompt_examples_are_task_valid() -> None:
+    cfg = get_task_group_defaults("geometry", "analytical_2d")
+    _generation, _rendering, prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_analytical_2d_area",
+    )
+    integer_answer_only = json.loads(str(prompt["json_example_answer_only_integer"]))
+    assert list(integer_answer_only.keys()) == ["answer"]
+    assert int(integer_answer_only["answer"]) >= 0
+
+    pi_answer_only = json.loads(str(prompt["json_example_answer_only_pi"]))
+    assert list(pi_answer_only.keys()) == ["answer"]
+    assert str(pi_answer_only["answer"]).endswith("π")
+
+    for key in (
+        "json_example_rectangle_explicit",
+        "json_example_rectangle_derived",
+        "json_example_triangle_explicit",
+        "json_example_triangle_derived",
+        "json_example_parallelogram_explicit",
+        "json_example_parallelogram_derived",
+        "json_example_trapezoid_explicit",
+        "json_example_trapezoid_derived",
+        "json_example_rhombus_explicit",
+        "json_example_rhombus_derived",
+        "json_example_circle_explicit",
+        "json_example_circle_derived",
+        "json_example_ellipse_explicit",
+        "json_example_ellipse_derived",
+    ):
+        parsed = json.loads(str(prompt[key]))
+        assert list(parsed.keys()) == ["evidence", "answer"]
+        assert isinstance(parsed["evidence"], dict)
+        assert parsed["evidence"]
+        for annotation, payload in parsed["evidence"].items():
+            assert str(annotation).strip()
+            assert isinstance(payload, (int, float, str))
+        if str(key).startswith(("json_example_circle", "json_example_ellipse")):
+            assert isinstance(parsed["answer"], str)
+            assert str(parsed["answer"]).endswith("π")
+        else:
+            assert int(parsed["answer"]) >= 0
 
 
 def test_section_defaults_require_shared_and_task_overrides_schema() -> None:
@@ -301,22 +439,19 @@ def test_section_defaults_require_shared_and_task_overrides_schema() -> None:
     assert resolve_task_group_section_defaults({"rendering": {"canvas_size_min": 111}}, "rendering") == {}
 
 
-def test_required_group_default_enforces_presence_and_nonempty() -> None:
+def test_required_group_helpers_enforce_presence_and_nonempty() -> None:
     assert required_group_default({"value": 3}, "value", context="test") == 3
+    resolved = required_group_defaults({"a": 1, "b": "ok"}, ("a", "b"), context="test")
+    assert resolved == {"a": 1, "b": "ok"}
     with pytest.raises(ValueError):
         required_group_default({}, "value", context="test")
     with pytest.raises(ValueError):
         required_group_default({"value": "   "}, "value", context="test")
-
-
-def test_required_group_defaults_enforces_all_keys() -> None:
-    resolved = required_group_defaults({"a": 1, "b": "ok"}, ("a", "b"), context="test")
-    assert resolved == {"a": 1, "b": "ok"}
     with pytest.raises(ValueError):
         required_group_defaults({"a": 1}, ("a", "b"), context="test")
 
 
-def test_resolve_optional_int_bounds() -> None:
+def test_resolve_numeric_bounds_helpers() -> None:
     assert resolve_optional_int_bounds(
         {"answer_min": 3},
         {"answer_max": 9},
@@ -339,9 +474,6 @@ def test_resolve_optional_int_bounds() -> None:
             max_key="answer_max",
             context="test",
         )
-
-
-def test_resolve_required_numeric_bounds() -> None:
     assert resolve_required_int_bounds(
         {"min": 2},
         {"max": 8},

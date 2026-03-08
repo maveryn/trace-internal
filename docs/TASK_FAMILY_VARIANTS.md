@@ -4,13 +4,13 @@
 Define how we split tasks into reusable families so each dataset slice stays comparable and avoids hidden weighting bias.
 
 ## Core rule
-1. **Family = reasoning mode** (for example `measurement`, `comparison`).
+1. **Family = reasoning mode** (for example `measurement_2d`, `comparison`).
 2. **Variant = visual/semantic subtype inside a family** (for example polygon `n`-gon subtype, query subtype).
 3. Keep family boundaries stable; add variants before adding new families unless reasoning mode changes.
 
 ## Geometry direction (current)
-1. `measurement` should use **one primary object per image**.
-2. Multi-object value-query geometry tasks belong under `comparison` (separate from single-object measurement).
+1. `measurement_2d` should use **one primary object per image**.
+2. Multi-object value-query geometry tasks belong under `comparison` (separate from single-object `measurement_2d`).
 
 ## Planned geometry measurement variants
 1. **Angle measurement**
@@ -18,13 +18,13 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Ask for the angle value.
    - Evidence: 3 vertex points in graph-unit integer coordinates.
 2. **Polygon area measurement**
-   - One polygon per image.
-   - Ask for area in square units.
-   - Evidence: polygon vertex coordinate set (unordered list).
+   - One shape per image: triangle/quadrilateral/pentagon polygon or ellipse.
+   - Ask for area (`integer` for polygons, `kπ` for ellipses).
+   - Evidence: polygon vertex coordinate set for polygons; center point for ellipses.
 3. **Polygon perimeter measurement**
-   - One polygon per image.
-   - Ask for perimeter in graph units.
-   - Evidence: polygon vertex coordinate set (unordered list).
+   - One shape per image: triangle/quadrilateral/pentagon polygon or circle.
+   - Ask for perimeter/circumference (`integer` for polygons, `kπ` for circles).
+   - Evidence: polygon vertex coordinate set for polygons; center point for circles.
 
 ## Future polygon variants (deferred)
 1. Polygon diameter measurement.

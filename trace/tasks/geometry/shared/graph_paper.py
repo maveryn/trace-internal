@@ -114,7 +114,7 @@ def lattice_axis_coordinates_for_offsets(
         raise ValueError("offsets must be non-empty")
 
     lower_bound = max(pad_px - (offset * spacing_px) for offset in offset_values)
-    upper_bound = min((canvas_px - pad_px) - (offset * spacing_px) for offset in offset_values)
+    upper_bound = min(((canvas_px - 1 - pad_px) - (offset * spacing_px)) for offset in offset_values)
     if lower_bound > upper_bound:
         return []
 

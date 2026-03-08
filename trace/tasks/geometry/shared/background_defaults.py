@@ -37,7 +37,6 @@ def load_geometry_background_defaults(*, task_group: str | None = None) -> Dict[
     )
 
 
-# Geometry measurement background defaults, sourced from domain config
+# Geometry measurement_2d background defaults, sourced from domain config
 # unless a task-group override is defined.
-POST_IMAGE_BACKGROUND_DEFAULTS: Dict[str, Any] = load_geometry_background_defaults(task_group="measurement")
-
+POST_IMAGE_BACKGROUND_DEFAULTS: Dict[str, Any] = load_geometry_background_defaults(task_group="measurement_2d")

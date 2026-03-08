@@ -11,8 +11,11 @@ Prompt text is externalized and deterministic.
    - output mode (`answer_only`, `answer_and_evidence`).
 4. Selection is deterministic from seed namespaces.
 5. Each required template list must have at least 10 variants.
-6. `answer_or_evidence` templates may be intentionally empty for modes where query templates already encode response format.
-7. Prefer slot-based composition for reusable format rules (e.g., shared JSON output contract in task-group `prompt.shared`, with task-level `evidence_hint`/`answer_hint`/example overrides).
+6. All active tasks must provide explicit JSON-format instructions in both output modes:
+   - `answer_only` uses `{"answer": ...}`
+   - `answer_and_evidence` uses `{"evidence": ..., "answer": ...}`
+7. Prefer slot-based composition for reusable format rules (for example shared `json_output_contract*` in domain/task-group config, with task-level `evidence_hint`/`answer_hint`/example overrides).
+8. For mixed-shape tasks, keep one bundle and switch shape-specific wording via slots (`object_description_*`, `question_text_*`, evidence/answer hint families).
 
 ## 2) Bundle schema (v1)
 Required fields:
@@ -44,12 +47,13 @@ Train records should store:
 
 ## 5) Active bundles/tasks
 Bundles:
-1. `prompts/geometry/measurement/geometry_angle_measure_v1.json`
-2. `prompts/geometry/measurement/geometry_measurement_v2.json`
+1. `prompts/geometry/measurement_2d/geometry_angle_measure_v1.json`
+2. `prompts/geometry/measurement_2d/geometry_measurement_v1.json`
 3. `prompts/tile/path/tile_path_v1.json`
 
 Tasks:
-1. `task_geometry_measurement_angle` (bundle override: `geometry_angle_measure_v1`)
-2. `task_geometry_measurement_polygon_area` (bundle: `geometry_measurement_v2`)
-3. `task_geometry_measurement_polygon_perimeter` (bundle: `geometry_measurement_v2`)
-4. `task_tile_path_shortest_path`
+1. `task_geometry_measurement_2d_angle` (bundle override: `geometry_angle_measure_v1`)
+2. `task_geometry_measurement_2d_area` (bundle: `geometry_measurement_v1`)
+3. `task_geometry_measurement_2d_perimeter` (bundle: `geometry_measurement_v1`)
+4. `task_geometry_measurement_2d_length` (bundle: `geometry_measurement_v1`)
+5. `task_tile_path_shortest_path`

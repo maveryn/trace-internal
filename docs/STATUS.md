@@ -1,6 +1,6 @@
 # TRACE Status
 
-Date: 2026-03-05
+Date: 2026-03-07
 
 ## Implemented
 1. Deterministic build pipeline with sidecar trace shards and atomic finalize.
@@ -11,20 +11,24 @@ Date: 2026-03-05
 6. Deterministic background/noise visual variation helpers.
 7. Domain + task-group default config loading with section-level `shared` + `task_overrides` composition.
 8. Shared geometry single-object scene helpers (`graph_paper`, `graph_rendering`, `single_object_scene`, `angle_geometry`, `polygon_geometry`).
-9. Objective-style geometry measurement tasks (single shape/object per image):
+9. Objective-style geometry measurement_2d tasks (single shape/object per image):
    - angle measure (primitive-angle, triangle/quadrilateral polygon-angle, or line-intersection source) with deterministic balanced source/answer sampling defaults, minimum ray length constraints, and MCQ query formatting,
-   - polygon area measure,
-   - polygon perimeter measure.
+   - area measure (triangle/quadrilateral/pentagon + ellipse variants),
+   - perimeter measure (triangle/quadrilateral/pentagon + circle variants),
+   - length measure (segment, polygon side, circle radius/diameter, ellipse major/minor axis variants).
    - angle measure now uses option-letter (`A..E`) ground-truth answers for MCQ output mode.
 10. Geometry graph-paper backgrounds now render center-origin cues by default: axis arrows + signed integer scale labels across the full visible axis range (no origin text label).
 11. Geometry graph-paper colors now vary within configured ranges per instance; axis lines are sampled darker than minor/major grid lines by construction.
-12. Geometry shape ink style is now sampled from shared domain-config ranges (line/text/stroke grayscale), and polygon area/perimeter tasks reuse one shared task-group base pipeline.
+12. Geometry shape ink style is now sampled from shared domain-config ranges (line/text/stroke grayscale), and area/perimeter tasks reuse one shared task-group shape pipeline.
+13. Geometry area/perimeter conic answers use `pi_expression` answer type (`kπ`) with center-point evidence.
+14. Active prompt bundles now use explicit JSON output contracts in both modes (`answer_only` + `answer_and_evidence`) across geometry and tile tasks.
 
 ## Active tasks
 1. `task_tile_path_shortest_path` (`domain=tile`, `task_group=path`)
-2. `task_geometry_measurement_angle` (`domain=geometry`, `task_group=measurement`)
-3. `task_geometry_measurement_polygon_area` (`domain=geometry`, `task_group=measurement`)
-4. `task_geometry_measurement_polygon_perimeter` (`domain=geometry`, `task_group=measurement`)
+2. `task_geometry_measurement_2d_angle` (`domain=geometry`, `task_group=measurement_2d`)
+3. `task_geometry_measurement_2d_area` (`domain=geometry`, `task_group=measurement_2d`)
+4. `task_geometry_measurement_2d_perimeter` (`domain=geometry`, `task_group=measurement_2d`)
+5. `task_geometry_measurement_2d_length` (`domain=geometry`, `task_group=measurement_2d`)
 
 ## Current quality baseline
 1. Tests are required to pass before finalize.

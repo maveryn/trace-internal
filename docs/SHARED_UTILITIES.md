@@ -45,9 +45,12 @@ Promote helpers when a second consumer appears.
    - `graph_paper.offset_point_by_grid_vector` is the canonical pixel-space translation helper for lattice vector offsets.
    - `background_defaults.load_geometry_background_defaults(...)` is the canonical geometry-domain loader for graph-paper background defaults (domain baseline with optional task-group override).
    - `noise_defaults.load_geometry_noise_defaults(...)` is the canonical geometry-domain loader for post-image noise defaults (domain baseline with optional task-group override).
-2. Geometry measurement task-group: `trace/tasks/geometry/measurement/defaults.py`, `polygon_measure_base.py`
-   - `defaults.py` centralizes task-group fallback defaults reused by measurement tasks.
-   - `polygon_measure_base.py` provides shared generation/output pipeline for polygon area/perimeter tasks (task-specific logic stays in thin subclasses).
+2. Geometry measurement_2d task-group: `trace/tasks/geometry/measurement_2d/defaults.py`, `shape_measure_base.py`, `variant_sampling.py`, `trace/tasks/geometry/shared/conic_geometry.py`, `trace/tasks/geometry/shared/length_geometry.py`
+   - `defaults.py` centralizes task-group fallback defaults reused by measurement_2d tasks.
+   - `shape_measure_base.py` provides the shared generation/output pipeline for shape variants (polygon + conic) used by area/perimeter tasks.
+   - `variant_sampling.py` provides shared balanced variant-selection helpers for multi-variant measurement tasks.
+   - `conic_geometry.py` provides reusable circle/ellipse sampling, rendering, scene-entity payloads, and center-point evidence helpers.
+   - `length_geometry.py` provides reusable integer-length segment vectors, sampling, rendering, and 2-point evidence helpers.
 3. Tile: `trace/tasks/tile/shared/path_grid.py`, `maze_sampling.py`, `grid_layout.py`, `maze_scene.py`, `maze_rendering.py`
 
 ## 3) Reuse rules

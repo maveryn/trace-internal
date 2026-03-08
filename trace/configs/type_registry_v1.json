@@ -2,6 +2,7 @@
   "type_registry_version": "v1",
   "answer_types": [
     "integer",
+    "pi_expression",
     "option_letter",
     "index_list",
     "matrix"

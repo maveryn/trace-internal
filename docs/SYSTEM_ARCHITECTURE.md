@@ -56,13 +56,14 @@ Implementation map for the contracts in `docs/BLUEPRINT.md`.
 1. `trace/tasks/registry.py` — registration and creation.
 2. `trace/tasks/base.py` — task protocol and `TaskOutput`.
 3. `trace/tasks/shared/*` — reusable query/layout/evidence/config/prompt helpers.
-4. `trace/tasks/<domain>/<task_group>/*.py` — concrete tasks.
+4. `trace/tasks/<domain>/<task_group>/*.py` — concrete tasks plus reusable task-group bases (for example `trace/tasks/geometry/measurement_2d/shape_measure_base.py`).
 
 ## 4) Current active tasks
 1. `trace/tasks/tile/path/shortest_path.py`
-2. `trace/tasks/geometry/measurement/angle.py`
-3. `trace/tasks/geometry/measurement/polygon_area.py`
-4. `trace/tasks/geometry/measurement/polygon_perimeter.py`
+2. `trace/tasks/geometry/measurement_2d/angle.py`
+3. `trace/tasks/geometry/measurement_2d/area.py`
+4. `trace/tasks/geometry/measurement_2d/perimeter.py`
+5. `trace/tasks/geometry/measurement_2d/length.py`
 
 ## 5) Architecture invariants
 1. Determinism from config + seeds + versions.

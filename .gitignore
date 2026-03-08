@@ -208,3 +208,4 @@ __marimo__/
 
 # TRACE generated previews/summaries
 samples/
+tmp/

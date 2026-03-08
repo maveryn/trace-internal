@@ -18,9 +18,15 @@
 ## 3) Prompt contract
 1. Bundle: `tile_path_v1`
 2. Task type key: `maze_path`
-3. Required slots: `rows`, `cols`, `evidence_hint`
-4. Modes: `answer_only`, `answer_and_evidence`
-5. Variant policy: at least 10 variants for each required task/query/mode key.
+3. Required slots:
+   - task/query: `rows`, `cols`
+   - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
+   - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
+4. Slot source:
+   - shared JSON-format contracts from `configs/domains/tile/base.yaml` (`prompt.shared`),
+   - task-group prompt slots from `configs/domains/tile/path.yaml` (`prompt.shared`).
+5. Modes: `answer_only`, `answer_and_evidence`
+6. Variant policy: at least 10 variants for each required task/query/mode key.
 
 ## 4) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.

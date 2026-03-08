@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import pytest
 
-from trace.tasks.geometry.measurement.angle import GeometryAngleMeasureTask
+from trace.tasks.geometry.measurement_2d.angle import GeometryAngleMeasure2DTask
 from trace.tasks.tile.path.shortest_path import TileShortestPathTask
 
 
 def test_geometry_measurement_default_noise_prob() -> None:
-    task = GeometryAngleMeasureTask()
+    task = GeometryAngleMeasure2DTask()
     out_a = task.generate(
         4242,
         params={

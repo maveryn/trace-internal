@@ -39,12 +39,12 @@ Default behavior:
 - writes one domain-combined workbook at `samples/<domain>/combined_samples.xlsx` with one sheet per task (same image/evidence preview columns as per-task sheets).
 
 Useful options:
-- `--tasks task_geometry_measurement_angle,task_tile_path_shortest_path`
+- `--tasks task_geometry_measurement_2d_angle,task_tile_path_shortest_path`
 - `--count 50`
 - `--count-per-query 100` (recommended for distribution checks on new/changed multi-query tasks)
 - `--seed 123`
 - `--params '{"canvas_size":640}'`
-- `--task-params '{"task_geometry_measurement_angle":{"scene_variant":"primitive_angle"}}'`
+- `--task-params '{"task_geometry_measurement_2d_angle":{"scene_variant":"primitive_angle"}}'`
 - `--clean` (safe mode: only allowed with `--tasks`; removes those task folders before regeneration)
 - `--clean-all` (explicit full wipe of `samples/`, use sparingly)
 

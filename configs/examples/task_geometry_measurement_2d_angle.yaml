@@ -1,14 +1,14 @@
 output_root: ./out
 
-dataset_name: strict_repro_geometry
+dataset_name: demo_task_geometry_measurement_2d_angle
 instance_version: v1
 image_format: png
-strict_repro: true
+strict_repro: false
 max_attempts_per_instance: 180
 sampling_seed: 0
 tasks:
   - task_id: task_geometry_measurement_2d_angle
-    count: 8
+    count: 24
     params:
       query_type: measure
       min_angle: 30
@@ -24,23 +24,5 @@ tasks:
         quadrilateral: 1.0
         intersection_lines: 1.0
       polygon_allowed_sides: [3, 4]
-    query_weights:
-      measure: 1.0
-  - task_id: task_geometry_measurement_2d_area
-    count: 8
-    params:
-      query_type: measure
-    query_weights:
-      measure: 1.0
-  - task_id: task_geometry_measurement_2d_perimeter
-    count: 8
-    params:
-      query_type: measure
-    query_weights:
-      measure: 1.0
-  - task_id: task_geometry_measurement_2d_length
-    count: 8
-    params:
-      query_type: measure
     query_weights:
       measure: 1.0

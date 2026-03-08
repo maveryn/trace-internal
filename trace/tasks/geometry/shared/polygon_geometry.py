@@ -5,7 +5,6 @@ from __future__ import annotations
 import hashlib
 import math
 from dataclasses import dataclass
-from functools import lru_cache
 from typing import Any, Dict, List, Sequence, Tuple
 
 from PIL import ImageDraw
@@ -15,6 +14,7 @@ from ...shared.sequence import rotate_sequence
 from ...shared.text_rendering import draw_text_centered, load_font, resolve_text_label_center
 from .graph_paper import sample_lattice_point_with_offsets
 from .graph_rendering import pixel_point_to_graph_units
+from .length_geometry import integer_length_vectors
 
 UnitPoint = Tuple[int, int]
 
@@ -41,39 +41,6 @@ class PolygonInstance:
     perimeter_units: int
     vertices: Tuple[Point, ...]
     labels: Tuple[str, ...]
-
-
-def _is_perfect_square(value: int) -> bool:
-    """Return true when `value` is a perfect square."""
-    if int(value) < 0:
-        return False
-    root = int(math.isqrt(int(value)))
-    return int(root * root) == int(value)
-
-
-@lru_cache(maxsize=16)
-def integer_length_vectors(
-    *,
-    max_abs_component: int = 8,
-    min_edge_length: int = 2,
-    max_edge_length: int = 10,
-) -> Tuple[Tuple[int, int, int], ...]:
-    """Return lattice vectors whose Euclidean lengths are integers."""
-    vectors: List[Tuple[int, int, int]] = []
-    for dx in range(-int(max_abs_component), int(max_abs_component) + 1):
-        for dy in range(-int(max_abs_component), int(max_abs_component) + 1):
-            if dx == 0 and dy == 0:
-                continue
-            length_sq = int(dx * dx) + int(dy * dy)
-            if not _is_perfect_square(length_sq):
-                continue
-            length = int(math.isqrt(length_sq))
-            if int(length) < int(min_edge_length) or int(length) > int(max_edge_length):
-                continue
-            vectors.append((int(dx), int(dy), int(length)))
-    if not vectors:
-        raise ValueError("integer_length_vectors resolved empty")
-    return tuple(vectors)
 
 
 def _segment_orientation(a: UnitPoint, b: UnitPoint, c: UnitPoint) -> int:

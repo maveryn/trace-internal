@@ -1,40 +1,41 @@
 {
-  "bundle_id": "tile_path_v1",
+  "bundle_id": "geometry_measurement_v1",
   "schema_version": "v1",
   "task_type_templates": {
-    "maze_path": [
-      "A single tile-maze image is shown as a {rows} by {cols} grid.",
-      "You are given one maze board with {rows} rows and {cols} columns.",
-      "Inspect the maze image arranged on a {rows}x{cols} grid.",
-      "This instance contains one {rows}-row, {cols}-column tile maze.",
-      "The puzzle is a single tile maze with dimensions {rows} by {cols}.",
-      "Review one maze panel built on a {rows}x{cols} lattice.",
-      "You will solve path reasoning on a {rows} by {cols} tile board.",
-      "The scene shows one grid maze of size {rows}x{cols}.",
-      "A single maze canvas is provided with {rows} rows and {cols} columns.",
-      "Work with the one-image maze whose grid is {rows} by {cols}."
+    "measurement_single_object": [
+      "A single image shows {object_description} on graph paper.",
+      "Inspect the diagram containing {object_description}.",
+      "One graph-paper figure is shown: {object_description}.",
+      "Work from the image with {object_description}.",
+      "The panel contains exactly one object: {object_description}.",
+      "Use the graph-paper scene that shows {object_description}.",
+      "This figure presents {object_description}.",
+      "A single geometry object appears in the image: {object_description}.",
+      "Review the one-object graph-paper scene: {object_description}.",
+      "The provided visual contains {object_description}."
     ]
   },
   "query_type_templates": {
-    "shortest_path": [
-      "Black tiles are blocked, green marks start, and red marks goal. Moves are edge-adjacent only (no diagonals). Find the shortest path length in steps.",
-      "Use 4-neighbor movement through non-black tiles only. Determine the unique shortest-path step length.",
-      "Treat black cells as walls, with green=start and red=goal. Find the shortest path length in steps.",
-      "Find the shortest route from start (green) to goal (red) using only edge-adjacent open cells.",
-      "Compute the shortest-path distance in steps under no-diagonal movement.",
-      "Find the number of steps on the shortest valid path from green to red through open cells only.",
-      "Using up/down/left/right moves only, determine the shortest-path step count.",
-      "Determine the shortest open-cell path length between start and goal.",
-      "Find shortest path length (step count) with 4-connected movement constraints.",
-      "Find the shortest legal path length from the green tile to the red tile in steps."
+    "measure": [
+      "{question_text}",
+      "From the graph-paper figure, {question_text}",
+      "Using the provided diagram, {question_text}",
+      "Inspect the plotted shape and answer: {question_text}",
+      "Based on the displayed object, {question_text}",
+      "Read the graph-paper scene and answer: {question_text}",
+      "Determine the requested value from the shape: {question_text}",
+      "Evaluate the measurement shown and answer: {question_text}",
+      "Work from the displayed object and answer: {question_text}",
+      "Use the visual evidence in the figure: {question_text}"
     ]
   },
   "required_slots_by_key": {
-    "task_type:maze_path": [
-      "rows",
-      "cols"
+    "task_type:measurement_single_object": [
+      "object_description"
     ],
-    "query_type:shortest_path": [],
+    "query_type:measure": [
+      "question_text"
+    ],
     "answer_or_evidence:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",

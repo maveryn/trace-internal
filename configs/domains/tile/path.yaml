@@ -18,6 +18,12 @@ prompt:
   shared:
     bundle_id: tile_path_v1
     task_type_key: maze_path
+    answer_hint: set "answer" to the shortest path length as an integer
+    evidence_hint_point_path: provide the shortest path as an ordered [x, y] pixel-coordinate point list
+    evidence_hint_bbox_set: provide the shortest path as a set of [x_min, y_min, x_max, y_max] pixel bounding boxes
+    json_example_point_path: '{"evidence":[[100,140],[180,140],[260,140],[260,220]],"answer":3}'
+    json_example_bbox_set: '{"evidence":[[60,100,140,180],[140,100,220,180],[220,100,300,180],[220,180,300,260]],"answer":3}'
+    json_example_answer_only: '{"answer":3}'
 
 sampling:
   shared:

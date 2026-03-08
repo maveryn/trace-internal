@@ -1,7 +1,7 @@
 # TRACE TODO
 
 ## Now (P0)
-1. Regenerate review samples for `task_geometry_measurement_angle`, `task_geometry_measurement_polygon_area`, and `task_geometry_measurement_polygon_perimeter`.
+1. Regenerate review samples for `task_geometry_measurement_2d_angle`, `task_geometry_measurement_2d_area`, `task_geometry_measurement_2d_perimeter`, and `task_geometry_measurement_2d_length`.
 2. Complete post-refactor cleanup review (remove stale references and dead helper paths).
 
 ## Next (P1)
@@ -12,7 +12,9 @@
 ## Later (P2)
 1. Add split-artifact generation with deterministic split policy metadata.
 2. Add richer dataset inspection tooling around trace shards and build reports.
-3. Refactor tile domain config layering: add `configs/domains/tile/base.yaml` for shared defaults and keep task-group files override-only.
+3. Keep future tile task groups aligned with `configs/domains/tile/base.yaml` shared defaults.
+4. Add geometry `analytic` task-group track (labeled/shaded/composite-region reasoning), separate from graph-paper `measurement`.
+5. Add geometry `estimate` task track for non-exact quantitative reasoning (for example count graph squares, count angles `< 90°`).
 
 ## Deferred
 1. Reward/tolerance policy tuning for RLVR scoring.
@@ -28,8 +30,9 @@
 4. Domain/task-group config loader and deterministic visual-variation infrastructure.
 5. Initial grounded tasks:
 - `task_tile_path_shortest_path`
-- `task_geometry_measurement_angle`
-- `task_geometry_measurement_polygon_area`
-- `task_geometry_measurement_polygon_perimeter`
+- `task_geometry_measurement_2d_angle`
+- `task_geometry_measurement_2d_area`
+- `task_geometry_measurement_2d_perimeter`
+- `task_geometry_measurement_2d_length`
 6. Sample-generation CLI with per-task artifacts and combined Excel.
 7. Pre-finalize prompt validation checks (metadata/bundle/key/placeholder/cardinality).

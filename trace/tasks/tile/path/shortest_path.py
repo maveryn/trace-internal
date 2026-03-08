@@ -20,7 +20,7 @@ from ...shared.bbox_projection import (
 )
 from ...shared.config_defaults import (
     group_default,
-    required_group_default,
+    required_group_defaults,
     resolve_required_float_bounds,
     split_generation_rendering_prompt_defaults,
 )
@@ -154,21 +154,34 @@ class TileShortestPathTask:
         else:
             evidence_value = path_bboxes
 
-        prompt_bundle_id = str(
-            required_group_default(
-                _PROMPT_DEFAULTS,
+        prompt_defaults = required_group_defaults(
+            _PROMPT_DEFAULTS,
+            (
                 "bundle_id",
-                context=f"prompt defaults for {self.task_id}",
-            )
-        )
-        prompt_task_type_key = str(
-            required_group_default(
-                _PROMPT_DEFAULTS,
                 "task_type_key",
-                context=f"prompt defaults for {self.task_id}",
-            )
+                "json_output_contract",
+                "json_output_contract_answer_only",
+                "answer_hint",
+                "json_example_answer_only",
+                "evidence_hint_point_path",
+                "evidence_hint_bbox_set",
+                "json_example_point_path",
+                "json_example_bbox_set",
+            ),
+            context=f"prompt defaults for {self.task_id}",
         )
-        evidence_hint = "ordered path points" if evidence_type == "point_path" else "path-cell bounding boxes"
+        prompt_bundle_id = str(prompt_defaults["bundle_id"])
+        prompt_task_type_key = str(prompt_defaults["task_type_key"])
+        evidence_hint = (
+            str(prompt_defaults["evidence_hint_point_path"])
+            if evidence_type == "point_path"
+            else str(prompt_defaults["evidence_hint_bbox_set"])
+        )
+        json_example = (
+            str(prompt_defaults["json_example_point_path"])
+            if evidence_type == "point_path"
+            else str(prompt_defaults["json_example_bbox_set"])
+        )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -179,7 +192,12 @@ class TileShortestPathTask:
             slots={
                 "rows": int(rows),
                 "cols": int(cols),
+                "json_output_contract": str(prompt_defaults["json_output_contract"]),
+                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "evidence_hint": evidence_hint,
+                "answer_hint": str(prompt_defaults["answer_hint"]),
+                "json_example": json_example,
+                "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
             },
             instance_seed=instance_seed,
         )

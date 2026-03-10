@@ -12,7 +12,7 @@ import shutil
 import sys
 from collections import Counter, defaultdict
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from openpyxl import Workbook
 from openpyxl.drawing.image import Image as XLImage
@@ -23,7 +23,6 @@ from PIL import ImageDraw as PILImageDraw
 from PIL import ImageOps as PILImageOps
 
 from trace.core.json_io import write_json_file
-from trace.core.query_types import resolve_query_types
 from trace.core.seed import hash64
 from trace.tasks import TASK_REGISTRY, create_task
 
@@ -34,7 +33,7 @@ _FIELD_LABELS: Dict[str, str] = {
     "task": "task",
     "sample_index": "sample_index",
     "instance_seed": "instance_seed",
-    "query_type": "query_type",
+    "task_variant": "task_variant",
     "image_path": "image_path",
     "data_path": "data_path",
     "prompt": "prompt",
@@ -48,7 +47,7 @@ _FIELD_LABELS: Dict[str, str] = {
 
 _TASK_SHEET_FIELDS: List[str] = [
     "task",
-    "query_type",
+    "task_variant",
     "prompt",
     "prompt_answer_only",
     "answer",
@@ -69,7 +68,7 @@ _COLUMN_WIDTHS_BY_FIELD: Dict[str, float] = {
     "task": 24,
     "sample_index": 12,
     "instance_seed": 20,
-    "query_type": 20,
+    "task_variant": 28,
     "image_path": 22,
     "data_path": 38,
     "prompt": 34,
@@ -108,14 +107,9 @@ _EVIDENCE_COLORS: List[Tuple[int, int, int]] = [
     (255, 111, 0),
 ]
 
-_UNIFORMITY_THRESHOLDS: Dict[str, float] = {
-    "min_samples_per_query": 80.0,
-    "mean_z_max": 3.0,
-    "max_bin_count_z_max": 4.0,
-    "tv_distance_max": 0.20,
-    "std_ratio_min": 0.60,
-    "std_ratio_max": 1.40,
-}
+_DISTRIBUTION_REVIEW_SAMPLE_COUNT = 500
+_DISTRIBUTION_SIGMA_THRESHOLD = 2.0
+_DISTRIBUTION_MAX_NUMERIC_BINS = 20
 
 
 def _parse_json_dict(raw: str, *, arg_name: str) -> Dict[str, Any]:
@@ -144,7 +138,7 @@ def _resolve_task_ids(raw_tasks: str) -> List[str]:
 def _json_cell(value: Any) -> str:
     """Serialize nested values for spreadsheet cells."""
     if isinstance(value, (dict, list)):
-        return json.dumps(value, ensure_ascii=False, allow_nan=False, sort_keys=True)
+        return json.dumps(value, ensure_ascii=False, allow_nan=False)
     return "" if value is None else str(value)
 
 
@@ -263,9 +257,9 @@ def _render_evidence_overlay(source: PILImage.Image, *, evidence_type: str, evid
     width, height = image.size
     radius = max(3, int(round(min(width, height) * 0.009)))
     line_width = max(2, int(round(min(width, height) * 0.006)))
-    query_type = str(evidence_type)
+    evidence_kind = str(evidence_type)
 
-    if query_type in {"point_map", "grid_point_map", "annotation_centers"}:
+    if evidence_kind in {"point_map", "grid_point_map", "annotation_centers"}:
         point_map = _extract_point_map(evidence_value)
         for idx, (label, point) in enumerate(point_map.items()):
             x, y = float(point[0]), float(point[1])
@@ -283,9 +277,9 @@ def _render_evidence_overlay(source: PILImage.Image, *, evidence_type: str, evid
             )
         return image
 
-    if query_type in {"point", "point_set", "point_path"}:
+    if evidence_kind in {"point", "point_set", "point_path"}:
         points = _extract_points(evidence_value)
-        if query_type == "point_path" and len(points) >= 2:
+        if evidence_kind == "point_path" and len(points) >= 2:
             draw.line(points, fill=(220, 20, 60, 180), width=line_width)
         for idx, (x, y) in enumerate(points):
             color = _EVIDENCE_COLORS[idx % len(_EVIDENCE_COLORS)]
@@ -297,7 +291,7 @@ def _render_evidence_overlay(source: PILImage.Image, *, evidence_type: str, evid
             )
         return image
 
-    if query_type in {"bbox", "bbox_set"}:
+    if evidence_kind in {"bbox", "bbox_set"}:
         bboxes = _extract_bboxes(evidence_value)
         for idx, (x0, y0, x1, y1) in enumerate(bboxes):
             color = _EVIDENCE_COLORS[idx % len(_EVIDENCE_COLORS)]
@@ -481,7 +475,7 @@ def _write_domain_combined_excel(
 
 
 def _as_float_number(value: Any) -> float | None:
-    """Parse numeric answer values when possible."""
+    """Parse plain numeric values when possible."""
     if isinstance(value, bool):
         return None
     if isinstance(value, (int, float)):
@@ -497,176 +491,417 @@ def _as_float_number(value: Any) -> float | None:
     return None
 
 
-def _build_query_distribution_report(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
-    """Build per-query answer distribution metrics and uniformity checks."""
-    rows_by_query: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
-    for row in rows:
-        rows_by_query[str(row.get("query_type", "default"))].append(row)
+def _answer_numeric_for_binning(value: Any) -> float | None:
+    """Parse one answer value into a numeric scalar for distribution binning."""
+    numeric = _as_float_number(value)
+    if numeric is not None:
+        return float(numeric)
+    if not isinstance(value, str):
+        return None
+    text = value.strip().replace(" ", "")
+    if not text:
+        return None
+    lowered = text.lower().replace("*", "")
+    if lowered in {"π", "pi"}:
+        return 1.0
+    match = re.fullmatch(r"([+-]?(?:\d+(?:\.\d+)?))(?:π|pi)", lowered, flags=re.IGNORECASE)
+    if match is None:
+        return None
+    try:
+        return float(match.group(1))
+    except Exception:
+        return None
 
-    per_query: Dict[str, Any] = {}
+
+def _format_numeric_label(value: float) -> str:
+    """Format one numeric boundary with compact deterministic precision."""
+    return f"{float(value):.6g}"
+
+
+def _normalize_probability_map(raw: Any) -> Dict[str, float]:
+    """Normalize one probability/weight map into a stable probability map."""
+    if not isinstance(raw, Mapping):
+        return {}
+    parsed: Dict[str, float] = {}
+    for key, value in raw.items():
+        numeric = _as_float_number(value)
+        if numeric is None or (not math.isfinite(float(numeric))) or float(numeric) <= 0.0:
+            continue
+        parsed[str(key)] = float(numeric)
+    total = float(sum(parsed.values()))
+    if total <= 0.0:
+        return {}
+    return {key: (float(parsed[key]) / total) for key in sorted(parsed.keys())}
+
+
+def _probability_maps_match(left: Mapping[str, float], right: Mapping[str, float], *, tol: float = 1e-9) -> bool:
+    """Return true when two probability maps have equal supports and values within tolerance."""
+    left_keys = set(str(key) for key in left.keys())
+    right_keys = set(str(key) for key in right.keys())
+    if left_keys != right_keys:
+        return False
+    for key in left_keys:
+        if abs(float(left[str(key)]) - float(right[str(key)])) > float(tol):
+            return False
+    return True
+
+
+def _extract_task_variant_distribution_hints(trace_payload: Mapping[str, Any]) -> Dict[str, Any]:
+    """Extract optional variant-probability hints from one task output trace payload."""
+    query_spec = trace_payload.get("query_spec", {}) if isinstance(trace_payload, Mapping) else {}
+    query_params = query_spec.get("params", {}) if isinstance(query_spec, Mapping) else {}
+    execution_trace = trace_payload.get("execution_trace", {}) if isinstance(trace_payload, Mapping) else {}
+
+    variant_probabilities = _normalize_probability_map(
+        execution_trace.get("task_variant_probabilities")
+        if isinstance(execution_trace, Mapping)
+        else {}
+    )
+    if not variant_probabilities:
+        variant_probabilities = _normalize_probability_map(
+            execution_trace.get("variant_probabilities")
+            if isinstance(execution_trace, Mapping)
+            else {}
+        )
+    if not variant_probabilities:
+        variant_probabilities = _normalize_probability_map(
+            query_params.get("task_variant_probabilities")
+            if isinstance(query_params, Mapping)
+            else {}
+        )
+    if not variant_probabilities:
+        variant_probabilities = _normalize_probability_map(
+            query_params.get("variant_probabilities")
+            if isinstance(query_params, Mapping)
+            else {}
+        )
+
+    source_kind = ""
+    if isinstance(execution_trace, Mapping) and execution_trace.get("source_kind") is not None:
+        source_kind = str(execution_trace.get("source_kind"))
+
+    source_kind_probabilities = _normalize_probability_map(
+        execution_trace.get("source_kind_probabilities")
+        if isinstance(execution_trace, Mapping)
+        else {}
+    )
+    if not source_kind_probabilities:
+        source_kind_probabilities = _normalize_probability_map(
+            query_params.get("source_kind_probabilities")
+            if isinstance(query_params, Mapping)
+            else {}
+        )
+
+    option_labels: List[str] = []
+    for key in ("answer_option_labels", "option_labels", "options"):
+        raw = execution_trace.get(key) if isinstance(execution_trace, Mapping) else None
+        if not isinstance(raw, list):
+            continue
+        labels = [str(item).strip() for item in raw if str(item).strip()]
+        if labels:
+            option_labels = labels
+            break
+
+    return {
+        "task_variant_probabilities": variant_probabilities,
+        "source_kind": str(source_kind),
+        "source_kind_probabilities": source_kind_probabilities,
+        "answer_option_labels": list(option_labels),
+    }
+
+
+def _resolve_task_variant_expected_probabilities(
+    rows_by_variant: Mapping[str, List[Dict[str, Any]]],
+) -> Tuple[Dict[str, float], str]:
+    """Resolve expected variant probabilities from trace metadata or fallback uniform."""
+    observed_variants = sorted(str(key) for key in rows_by_variant.keys())
+    if not observed_variants:
+        return {}, "no_variants"
+
+    direct_maps: List[Dict[str, float]] = []
+    for rows in rows_by_variant.values():
+        for row in rows:
+            parsed = _normalize_probability_map(row.get("_task_variant_probabilities"))
+            if parsed:
+                direct_maps.append(parsed)
+    if direct_maps:
+        first = direct_maps[0]
+        if all(_probability_maps_match(first, item) for item in direct_maps[1:]):
+            return dict(first), "task_variant_probabilities"
+
+    source_probability_maps: List[Dict[str, float]] = []
+    source_to_variant: Dict[str, str] = {}
+    source_mapping_valid = True
+    for variant, rows in rows_by_variant.items():
+        for row in rows:
+            source_kind = str(row.get("_source_kind", "")).strip()
+            if source_kind:
+                existing = source_to_variant.get(source_kind)
+                if existing is None:
+                    source_to_variant[source_kind] = str(variant)
+                elif str(existing) != str(variant):
+                    source_mapping_valid = False
+            parsed = _normalize_probability_map(row.get("_source_kind_probabilities"))
+            if parsed:
+                source_probability_maps.append(parsed)
+    if source_mapping_valid and source_probability_maps:
+        first_source_map = source_probability_maps[0]
+        if all(_probability_maps_match(first_source_map, item) for item in source_probability_maps[1:]):
+            aggregated: Dict[str, float] = defaultdict(float)
+            for source_kind, probability in first_source_map.items():
+                variant = source_to_variant.get(str(source_kind))
+                if variant is None:
+                    continue
+                aggregated[str(variant)] += float(probability)
+            normalized_aggregated = _normalize_probability_map(aggregated)
+            if normalized_aggregated:
+                return normalized_aggregated, "derived_from_source_kind_probabilities"
+
+    uniform_probability = 1.0 / float(len(observed_variants))
+    return {variant: float(uniform_probability) for variant in observed_variants}, "uniform_fallback"
+
+
+def _finalize_binned_check(
+    *,
+    bins: List[Dict[str, Any]],
+    sample_count: int,
+) -> Dict[str, Any]:
+    """Compute z-score based distribution diagnostics for one set of bins."""
+    out = {
+        "status": "skipped",
+        "reason": "",
+        "bin_count": int(len(bins)),
+        "sample_count": int(sample_count),
+        "sigma_threshold": float(_DISTRIBUTION_SIGMA_THRESHOLD),
+        "recommended_sample_count": int(_DISTRIBUTION_REVIEW_SAMPLE_COUNT),
+        "bins": list(bins),
+        "metrics": {
+            "max_abs_delta_count": 0.0,
+            "max_abs_delta_ratio": 0.0,
+            "max_bin_z": 0.0,
+        },
+    }
+    if not bins:
+        out["reason"] = "empty_bins"
+        return out
+    max_abs_delta_count = 0.0
+    max_abs_delta_ratio = 0.0
+    max_bin_z = 0.0
+    for bin_entry in bins:
+        probability = float(bin_entry.get("expected_probability", 0.0))
+        count = int(bin_entry.get("count", 0))
+        expected_count = float(sample_count) * float(probability)
+        delta_count = float(count) - float(expected_count)
+        sigma = math.sqrt(float(sample_count) * float(probability) * max(0.0, 1.0 - float(probability)))
+        z_score = (abs(float(delta_count)) / float(sigma)) if float(sigma) > 0.0 else 0.0
+        bin_entry["expected_count"] = float(expected_count)
+        bin_entry["delta_count"] = float(delta_count)
+        bin_entry["z_score"] = float(z_score)
+        max_abs_delta_count = max(float(max_abs_delta_count), abs(float(delta_count)))
+        if int(sample_count) > 0:
+            max_abs_delta_ratio = max(float(max_abs_delta_ratio), abs(float(delta_count)) / float(sample_count))
+        max_bin_z = max(float(max_bin_z), float(z_score))
+
+    out["metrics"] = {
+        "max_abs_delta_count": float(max_abs_delta_count),
+        "max_abs_delta_ratio": float(max_abs_delta_ratio),
+        "max_bin_z": float(max_bin_z),
+    }
+    out["status"] = "pass" if float(max_bin_z) <= float(_DISTRIBUTION_SIGMA_THRESHOLD) else "fail"
+    return out
+
+
+def _build_answer_distribution_for_variant(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+    """Build one answer-distribution report for a task-variant slice."""
+    answer_counter = Counter(_json_cell(row.get("answer_value")) for row in rows)
+    report: Dict[str, Any] = {
+        "accepted_samples": int(len(rows)),
+        "answer_counts": dict(sorted(answer_counter.items())),
+        "unique_answers": int(len(answer_counter)),
+    }
+
+    numeric_values: List[float] = []
+    option_signatures: List[Tuple[str, ...]] = []
+    all_numeric = True
+    for row in rows:
+        numeric = _answer_numeric_for_binning(row.get("answer_value"))
+        if numeric is None:
+            all_numeric = False
+        else:
+            numeric_values.append(float(numeric))
+        raw_options = row.get("_answer_option_labels")
+        if isinstance(raw_options, list):
+            labels = tuple(str(item).strip() for item in raw_options if str(item).strip())
+            if labels:
+                option_signatures.append(labels)
+
+    if all_numeric and numeric_values:
+        answer_min = float(min(numeric_values))
+        answer_max = float(max(numeric_values))
+        answer_span = float(answer_max - answer_min)
+        if answer_span <= 0.0:
+            bin_count = 1
+        else:
+            bin_count = max(1, int(min(_DISTRIBUTION_MAX_NUMERIC_BINS, math.floor(answer_span))))
+        bin_width = (float(answer_span) / float(bin_count)) if int(bin_count) > 0 else 0.0
+        bins: List[Dict[str, Any]] = []
+        for idx in range(int(bin_count)):
+            lower = float(answer_min + (float(idx) * float(bin_width))) if answer_span > 0.0 else float(answer_min)
+            if idx == int(bin_count) - 1:
+                upper = float(answer_max)
+                label = f"[{_format_numeric_label(lower)}, {_format_numeric_label(upper)}]"
+            else:
+                upper = float(answer_min + (float(idx + 1) * float(bin_width)))
+                label = f"[{_format_numeric_label(lower)}, {_format_numeric_label(upper)})"
+            bins.append(
+                {
+                    "bin_id": int(idx),
+                    "label": str(label),
+                    "range_min": float(lower),
+                    "range_max": float(upper),
+                    "count": 0,
+                    "expected_probability": (1.0 / float(bin_count)),
+                }
+            )
+        if int(bin_count) == 1:
+            bins[0]["count"] = int(len(numeric_values))
+        else:
+            for value in numeric_values:
+                if value >= answer_max:
+                    bin_index = int(bin_count) - 1
+                else:
+                    width = float(bin_width) if float(bin_width) > 0.0 else 1.0
+                    ratio = (float(value) - float(answer_min)) / float(width)
+                    bin_index = max(0, min(int(bin_count) - 1, int(math.floor(ratio))))
+                bins[int(bin_index)]["count"] = int(bins[int(bin_index)]["count"]) + 1
+
+        report["answer_numeric"] = {
+            "count": int(len(numeric_values)),
+            "min": float(answer_min),
+            "max": float(answer_max),
+            "mean": float(sum(numeric_values) / float(len(numeric_values))),
+            "binning": {
+                "kind": "numeric_equal_width",
+                "bin_count": int(bin_count),
+                "range_min": float(answer_min),
+                "range_max": float(answer_max),
+                "range_span": float(answer_span),
+            },
+        }
+        report["distribution_check"] = _finalize_binned_check(
+            bins=bins,
+            sample_count=int(len(numeric_values)),
+        )
+        return report
+
+    category_labels: List[str] = []
+    if option_signatures:
+        first_signature = option_signatures[0]
+        if all(signature == first_signature for signature in option_signatures[1:]):
+            category_labels = [str(label) for label in first_signature]
+    if not category_labels:
+        category_labels = sorted(answer_counter.keys())
+
+    if not category_labels:
+        report["distribution_check"] = _finalize_binned_check(bins=[], sample_count=0)
+        return report
+
+    bin_probability = 1.0 / float(len(category_labels))
+    bins = [
+        {
+            "bin_id": int(index),
+            "label": str(label),
+            "count": int(answer_counter.get(str(label), 0)),
+            "expected_probability": float(bin_probability),
+        }
+        for index, label in enumerate(category_labels)
+    ]
+    report["distribution_check"] = _finalize_binned_check(
+        bins=bins,
+        sample_count=int(sum(answer_counter.values())),
+    )
+    report["answer_categorical"] = {
+        "count": int(sum(answer_counter.values())),
+        "labels": [str(label) for label in category_labels],
+        "binning": {
+            "kind": "categorical",
+            "bin_count": int(len(category_labels)),
+        },
+    }
+    return report
+
+
+def _build_variant_distribution_report(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Build task-variant and answer-bin distribution reports for one task."""
+    rows_by_variant: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        rows_by_variant[str(row.get("task_variant", "default"))].append(row)
+
+    expected_variant_probabilities, expected_variant_source = _resolve_task_variant_expected_probabilities(rows_by_variant)
+    variant_labels = sorted(expected_variant_probabilities.keys() or rows_by_variant.keys())
+    variant_counts = {str(variant): int(len(rows_by_variant.get(str(variant), []))) for variant in variant_labels}
+    variant_bins = [
+        {
+            "bin_id": int(index),
+            "label": str(variant),
+            "count": int(variant_counts.get(str(variant), 0)),
+            "expected_probability": float(expected_variant_probabilities.get(str(variant), 0.0)),
+        }
+        for index, variant in enumerate(variant_labels)
+    ]
+    if variant_bins and sum(float(item.get("expected_probability", 0.0)) for item in variant_bins) <= 0.0:
+        uniform_probability = 1.0 / float(len(variant_bins))
+        for item in variant_bins:
+            item["expected_probability"] = float(uniform_probability)
+        expected_variant_probabilities = {str(item["label"]): float(uniform_probability) for item in variant_bins}
+        expected_variant_source = "uniform_fallback"
+
+    variant_distribution_check = _finalize_binned_check(
+        bins=variant_bins,
+        sample_count=int(len(rows)),
+    )
+    variant_distribution_report = {
+        "accepted_samples": int(len(rows)),
+        "expected_probabilities": dict(sorted(expected_variant_probabilities.items())),
+        "expected_source": str(expected_variant_source),
+        "check": variant_distribution_check,
+    }
+
+    per_variant: Dict[str, Any] = {}
     checks_run = 0
     checks_failed = 0
     checks_skipped = 0
 
-    for query_type in sorted(rows_by_query.keys()):
-        q_rows = rows_by_query[query_type]
-        answer_counter = Counter(_json_cell(row.get("answer_value")) for row in q_rows)
-        numeric_answers: List[float] = []
-        feasible_signatures: set[Tuple[int, ...]] = set()
-        feasible_missing = 0
-        for row in q_rows:
-            numeric = _as_float_number(row.get("answer_value"))
-            if numeric is not None:
-                numeric_answers.append(float(numeric))
-            feasible_raw = row.get("_feasible_answer_values")
-            if isinstance(feasible_raw, list) and feasible_raw:
-                parsed = []
-                valid = True
-                for item in feasible_raw:
-                    number = _as_float_number(item)
-                    if number is None or not float(number).is_integer():
-                        valid = False
-                        break
-                    parsed.append(int(number))
-                if valid:
-                    feasible_signatures.add(tuple(sorted(set(parsed))))
-                else:
-                    feasible_missing += 1
-            else:
-                feasible_missing += 1
+    if str(variant_distribution_check.get("status")) in {"pass", "fail"}:
+        checks_run += 1
+        if str(variant_distribution_check.get("status")) == "fail":
+            checks_failed += 1
+    else:
+        checks_skipped += 1
 
-        query_report: Dict[str, Any] = {
-            "accepted_samples": len(q_rows),
-            "answer_counts": dict(sorted(answer_counter.items())),
-            "unique_answers": len(answer_counter),
-        }
-
-        if numeric_answers:
-            mean = float(sum(numeric_answers) / float(len(numeric_answers)))
-            variance = float(sum((value - mean) ** 2 for value in numeric_answers) / float(len(numeric_answers)))
-            query_report["answer_numeric"] = {
-                "count": len(numeric_answers),
-                "mean": mean,
-                "std": math.sqrt(max(0.0, variance)),
-            }
-
-        uniformity: Dict[str, Any] = {
-            "status": "skipped",
-            "reason": "",
-            "thresholds": dict(_UNIFORMITY_THRESHOLDS),
-        }
-
-        if len(feasible_signatures) == 1 and feasible_missing == 0 and numeric_answers:
-            support = list(feasible_signatures.pop())
-            support_size = len(support)
-            numeric_count = len(numeric_answers)
-            support_counts: Dict[int, int] = {int(value): 0 for value in support}
-            outside_support = 0
-            for value in numeric_answers:
-                if not float(value).is_integer():
-                    outside_support += 1
-                    continue
-                ivalue = int(value)
-                if ivalue in support_counts:
-                    support_counts[ivalue] += 1
-                else:
-                    outside_support += 1
-
-            uniformity.update(
-                {
-                    "support": [int(value) for value in support],
-                    "support_size": int(support_size),
-                    "outside_support_count": int(outside_support),
-                }
-            )
-
-            if support_size <= 1:
-                uniformity["reason"] = "support_size<=1"
-            elif numeric_count < int(_UNIFORMITY_THRESHOLDS["min_samples_per_query"]):
-                uniformity["reason"] = "insufficient_samples"
-            elif outside_support > 0:
-                uniformity["reason"] = "answers_outside_feasible_support"
-            else:
-                p = 1.0 / float(support_size)
-                expected_count = float(numeric_count) * p
-                expected_mean = float(sum(support) / float(support_size))
-                expected_variance = float(sum((value - expected_mean) ** 2 for value in support) / float(support_size))
-                expected_std = math.sqrt(max(0.0, expected_variance))
-                observed_mean = float(sum(numeric_answers) / float(numeric_count))
-                observed_variance = float(sum((value - observed_mean) ** 2 for value in numeric_answers) / float(numeric_count))
-                observed_std = math.sqrt(max(0.0, observed_variance))
-                mean_se = (expected_std / math.sqrt(float(numeric_count))) if expected_std > 0.0 else 0.0
-                mean_z = (abs(observed_mean - expected_mean) / mean_se) if mean_se > 0.0 else 0.0
-                sigma_count = math.sqrt(float(numeric_count) * p * max(0.0, 1.0 - p))
-                max_bin_count_z = 0.0
-                tv_distance = 0.0
-                for value in support:
-                    count = int(support_counts[int(value)])
-                    if sigma_count > 0.0:
-                        max_bin_count_z = max(max_bin_count_z, abs(float(count) - expected_count) / sigma_count)
-                    tv_distance += abs((float(count) / float(numeric_count)) - p)
-                tv_distance *= 0.5
-                std_ratio = (observed_std / expected_std) if expected_std > 0.0 else None
-
-                passes = (
-                    mean_z <= float(_UNIFORMITY_THRESHOLDS["mean_z_max"])
-                    and max_bin_count_z <= float(_UNIFORMITY_THRESHOLDS["max_bin_count_z_max"])
-                    and tv_distance <= float(_UNIFORMITY_THRESHOLDS["tv_distance_max"])
-                    and (
-                        std_ratio is None
-                        or (
-                            float(_UNIFORMITY_THRESHOLDS["std_ratio_min"])
-                            <= float(std_ratio)
-                            <= float(_UNIFORMITY_THRESHOLDS["std_ratio_max"])
-                        )
-                    )
-                )
-
-                uniformity.update(
-                    {
-                        "status": ("pass" if passes else "fail"),
-                        "reason": "",
-                        "expected": {
-                            "mean": expected_mean,
-                            "std": expected_std,
-                            "count_per_answer": expected_count,
-                        },
-                        "observed": {
-                            "mean": observed_mean,
-                            "std": observed_std,
-                            "count_by_answer": {str(key): int(value) for key, value in sorted(support_counts.items())},
-                        },
-                        "metrics": {
-                            "mean_z": float(mean_z),
-                            "std_ratio": (None if std_ratio is None else float(std_ratio)),
-                            "max_bin_count_z": float(max_bin_count_z),
-                            "tv_distance": float(tv_distance),
-                        },
-                    }
-                )
-                checks_run += 1
-                if not passes:
-                    checks_failed += 1
-            if uniformity["status"] == "skipped":
-                checks_skipped += 1
+    for task_variant in sorted(rows_by_variant.keys()):
+        variant_report = _build_answer_distribution_for_variant(rows_by_variant[task_variant])
+        distribution_check = variant_report.get("distribution_check", {})
+        status = str(distribution_check.get("status", "skipped"))
+        if status in {"pass", "fail"}:
+            checks_run += 1
+            if status == "fail":
+                checks_failed += 1
         else:
-            if len(feasible_signatures) > 1:
-                uniformity["reason"] = "inconsistent_feasible_support_metadata"
-            elif feasible_missing > 0:
-                uniformity["reason"] = "missing_feasible_support_metadata"
-            else:
-                uniformity["reason"] = "non_numeric_answers"
             checks_skipped += 1
-
-        query_report["uniformity_check"] = uniformity
-        per_query[query_type] = query_report
+        per_variant[str(task_variant)] = variant_report
 
     return {
-        "thresholds": dict(_UNIFORMITY_THRESHOLDS),
+        "thresholds": {
+            "recommended_sample_count": int(_DISTRIBUTION_REVIEW_SAMPLE_COUNT),
+            "sigma_threshold": float(_DISTRIBUTION_SIGMA_THRESHOLD),
+            "max_numeric_bins": int(_DISTRIBUTION_MAX_NUMERIC_BINS),
+        },
         "checks_run": int(checks_run),
         "checks_failed": int(checks_failed),
         "checks_skipped": int(checks_skipped),
-        "per_query_type": per_query,
+        "task_variant_distribution": variant_distribution_report,
+        "per_task_variant": per_variant,
     }
 
 
@@ -675,7 +910,6 @@ def _generate_samples_for_task(
     task_id: str,
     out_root: Path,
     count: int,
-    count_per_query: int | None,
     base_seed: int,
     max_attempts_per_instance: int,
     image_format: str,
@@ -689,20 +923,17 @@ def _generate_samples_for_task(
     image_dir.mkdir(parents=True, exist_ok=True)
     data_dir.mkdir(parents=True, exist_ok=True)
 
-    query_types = resolve_query_types(task, params)
     accepted = 0
     attempted_candidates = 0
-    max_candidates = 0
+    max_candidates = max(int(count) * 20, int(count))
     rejections: Dict[str, int] = {}
     rows: List[Dict[str, Any]] = []
-    accepted_by_query: Dict[str, int] = defaultdict(int)
-    attempts_by_query: Dict[str, int] = defaultdict(int)
+    accepted_by_variant: Dict[str, int] = defaultdict(int)
 
-    def _attempt_sample(query_type: str, *, seed_namespace: str, seed_index: int) -> None:
+    def _attempt_sample(*, seed_namespace: str, seed_index: int) -> None:
         nonlocal accepted
         instance_seed = hash64(int(base_seed), seed_namespace, int(seed_index))
         task_params = dict(params)
-        task_params["query_type"] = str(query_type)
         task_params["_sampling_index"] = int(seed_index)
 
         try:
@@ -734,7 +965,7 @@ def _generate_samples_for_task(
             "task": task.task_id,
             "sample_index": int(accepted),
             "instance_seed": int(instance_seed),
-            "query_type": str(output.query_type),
+            "task_variant": str(getattr(output, "task_variant", "default")),
             "prompt": prompt_answer_and_evidence,
             "prompt_variants": prompt_variants,
             "answer_gt": output.answer_gt.to_dict(),
@@ -749,8 +980,8 @@ def _generate_samples_for_task(
         }
         write_json_file(data_path, payload)
 
-        exec_trace = output.trace_payload.get("execution_trace", {}) if isinstance(output.trace_payload, dict) else {}
-        feasible_values = exec_trace.get("feasible_answer_values", []) if isinstance(exec_trace, dict) else []
+        trace_payload = dict(output.trace_payload) if isinstance(output.trace_payload, dict) else {}
+        distribution_hints = _extract_task_variant_distribution_hints(trace_payload)
         projected_evidence = output.trace_payload.get("projected_evidence", {}) if isinstance(output.trace_payload, dict) else {}
         overlay_evidence_type = str(output.evidence_gt.type)
         overlay_evidence_value = output.evidence_gt.value
@@ -777,7 +1008,7 @@ def _generate_samples_for_task(
                 "task": task.task_id,
                 "sample_index": int(accepted),
                 "instance_seed": int(instance_seed),
-                "query_type": str(output.query_type),
+                "task_variant": str(getattr(output, "task_variant", "default")),
                 "image_path": rel_image_path,
                 "data_path": rel_data_path,
                 "prompt": prompt_answer_and_evidence,
@@ -789,46 +1020,26 @@ def _generate_samples_for_task(
                 "answer_evidence": output.evidence_gt.value,
                 "_overlay_evidence_type": overlay_evidence_type,
                 "_overlay_evidence_value": overlay_evidence_value,
-                "_feasible_answer_values": list(feasible_values) if isinstance(feasible_values, list) else [],
+                "_task_variant_probabilities": dict(distribution_hints.get("task_variant_probabilities", {})),
+                "_source_kind": str(distribution_hints.get("source_kind", "")),
+                "_source_kind_probabilities": dict(distribution_hints.get("source_kind_probabilities", {})),
+                "_answer_option_labels": list(distribution_hints.get("answer_option_labels", [])),
             }
         )
         accepted += 1
-        accepted_by_query[str(output.query_type)] += 1
+        accepted_by_variant[str(getattr(output, "task_variant", "default"))] += 1
 
-    if count_per_query is not None:
-        requested_by_query = {query_type: int(count_per_query) for query_type in query_types}
-        for query_type in query_types:
-            requested_q = int(requested_by_query[query_type])
-            max_candidates_q = max(int(requested_q) * 20, int(requested_q))
-            max_candidates += int(max_candidates_q)
-            seed_index_q = 0
-            while int(accepted_by_query[query_type]) < int(requested_q) and seed_index_q < int(max_candidates_q):
-                attempts_by_query[query_type] += 1
-                _attempt_sample(
-                    query_type,
-                    seed_namespace=f"{task_id}:{query_type}:sample_instance_seed",
-                    seed_index=seed_index_q,
-                )
-                seed_index_q += 1
-            attempted_candidates += int(seed_index_q)
-        requested_samples = int(sum(requested_by_query.values()))
-    else:
-        requested_by_query = {}
-        max_candidates = max(int(count) * 20, int(count))
-        seed_index = 0
-        while accepted < int(count) and seed_index < int(max_candidates):
-            query_type = query_types[seed_index % len(query_types)]
-            attempts_by_query[query_type] += 1
-            _attempt_sample(
-                query_type,
-                seed_namespace=f"{task_id}:sample_instance_seed",
-                seed_index=seed_index,
-            )
-            seed_index += 1
-        attempted_candidates = int(seed_index)
-        requested_samples = int(count)
+    seed_index = 0
+    while accepted < int(count) and seed_index < int(max_candidates):
+        _attempt_sample(
+            seed_namespace=f"{task_id}:sample_instance_seed",
+            seed_index=seed_index,
+        )
+        seed_index += 1
+    attempted_candidates = int(seed_index)
+    requested_samples = int(count)
 
-    distribution_report = _build_query_distribution_report(rows)
+    distribution_report = _build_variant_distribution_report(rows)
 
     summary = {
         "domain": task.domain,
@@ -836,15 +1047,16 @@ def _generate_samples_for_task(
         "task": task.task_id,
         "requested_samples": int(requested_samples),
         "accepted_samples": int(accepted),
-        "requested_samples_by_query_type": (
-            dict(sorted(requested_by_query.items())) if requested_by_query else None
-        ),
-        "accepted_samples_by_query_type": dict(sorted((k, int(v)) for k, v in accepted_by_query.items())),
-        "attempted_candidates_by_query_type": dict(sorted((k, int(v)) for k, v in attempts_by_query.items())),
+        "accepted_samples_by_task_variant": dict(sorted((k, int(v)) for k, v in accepted_by_variant.items())),
         "attempted_candidates": int(attempted_candidates),
         "max_candidates": int(max_candidates),
-        "query_types": list(query_types),
+        "task_variants": sorted(accepted_by_variant.keys()),
         "rejections_by_error": dict(sorted(rejections.items())),
+        "distribution_checks": {
+            "checks_run": int(distribution_report.get("checks_run", 0)),
+            "checks_failed": int(distribution_report.get("checks_failed", 0)),
+            "checks_skipped": int(distribution_report.get("checks_skipped", 0)),
+        },
         "answer_distribution": dict(distribution_report),
     }
     write_json_file(task_dir / "summary.json", summary)
@@ -857,14 +1069,14 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="Generate TRACE task sample images/data, per-task Excel files, and per-domain combined workbooks"
     )
-    parser.add_argument("--out", default="samples", help="Output root directory")
+    parser.add_argument("--out", default="task-reviews/generated_samples", help="Output root directory")
     parser.add_argument("--tasks", default="", help="Comma-separated task ids (default: all registered tasks)")
     parser.add_argument("--count", type=int, default=50, help="Samples per task (default: 50)")
     parser.add_argument(
-        "--count-per-query",
+        "--count-per-variant",
         type=int,
         default=0,
-        help="Samples per query type per task (overrides --count when > 0)",
+        help="Reserved for future variant-targeted sampling (must be 0 for now)",
     )
     parser.add_argument("--seed", type=int, default=0, help="Base sampling seed")
     parser.add_argument("--max-attempts-per-instance", type=int, default=100, help="Max generation attempts per instance")
@@ -876,18 +1088,31 @@ def main() -> int:
         default="combined_samples.xlsx",
         help="Combined Excel filename written under each domain directory",
     )
+    parser.add_argument(
+        "--distribution-check",
+        action="store_true",
+        help=(
+            "Require distribution checks to run/pass for every selected task "
+            f"(requires --count >= {_DISTRIBUTION_REVIEW_SAMPLE_COUNT})"
+        ),
+    )
     parser.add_argument("--clean", action="store_true", help="Clean only selected task directories before generation")
     parser.add_argument("--clean-all", action="store_true", help="Dangerous: remove entire --out before generation")
     args = parser.parse_args()
 
     if int(args.count) <= 0:
         raise ValueError("--count must be positive")
-    if int(args.count_per_query) < 0:
-        raise ValueError("--count-per-query must be >= 0")
+    if int(args.count_per_variant) != 0:
+        raise ValueError("--count-per-variant is not supported yet; use --count")
     if args.clean and args.clean_all:
         raise ValueError("use only one of --clean or --clean-all")
     if args.clean and not args.tasks.strip():
         raise ValueError("--clean requires --tasks so we only remove explicit task directories")
+    if args.distribution_check and int(args.count) < int(_DISTRIBUTION_REVIEW_SAMPLE_COUNT):
+        raise ValueError(
+            "--distribution-check requires --count >= "
+            f"{int(_DISTRIBUTION_REVIEW_SAMPLE_COUNT)} (received {int(args.count)})"
+        )
 
     task_ids = _resolve_task_ids(args.tasks)
     global_params = _parse_json_dict(args.params, arg_name="--params")
@@ -912,6 +1137,7 @@ def main() -> int:
     rows_by_domain_task: Dict[str, Dict[str, List[Dict[str, Any]]]] = defaultdict(dict)
     all_summaries: List[Dict[str, Any]] = []
     shortfall_tasks: List[str] = []
+    distribution_check_failures: List[str] = []
 
     for task_id in task_ids:
         params = dict(global_params)
@@ -920,7 +1146,6 @@ def main() -> int:
             task_id=task_id,
             out_root=out_root,
             count=int(args.count),
-            count_per_query=(int(args.count_per_query) if int(args.count_per_query) > 0 else None),
             base_seed=int(args.seed),
             max_attempts_per_instance=int(args.max_attempts_per_instance),
             image_format=("jpeg" if args.image_format == "jpg" else args.image_format),
@@ -938,8 +1163,20 @@ def main() -> int:
             shortfall_tasks.append(str(summary["task"]))
         print(
             f"[task] {summary['task']}: accepted={summary['accepted_samples']}/{summary['requested_samples']} "
-            f"attempts={summary['attempted_candidates']}"
+            f"attempts={summary['attempted_candidates']} "
+            f"dist(run/fail/skip)="
+            f"{summary.get('distribution_checks', {}).get('checks_run', 0)}/"
+            f"{summary.get('distribution_checks', {}).get('checks_failed', 0)}/"
+            f"{summary.get('distribution_checks', {}).get('checks_skipped', 0)}"
         )
+        if args.distribution_check:
+            checks = summary.get("distribution_checks", {})
+            failed = int(checks.get("checks_failed", 0))
+            skipped = int(checks.get("checks_skipped", 0))
+            if failed > 0 or skipped > 0:
+                distribution_check_failures.append(
+                    f"{summary['task']} (failed={failed}, skipped={skipped})"
+                )
 
     domain_combined_excels: Dict[str, str] = {}
     for domain in sorted(rows_by_domain_task.keys()):
@@ -954,8 +1191,7 @@ def main() -> int:
 
     summary_payload = {
         "num_tasks": len(task_ids),
-        "samples_per_task": (None if int(args.count_per_query) > 0 else int(args.count)),
-        "samples_per_query_type": (int(args.count_per_query) if int(args.count_per_query) > 0 else None),
+        "samples_per_task": int(args.count),
         "total_rows": len(all_rows),
         "domain_combined_excels": dict(sorted(domain_combined_excels.items())),
         "tasks": all_summaries,
@@ -965,7 +1201,14 @@ def main() -> int:
     if shortfall_tasks:
         print(
             f"[error] sample shortfall for tasks: {', '.join(sorted(shortfall_tasks))}. "
-            "Check task summaries under samples/<domain>/<task_group>/<task>/summary.json",
+            "Check task summaries under <out>/<domain>/<task_group>/<task>/summary.json",
+            file=sys.stderr,
+        )
+        return 1
+    if args.distribution_check and distribution_check_failures:
+        print(
+            f"[error] distribution check failed for tasks: {', '.join(sorted(distribution_check_failures))}. "
+            "Inspect distribution_report.json under <out>/<domain>/<task_group>/<task>/",
             file=sys.stderr,
         )
         return 1

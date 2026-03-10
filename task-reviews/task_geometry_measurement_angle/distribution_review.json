@@ -1,0 +1,638 @@
+{
+  "collection": {
+    "collected_variant_counts": {
+      "intersection_angle": 100,
+      "primitive_angle": 100
+    },
+    "expected_variants": [
+      "intersection_angle",
+      "primitive_angle"
+    ],
+    "generated_variant_counts": {
+      "intersection_angle": 103,
+      "primitive_angle": 100
+    },
+    "generation_error_counts": {},
+    "target_count_per_variant": 100,
+    "total_generated": 203
+  },
+  "domain": "geometry",
+  "failed_variants": [],
+  "has_task_variants": true,
+  "incomplete_variants": [],
+  "mode": "per_variant",
+  "no_samples_collected": false,
+  "overall": {
+    "answer_type_counts": {
+      "integer": 200
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.085,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": 0.3,
+        "pass": true,
+        "threshold": 0.5
+      },
+      "min_unique_answers": {
+        "observed": 35,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": {
+      "bin_count": 5,
+      "bins": [
+        {
+          "bin_id": 0,
+          "count": 40,
+          "label": "[31, 54.6)"
+        },
+        {
+          "bin_id": 1,
+          "count": 60,
+          "label": "[54.6, 78.2)"
+        },
+        {
+          "bin_id": 2,
+          "count": 13,
+          "label": "[78.2, 101.8)"
+        },
+        {
+          "bin_id": 3,
+          "count": 42,
+          "label": "[101.8, 125.4)"
+        },
+        {
+          "bin_id": 4,
+          "count": 45,
+          "label": "[125.4, 149]"
+        }
+      ],
+      "max_bin_count": 60,
+      "max_bin_frequency": 0.3,
+      "range_max": 149.0,
+      "range_min": 31.0
+    },
+    "max_answer_count": 17,
+    "max_answer_frequency": 0.085,
+    "pass": true,
+    "sample_count": 200,
+    "top_answers": [
+      {
+        "answer_label": "76",
+        "count": 17
+      },
+      {
+        "answer_label": "58",
+        "count": 14
+      },
+      {
+        "answer_label": "90",
+        "count": 13
+      },
+      {
+        "answer_label": "114",
+        "count": 11
+      },
+      {
+        "answer_label": "122",
+        "count": 11
+      },
+      {
+        "answer_label": "135",
+        "count": 11
+      },
+      {
+        "answer_label": "32",
+        "count": 11
+      },
+      {
+        "answer_label": "59",
+        "count": 11
+      },
+      {
+        "answer_label": "104",
+        "count": 10
+      },
+      {
+        "answer_label": "148",
+        "count": 10
+      },
+      {
+        "answer_label": "31",
+        "count": 10
+      },
+      {
+        "answer_label": "66",
+        "count": 10
+      },
+      {
+        "answer_label": "149",
+        "count": 9
+      },
+      {
+        "answer_label": "45",
+        "count": 8
+      },
+      {
+        "answer_label": "121",
+        "count": 5
+      },
+      {
+        "answer_label": "144",
+        "count": 5
+      },
+      {
+        "answer_label": "145",
+        "count": 3
+      },
+      {
+        "answer_label": "35",
+        "count": 3
+      },
+      {
+        "answer_label": "42",
+        "count": 3
+      },
+      {
+        "answer_label": "69",
+        "count": 3
+      },
+      {
+        "answer_label": "125",
+        "count": 2
+      },
+      {
+        "answer_label": "126",
+        "count": 2
+      },
+      {
+        "answer_label": "132",
+        "count": 2
+      },
+      {
+        "answer_label": "133",
+        "count": 2
+      },
+      {
+        "answer_label": "47",
+        "count": 2
+      },
+      {
+        "answer_label": "54",
+        "count": 2
+      },
+      {
+        "answer_label": "77",
+        "count": 2
+      },
+      {
+        "answer_label": "103",
+        "count": 1
+      },
+      {
+        "answer_label": "110",
+        "count": 1
+      },
+      {
+        "answer_label": "115",
+        "count": 1
+      },
+      {
+        "answer_label": "138",
+        "count": 1
+      },
+      {
+        "answer_label": "48",
+        "count": 1
+      },
+      {
+        "answer_label": "55",
+        "count": 1
+      },
+      {
+        "answer_label": "65",
+        "count": 1
+      },
+      {
+        "answer_label": "70",
+        "count": 1
+      }
+    ],
+    "unique_answers": 35
+  },
+  "pass": true,
+  "per_task_variant": {
+    "intersection_angle": {
+      "answer_type_counts": {
+        "integer": 100
+      },
+      "checks": {
+        "max_answer_frequency": {
+          "observed": 0.11,
+          "pass": true,
+          "threshold": 0.25
+        },
+        "max_five_bin_frequency": {
+          "observed": 0.39,
+          "pass": true,
+          "threshold": 0.5
+        },
+        "min_unique_answers": {
+          "observed": 15,
+          "pass": true,
+          "threshold": 5
+        }
+      },
+      "five_bin_numeric": {
+        "bin_count": 5,
+        "bins": [
+          {
+            "bin_id": 0,
+            "count": 16,
+            "label": "[31, 54.6)"
+          },
+          {
+            "bin_id": 1,
+            "count": 39,
+            "label": "[54.6, 78.2)"
+          },
+          {
+            "bin_id": 2,
+            "count": 6,
+            "label": "[78.2, 101.8)"
+          },
+          {
+            "bin_id": 3,
+            "count": 18,
+            "label": "[101.8, 125.4)"
+          },
+          {
+            "bin_id": 4,
+            "count": 21,
+            "label": "[125.4, 149]"
+          }
+        ],
+        "max_bin_count": 39,
+        "max_bin_frequency": 0.39,
+        "range_max": 149.0,
+        "range_min": 31.0
+      },
+      "max_answer_count": 11,
+      "max_answer_frequency": 0.11,
+      "pass": true,
+      "sample_count": 100,
+      "top_answers": [
+        {
+          "answer_label": "59",
+          "count": 11
+        },
+        {
+          "answer_label": "76",
+          "count": 10
+        },
+        {
+          "answer_label": "58",
+          "count": 9
+        },
+        {
+          "answer_label": "66",
+          "count": 9
+        },
+        {
+          "answer_label": "135",
+          "count": 8
+        },
+        {
+          "answer_label": "148",
+          "count": 8
+        },
+        {
+          "answer_label": "114",
+          "count": 6
+        },
+        {
+          "answer_label": "31",
+          "count": 6
+        },
+        {
+          "answer_label": "45",
+          "count": 6
+        },
+        {
+          "answer_label": "90",
+          "count": 6
+        },
+        {
+          "answer_label": "122",
+          "count": 5
+        },
+        {
+          "answer_label": "149",
+          "count": 5
+        },
+        {
+          "answer_label": "104",
+          "count": 4
+        },
+        {
+          "answer_label": "32",
+          "count": 4
+        },
+        {
+          "answer_label": "121",
+          "count": 3
+        }
+      ],
+      "unique_answers": 15
+    },
+    "primitive_angle": {
+      "answer_type_counts": {
+        "integer": 100
+      },
+      "checks": {
+        "max_answer_frequency": {
+          "observed": 0.07,
+          "pass": true,
+          "threshold": 0.25
+        },
+        "max_five_bin_frequency": {
+          "observed": 0.24,
+          "pass": true,
+          "threshold": 0.5
+        },
+        "min_unique_answers": {
+          "observed": 34,
+          "pass": true,
+          "threshold": 5
+        }
+      },
+      "five_bin_numeric": {
+        "bin_count": 5,
+        "bins": [
+          {
+            "bin_id": 0,
+            "count": 24,
+            "label": "[31, 54.6)"
+          },
+          {
+            "bin_id": 1,
+            "count": 21,
+            "label": "[54.6, 78.2)"
+          },
+          {
+            "bin_id": 2,
+            "count": 7,
+            "label": "[78.2, 101.8)"
+          },
+          {
+            "bin_id": 3,
+            "count": 24,
+            "label": "[101.8, 125.4)"
+          },
+          {
+            "bin_id": 4,
+            "count": 24,
+            "label": "[125.4, 149]"
+          }
+        ],
+        "max_bin_count": 24,
+        "max_bin_frequency": 0.24,
+        "range_max": 149.0,
+        "range_min": 31.0
+      },
+      "max_answer_count": 7,
+      "max_answer_frequency": 0.07,
+      "pass": true,
+      "sample_count": 100,
+      "top_answers": [
+        {
+          "answer_label": "32",
+          "count": 7
+        },
+        {
+          "answer_label": "76",
+          "count": 7
+        },
+        {
+          "answer_label": "90",
+          "count": 7
+        },
+        {
+          "answer_label": "104",
+          "count": 6
+        },
+        {
+          "answer_label": "122",
+          "count": 6
+        },
+        {
+          "answer_label": "114",
+          "count": 5
+        },
+        {
+          "answer_label": "144",
+          "count": 5
+        },
+        {
+          "answer_label": "58",
+          "count": 5
+        },
+        {
+          "answer_label": "149",
+          "count": 4
+        },
+        {
+          "answer_label": "31",
+          "count": 4
+        },
+        {
+          "answer_label": "135",
+          "count": 3
+        },
+        {
+          "answer_label": "145",
+          "count": 3
+        },
+        {
+          "answer_label": "35",
+          "count": 3
+        },
+        {
+          "answer_label": "42",
+          "count": 3
+        },
+        {
+          "answer_label": "69",
+          "count": 3
+        },
+        {
+          "answer_label": "121",
+          "count": 2
+        },
+        {
+          "answer_label": "125",
+          "count": 2
+        },
+        {
+          "answer_label": "126",
+          "count": 2
+        },
+        {
+          "answer_label": "132",
+          "count": 2
+        },
+        {
+          "answer_label": "133",
+          "count": 2
+        },
+        {
+          "answer_label": "148",
+          "count": 2
+        },
+        {
+          "answer_label": "45",
+          "count": 2
+        },
+        {
+          "answer_label": "47",
+          "count": 2
+        },
+        {
+          "answer_label": "54",
+          "count": 2
+        },
+        {
+          "answer_label": "77",
+          "count": 2
+        },
+        {
+          "answer_label": "103",
+          "count": 1
+        },
+        {
+          "answer_label": "110",
+          "count": 1
+        },
+        {
+          "answer_label": "115",
+          "count": 1
+        },
+        {
+          "answer_label": "138",
+          "count": 1
+        },
+        {
+          "answer_label": "48",
+          "count": 1
+        },
+        {
+          "answer_label": "55",
+          "count": 1
+        },
+        {
+          "answer_label": "65",
+          "count": 1
+        },
+        {
+          "answer_label": "66",
+          "count": 1
+        },
+        {
+          "answer_label": "70",
+          "count": 1
+        }
+      ],
+      "unique_answers": 34
+    }
+  },
+  "sampling_axes": {
+    "source_kind": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "intersection_lines": 0.5,
+        "primitive_angle": 0.5
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.54,
+      "observed_counts": {
+        "intersection_lines": 54,
+        "primitive_angle": 46
+      },
+      "sample_count": 100
+    },
+    "target_angle": {
+      "expected_conflict": true,
+      "expected_probabilities": {
+        "58": 1.0
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.09,
+      "observed_counts": {
+        "104": 4,
+        "114": 6,
+        "121": 2,
+        "122": 4,
+        "125": 1,
+        "126": 1,
+        "132": 1,
+        "135": 5,
+        "138": 1,
+        "144": 3,
+        "145": 2,
+        "148": 5,
+        "149": 6,
+        "31": 5,
+        "32": 7,
+        "35": 2,
+        "42": 1,
+        "45": 2,
+        "47": 1,
+        "48": 1,
+        "54": 1,
+        "55": 1,
+        "58": 9,
+        "59": 8,
+        "66": 5,
+        "69": 1,
+        "76": 9,
+        "90": 6
+      },
+      "sample_count": 100
+    },
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "intersection_angle": 0.5,
+        "primitive_angle": 0.5
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.54,
+      "observed_counts": {
+        "intersection_angle": 54,
+        "primitive_angle": 46
+      },
+      "sample_count": 100
+    }
+  },
+  "task_group": "measurement",
+  "task_id": "task_geometry_measurement_angle",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {
+      "intersection_angle": 0.5,
+      "primitive_angle": 0.5
+    },
+    "expected_source": "execution_trace",
+    "has_variants": true,
+    "observed_counts": {
+      "intersection_angle": 54,
+      "primitive_angle": 46
+    },
+    "status": "reported"
+  }
+}

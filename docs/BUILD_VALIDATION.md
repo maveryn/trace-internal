@@ -26,11 +26,24 @@ Operational policy for build lifecycle and pre-finalize validation.
 8. Prompt variant-count/index consistency.
 9. Task-doc consistency: every registered task has `docs/tasks/<task_id>.md`, and `docs/tasks/README.md` links match active tasks.
 
-## 4) Distribution review policy
+## 4) Task-review and distribution policy
 For new or distribution-changing task logic:
-1. Generate per-query samples (`--count-per-query 100` recommended).
-2. Review `distribution_report.json`.
-3. Fix obvious skew before merge/finalize.
+1. Run the task-review workflow on affected tasks:
+   - full review: `PYTHONPATH=. python scripts/run_task_review.py --tasks <task_id> --mode full`
+   - distribution only: `PYTHONPATH=. python scripts/run_task_review.py --tasks <task_id> --mode distribution`
+   - inspection only (skip distribution analysis): `PYTHONPATH=. python scripts/run_task_review.py --tasks <task_id> --mode inspection`
+2. Required review scope:
+   - random sample review: 100 samples per task (`random_review_100.json`)
+   - per-variant distribution review: 100 samples per task variant when variants exist (`distribution_review.json`)
+   - manual inspection workbook: 25 samples per task variant in `samples.xlsx` (one sheet per task variant)
+3. Required gating checks (computed from answer values only):
+   - `unique_answers >= 5`
+   - `max_answer_frequency < 25%`
+   - numeric-answer tasks only: `max_five_bin_frequency <= 50%` (5 equal-width bins over observed numeric range)
+   - apply checks per task variant; task-level pass requires every variant to pass.
+   - zero collected samples for a task/variant review is a hard fail (`no_samples_collected`).
+4. For quick distribution-only runs (without workbook generation), the dedicated checker remains available:
+   - `PYTHONPATH=. python scripts/check_task_answer_distribution.py --tasks <task_id>`
 
 ## 5) Reports and failure artifacts
 Always emit in staging:

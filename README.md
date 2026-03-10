@@ -20,36 +20,17 @@ pip install -r requirements.txt
 PYTHONPATH=. python scripts/build_dataset.py --config configs/examples/minimal_build.yaml
 ```
 
-## Generate Task Samples
+## Task Reviews
 
-Use the sample generator to export review artifacts for tasks under `samples/`.
-Treat this folder as the persistent verification store during task development.
+Use task-review workflow outputs under `task-reviews/`.
 
 ```bash
-PYTHONPATH=. python scripts/generate_task_samples.py --tasks task_tile_path_shortest_path --clean
+PYTHONPATH=. python scripts/run_task_review.py --tasks task_geometry_measurement_angle --mode full
 ```
 
-Default behavior:
-- generates `50` samples per task,
-- writes image artifacts under `samples/<domain>/<task_group>/<task>/images/`,
-- writes per-sample JSON data under `samples/<domain>/<task_group>/<task>/data/`,
-- writes per-task summary files (`summary.json`),
-- writes per-task distribution reports (`distribution_report.json`) with per-query answer-shape metrics and feasible-uniform skew checks when supported by task trace metadata,
-- writes per-task review workbooks at `samples/<domain>/<task_group>/<task>/samples.xlsx` with embedded preview images (max side `384` px, source files unchanged),
-- writes one domain-combined workbook at `samples/<domain>/combined_samples.xlsx` with one sheet per task (same image/evidence preview columns as per-task sheets).
-
-Useful options:
-- `--tasks task_geometry_measurement_angle,task_tile_path_shortest_path`
-- `--count 50`
-- `--count-per-query 100` (recommended for distribution checks on new/changed multi-query tasks)
-- `--seed 123`
-- `--params '{"canvas_size":640}'`
-- `--task-params '{"task_geometry_measurement_angle":{"scene_variant":"primitive_angle"}}'`
-- `--clean` (safe mode: only allowed with `--tasks`; removes those task folders before regeneration)
-- `--clean-all` (explicit full wipe of `samples/`, use sparingly)
-
-## Sample Regeneration Policy
-
-Whenever a task is newly implemented or a change affects task logic or visualization,
-rerun `scripts/generate_task_samples.py` for that task to refresh the review artifacts.
-For distribution-impacting changes, run `--count-per-query 100` and review each task's `distribution_report.json`.
+This writes:
+- `task-reviews/<task_id>/random_review_100.json`
+- `task-reviews/<task_id>/distribution_review.json`
+- `task-reviews/<task_id>/samples.xlsx` (one sheet per task variant)
+- `task-reviews/<task_id>/manifest.json`
+- `task-reviews/review_summary.json`

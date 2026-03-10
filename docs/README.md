@@ -12,6 +12,7 @@ This folder is the source of truth for contracts, architecture, and task authori
 7. `BUILD_VALIDATION.md` + `VALIDATION_ERROR_CODES.md` — pre-finalize checks and error taxonomy.
 8. `CODE_DOCUMENTATION.md` + `CODE_REVIEW_GUIDELINES.md` — quality/process guidance.
 9. `STATUS.md` + `TODO.md` — current snapshot and backlog.
+10. `../task-reviews/README.md` — task-by-task review workflow and artifacts.
 
 ## Task docs
 - Rules: `docs/tasks/README.md`

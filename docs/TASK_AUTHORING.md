@@ -9,7 +9,7 @@ Use this as the implementation checklist for new or modified tasks.
 4. Confirm family/variant fit using `docs/TASK_FAMILY_VARIANTS.md` before introducing a new task group.
 5. Define task contracts:
    - scene,
-   - query types,
+   - task variants,
    - answer type,
    - evidence type(s),
    - constraints/rejection policy.
@@ -48,25 +48,28 @@ Use this as the implementation checklist for new or modified tasks.
 ## 3) Prompt rules
 1. Bundle path: `prompts/<domain>/<task_group>/<bundle>.json`.
 2. Required template layers:
-   - task type,
-   - query type,
+   - task family,
+   - task,
+   - optional task variant,
    - output mode (`answer_only`, `answer_and_evidence`).
 3. Deterministic variant selection only.
 4. Record prompt metadata in trace payload.
-5. Keep variant cardinality at least 10 per required template list.
+5. Keep exactly 5 high-quality variants per required template list.
 6. Both output modes must include explicit JSON response-format instructions via slots:
    - `answer_only`: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
    - `answer_and_evidence`: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
-7. Every JSON example shown in prompts (both `answer_only` and `answer_and_evidence`) must itself be a valid answer for that task/query/variant contract (key order, value type, and evidence cardinality/semantics).
+7. Every JSON example shown in prompts (both `answer_only` and `answer_and_evidence`) must itself be a valid answer for that task/variant contract (key order, value type, and evidence cardinality/semantics).
 8. If evidence cardinality/shape differs by variant (for example triangle vs quadrilateral), provide variant-specific `json_example_*` slots and select them deterministically from variant context.
 9. If a prompt slot value is static for a task (for example a fixed question stem), store it in prompt config/template data rather than task-module constants.
+10. Favor natural, image-led wording in template stems; do not pad bundles with low-quality paraphrases just to increase variant count.
+11. Keep `question_text` semantic-only when task templates already carry formatting or rounding instructions; avoid repeating the same instruction across prompt layers.
 
 ## 4) Config/defaults rules
 1. Precedence: `domain -> task_group -> task/params`.
 2. Use shared defaults helpers; avoid local parsing duplicates.
 3. In task-group files, separate shared keys (`shared`) from task-specific keys (`task_overrides.<task_id>`) for `generation`/`rendering`/`prompt`/`sampling`; default to `shared` and use `task_overrides` only for task-specific deltas (legacy flat section keys are unsupported).
 4. Keep broadly shared domain visual policy in `configs/domains/<domain>/base.yaml`; use task-group visual only for group-specific overrides.
-5. Query-weight fallback is: build task `query_weights` -> task-group `sampling.task_overrides` -> task-group `sampling.shared` -> uniform.
+5. Task-variant weights are resolved inside each task from config/params; builder-level sampling weights apply only across tasks.
 6. Visual defaults/noise should route through shared visual modules.
 7. Geometry `measurement` tasks should keep graph-paper/anchor alignment policy consistent; geometry `analytical_2d` tasks should use non-graph-paper backgrounds unless a task explicitly requires visible grid cues.
 8. For sibling variants of one objective family (for example area/perimeter), keep shared generation/prompt/trace flow in one task-group shared base helper and keep task modules thin.
@@ -76,14 +79,14 @@ Use this as the implementation checklist for new or modified tasks.
 
 ## 5) Sampling rules
 1. Global sampling unit is `task`.
-2. Query sampling occurs inside each task.
-3. Default `P(query|task)` is uniform unless overridden.
-4. For each query type, sample feasible answers near-uniform unless curriculum explicitly overrides.
+2. Task-variant sampling occurs inside each task.
+3. Default `P(task_variant|task)` is uniform unless overridden.
+4. Keep answer sampling as broad as constraints allow and validate with the standard answer-distribution checks.
 5. For geometry placement with lattice offsets, compute anchor bounds from the selected candidate (not global worst-case margins).
 6. Avoid tiny fixed structure banks; randomize both structural and visual factors whenever constraints allow.
 7. For tasks with both source categories and answer targets, sample both distributions explicitly and verify realized distributions.
 8. For deterministic balance over generated prefixes, use builder `_sampling_index` (not hashed `instance_seed`) when cycling categories/answers.
-9. When changing answer/evidence/query contracts, remove deprecated helper paths and stale trace fields in the same patch.
+9. When changing answer/evidence/variant contracts, remove deprecated helper paths and stale trace fields in the same patch.
 
 ## 6) Minimal test checklist
 1. Determinism for fixed seed.
@@ -111,15 +114,27 @@ PYTHONPATH=. pytest -q
 ## 8) Reuse anti-patterns
 Use `docs/CODE_REVIEW_GUIDELINES.md` Section 2 as the canonical anti-pattern list.
 
-## 9) Sample generation review
-For quick visual sanity checks:
+## 9) Task review workflow
+For new tasks or distribution-changing changes, run the standardized review workflow:
 ```bash
-PYTHONPATH=. python scripts/generate_task_samples.py --tasks <task_id> --count 50 --clean
+PYTHONPATH=. python scripts/run_task_review.py --tasks <task_id> --mode full
 ```
 
-For new tasks or distribution-changing changes:
-```bash
-PYTHONPATH=. python scripts/generate_task_samples.py --tasks <task_id> --count-per-query 100 --clean
-```
+This writes review artifacts under `task-reviews/<task_id>/`:
+- `random_review_100.json` (100 random samples, includes variant/sampling-axis distributions)
+- `distribution_review.json` (100 answers per variant when variants exist; otherwise single 100-sample check)
+- `samples.xlsx` (25 manual-inspection samples per variant, one sheet per task variant)
 
-Review `distribution_report.json` and resolve obvious skew before sign-off.
+Use `--mode inspection` when only visual/prompt inspection is needed and distribution checks should be skipped.
+
+Required answer-distribution checks:
+- `unique_answers >= 5`
+- `max_answer_frequency < 25%`
+- numeric-answer tasks: `max_five_bin_frequency <= 50%` (5 equal-width bins)
+- apply checks per `task_variant`; task-level pass requires every variant to pass.
+- zero collected samples for a review slice is a hard fail (`no_samples_collected`).
+
+For quick distribution-only runs:
+```bash
+PYTHONPATH=. python scripts/check_task_answer_distribution.py --tasks <task_id>
+```

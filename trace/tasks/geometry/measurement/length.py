@@ -58,6 +58,7 @@ from ..shared.polygon_geometry import (
     polygon_scene_entity,
     sample_polygon_instance_on_graph_paper,
 )
+from ..shared.prompt_text import append_required_labels_clause
 from ..shared.render_variation import sample_int_render_param
 from ..shared.shape_style import extract_background_anchor_colors, sample_geometry_shape_style
 from ..shared.single_object_scene import (
@@ -68,7 +69,6 @@ from ..shared.single_object_scene import (
 from ..shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from .defaults import MEASUREMENT_SHARED_DEFAULTS
 
-_QUERY_TYPE = "measure"
 _POLYGON_VARIANT_TO_SIDES: Dict[str, int] = {
     "triangle": 3,
     "quadrilateral": 4,
@@ -98,11 +98,11 @@ class _TaskDefaults:
     segment_length_max: int = 8
     segment_vector_max_abs_component: int = 12
     polygon_allowed_sides: Tuple[int, ...] = MEASUREMENT_SHARED_DEFAULTS.polygon_allowed_sides
-    circle_radius_min: int = 1
-    circle_radius_max: int = 4
-    ellipse_axis_min: int = 1
-    ellipse_axis_max: int = 4
-    ellipse_allow_circle: bool = False
+    circle_radius_min: int = MEASUREMENT_SHARED_DEFAULTS.circle_radius_min
+    circle_radius_max: int = MEASUREMENT_SHARED_DEFAULTS.circle_radius_max
+    ellipse_axis_min: int = MEASUREMENT_SHARED_DEFAULTS.ellipse_axis_min
+    ellipse_axis_max: int = MEASUREMENT_SHARED_DEFAULTS.ellipse_axis_max
+    ellipse_allow_circle: bool = MEASUREMENT_SHARED_DEFAULTS.ellipse_allow_circle
 
 
 _DEFAULTS = _TaskDefaults()
@@ -298,14 +298,6 @@ def _evidence_hint_key_candidates_for_variant(variant_kind: str) -> Tuple[str, .
     return ("evidence_hint_point_map", "evidence_hint")
 
 
-def _required_labels_text(labels: Sequence[str]) -> str:
-    """Render deterministic required-label suffix for prompt evidence hint."""
-    normalized = [str(label) for label in labels if str(label).strip()]
-    if not normalized:
-        return ""
-    return f" Required labels: {', '.join(normalized)}"
-
-
 def _format_question(template: str, *, label_a: str | None = None, label_b: str | None = None) -> str:
     """Format one question template with optional side/segment labels."""
     slot_values = {
@@ -369,17 +361,8 @@ class GeometryLengthMeasure2DTask:
     scene_kind = "geometry_2d_length_measurement"
     query_template_id = "geometry_2d_length_measure_v1"
 
-    @staticmethod
-    def supported_query_types(_params: Dict[str, Any] | None = None) -> List[str]:
-        """Return query types supported by this task."""
-        return [_QUERY_TYPE]
-
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic length-measurement instance."""
-        query_type = str(params.get("query_type", _QUERY_TYPE))
-        if query_type != _QUERY_TYPE:
-            raise ValueError(f"unsupported query_type: {query_type}")
-
         scene_rng = spawn_rng(instance_seed, "scene")
         allowed_polygon_sides = _resolve_supported_polygon_sides(params, gen_defaults=_GEN_DEFAULTS)
         supported_variants = _supported_variants_for_allowed_sides(allowed_polygon_sides)
@@ -928,21 +911,23 @@ class GeometryLengthMeasure2DTask:
             _PROMPT_DEFAULTS,
             (
                 "bundle_id",
-                "task_type_key",
+                "task_family_key",
+                "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
         prompt_bundle_id = str(prompt_defaults["bundle_id"])
-        prompt_task_type_key = str(prompt_defaults["task_type_key"])
+        prompt_task_family_key = str(prompt_defaults["task_family_key"])
+        prompt_task_key = str(prompt_defaults["task_key"])
         evidence_hint = _required_prompt_text(
             _PROMPT_DEFAULTS,
             preferred_keys=_evidence_hint_key_candidates_for_variant(str(variant_kind)),
             context=f"prompt defaults for {self.task_id}",
         )
         required_labels = [str(label) for label in evidence.get("required_labels", []) if str(label).strip()]
-        evidence_hint = f"{str(evidence_hint).rstrip().rstrip('.')}{_required_labels_text(required_labels)}"
+        evidence_hint = append_required_labels_clause(str(evidence_hint), required_labels)
         answer_hint = _required_prompt_text(
             _PROMPT_DEFAULTS,
             preferred_keys=("answer_hint_integer", "answer_hint"),
@@ -957,8 +942,8 @@ class GeometryLengthMeasure2DTask:
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=prompt_bundle_id,
-            task_type_key=prompt_task_type_key,
-            query_type=_QUERY_TYPE,
+            task_family_key=prompt_task_family_key,
+            task_key=prompt_task_key,
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
@@ -1017,7 +1002,7 @@ class GeometryLengthMeasure2DTask:
                 },
             },
             "query_spec": {
-                "query_type": _QUERY_TYPE,
+                "task_variant": str(variant_kind),
                 "template_id": str(self.query_template_id),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1068,6 +1053,6 @@ class GeometryLengthMeasure2DTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_type=_QUERY_TYPE,
+            task_variant=str(variant_kind),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

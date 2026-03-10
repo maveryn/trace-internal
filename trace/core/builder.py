@@ -18,11 +18,9 @@ from .config import BuildConfig, BuildTaskConfig
 from .hash_utils import blake3_file, blake3_hex
 from .identity import compute_instance_id
 from .json_io import write_json_file
-from .query_types import resolve_query_types
 from .sampling import normalize_positive_weights, weighted_choice
 from .seed import SEED_DERIVATION_VERSION, hash64
 from .strict_repro import compare_staging_dirs
-from .task_group_config import get_task_group_defaults, resolve_task_group_section_defaults
 from .trace_store import TraceShardWriter
 from .type_registry import DEFAULT_REGISTRY_PATH, TypeRegistry, load_type_registry
 from .types import CurriculumIndex, ImageRecord, TraceInstance, TrainInstance
@@ -46,8 +44,6 @@ class _BuildStageResult:
     rejected_by_task: Dict[str, int]
     rejected_reason_by_task: Dict[str, Dict[str, int]]
     evidence_format_map: Dict[str, str]
-    accepted_query_counts_by_task: Dict[str, Dict[str, int]]
-    query_sampling_probabilities_by_task: Dict[str, Dict[str, float]]
     domain_sampling_probabilities: Dict[str, float]
     task_group_sampling_probabilities: Dict[str, float]
     warnings: List[str]
@@ -69,8 +65,6 @@ def _serialize_task_config(task: BuildTaskConfig) -> Dict[str, Any]:
         "count": task.count,
         "weight": task.weight,
         "params": dict(task.params),
-        "query_weights": dict(task.query_weights),
-        "expected_query_counts": dict(task.expected_query_counts),
     }
 
 
@@ -178,47 +172,6 @@ def _resolve_task_targets(config: BuildConfig) -> tuple[Dict[str, int], Dict[str
     return target_counts, task_probabilities, "weighted_task_sampler"
 
 
-def _resolve_query_probabilities(query_types: List[str], configured: Mapping[str, float]) -> Dict[str, float]:
-    """Resolve per-task query-type probabilities with optional overrides."""
-    if not configured:
-        p = 1.0 / float(len(query_types))
-        return {query_type: p for query_type in query_types}
-
-    selected = {query_type: float(configured.get(query_type, 0.0)) for query_type in query_types}
-    if sum(selected.values()) <= 0.0:
-        raise BuildError("resolved query_weights must have at least one positive weight for supported query types")
-    try:
-        return normalize_positive_weights(selected)
-    except ValueError as exc:
-        raise BuildError(str(exc)) from exc
-
-
-def _resolve_task_group_query_weight_defaults(*, task_id: str, domain: str, task_group: str) -> Dict[str, float]:
-    """Resolve task-group query-weight defaults for one task id."""
-    merged_defaults = get_task_group_defaults(str(domain), str(task_group))
-    sampling_defaults = resolve_task_group_section_defaults(
-        merged_defaults,
-        "sampling",
-        task_id=str(task_id),
-    )
-    query_weights = sampling_defaults.get("query_weights", {})
-    if not isinstance(query_weights, Mapping):
-        return {}
-    return {str(query_type): float(weight) for query_type, weight in query_weights.items()}
-
-
-def _expected_query_counts(tasks: List[BuildTaskConfig]) -> Dict[str, Dict[str, int]]:
-    """Extract expected query-type counts for validation checks."""
-    out: Dict[str, Dict[str, int]] = {}
-    for task in tasks:
-        if task.expected_query_counts:
-            out[task.task_id] = {
-                str(query_type): int(count)
-                for query_type, count in task.expected_query_counts.items()
-            }
-    return out
-
-
 def _aggregate_sampling_probabilities(task_probabilities: Mapping[str, float]) -> tuple[Dict[str, float], Dict[str, float]]:
     """Aggregate domain/task-group probabilities from task-level weights."""
     domain_probs: Dict[str, float] = {}
@@ -254,8 +207,6 @@ def _build_staging(
     accepted_by_task: Dict[str, int] = {}
     rejected_by_task: Dict[str, int] = {}
     rejected_reason_by_task: Dict[str, Dict[str, int]] = {}
-    accepted_query_counts_by_task: Dict[str, Dict[str, int]] = {}
-    query_sampling_probabilities_by_task: Dict[str, Dict[str, float]] = {}
     evidence_format_map: Dict[str, str] = {}
 
     with TraceShardWriter(stage_root) as trace_writer:
@@ -265,30 +216,14 @@ def _build_staging(
             accepted = 0
             rejected = 0
             rejection_reasons: Dict[str, int] = {}
-            accepted_query_counts: Dict[str, int] = {}
             seed_index = 0
             max_candidates = max(1, task_target * 20)
 
-            query_types = resolve_query_types(task, task_cfg.params)
-            if task_cfg.query_weights:
-                query_weights = {str(query_type): float(weight) for query_type, weight in task_cfg.query_weights.items()}
-            else:
-                query_weights = _resolve_task_group_query_weight_defaults(
-                    task_id=task_cfg.task_id,
-                    domain=str(getattr(task, "domain")),
-                    task_group=str(getattr(task, "task_group")),
-                )
-            query_probabilities = _resolve_query_probabilities(query_types, query_weights)
-            query_sampling_probabilities_by_task[task_cfg.task_id] = dict(sorted(query_probabilities.items()))
-
             while accepted < task_target and seed_index < max_candidates:
                 instance_seed = hash64(config.sampling_seed, f"{task_cfg.task_id}:instance_seed", seed_index)
-                query_rng = random.Random(hash64(config.sampling_seed, f"{task_cfg.task_id}:query_sampler", seed_index))
-                sampled_query_type = weighted_choice(query_rng, query_probabilities)
                 seed_index += 1
 
                 params = dict(task_cfg.params)
-                params["query_type"] = sampled_query_type
                 params["_sampling_index"] = int(seed_index - 1)
                 try:
                     generated = task.generate(
@@ -302,7 +237,7 @@ def _build_staging(
                     rejection_reasons[reason] = rejection_reasons.get(reason, 0) + 1
                     continue
 
-                query_type_used = str(getattr(generated, "query_type", sampled_query_type) or sampled_query_type)
+                task_variant_used = str(getattr(generated, "task_variant", "default") or "default")
                 if not type_registry.validate_answer_type(generated.answer_gt.type):
                     raise BuildError(f"unregistered answer type: {generated.answer_gt.type}")
                 if not type_registry.validate_evidence_type(generated.evidence_gt.type):
@@ -342,7 +277,7 @@ def _build_staging(
                 trace_payload = dict(generated.trace_payload)
                 query_spec = trace_payload.get("query_spec")
                 if isinstance(query_spec, dict):
-                    query_spec.setdefault("query_type", query_type_used)
+                    query_spec.setdefault("task_variant", task_variant_used)
 
                 trace_instance = TraceInstance(
                     instance_id=instance_id,
@@ -390,13 +325,11 @@ def _build_staging(
                     ).to_dict()
                 )
                 evidence_format_map[task.task_id] = generated.evidence_gt.type
-                accepted_query_counts[query_type_used] = accepted_query_counts.get(query_type_used, 0) + 1
                 accepted += 1
 
             accepted_by_task[task_cfg.task_id] = accepted
             rejected_by_task[task_cfg.task_id] = rejected
             rejected_reason_by_task[task_cfg.task_id] = dict(sorted(rejection_reasons.items()))
-            accepted_query_counts_by_task[task_cfg.task_id] = dict(sorted(accepted_query_counts.items()))
 
             if accepted < task_target:
                 warning_messages.append(
@@ -416,14 +349,6 @@ def _build_staging(
         rejected_by_task=dict(sorted(rejected_by_task.items())),
         rejected_reason_by_task=dict(sorted(rejected_reason_by_task.items())),
         evidence_format_map=dict(sorted(evidence_format_map.items())),
-        accepted_query_counts_by_task={
-            task_id: dict(sorted(counts.items()))
-            for task_id, counts in sorted(accepted_query_counts_by_task.items())
-        },
-        query_sampling_probabilities_by_task={
-            task_id: dict(sorted(probabilities.items()))
-            for task_id, probabilities in sorted(query_sampling_probabilities_by_task.items())
-        },
         domain_sampling_probabilities=domain_probs,
         task_group_sampling_probabilities=task_group_probs,
         warnings=warning_messages,
@@ -474,13 +399,10 @@ def build_dataset(config: BuildConfig, *, code_hash: str = "local") -> Path:
                 raise BuildError(f"strict_repro_mismatch: {summary}")
             shutil.rmtree(repro_root)
 
-        expected_query_counts = _expected_query_counts(config.tasks)
         validation_report = validate_dataset(
             primary.instances,
             staging_root=temp_root,
             expected_task_counts=primary.target_counts_by_task,
-            expected_query_counts=expected_query_counts,
-            observed_query_counts=primary.accepted_query_counts_by_task,
             dataset_id=dataset_id,
             expected_instance_version=config.instance_version,
         )
@@ -502,12 +424,10 @@ def build_dataset(config: BuildConfig, *, code_hash: str = "local") -> Path:
                 "task_sampling_probabilities": primary.task_sampling_probabilities,
                 "domain_sampling_probabilities": primary.domain_sampling_probabilities,
                 "task_group_sampling_probabilities": primary.task_group_sampling_probabilities,
-                "query_sampling_probabilities_by_task": primary.query_sampling_probabilities_by_task,
             },
             "accepted_counts_by_task": primary.accepted_by_task,
             "rejected_counts_by_task": primary.rejected_by_task,
             "rejection_reason_breakdown_by_task": primary.rejected_reason_by_task,
-            "query_type_accepted_counts_by_task": primary.accepted_query_counts_by_task,
             "final_rejection_rate": rejection_rate,
             "resolved_evidence_format_map": primary.evidence_format_map,
             "trace_shard_manifest": {

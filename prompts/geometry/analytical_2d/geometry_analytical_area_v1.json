@@ -1,39 +1,29 @@
 {
   "bundle_id": "geometry_analytical_area_v1",
   "schema_version": "v1",
-  "task_type_templates": {
+  "task_family_templates": {
     "analytical_single_shape": [
-      "A single image shows {object_description}.",
-      "Inspect the annotated diagram containing {object_description}.",
-      "One annotated geometry shape is shown: {object_description}.",
-      "Work from the image that contains {object_description}.",
-      "The panel contains exactly one annotated figure: {object_description}.",
-      "Use the scene that shows {object_description}.",
-      "This figure presents {object_description}.",
-      "A single annotated geometry object appears in the image: {object_description}.",
-      "Review the one-shape scene: {object_description}.",
-      "The provided visual contains {object_description}."
+      "You are given an image showing {object_description}.",
+      "The image shows {object_description}.",
+      "Look at the annotated image showing {object_description}.",
+      "Use the image showing {object_description}.",
+      "Work from the annotated figure showing {object_description}."
     ]
   },
-  "query_type_templates": {
-    "measure": [
+  "task_templates": {
+    "analytical_area_query": [
       "{question_text}",
-      "From the figure, {question_text}",
-      "Using the provided diagram, {question_text}",
-      "Inspect the plotted shape and answer: {question_text}",
-      "Based on the displayed shape, {question_text}",
-      "Read the scene and answer: {question_text}",
-      "Determine the requested area from the annotations: {question_text}",
-      "Evaluate the annotated shape and answer: {question_text}",
-      "Work from the displayed figure and answer: {question_text}",
-      "Use the visual annotations in the figure: {question_text}"
+      "Answer this question from the image: {question_text}",
+      "Answer this question from the labeled figure: {question_text}",
+      "Read the marked measurements and answer: {question_text}",
+      "Based on the shown values, answer this question: {question_text}"
     ]
   },
   "required_slots_by_key": {
-    "task_type:analytical_single_shape": [
+    "task_family:analytical_single_shape": [
       "object_description"
     ],
-    "query_type:measure": [
+    "task:analytical_area_query": [
       "question_text"
     ],
     "answer_or_evidence:answer_only": [
@@ -52,26 +42,16 @@
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer details: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nFor answer, {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer guidance: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer value rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer key rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer content: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer specification: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
     "answer_and_evidence": [
       "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
       "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence details: {evidence_hint}.\nAnswer details: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
       "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFor evidence, {evidence_hint}.\nFor answer, {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence guidance: {evidence_hint}.\nAnswer guidance: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence value rule: {evidence_hint}.\nAnswer value rule: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence key rule: {evidence_hint}.\nAnswer key rule: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence content: {evidence_hint}.\nAnswer content: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence specification: {evidence_hint}.\nAnswer specification: {answer_hint}.\nExample JSON:\n{json_example}"
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   }
 }

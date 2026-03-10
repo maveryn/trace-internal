@@ -50,6 +50,7 @@ from ..shared.polygon_geometry import (
     polygon_scene_entity,
     sample_polygon_instance_on_graph_paper,
 )
+from ..shared.prompt_text import append_required_labels_clause
 from ..shared.render_variation import sample_int_render_param
 from ..shared.shape_style import extract_background_anchor_colors, sample_geometry_shape_style
 from ..shared.single_object_scene import (
@@ -62,7 +63,6 @@ from .defaults import MEASUREMENT_SHARED_DEFAULTS
 from ..shared.background_defaults import POST_IMAGE_BACKGROUND_DEFAULTS
 from ..shared.noise_defaults import POST_IMAGE_NOISE_DEFAULTS
 
-_QUERY_TYPE = "measure"
 _POLYGON_VARIANT_TO_SIDES: Dict[str, int] = {
     "triangle": 3,
     "quadrilateral": 4,
@@ -90,14 +90,6 @@ def _prompt_family_for_variant(variant_kind: str) -> str:
     return str(variant_kind)
 
 
-def _build_required_labels_text(labels: Sequence[str]) -> str:
-    """Render deterministic required-label suffix for prompt evidence hint."""
-    normalized = [str(label) for label in labels if str(label).strip()]
-    if not normalized:
-        return ""
-    return f" Required labels: {', '.join(normalized)}"
-
-
 def _required_prompt_text(prompt_defaults: Mapping[str, Any], *, preferred_keys: Sequence[str], context: str) -> str:
     """Return first available non-empty prompt text among ordered key candidates."""
     for key in preferred_keys:
@@ -116,10 +108,6 @@ class GeometryShapeMeasureBase:
     query_template_id = ""
     answer_component_key = ""
     supported_shape_variants: Tuple[str, ...] = ()
-
-    @staticmethod
-    def supported_query_types(_params: Dict[str, Any] | None = None) -> List[str]:
-        return [_QUERY_TYPE]
 
     def _answer_scalar_from_polygon_instance(self, instance: PolygonInstance) -> int:
         """Return scalar answer value for one polygon instance."""
@@ -162,9 +150,11 @@ class GeometryShapeMeasureBase:
         """Return minimum graph-cell count required by one selected variant."""
         variant = str(variant_kind)
         if variant == "ellipse":
-            axis_min = int(group_default(gen_defaults, "ellipse_axis_min", 2))
-            axis_max = int(group_default(gen_defaults, "ellipse_axis_max", 12))
-            allow_circle = bool(group_default(gen_defaults, "ellipse_allow_circle", True))
+            axis_min = int(group_default(gen_defaults, "ellipse_axis_min", MEASUREMENT_SHARED_DEFAULTS.ellipse_axis_min))
+            axis_max = int(group_default(gen_defaults, "ellipse_axis_max", MEASUREMENT_SHARED_DEFAULTS.ellipse_axis_max))
+            allow_circle = bool(
+                group_default(gen_defaults, "ellipse_allow_circle", MEASUREMENT_SHARED_DEFAULTS.ellipse_allow_circle)
+            )
             pairs = ellipse_axis_pairs(
                 axis_min=int(axis_min),
                 axis_max=int(axis_max),
@@ -177,8 +167,8 @@ class GeometryShapeMeasureBase:
             min_extent = min(max(int(semi_x), int(semi_y)) for semi_x, semi_y in pairs)
             return int((2 * int(min_extent)) + 2)
         if variant == "circle":
-            radius_min = int(group_default(gen_defaults, "circle_radius_min", 2))
-            radius_max = int(group_default(gen_defaults, "circle_radius_max", 12))
+            radius_min = int(group_default(gen_defaults, "circle_radius_min", MEASUREMENT_SHARED_DEFAULTS.circle_radius_min))
+            radius_max = int(group_default(gen_defaults, "circle_radius_max", MEASUREMENT_SHARED_DEFAULTS.circle_radius_max))
             radii = circle_radii_for_pi_coefficient(
                 radius_min=int(radius_min),
                 radius_max=int(radius_max),
@@ -194,10 +184,6 @@ class GeometryShapeMeasureBase:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic shape-measurement instance."""
-        query_type = str(params.get("query_type", _QUERY_TYPE))
-        if query_type != _QUERY_TYPE:
-            raise ValueError(f"unsupported query_type: {query_type}")
-
         task_group_defaults = get_task_group_defaults(self.domain, self.task_group)
         gen_defaults, render_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
             task_group_defaults if isinstance(task_group_defaults, Mapping) else {},
@@ -318,11 +304,13 @@ class GeometryShapeMeasureBase:
         circle_radii_for_context: List[int] | None = None
         if str(variant_kind) == "ellipse":
             ellipse_pairs = ellipse_axis_pairs(
-                axis_min=int(group_default(gen_defaults, "ellipse_axis_min", 2)),
-                axis_max=int(group_default(gen_defaults, "ellipse_axis_max", 12)),
+                axis_min=int(group_default(gen_defaults, "ellipse_axis_min", MEASUREMENT_SHARED_DEFAULTS.ellipse_axis_min)),
+                axis_max=int(group_default(gen_defaults, "ellipse_axis_max", MEASUREMENT_SHARED_DEFAULTS.ellipse_axis_max)),
                 coefficient_min=(int(answer_min) if answer_min is not None else None),
                 coefficient_max=(int(answer_max) if answer_max is not None else None),
-                allow_circle=bool(group_default(gen_defaults, "ellipse_allow_circle", True)),
+                allow_circle=bool(
+                    group_default(gen_defaults, "ellipse_allow_circle", MEASUREMENT_SHARED_DEFAULTS.ellipse_allow_circle)
+                ),
             )
             ellipse_pairs_for_context = feasible_ellipse_axis_pairs_on_graph_paper(
                 canvas_size=int(context.canvas_size),
@@ -337,8 +325,8 @@ class GeometryShapeMeasureBase:
                 )
         if str(variant_kind) == "circle":
             circle_radii = circle_radii_for_pi_coefficient(
-                radius_min=int(group_default(gen_defaults, "circle_radius_min", 2)),
-                radius_max=int(group_default(gen_defaults, "circle_radius_max", 12)),
+                radius_min=int(group_default(gen_defaults, "circle_radius_min", MEASUREMENT_SHARED_DEFAULTS.circle_radius_min)),
+                radius_max=int(group_default(gen_defaults, "circle_radius_max", MEASUREMENT_SHARED_DEFAULTS.circle_radius_max)),
                 coefficient_min=(int(answer_min) if answer_min is not None else None),
                 coefficient_max=(int(answer_max) if answer_max is not None else None),
                 coefficient_scale=int(self._circle_answer_coefficient_scale()),
@@ -595,14 +583,16 @@ class GeometryShapeMeasureBase:
             prompt_defaults,
             (
                 "bundle_id",
-                "task_type_key",
+                "task_family_key",
+                "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
         prompt_bundle_id = str(base_prompt_required["bundle_id"])
-        prompt_task_type_key = str(base_prompt_required["task_type_key"])
+        prompt_task_family_key = str(base_prompt_required["task_family_key"])
+        prompt_task_key = str(base_prompt_required["task_key"])
         json_output_contract = str(base_prompt_required["json_output_contract"])
         json_output_contract_answer_only = str(base_prompt_required["json_output_contract_answer_only"])
 
@@ -625,7 +615,7 @@ class GeometryShapeMeasureBase:
             preferred_keys=(f"evidence_hint_{prompt_family}", "evidence_hint_point_map", "evidence_hint"),
             context=f"prompt defaults for {self.task_id}",
         )
-        evidence_hint = f"{str(evidence_hint_base).rstrip().rstrip('.')}{_build_required_labels_text(required_labels)}"
+        evidence_hint = append_required_labels_clause(str(evidence_hint_base), required_labels)
         answer_hint = _required_prompt_text(
             prompt_defaults,
             preferred_keys=(f"answer_hint_{answer_family}", "answer_hint"),
@@ -640,8 +630,8 @@ class GeometryShapeMeasureBase:
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=prompt_bundle_id,
-            task_type_key=prompt_task_type_key,
-            query_type=_QUERY_TYPE,
+            task_family_key=prompt_task_family_key,
+            task_key=prompt_task_key,
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
@@ -716,7 +706,7 @@ class GeometryShapeMeasureBase:
                 },
             },
             "query_spec": {
-                "query_type": _QUERY_TYPE,
+                "task_variant": str(variant_kind),
                 "template_id": str(self.query_template_id),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -766,6 +756,6 @@ class GeometryShapeMeasureBase:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_type=_QUERY_TYPE,
+            task_variant=str(variant_kind),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

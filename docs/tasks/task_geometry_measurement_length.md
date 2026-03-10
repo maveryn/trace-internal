@@ -6,9 +6,9 @@
 3. Task id: `task_geometry_measurement_length`
 4. Objective: measure one target segment length from a single-object scene.
 
-## 2) Scene + query contract
+## 2) Scene + task contract
 1. Entities/relations: one entity (`segment`, `polygon`, `circle`, or `ellipse` variant); no inter-entity relations.
-2. Supported `query_type` values: `measure`.
+2. Supported `task_variant` values: `segment`, `triangle`, `quadrilateral`, `pentagon`, `circle_radius`, `circle_diameter`, `ellipse_major_axis`, `ellipse_minor_axis`.
 3. `answer_gt.type`: `integer`.
 4. Default `evidence_gt.type`: `grid_point_map` with variant-specific cardinality:
    - circle variants (`circle_radius`, `circle_diameter`): one labeled center point,
@@ -18,25 +18,26 @@
 
 ## 3) Prompt contract
 1. `prompt_bundle_id`: `geometry_measurement_v1`
-2. `task_type_key`: `measurement_single_object`
-3. Query-type mapping: `measure -> variant-specific length question`:
+2. `task_family_key`: `measurement_single_object`
+3. `task_key`: `measurement_query`
+4. Task-variant mapping controls variant-specific length wording:
    - segment: labeled endpoint pair,
    - polygon: labeled side pair,
    - circle: radius or diameter,
    - ellipse: major/minor axis.
-4. Answer+evidence JSON shape is variant-specific via labeled point maps:
+5. Answer+evidence JSON shape is variant-specific via labeled point maps:
    - circle variants: `{"evidence":{"O":[x,y]},"answer":<integer>}`,
    - non-circle variants: `{"evidence":{"A":[x1,y1],"B":[x2,y2]},"answer":<integer>}`.
-5. Answer-only JSON shape: `{"answer":<integer>}`.
-6. Required slots:
+6. Answer-only JSON shape: `{"answer":<integer>}`.
+7. Required slots:
    - shared: `object_description`, `question_text`,
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`,
    - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`.
-7. Slot source:
+8. Slot source:
    - shared JSON-format contracts from `configs/domains/geometry/base.yaml` (`prompt.shared`),
    - measurement-family prompt slots from `configs/domains/geometry/measurement.yaml` (`prompt.shared` + `prompt.task_overrides.task_geometry_measurement_length`).
-8. Variant counts (task/query/mode): minimum 10 templates per required key.
-9. Output modes:
+9. Variant counts (task-family/task/mode): minimum 10 templates per required key.
+10. Output modes:
    - `answer_only`
    - `answer_and_evidence`
 

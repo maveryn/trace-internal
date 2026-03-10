@@ -18,6 +18,8 @@ def _example_answer_value(answer_type: str) -> Any:
     answer_kind = str(answer_type)
     if answer_kind == "integer":
         return 8
+    if answer_kind == "number":
+        return 42.3
     if answer_kind == "pi_expression":
         return "12π"
     if answer_kind == "option_letter":

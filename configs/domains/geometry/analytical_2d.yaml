@@ -1,7 +1,7 @@
 generation:
   shared:
     answer_min: 8
-    answer_max: 64
+    answer_max: 2500
     shape_weights:
       rectangle: 1.0
       triangle: 1.0
@@ -17,18 +17,16 @@ generation:
     balanced_mode_sampling: true
   task_overrides:
     task_geometry_analytical_2d_area:
-      side_min: 2
-      side_max: 12
-      right_triangle_max_component: 18
-      circle_radius_min: 2
-      circle_radius_max: 10
-      ellipse_axis_min: 2
-      ellipse_axis_max: 10
+      side_min: 5
+      side_max: 50
+      right_triangle_max_component: 80
+      circle_radius_min: 5
+      circle_radius_max: 50
+      ellipse_axis_min: 5
+      ellipse_axis_max: 50
 
 rendering:
   shared:
-    canvas_size_min: 256
-    canvas_size_max: 512
     graph_cells_min: 6
     graph_cells_max: 12
     line_width: 4
@@ -43,6 +41,8 @@ rendering:
     label_stroke_width: 1
     label_stroke_width_min: 1
     label_stroke_width_max: 2
+    analytical_unit_spacing_px: 10
+    analytical_unit_padding_px: 20
 
 visual:
   background:
@@ -66,8 +66,9 @@ visual:
 prompt:
   shared:
     bundle_id: geometry_analytical_area_v1
-    task_type_key: analytical_single_shape
-    object_description: a single annotated geometric shape
+    task_family_key: analytical_single_shape
+    task_key: analytical_area_query
+    object_description: a geometric shape with measurement annotations
     evidence_hint_measurement_map: set "evidence" to a JSON object that maps each required annotation label to its shown measurement value
     answer_hint_integer: set "answer" to the area value as an integer
     answer_hint_pi: set "answer" to the area value in the form kπ (for example 12π)
@@ -77,20 +78,20 @@ prompt:
     json_example_answer_only_pi: '{"answer":"24π"}'
   task_overrides:
     task_geometry_analytical_2d_area:
-      question_text_rectangle_explicit: The shape is a rectangle. Use the annotated side lengths to compute its area in square units.
-      question_text_rectangle_derived: The shape is a rectangle. One side length and the diagonal are annotated. Compute the area in square units.
-      question_text_triangle_explicit: The shape is a right triangle. Use the annotated base and height to compute its area in square units.
-      question_text_triangle_derived: The shape is a right triangle. A leg length and the hypotenuse are annotated. Compute the area in square units.
-      question_text_parallelogram_explicit: The shape is a parallelogram. Use the annotated base and height to compute its area in square units.
-      question_text_parallelogram_derived: The shape is a parallelogram. The base, one side, and the horizontal offset are annotated. Compute the area in square units.
-      question_text_trapezoid_explicit: The shape is a trapezoid. Use the annotated bases and height to compute its area in square units.
-      question_text_trapezoid_derived: The shape is an isosceles trapezoid. Both bases and one leg length are annotated. Compute the area in square units.
-      question_text_rhombus_explicit: The shape is a rhombus. Both diagonals are annotated. Compute its area in square units.
-      question_text_rhombus_derived: The shape is a rhombus. One side length and one diagonal are annotated. Compute its area in square units.
-      question_text_circle_explicit: The shape is a circle. The radius is annotated. Compute the area and express the result in kπ form.
-      question_text_circle_derived: The shape is a circle. The circumference is annotated in π units. Compute the area and express the result in kπ form.
-      question_text_ellipse_explicit: The shape is an ellipse. The semimajor axis and semiminor axis are annotated. Compute the area and express the result in kπ form.
-      question_text_ellipse_derived: The shape is an ellipse. The semimajor axis and focal distance are annotated. Compute the area and express the result in kπ form.
+      question_text_rectangle_explicit: The rectangle has two annotated side lengths. What is its area in square units?
+      question_text_rectangle_derived: One side length and the diagonal of the rectangle are annotated. What is its area in square units?
+      question_text_triangle_explicit: The right triangle has an annotated base and height. What is its area in square units?
+      question_text_triangle_derived: A leg length and the hypotenuse of the right triangle are annotated. What is its area in square units?
+      question_text_parallelogram_explicit: The parallelogram has an annotated base and height. What is its area in square units?
+      question_text_parallelogram_derived: The parallelogram shows a base, one side length, and the horizontal offset. What is its area in square units?
+      question_text_trapezoid_explicit: The trapezoid has annotated base lengths and height. What is its area in square units?
+      question_text_trapezoid_derived: The isosceles trapezoid shows both bases and one leg length. What is its area in square units?
+      question_text_rhombus_explicit: The rhombus has both diagonals annotated. What is its area in square units?
+      question_text_rhombus_derived: One side length and one diagonal of the rhombus are annotated. What is its area in square units?
+      question_text_circle_explicit: The circle has an annotated radius. What is its area? Express the result in kπ form.
+      question_text_circle_derived: The circle has an annotated diameter. What is its area? Express the result in kπ form.
+      question_text_ellipse_explicit: The ellipse has annotated semimajor and semiminor axes. What is its area? Express the result in kπ form.
+      question_text_ellipse_derived: The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in kπ form.
       json_example_rectangle_explicit: '{"evidence":{"AB":6,"CD":4},"answer":24}'
       json_example_rectangle_derived: '{"evidence":{"AB":3,"CD":5},"answer":12}'
       json_example_triangle_explicit: '{"evidence":{"AB":4,"CD":6},"answer":12}'
@@ -102,11 +103,6 @@ prompt:
       json_example_rhombus_explicit: '{"evidence":{"AB":10,"CD":6},"answer":30}'
       json_example_rhombus_derived: '{"evidence":{"AB":5,"CD":8},"answer":24}'
       json_example_circle_explicit: '{"evidence":{"AB":4},"answer":"16π"}'
-      json_example_circle_derived: '{"evidence":{"AB":"10π"},"answer":"25π"}'
+      json_example_circle_derived: '{"evidence":{"AB":8},"answer":"16π"}'
       json_example_ellipse_explicit: '{"evidence":{"AB":6,"CD":4},"answer":"24π"}'
       json_example_ellipse_derived: '{"evidence":{"AB":5,"CD":3},"answer":"20π"}'
-
-sampling:
-  shared:
-    query_weights:
-      measure: 1.0

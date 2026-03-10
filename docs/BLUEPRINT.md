@@ -14,11 +14,11 @@ TRACE generates grounded visual-reasoning instances with:
 Use: `domain -> task_group -> task`.
 
 Rules:
-1. `task_group` is broad reasoning style; query variants stay inside task via `query_type`.
-2. For geometry graph-paper readout tasks, use `task_group=measurement`; for formula/relationship-based geometry with numeric annotations, use `task_group=analytical_2d`.
+1. `task_group` is broad reasoning style; intra-task variants stay inside task via `task_variant`.
+2. For geometry graph-paper readout tasks, use `task_group=measurement`; for formula/relationship-based geometry with numeric annotations, use `task_group=analytical_2d` (2D) and `task_group=analytical_3d` (3D solids).
 3. Config precedence: `domain defaults -> task_group defaults -> task/params`.
 4. In task-group config sections (`generation`, `rendering`, `prompt`, `sampling`), keep shared keys under `shared` and task-specific keys under `task_overrides.<task_id>` (legacy flat section keys are unsupported).
-5. Query-weight precedence: `build task query_weights -> task_group sampling.task_overrides -> task_group sampling.shared -> uniform`.
+5. Build-task weights control cross-task sampling; task-variant weights are resolved inside the task from config/params.
 6. Task-id naming is mandatory: `task_<domain>_<task_group>_<task_name>` (all lowercase snake_case).
 7. `task_id` domain/task_group segments must match class `domain` and `task_group`.
 8. Task module naming is mandatory: file path `trace/tasks/<domain>/<task_group>/<task_name>.py` (do not repeat full `task_id` in filename).
@@ -55,12 +55,13 @@ Required sections:
 ## 4) Prompt contract
 1. Prompt text must live in external bundles under `prompts/`.
 2. Deterministic composition layers:
-   - task type
-   - query type
+   - task family
+   - task
+   - optional task variant
    - output mode (`answer_only`, `answer_and_evidence`)
 3. Store both prompt modes per instance in `prompt_variants`.
 4. Record prompt metadata in trace (`bundle/key/variant/count/slots`).
-5. Template cardinality rule: each required list has at least 10 variants.
+5. Template cardinality rule: each required list has exactly 5 high-quality variants.
 
 ## 5) Evidence contract
 1. Symbolic witness is source of truth in trace.
@@ -80,8 +81,8 @@ Required sections:
 ## 7) Sampling policy
 1. Global sampling unit is `task`.
 2. Domain/task-group probabilities are derived by task aggregation.
-3. Query sampling is inside each task (`P(query|task)`), uniform by default.
-4. For each query type, sample final answers as close to feasible-uniform as constraints allow.
+3. Task-variant sampling is inside each task (`P(task_variant|task)`), uniform by default unless overridden.
+4. Validate answer distributions per task variant with lightweight anti-degeneracy checks over generated answers: at least 5 unique answers, max single-answer frequency below 25%, and (for numeric tasks) max 5-bin frequency at most 50%.
 5. Never relax semantic constraints to force acceptance.
 
 ## 8) Build, validation, and finalize

@@ -1,4 +1,4 @@
-"""Contract tests for geometry analytical_2d area task."""
+"""Contract tests for geometry analytical_3d volume task."""
 
 from __future__ import annotations
 
@@ -7,14 +7,14 @@ from pathlib import Path
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.geometry.analytical_2d.area import GeometryAnalyticalArea2DTask
+from trace.tasks.geometry.analytical_3d.volume import GeometryAnalyticalVolume3DTask
 from tests.helpers import read_jsonl
 
 
-def test_geometry_analytical_area_deterministic() -> None:
-    task = GeometryAnalyticalArea2DTask()
-    out_a = task.generate(73011, params={}, max_attempts=260)
-    out_b = task.generate(73011, params={}, max_attempts=260)
+def test_geometry_analytical_3d_volume_deterministic() -> None:
+    task = GeometryAnalyticalVolume3DTask()
+    out_a = task.generate(99201, params={}, max_attempts=260)
+    out_b = task.generate(99201, params={}, max_attempts=260)
     assert str(out_a.task_variant).strip()
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
     assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
@@ -30,32 +30,33 @@ def test_geometry_analytical_area_deterministic() -> None:
         assert isinstance(out_a.answer_gt.value, int)
 
 
-def test_geometry_analytical_area_build_smoke(tmp_path: Path) -> None:
-    output_root = tmp_path / "task_geometry_analytical_2d_area"
+def test_geometry_analytical_3d_volume_build_smoke(tmp_path: Path) -> None:
+    output_root = tmp_path / "task_geometry_analytical_3d_volume"
     config = BuildConfig(
         output_root=str(output_root),
-        dataset_name="build_smoke_task_geometry_analytical_2d_area",
+        dataset_name="build_smoke_task_geometry_analytical_3d_volume",
         instance_version="v1",
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_geometry_analytical_2d_area",
+                task_id="task_geometry_analytical_3d_volume",
                 count=6,
                 params={},
             )
         ],
         strict_repro=False,
         max_attempts_per_instance=260,
-        sampling_seed=23,
+        sampling_seed=29,
     )
-    final_path = build_dataset(config, code_hash="geometry-analytical-area-smoke")
+    final_path = build_dataset(config, code_hash="geometry-analytical-3d-volume-smoke")
     assert final_path.exists()
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 6
-    assert all(record["task_group"] == "analytical_2d" for record in train_records)
+    assert all(record["task_group"] == "analytical_3d" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_geometry_analytical_2d_area"]) == 6
+    assert int(build_report["accepted_counts_by_task"]["task_geometry_analytical_3d_volume"]) == 6
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0
+

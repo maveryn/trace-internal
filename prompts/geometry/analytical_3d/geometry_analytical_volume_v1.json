@@ -1,29 +1,29 @@
 {
-  "bundle_id": "geometry_angle_measure_v1",
+  "bundle_id": "geometry_analytical_volume_v1",
   "schema_version": "v1",
   "task_family_templates": {
-    "measurement_single_object": [
-      "You are given a graph-paper image showing {object_description}.",
-      "The graph-paper image shows {object_description}.",
-      "Look at the graph-paper image showing {object_description}.",
-      "Use the graph-paper diagram showing {object_description}.",
-      "Work from the graph-paper image showing {object_description}."
+    "analytical_single_solid": [
+      "You are given an image showing {object_description}.",
+      "The image shows {object_description}.",
+      "Look at the annotated image showing {object_description}.",
+      "Use the image showing {object_description}.",
+      "Work from the annotated figure showing {object_description}."
     ]
   },
   "task_templates": {
-    "measurement_angle_value": [
-      "{question_text}\nReport the angle in degrees to the nearest integer.",
-      "{question_text}\nGive the angle measure in degrees rounded to the nearest integer.",
-      "{question_text}\nWrite the angle value in degrees as the nearest integer.",
-      "{question_text}\nProvide the angle measure rounded to the nearest degree.",
-      "{question_text}\nReport the angle rounded to the nearest degree."
+    "analytical_volume_query": [
+      "{question_text}",
+      "Answer this question from the image: {question_text}",
+      "Answer this question from the labeled figure: {question_text}",
+      "Read the marked measurements and answer: {question_text}",
+      "Based on the shown values, answer this question: {question_text}"
     ]
   },
   "required_slots_by_key": {
-    "task_family:measurement_single_object": [
+    "task_family:analytical_single_solid": [
       "object_description"
     ],
-    "task:measurement_angle_value": [
+    "task:analytical_volume_query": [
       "question_text"
     ],
     "answer_or_evidence:answer_only": [

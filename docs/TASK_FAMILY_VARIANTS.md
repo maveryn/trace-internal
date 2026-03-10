@@ -16,7 +16,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
 ## Planned geometry measurement variants
 1. **Angle measurement**
    - One angle per image.
-   - Ask for the angle value.
+   - Ask for the angle value rounded to the nearest integer degree.
    - Evidence: labeled 3-point map in graph-unit integer coordinates.
 2. **Polygon area measurement**
    - One shape per image: triangle/quadrilateral polygon or ellipse.
@@ -26,6 +26,11 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - One shape per image: triangle/quadrilateral polygon or circle.
    - Ask for perimeter/circumference (`integer` for polygons, `kπ` for circles).
    - Evidence: labeled polygon-vertex map for polygons; labeled center/radius-point map for circles.
+4. **Slope measurement**
+   - One finite line per image on graph paper.
+   - Line crosses x-axis at an integer lattice coordinate and at least one other integer lattice point.
+   - Ask for slope to one decimal place.
+   - Evidence: labeled x-axis crossing lattice point.
 
 ## Implemented analytical variant
 1. **Analytical area (`task_geometry_analytical_2d_area`)**
@@ -33,6 +38,10 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - One explicit + one derived variant per shape.
    - Ask for area (`integer` for polygonal shapes, `kπ` for circle/ellipse).
    - Evidence: structured `measurement_ref_map` (`annotation -> value`) for all quantities used in the area computation.
+2. **Analytical 3D volume (`task_geometry_analytical_3d_volume`)**
+   - One annotated 3D solid per image: rectangular prism, triangular prism, square pyramid, cylinder, cone, sphere.
+   - Ask for volume (`integer` for polyhedra, `kπ` for cylinder/cone/sphere).
+   - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the required measurement labels.
 
 ## Future polygon variants (deferred)
 1. Polygon diameter measurement.

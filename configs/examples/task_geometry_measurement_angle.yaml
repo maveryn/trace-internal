@@ -10,7 +10,6 @@ tasks:
   - task_id: task_geometry_measurement_angle
     count: 24
     params:
-      query_type: measure
       min_angle: 30
       max_angle: 150
       angle_step: 1
@@ -20,9 +19,4 @@ tasks:
       balanced_sampling: true
       source_kind_weights:
         primitive_angle: 1.0
-        triangle: 1.0
-        quadrilateral: 1.0
         intersection_lines: 1.0
-      polygon_allowed_sides: [3, 4]
-    query_weights:
-      measure: 1.0

@@ -13,6 +13,7 @@ from trace.tasks.geometry.measurement.angle import GeometryAngleMeasure2DTask
 from trace.tasks.geometry.measurement.area import GeometryAreaMeasure2DTask
 from trace.tasks.geometry.measurement.length import GeometryLengthMeasure2DTask
 from trace.tasks.geometry.measurement.perimeter import GeometryPerimeterMeasure2DTask
+from trace.tasks.geometry.measurement.slope import GeometrySlopeMeasureTask
 from tests.helpers import read_jsonl
 
 
@@ -20,25 +21,31 @@ _TASK_CASES: list[tuple[str, Type[Any], Dict[str, Any], int]] = [
     (
         "task_geometry_measurement_angle",
         GeometryAngleMeasure2DTask,
-        {"query_type": "measure"},
+        {},
         180,
     ),
     (
         "task_geometry_measurement_area",
         GeometryAreaMeasure2DTask,
-        {"query_type": "measure"},
+        {},
         180,
     ),
     (
         "task_geometry_measurement_perimeter",
         GeometryPerimeterMeasure2DTask,
-        {"query_type": "measure"},
+        {},
         180,
     ),
     (
         "task_geometry_measurement_length",
         GeometryLengthMeasure2DTask,
-        {"query_type": "measure"},
+        {},
+        180,
+    ),
+    (
+        "task_geometry_measurement_slope",
+        GeometrySlopeMeasureTask,
+        {},
         180,
     ),
 ]
@@ -58,15 +65,17 @@ def test_geometry_measurement_task_contract_deterministic() -> None:
 
     for task_id, task_cls, params, max_attempts in _TASK_CASES:
         task = task_cls()
-        assert task.supported_query_types({}) == ["measure"]
 
         out_a = task.generate(53123, params=dict(params), max_attempts=int(max_attempts))
         out_b = task.generate(53123, params=dict(params), max_attempts=int(max_attempts))
 
-        assert out_a.query_type == "measure"
+        assert str(out_a.task_variant).strip()
         if str(task_id) == "task_geometry_measurement_angle":
-            assert out_a.answer_gt.type == "option_letter"
-            assert str(out_a.answer_gt.value) in {"A", "B", "C", "D", "E"}
+            assert out_a.answer_gt.type == "integer"
+            assert isinstance(out_a.answer_gt.value, int)
+        elif str(task_id) == "task_geometry_measurement_slope":
+            assert out_a.answer_gt.type == "number"
+            assert isinstance(out_a.answer_gt.value, float)
         else:
             assert out_a.answer_gt.type in {"integer", "pi_expression"}
             if out_a.answer_gt.type == "integer":
@@ -84,6 +93,13 @@ def test_geometry_measurement_task_contract_deterministic() -> None:
         prompt_variants_meta = out_a.trace_payload["query_spec"]["prompt_variants"]
         assert sorted(prompt_variants_meta.keys()) == ["answer_and_evidence", "answer_only"]
         assert out_a.trace_payload["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
+        if str(task_id) == "task_geometry_measurement_angle":
+            question_text = str(out_a.trace_payload["query_spec"]["prompt_variant"]["slot_values"]["question_text"])
+            lowered_question_text = question_text.lower()
+            assert "nearest tenth" not in lowered_question_text
+            assert "one decimal" not in lowered_question_text
+            assert "nearest degree" not in lowered_question_text
+            assert "nearest integer" not in lowered_question_text
 
         background_meta = out_a.trace_payload["render_spec"]["background_style"]
         assert background_meta["selected_style"] == "graph_paper"
@@ -139,9 +155,7 @@ def test_geometry_measurement_task_build_smoke(tmp_path: Path) -> None:
         assert all(record["task_group"] == "measurement" for record in train_records)
 
         build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-        query_counts = build_report["query_type_accepted_counts_by_task"][str(task_id)]
-        assert sum(int(value) for value in query_counts.values()) == 4
-        assert set(query_counts.keys()) == {"measure"}
+        assert int(build_report["accepted_counts_by_task"][str(task_id)]) == 4
 
         validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
         assert validation["total_errors"] == 0

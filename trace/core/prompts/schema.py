@@ -5,8 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Tuple
 
-
-MIN_PROMPT_VARIANTS = 10
+REQUIRED_PROMPT_VARIANTS = 5
 
 
 @dataclass(frozen=True)
@@ -15,8 +14,9 @@ class PromptBundle:
 
     bundle_id: str
     schema_version: str
-    task_type_templates: Dict[str, Tuple[str, ...]]
-    query_type_templates: Dict[str, Tuple[str, ...]]
+    task_family_templates: Dict[str, Tuple[str, ...]]
+    task_templates: Dict[str, Tuple[str, ...]]
+    task_variant_templates: Dict[str, Tuple[str, ...]]
     answer_or_evidence_templates: Dict[str, Tuple[str, ...]]
     required_slots_by_key: Dict[str, Tuple[str, ...]]
     source_path: str
@@ -40,9 +40,9 @@ def _parse_template_map(
             templates = tuple(str(item) for item in values)
         else:
             templates = tuple(str(item).strip() for item in values if str(item).strip())
-        if len(templates) < MIN_PROMPT_VARIANTS:
+        if len(templates) != REQUIRED_PROMPT_VARIANTS:
             raise ValueError(
-                f"{field_name}.{entry_key} must contain at least {MIN_PROMPT_VARIANTS} prompt variants"
+                f"{field_name}.{entry_key} must contain exactly {REQUIRED_PROMPT_VARIANTS} prompt variants"
             )
         parsed[entry_key] = templates
     return parsed
@@ -73,8 +73,20 @@ def parse_prompt_bundle(raw: Mapping[str, Any], *, source_path: str) -> PromptBu
     if not schema_version:
         raise ValueError("schema_version is required")
 
-    task_type_templates = _parse_template_map(raw.get("task_type_templates"), field_name="task_type_templates")
-    query_type_templates = _parse_template_map(raw.get("query_type_templates"), field_name="query_type_templates")
+    task_family_templates = _parse_template_map(
+        raw.get("task_family_templates"),
+        field_name="task_family_templates",
+    )
+    task_templates = _parse_template_map(raw.get("task_templates"), field_name="task_templates")
+    task_variant_raw = raw.get("task_variant_templates")
+    task_variant_templates = (
+        _parse_template_map(
+            task_variant_raw,
+            field_name="task_variant_templates",
+        )
+        if task_variant_raw is not None
+        else {}
+    )
     answer_or_evidence_raw = raw.get("answer_or_evidence_templates")
     answer_or_evidence_templates = (
         _parse_template_map(
@@ -90,8 +102,9 @@ def parse_prompt_bundle(raw: Mapping[str, Any], *, source_path: str) -> PromptBu
     return PromptBundle(
         bundle_id=bundle_id,
         schema_version=schema_version,
-        task_type_templates=task_type_templates,
-        query_type_templates=query_type_templates,
+        task_family_templates=task_family_templates,
+        task_templates=task_templates,
+        task_variant_templates=task_variant_templates,
         answer_or_evidence_templates=answer_or_evidence_templates,
         required_slots_by_key=required_slots_by_key,
         source_path=str(source_path),

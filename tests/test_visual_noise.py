@@ -13,7 +13,6 @@ def test_geometry_measurement_default_noise_prob() -> None:
     out_a = task.generate(
         4242,
         params={
-            "query_type": "measure",
             "angle_step": 1,
         },
         max_attempts=200,
@@ -21,7 +20,6 @@ def test_geometry_measurement_default_noise_prob() -> None:
     out_b = task.generate(
         4242,
         params={
-            "query_type": "measure",
             "angle_step": 1,
         },
         max_attempts=200,

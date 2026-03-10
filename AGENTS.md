@@ -32,11 +32,11 @@ Each generated instance should include:
 ## Core engineering rules
 - Use taxonomy consistently: `domain -> task_group -> task`.
 - Task ids must follow `task_<domain>_<task_group>_<task_name>` (lowercase snake_case), and task module filenames must be `<task_name>.py` under `trace/tasks/<domain>/<task_group>/`.
-- Keep `task_group` broad by reasoning style; for geometry value-style tasks use `task_group=measurement` and keep variants in `query_type`.
-- Sampling policy is task-level globally (equal task weights by default); domain/task_group probabilities are derived by aggregation, and query sampling happens inside each task (uniform by default unless task-config override).
+- Keep `task_group` broad by reasoning style; for geometry value-style tasks use `task_group=measurement` and keep intra-task variants in `task_variant`.
+- Sampling policy is task-level globally (equal task weights by default); domain/task_group probabilities are derived by aggregation, and task-variant sampling happens inside each task (uniform by default unless task-config override).
 - Domain/task-group defaults (generation/rendering/visual variation) should follow precedence `domain -> task_group -> task/params`: shared domain defaults under `configs/domains/<domain>/base.yaml`, group overrides under `configs/domains/<domain>/<task_group>.yaml`, then optional task-level overrides.
 - Do not hardcode user-facing prompt text in task modules; prompts must come from external template assets.
-- Prompt composition must be reusable: one task-type layer and one query-type layer, each with deterministic variant selection.
+- Prompt composition must be reusable: one task-family layer and one task layer (plus optional task-variant layer), each with deterministic variant selection.
 - Keep prompt templates versioned and recorded in trace metadata (`prompt_bundle_id`, keys, variant indices).
 - Keep generation factorized into explicit specs (`SceneSpec`, `QuerySpec`, `RenderSpec`, `PromptSpec`, `VerifierSpec`, `SamplerSpec`, `InstanceRecordSpec`).
 - Generators must be deterministic given seeds/specs/versions.

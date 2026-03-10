@@ -69,7 +69,6 @@ from .defaults import ANALYTICAL_SHARED_DEFAULTS
 Point = Tuple[float, float]
 Segment = Tuple[Point, Point]
 
-_QUERY_TYPE = "measure"
 _SHAPES: Tuple[str, ...] = (
     "rectangle",
     "triangle",
@@ -113,6 +112,7 @@ class _AnnotationSpec:
     text: str
     anchor: Point
     base_direction: Point
+    offset_scale: float = 1.0
     point_a: Point | None = None
     point_b: Point | None = None
 
@@ -249,9 +249,34 @@ def _right_triangle_triplets(max_component: int) -> Tuple[Tuple[int, int, int], 
     return tuple(sorted(out))
 
 
+def _analytical_unit_spacing_px(context: GraphSceneContext) -> int:
+    """Return per-unit pixel spacing for analytical 2D scenes.
+
+    Analytical tasks do not render graph paper, so unit spacing is decoupled
+    from graph-cell counts and controlled by analytical render params.
+    """
+    raw_value = context.render_params.get("analytical_unit_spacing_px", context.graph_spacing)
+    spacing_px = int(raw_value)
+    if int(spacing_px) < 2:
+        raise ValueError("analytical_unit_spacing_px must be >= 2")
+    return int(spacing_px)
+
+
+def _analytical_unit_padding_px(context: GraphSceneContext) -> int:
+    """Return canvas padding in pixels reserved for analytical-shape placement."""
+    raw_value = context.render_params.get("analytical_unit_padding_px", 20)
+    padding_px = int(raw_value)
+    if int(padding_px) < 0:
+        raise ValueError("analytical_unit_padding_px must be >= 0")
+    return int(padding_px)
+
+
 def _unit_cap(context: GraphSceneContext) -> int:
-    """Return conservative per-axis unit span cap for current graph scene."""
-    return max(4, int(context.graph_cells) - 2)
+    """Return conservative per-axis unit span cap for analytical scenes."""
+    spacing_px = int(_analytical_unit_spacing_px(context))
+    padding_px = int(_analytical_unit_padding_px(context))
+    usable_px = max(8, int(context.canvas_size) - (2 * int(padding_px)))
+    return max(4, int(usable_px // max(1, int(spacing_px))) - 2)
 
 
 def _place_points_on_lattice(
@@ -262,21 +287,23 @@ def _place_points_on_lattice(
     padding_units: int,
 ) -> Dict[str, Point]:
     """Place relative unit offsets on lattice under in-canvas constraints."""
+    spacing_px = int(_analytical_unit_spacing_px(context))
+    base_padding_px = int(_analytical_unit_padding_px(context))
     offsets = [tuple((int(offset[0]), int(offset[1]))) for offset in unit_points.values()]
     anchor = sample_lattice_point_with_offsets(
         rng,
         canvas_size=int(context.canvas_size),
-        spacing=int(context.graph_spacing),
+        spacing=int(spacing_px),
         x_offsets=[int(offset[0]) for offset in offsets],
         y_offsets=[int(offset[1]) for offset in offsets],
         lattice_origin=(float(context.graph_origin[0]), float(context.graph_origin[1])),
-        padding=int(max(0, int(padding_units)) * int(context.graph_spacing)),
+        padding=int(base_padding_px + (max(0, int(padding_units)) * int(spacing_px))),
     )
     return {
         str(key): offset_point_by_grid_vector(
             (float(anchor[0]), float(anchor[1])),
             (int(offset[0]), int(offset[1])),
-            spacing=int(context.graph_spacing),
+            spacing=int(spacing_px),
         )
         for key, offset in unit_points.items()
     }
@@ -316,6 +343,7 @@ def _edge_annotation(
     point_a: Point,
     point_b: Point,
     centroid: Point,
+    offset_scale: float = 1.0,
 ) -> _AnnotationSpec:
     """Build one annotation aligned to a polygon edge and pushed outward."""
     mid_x, mid_y = _segment_midpoint(point_a, point_b)
@@ -330,6 +358,7 @@ def _edge_annotation(
         text=str(text),
         anchor=(float(mid_x), float(mid_y)),
         base_direction=(float(perp[0]), float(perp[1])),
+        offset_scale=float(offset_scale),
         point_a=(float(point_a[0]), float(point_a[1])),
         point_b=(float(point_b[0]), float(point_b[1])),
     )
@@ -342,9 +371,13 @@ def _segment_annotation(
     point_a: Point,
     point_b: Point,
     direction: Point | None = None,
+    anchor_fraction: float = 0.5,
+    offset_scale: float = 1.0,
 ) -> _AnnotationSpec:
     """Build one annotation aligned to an arbitrary segment."""
-    mid_x, mid_y = _segment_midpoint(point_a, point_b)
+    frac = max(0.0, min(1.0, float(anchor_fraction)))
+    mid_x = float(point_a[0]) + (float(point_b[0]) - float(point_a[0])) * float(frac)
+    mid_y = float(point_a[1]) + (float(point_b[1]) - float(point_a[1])) * float(frac)
     if direction is None:
         edge_dx = float(point_b[0]) - float(point_a[0])
         edge_dy = float(point_b[1]) - float(point_a[1])
@@ -356,6 +389,7 @@ def _segment_annotation(
         text=str(text),
         anchor=(float(mid_x), float(mid_y)),
         base_direction=(float(base_direction[0]), float(base_direction[1])),
+        offset_scale=float(offset_scale),
         point_a=(float(point_a[0]), float(point_a[1])),
         point_b=(float(point_b[0]), float(point_b[1])),
     )
@@ -420,6 +454,7 @@ def _materialize_case_annotations(
                 text=format_annotation_value(value),
                 anchor=(float(annotation.anchor[0]), float(annotation.anchor[1])),
                 base_direction=(float(annotation.base_direction[0]), float(annotation.base_direction[1])),
+                offset_scale=float(annotation.offset_scale),
                 point_a=(float(point_a[0]), float(point_a[1])),
                 point_b=(float(point_b[0]), float(point_b[1])),
             )
@@ -432,6 +467,7 @@ def _draw_annotations(
     *,
     annotations: Sequence[_AnnotationSpec],
     blocked_segments: Sequence[Segment],
+    fixed_centers: Mapping[str, Point] | None = None,
     context: GraphSceneContext,
     shape_style: GeometryShapeStyle,
     label_offset_px: float,
@@ -453,24 +489,54 @@ def _draw_annotations(
     out: Dict[str, List[float]] = {}
     occupied_padding = max(4.0, 2.0 * float(scene_scale))
     for annotation in annotations:
-        scaled_anchor = scale_point(
-            (float(annotation.anchor[0]), float(annotation.anchor[1])),
-            int(scene_scale),
-        )
-        adjusted_offset = float(max(12.0, float(label_offset_px) * 1.25))
-        center, bbox = resolve_text_label_center(
-            draw,
-            text=str(annotation.text),
-            anchor=(float(scaled_anchor[0]), float(scaled_anchor[1])),
-            base_direction=(float(annotation.base_direction[0]), float(annotation.base_direction[1])),
-            offset_px=float(adjusted_offset),
-            font=font,
-            blocked_segments=blocked_scaled,
-            occupied_boxes=occupied_boxes,
-            stroke_width=int(stroke_width),
-            line_clearance_px=max(4.0, 2.4 * float(scene_scale)),
-            canvas_size=int(context.canvas_size) * int(scene_scale),
-        )
+        fixed_center = None
+        if fixed_centers is not None:
+            fixed_value = fixed_centers.get(str(annotation.ann_id))
+            if fixed_value is not None:
+                fixed_center = (float(fixed_value[0]), float(fixed_value[1]))
+        if fixed_center is None:
+            scaled_anchor = scale_point(
+                (float(annotation.anchor[0]), float(annotation.anchor[1])),
+                int(scene_scale),
+            )
+            adjusted_offset = float(
+                max(
+                    12.0,
+                    float(label_offset_px) * 1.25 * max(0.5, float(annotation.offset_scale)),
+                )
+            )
+            center, bbox = resolve_text_label_center(
+                draw,
+                text=str(annotation.text),
+                anchor=(float(scaled_anchor[0]), float(scaled_anchor[1])),
+                base_direction=(float(annotation.base_direction[0]), float(annotation.base_direction[1])),
+                offset_px=float(adjusted_offset),
+                font=font,
+                blocked_segments=blocked_scaled,
+                occupied_boxes=occupied_boxes,
+                stroke_width=int(stroke_width),
+                line_clearance_px=max(4.0, 2.4 * float(scene_scale)),
+                canvas_size=int(context.canvas_size) * int(scene_scale),
+            )
+        else:
+            scaled_center = scale_point((float(fixed_center[0]), float(fixed_center[1])), int(scene_scale))
+            center = (float(scaled_center[0]), float(scaled_center[1]))
+            text_bbox = draw.textbbox(
+                (0.0, 0.0),
+                str(annotation.text),
+                font=font,
+                stroke_width=int(stroke_width),
+            )
+            text_width = max(1.0, float(text_bbox[2]) - float(text_bbox[0]))
+            text_height = max(1.0, float(text_bbox[3]) - float(text_bbox[1]))
+            half_w = 0.5 * float(text_width)
+            half_h = 0.5 * float(text_height)
+            bbox = (
+                float(center[0]) - float(half_w),
+                float(center[1]) - float(half_h),
+                float(center[0]) + float(half_w),
+                float(center[1]) + float(half_h),
+            )
         draw_text_centered(
             draw,
             text=str(annotation.text),
@@ -612,6 +678,7 @@ def _draw_case_annotations(
     annotations: Sequence[_AnnotationSpec],
     evidence_label_values: Mapping[str, Any],
     blocked_segments: Sequence[Segment],
+    fixed_centers: Mapping[str, Point] | None = None,
     extra_points: Sequence[Point] | None = None,
     context: GraphSceneContext,
     shape_style: GeometryShapeStyle,
@@ -630,6 +697,7 @@ def _draw_case_annotations(
         draw,
         annotations=value_annotations,
         blocked_segments=blocked_segments,
+        fixed_centers=fixed_centers,
         context=context,
         shape_style=shape_style,
         label_offset_px=float(label_offset_px),
@@ -1704,23 +1772,41 @@ def _sample_rhombus_explicit_case(
                 text=f"d1={int(2 * half_d1)}",
                 point_a=points["a"],
                 point_b=points["c"],
-                direction=(0.0, -1.0),
+                direction=(1.0, 0.0),
+                anchor_fraction=0.64,
+                offset_scale=1.55,
             ),
             _segment_annotation(
                 ann_id="d2",
                 text=f"d2={int(2 * half_d2)}",
                 point_a=points["b"],
                 point_b=points["d"],
-                direction=(1.0, 0.0),
+                direction=(0.0, -1.0),
+                anchor_fraction=0.42,
+                offset_scale=1.25,
             ),
         ]
         evidence_values = {"d1": int(2 * half_d1), "d2": int(2 * half_d2)}
+        center_x, center_y = float(points["o"][0]), float(points["o"][1])
+        span_x = abs(float(points["c"][0]) - float(points["o"][0]))
+        span_y = abs(float(points["o"][1]) - float(points["b"][1]))
+        fixed_centers = {
+            "d1": (
+                float(center_x + (0.50 * span_x)),
+                float(center_y + (0.12 * span_y)),
+            ),
+            "d2": (
+                float(center_x + (0.12 * span_x)),
+                float(center_y - (0.50 * span_y)),
+            ),
+        }
         centers, evidence_annotations = _draw_case_annotations(
             draw,
             rng=rng,
             annotations=annotations,
             evidence_label_values=evidence_values,
             blocked_segments=segments,
+            fixed_centers=fixed_centers,
             extra_points=vertices,
             context=context,
             shape_style=shape_style,
@@ -1901,6 +1987,7 @@ def _sample_circle_explicit_case(
     if int(radius_min) > int(radius_max):
         raise ValueError("no feasible circle radius range for current graph context")
     for _ in range(180):
+        spacing_px = int(_analytical_unit_spacing_px(context))
         radius = int(rng.randint(int(radius_min), int(radius_max)))
         area_coeff = int(radius * radius)
         if int(area_coeff) < int(answer_min) or int(area_coeff) > int(answer_max):
@@ -1908,18 +1995,18 @@ def _sample_circle_explicit_case(
         instance = sample_circle_instance_on_graph_paper(
             rng,
             canvas_size=int(context.canvas_size),
-            graph_spacing=int(context.graph_spacing),
+            graph_spacing=int(spacing_px),
             graph_origin=(float(context.graph_origin[0]), float(context.graph_origin[1])),
             radii=[int(radius)],
             padding_units=1,
             max_attempts=32,
         )
         center = (float(instance.center[0]), float(instance.center[1]))
-        radius_point = offset_point_by_grid_vector(center, (int(radius), 0), spacing=int(context.graph_spacing))
+        radius_point = offset_point_by_grid_vector(center, (int(radius), 0), spacing=int(spacing_px))
         draw_circle_outline(
             draw,
             center=scale_point(center, int(context.scene_scale)),
-            radius_px=int(instance.radius_units) * int(context.graph_spacing) * int(context.scene_scale),
+            radius_px=int(instance.radius_units) * int(spacing_px) * int(context.scene_scale),
             line_width=max(1, int(line_width) * int(context.scene_scale)),
             line_color=tuple(int(value) for value in shape_style.line_color),
         )
@@ -1977,8 +2064,8 @@ def _sample_circle_explicit_case(
             },
             render_anchor=conic_render_anchor(
                 center=center,
-                semi_axis_x_px=int(radius) * int(context.graph_spacing),
-                semi_axis_y_px=int(radius) * int(context.graph_spacing),
+                semi_axis_x_px=int(radius) * int(spacing_px),
+                semi_axis_y_px=int(radius) * int(spacing_px),
             ),
         )
     raise ValueError("failed to sample circle explicit case")
@@ -1999,52 +2086,54 @@ def _sample_circle_derived_case(
     answer_max: int,
     gen_defaults: Mapping[str, Any],
 ) -> _CaseArtifacts:
-    """Sample one circle circumference-derived area case and render it."""
+    """Sample one circle diameter-derived area case and render it."""
     radius_min = max(1, int(group_default(gen_defaults, "circle_radius_min", 2)))
     radius_max = max(radius_min, int(group_default(gen_defaults, "circle_radius_max", 10)))
     radius_max = min(int(radius_max), max(1, int(_unit_cap(context) // 2)))
     if int(radius_min) > int(radius_max):
         raise ValueError("no feasible circle radius range for current graph context")
     for _ in range(180):
+        spacing_px = int(_analytical_unit_spacing_px(context))
         radius = int(rng.randint(int(radius_min), int(radius_max)))
         area_coeff = int(radius * radius)
         if int(area_coeff) < int(answer_min) or int(area_coeff) > int(answer_max):
             continue
-        circumference_coeff = int(2 * int(radius))
+        diameter = int(2 * int(radius))
         instance = sample_circle_instance_on_graph_paper(
             rng,
             canvas_size=int(context.canvas_size),
-            graph_spacing=int(context.graph_spacing),
+            graph_spacing=int(spacing_px),
             graph_origin=(float(context.graph_origin[0]), float(context.graph_origin[1])),
             radii=[int(radius)],
             padding_units=1,
             max_attempts=32,
         )
         center = (float(instance.center[0]), float(instance.center[1]))
-        top_point = offset_point_by_grid_vector(center, (0, int(radius)), spacing=int(context.graph_spacing))
+        left_point = offset_point_by_grid_vector(center, (-int(radius), 0), spacing=int(spacing_px))
+        right_point = offset_point_by_grid_vector(center, (int(radius), 0), spacing=int(spacing_px))
         draw_circle_outline(
             draw,
             center=scale_point(center, int(context.scene_scale)),
-            radius_px=int(instance.radius_units) * int(context.graph_spacing) * int(context.scene_scale),
+            radius_px=int(instance.radius_units) * int(spacing_px) * int(context.scene_scale),
             line_width=max(1, int(line_width) * int(context.scene_scale)),
             line_color=tuple(int(value) for value in shape_style.line_color),
         )
         draw.line(
-            [scale_point(center, int(context.scene_scale)), scale_point(top_point, int(context.scene_scale))],
+            [scale_point(left_point, int(context.scene_scale)), scale_point(right_point, int(context.scene_scale))],
             fill=tuple(int(value) for value in shape_style.line_color),
             width=max(1, int(helper_line_width) * int(context.scene_scale)),
         )
-        segments = [((float(center[0]), float(center[1])), (float(top_point[0]), float(top_point[1])))]
+        segments = [((float(left_point[0]), float(left_point[1])), (float(right_point[0]), float(right_point[1])))]
         annotations = [
             _segment_annotation(
-                ann_id="C",
-                text=f"{int(circumference_coeff)}π",
-                point_a=center,
-                point_b=top_point,
-                direction=(1.0, 0.0),
+                ann_id="d",
+                text=f"d={int(diameter)}",
+                point_a=left_point,
+                point_b=right_point,
+                direction=(0.0, -1.0),
             )
         ]
-        evidence_values = {"C": f"{int(circumference_coeff)}π"}
+        evidence_values = {"d": int(diameter)}
         centers, evidence_annotations = _draw_case_annotations(
             draw,
             rng=rng,
@@ -2065,8 +2154,8 @@ def _sample_circle_derived_case(
             answer_type="pi_expression",
             answer_scalar=int(area_coeff),
             answer_value=_pi_expression(int(area_coeff)),
-            formula_expression="A = π * (C/(2π))^2",
-            evidence_ids=("C",),
+            formula_expression="A = π * (d/2)^2",
+            evidence_ids=("d",),
             evidence_label_values=dict(evidence_values),
             evidence_annotations=dict(evidence_annotations),
             annotation_centers=dict(centers),
@@ -2078,14 +2167,14 @@ def _sample_circle_derived_case(
                     "reasoning_mode": "derived",
                     "center": [float(center[0]), float(center[1])],
                     "radius_units": int(radius),
-                    "circumference_pi_coefficient": int(circumference_coeff),
+                    "diameter_units": int(diameter),
                     "area_pi_coefficient": int(area_coeff),
                 },
             },
             render_anchor=conic_render_anchor(
                 center=center,
-                semi_axis_x_px=int(radius) * int(context.graph_spacing),
-                semi_axis_y_px=int(radius) * int(context.graph_spacing),
+                semi_axis_x_px=int(radius) * int(spacing_px),
+                semi_axis_y_px=int(radius) * int(spacing_px),
             ),
         )
     raise ValueError("failed to sample circle derived case")
@@ -2113,6 +2202,7 @@ def _sample_ellipse_explicit_case(
     if int(axis_min) > int(axis_max):
         raise ValueError("no feasible ellipse axis range for current graph context")
     for _ in range(220):
+        spacing_px = int(_analytical_unit_spacing_px(context))
         semi_major = int(rng.randint(int(axis_min), int(axis_max)))
         semi_minor = int(rng.randint(int(axis_min), int(semi_major)))
         area_coeff = int(semi_major * semi_minor)
@@ -2121,20 +2211,20 @@ def _sample_ellipse_explicit_case(
         instance = sample_ellipse_instance_on_graph_paper(
             rng,
             canvas_size=int(context.canvas_size),
-            graph_spacing=int(context.graph_spacing),
+            graph_spacing=int(spacing_px),
             graph_origin=(float(context.graph_origin[0]), float(context.graph_origin[1])),
             axis_pairs=[(int(semi_major), int(semi_minor))],
             padding_units=1,
             max_attempts=32,
         )
         center = (float(instance.center[0]), float(instance.center[1]))
-        axis_x_end = offset_point_by_grid_vector(center, (int(semi_major), 0), spacing=int(context.graph_spacing))
-        axis_y_end = offset_point_by_grid_vector(center, (0, int(semi_minor)), spacing=int(context.graph_spacing))
+        axis_x_end = offset_point_by_grid_vector(center, (int(semi_major), 0), spacing=int(spacing_px))
+        axis_y_end = offset_point_by_grid_vector(center, (0, int(semi_minor)), spacing=int(spacing_px))
         draw_ellipse_outline(
             draw,
             center=scale_point(center, int(context.scene_scale)),
-            semi_axis_x_px=int(semi_major) * int(context.graph_spacing) * int(context.scene_scale),
-            semi_axis_y_px=int(semi_minor) * int(context.graph_spacing) * int(context.scene_scale),
+            semi_axis_x_px=int(semi_major) * int(spacing_px) * int(context.scene_scale),
+            semi_axis_y_px=int(semi_minor) * int(spacing_px) * int(context.scene_scale),
             line_width=max(1, int(line_width) * int(context.scene_scale)),
             line_color=tuple(int(value) for value in shape_style.line_color),
         )
@@ -2208,8 +2298,8 @@ def _sample_ellipse_explicit_case(
             },
             render_anchor=conic_render_anchor(
                 center=center,
-                semi_axis_x_px=int(semi_major) * int(context.graph_spacing),
-                semi_axis_y_px=int(semi_minor) * int(context.graph_spacing),
+                semi_axis_x_px=int(semi_major) * int(spacing_px),
+                semi_axis_y_px=int(semi_minor) * int(spacing_px),
             ),
         )
     raise ValueError("failed to sample ellipse explicit case")
@@ -2241,6 +2331,7 @@ def _sample_ellipse_derived_case(
     if not triplets:
         raise ValueError("no feasible triplets for ellipse derived case")
     for _ in range(260):
+        spacing_px = int(_analytical_unit_spacing_px(context))
         semi_minor, focal, semi_major = triplets[int(rng.randrange(len(triplets)))]
         if int(semi_major) <= int(semi_minor):
             continue
@@ -2250,20 +2341,20 @@ def _sample_ellipse_derived_case(
         instance = sample_ellipse_instance_on_graph_paper(
             rng,
             canvas_size=int(context.canvas_size),
-            graph_spacing=int(context.graph_spacing),
+            graph_spacing=int(spacing_px),
             graph_origin=(float(context.graph_origin[0]), float(context.graph_origin[1])),
             axis_pairs=[(int(semi_major), int(semi_minor))],
             padding_units=1,
             max_attempts=32,
         )
         center = (float(instance.center[0]), float(instance.center[1]))
-        axis_x_end = offset_point_by_grid_vector(center, (int(semi_major), 0), spacing=int(context.graph_spacing))
-        focus_point = offset_point_by_grid_vector(center, (int(focal), 0), spacing=int(context.graph_spacing))
+        axis_x_end = offset_point_by_grid_vector(center, (int(semi_major), 0), spacing=int(spacing_px))
+        focus_point = offset_point_by_grid_vector(center, (int(focal), 0), spacing=int(spacing_px))
         draw_ellipse_outline(
             draw,
             center=scale_point(center, int(context.scene_scale)),
-            semi_axis_x_px=int(semi_major) * int(context.graph_spacing) * int(context.scene_scale),
-            semi_axis_y_px=int(semi_minor) * int(context.graph_spacing) * int(context.scene_scale),
+            semi_axis_x_px=int(semi_major) * int(spacing_px) * int(context.scene_scale),
+            semi_axis_y_px=int(semi_minor) * int(spacing_px) * int(context.scene_scale),
             line_width=max(1, int(line_width) * int(context.scene_scale)),
             line_color=tuple(int(value) for value in shape_style.line_color),
         )
@@ -2349,8 +2440,8 @@ def _sample_ellipse_derived_case(
             },
             render_anchor=conic_render_anchor(
                 center=center,
-                semi_axis_x_px=int(semi_major) * int(context.graph_spacing),
-                semi_axis_y_px=int(semi_minor) * int(context.graph_spacing),
+                semi_axis_x_px=int(semi_major) * int(spacing_px),
+                semi_axis_y_px=int(semi_minor) * int(spacing_px),
             ),
         )
     raise ValueError("failed to sample ellipse derived case")
@@ -2591,10 +2682,6 @@ class GeometryAnalyticalArea2DTask:
     domain = "geometry"
     task_group = "analytical_2d"
 
-    @staticmethod
-    def supported_query_types(_params: Dict[str, Any] | None = None) -> List[str]:
-        return [_QUERY_TYPE]
-
     def _complexity(
         self,
         *,
@@ -2632,10 +2719,6 @@ class GeometryAnalyticalArea2DTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic analytical area instance."""
-        query_type = str(params.get("query_type", _QUERY_TYPE))
-        if str(query_type) != _QUERY_TYPE:
-            raise ValueError(f"unsupported query_type: {query_type}")
-
         task_group_defaults = get_task_group_defaults(self.domain, self.task_group)
         gen_defaults, render_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
             task_group_defaults if isinstance(task_group_defaults, Mapping) else {},
@@ -2650,28 +2733,14 @@ class GeometryAnalyticalArea2DTask:
             gen_defaults=gen_defaults,
         )
         context_params = dict(params)
-        required_graph_cells = 0
-        if str(shape_variant) == "circle":
-            required_graph_cells = 10
-        elif str(shape_variant) == "ellipse":
-            required_graph_cells = 12 if str(reasoning_mode) == "derived" else 10
-        if int(required_graph_cells) > 0 and "graph_cells" not in context_params:
-            current_min_cells = int(
-                context_params.get(
-                    "graph_cells_min",
-                    group_default(render_defaults, "graph_cells_min", _DEFAULTS.graph_cells_min),
-                )
+        if "analytical_unit_spacing_px" not in context_params:
+            context_params["analytical_unit_spacing_px"] = int(
+                group_default(render_defaults, "analytical_unit_spacing_px", 10)
             )
-            current_max_cells = int(
-                context_params.get(
-                    "graph_cells_max",
-                    group_default(render_defaults, "graph_cells_max", _DEFAULTS.graph_cells_max),
-                )
+        if "analytical_unit_padding_px" not in context_params:
+            context_params["analytical_unit_padding_px"] = int(
+                group_default(render_defaults, "analytical_unit_padding_px", 20)
             )
-            resolved_min_cells = max(int(current_min_cells), int(required_graph_cells))
-            resolved_max_cells = max(int(current_max_cells), int(resolved_min_cells))
-            context_params["graph_cells_min"] = int(resolved_min_cells)
-            context_params["graph_cells_max"] = int(resolved_max_cells)
 
         line_width = sample_int_render_param(
             scene_rng,
@@ -2728,7 +2797,7 @@ class GeometryAnalyticalArea2DTask:
                 label_offset_px = float(group_default(render_defaults, "label_offset_px", _DEFAULTS.label_offset_px))
                 label_font_size_px = resolve_scene_label_font_size_px(
                     canvas_size=int(context.canvas_size),
-                    graph_spacing=int(context.graph_spacing),
+                    graph_spacing=int(_analytical_unit_spacing_px(context)),
                     scene_scale=int(context.scene_scale),
                     min_px=int(group_default(render_defaults, "label_font_size_min", _DEFAULTS.label_font_size_min)),
                     max_px=int(group_default(render_defaults, "label_font_size_max", _DEFAULTS.label_font_size_max)),
@@ -2785,7 +2854,8 @@ class GeometryAnalyticalArea2DTask:
             prompt_defaults,
             (
                 "bundle_id",
-                "task_type_key",
+                "task_family_key",
+                "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "object_description",
@@ -2804,9 +2874,13 @@ class GeometryAnalyticalArea2DTask:
             role_to_annotation=case.evidence_annotations,
             role_to_value=case.evidence_label_values,
         )
-        evidence_hint_base = str(prompt_required["evidence_hint_measurement_map"])
+        evidence_hint_base = str(prompt_required["evidence_hint_measurement_map"]).strip()
+        if evidence_hint_base and evidence_hint_base[-1] not in {".", "!", "?", ":", ";"}:
+            evidence_hint_base = f"{evidence_hint_base}."
         evidence_hint = (
-            f"{evidence_hint_base.rstrip().rstrip('.')} Required annotations: {', '.join(required_annotations)}"
+            f"{evidence_hint_base} Required annotations: {', '.join(required_annotations)}"
+            if evidence_hint_base
+            else f"Required annotations: {', '.join(required_annotations)}"
         )
         answer_family = "pi" if str(case.answer_type) == "pi_expression" else "integer"
         question_text = _required_prompt_text(
@@ -2827,8 +2901,8 @@ class GeometryAnalyticalArea2DTask:
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_required["bundle_id"]),
-            task_type_key=str(prompt_required["task_type_key"]),
-            query_type=str(_QUERY_TYPE),
+            task_family_key=str(prompt_required["task_family_key"]),
+            task_key=str(prompt_required["task_key"]),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(prompt_required["object_description"]),
@@ -2882,7 +2956,7 @@ class GeometryAnalyticalArea2DTask:
                 },
             },
             "query_spec": {
-                "query_type": _QUERY_TYPE,
+                "task_variant": str(case.case_id),
                 "template_id": "geometry_analytical_area_v1",
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -2960,6 +3034,6 @@ class GeometryAnalyticalArea2DTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_type=str(_QUERY_TYPE),
+            task_variant=str(case.case_id),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

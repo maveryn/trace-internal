@@ -10,43 +10,23 @@ tasks:
   - task_id: task_geometry_measurement_angle
     count: 8
     params:
-      query_type: measure
       min_angle: 30
       max_angle: 150
       angle_step: 1
-      quantization_tolerance_degrees: 0.05
+      quantization_tolerance_degrees: 0.5
       max_abs_vector_component: 20
       min_ray_length_units: 2
       balanced_sampling: true
       source_kind_weights:
         primitive_angle: 1.0
-        triangle: 1.0
-        quadrilateral: 1.0
         intersection_lines: 1.0
-      polygon_allowed_sides: [3, 4]
-    query_weights:
-      measure: 1.0
   - task_id: task_geometry_measurement_area
     count: 8
-    params:
-      query_type: measure
-    query_weights:
-      measure: 1.0
   - task_id: task_geometry_measurement_perimeter
     count: 8
-    params:
-      query_type: measure
-    query_weights:
-      measure: 1.0
   - task_id: task_geometry_measurement_length
     count: 8
-    params:
-      query_type: measure
-    query_weights:
-      measure: 1.0
+  - task_id: task_geometry_measurement_slope
+    count: 8
   - task_id: task_geometry_analytical_2d_area
     count: 8
-    params:
-      query_type: measure
-    query_weights:
-      measure: 1.0

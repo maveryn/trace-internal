@@ -17,9 +17,11 @@ Promote helpers when a second consumer appears.
 2. `trace/core/seed.py`, `trace/core/sampling.py`
 3. `trace/core/type_registry.py`, `trace/core/validation.py`
 4. `trace/core/builder.py`, `trace/core/strict_repro.py`
-5. `trace/core/task_group_config.py`, `trace/core/json_io.py`, `trace/core/query_types.py`
+5. `trace/core/task_group_config.py`, `trace/core/json_io.py`
    - `task_group_config` resolves merged defaults and section-level `shared` + `task_overrides` composition.
-6. `trace/core/prompts/*` and `trace/core/visual/*`
+6. `trace/core/answer_distribution.py`
+   - Canonical answer-distribution degeneracy checks used by `scripts/check_task_answer_distribution.py`.
+7. `trace/core/prompts/*` and `trace/core/visual/*`
    - `trace/core/visual/ranges.py` is the canonical visual-layer range parser for integer min/max normalization.
 
 ### Task-shared
@@ -47,7 +49,7 @@ Promote helpers when a second consumer appears.
    - Canonical deterministic JSON-example builder for prompt slots (`answer_only` + `answer_and_evidence`) that preserves active evidence schema shape/cardinality.
 
 ### Domain-shared (current)
-1. Geometry: `trace/tasks/geometry/shared/graph_paper.py`, `graph_rendering.py`, `single_object_scene.py`, `angle_geometry.py`, `polygon_geometry.py`, `shape_style.py`, `background_defaults.py`, `noise_defaults.py`, `variant_sampling.py`, `render_variation.py`, `annotation_values.py`, `labeled_point_evidence.py`, `point_labels.py`
+1. Geometry: `trace/tasks/geometry/shared/graph_paper.py`, `graph_rendering.py`, `single_object_scene.py`, `angle_geometry.py`, `polygon_geometry.py`, `slope_geometry.py`, `shape_style.py`, `background_defaults.py`, `noise_defaults.py`, `variant_sampling.py`, `render_variation.py`, `annotation_values.py`, `labeled_point_evidence.py`, `point_labels.py`, `prompt_text.py`
    - `graph_paper.offset_point_by_grid_vector` is the canonical pixel-space translation helper for lattice vector offsets.
    - `background_defaults.load_geometry_background_defaults(...)` is the canonical geometry-domain loader for background defaults (domain baseline with optional task-group override).
    - `noise_defaults.load_geometry_noise_defaults(...)` is the canonical geometry-domain loader for post-image noise defaults (domain baseline with optional task-group override).
@@ -56,6 +58,8 @@ Promote helpers when a second consumer appears.
    - `annotation_values.py` provides canonical value formatting + structured annotation->value evidence map helpers for analytical geometry tasks.
    - `labeled_point_evidence.py` provides canonical labeled graph-point evidence payload builders (`grid_point_map` + projected map/set/path forms).
    - `point_labels.py` provides overlap-aware labeled-point rendering helpers reused by conic/point-evidence tasks.
+   - `prompt_text.py` provides canonical prompt-fragment helpers such as `append_required_labels_clause(...)` so label-list suffixes keep consistent punctuation across geometry tasks.
+   - `slope_geometry.py` provides reusable slope-line feasibility/sampling helpers for graph-paper slope tasks.
 2. Geometry measurement task-group: `trace/tasks/geometry/measurement/defaults.py`, `shape_measure_base.py`, `trace/tasks/geometry/shared/conic_geometry.py`, `trace/tasks/geometry/shared/length_geometry.py`
    - `defaults.py` centralizes task-group fallback defaults reused by measurement tasks.
    - `shape_measure_base.py` provides the shared generation/output pipeline for shape variants (polygon + conic) used by area/perimeter tasks.

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from PIL import ImageDraw
 
@@ -71,11 +71,6 @@ class TileShortestPathTask:
     domain = "tile"
     task_group = "path"
 
-    @staticmethod
-    def supported_query_types(_params: Dict[str, Any] | None = None) -> List[str]:
-        """Return query types supported by this task."""
-        return ["shortest_path"]
-
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         rows = int(params.get("rows", group_default(_GEN_DEFAULTS, "rows", _DEFAULTS.rows)))
         cols = int(params.get("cols", group_default(_GEN_DEFAULTS, "cols", _DEFAULTS.cols)))
@@ -92,11 +87,8 @@ class TileShortestPathTask:
         canvas_size = int(params.get("canvas_size", group_default(_RENDER_DEFAULTS, "canvas_size", _DEFAULTS.canvas_size)))
         margin = int(params.get("margin", group_default(_RENDER_DEFAULTS, "margin", _DEFAULTS.margin)))
         evidence_type = str(params.get("evidence_type", group_default(_GEN_DEFAULTS, "evidence_type", _DEFAULTS.evidence_type)))
-        query_type = str(params.get("query_type", "shortest_path"))
         if evidence_type not in {"point_path", "bbox_set"}:
             raise ValueError(f"unsupported evidence_type: {evidence_type}")
-        if query_type != "shortest_path":
-            raise ValueError(f"unsupported query_type: {query_type}")
 
         task_rng = spawn_rng(instance_seed, "task")
         blocked, start, goal, path, shortest_len = sample_unique_shortest_path_maze(
@@ -158,7 +150,8 @@ class TileShortestPathTask:
             _PROMPT_DEFAULTS,
             (
                 "bundle_id",
-                "task_type_key",
+                "task_family_key",
+                "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint",
@@ -171,7 +164,8 @@ class TileShortestPathTask:
             context=f"prompt defaults for {self.task_id}",
         )
         prompt_bundle_id = str(prompt_defaults["bundle_id"])
-        prompt_task_type_key = str(prompt_defaults["task_type_key"])
+        prompt_task_family_key = str(prompt_defaults["task_family_key"])
+        prompt_task_key = str(prompt_defaults["task_key"])
         evidence_hint = (
             str(prompt_defaults["evidence_hint_point_path"])
             if evidence_type == "point_path"
@@ -186,8 +180,8 @@ class TileShortestPathTask:
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=prompt_bundle_id,
-            task_type_key=prompt_task_type_key,
-            query_type=query_type,
+            task_family_key=prompt_task_family_key,
+            task_key=prompt_task_key,
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "rows": int(rows),
@@ -230,7 +224,7 @@ class TileShortestPathTask:
                 "relations": {"adjacency_open": adjacency_open},
             },
             "query_spec": {
-                "query_type": query_type,
+                "task_variant": "shortest_path",
                 "template_id": "shortest_path_v1",
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -295,6 +289,6 @@ class TileShortestPathTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_type=query_type,
+            task_variant="shortest_path",
             prompt_variants=prompt_variants,
         )

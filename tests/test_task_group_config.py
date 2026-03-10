@@ -43,7 +43,7 @@ def _polygon_perimeter(points: list[list[int]]) -> int:
 
 def test_geometry_measurement_defaults_loaded() -> None:
     cfg = get_task_group_defaults("geometry", "measurement")
-    for section in ("generation", "rendering", "prompt", "sampling"):
+    for section in ("generation", "rendering", "prompt"):
         assert isinstance(cfg.get(section), dict)
 
     render_shared = cfg["rendering"]["shared"]
@@ -62,20 +62,19 @@ def test_geometry_measurement_defaults_loaded() -> None:
 
     prompt_shared = cfg["prompt"]["shared"]
     assert str(prompt_shared["bundle_id"]).strip()
-    assert str(prompt_shared["task_type_key"]).strip()
+    assert str(prompt_shared["task_family_key"]).strip()
+    assert str(prompt_shared["task_key"]).strip()
     assert str(prompt_shared["json_output_contract"]).strip()
     assert str(prompt_shared["json_output_contract_answer_only"]).strip()
-    assert float(cfg["sampling"]["shared"]["query_weights"]["measure"]) > 0.0
 
     angle_generation, angle_rendering, angle_prompt = split_generation_rendering_prompt_defaults(
         cfg,
         task_id="task_geometry_measurement_angle",
     )
-    for key in ("min_angle", "max_angle", "angle_step", "mcq_option_count"):
+    for key in ("min_angle", "max_angle", "angle_step"):
         assert key in angle_generation
     assert int(angle_generation["max_angle"]) >= int(angle_generation["min_angle"])
     assert int(angle_generation["angle_step"]) > 0
-    assert int(angle_generation["mcq_option_count"]) >= 3
     assert int(angle_rendering["line_width"]) > 0
     assert str(angle_prompt["evidence_hint"]).strip()
     assert str(angle_prompt["answer_hint"]).strip()
@@ -88,7 +87,7 @@ def test_geometry_measurement_defaults_loaded() -> None:
     )
     assert sorted(area_generation["variant_weights"].keys()) == ["ellipse", "quadrilateral", "triangle"]
     assert bool(area_generation["balanced_variant_sampling"]) is True
-    assert bool(area_generation["ellipse_allow_circle"]) is False
+    assert bool(area_generation["ellipse_allow_circle"]) is True
     assert int(area_rendering["line_width"]) > 0
     assert str(area_prompt["question_text_polygon"]).strip()
     assert str(area_prompt["question_text_ellipse"]).strip()
@@ -164,10 +163,25 @@ def test_geometry_measurement_defaults_loaded() -> None:
     assert str(length_prompt["json_example_integer"]).strip()
     assert str(length_prompt["json_example_answer_only_integer"]).strip()
 
+    slope_generation, slope_rendering, slope_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_measurement_slope",
+    )
+    assert int(slope_generation["slope_tenths_min"]) < 0
+    assert int(slope_generation["slope_tenths_max"]) > 0
+    assert bool(slope_generation["balanced_sampling"]) is True
+    assert int(slope_rendering["line_width"]) > 0
+    assert str(slope_prompt["object_description"]).strip()
+    assert str(slope_prompt["question_text"]).strip()
+    assert str(slope_prompt["evidence_hint"]).strip()
+    assert str(slope_prompt["answer_hint"]).strip()
+    assert str(slope_prompt["json_example"]).strip()
+    assert str(slope_prompt["json_example_answer_only"]).strip()
+
 
 def test_geometry_analytical_defaults_loaded() -> None:
     cfg = get_task_group_defaults("geometry", "analytical_2d")
-    for section in ("generation", "rendering", "prompt", "sampling"):
+    for section in ("generation", "rendering", "prompt"):
         assert isinstance(cfg.get(section), dict)
 
     generation_shared = cfg["generation"]["shared"]
@@ -197,6 +211,8 @@ def test_geometry_analytical_defaults_loaded() -> None:
     assert int(render_shared["helper_line_width_max"]) >= int(render_shared["helper_line_width_min"])
     assert int(render_shared["label_stroke_width_min"]) >= 1
     assert int(render_shared["label_stroke_width_max"]) >= int(render_shared["label_stroke_width_min"])
+    assert int(render_shared["analytical_unit_spacing_px"]) >= 2
+    assert int(render_shared["analytical_unit_padding_px"]) >= 0
     visual_background = cfg["visual"]["background"]
     assert bool(visual_background["enabled"]) is True
     assert {"solid_cool", "solid_offwhite", "solid_warm"}.issubset(set(visual_background["styles"].keys()))
@@ -215,7 +231,8 @@ def test_geometry_analytical_defaults_loaded() -> None:
     assert int(prompt_generation["ellipse_axis_max"]) >= int(prompt_generation["ellipse_axis_min"])
     assert int(prompt_rendering["line_width"]) > 0
     assert str(prompt_defaults["bundle_id"]).strip()
-    assert str(prompt_defaults["task_type_key"]).strip()
+    assert str(prompt_defaults["task_family_key"]).strip()
+    assert str(prompt_defaults["task_key"]).strip()
     assert str(prompt_defaults["object_description"]).strip()
     assert str(prompt_defaults["evidence_hint_measurement_map"]).strip()
     assert str(prompt_defaults["answer_hint_integer"]).strip()
@@ -241,17 +258,73 @@ def test_geometry_analytical_defaults_loaded() -> None:
         assert str(prompt_defaults[f"question_text_{key}"]).strip()
         assert str(prompt_defaults[f"json_example_{key}"]).strip()
 
-    assert float(cfg["sampling"]["shared"]["query_weights"]["measure"]) > 0.0
+
+def test_geometry_analytical_3d_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("geometry", "analytical_3d")
+    for section in ("generation", "rendering", "prompt"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["answer_min"]) >= 0
+    assert int(generation_shared["answer_max"]) >= int(generation_shared["answer_min"])
+    assert sorted(generation_shared["variant_weights"].keys()) == [
+        "cone_given_r_h",
+        "cylinder_given_r_h",
+        "rectangular_prism_given_lwh",
+        "sphere_given_r",
+        "square_pyramid_given_base_height",
+        "triangular_prism_given_b_h_l",
+    ]
+    assert bool(generation_shared["balanced_variant_sampling"]) is True
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_size_min"]) > 0
+    assert int(render_shared["canvas_size_max"]) >= int(render_shared["canvas_size_min"])
+    assert int(render_shared["line_width_min"]) >= 1
+    assert int(render_shared["line_width_max"]) >= int(render_shared["line_width_min"])
+    assert int(render_shared["helper_line_width_min"]) >= 1
+    assert int(render_shared["helper_line_width_max"]) >= int(render_shared["helper_line_width_min"])
+    assert int(render_shared["label_stroke_width_min"]) >= 1
+    assert int(render_shared["label_stroke_width_max"]) >= int(render_shared["label_stroke_width_min"])
+
+    gen_defaults, render_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_analytical_3d_volume",
+    )
+    assert int(gen_defaults["dimension_min"]) > 0
+    assert int(gen_defaults["dimension_max"]) >= int(gen_defaults["dimension_min"])
+    assert int(gen_defaults["radius_min"]) > 0
+    assert int(gen_defaults["radius_max"]) >= int(gen_defaults["radius_min"])
+    assert int(gen_defaults["sphere_radius_min"]) > 0
+    assert int(gen_defaults["sphere_radius_max"]) >= int(gen_defaults["sphere_radius_min"])
+    assert int(render_defaults["line_width"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip()
+    assert str(prompt_defaults["task_family_key"]).strip()
+    assert str(prompt_defaults["task_key"]).strip()
+    assert str(prompt_defaults["object_description"]).strip()
+    assert str(prompt_defaults["evidence_hint_measurement_map"]).strip()
+    assert str(prompt_defaults["answer_hint_integer"]).strip()
+    assert str(prompt_defaults["answer_hint_pi"]).strip()
+    assert str(prompt_defaults["json_example_answer_only_integer"]).strip()
+    assert str(prompt_defaults["json_example_answer_only_pi"]).strip()
+    for key in (
+        "rectangular_prism_given_lwh",
+        "triangular_prism_given_b_h_l",
+        "square_pyramid_given_base_height",
+        "cylinder_given_r_h",
+        "cone_given_r_h",
+        "sphere_given_r",
+    ):
+        assert str(prompt_defaults[f"question_text_{key}"]).strip()
 
 
 def test_tile_path_defaults_loaded() -> None:
     cfg = get_task_group_defaults("tile", "path")
-    for section in ("generation", "rendering", "prompt", "visual", "sampling"):
+    for section in ("generation", "rendering", "prompt", "visual"):
         assert isinstance(cfg.get(section), dict)
     assert "task_tile_path_shortest_path" in cfg["generation"]["task_overrides"]
     assert isinstance(cfg["visual"]["background"]["styles"], dict)
     assert cfg["visual"]["background"]["styles"]
-    assert float(cfg["sampling"]["shared"]["query_weights"]["shortest_path"]) > 0.0
 
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
@@ -260,7 +333,8 @@ def test_tile_path_defaults_loaded() -> None:
     assert int(generation["rows"]) > 0
     assert int(rendering["canvas_size"]) > 0
     assert str(prompt["bundle_id"]).strip()
-    assert str(prompt["task_type_key"]).strip()
+    assert str(prompt["task_family_key"]).strip()
+    assert str(prompt["task_key"]).strip()
     assert str(prompt["json_output_contract"]).strip()
     assert str(prompt["json_output_contract_answer_only"]).strip()
     assert str(prompt["answer_hint"]).strip()
@@ -288,10 +362,26 @@ def test_measurement_prompt_examples_are_task_valid() -> None:
     angle_example = json.loads(str(angle_prompt["json_example"]))
     assert list(angle_example.keys()) == ["evidence", "answer"]
     assert len(angle_example["evidence"]) == 3
-    assert str(angle_example["answer"]) in {"A", "B", "C", "D", "E"}
+    assert isinstance(angle_example["answer"], int)
     angle_answer_only_example = json.loads(str(angle_prompt["json_example_answer_only"]))
     assert list(angle_answer_only_example.keys()) == ["answer"]
-    assert str(angle_answer_only_example["answer"]) in {"A", "B", "C", "D", "E"}
+    assert isinstance(angle_answer_only_example["answer"], int)
+
+    _slope_generation, _slope_rendering, slope_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_measurement_slope",
+    )
+    slope_example = json.loads(str(slope_prompt["json_example"]))
+    assert list(slope_example.keys()) == ["evidence", "answer"]
+    assert isinstance(slope_example["evidence"], dict)
+    assert len(slope_example["evidence"]) == 1
+    only_point = next(iter(slope_example["evidence"].values()))
+    assert isinstance(only_point, list) and len(only_point) == 2
+    assert int(only_point[1]) == 0
+    assert isinstance(slope_example["answer"], float)
+    slope_answer_only_example = json.loads(str(slope_prompt["json_example_answer_only"]))
+    assert list(slope_answer_only_example.keys()) == ["answer"]
+    assert isinstance(slope_answer_only_example["answer"], float)
 
     _area_generation, _area_rendering, area_prompt = split_generation_rendering_prompt_defaults(
         cfg,

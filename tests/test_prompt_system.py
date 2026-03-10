@@ -7,6 +7,7 @@ import re
 import pytest
 
 from trace.core.prompts import load_prompt_bundle, render_prompt, render_prompt_variants
+from trace.core.prompts.schema import REQUIRED_PROMPT_VARIANTS
 
 
 def test_render_prompt_is_deterministic() -> None:
@@ -14,10 +15,10 @@ def test_render_prompt_is_deterministic() -> None:
         domain="geometry",
         task_group="measurement",
         bundle_id="geometry_measurement_v1",
-        task_type_key="measurement_single_object",
-        query_type="measure",
+        task_family_key="measurement_single_object",
+        task_key="measurement_query",
         slots={
-            "object_description": "a single labeled angle",
+            "object_description": "a labeled angle",
             "question_text": "What is the measure of angle ABC in degrees?",
             "json_output_contract": 'Return a valid JSON object with keys "evidence" and "answer" in that order.',
             "json_output_contract_answer_only": 'Return a valid JSON object with key "answer".',
@@ -32,10 +33,10 @@ def test_render_prompt_is_deterministic() -> None:
         domain="geometry",
         task_group="measurement",
         bundle_id="geometry_measurement_v1",
-        task_type_key="measurement_single_object",
-        query_type="measure",
+        task_family_key="measurement_single_object",
+        task_key="measurement_query",
         slots={
-            "object_description": "a single labeled angle",
+            "object_description": "a labeled angle",
             "question_text": "What is the measure of angle ABC in degrees?",
             "json_output_contract": 'Return a valid JSON object with keys "evidence" and "answer" in that order.',
             "json_output_contract_answer_only": 'Return a valid JSON object with key "answer".',
@@ -48,26 +49,26 @@ def test_render_prompt_is_deterministic() -> None:
     )
     assert a.prompt == b.prompt
     assert a.metadata == b.metadata
-    assert a.metadata["slot_values"]["object_description"] == "a single labeled angle"
+    assert a.metadata["slot_values"]["object_description"] == "a labeled angle"
     assert a.metadata["answer_or_evidence_key"] == "answer_and_evidence"
     assert "Example JSON" in a.prompt
 
 
 def test_prompt_bundle_contract_and_required_slots() -> None:
     bundle = load_prompt_bundle("geometry", "measurement", "geometry_measurement_v1")
-    assert len(bundle.task_type_templates["measurement_single_object"]) >= 10
-    assert len(bundle.query_type_templates["measure"]) >= 10
-    assert len(bundle.answer_or_evidence_templates["answer_only"]) >= 10
-    assert len(bundle.answer_or_evidence_templates["answer_and_evidence"]) >= 10
+    assert len(bundle.task_family_templates["measurement_single_object"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_templates["measurement_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.answer_or_evidence_templates["answer_only"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.answer_or_evidence_templates["answer_and_evidence"]) == REQUIRED_PROMPT_VARIANTS
 
     with pytest.raises(ValueError):
         render_prompt(
             domain="geometry",
             task_group="measurement",
             bundle_id="geometry_measurement_v1",
-            task_type_key="measurement_single_object",
-            query_type="measure",
-            slots={"object_description": "a single polygon"},
+            task_family_key="measurement_single_object",
+            task_key="measurement_query",
+            slots={"object_description": "a polygon"},
             instance_seed=9999,
         )
 
@@ -77,11 +78,11 @@ def test_render_prompt_variants_contains_answer_only_and_answer_and_evidence() -
         domain="geometry",
         task_group="measurement",
         bundle_id="geometry_measurement_v1",
-        task_type_key="measurement_single_object",
-        query_type="measure",
+        task_family_key="measurement_single_object",
+        task_key="measurement_query",
         answer_or_evidence_keys=("answer_only", "answer_and_evidence"),
         slots={
-            "object_description": "a single polygon",
+            "object_description": "a polygon",
             "question_text": "What is the area of the polygon in square units?",
             "json_output_contract": 'Return a valid JSON object with keys "evidence" and "answer" in that order.',
             "json_output_contract_answer_only": 'Return a valid JSON object with key "answer".',
@@ -105,13 +106,15 @@ def test_geometry_measurement_bundles_answer_templates_use_contract_and_avoid_on
     for bundle_id in ("geometry_angle_measure_v1", "geometry_measurement_v1"):
         bundle = load_prompt_bundle("geometry", "measurement", bundle_id)
 
-        measure_templates = bundle.query_type_templates["measure"]
+        task_templates = bundle.task_templates[
+            "measurement_angle_value" if bundle_id == "geometry_angle_measure_v1" else "measurement_query"
+        ]
         answer_only_templates = bundle.answer_or_evidence_templates["answer_only"]
         evidence_templates = bundle.answer_or_evidence_templates["answer_and_evidence"]
 
-        assert len(measure_templates) >= 10
-        assert len(answer_only_templates) >= 10
-        assert len(evidence_templates) >= 10
+        assert len(task_templates) == REQUIRED_PROMPT_VARIANTS
+        assert len(answer_only_templates) == REQUIRED_PROMPT_VARIANTS
+        assert len(evidence_templates) == REQUIRED_PROMPT_VARIANTS
         assert all(str(template).strip() for template in answer_only_templates)
         assert all("{json_output_contract_answer_only}" in str(template) for template in answer_only_templates)
         assert all("{answer_hint}" in str(template) for template in answer_only_templates)
@@ -124,15 +127,21 @@ def test_geometry_measurement_bundles_answer_templates_use_contract_and_avoid_on
         assert all("{json_example}" in str(template) for template in evidence_templates)
 
         if bundle_id == "geometry_angle_measure_v1":
-            assert all("option" in str(template).lower() for template in measure_templates)
-            assert any("option letter" in str(template).lower() for template in measure_templates)
+            assert len({str(template) for template in task_templates}) == REQUIRED_PROMPT_VARIANTS
+            assert all("{question_text}" in str(template) for template in task_templates)
+            assert all("option" not in str(template).lower() for template in task_templates)
+            assert any(
+                ("nearest degree" in str(template).lower()) or ("nearest integer" in str(template).lower())
+                for template in task_templates
+            )
         else:
-            assert len({str(template) for template in measure_templates}) >= 10
-            assert all("{question_text}" in str(template) for template in measure_templates)
+            assert len({str(template) for template in task_templates}) == REQUIRED_PROMPT_VARIANTS
+            assert all("{question_text}" in str(template) for template in task_templates)
 
 
 def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
     bundle_coords = (
+        ("geometry", "analytical_3d", "geometry_analytical_volume_v1"),
         ("geometry", "analytical_2d", "geometry_analytical_area_v1"),
         ("geometry", "measurement", "geometry_angle_measure_v1"),
         ("geometry", "measurement", "geometry_measurement_v1"),
@@ -142,8 +151,8 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
         bundle = load_prompt_bundle(domain, task_group, bundle_id)
         answer_only_templates = bundle.answer_or_evidence_templates["answer_only"]
         evidence_templates = bundle.answer_or_evidence_templates["answer_and_evidence"]
-        assert len(answer_only_templates) >= 10
-        assert len(evidence_templates) >= 10
+        assert len(answer_only_templates) == REQUIRED_PROMPT_VARIANTS
+        assert len(evidence_templates) == REQUIRED_PROMPT_VARIANTS
         assert all("{json_output_contract_answer_only}" in str(template) for template in answer_only_templates)
         assert all("{answer_hint}" in str(template) for template in answer_only_templates)
         assert all("{json_example_answer_only}" in str(template) for template in answer_only_templates)
@@ -164,10 +173,22 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
         }.issubset(set(bundle.required_slots_by_key.get("answer_or_evidence:answer_and_evidence", ())))
 
 
+def test_geometry_task_templates_avoid_awkward_comma_question_prefixes() -> None:
+    bundle_coords = (
+        ("geometry", "measurement", "geometry_measurement_v1", "measurement_query"),
+        ("geometry", "analytical_2d", "geometry_analytical_area_v1", "analytical_area_query"),
+        ("geometry", "analytical_3d", "geometry_analytical_volume_v1", "analytical_volume_query"),
+    )
+    for domain, task_group, bundle_id, task_key in bundle_coords:
+        bundle = load_prompt_bundle(domain, task_group, bundle_id)
+        templates = bundle.task_templates[task_key]
+        assert all(", {question_text}" not in str(template) for template in templates)
+
+
 def test_analytical_area_bundle_renders_deterministically() -> None:
     slots = {
-        "object_description": "a single annotated geometric shape on graph paper",
-        "question_text": "The shape is a rectangle. Use the annotated side lengths to compute its area in square units.",
+        "object_description": "an annotated geometric shape",
+        "question_text": "The rectangle has two annotated side lengths. What is its area in square units?",
         "json_output_contract": 'Return a valid JSON object with keys "evidence" and "answer" in that order.',
         "json_output_contract_answer_only": 'Return a valid JSON object with key "answer".',
         "evidence_hint": 'set "evidence" to a JSON object that maps each required annotation label to its shown measurement value',
@@ -179,8 +200,8 @@ def test_analytical_area_bundle_renders_deterministically() -> None:
         domain="geometry",
         task_group="analytical_2d",
         bundle_id="geometry_analytical_area_v1",
-        task_type_key="analytical_single_shape",
-        query_type="measure",
+        task_family_key="analytical_single_shape",
+        task_key="analytical_area_query",
         slots=slots,
         instance_seed=7812,
     )
@@ -188,8 +209,8 @@ def test_analytical_area_bundle_renders_deterministically() -> None:
         domain="geometry",
         task_group="analytical_2d",
         bundle_id="geometry_analytical_area_v1",
-        task_type_key="analytical_single_shape",
-        query_type="measure",
+        task_family_key="analytical_single_shape",
+        task_key="analytical_area_query",
         slots=slots,
         instance_seed=7812,
     )

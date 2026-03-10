@@ -17,8 +17,6 @@ class BuildTaskConfig:
     count: int | None = None
     weight: float | None = None
     params: Dict[str, Any] = field(default_factory=dict)
-    query_weights: Dict[str, float] = field(default_factory=dict)
-    expected_query_counts: Dict[str, int] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -45,8 +43,6 @@ def load_build_config(path: str | Path) -> BuildConfig:
             count=(int(item["count"]) if item.get("count") is not None else None),
             weight=(float(item["weight"]) if item.get("weight") is not None else None),
             params=dict(item.get("params", {})),
-            query_weights={str(key): float(val) for key, val in dict(item.get("query_weights", {})).items()},
-            expected_query_counts={str(key): int(val) for key, val in dict(item.get("expected_query_counts", {})).items()},
         )
         for item in data.get("tasks", [])
     ]

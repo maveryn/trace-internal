@@ -9,7 +9,3 @@ sampling_seed: 0
 tasks:
   - task_id: task_geometry_measurement_length
     count: 24
-    params:
-      query_type: measure
-    query_weights:
-      measure: 1.0

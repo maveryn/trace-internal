@@ -1,6 +1,12 @@
 generation:
   shared:
     answer_min: 8
+    polygon_allowed_sides: [3, 4, 5]
+    circle_radius_min: 2
+    circle_radius_max: 10
+    ellipse_axis_min: 2
+    ellipse_axis_max: 10
+    ellipse_allow_circle: false
   task_overrides:
     task_geometry_measurement_angle:
       min_angle: 30
@@ -10,63 +16,51 @@ generation:
       max_abs_vector_component: 20
       min_ray_length_units: 2
       balanced_sampling: true
-      mcq_option_count: 5
-      mcq_min_delta: 5
-      mcq_max_delta: 30
-      polygon_allowed_sides: [3, 4]
       source_kind_weights:
         primitive_angle: 1.0
-        triangle: 1.0
-        quadrilateral: 1.0
         intersection_lines: 1.0
     task_geometry_measurement_area:
-      answer_max: 32
+      answer_min: 8
+      answer_max: 96
       balanced_variant_sampling: true
       variant_weights:
         triangle: 1.0
         quadrilateral: 1.0
         ellipse: 1.0
-      ellipse_axis_min: 2
-      ellipse_axis_max: 6
-      ellipse_allow_circle: false
+      ellipse_allow_circle: true
     task_geometry_measurement_perimeter:
-      answer_max: 24
+      answer_min: 8
+      answer_max: 64
       balanced_variant_sampling: true
       variant_weights:
         triangle: 1.0
         quadrilateral: 1.0
         circle: 1.0
-      circle_radius_min: 4
-      circle_radius_max: 6
     task_geometry_measurement_length:
       answer_min: 2
-      answer_max: 8
+      answer_max: 16
       balanced_variant_sampling: true
       variant_weights:
         segment: 1.0
         triangle: 1.0
         quadrilateral: 1.0
         pentagon: 1.0
-        circle_radius: 1.0
-        circle_diameter: 1.0
-        ellipse_major_axis: 1.0
-        ellipse_minor_axis: 1.0
+        circle_radius: 0.25
+        circle_diameter: 0.25
+        ellipse_major_axis: 0.25
+        ellipse_minor_axis: 0.25
       segment_length_min: 2
-      segment_length_max: 8
-      segment_vector_max_abs_component: 12
-      polygon_allowed_sides: [3, 4, 5]
-      circle_radius_min: 1
-      circle_radius_max: 4
-      ellipse_axis_min: 1
-      ellipse_axis_max: 4
-      ellipse_allow_circle: false
+      segment_length_max: 16
+      segment_vector_max_abs_component: 20
+    task_geometry_measurement_slope:
+      slope_tenths_min: -40
+      slope_tenths_max: 40
+      balanced_sampling: true
 
 rendering:
   shared:
-    canvas_size_min: 256
-    canvas_size_max: 512
     graph_cells_min: 6
-    graph_cells_max: 12
+    graph_cells_max: 20
     line_width: 4
     line_width_min: 2
     line_width_max: 5
@@ -80,11 +74,12 @@ rendering:
 prompt:
   shared:
     bundle_id: geometry_measurement_v1
-    task_type_key: measurement_single_object
-    object_description_segment: a single labeled line segment
-    object_description_polygon: a single polygon
-    object_description_ellipse: a single ellipse
-    object_description_circle: a single circle
+    task_family_key: measurement_single_object
+    task_key: measurement_query
+    object_description_segment: a labeled line segment
+    object_description_polygon: a polygon
+    object_description_ellipse: an ellipse
+    object_description_circle: a circle
     evidence_hint_point_map: set "evidence" to a JSON object mapping each required label to one graph-unit coordinate [x, y]
     evidence_hint_segment: provide exactly two labels for the measured segment endpoints
     evidence_hint_polygon_side: provide exactly two labels for the measured polygon side endpoints
@@ -99,10 +94,11 @@ prompt:
   task_overrides:
     task_geometry_measurement_angle:
       bundle_id: geometry_angle_measure_v1
+      task_key: measurement_angle_value
       evidence_hint: set "evidence" to a JSON object with three labeled points [ray endpoint A, vertex, ray endpoint B] in graph-unit coordinates
-      answer_hint: set "answer" to the selected option letter (A, B, C, D, or E)
-      json_example: '{"evidence":{"P":[2,1],"Q":[0,0],"R":[3,-1]},"answer":"B"}'
-      json_example_answer_only: '{"answer":"B"}'
+      answer_hint: set "answer" to the angle measure in degrees rounded to the nearest integer
+      json_example: '{"evidence":{"P":[2,1],"Q":[0,0],"R":[3,-1]},"answer":45}'
+      json_example_answer_only: '{"answer":45}'
     task_geometry_measurement_area:
       question_text_polygon: What is the area of the polygon in square units?
       question_text_ellipse: What is the area of the ellipse in square units? Express the answer in the form kπ.
@@ -131,8 +127,10 @@ prompt:
       json_example_ellipse_major_axis_integer: '{"evidence":{"A":[-4,0],"B":[4,0]},"answer":8}'
       json_example_ellipse_minor_axis_integer: '{"evidence":{"C":[0,-3],"D":[0,3]},"answer":6}'
       json_example_integer: '{"evidence":{"M":[1,2],"N":[6,2]},"answer":5}'
-
-sampling:
-  shared:
-    query_weights:
-      measure: 1.0
+    task_geometry_measurement_slope:
+      object_description: a straight line
+      question_text: What is the slope of the line? Report the result to one decimal place.
+      evidence_hint: set "evidence" to a JSON object with one labeled graph-unit point where the line crosses the x-axis
+      answer_hint: set "answer" to the slope value rounded to one decimal place
+      json_example: '{"evidence":{"X":[2,0]},"answer":-1.5}'
+      json_example_answer_only: '{"answer":-1.5}'

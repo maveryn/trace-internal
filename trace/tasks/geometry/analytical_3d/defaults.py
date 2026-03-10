@@ -1,4 +1,4 @@
-"""Shared fallback defaults for geometry/analytical_2d task-group modules."""
+"""Shared fallback defaults for geometry/analytical_3d task-group modules."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
-class GeometryAnalytical2DSharedDefaults:
-    """Common fallback defaults reused across geometry/analytical_2d tasks."""
+class GeometryAnalytical3DSharedDefaults:
+    """Common fallback defaults reused across geometry/analytical_3d tasks."""
 
     canvas_size_min: int = 512
     canvas_size_max: int = 768
@@ -20,7 +20,7 @@ class GeometryAnalytical2DSharedDefaults:
     label_font_size_max: int = 30
     label_stroke_width: int = 1
     answer_min: int = 8
-    answer_max: int = 64
+    answer_max: int = 96
 
 
-ANALYTICAL_SHARED_DEFAULTS = GeometryAnalytical2DSharedDefaults()
+ANALYTICAL_3D_SHARED_DEFAULTS = GeometryAnalytical3DSharedDefaults()

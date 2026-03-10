@@ -6,8 +6,8 @@
 3. Task id: `task_tile_path_shortest_path`
 4. Objective: return shortest-path length with grounded path evidence.
 
-## 2) Scene + query contract
-1. Query type: `shortest_path`
+## 2) Scene + task contract
+1. Supported `task_variant` values: `shortest_path`
 2. `answer_gt.type`: `integer`
 3. Default evidence type: `point_path`
 4. Alternate evidence type: `bbox_set`
@@ -17,16 +17,17 @@
 
 ## 3) Prompt contract
 1. Bundle: `tile_path_v1`
-2. Task type key: `maze_path`
-3. Required slots:
-   - task/query: `rows`, `cols`
+2. `task_family_key`: `maze_path`
+3. `task_key`: `shortest_path_query`
+4. Required slots:
+   - task-family/task: `rows`, `cols`
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
    - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
-4. Slot source:
+5. Slot source:
    - shared JSON-format contracts from `configs/domains/tile/base.yaml` (`prompt.shared`),
    - task-group prompt slots from `configs/domains/tile/path.yaml` (`prompt.shared`).
-5. Modes: `answer_only`, `answer_and_evidence`
-6. Variant policy: at least 10 variants for each required task/query/mode key.
+6. Modes: `answer_only`, `answer_and_evidence`
+7. Variant policy: exactly 5 prompt variants for each required task-family/task/mode key.
 
 ## 4) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.

@@ -6,11 +6,12 @@ Prompt text is externalized and deterministic.
 1. Task modules must not hardcode user-facing prompt strings.
 2. Bundles live under `prompts/<domain>/<task_group>/<bundle_id>.json`.
 3. Composition layers:
-   - task type,
-   - query type,
+   - task family,
+   - task,
+   - optional task variant,
    - output mode (`answer_only`, `answer_and_evidence`).
 4. Selection is deterministic from seed namespaces.
-5. Each required template list must have at least 10 variants.
+5. Each required template list must contain exactly 5 high-quality variants.
 6. All active tasks must provide explicit JSON-format instructions in both output modes:
    - `answer_only` uses `{"answer": ...}`
    - `answer_and_evidence` uses `{"evidence": ..., "answer": ...}`
@@ -21,14 +22,15 @@ Prompt text is externalized and deterministic.
 Required fields:
 1. `bundle_id`
 2. `schema_version`
-3. `task_type_templates`
-4. `query_type_templates`
+3. `task_family_templates`
+4. `task_templates`
 5. `answer_or_evidence_templates`
 6. `required_slots_by_key`
+7. Optional: `task_variant_templates`
 
 ## 3) Metadata requirements
 Trace `query_spec.prompt_variant` should include:
-1. bundle/key identifiers,
+1. bundle/key identifiers (`task_family_key`, `task_key`, optional `task_variant_key`),
 2. selected variant indices,
 3. variant counts,
 4. slot values for declared required slots,
@@ -45,17 +47,25 @@ Train records should store:
 4. `trace/core/prompts/render.py` — strict rendering and composition.
 5. `trace/tasks/shared/prompt_variants.py` — task-level dual-mode orchestration.
 
+## 4.1 Prompt-quality policy
+1. Prefer 5 strong variants over larger padded lists.
+2. Keep stems natural and image-focused; avoid awkward scaffolding such as “single/exactly one object” unless the distinction is semantically necessary.
+3. Keep output-mode variants concise and structurally consistent so format requirements stay easy to parse.
+
 ## 5) Active bundles/tasks
 Bundles:
 1. `prompts/geometry/measurement/geometry_angle_measure_v1.json`
 2. `prompts/geometry/measurement/geometry_measurement_v1.json`
 3. `prompts/geometry/analytical_2d/geometry_analytical_area_v1.json`
-4. `prompts/tile/path/tile_path_v1.json`
+4. `prompts/geometry/analytical_3d/geometry_analytical_volume_v1.json`
+5. `prompts/tile/path/tile_path_v1.json`
 
 Tasks:
 1. `task_geometry_measurement_angle` (bundle override: `geometry_angle_measure_v1`)
 2. `task_geometry_measurement_area` (bundle: `geometry_measurement_v1`)
 3. `task_geometry_measurement_perimeter` (bundle: `geometry_measurement_v1`)
 4. `task_geometry_measurement_length` (bundle: `geometry_measurement_v1`)
-5. `task_geometry_analytical_2d_area` (bundle: `geometry_analytical_area_v1`)
-6. `task_tile_path_shortest_path`
+5. `task_geometry_measurement_slope` (bundle: `geometry_measurement_v1`)
+6. `task_geometry_analytical_2d_area` (bundle: `geometry_analytical_area_v1`)
+7. `task_geometry_analytical_3d_volume` (bundle: `geometry_analytical_volume_v1`)
+8. `task_tile_path_shortest_path`

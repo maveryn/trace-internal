@@ -1,39 +1,29 @@
 {
   "bundle_id": "geometry_measurement_v1",
   "schema_version": "v1",
-  "task_type_templates": {
+  "task_family_templates": {
     "measurement_single_object": [
-      "A single image shows {object_description} on graph paper.",
-      "Inspect the diagram containing {object_description}.",
-      "One graph-paper figure is shown: {object_description}.",
-      "Work from the image with {object_description}.",
-      "The panel contains exactly one object: {object_description}.",
-      "Use the graph-paper scene that shows {object_description}.",
-      "This figure presents {object_description}.",
-      "A single geometry object appears in the image: {object_description}.",
-      "Review the one-object graph-paper scene: {object_description}.",
-      "The provided visual contains {object_description}."
+      "You are given a graph-paper image showing {object_description}.",
+      "The graph-paper image shows {object_description}.",
+      "Look at the graph-paper image showing {object_description}.",
+      "Use the graph-paper diagram showing {object_description}.",
+      "Work from the graph-paper image showing {object_description}."
     ]
   },
-  "query_type_templates": {
-    "measure": [
+  "task_templates": {
+    "measurement_query": [
       "{question_text}",
-      "From the graph-paper figure, {question_text}",
-      "Using the provided diagram, {question_text}",
-      "Inspect the plotted shape and answer: {question_text}",
-      "Based on the displayed object, {question_text}",
-      "Read the graph-paper scene and answer: {question_text}",
-      "Determine the requested value from the shape: {question_text}",
-      "Evaluate the measurement shown and answer: {question_text}",
-      "Work from the displayed object and answer: {question_text}",
-      "Use the visual evidence in the figure: {question_text}"
+      "Answer this question from the graph-paper image: {question_text}",
+      "Use the graph-paper image to answer: {question_text}",
+      "Based on the graph-paper image, answer this question: {question_text}",
+      "Read the graph-paper image and answer: {question_text}"
     ]
   },
   "required_slots_by_key": {
-    "task_type:measurement_single_object": [
+    "task_family:measurement_single_object": [
       "object_description"
     ],
-    "query_type:measure": [
+    "task:measurement_query": [
       "question_text"
     ],
     "answer_or_evidence:answer_only": [
@@ -52,26 +42,16 @@
     "answer_only": [
       "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer details: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
       "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nFor answer, {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer guidance: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer value rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer key rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer content: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-      "{json_output_contract_answer_only}\nAnswer specification: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
     ],
     "answer_and_evidence": [
       "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
       "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence details: {evidence_hint}.\nAnswer details: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
       "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nFor evidence, {evidence_hint}.\nFor answer, {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence guidance: {evidence_hint}.\nAnswer guidance: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence value rule: {evidence_hint}.\nAnswer value rule: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence key rule: {evidence_hint}.\nAnswer key rule: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence content: {evidence_hint}.\nAnswer content: {answer_hint}.\nExample JSON:\n{json_example}",
-      "{json_output_contract}\nEvidence specification: {evidence_hint}.\nAnswer specification: {answer_hint}.\nExample JSON:\n{json_example}"
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
     ]
   }
 }

@@ -11,6 +11,7 @@ from trace.tasks.geometry.measurement.angle import GeometryAngleMeasure2DTask
 from trace.tasks.geometry.measurement.area import GeometryAreaMeasure2DTask
 from trace.tasks.geometry.measurement.length import GeometryLengthMeasure2DTask
 from trace.tasks.geometry.measurement.perimeter import GeometryPerimeterMeasure2DTask
+from trace.tasks.geometry.measurement.slope import GeometrySlopeMeasureTask
 
 
 def _extract_prompt_json_example(prompt: str) -> dict:
@@ -48,37 +49,34 @@ def test_angle_measure_outputs_expected_contract() -> None:
     task = GeometryAngleMeasure2DTask()
     cases = [
         ("primitive_angle", "primitive_angle"),
-        ("triangle", "polygon_angle"),
-        ("quadrilateral", "polygon_angle"),
         ("intersection_lines", "intersection_angle"),
     ]
     for idx, (source_kind, scene_variant) in enumerate(cases):
         out = task.generate(
             2200 + idx,
-            params={"query_type": "measure", "source_kind": source_kind, "angle_step": 1, "min_angle": 30, "max_angle": 150},
+            params={"source_kind": source_kind, "angle_step": 1, "min_angle": 30, "max_angle": 150},
             max_attempts=180,
         )
         trace = out.trace_payload
-        assert out.query_type == "measure"
-        assert out.answer_gt.type == "option_letter"
-        assert str(out.answer_gt.value) in {"A", "B", "C", "D", "E"}
+        assert str(out.task_variant).strip()
+        assert out.answer_gt.type == "integer"
+        assert isinstance(out.answer_gt.value, int)
         assert out.evidence_gt.type == "grid_point_map"
         evidence_map = _assert_grid_point_map(out.evidence_gt.value, expected_len=3)
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
         assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
         assert trace["execution_trace"]["scene_variant"] == scene_variant
         assert trace["execution_trace"]["source_kind"] == source_kind
-        assert str(trace["execution_trace"]["correct_option_letter"]) == str(out.answer_gt.value)
-        assert str(trace["execution_trace"]["answer_option_letter"]) == str(out.answer_gt.value)
         target_angle = int(trace["execution_trace"]["target_angle"])
         assert 30 <= int(target_angle) <= 150
-        assert abs(float(trace["execution_trace"]["raw_angle_degrees"]) - float(target_angle)) <= 0.05 + 1e-9
-        assert trace["execution_trace"]["question_format"] == "mcq"
-        assert len(trace["execution_trace"]["choices"]) == 5
-        assert int(trace["execution_trace"]["correct_option_value"]) == int(target_angle)
-        assert 0 <= int(trace["execution_trace"]["correct_option_index"]) <= 4
-        assert "option letter" in out.prompt.lower()
-        assert "A." in out.prompt and "B." in out.prompt
+        answer_value = int(out.answer_gt.value)
+        raw_angle = float(trace["execution_trace"]["raw_angle_degrees"])
+        assert 30.0 <= float(raw_angle) <= 150.0
+        assert abs(float(raw_angle) - float(answer_value)) <= 0.05 + 1e-9
+        assert int(answer_value) == int(target_angle)
+        assert trace["execution_trace"]["question_format"] == "numeric_open"
+        assert "option letter" not in out.prompt.lower()
+        assert "\nA." not in out.prompt and "\nB." not in out.prompt
 
         origin_x, origin_y, spacing = _graph_origin_and_spacing(trace)
         projected = trace["projected_evidence"]["point_map"]
@@ -97,12 +95,6 @@ def test_angle_measure_outputs_expected_contract() -> None:
             arm_a = attrs["points"]["arm_a"]
             vertex = attrs["points"]["vertex"]
             arm_b = attrs["points"]["arm_b"]
-        elif source_kind in {"triangle", "quadrilateral"}:
-            vertices = attrs["vertices"]
-            prev_idx, vertex_idx, next_idx = attrs["target_triplet_indices"]
-            arm_a = vertices[int(prev_idx)]
-            vertex = vertices[int(vertex_idx)]
-            arm_b = vertices[int(next_idx)]
         else:
             target_points = attrs["points"]["target"]
             arm_a = target_points["arm_a"]
@@ -129,18 +121,24 @@ def test_angle_measure_outputs_expected_contract() -> None:
         arm_b_graph = _graph_point(arm_b, origin_x=origin_x, origin_y=origin_y, spacing=spacing)
         assert hypot(arm_a_graph[0] - vertex_graph[0], arm_a_graph[1] - vertex_graph[1]) >= 2.0 - 1e-6
         assert hypot(arm_b_graph[0] - vertex_graph[0], arm_b_graph[1] - vertex_graph[1]) >= 2.0 - 1e-6
+        assert (
+            abs(float(arm_a_graph[0]) - float(vertex_graph[0])) <= 1e-6
+            or abs(float(arm_a_graph[1]) - float(vertex_graph[1])) <= 1e-6
+            or abs(float(arm_b_graph[0]) - float(vertex_graph[0])) <= 1e-6
+            or abs(float(arm_b_graph[1]) - float(vertex_graph[1])) <= 1e-6
+        )
 
 
 def test_angle_measure_label_font_scales_with_canvas() -> None:
     task = GeometryAngleMeasure2DTask()
     small = task.generate(
         4010,
-        params={"query_type": "measure", "source_kind": "primitive_angle", "canvas_size": 256, "graph_cells": 16},
+        params={"source_kind": "primitive_angle", "canvas_size": 256, "graph_cells": 16},
         max_attempts=180,
     )
     large = task.generate(
         4010,
-        params={"query_type": "measure", "source_kind": "primitive_angle", "canvas_size": 512, "graph_cells": 16},
+        params={"source_kind": "primitive_angle", "canvas_size": 512, "graph_cells": 16},
         max_attempts=180,
     )
     small_style = small.trace_payload["render_spec"]["text_style"]
@@ -158,7 +156,7 @@ def test_angle_measure_balanced_sampling_defaults_and_index() -> None:
     for index in range(160):
         out = task.generate(
             hash64(7000, "angle_cycle_seed", index),
-            params={"query_type": "measure", "_sampling_index": index},
+            params={"_sampling_index": index},
             max_attempts=220,
         )
         source_kind = str(out.trace_payload["execution_trace"]["source_kind"])
@@ -178,21 +176,21 @@ def test_angle_measure_balanced_sampling_defaults_and_index() -> None:
     assert len(answer_counts) >= coverage_floor
 
     sources = []
-    for index in range(8):
+    for index in range(6):
         out = task.generate(
             hash64(4040, "angle_measure_seed", index),
-            params={"query_type": "measure", "_sampling_index": index},
+            params={"_sampling_index": index},
             max_attempts=220,
         )
         sources.append(str(out.trace_payload["execution_trace"]["source_kind"]))
-    assert sources[:4] == sources[4:]
+    assert sources[:2] == sources[2:4] == sources[4:6]
 
     answers = []
     primitive_feasible_count = None
     for index in range(30):
         out = task.generate(
             hash64(4404, "angle_measure_seed", index),
-            params={"query_type": "measure", "_sampling_index": index, "source_kind": "primitive_angle"},
+            params={"_sampling_index": index, "source_kind": "primitive_angle"},
             max_attempts=220,
         )
         if primitive_feasible_count is None:
@@ -205,6 +203,56 @@ def test_angle_measure_balanced_sampling_defaults_and_index() -> None:
         answers.append(int(out.trace_payload["execution_trace"]["target_angle"]))
     assert primitive_feasible_count is not None
     assert len(set(answers)) == min(len(answers), int(primitive_feasible_count))
+
+
+def test_slope_measure_outputs_expected_contract() -> None:
+    task = GeometrySlopeMeasureTask()
+    out = task.generate(
+        9901,
+        params={"slope_tenths_min": -20, "slope_tenths_max": 20},
+        max_attempts=180,
+    )
+    trace = out.trace_payload
+    assert str(out.task_variant) == "line_slope"
+    assert out.answer_gt.type == "number"
+    assert isinstance(out.answer_gt.value, float)
+    assert abs((float(out.answer_gt.value) * 10.0) - round(float(out.answer_gt.value) * 10.0)) <= 1e-9
+    assert out.evidence_gt.type == "grid_point_map"
+    evidence_map = _assert_grid_point_map(out.evidence_gt.value, expected_len=1)
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+    assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
+    assert trace["execution_trace"]["task_variant"] == "line_slope"
+    assert trace["execution_trace"]["question_format"] == "numeric_open"
+    feasible_answers = [float(value) for value in trace["execution_trace"]["feasible_answer_values"]]
+    assert feasible_answers
+    assert float(out.answer_gt.value) in feasible_answers
+
+    evidence_label = next(iter(evidence_map.keys()))
+    crossing = evidence_map[evidence_label]
+    assert int(crossing[1]) == 0
+    attrs = trace["scene_ir"]["entities"][0]["attrs"]
+    assert [int(crossing[0]), int(crossing[1])] == [int(attrs["axis_crossing_graph"][0]), int(attrs["axis_crossing_graph"][1])]
+
+    lattice_point = [int(attrs["lattice_point_graph"][0]), int(attrs["lattice_point_graph"][1])]
+    assert int(lattice_point[1]) != 0
+    assert int(lattice_point[0]) != int(crossing[0])
+
+    expected_slope = round(
+        float(lattice_point[1] - crossing[1]) / float(lattice_point[0] - crossing[0]),
+        1,
+    )
+    assert abs(float(out.answer_gt.value) - float(expected_slope)) <= 1e-9
+    assert abs(float(trace["execution_trace"]["answer_value"]) - float(out.answer_gt.value)) <= 1e-9
+
+    line_a = attrs["line_endpoints_graph"][0]
+    line_b = attrs["line_endpoints_graph"][1]
+    vx = float(line_b[0]) - float(line_a[0])
+    vy = float(line_b[1]) - float(line_a[1])
+    for point in ([float(crossing[0]), float(crossing[1])], [float(lattice_point[0]), float(lattice_point[1])]):
+        px = float(point[0]) - float(line_a[0])
+        py = float(point[1]) - float(line_a[1])
+        cross = (float(vx) * float(py)) - (float(vy) * float(px))
+        assert abs(float(cross)) <= 1e-6
 
 
 def test_polygon_measure_tasks_match_scene_attrs() -> None:
@@ -262,11 +310,11 @@ def test_polygon_measure_tasks_match_scene_attrs() -> None:
         task = task_cls()
         out = task.generate(
             3300 + idx,
-            params={"query_type": "measure", "shape_variant": str(shape_variant)},
+            params={"shape_variant": str(shape_variant)},
             max_attempts=180,
         )
         trace = out.trace_payload
-        assert out.query_type == "measure"
+        assert str(out.task_variant).strip()
         assert out.answer_gt.type == str(answer_type)
         assert out.evidence_gt.type == "grid_point_map"
         evidence_map = _assert_grid_point_map(
@@ -327,13 +375,13 @@ def test_length_measure_variants_match_scene_and_evidence() -> None:
     for idx, variant in enumerate(variants):
         out = task.generate(
             7400 + idx,
-            params={"query_type": "measure", "shape_variant": str(variant)},
+            params={"shape_variant": str(variant)},
             max_attempts=220,
         )
         trace = out.trace_payload
-        assert out.query_type == "measure"
+        assert str(out.task_variant).strip()
         assert out.answer_gt.type == "integer"
-        assert 2 <= int(out.answer_gt.value) <= 8
+        assert 2 <= int(out.answer_gt.value) <= 16
         assert out.evidence_gt.type == "grid_point_map"
         evidence_map = _assert_grid_point_map(
             out.evidence_gt.value,
@@ -406,30 +454,51 @@ def test_measurement_shape_variant_balancing_defaults() -> None:
             {"triangle", "quadrilateral", "circle"},
             "perimeter_cycle_seed",
         ),
-        (
-            GeometryLengthMeasure2DTask,
-            {
-                "segment",
-                "triangle",
-                "quadrilateral",
-                "pentagon",
-                "circle_radius",
-                "circle_diameter",
-                "ellipse_major_axis",
-                "ellipse_minor_axis",
-            },
-            "length_cycle_seed",
-        ),
     ]
     for task_cls, expected_variants, seed_ns in cases:
         task = task_cls()
         counts: Counter[str] = Counter()
-        for index in range(80):
+        for index in range(84):
             out = task.generate(
                 hash64(9090, str(seed_ns), index),
-                params={"query_type": "measure", "_sampling_index": index},
+                params={"_sampling_index": index},
                 max_attempts=220,
             )
             counts[str(out.trace_payload["execution_trace"]["shape_variant"])] += 1
         assert set(counts.keys()) == set(expected_variants)
         assert max(counts.values()) - min(counts.values()) <= 1
+
+
+def test_measurement_length_shape_variant_weighted_defaults() -> None:
+    task = GeometryLengthMeasure2DTask()
+    expected_variants = {
+        "segment",
+        "triangle",
+        "quadrilateral",
+        "pentagon",
+        "circle_radius",
+        "circle_diameter",
+        "ellipse_major_axis",
+        "ellipse_minor_axis",
+    }
+
+    first = task.generate(hash64(9091, "length_variant_probs", 0), params={}, max_attempts=220)
+    probabilities = dict(first.trace_payload["execution_trace"]["variant_probabilities"])
+    assert set(probabilities.keys()) == expected_variants
+
+    high_weight_variants = {"segment", "triangle", "quadrilateral", "pentagon"}
+    low_weight_variants = expected_variants - high_weight_variants
+    for variant in high_weight_variants:
+        assert abs(float(probabilities[variant]) - 0.2) <= 1e-9
+    for variant in low_weight_variants:
+        assert abs(float(probabilities[variant]) - 0.05) <= 1e-9
+
+    counts: Counter[str] = Counter()
+    for index in range(400):
+        out = task.generate(hash64(9092, "length_weighted_seed", index), params={}, max_attempts=220)
+        counts[str(out.trace_payload["execution_trace"]["shape_variant"])] += 1
+    assert set(counts.keys()) == expected_variants
+
+    high_mean = sum(int(counts[variant]) for variant in high_weight_variants) / float(len(high_weight_variants))
+    low_mean = sum(int(counts[variant]) for variant in low_weight_variants) / float(len(low_weight_variants))
+    assert high_mean > (2.5 * low_mean)

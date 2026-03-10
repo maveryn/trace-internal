@@ -22,7 +22,7 @@ class TaskOutput:
     trace_payload: Dict[str, Any]
     complexity: TaskComplexity
     task_versions: Dict[str, str]
-    query_type: str = "default"
+    task_variant: str = "default"
     prompt_variants: Dict[str, str] = field(default_factory=dict)
 
 

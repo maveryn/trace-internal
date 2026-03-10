@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import lru_cache
+import math
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.sampling import normalize_positive_weights, weighted_choice
@@ -25,9 +26,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ...shared.mcq import build_integer_mcq_options, format_lettered_options, option_label_for_index
 from ...shared.prompt_json_example import build_prompt_json_examples
-from ...shared.sequence import rotate_sequence
 from ...shared.text_rendering import resolve_scene_label_font_size_px
 from ..shared.angle_geometry import (
     draw_labeled_angle,
@@ -37,11 +36,8 @@ from ..shared.angle_geometry import (
 from ..shared.graph_paper import offset_point_by_grid_vector, sample_lattice_point_with_offsets
 from ..shared.graph_rendering import graph_paper_grid_from_frame, scale_point
 from ..shared.labeled_point_evidence import labeled_grid_point_evidence_artifacts
-from ..shared.polygon_geometry import (
-    alphabetic_labels,
-    draw_polygon_labels,
-    draw_polygon_outline,
-)
+from ..shared.polygon_geometry import alphabetic_labels
+from ..shared.prompt_text import append_required_labels_clause
 from ..shared.render_variation import sample_int_render_param
 from ..shared.shape_style import (
     GeometryShapeStyle,
@@ -57,11 +53,18 @@ from ..shared.background_defaults import POST_IMAGE_BACKGROUND_DEFAULTS
 from .defaults import MEASUREMENT_SHARED_DEFAULTS
 from ..shared.noise_defaults import POST_IMAGE_NOISE_DEFAULTS
 
-_QUERY_TYPE = "measure"
-_SOURCE_KINDS: Tuple[str, str, str, str] = ("primitive_angle", "triangle", "quadrilateral", "intersection_lines")
 _INTERSECTION_SOURCE_KIND = "intersection_lines"
-_POLYGON_SIDE_TO_SOURCE_KIND: Dict[int, str] = {3: "triangle", 4: "quadrilateral"}
-_SOURCE_KIND_TO_POLYGON_SIDE: Dict[str, int] = {value: key for key, value in _POLYGON_SIDE_TO_SOURCE_KIND.items()}
+_SOURCE_KINDS: Tuple[str, str] = ("primitive_angle", _INTERSECTION_SOURCE_KIND)
+
+
+def _scene_variant_for_source_kind(source_kind: str) -> str:
+    """Map one source-kind category to task-level `scene_variant`."""
+    kind = str(source_kind)
+    if kind == "primitive_angle":
+        return "primitive_angle"
+    if kind == _INTERSECTION_SOURCE_KIND:
+        return "intersection_angle"
+    raise ValueError(f"unsupported source_kind for scene_variant mapping: {kind}")
 
 
 @dataclass(frozen=True)
@@ -83,10 +86,6 @@ class _TaskDefaults:
     label_font_size_min: int = MEASUREMENT_SHARED_DEFAULTS.label_font_size_min
     label_font_size_max: int = MEASUREMENT_SHARED_DEFAULTS.label_font_size_max
     label_stroke_width: int = MEASUREMENT_SHARED_DEFAULTS.label_stroke_width
-    polygon_allowed_sides: Tuple[int, ...] = (3, 4)
-    mcq_option_count: int = 5
-    mcq_min_delta: int = 5
-    mcq_max_delta: int = 30
 
 
 _DEFAULTS = _TaskDefaults()
@@ -97,11 +96,11 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 )
 
 
-def _complexity_score(*, source_kind: str, angle_degrees: int) -> float:
+def _complexity_score(*, source_kind: str, angle_degrees: float) -> float:
     """Compute a lightweight complexity proxy for angle measurement."""
     centered = 1.0 - min(1.0, abs(float(angle_degrees) - 90.0) / 90.0)
-    polygon_bonus = 0.18 if str(source_kind) != "primitive_angle" else 0.0
-    return max(0.0, min(1.0, 0.42 + (0.4 * centered) + polygon_bonus))
+    source_bonus = 0.18 if str(source_kind) == _INTERSECTION_SOURCE_KIND else 0.0
+    return max(0.0, min(1.0, 0.42 + (0.4 * centered) + source_bonus))
 
 
 def _angle_question_text(*, label_a: str, label_v: str, label_b: str) -> str:
@@ -109,35 +108,13 @@ def _angle_question_text(*, label_a: str, label_v: str, label_b: str) -> str:
     return f"What is the measure of angle {str(label_a)}{str(label_v)}{str(label_b)} in degrees?"
 
 
-def _resolve_supported_polygon_sides(params: Mapping[str, Any]) -> List[int]:
-    """Resolve allowed side counts for polygon-angle scene variants."""
-    raw = params.get(
-        "polygon_allowed_sides",
-        group_default(_GEN_DEFAULTS, "polygon_allowed_sides", list(_DEFAULTS.polygon_allowed_sides)),
-    )
-    if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)):
-        raise ValueError("polygon_allowed_sides must be a sequence of ints")
-    out = sorted({int(item) for item in raw if int(item) in set(_POLYGON_SIDE_TO_SOURCE_KIND)})
-    if not out:
-        raise ValueError("polygon_allowed_sides must include at least one of [3, 4]")
-    return [int(item) for item in out]
-
-
-def _source_kinds_for_allowed_sides(allowed_polygon_sides: Sequence[int]) -> List[str]:
-    """Return ordered source kinds for configured polygon-side support."""
-    allowed_polygon_kinds = [_POLYGON_SIDE_TO_SOURCE_KIND[int(side)] for side in allowed_polygon_sides]
-    return ["primitive_angle", *allowed_polygon_kinds, _INTERSECTION_SOURCE_KIND]
-
-
 def _resolve_source_kind(
     rng,
     *,
     params: Mapping[str, Any],
-    allowed_polygon_sides: Sequence[int],
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve shape source kind with near-uniform category sampling by default."""
-    supported_kinds = _source_kinds_for_allowed_sides(allowed_polygon_sides)
-    allowed_polygon_kinds = [kind for kind in supported_kinds if str(kind) in set(_SOURCE_KIND_TO_POLYGON_SIDE)]
+    supported_kinds = [str(kind) for kind in _SOURCE_KINDS]
     supported_set = set(supported_kinds)
 
     explicit_source = params.get("source_kind")
@@ -152,16 +129,6 @@ def _resolve_source_kind(
         selected_variant = str(explicit_variant).strip()
         if selected_variant == "primitive_angle":
             return "primitive_angle", {kind: (1.0 if kind == "primitive_angle" else 0.0) for kind in sorted(supported_set)}
-        if selected_variant == "polygon_angle":
-            polygon_probs = normalize_positive_weights(
-                {kind: 1.0 for kind in allowed_polygon_kinds},
-                default_keys=allowed_polygon_kinds,
-            )
-            selected_polygon_kind = weighted_choice(rng, polygon_probs, sort_keys=True)
-            return str(selected_polygon_kind), {
-                kind: float(polygon_probs.get(kind, 0.0)) if kind != "primitive_angle" else 0.0
-                for kind in sorted(supported_set)
-            }
         if selected_variant in {"intersection_angle", _INTERSECTION_SOURCE_KIND}:
             return _INTERSECTION_SOURCE_KIND, {
                 kind: (1.0 if kind == _INTERSECTION_SOURCE_KIND else 0.0) for kind in sorted(supported_set)
@@ -310,7 +277,7 @@ def _resolve_balanced_source_and_target(
         source_count = int(len(source_values))
         angle_count = int(len(angle_values))
         source_index = int(seed_value % source_count)
-        angle_index = int(seed_value % angle_count)
+        angle_index = int((seed_value // source_count) % angle_count)
         resolved_source = str(source_values[source_index])
         resolved_target = int(angle_values[angle_index])
         return resolved_source, source_probs, resolved_target, target_probs
@@ -326,29 +293,6 @@ def _offset_span_units(offsets: Sequence[int]) -> int:
     """Return inclusive span (`max-min`) across integer offsets."""
     values = [int(value) for value in offsets]
     return int(max(values) - min(values))
-
-
-def _polygon_offsets_for_angle_source(
-    *,
-    sides: int,
-    vector_a: Tuple[int, int],
-    vector_b: Tuple[int, int],
-    multiplier: int,
-) -> List[Tuple[int, int]]:
-    """Build base polygon offsets where index 1 is the target-angle vertex."""
-    va_x, va_y = int(vector_a[0]), int(vector_a[1])
-    vb_x, vb_y = int(vector_b[0]), int(vector_b[1])
-    mul = max(1, int(multiplier))
-    if int(sides) == 3:
-        return [(va_x, va_y), (0, 0), (vb_x, vb_y)]
-    if int(sides) == 4:
-        return [
-            (va_x, va_y),
-            (0, 0),
-            (vb_x, vb_y),
-            (mul * (va_x + vb_x), mul * (va_y + vb_y)),
-        ]
-    raise ValueError("sides must be one of [3, 4] for angle-source polygons")
 
 
 def _intersection_offsets_for_angle_source(
@@ -395,54 +339,6 @@ def _primitive_feasible_angles_for_offset_limit(
             and _offset_span_units((0, int(vector_a[1]), int(vector_b[1]))) <= int(limit)
             for vector_a, vector_b, _raw in pairs
         )
-        if accepted:
-            feasible.append(int(angle_value))
-    return tuple(feasible)
-
-
-@lru_cache(maxsize=128)
-def _polygon_feasible_angles_for_offset_limit(
-    *,
-    sides: int,
-    min_angle: int,
-    max_angle: int,
-    angle_step: int,
-    max_abs_vector_component: int,
-    quantization_tolerance_degrees: float,
-    min_ray_length_units: float,
-    max_offset_units: int,
-) -> Tuple[int, ...]:
-    """Return polygon-feasible target angles under one offset-unit cap."""
-    side_value = int(sides)
-    if side_value not in set(_POLYGON_SIDE_TO_SOURCE_KIND):
-        return tuple()
-    catalog = primitive_angle_pair_catalog(
-        angle_step=int(angle_step),
-        min_angle=int(min_angle),
-        max_angle=int(max_angle),
-        max_abs_vector_component=int(max_abs_vector_component),
-        max_quantization_error=float(quantization_tolerance_degrees),
-        min_vector_length_units=float(min_ray_length_units),
-    )
-    feasible: List[int] = []
-    limit = max(1, int(max_offset_units))
-    for angle_value, pairs in sorted(catalog.items()):
-        accepted = False
-        for vector_a, vector_b, _raw in pairs:
-            for multiplier in (1, 2):
-                offsets = _polygon_offsets_for_angle_source(
-                    sides=int(side_value),
-                    vector_a=(int(vector_a[0]), int(vector_a[1])),
-                    vector_b=(int(vector_b[0]), int(vector_b[1])),
-                    multiplier=int(multiplier),
-                )
-                x_offsets = [int(offset[0]) for offset in offsets]
-                y_offsets = [int(offset[1]) for offset in offsets]
-                if _offset_span_units(x_offsets) <= int(limit) and _offset_span_units(y_offsets) <= int(limit):
-                    accepted = True
-                    break
-            if accepted:
-                break
         if accepted:
             feasible.append(int(angle_value))
     return tuple(feasible)
@@ -518,52 +414,6 @@ def _required_graph_cells_for_primitive_target(
         for vector_a, vector_b, _raw in pairs
     )
     return int(min_offset_units + 4)
-
-
-@lru_cache(maxsize=512)
-def _required_graph_cells_for_polygon_target(
-    *,
-    sides: int,
-    target_angle: int,
-    min_angle: int,
-    max_angle: int,
-    angle_step: int,
-    max_abs_vector_component: int,
-    quantization_tolerance_degrees: float,
-    min_ray_length_units: float,
-) -> int:
-    """Return minimum graph-cell count needed for one polygon target angle."""
-    side_value = int(sides)
-    if side_value not in set(_POLYGON_SIDE_TO_SOURCE_KIND):
-        raise ValueError("sides must be one of [3, 4]")
-    catalog = primitive_angle_pair_catalog(
-        angle_step=int(angle_step),
-        min_angle=int(min_angle),
-        max_angle=int(max_angle),
-        max_abs_vector_component=int(max_abs_vector_component),
-        max_quantization_error=float(quantization_tolerance_degrees),
-        min_vector_length_units=float(min_ray_length_units),
-    )
-    pairs = list(catalog.get(int(target_angle), ()))
-    if not pairs:
-        raise ValueError("target_angle has no polygon vector pairs")
-    min_offset_units = None
-    for vector_a, vector_b, _raw in pairs:
-        for multiplier in (1, 2):
-            offsets = _polygon_offsets_for_angle_source(
-                sides=int(side_value),
-                vector_a=(int(vector_a[0]), int(vector_a[1])),
-                vector_b=(int(vector_b[0]), int(vector_b[1])),
-                multiplier=int(multiplier),
-            )
-            x_offsets = [int(offset[0]) for offset in offsets]
-            y_offsets = [int(offset[1]) for offset in offsets]
-            offset_units = max(_offset_span_units(x_offsets), _offset_span_units(y_offsets))
-            if min_offset_units is None or int(offset_units) < int(min_offset_units):
-                min_offset_units = int(offset_units)
-    if min_offset_units is None:
-        raise ValueError("target_angle has no polygon offset candidates")
-    return int(min_offset_units + 2)
 
 
 @lru_cache(maxsize=512)
@@ -662,11 +512,9 @@ def _build_primitive_scene(
     return {
         "scene_variant": "primitive_angle",
         "source_kind": "primitive_angle",
-        "polygon_sides": None,
-        "answer_value": int(sample.angle_degrees),
         "raw_angle_degrees": float(sample.raw_angle_degrees),
         "question_text": _angle_question_text(label_a=label_a, label_v=label_v, label_b=label_b),
-        "object_description": "a single labeled angle",
+        "object_description": "a labeled angle",
         "entity": {
             "entity_id": "angle_1",
             "entity_type": "angle",
@@ -698,174 +546,6 @@ def _build_primitive_scene(
         ],
         "target_labels": [str(label_a), str(label_v), str(label_b)],
     }
-
-
-def _build_polygon_scene(
-    rng,
-    *,
-    canvas_size: int,
-    graph_spacing: int,
-    graph_origin: Point,
-    min_angle: int,
-    max_angle: int,
-    angle_step: int,
-    quantization_tolerance_degrees: float,
-    max_abs_vector_component: int,
-    min_ray_length_units: float,
-    polygon_sides: int,
-    target_angle: int,
-    line_width: int,
-    label_offset_px: float,
-    label_font_size_px: int,
-    label_stroke_width: int,
-    draw,
-    scene_scale: int,
-    shape_style: GeometryShapeStyle,
-) -> Dict[str, Any]:
-    """Sample/draw a polygon-angle scene and return trace-ready payloads."""
-    side_value = int(polygon_sides)
-    if int(side_value) not in set(_POLYGON_SIDE_TO_SOURCE_KIND):
-        raise ValueError("polygon_sides must be one of [3, 4]")
-    source_kind = _POLYGON_SIDE_TO_SOURCE_KIND[int(side_value)]
-    catalog = primitive_angle_pair_catalog(
-        angle_step=int(angle_step),
-        min_angle=int(min_angle),
-        max_angle=int(max_angle),
-        max_quantization_error=float(quantization_tolerance_degrees),
-        max_abs_vector_component=int(max_abs_vector_component),
-        min_vector_length_units=float(min_ray_length_units),
-    )
-    if int(target_angle) not in set(catalog.keys()):
-        raise ValueError("target_angle not feasible for polygon-angle construction")
-    pairs = list(catalog[int(target_angle)])
-    if not pairs:
-        raise ValueError("no vector pairs available for target_angle")
-    max_span_units = max(1, int(canvas_size // max(1, int(graph_spacing))) - 2)
-    pair_multiplier_candidates: List[Tuple[Tuple[int, int], Tuple[int, int], float, int, List[Tuple[int, int]]]] = []
-    for vector_a, vector_b, raw_angle in pairs:
-        for multiplier in (1, 2):
-            offsets = _polygon_offsets_for_angle_source(
-                sides=int(side_value),
-                vector_a=(int(vector_a[0]), int(vector_a[1])),
-                vector_b=(int(vector_b[0]), int(vector_b[1])),
-                multiplier=int(multiplier),
-            )
-            x_offsets = [int(offset[0]) for offset in offsets]
-            y_offsets = [int(offset[1]) for offset in offsets]
-            if _offset_span_units(x_offsets) > int(max_span_units) or _offset_span_units(y_offsets) > int(max_span_units):
-                continue
-            pair_multiplier_candidates.append(
-                (
-                    (int(vector_a[0]), int(vector_a[1])),
-                    (int(vector_b[0]), int(vector_b[1])),
-                    float(raw_angle),
-                    int(multiplier),
-                    [(int(offset[0]), int(offset[1])) for offset in offsets],
-                )
-            )
-    if not pair_multiplier_candidates:
-        raise ValueError("no feasible polygon-angle vector candidates for current canvas/grid settings")
-
-    for _ in range(260):
-        vector_a, vector_b, raw_angle, multiplier, offsets = rng.choice(pair_multiplier_candidates)
-        try:
-            target_vertex = sample_lattice_point_with_offsets(
-                rng,
-                canvas_size=int(canvas_size),
-                spacing=int(graph_spacing),
-                x_offsets=[int(offset[0]) for offset in offsets],
-                y_offsets=[int(offset[1]) for offset in offsets],
-                lattice_origin=(float(graph_origin[0]), float(graph_origin[1])),
-                padding=int(1 * int(graph_spacing)),
-            )
-        except ValueError:
-            continue
-        base_vertices = [
-            offset_point_by_grid_vector(
-                (float(target_vertex[0]), float(target_vertex[1])),
-                (int(offset[0]), int(offset[1])),
-                spacing=int(graph_spacing),
-            )
-            for offset in offsets
-        ]
-        # Randomize ordering while preserving local neighbor structure.
-        shift = int(rng.randrange(int(side_value)))
-        vertices = rotate_sequence(base_vertices, shift=shift)
-        target_idx = (1 - int(shift)) % int(side_value)
-        prev_idx = (int(target_idx) - 1) % int(side_value)
-        next_idx = (int(target_idx) + 1) % int(side_value)
-
-        labels = rotate_sequence(
-            alphabetic_labels(int(side_value), start_index=int(rng.randrange(26))),
-            shift=int(shift),
-        )
-        point_a = vertices[int(prev_idx)]
-        vertex = vertices[int(target_idx)]
-        point_b = vertices[int(next_idx)]
-        snapped_angle = int(target_angle)
-
-        draw_polygon_outline(
-            draw,
-            vertices=[scale_point(point, int(scene_scale)) for point in vertices],
-            line_width=max(1, int(line_width) * int(scene_scale)),
-            line_color=tuple(int(value) for value in shape_style.line_color),
-        )
-        draw_polygon_labels(
-            draw,
-            vertices=[scale_point(point, int(scene_scale)) for point in vertices],
-            labels=list(labels),
-            label_offset_px=float(label_offset_px) * float(scene_scale),
-            font_size_px=int(label_font_size_px),
-            text_stroke_width=max(1, int(label_stroke_width)),
-            label_color=tuple(int(value) for value in shape_style.label_color),
-            label_stroke_color=tuple(int(value) for value in shape_style.label_stroke_color),
-            canvas_size=int(canvas_size) * int(scene_scale),
-        )
-
-        label_a = str(labels[int(prev_idx)])
-        label_v = str(labels[int(target_idx)])
-        label_b = str(labels[int(next_idx)])
-        entity = {
-            "entity_id": "polygon_1",
-            "entity_type": "polygon",
-            "attrs": {
-                "source_kind": str(source_kind),
-                "polygon_sides": int(side_value),
-                "labels": [str(label) for label in labels],
-                "vertices": [[float(point[0]), float(point[1])] for point in vertices],
-                "target_vertex_index": int(target_idx),
-                "target_triplet_indices": [int(prev_idx), int(target_idx), int(next_idx)],
-                "target_angle_degrees": int(snapped_angle),
-                "target_angle_raw_degrees": float(raw_angle),
-                "construction_multiplier": int(multiplier),
-            },
-        }
-        anchor_vertices = [[float(point[0]), float(point[1])] for point in vertices]
-        anchor = {
-            "point": list(anchor_vertices[0]),
-            "polyline": [*anchor_vertices, list(anchor_vertices[0])],
-            "coord_space": "pixel",
-        }
-
-        return {
-            "scene_variant": "polygon_angle",
-            "source_kind": str(source_kind),
-            "polygon_sides": int(side_value),
-            "answer_value": int(snapped_angle),
-            "raw_angle_degrees": float(raw_angle),
-            "question_text": _angle_question_text(label_a=label_a, label_v=label_v, label_b=label_b),
-            "object_description": "a single labeled polygon",
-            "entity": entity,
-            "anchor": anchor,
-            "evidence_points": [
-                (float(point_a[0]), float(point_a[1])),
-                (float(vertex[0]), float(vertex[1])),
-                (float(point_b[0]), float(point_b[1])),
-            ],
-            "target_labels": [str(label_a), str(label_v), str(label_b)],
-        }
-
-    raise ValueError("failed to sample polygon angle scene")
 
 
 def _build_intersection_scene(
@@ -1013,8 +693,6 @@ def _build_intersection_scene(
         return {
             "scene_variant": "intersection_angle",
             "source_kind": _INTERSECTION_SOURCE_KIND,
-            "polygon_sides": None,
-            "answer_value": int(target_angle),
             "raw_angle_degrees": float(raw_angle),
             "question_text": _angle_question_text(label_a=label_a, label_v=label_v, label_b=label_b),
             "object_description": "two intersecting line segments",
@@ -1067,22 +745,14 @@ def _build_intersection_scene(
 
 @register_task
 class GeometryAngleMeasure2DTask:
-    """Measure one 2D angle from primitive, polygon, or intersection sources."""
+    """Measure one 2D angle from primitive or intersection sources."""
 
     task_id = "task_geometry_measurement_angle"
     domain = "geometry"
     task_group = "measurement"
 
-    @staticmethod
-    def supported_query_types(_params: Dict[str, Any] | None = None) -> List[str]:
-        return [_QUERY_TYPE]
-
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic angle-measurement instance."""
-        query_type = str(params.get("query_type", _QUERY_TYPE))
-        if query_type != _QUERY_TYPE:
-            raise ValueError(f"unsupported query_type: {query_type}")
-
         scene_rng = spawn_rng(instance_seed, "scene")
 
         min_angle = int(params.get("min_angle", group_default(_GEN_DEFAULTS, "min_angle", _DEFAULTS.min_angle)))
@@ -1105,15 +775,6 @@ class GeometryAngleMeasure2DTask:
                 "min_ray_length_units",
                 group_default(_GEN_DEFAULTS, "min_ray_length_units", _DEFAULTS.min_ray_length_units),
             )
-        )
-        mcq_option_count = int(
-            params.get("mcq_option_count", group_default(_GEN_DEFAULTS, "mcq_option_count", _DEFAULTS.mcq_option_count))
-        )
-        mcq_min_delta = int(
-            params.get("mcq_min_delta", group_default(_GEN_DEFAULTS, "mcq_min_delta", _DEFAULTS.mcq_min_delta))
-        )
-        mcq_max_delta = int(
-            params.get("mcq_max_delta", group_default(_GEN_DEFAULTS, "mcq_max_delta", _DEFAULTS.mcq_max_delta))
         )
         line_width = sample_int_render_param(
             scene_rng,
@@ -1154,8 +815,7 @@ class GeometryAngleMeasure2DTask:
         if float(min_ray_length_units) < 0.0:
             raise ValueError("min_ray_length_units must be >= 0")
 
-        allowed_sides = _resolve_supported_polygon_sides(params)
-        supported_source_kinds = _source_kinds_for_allowed_sides(allowed_sides)
+        supported_source_kinds = [str(kind) for kind in _SOURCE_KINDS]
         catalog = primitive_angle_pair_catalog(
             angle_step=int(angle_step),
             min_angle=int(min_angle),
@@ -1170,7 +830,6 @@ class GeometryAngleMeasure2DTask:
         source_kind, source_kind_probabilities = _resolve_source_kind(
             scene_rng,
             params=params,
-            allowed_polygon_sides=allowed_sides,
         )
         if "graph_cells" in params:
             graph_cells_cap = int(params.get("graph_cells", _DEFAULTS.graph_cells_max))
@@ -1212,20 +871,7 @@ class GeometryAngleMeasure2DTask:
                     )
                 )
                 return [int(value) for value in intersection_candidates] if intersection_candidates else list(angle_candidates)
-            polygon_sides = int(_SOURCE_KIND_TO_POLYGON_SIDE[resolved_kind])
-            polygon_candidates = list(
-                _polygon_feasible_angles_for_offset_limit(
-                    sides=int(polygon_sides),
-                    min_angle=int(min_angle),
-                    max_angle=int(max_angle),
-                    angle_step=int(angle_step),
-                    max_abs_vector_component=int(max_abs_vector_component),
-                    quantization_tolerance_degrees=float(quantization_tolerance_degrees),
-                    min_ray_length_units=float(min_ray_length_units),
-                    max_offset_units=int(shape_offset_limit),
-                )
-            )
-            return [int(value) for value in polygon_candidates] if polygon_candidates else list(angle_candidates)
+            raise ValueError(f"unsupported source_kind: {resolved_kind}")
 
         target_candidates_for_source = _resolve_source_candidates(str(source_kind))
         target_angle, target_angle_probabilities = _resolve_target_angle(
@@ -1281,16 +927,7 @@ class GeometryAngleMeasure2DTask:
                 min_ray_length_units=float(min_ray_length_units),
             )
         else:
-            required_graph_cells = _required_graph_cells_for_polygon_target(
-                sides=int(_SOURCE_KIND_TO_POLYGON_SIDE[str(source_kind)]),
-                target_angle=int(target_angle),
-                min_angle=int(min_angle),
-                max_angle=int(max_angle),
-                angle_step=int(angle_step),
-                max_abs_vector_component=int(max_abs_vector_component),
-                quantization_tolerance_degrees=float(quantization_tolerance_degrees),
-                min_ray_length_units=float(min_ray_length_units),
-            )
+            raise ValueError(f"unsupported source_kind: {source_kind}")
         context_params = dict(params)
         if "graph_cells" in context_params:
             fixed_cells = int(context_params.get("graph_cells", 0))
@@ -1402,28 +1039,7 @@ class GeometryAngleMeasure2DTask:
                         shape_style=shape_style_attempt,
                     )
                 else:
-                    polygon_sides = int(_SOURCE_KIND_TO_POLYGON_SIDE[str(source_kind)])
-                    scene_payload = _build_polygon_scene(
-                        scene_rng,
-                        canvas_size=int(context_attempt.canvas_size),
-                        graph_spacing=int(context_attempt.graph_spacing),
-                        graph_origin=(float(context_attempt.graph_origin[0]), float(context_attempt.graph_origin[1])),
-                        min_angle=int(min_angle),
-                        max_angle=int(max_angle),
-                        angle_step=int(angle_step),
-                        quantization_tolerance_degrees=float(quantization_tolerance_degrees),
-                        max_abs_vector_component=int(max_abs_vector_component),
-                        min_ray_length_units=float(min_ray_length_units),
-                        polygon_sides=int(polygon_sides),
-                        target_angle=int(target_angle),
-                        line_width=int(line_width),
-                        label_offset_px=float(label_offset_px),
-                        label_font_size_px=int(label_font_size_px_attempt),
-                        label_stroke_width=int(label_stroke_width_scene_attempt),
-                        draw=draw_attempt,
-                        scene_scale=int(context_attempt.scene_scale),
-                        shape_style=shape_style_attempt,
-                    )
+                    raise ValueError(f"unsupported source_kind: {source_kind}")
                 context = context_attempt
                 image = image_attempt
                 background_meta = background_meta_attempt
@@ -1437,21 +1053,7 @@ class GeometryAngleMeasure2DTask:
         if scene_payload is None or context is None or image is None or background_meta is None or shape_style is None:
             raise RuntimeError("failed to generate task_geometry_measurement_angle instance") from last_error
 
-        mcq_rng = spawn_rng(instance_seed, "angle_measure.mcq")
-        mcq_payload = build_integer_mcq_options(
-            mcq_rng,
-            correct_value=int(scene_payload["answer_value"]),
-            min_value=int(min_angle),
-            max_value=int(max_angle),
-            option_count=int(mcq_option_count),
-            min_delta=int(mcq_min_delta),
-            max_delta=int(mcq_max_delta),
-        )
-        option_values = [int(value) for value in mcq_payload["options"]]
-        correct_option_index = int(mcq_payload["correct_index"])
-        options_text = format_lettered_options(option_values)
         question_text = str(scene_payload["question_text"])
-        correct_option_label = str(option_label_for_index(correct_option_index))
 
         evidence_points = scene_payload.get("evidence_points", [])
         if not isinstance(evidence_points, list) or len(evidence_points) != 3:
@@ -1492,7 +1094,8 @@ class GeometryAngleMeasure2DTask:
             _PROMPT_DEFAULTS,
             (
                 "bundle_id",
-                "task_type_key",
+                "task_family_key",
+                "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "evidence_hint",
@@ -1503,29 +1106,27 @@ class GeometryAngleMeasure2DTask:
             context=f"prompt defaults for {self.task_id}",
         )
         prompt_bundle_id = str(prompt_defaults["bundle_id"])
-        prompt_task_type_key = str(prompt_defaults["task_type_key"])
+        prompt_task_family_key = str(prompt_defaults["task_family_key"])
+        prompt_task_key = str(prompt_defaults["task_key"])
         json_output_contract = str(prompt_defaults["json_output_contract"])
         json_output_contract_answer_only = str(prompt_defaults["json_output_contract_answer_only"])
         evidence_hint_base = str(prompt_defaults["evidence_hint"])
-        evidence_hint = (
-            f"{evidence_hint_base.rstrip().rstrip('.')} Required labels: {', '.join(target_labels)}"
-        )
+        evidence_hint = append_required_labels_clause(evidence_hint_base, target_labels)
         answer_hint = str(prompt_defaults["answer_hint"])
         json_example, json_example_answer_only = build_prompt_json_examples(
             evidence_value=evidence.get("evidence_value", {}),
-            answer_type="option_letter",
+            answer_type="integer",
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=prompt_bundle_id,
-            task_type_key=prompt_task_type_key,
-            query_type=_QUERY_TYPE,
+            task_family_key=prompt_task_family_key,
+            task_key=prompt_task_key,
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(scene_payload["object_description"]),
                 "question_text": str(question_text),
-                "options_text": str(options_text),
                 "json_output_contract": str(json_output_contract),
                 "json_output_contract_answer_only": str(json_output_contract_answer_only),
                 "evidence_hint": str(evidence_hint),
@@ -1537,15 +1138,16 @@ class GeometryAngleMeasure2DTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        answer_value = int(scene_payload["answer_value"])
         raw_angle_degrees = float(scene_payload["raw_angle_degrees"])
-        if abs(float(raw_angle_degrees) - float(answer_value)) > float(quantization_tolerance_degrees) + 1e-9:
-            raise RuntimeError("resolved angle exceeds quantization tolerance")
+        answer_value = int(target_angle)
+        if abs(float(raw_angle_degrees) - float(answer_value)) > 0.05 + 1e-9:
+            raise RuntimeError("resolved angle exceeds nearest-integer rounding tolerance")
         scene_variant_value = str(scene_payload["scene_variant"])
         source_kind_value = str(scene_payload["source_kind"])
-        polygon_sides_value = (
-            int(scene_payload["polygon_sides"]) if scene_payload.get("polygon_sides") is not None else None
-        )
+        task_variant_probabilities: Dict[str, float] = {}
+        for source_kind_key, probability in source_kind_probabilities.items():
+            variant_key = _scene_variant_for_source_kind(str(source_kind_key))
+            task_variant_probabilities[str(variant_key)] = float(task_variant_probabilities.get(str(variant_key), 0.0)) + float(probability)
         trace_payload = {
             "scene_ir": {
                 "scene_kind": "geometry_2d_angle_measurement",
@@ -1562,7 +1164,7 @@ class GeometryAngleMeasure2DTask:
                 },
             },
             "query_spec": {
-                "query_type": _QUERY_TYPE,
+                "task_variant": str(scene_variant_value),
                 "template_id": "geometry_angle_measure_v1",
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -1579,11 +1181,8 @@ class GeometryAngleMeasure2DTask:
                     "min_ray_length_units": float(min_ray_length_units),
                     "min_angle": int(min_angle),
                     "max_angle": int(max_angle),
-                    "mcq_option_count": int(mcq_option_count),
-                    "mcq_min_delta": int(mcq_min_delta),
-                    "mcq_max_delta": int(mcq_max_delta),
+                    "answer_rounding": "nearest_integer_degree",
                     "required_graph_cells": int(required_graph_cells),
-                    "polygon_allowed_sides": [int(item) for item in allowed_sides],
                 },
             },
             "render_spec": {
@@ -1603,20 +1202,16 @@ class GeometryAngleMeasure2DTask:
             "execution_trace": {
                 "scene_variant": str(scene_variant_value),
                 "source_kind": str(source_kind_value),
-                "polygon_sides": polygon_sides_value,
                 "target_angle": int(target_angle),
                 "answer_value": int(answer_value),
-                "answer_option_letter": str(correct_option_label),
                 "raw_angle_degrees": float(raw_angle_degrees),
                 "angle_degrees": int(answer_value),
                 "target_labels": list(scene_payload["target_labels"]),
                 "required_evidence_labels": list(target_labels),
-                "question_format": "mcq",
-                "choices": [int(value) for value in option_values],
-                "correct_option_index": int(correct_option_index),
-                "correct_option_letter": str(correct_option_label),
-                "correct_option_value": int(option_values[correct_option_index]),
+                "question_format": "numeric_open",
+                "feasible_target_angles": [int(value) for value in target_candidates_for_source],
                 "feasible_answer_values": [int(value) for value in target_candidates_for_source],
+                "task_variant_probabilities": {str(key): float(value) for key, value in sorted(task_variant_probabilities.items())},
             },
             "witness_symbolic": dict(evidence["witness_symbolic"]),
             "projected_evidence": dict(evidence["projected_evidence"]),
@@ -1633,13 +1228,13 @@ class GeometryAngleMeasure2DTask:
 
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
-            answer_gt=TypedValue(type="option_letter", value=str(correct_option_label)),
+            answer_gt=TypedValue(type="integer", value=int(answer_value)),
             evidence_gt=TypedValue(type=str(evidence["evidence_type"]), value=evidence["evidence_value"]),
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            query_type=_QUERY_TYPE,
+            task_variant=str(scene_variant_value),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

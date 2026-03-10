@@ -45,6 +45,15 @@ def _assert_grid_point_map(value: object, *, expected_len: int) -> dict[str, lis
     return dict(value)
 
 
+def _assert_graph_point_set(value: object, *, expected_len: int) -> list[list[int]]:
+    assert isinstance(value, list)
+    assert len(value) == int(expected_len)
+    for point in value:
+        assert isinstance(point, list) and len(point) == 2
+        assert all(isinstance(coord, int) for coord in point)
+    return [list(point) for point in value]
+
+
 def test_angle_measure_outputs_expected_contract() -> None:
     task = GeometryAngleMeasure2DTask()
     cases = [
@@ -61,8 +70,8 @@ def test_angle_measure_outputs_expected_contract() -> None:
         assert str(out.task_variant).strip()
         assert out.answer_gt.type == "integer"
         assert isinstance(out.answer_gt.value, int)
-        assert out.evidence_gt.type == "grid_point_map"
-        evidence_map = _assert_grid_point_map(out.evidence_gt.value, expected_len=3)
+        assert out.evidence_gt.type == "graph_point_set"
+        evidence_points = _assert_graph_point_set(out.evidence_gt.value, expected_len=3)
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
         assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
         assert trace["execution_trace"]["scene_variant"] == scene_variant
@@ -81,8 +90,8 @@ def test_angle_measure_outputs_expected_contract() -> None:
         origin_x, origin_y, spacing = _graph_origin_and_spacing(trace)
         projected = trace["projected_evidence"]["point_map"]
         projected_grid = trace["projected_evidence"]["grid_point_map"]
-        assert set(projected.keys()) == set(evidence_map.keys())
-        assert set(projected_grid.keys()) == set(evidence_map.keys())
+        assert len(projected) == 3
+        assert len(projected_grid) == 3
         for label in projected:
             pixel_point = projected[label]
             graph_point = projected_grid[label]
@@ -115,7 +124,7 @@ def test_angle_measure_outputs_expected_contract() -> None:
                 int(round((float(origin_y) - float(arm_b[1])) / float(spacing))),
             ],
         }
-        assert evidence_map == expected_graph_evidence
+        assert sorted(evidence_points) == sorted(expected_graph_evidence.values())
         arm_a_graph = _graph_point(arm_a, origin_x=origin_x, origin_y=origin_y, spacing=spacing)
         vertex_graph = _graph_point(vertex, origin_x=origin_x, origin_y=origin_y, spacing=spacing)
         arm_b_graph = _graph_point(arm_b, origin_x=origin_x, origin_y=origin_y, spacing=spacing)
@@ -217,8 +226,8 @@ def test_slope_measure_outputs_expected_contract() -> None:
     assert out.answer_gt.type == "number"
     assert isinstance(out.answer_gt.value, float)
     assert abs((float(out.answer_gt.value) * 10.0) - round(float(out.answer_gt.value) * 10.0)) <= 1e-9
-    assert out.evidence_gt.type == "grid_point_map"
-    evidence_map = _assert_grid_point_map(out.evidence_gt.value, expected_len=1)
+    assert out.evidence_gt.type == "graph_point_set"
+    evidence_points = _assert_graph_point_set(out.evidence_gt.value, expected_len=1)
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
     assert trace["execution_trace"]["task_variant"] == "line_slope"
@@ -227,8 +236,7 @@ def test_slope_measure_outputs_expected_contract() -> None:
     assert feasible_answers
     assert float(out.answer_gt.value) in feasible_answers
 
-    evidence_label = next(iter(evidence_map.keys()))
-    crossing = evidence_map[evidence_label]
+    crossing = evidence_points[0]
     assert int(crossing[1]) == 0
     attrs = trace["scene_ir"]["entities"][0]["attrs"]
     assert [int(crossing[0]), int(crossing[1])] == [int(attrs["axis_crossing_graph"][0]), int(attrs["axis_crossing_graph"][1])]
@@ -381,7 +389,7 @@ def test_length_measure_variants_match_scene_and_evidence() -> None:
         trace = out.trace_payload
         assert str(out.task_variant).strip()
         assert out.answer_gt.type == "integer"
-        assert 2 <= int(out.answer_gt.value) <= 16
+        assert 2 <= int(out.answer_gt.value) <= 20
         assert out.evidence_gt.type == "grid_point_map"
         evidence_map = _assert_grid_point_map(
             out.evidence_gt.value,

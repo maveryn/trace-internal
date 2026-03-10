@@ -43,6 +43,7 @@ Use this checklist during implementation and refactor reviews.
 27. Keep prompt bundles tight: use exactly 5 strong variants per required template list, and remove filler paraphrases that make prompts less natural or less precise.
 28. When prompt fragments append variant-specific label lists, route that formatting through one shared helper so punctuation and sentence boundaries stay consistent across tasks.
 29. Keep task-level `question_text` slots free of output-format duplicates when the task template already supplies that instruction (for example rounding/precision wording).
+30. When graph-paper evidence only needs coordinates (not label identity), prefer unlabeled `graph_point_set` evidence and keep any label-to-point correspondence in trace projections instead of the primary task answer contract.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

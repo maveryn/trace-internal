@@ -10,7 +10,7 @@
 1. Entities/relations: one entity (`angle` or `line_intersection` source variant); no inter-entity relations.
 2. Supported `task_variant` values: `primitive_angle`, `intersection_angle`.
 3. `answer_gt.type`: `integer` (angle measure in degrees rounded to the nearest integer).
-4. Default `evidence_gt.type`: `grid_point_map` (3 labeled points for `[ray endpoint A, vertex, ray endpoint B]` in integer graph units).
+4. Default `evidence_gt.type`: `graph_point_set` (exactly 3 integer graph-paper points for the queried angle: the vertex and the two ray endpoints).
 5. Alternate evidence forms: projected `point_map` + `grid_point_map` and derived set/path projections in trace.
 6. Overlap/touch policy: single object only (no multi-object overlap constraints needed).
 
@@ -19,7 +19,7 @@
 2. `task_family_key`: `measurement_single_object`
 3. `task_key`: `measurement_angle_value`
 4. Task-variant mapping: slot-driven question/evidence values depend on the sampled angle scene variant/source kind.
-5. Answer+evidence JSON shape: `{"evidence":{"A":[x1,y1],"B":[x2,y2],"C":[x3,y3]},"answer":<DEGREES_AS_INTEGER>}` where evidence holds the labeled angle-point triplet.
+5. Answer+evidence JSON shape: `{"evidence":[[x1,y1],[x2,y2],[x3,y3]],"answer":<DEGREES_AS_INTEGER>}` where evidence holds the queried angle's three graph-paper points.
 6. Answer-only JSON shape: `{"answer":<DEGREES_AS_INTEGER>}`.
 7. Required slots:
    - shared: `object_description`, `question_text`,
@@ -50,4 +50,4 @@
 2. Determinism test: `tests/test_geometry_measurement_contracts.py`.
 3. Answer/evidence consistency test: `tests/test_geometry_measurement_tasks.py`.
 4. Prompt metadata/placeholder test: `tests/test_prompt_system.py`.
-5. Constraint-specific tests: ordered 3-point graph-lattice evidence projection, nearest-integer angle consistency checks, and axis-aligned-ray enforcement.
+5. Constraint-specific tests: 3-point graph-lattice evidence projection, nearest-integer angle consistency checks, and axis-aligned-ray enforcement.

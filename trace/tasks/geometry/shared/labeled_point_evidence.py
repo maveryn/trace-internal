@@ -1,4 +1,4 @@
-"""Shared helpers for labeled graph-point evidence payloads."""
+"""Shared helpers for graph-point evidence payloads."""
 
 from __future__ import annotations
 
@@ -62,3 +62,37 @@ def labeled_grid_point_evidence_artifacts(
         },
     }
 
+
+def graph_point_set_evidence_artifacts(
+    *,
+    points_by_label: Mapping[str, Sequence[float]],
+    graph_origin: Sequence[float],
+    graph_spacing: int,
+    witness_type: str,
+    ordered_labels: Sequence[str] | None = None,
+) -> Dict[str, Any]:
+    """Build unlabeled graph-point-set evidence while preserving labeled projections.
+
+    The primary `evidence_value` is an unordered list of integer graph-paper points.
+    Labeled map projections are still emitted in `projected_evidence` so task traces
+    can retain the semantic correspondence between rendered labels and sampled points.
+    """
+
+    labeled = labeled_grid_point_evidence_artifacts(
+        points_by_label=points_by_label,
+        graph_origin=graph_origin,
+        graph_spacing=graph_spacing,
+        witness_type=witness_type,
+        ordered_labels=ordered_labels,
+    )
+    projected = dict(labeled["projected_evidence"])
+    grid_set = projected.get("grid_point_set", [])
+    if not isinstance(grid_set, list) or not grid_set:
+        raise ValueError("graph_point_set evidence requires at least one graph point")
+    return {
+        "evidence_type": "graph_point_set",
+        "evidence_value": list(grid_set),
+        "required_labels": list(labeled.get("required_labels", [])),
+        "witness_symbolic": dict(labeled["witness_symbolic"]),
+        "projected_evidence": projected,
+    }

@@ -26,7 +26,6 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ...shared.prompt_json_example import build_prompt_json_examples
 from ...shared.text_rendering import resolve_scene_label_font_size_px
 from ..shared.angle_geometry import (
     draw_labeled_angle,
@@ -35,9 +34,8 @@ from ..shared.angle_geometry import (
 )
 from ..shared.graph_paper import offset_point_by_grid_vector, sample_lattice_point_with_offsets
 from ..shared.graph_rendering import graph_paper_grid_from_frame, scale_point
-from ..shared.labeled_point_evidence import labeled_grid_point_evidence_artifacts
+from ..shared.labeled_point_evidence import graph_point_set_evidence_artifacts
 from ..shared.polygon_geometry import alphabetic_labels
-from ..shared.prompt_text import append_required_labels_clause
 from ..shared.render_variation import sample_int_render_param
 from ..shared.shape_style import (
     GeometryShapeStyle,
@@ -1066,7 +1064,7 @@ class GeometryAngleMeasure2DTask:
             str(target_labels[1]): evidence_points[1],
             str(target_labels[2]): evidence_points[2],
         }
-        evidence = labeled_grid_point_evidence_artifacts(
+        evidence = graph_point_set_evidence_artifacts(
             points_by_label=evidence_points_by_label,
             graph_origin=context.graph_origin,
             graph_spacing=int(context.graph_spacing),
@@ -1075,12 +1073,12 @@ class GeometryAngleMeasure2DTask:
         )
         evidence_value = evidence.get("evidence_value", [])
         if (
-            not isinstance(evidence_value, dict)
-            or set(evidence_value.keys()) != set(target_labels)
-            or any(not isinstance(point, list) or len(point) != 2 for point in evidence_value.values())
-            or any(not isinstance(coord, int) for point in evidence_value.values() for coord in point)
+            not isinstance(evidence_value, list)
+            or len(evidence_value) != 3
+            or any(not isinstance(point, list) or len(point) != 2 for point in evidence_value)
+            or any(not isinstance(coord, int) for point in evidence_value for coord in point)
         ):
-            raise RuntimeError("angle triplet evidence must include labeled integer graph-lattice points")
+            raise RuntimeError("angle triplet evidence must include three integer graph-lattice points")
 
         image, background_meta_final, post_noise_meta = finalize_graph_scene_image(
             image,
@@ -1110,13 +1108,10 @@ class GeometryAngleMeasure2DTask:
         prompt_task_key = str(prompt_defaults["task_key"])
         json_output_contract = str(prompt_defaults["json_output_contract"])
         json_output_contract_answer_only = str(prompt_defaults["json_output_contract_answer_only"])
-        evidence_hint_base = str(prompt_defaults["evidence_hint"])
-        evidence_hint = append_required_labels_clause(evidence_hint_base, target_labels)
+        evidence_hint = str(prompt_defaults["evidence_hint"])
         answer_hint = str(prompt_defaults["answer_hint"])
-        json_example, json_example_answer_only = build_prompt_json_examples(
-            evidence_value=evidence.get("evidence_value", {}),
-            answer_type="integer",
-        )
+        json_example = str(prompt_defaults["json_example"])
+        json_example_answer_only = str(prompt_defaults["json_example_answer_only"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,

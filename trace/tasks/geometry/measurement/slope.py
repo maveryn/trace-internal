@@ -17,7 +17,6 @@ from ...shared.config_defaults import (
     split_generation_rendering_prompt_defaults,
 )
 from ...shared.output_metadata import default_task_versions
-from ...shared.prompt_json_example import build_prompt_json_examples
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
     build_prompt_trace_artifacts,
@@ -25,7 +24,7 @@ from ...shared.prompt_variants import (
 )
 from ..shared.background_defaults import POST_IMAGE_BACKGROUND_DEFAULTS
 from ..shared.graph_rendering import graph_paper_grid_from_frame, scale_point
-from ..shared.labeled_point_evidence import labeled_grid_point_evidence_artifacts
+from ..shared.labeled_point_evidence import graph_point_set_evidence_artifacts
 from ..shared.noise_defaults import POST_IMAGE_NOISE_DEFAULTS
 from ..shared.render_variation import sample_int_render_param
 from ..shared.shape_style import extract_background_anchor_colors, sample_geometry_shape_style
@@ -305,23 +304,23 @@ class GeometrySlopeMeasureTask:
         )
 
         axis_label = "X"
-        evidence = labeled_grid_point_evidence_artifacts(
+        evidence = graph_point_set_evidence_artifacts(
             points_by_label={str(axis_label): sample.axis_crossing_pixel},
             graph_origin=context.graph_origin,
             graph_spacing=int(context.graph_spacing),
             witness_type="x_axis_crossing",
             ordered_labels=[str(axis_label)],
         )
-        evidence_value = evidence.get("evidence_value", {})
+        evidence_value = evidence.get("evidence_value", [])
         if (
-            not isinstance(evidence_value, dict)
-            or list(evidence_value.keys()) != [str(axis_label)]
-            or not isinstance(evidence_value[str(axis_label)], list)
-            or len(evidence_value[str(axis_label)]) != 2
-            or any(not isinstance(coord, int) for coord in evidence_value[str(axis_label)])
+            not isinstance(evidence_value, list)
+            or len(evidence_value) != 1
+            or not isinstance(evidence_value[0], list)
+            or len(evidence_value[0]) != 2
+            or any(not isinstance(coord, int) for coord in evidence_value[0])
         ):
-            raise RuntimeError("slope evidence must be one labeled integer graph coordinate")
-        if int(evidence_value[str(axis_label)][1]) != 0:
+            raise RuntimeError("slope evidence must be one integer graph coordinate")
+        if int(evidence_value[0][1]) != 0:
             raise RuntimeError("x-axis crossing evidence must have y=0 in graph units")
 
         prompt_defaults = required_group_defaults(
@@ -336,6 +335,8 @@ class GeometrySlopeMeasureTask:
                 "question_text",
                 "evidence_hint",
                 "answer_hint",
+                "json_example",
+                "json_example_answer_only",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -348,10 +349,8 @@ class GeometrySlopeMeasureTask:
         json_output_contract_answer_only = str(prompt_defaults["json_output_contract_answer_only"])
         evidence_hint = str(prompt_defaults["evidence_hint"])
         answer_hint = str(prompt_defaults["answer_hint"])
-        json_example, json_example_answer_only = build_prompt_json_examples(
-            evidence_value=evidence_value,
-            answer_type="number",
-        )
+        json_example = str(prompt_defaults["json_example"])
+        json_example_answer_only = str(prompt_defaults["json_example_answer_only"])
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,

@@ -93,9 +93,9 @@ class _TaskDefaults:
     label_font_size_max: int = MEASUREMENT_SHARED_DEFAULTS.label_font_size_max
     label_stroke_width: int = MEASUREMENT_SHARED_DEFAULTS.label_stroke_width
     answer_min: int = 2
-    answer_max: int = 8
+    answer_max: int = 20
     segment_length_min: int = 2
-    segment_length_max: int = 8
+    segment_length_max: int = 20
     segment_vector_max_abs_component: int = 12
     polygon_allowed_sides: Tuple[int, ...] = MEASUREMENT_SHARED_DEFAULTS.polygon_allowed_sides
     circle_radius_min: int = MEASUREMENT_SHARED_DEFAULTS.circle_radius_min

@@ -56,7 +56,7 @@ Promote helpers when a second consumer appears.
    - `shape_style.py` is the canonical geometry ink-style sampler and applies Lab-distance constraints against background anchor colors.
    - `render_variation.py` is the canonical integer render-range sampler (for example line-width ranges).
    - `annotation_values.py` provides canonical value formatting + structured annotation->value evidence map helpers for analytical geometry tasks.
-   - `labeled_point_evidence.py` provides canonical labeled graph-point evidence payload builders (`grid_point_map` + projected map/set/path forms).
+   - `labeled_point_evidence.py` provides canonical graph-point evidence payload builders for both labeled maps (`grid_point_map`) and unlabeled graph-point sets (`graph_point_set`), while keeping projected map/set/path forms in trace.
    - `point_labels.py` provides overlap-aware labeled-point rendering helpers reused by conic/point-evidence tasks.
    - `prompt_text.py` provides canonical prompt-fragment helpers such as `append_required_labels_clause(...)` so label-list suffixes keep consistent punctuation across geometry tasks.
    - `slope_geometry.py` provides reusable slope-line feasibility/sampling helpers for graph-paper slope tasks.

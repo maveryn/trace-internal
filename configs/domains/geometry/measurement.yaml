@@ -38,7 +38,7 @@ generation:
         circle: 1.0
     task_geometry_measurement_length:
       answer_min: 2
-      answer_max: 16
+      answer_max: 20
       balanced_variant_sampling: true
       variant_weights:
         segment: 1.0
@@ -50,7 +50,7 @@ generation:
         ellipse_major_axis: 0.25
         ellipse_minor_axis: 0.25
       segment_length_min: 2
-      segment_length_max: 16
+      segment_length_max: 20
       segment_vector_max_abs_component: 20
     task_geometry_measurement_slope:
       slope_tenths_min: -40
@@ -95,9 +95,9 @@ prompt:
     task_geometry_measurement_angle:
       bundle_id: geometry_angle_measure_v1
       task_key: measurement_angle_value
-      evidence_hint: set "evidence" to a JSON object with three labeled points [ray endpoint A, vertex, ray endpoint B] in graph-unit coordinates
+      evidence_hint: 'set "evidence" to an array of exactly three graph-paper points for the queried angle: the vertex and the two ray endpoints'
       answer_hint: set "answer" to the angle measure in degrees rounded to the nearest integer
-      json_example: '{"evidence":{"P":[2,1],"Q":[0,0],"R":[3,-1]},"answer":45}'
+      json_example: '{"evidence":[[0,2],[0,0],[3,0]],"answer":90}'
       json_example_answer_only: '{"answer":45}'
     task_geometry_measurement_area:
       question_text_polygon: What is the area of the polygon in square units?
@@ -129,8 +129,8 @@ prompt:
       json_example_integer: '{"evidence":{"M":[1,2],"N":[6,2]},"answer":5}'
     task_geometry_measurement_slope:
       object_description: a straight line
-      question_text: What is the slope of the line? Report the result to one decimal place.
-      evidence_hint: set "evidence" to a JSON object with one labeled graph-unit point where the line crosses the x-axis
+      question_text: What is the slope of the line?
+      evidence_hint: set "evidence" to an array of exactly one graph-paper point where the line crosses the x-axis
       answer_hint: set "answer" to the slope value rounded to one decimal place
-      json_example: '{"evidence":{"X":[2,0]},"answer":-1.5}'
+      json_example: '{"evidence":[[2,0]],"answer":-1.5}'
       json_example_answer_only: '{"answer":-1.5}'

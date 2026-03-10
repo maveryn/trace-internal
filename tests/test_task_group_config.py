@@ -361,6 +361,7 @@ def test_measurement_prompt_examples_are_task_valid() -> None:
     )
     angle_example = json.loads(str(angle_prompt["json_example"]))
     assert list(angle_example.keys()) == ["evidence", "answer"]
+    assert isinstance(angle_example["evidence"], list)
     assert len(angle_example["evidence"]) == 3
     assert isinstance(angle_example["answer"], int)
     angle_answer_only_example = json.loads(str(angle_prompt["json_example_answer_only"]))
@@ -373,9 +374,9 @@ def test_measurement_prompt_examples_are_task_valid() -> None:
     )
     slope_example = json.loads(str(slope_prompt["json_example"]))
     assert list(slope_example.keys()) == ["evidence", "answer"]
-    assert isinstance(slope_example["evidence"], dict)
+    assert isinstance(slope_example["evidence"], list)
     assert len(slope_example["evidence"]) == 1
-    only_point = next(iter(slope_example["evidence"].values()))
+    only_point = slope_example["evidence"][0]
     assert isinstance(only_point, list) and len(only_point) == 2
     assert int(only_point[1]) == 0
     assert isinstance(slope_example["answer"], float)

@@ -36,7 +36,7 @@
 8. Slot source:
    - shared JSON-format contracts from `configs/domains/geometry/base.yaml` (`prompt.shared`),
    - measurement-family prompt slots from `configs/domains/geometry/measurement.yaml` (`prompt.shared` + `prompt.task_overrides.task_geometry_measurement_length`).
-9. Variant counts (task-family/task/mode): minimum 10 templates per required key.
+9. Variant counts (task-family/task/mode): exactly 5 templates per required key.
 10. Output modes:
    - `answer_only`
    - `answer_and_evidence`
@@ -55,7 +55,7 @@
    - `circle_radius` / `circle_diameter`,
    - `ellipse_major_axis` / `ellipse_minor_axis`.
 7. Default answer-range policy:
-   - configured length answers are constrained to `[2, 8]`.
+   - configured length answers are constrained to `[2, 20]`.
 8. Rendering policy for conics:
    - circle/ellipse tasks do not draw helper radius/diameter/axis segments.
    - circle evidence uses center point only.

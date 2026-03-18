@@ -66,6 +66,7 @@ Promote helpers when a second consumer appears.
    - `variant_sampling.py` in `trace/tasks/geometry/shared/` provides shared balanced variant-selection helpers reused across geometry task groups.
    - `conic_geometry.py` provides reusable circle/ellipse sampling, rendering, and scene-entity payload helpers.
    - `length_geometry.py` provides reusable integer-length segment vectors, sampling, and labeled-segment rendering helpers.
+   - `polygon_geometry.py` provides reusable procedural polygon sampling plus feasible-target support probes for polygon-side measurement tasks and constructive triangle-area helpers for graph-paper area tasks.
 3. Tile: `trace/tasks/tile/shared/path_grid.py`, `maze_sampling.py`, `grid_layout.py`, `maze_scene.py`, `maze_rendering.py`
 
 ## 3) Reuse rules

@@ -88,6 +88,32 @@ def resolve_graph_cells_per_side(
     return int(rng.choice(feasible))
 
 
+def resolve_graph_cell_capacity(
+    *,
+    params: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+    fallback_min: int,
+    fallback_max: int,
+) -> tuple[int | None, int]:
+    """Return explicit graph-cell count (if fixed) and max allowed graph-cell count."""
+    explicit_cells = params.get("graph_cells", render_defaults.get("graph_cells"))
+    if explicit_cells is not None:
+        value = int(explicit_cells)
+        if int(value) < 2:
+            raise ValueError("graph_cells must be >= 2")
+        return int(value), int(value)
+    _cells_min, cells_max = resolve_required_int_bounds(
+        params,
+        render_defaults,
+        min_key="graph_cells_min",
+        max_key="graph_cells_max",
+        fallback_min=int(fallback_min),
+        fallback_max=int(fallback_max),
+        context="graph-paper cell-count defaults",
+    )
+    return None, int(cells_max)
+
+
 def lattice_axis_coordinates_for_offsets(
     *,
     canvas_size: int,

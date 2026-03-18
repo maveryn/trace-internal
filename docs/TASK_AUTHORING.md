@@ -61,9 +61,12 @@ Use this as the implementation checklist for new or modified tasks.
 7. Every JSON example shown in prompts (both `answer_only` and `answer_and_evidence`) must itself be a valid answer for that task/variant contract (key order, value type, and evidence cardinality/semantics).
 8. If evidence cardinality/shape differs by variant (for example triangle vs quadrilateral), provide variant-specific `json_example_*` slots and select them deterministically from variant context.
 9. If graph-paper evidence does not require label identity for verification, prefer coordinate-only evidence (`graph_point_set`) and keep any labeled correspondence in projected trace metadata rather than the primary evidence payload.
-9. If a prompt slot value is static for a task (for example a fixed question stem), store it in prompt config/template data rather than task-module constants.
-10. Favor natural, image-led wording in template stems; do not pad bundles with low-quality paraphrases just to increase variant count.
-11. Keep `question_text` semantic-only when task templates already carry formatting or rounding instructions; avoid repeating the same instruction across prompt layers.
+10. If scene/layout capacity changes which answers are feasible, choose the target answer from the feasible support before placement so layout does not silently bias the answer distribution.
+11. If that feasibility probe is reusable across sibling variants (for example polygon-side variants sharing one target-conditioned sampler), implement it in a domain-shared helper instead of task-local resampling code.
+12. If one variant still collapses to a tiny feasible answer set under a generic sampler, switch that variant to a constructive sampler that directly realizes broader valid targets while preserving the task contract.
+13. If a prompt slot value is static for a task (for example a fixed question stem), store it in prompt config/template data rather than task-module constants.
+14. Favor natural, image-led wording in template stems; do not pad bundles with low-quality paraphrases just to increase variant count.
+15. Keep `question_text` semantic-only when task templates already carry formatting or rounding instructions; avoid repeating the same instruction across prompt layers.
 
 ## 4) Config/defaults rules
 1. Precedence: `domain -> task_group -> task/params`.

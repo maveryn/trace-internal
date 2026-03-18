@@ -35,7 +35,7 @@
    - measurement-family prompt slots from `configs/domains/geometry/measurement.yaml` (`prompt.shared`),
    - shape-specific question/example slots from `prompt.task_overrides.task_geometry_measurement_area` (`question_text_polygon`, `question_text_ellipse`, and polygon side-count matched `json_example_triangle|quadrilateral`).
 7. Answer-only JSON shape: `{"answer":<value>}` where `<value>` is integer or `kπ` per variant.
-8. Variant counts (task-family/task/mode): minimum 10 templates per required key.
+8. Variant counts (task-family/task/mode): exactly 5 templates per required key.
 9. Output modes:
    - `answer_only`
    - `answer_and_evidence`
@@ -48,8 +48,11 @@
 5. Structural diversity policy: polygons are procedurally sampled per instance (not from a tiny fixed template bank) to reduce cross-seed visual similarity.
 6. Graph-paper reference cues: center-origin marker includes axis arrows plus signed integer scale labels across the full visible axis range (no origin text label).
 7. Graph-paper color variation: minor/major/axis colors are sampled from constrained ranges per instance, with axis lines always darker than grid lines.
-8. Answer bounds: area target scalar `k` is constrained to `[8, 32]` by task-group config (`integer` for polygons, `kπ` coefficient for ellipse).
+8. Answer bounds: area target scalar `k` is constrained to `[8, 96]` by task-group config (`integer` for polygons, `kπ` coefficient for ellipse).
 9. Default variant sampling weights: triangle/quadrilateral/ellipse = 1:1:1.
+10. Triangle sampling policy:
+   - triangle area targets are sampled from exact feasible support before scene placement.
+   - triangles are then constructed from integer-edge lattice specs that realize the selected area, avoiding collapse to a tiny answer set under generic polygon rejection.
 
 ## 5) Complexity + tests
 1. Complexity definition/components: shape variant + area magnitude.

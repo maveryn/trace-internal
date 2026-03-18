@@ -44,6 +44,9 @@ Use this checklist during implementation and refactor reviews.
 28. When prompt fragments append variant-specific label lists, route that formatting through one shared helper so punctuation and sentence boundaries stay consistent across tasks.
 29. Keep task-level `question_text` slots free of output-format duplicates when the task template already supplies that instruction (for example rounding/precision wording).
 30. When graph-paper evidence only needs coordinates (not label identity), prefer unlabeled `graph_point_set` evidence and keep any label-to-point correspondence in trace projections instead of the primary task answer contract.
+31. When scene layout constrains which target answers can fit, sample the target answer from the feasible support before placement/layout so easier-to-fit values do not become overrepresented by construction.
+32. When target-conditioned feasibility logic can be reused across sibling shape variants, keep the support probe/sampler in a domain-shared geometry helper rather than embedding task-local rejection loops.
+33. When a generic procedural sampler collapses one variant to a tiny answer set, prefer a constructive variant-specific sampler that preserves the task contract while broadening feasible support.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

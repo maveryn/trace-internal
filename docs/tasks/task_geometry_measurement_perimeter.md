@@ -35,7 +35,7 @@
    - measurement-family prompt slots from `configs/domains/geometry/measurement.yaml` (`prompt.shared`),
    - shape-specific question/example slots from `prompt.task_overrides.task_geometry_measurement_perimeter` (`question_text_polygon`, `question_text_circle`, and polygon side-count matched `json_example_triangle|quadrilateral`).
 7. Answer-only JSON shape: `{"answer":<value>}` where `<value>` is integer or `kπ` per variant.
-8. Variant counts (task-family/task/mode): minimum 10 templates per required key.
+8. Variant counts (task-family/task/mode): exactly 5 templates per required key.
 9. Output modes:
    - `answer_only`
    - `answer_and_evidence`

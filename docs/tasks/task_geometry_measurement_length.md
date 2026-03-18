@@ -10,9 +10,9 @@
 1. Entities/relations: one entity (`segment`, `polygon`, `circle`, or `ellipse` variant); no inter-entity relations.
 2. Supported `task_variant` values: `segment`, `triangle`, `quadrilateral`, `pentagon`, `circle_radius`, `circle_diameter`, `ellipse_major_axis`, `ellipse_minor_axis`.
 3. `answer_gt.type`: `integer`.
-4. Default `evidence_gt.type`: `grid_point_map` with variant-specific cardinality:
-   - circle variants (`circle_radius`, `circle_diameter`): one labeled center point,
-   - non-circle variants: two labeled endpoints.
+4. Default `evidence_gt.type`: `graph_point_set` with variant-specific cardinality:
+   - circle variants (`circle_radius`, `circle_diameter`): exactly one graph-paper point for the center,
+   - segment / polygon-side / ellipse-axis variants: exactly two graph-paper points for the measured endpoints.
 5. Alternate evidence forms: projected `point_map` + `grid_point_map` and derived set/path projections in trace.
 6. Overlap/touch policy: single object only (no multi-object overlap constraints needed).
 
@@ -25,9 +25,9 @@
    - polygon: labeled side pair,
    - circle: radius or diameter,
    - ellipse: major/minor axis.
-5. Answer+evidence JSON shape is variant-specific via labeled point maps:
-   - circle variants: `{"evidence":{"O":[x,y]},"answer":<integer>}`,
-   - non-circle variants: `{"evidence":{"A":[x1,y1],"B":[x2,y2]},"answer":<integer>}`.
+5. Answer+evidence JSON shape is variant-specific via unlabeled graph-point sets:
+   - circle variants: `{"evidence":[[x,y]],"answer":<integer>}`,
+   - non-circle variants: `{"evidence":[[x1,y1],[x2,y2]],"answer":<integer>}`.
 6. Answer-only JSON shape: `{"answer":<integer>}`.
 7. Required slots:
    - shared: `object_description`, `question_text`,
@@ -62,10 +62,15 @@
    - ellipse evidence uses major/minor axis endpoints.
 9. Graph-bounds policy:
    - sampled measured endpoints and conic extents must remain inside the visible graph-paper draw region.
+10. Conic sampling policy:
+   - circle radius/diameter and ellipse major/minor-axis variants select the target answer before scene placement so graph-capacity constraints do not bias toward smaller measures.
+11. Polygon-side sampling policy:
+   - triangle/quadrilateral/pentagon variants select the target side length from the feasible support before scene placement.
+   - the rendered polygon is then sampled with at least one side at that target length, and the measured side is chosen from those matching sides.
 
 ## 5) Complexity + tests
 1. Complexity definition/components: shape variant + answer magnitude.
 2. Determinism test: `tests/test_geometry_measurement_contracts.py`.
 3. Answer/evidence consistency test: `tests/test_geometry_measurement_tasks.py`.
 4. Prompt metadata/placeholder test: `tests/test_prompt_system.py`.
-5. Constraint-specific tests: integer answer guarantees, 2-point graph-lattice evidence projection, and variant-balance checks.
+5. Constraint-specific tests: integer answer guarantees, graph-lattice evidence projection/cardinality by variant, and variant-balance checks.

@@ -13,7 +13,7 @@ Date: 2026-03-08
 8. Shared geometry single-object scene helpers (`graph_paper`, `graph_rendering`, `single_object_scene`, `angle_geometry`, `polygon_geometry`).
 9. Objective-style geometry measurement tasks (single shape/object per image):
    - angle measure (primitive-angle or line-intersection source) with deterministic balanced source/answer sampling defaults, minimum ray length constraints, axis-aligned-ray construction, and nearest-integer degree query formatting,
-   - area measure (triangle/quadrilateral + ellipse variants),
+   - area measure (triangle/quadrilateral + ellipse variants, with triangle target-area sampling from exact feasible support),
    - perimeter measure (triangle/quadrilateral + circle variants),
    - length measure (segment, polygon side, circle radius/diameter, ellipse major/minor axis variants),
    - slope measure (single finite line crossing x-axis at an integer lattice coordinate, with nearest-tenth numeric answers and x-axis crossing-point evidence).

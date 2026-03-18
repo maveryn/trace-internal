@@ -340,6 +340,12 @@ def test_polygon_measure_tasks_match_scene_attrs() -> None:
 
         if str(answer_type) == "integer":
             assert int(out.answer_gt.value) == int(attrs[str(answer_attr)])
+            if "feasible_answer_values" in trace["execution_trace"]:
+                feasible_answers = [int(value) for value in trace["execution_trace"]["feasible_answer_values"]]
+                assert feasible_answers
+                assert int(out.answer_gt.value) in feasible_answers
+                answer_probabilities = dict(trace["execution_trace"]["answer_scalar_probabilities"])
+                assert set(int(key) for key in answer_probabilities.keys()) == set(feasible_answers)
             assert len(evidence_map) == int(attrs["polygon_sides"])
             example = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
             assert list(example.keys()) == ["evidence", "answer"]
@@ -390,22 +396,29 @@ def test_length_measure_variants_match_scene_and_evidence() -> None:
         assert str(out.task_variant).strip()
         assert out.answer_gt.type == "integer"
         assert 2 <= int(out.answer_gt.value) <= 20
-        assert out.evidence_gt.type == "grid_point_map"
-        evidence_map = _assert_grid_point_map(
+        assert out.evidence_gt.type == "graph_point_set"
+        evidence_points = _assert_graph_point_set(
             out.evidence_gt.value,
             expected_len=len(trace["execution_trace"]["required_evidence_labels"]),
         )
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
         assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
         assert str(trace["execution_trace"]["shape_variant"]) == str(variant)
+        example = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        assert list(example.keys()) == ["evidence", "answer"]
+        assert isinstance(example["evidence"], list)
 
         entity = trace["scene_ir"]["entities"][0]
         attrs = entity["attrs"]
         required_labels = [str(label) for label in trace["execution_trace"]["required_evidence_labels"]]
+        projected_grid = trace["projected_evidence"]["grid_point_map"]
+        expected_evidence_points = [projected_grid[str(label)] for label in required_labels]
+        assert sorted(evidence_points) == sorted(expected_evidence_points)
         if variant == "segment":
-            assert len(evidence_map) == 2
-            graph_a = evidence_map[required_labels[0]]
-            graph_b = evidence_map[required_labels[1]]
+            assert len(evidence_points) == 2
+            assert len(example["evidence"]) == 2
+            graph_a = evidence_points[0]
+            graph_b = evidence_points[1]
             graph_len = hypot(
                 float(graph_b[0]) - float(graph_a[0]),
                 float(graph_b[1]) - float(graph_a[1]),
@@ -414,9 +427,15 @@ def test_length_measure_variants_match_scene_and_evidence() -> None:
             assert str(entity["entity_type"]) == "segment"
             assert int(attrs["length_units"]) == int(out.answer_gt.value)
         elif variant in {"triangle", "quadrilateral", "pentagon"}:
-            assert len(evidence_map) == 2
-            graph_a = evidence_map[required_labels[0]]
-            graph_b = evidence_map[required_labels[1]]
+            assert len(evidence_points) == 2
+            assert len(example["evidence"]) == 2
+            feasible_answers = [int(value) for value in trace["execution_trace"]["feasible_answer_values"]]
+            assert feasible_answers
+            assert int(out.answer_gt.value) in feasible_answers
+            answer_probabilities = dict(trace["execution_trace"]["answer_scalar_probabilities"])
+            assert set(int(key) for key in answer_probabilities.keys()) == set(feasible_answers)
+            graph_a = evidence_points[0]
+            graph_b = evidence_points[1]
             graph_len = hypot(
                 float(graph_b[0]) - float(graph_a[0]),
                 float(graph_b[1]) - float(graph_a[1]),
@@ -425,21 +444,33 @@ def test_length_measure_variants_match_scene_and_evidence() -> None:
             assert str(entity["entity_type"]) == "polygon"
             assert int(attrs["target_side_length_units"]) == int(out.answer_gt.value)
         elif variant in {"circle_radius", "circle_diameter"}:
-            assert len(evidence_map) == 1
+            assert len(evidence_points) == 1
+            assert len(example["evidence"]) == 1
             assert str(entity["entity_type"]) == "circle"
             expected_kind = "radius" if variant == "circle_radius" else "diameter"
             assert str(attrs["measurement_kind"]) == expected_kind
+            feasible_answers = [int(value) for value in trace["execution_trace"]["feasible_answer_values"]]
+            assert feasible_answers
+            assert int(out.answer_gt.value) in feasible_answers
+            answer_probabilities = dict(trace["execution_trace"]["answer_scalar_probabilities"])
+            assert set(int(key) for key in answer_probabilities.keys()) == set(feasible_answers)
             origin_x, origin_y, spacing = _graph_origin_and_spacing(trace)
             center = attrs["center"]
             center_grid = [
                 int(round((float(center[0]) - float(origin_x)) / float(spacing))),
                 int(round((float(origin_y) - float(center[1])) / float(spacing))),
             ]
-            assert evidence_map[required_labels[0]] == center_grid
+            assert evidence_points[0] == center_grid
         else:
-            assert len(evidence_map) == 2
-            graph_a = evidence_map[required_labels[0]]
-            graph_b = evidence_map[required_labels[1]]
+            assert len(evidence_points) == 2
+            assert len(example["evidence"]) == 2
+            feasible_answers = [int(value) for value in trace["execution_trace"]["feasible_answer_values"]]
+            assert feasible_answers
+            assert int(out.answer_gt.value) in feasible_answers
+            answer_probabilities = dict(trace["execution_trace"]["answer_scalar_probabilities"])
+            assert set(int(key) for key in answer_probabilities.keys()) == set(feasible_answers)
+            graph_a = evidence_points[0]
+            graph_b = evidence_points[1]
             graph_len = hypot(
                 float(graph_b[0]) - float(graph_a[0]),
                 float(graph_b[1]) - float(graph_a[1]),

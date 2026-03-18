@@ -120,13 +120,17 @@ prompt:
       question_text_circle_diameter: What is the diameter of the circle in graph units?
       question_text_ellipse_major_axis: What is the length of the major axis of the ellipse in graph units?
       question_text_ellipse_minor_axis: What is the length of the minor axis of the ellipse in graph units?
-      json_example_segment_integer: '{"evidence":{"M":[1,2],"N":[6,2]},"answer":5}'
-      json_example_polygon_side_integer: '{"evidence":{"A":[0,0],"B":[3,4]},"answer":5}'
-      json_example_circle_radius_integer: '{"evidence":{"O":[0,0]},"answer":4}'
-      json_example_circle_diameter_integer: '{"evidence":{"O":[0,0]},"answer":8}'
-      json_example_ellipse_major_axis_integer: '{"evidence":{"A":[-4,0],"B":[4,0]},"answer":8}'
-      json_example_ellipse_minor_axis_integer: '{"evidence":{"C":[0,-3],"D":[0,3]},"answer":6}'
-      json_example_integer: '{"evidence":{"M":[1,2],"N":[6,2]},"answer":5}'
+      evidence_hint_segment: set "evidence" to an array of exactly two graph-paper points for the measured segment endpoints
+      evidence_hint_polygon_side: set "evidence" to an array of exactly two graph-paper points for the measured polygon-side endpoints
+      evidence_hint_circle_center: set "evidence" to an array of exactly one graph-paper point for the circle center
+      evidence_hint_ellipse_axis: set "evidence" to an array of exactly two graph-paper points for the measured ellipse-axis endpoints
+      json_example_segment_integer: '{"evidence":[[1,2],[6,2]],"answer":5}'
+      json_example_polygon_side_integer: '{"evidence":[[0,0],[3,4]],"answer":5}'
+      json_example_circle_radius_integer: '{"evidence":[[0,0]],"answer":4}'
+      json_example_circle_diameter_integer: '{"evidence":[[0,0]],"answer":8}'
+      json_example_ellipse_major_axis_integer: '{"evidence":[[-4,0],[4,0]],"answer":8}'
+      json_example_ellipse_minor_axis_integer: '{"evidence":[[0,-3],[0,3]],"answer":6}'
+      json_example_integer: '{"evidence":[[1,2],[6,2]],"answer":5}'
     task_geometry_measurement_slope:
       object_description: a straight line
       question_text: What is the slope of the line?

@@ -454,17 +454,17 @@ def test_measurement_prompt_examples_are_task_valid() -> None:
     )
     length_example = json.loads(str(length_prompt["json_example_integer"]))
     assert list(length_example.keys()) == ["evidence", "answer"]
-    assert isinstance(length_example["evidence"], dict)
-    length_points = [[int(point[0]), int(point[1])] for point in length_example["evidence"].values()]
+    assert isinstance(length_example["evidence"], list)
+    length_points = [[int(point[0]), int(point[1])] for point in length_example["evidence"]]
     assert len(length_points) == 2
     dx = int(length_points[1][0]) - int(length_points[0][0])
     dy = int(length_points[1][1]) - int(length_points[0][1])
     assert int(length_example["answer"]) == int(round(math.hypot(float(dx), float(dy))))
     center_example = json.loads(str(length_prompt["json_example_circle_radius_integer"]))
     assert list(center_example.keys()) == ["evidence", "answer"]
-    assert isinstance(center_example["evidence"], dict)
+    assert isinstance(center_example["evidence"], list)
     assert len(center_example["evidence"]) == 1
-    only_point = next(iter(center_example["evidence"].values()))
+    only_point = center_example["evidence"][0]
     assert isinstance(only_point, list) and len(only_point) == 2
     length_answer_only_example = json.loads(str(length_prompt["json_example_answer_only_integer"]))
     assert list(length_answer_only_example.keys()) == ["answer"]

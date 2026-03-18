@@ -182,6 +182,47 @@ class GeometryShapeMeasureBase:
             return int((2 * int(min_radius)) + 2)
         return 0
 
+    def _resolve_polygon_target_answer(
+        self,
+        *,
+        instance_seed: int,
+        params: Mapping[str, Any],
+        variant_kind: str,
+        answer_min: int | None,
+        answer_max: int | None,
+        gen_defaults: Mapping[str, Any],
+        render_defaults: Mapping[str, Any],
+    ) -> Tuple[int | None, Dict[str, float], List[int], int]:
+        """Return optional target answer support for polygon variants.
+
+        Default behavior does not preselect a polygon target answer.
+        """
+
+        return None, {}, [], 0
+
+    def _sample_polygon_instance(
+        self,
+        rng,
+        *,
+        variant_kind: str,
+        target_answer_scalar: int | None,
+        context,
+        gen_defaults: Mapping[str, Any],
+    ) -> PolygonInstance:
+        """Sample one polygon instance for the active polygon variant."""
+
+        polygon_sides = int(_POLYGON_VARIANT_TO_SIDES[str(variant_kind)])
+        return sample_polygon_instance_on_graph_paper(
+            rng,
+            allowed_sides=[int(polygon_sides)],
+            canvas_size=int(context.canvas_size),
+            graph_spacing=int(context.graph_spacing),
+            graph_origin=(float(context.graph_origin[0]), float(context.graph_origin[1])),
+            padding_units=0,
+            max_attempts=8,
+            min_area_square_units=4,
+        )
+
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic shape-measurement instance."""
         task_group_defaults = get_task_group_defaults(self.domain, self.task_group)
@@ -216,12 +257,33 @@ class GeometryShapeMeasureBase:
             max_key="answer_max",
             context=f"generation defaults for {self.task_id}",
         )
+        selected_polygon_target_answer = None
+        polygon_answer_probabilities: Dict[str, float] = {}
+        polygon_feasible_answer_values: List[int] = []
+        polygon_required_graph_cells = 0
+        if str(variant_kind) in _POLYGON_VARIANTS:
+            (
+                selected_polygon_target_answer,
+                polygon_answer_probabilities,
+                polygon_feasible_answer_values,
+                polygon_required_graph_cells,
+            ) = self._resolve_polygon_target_answer(
+                instance_seed=int(instance_seed),
+                params=params,
+                variant_kind=str(variant_kind),
+                answer_min=answer_min,
+                answer_max=answer_max,
+                gen_defaults=gen_defaults,
+                render_defaults=render_defaults,
+            )
         required_graph_cells = self._resolve_required_graph_cells(
             variant_kind=str(variant_kind),
             answer_min=answer_min,
             answer_max=answer_max,
             gen_defaults=gen_defaults,
         )
+        if int(polygon_required_graph_cells) > 0:
+            required_graph_cells = max(int(required_graph_cells), int(polygon_required_graph_cells))
         context_params = dict(params)
         if int(required_graph_cells) > 0:
             if "graph_cells" in context_params:
@@ -356,18 +418,22 @@ class GeometryShapeMeasureBase:
         for _ in range(max(1, int(attempt_budget))):
             try:
                 if str(variant_kind) in _POLYGON_VARIANTS:
-                    polygon_sides = int(_POLYGON_VARIANT_TO_SIDES[str(variant_kind)])
-                    candidate_polygon = sample_polygon_instance_on_graph_paper(
+                    candidate_polygon = self._sample_polygon_instance(
                         scene_rng,
-                        allowed_sides=[int(polygon_sides)],
-                        canvas_size=int(context.canvas_size),
-                        graph_spacing=int(context.graph_spacing),
-                        graph_origin=(float(context.graph_origin[0]), float(context.graph_origin[1])),
-                        padding_units=0,
-                        max_attempts=8,
-                        min_area_square_units=4,
+                        variant_kind=str(variant_kind),
+                        target_answer_scalar=(
+                            None if selected_polygon_target_answer is None else int(selected_polygon_target_answer)
+                        ),
+                        context=context,
+                        gen_defaults=gen_defaults,
                     )
                     candidate_answer = int(self._answer_scalar_from_polygon_instance(candidate_polygon))
+                    if (
+                        selected_polygon_target_answer is not None
+                        and int(candidate_answer) != int(selected_polygon_target_answer)
+                    ):
+                        range_rejections += 1
+                        continue
                     if answer_min is not None and int(candidate_answer) < int(answer_min):
                         range_rejections += 1
                         continue
@@ -673,6 +739,13 @@ class GeometryShapeMeasureBase:
                     "template_id": str(polygon_instance.template_id),
                 }
             )
+            if polygon_feasible_answer_values:
+                execution_trace.update(
+                    {
+                        "feasible_answer_values": [int(value) for value in polygon_feasible_answer_values],
+                        "answer_scalar_probabilities": dict(polygon_answer_probabilities),
+                    }
+                )
         if ellipse_instance is not None:
             execution_trace.update(
                 {

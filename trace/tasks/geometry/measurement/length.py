@@ -18,7 +18,6 @@ from ...shared.config_defaults import (
     split_generation_rendering_prompt_defaults,
 )
 from ...shared.output_metadata import default_task_versions
-from ...shared.prompt_json_example import build_prompt_json_examples
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
     build_prompt_trace_artifacts,
@@ -39,8 +38,9 @@ from ..shared.conic_geometry import (
     sample_circle_instance_on_graph_paper,
     sample_ellipse_instance_on_graph_paper,
 )
+from ..shared.graph_paper import resolve_graph_cell_capacity
 from ..shared.graph_rendering import graph_paper_grid_from_frame, scale_point
-from ..shared.labeled_point_evidence import labeled_grid_point_evidence_artifacts
+from ..shared.labeled_point_evidence import graph_point_set_evidence_artifacts
 from ..shared.length_geometry import (
     draw_labeled_segment,
     sample_segment_instance_on_graph_paper,
@@ -54,11 +54,11 @@ from ..shared.polygon_geometry import (
     alphabetic_labels,
     draw_polygon_labels,
     draw_polygon_outline,
+    feasible_polygon_side_lengths,
     polygon_render_anchor,
     polygon_scene_entity,
     sample_polygon_instance_on_graph_paper,
 )
-from ..shared.prompt_text import append_required_labels_clause
 from ..shared.render_variation import sample_int_render_param
 from ..shared.shape_style import extract_background_anchor_colors, sample_geometry_shape_style
 from ..shared.single_object_scene import (
@@ -254,6 +254,151 @@ def _resolve_required_graph_cells(
     return 0
 
 
+def _resolve_circle_target_radius(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    variant_kind: str,
+    answer_min: int,
+    answer_max: int,
+    gen_defaults: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+) -> Tuple[int, Dict[str, float], List[int]]:
+    """Select one circle radius from the feasible answer set before scene layout.
+
+    Sampling the target answer before scene construction avoids over-sampling
+    small circles, which otherwise fit more often than larger ones.
+    """
+
+    raw_radii = _circle_radii_for_variant(
+        variant_kind=str(variant_kind),
+        answer_min=int(answer_min),
+        answer_max=int(answer_max),
+        gen_defaults=gen_defaults,
+    )
+    if not raw_radii:
+        raise ValueError("no feasible circle radii for requested answer bounds")
+    _explicit_graph_cells, graph_cells_max = resolve_graph_cell_capacity(
+        params=params,
+        render_defaults=render_defaults,
+        fallback_min=int(_DEFAULTS.graph_cells_min),
+        fallback_max=int(_DEFAULTS.graph_cells_max),
+    )
+    feasible_radii = [
+        int(radius)
+        for radius in raw_radii
+        if int((2 * int(radius)) + 2) <= int(graph_cells_max)
+    ]
+    if not feasible_radii:
+        raise ValueError("no circle radii fit within configured graph-cell limits")
+
+    answer_values = [
+        int(radius) if str(variant_kind) == "circle_radius" else int(2 * int(radius))
+        for radius in feasible_radii
+    ]
+    probabilities = {str(value): (1.0 / float(len(answer_values))) for value in answer_values}
+    sampling_index = params.get("_sampling_index", instance_seed)
+    selected_index = abs(int(sampling_index)) % len(feasible_radii)
+    return int(feasible_radii[selected_index]), probabilities, [int(value) for value in answer_values]
+
+
+def _resolve_ellipse_target_pair(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    variant_kind: str,
+    answer_min: int,
+    answer_max: int,
+    gen_defaults: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+) -> Tuple[Tuple[int, int], Dict[str, float], List[int]]:
+    """Select one ellipse semiaxis pair from a uniformly sampled target answer.
+
+    As with circles, sampling the target answer before scene placement prevents
+    layout feasibility from overrepresenting smaller axis lengths.
+    """
+
+    raw_pairs = _ellipse_pairs_for_variant(
+        variant_kind=str(variant_kind),
+        answer_min=int(answer_min),
+        answer_max=int(answer_max),
+        gen_defaults=gen_defaults,
+    )
+    if not raw_pairs:
+        raise ValueError("no feasible ellipse semiaxis pairs for requested answer bounds")
+    _explicit_graph_cells, graph_cells_max = resolve_graph_cell_capacity(
+        params=params,
+        render_defaults=render_defaults,
+        fallback_min=int(_DEFAULTS.graph_cells_min),
+        fallback_max=int(_DEFAULTS.graph_cells_max),
+    )
+    feasible_pairs = [
+        (int(semi_x), int(semi_y))
+        for semi_x, semi_y in raw_pairs
+        if int((2 * max(int(semi_x), int(semi_y))) + 2) <= int(graph_cells_max)
+    ]
+    if not feasible_pairs:
+        raise ValueError("no ellipse semiaxis pairs fit within configured graph-cell limits")
+
+    answer_to_pairs: Dict[int, List[Tuple[int, int]]] = {}
+    for semi_x, semi_y in feasible_pairs:
+        major = int(2 * max(int(semi_x), int(semi_y)))
+        minor = int(2 * min(int(semi_x), int(semi_y)))
+        answer_value = int(major if str(variant_kind) == "ellipse_major_axis" else minor)
+        answer_to_pairs.setdefault(int(answer_value), []).append((int(semi_x), int(semi_y)))
+
+    answer_values = sorted(int(value) for value in answer_to_pairs.keys())
+    probabilities = {str(value): (1.0 / float(len(answer_values))) for value in answer_values}
+    sampling_index = abs(int(params.get("_sampling_index", instance_seed)))
+    selected_answer = int(answer_values[int(sampling_index) % len(answer_values)])
+    candidate_pairs = sorted(
+        list(answer_to_pairs[int(selected_answer)]),
+        key=lambda pair: (max(int(pair[0]), int(pair[1])), min(int(pair[0]), int(pair[1])), int(pair[0]), int(pair[1])),
+    )
+    pair_index = (int(sampling_index) // max(1, len(answer_values))) % len(candidate_pairs)
+    return tuple(candidate_pairs[int(pair_index)]), probabilities, [int(value) for value in answer_values]
+
+
+def _resolve_polygon_target_side_length(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    variant_kind: str,
+    answer_min: int,
+    answer_max: int,
+    render_defaults: Mapping[str, Any],
+) -> Tuple[int, Dict[str, float], List[int]]:
+    """Select one polygon-side answer from the feasible support before layout.
+
+    Sampling the target side length before scene construction prevents shorter,
+    easier-to-fit polygon sides from becoming overrepresented by layout
+    feasibility.
+    """
+
+    polygon_sides = int(_POLYGON_VARIANT_TO_SIDES[str(variant_kind)])
+    _explicit_graph_cells, graph_cells_max = resolve_graph_cell_capacity(
+        params=params,
+        render_defaults=render_defaults,
+        fallback_min=int(_DEFAULTS.graph_cells_min),
+        fallback_max=int(_DEFAULTS.graph_cells_max),
+    )
+    feasible_answers = list(
+        feasible_polygon_side_lengths(
+            sides=int(polygon_sides),
+            max_span_units=max(3, int(graph_cells_max) - 2),
+            min_edge_length=int(max(2, int(answer_min))),
+            max_edge_length=int(min(int(answer_max), int(graph_cells_max) - 2)),
+            min_area_square_units=4,
+        )
+    )
+    if not feasible_answers:
+        raise ValueError("no polygon side lengths fit within configured answer and graph-cell limits")
+    probabilities = {str(value): (1.0 / float(len(feasible_answers))) for value in feasible_answers}
+    sampling_index = abs(int(params.get("_sampling_index", instance_seed)))
+    selected_answer = int(feasible_answers[int(sampling_index) % len(feasible_answers)])
+    return int(selected_answer), probabilities, [int(value) for value in feasible_answers]
+
+
 def _prompt_family_for_variant(variant_kind: str) -> str:
     """Return prompt-family suffix for one length variant."""
     variant = str(variant_kind)
@@ -296,6 +441,24 @@ def _evidence_hint_key_candidates_for_variant(variant_kind: str) -> Tuple[str, .
     if variant in _ELLIPSE_VARIANTS:
         return ("evidence_hint_ellipse_axis", "evidence_hint_point_map", "evidence_hint")
     return ("evidence_hint_point_map", "evidence_hint")
+
+
+def _json_example_key_candidates_for_variant(variant_kind: str) -> Tuple[str, ...]:
+    """Return ordered JSON example key candidates for one length variant."""
+    variant = str(variant_kind)
+    if variant == "segment":
+        return ("json_example_segment_integer", "json_example_integer", "json_example")
+    if variant in _POLYGON_VARIANTS:
+        return ("json_example_polygon_side_integer", "json_example_integer", "json_example")
+    if variant == "circle_radius":
+        return ("json_example_circle_radius_integer", "json_example_integer", "json_example")
+    if variant == "circle_diameter":
+        return ("json_example_circle_diameter_integer", "json_example_integer", "json_example")
+    if variant == "ellipse_major_axis":
+        return ("json_example_ellipse_major_axis_integer", "json_example_integer", "json_example")
+    if variant == "ellipse_minor_axis":
+        return ("json_example_ellipse_minor_axis_integer", "json_example_integer", "json_example")
+    return ("json_example_integer", "json_example")
 
 
 def _format_question(template: str, *, label_a: str | None = None, label_b: str | None = None) -> str:
@@ -381,12 +544,68 @@ class GeometryLengthMeasure2DTask:
             supported_variants=supported_variants,
         )
         answer_min, answer_max = _answer_bounds(params, gen_defaults=_GEN_DEFAULTS)
+        selected_circle_radius_units: int | None = None
+        circle_answer_probabilities: Dict[str, float] = {}
+        circle_feasible_answer_values: List[int] = []
+        selected_ellipse_pair_units: Tuple[int, int] | None = None
+        ellipse_answer_probabilities: Dict[str, float] = {}
+        ellipse_feasible_answer_values: List[int] = []
+        selected_polygon_target_length_units: int | None = None
+        polygon_answer_probabilities: Dict[str, float] = {}
+        polygon_feasible_answer_values: List[int] = []
+        if str(variant_kind) in _POLYGON_VARIANTS:
+            (
+                selected_polygon_target_length_units,
+                polygon_answer_probabilities,
+                polygon_feasible_answer_values,
+            ) = _resolve_polygon_target_side_length(
+                instance_seed=int(instance_seed),
+                params=params,
+                variant_kind=str(variant_kind),
+                answer_min=int(answer_min),
+                answer_max=int(answer_max),
+                render_defaults=_RENDER_DEFAULTS,
+            )
+        if str(variant_kind) in _CIRCLE_VARIANTS:
+            (
+                selected_circle_radius_units,
+                circle_answer_probabilities,
+                circle_feasible_answer_values,
+            ) = _resolve_circle_target_radius(
+                instance_seed=int(instance_seed),
+                params=params,
+                variant_kind=str(variant_kind),
+                answer_min=int(answer_min),
+                answer_max=int(answer_max),
+                gen_defaults=_GEN_DEFAULTS,
+                render_defaults=_RENDER_DEFAULTS,
+            )
+        if str(variant_kind) in _ELLIPSE_VARIANTS:
+            (
+                selected_ellipse_pair_units,
+                ellipse_answer_probabilities,
+                ellipse_feasible_answer_values,
+            ) = _resolve_ellipse_target_pair(
+                instance_seed=int(instance_seed),
+                params=params,
+                variant_kind=str(variant_kind),
+                answer_min=int(answer_min),
+                answer_max=int(answer_max),
+                gen_defaults=_GEN_DEFAULTS,
+                render_defaults=_RENDER_DEFAULTS,
+            )
         required_graph_cells = _resolve_required_graph_cells(
             variant_kind=str(variant_kind),
             answer_min=int(answer_min),
             answer_max=int(answer_max),
             gen_defaults=_GEN_DEFAULTS,
         )
+        if selected_polygon_target_length_units is not None:
+            required_graph_cells = max(int(required_graph_cells), int(selected_polygon_target_length_units) + 2)
+        if selected_circle_radius_units is not None:
+            required_graph_cells = int((2 * int(selected_circle_radius_units)) + 2)
+        if selected_ellipse_pair_units is not None:
+            required_graph_cells = int((2 * max(int(selected_ellipse_pair_units[0]), int(selected_ellipse_pair_units[1]))) + 2)
 
         context_params = dict(params)
         if int(required_graph_cells) > 0:
@@ -407,7 +626,9 @@ class GeometryLengthMeasure2DTask:
                     )
                 )
                 resolved_min_cells = max(int(current_min_cells), int(required_graph_cells))
-                resolved_max_cells = max(int(current_max_cells), int(resolved_min_cells))
+                if int(resolved_min_cells) > int(current_max_cells):
+                    raise ValueError("graph_cells range is too small for selected shape variant and answer bounds")
+                resolved_max_cells = int(current_max_cells)
                 context_params["graph_cells_min"] = int(resolved_min_cells)
                 context_params["graph_cells_max"] = int(resolved_max_cells)
 
@@ -525,7 +746,7 @@ class GeometryLengthMeasure2DTask:
                     entity = segment_scene_entity(candidate, segment_kind="segment")
                     anchor = segment_render_anchor(candidate)
                     evidence_labels = [str(candidate.labels[0]), str(candidate.labels[1])]
-                    evidence = labeled_grid_point_evidence_artifacts(
+                    evidence = graph_point_set_evidence_artifacts(
                         points_by_label={
                             str(candidate.labels[0]): (float(candidate.endpoint_a[0]), float(candidate.endpoint_a[1])),
                             str(candidate.labels[1]): (float(candidate.endpoint_b[0]), float(candidate.endpoint_b[1])),
@@ -555,6 +776,8 @@ class GeometryLengthMeasure2DTask:
 
                 if str(variant_kind) in _POLYGON_VARIANTS:
                     polygon_sides = int(_POLYGON_VARIANT_TO_SIDES[str(variant_kind)])
+                    if selected_polygon_target_length_units is None:
+                        raise RuntimeError("polygon variant must resolve one target side length before scene layout")
                     polygon_instance = sample_polygon_instance_on_graph_paper(
                         scene_rng,
                         allowed_sides=[int(polygon_sides)],
@@ -564,18 +787,33 @@ class GeometryLengthMeasure2DTask:
                         padding_units=0,
                         max_attempts=12,
                         min_area_square_units=4,
+                        min_edge_length_units=int(max(2, int(answer_min))),
+                        max_edge_length_units=int(answer_max),
+                        required_side_length_units=int(selected_polygon_target_length_units),
                     )
-                    side_idx = int(scene_rng.randrange(int(polygon_instance.sides)))
-                    next_idx = int((int(side_idx) + 1) % int(polygon_instance.sides))
-                    point_a = polygon_instance.vertices[int(side_idx)]
-                    point_b = polygon_instance.vertices[int(next_idx)]
-                    candidate_answer = _graph_segment_length_units(
-                        point_a,
-                        point_b,
-                        spacing=int(context.graph_spacing),
-                    )
-                    if int(candidate_answer) < int(answer_min) or int(candidate_answer) > int(answer_max):
+                    matching_sides: List[Tuple[int, int, Sequence[float], Sequence[float]]] = []
+                    for candidate_side_idx in range(int(polygon_instance.sides)):
+                        candidate_next_idx = int((int(candidate_side_idx) + 1) % int(polygon_instance.sides))
+                        candidate_point_a = polygon_instance.vertices[int(candidate_side_idx)]
+                        candidate_point_b = polygon_instance.vertices[int(candidate_next_idx)]
+                        candidate_answer = _graph_segment_length_units(
+                            candidate_point_a,
+                            candidate_point_b,
+                            spacing=int(context.graph_spacing),
+                        )
+                        if int(candidate_answer) == int(selected_polygon_target_length_units):
+                            matching_sides.append(
+                                (
+                                    int(candidate_side_idx),
+                                    int(candidate_next_idx),
+                                    candidate_point_a,
+                                    candidate_point_b,
+                                )
+                            )
+                    if not matching_sides:
                         continue
+                    side_idx, next_idx, point_a, point_b = matching_sides[int(scene_rng.randrange(len(matching_sides)))]
+                    candidate_answer = int(selected_polygon_target_length_units)
                     if not _all_points_inside_bounds(
                         list(polygon_instance.vertices),
                         bounds=graph_bounds,
@@ -614,7 +852,7 @@ class GeometryLengthMeasure2DTask:
                     anchor = polygon_render_anchor(polygon_instance)
                     side_label_a = str(polygon_instance.labels[int(side_idx)])
                     side_label_b = str(polygon_instance.labels[int(next_idx)])
-                    evidence = labeled_grid_point_evidence_artifacts(
+                    evidence = graph_point_set_evidence_artifacts(
                         points_by_label={
                             str(side_label_a): (float(point_a[0]), float(point_a[1])),
                             str(side_label_b): (float(point_b[0]), float(point_b[1])),
@@ -640,6 +878,8 @@ class GeometryLengthMeasure2DTask:
                         label_b=str(side_label_b),
                     )
                     variant_detail = {
+                        "feasible_answer_values": list(polygon_feasible_answer_values),
+                        "answer_scalar_probabilities": dict(polygon_answer_probabilities),
                         "target_side_indices": [int(side_idx), int(next_idx)],
                         "target_side_labels": [
                             str(side_label_a),
@@ -649,12 +889,9 @@ class GeometryLengthMeasure2DTask:
                     break
 
                 if str(variant_kind) in _CIRCLE_VARIANTS:
-                    radii = _circle_radii_for_variant(
-                        variant_kind=str(variant_kind),
-                        answer_min=int(answer_min),
-                        answer_max=int(answer_max),
-                        gen_defaults=_GEN_DEFAULTS,
-                    )
+                    if selected_circle_radius_units is None:
+                        raise RuntimeError("circle variant must resolve one target radius before scene layout")
+                    radii = [int(selected_circle_radius_units)]
                     feasible_radii = feasible_circle_radii_on_graph_paper(
                         canvas_size=int(context.canvas_size),
                         graph_spacing=int(context.graph_spacing),
@@ -737,7 +974,7 @@ class GeometryLengthMeasure2DTask:
                     ]
                     entity["attrs"]["evidence_labels"] = {"center": str(center_label)}
                     anchor = _segment_anchor(point_a, point_b)
-                    evidence = labeled_grid_point_evidence_artifacts(
+                    evidence = graph_point_set_evidence_artifacts(
                         points_by_label={str(center_label): (float(circle_instance.center[0]), float(circle_instance.center[1]))},
                         graph_origin=context.graph_origin,
                         graph_spacing=int(context.graph_spacing),
@@ -758,16 +995,15 @@ class GeometryLengthMeasure2DTask:
                     variant_detail = {
                         "measurement_kind": str(entity["attrs"]["measurement_kind"]),
                         "measurement_axis": str(axis_kind),
+                        "feasible_answer_values": list(circle_feasible_answer_values),
+                        "answer_scalar_probabilities": dict(circle_answer_probabilities),
                     }
                     break
 
                 if str(variant_kind) in _ELLIPSE_VARIANTS:
-                    pairs = _ellipse_pairs_for_variant(
-                        variant_kind=str(variant_kind),
-                        answer_min=int(answer_min),
-                        answer_max=int(answer_max),
-                        gen_defaults=_GEN_DEFAULTS,
-                    )
+                    if selected_ellipse_pair_units is None:
+                        raise RuntimeError("ellipse variant must resolve one target pair before scene layout")
+                    pairs = [tuple(selected_ellipse_pair_units)]
                     feasible_pairs = feasible_ellipse_axis_pairs_on_graph_paper(
                         canvas_size=int(context.canvas_size),
                         graph_spacing=int(context.graph_spacing),
@@ -857,7 +1093,7 @@ class GeometryLengthMeasure2DTask:
                         "endpoint_b": str(endpoint_labels[1]),
                     }
                     anchor = _segment_anchor(point_a, point_b)
-                    evidence = labeled_grid_point_evidence_artifacts(
+                    evidence = graph_point_set_evidence_artifacts(
                         points_by_label={
                             str(endpoint_labels[0]): (float(point_a[0]), float(point_a[1])),
                             str(endpoint_labels[1]): (float(point_b[0]), float(point_b[1])),
@@ -881,6 +1117,8 @@ class GeometryLengthMeasure2DTask:
                     variant_detail = {
                         "measurement_kind": str(entity["attrs"]["measurement_kind"]),
                         "measurement_axis": str(axis_kind),
+                        "feasible_answer_values": list(ellipse_feasible_answer_values),
+                        "answer_scalar_probabilities": dict(ellipse_answer_probabilities),
                     }
                     break
 
@@ -926,16 +1164,20 @@ class GeometryLengthMeasure2DTask:
             preferred_keys=_evidence_hint_key_candidates_for_variant(str(variant_kind)),
             context=f"prompt defaults for {self.task_id}",
         )
-        required_labels = [str(label) for label in evidence.get("required_labels", []) if str(label).strip()]
-        evidence_hint = append_required_labels_clause(str(evidence_hint), required_labels)
         answer_hint = _required_prompt_text(
             _PROMPT_DEFAULTS,
             preferred_keys=("answer_hint_integer", "answer_hint"),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = build_prompt_json_examples(
-            evidence_value=evidence.get("evidence_value", {}),
-            answer_type="integer",
+        json_example = _required_prompt_text(
+            _PROMPT_DEFAULTS,
+            preferred_keys=_json_example_key_candidates_for_variant(str(variant_kind)),
+            context=f"prompt defaults for {self.task_id}",
+        )
+        json_example_answer_only = _required_prompt_text(
+            _PROMPT_DEFAULTS,
+            preferred_keys=("json_example_answer_only_integer", "json_example_answer_only"),
+            context=f"prompt defaults for {self.task_id}",
         )
 
         prompt_selection = render_task_prompt_variants(

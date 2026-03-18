@@ -1,0 +1,269 @@
+{
+  "answer_distribution": {
+    "answer_type_counts": {
+      "integer": 68,
+      "pi_expression": 32
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.07,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": null,
+        "pass": null,
+        "status": "not_applicable_non_numeric_answers",
+        "threshold": 0.5
+      },
+      "min_unique_answers": {
+        "observed": 40,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": null,
+    "max_answer_count": 7,
+    "max_answer_frequency": 0.07,
+    "pass": true,
+    "sample_count": 100,
+    "top_answers": [
+      {
+        "answer_label": "36",
+        "count": 7
+      },
+      {
+        "answer_label": "18",
+        "count": 6
+      },
+      {
+        "answer_label": "12",
+        "count": 5
+      },
+      {
+        "answer_label": "24",
+        "count": 4
+      },
+      {
+        "answer_label": "48",
+        "count": 4
+      },
+      {
+        "answer_label": "54",
+        "count": 4
+      },
+      {
+        "answer_label": "66",
+        "count": 4
+      },
+      {
+        "answer_label": "8π",
+        "count": 4
+      },
+      {
+        "answer_label": "12π",
+        "count": 3
+      },
+      {
+        "answer_label": "16π",
+        "count": 3
+      },
+      {
+        "answer_label": "28",
+        "count": 3
+      },
+      {
+        "answer_label": "30",
+        "count": 3
+      },
+      {
+        "answer_label": "40",
+        "count": 3
+      },
+      {
+        "answer_label": "42",
+        "count": 3
+      },
+      {
+        "answer_label": "8",
+        "count": 3
+      },
+      {
+        "answer_label": "96",
+        "count": 3
+      },
+      {
+        "answer_label": "14",
+        "count": 2
+      },
+      {
+        "answer_label": "15",
+        "count": 2
+      },
+      {
+        "answer_label": "15π",
+        "count": 2
+      },
+      {
+        "answer_label": "16",
+        "count": 2
+      },
+      {
+        "answer_label": "18π",
+        "count": 2
+      },
+      {
+        "answer_label": "21",
+        "count": 2
+      },
+      {
+        "answer_label": "24π",
+        "count": 2
+      },
+      {
+        "answer_label": "25π",
+        "count": 2
+      },
+      {
+        "answer_label": "26",
+        "count": 2
+      },
+      {
+        "answer_label": "36π",
+        "count": 2
+      },
+      {
+        "answer_label": "56π",
+        "count": 2
+      },
+      {
+        "answer_label": "60",
+        "count": 2
+      },
+      {
+        "answer_label": "72π",
+        "count": 2
+      },
+      {
+        "answer_label": "9π",
+        "count": 2
+      },
+      {
+        "answer_label": "10π",
+        "count": 1
+      },
+      {
+        "answer_label": "14π",
+        "count": 1
+      },
+      {
+        "answer_label": "20",
+        "count": 1
+      },
+      {
+        "answer_label": "20π",
+        "count": 1
+      },
+      {
+        "answer_label": "22",
+        "count": 1
+      },
+      {
+        "answer_label": "32π",
+        "count": 1
+      },
+      {
+        "answer_label": "35",
+        "count": 1
+      },
+      {
+        "answer_label": "35π",
+        "count": 1
+      },
+      {
+        "answer_label": "40π",
+        "count": 1
+      },
+      {
+        "answer_label": "84",
+        "count": 1
+      }
+    ],
+    "unique_answers": 40
+  },
+  "sample_count": 100,
+  "sampling_axes": {
+    "answer_scalar": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "12": 0.09090909090909091,
+        "24": 0.09090909090909091,
+        "30": 0.09090909090909091,
+        "36": 0.09090909090909091,
+        "42": 0.09090909090909091,
+        "48": 0.09090909090909091,
+        "54": 0.09090909090909091,
+        "60": 0.09090909090909091,
+        "66": 0.09090909090909091,
+        "84": 0.09090909090909091,
+        "96": 0.09090909090909091
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.69,
+      "observed_counts": {
+        "": 69,
+        "12": 2,
+        "24": 2,
+        "30": 2,
+        "36": 5,
+        "42": 2,
+        "48": 4,
+        "54": 4,
+        "60": 2,
+        "66": 4,
+        "84": 1,
+        "96": 3
+      },
+      "sample_count": 100
+    },
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {},
+      "expected_source": "",
+      "max_observed_frequency": 0.37,
+      "observed_counts": {
+        "ellipse": 32,
+        "quadrilateral": 37,
+        "triangle": 31
+      },
+      "sample_count": 100
+    },
+    "variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "ellipse": 0.3333333333333333,
+        "quadrilateral": 0.3333333333333333,
+        "triangle": 0.3333333333333333
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 1.0,
+      "observed_counts": {
+        "": 100
+      },
+      "sample_count": 100
+    }
+  },
+  "task_id": "task_geometry_measurement_area",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {},
+    "expected_source": "",
+    "has_variants": true,
+    "observed_counts": {
+      "ellipse": 32,
+      "quadrilateral": 37,
+      "triangle": 31
+    },
+    "status": "reported"
+  }
+}

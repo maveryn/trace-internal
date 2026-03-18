@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import hashlib
 import math
+import random
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import Any, Dict, List, Sequence, Tuple
 
 from PIL import ImageDraw
@@ -98,6 +100,12 @@ def _polygon_signature(vertices: Sequence[UnitPoint]) -> str:
     return str(digest)
 
 
+def _polygon_probe_seed(*parts: Any) -> int:
+    """Return a stable integer seed for deterministic polygon-support probes."""
+    payload = "|".join(str(part) for part in parts)
+    return int.from_bytes(hashlib.blake2s(payload.encode("utf-8"), digest_size=8).digest(), "big")
+
+
 def sample_procedural_polygon_template(
     rng,
     *,
@@ -107,6 +115,7 @@ def sample_procedural_polygon_template(
     min_edge_length: int = 2,
     max_edge_length: int = 10,
     min_area_square_units: int = 4,
+    required_edge_length: int | None = None,
     max_attempts: int = 2200,
 ) -> PolygonTemplate:
     """Sample a random simple lattice polygon with integer edge lengths.
@@ -127,26 +136,35 @@ def sample_procedural_polygon_template(
         min_edge_length=int(min_edge_length),
         max_edge_length=int(max_edge_length),
     )
-    vector_set = {(int(dx), int(dy)) for dx, dy, _length in vector_pool}
+    vector_lengths = {(int(dx), int(dy)): int(length) for dx, dy, length in vector_pool}
+    vectors_by_length: Dict[int, Tuple[Tuple[int, int, int], ...]] = {}
+    for dx, dy, length in vector_pool:
+        vectors_by_length.setdefault(int(length), []).append((int(dx), int(dy), int(length)))
+    required_length = None if required_edge_length is None else int(required_edge_length)
+    required_pool = tuple(vectors_by_length.get(int(required_length), ())) if required_length is not None else ()
+    if required_length is not None and not required_pool:
+        raise ValueError("required_edge_length has no feasible lattice vectors under current polygon constraints")
 
     for _ in range(max(1, int(max_attempts))):
-        edges: List[UnitPoint] = []
+        edges: List[Tuple[int, int, int]] = []
         sum_x = 0
         sum_y = 0
         valid_prefix = True
+        required_edge_index = int(rng.randrange(n_sides)) if required_length is not None else -1
         for _edge_idx in range(n_sides - 1):
-            chosen: UnitPoint | None = None
+            candidate_pool = required_pool if int(_edge_idx) == int(required_edge_index) else vector_pool
+            chosen: Tuple[int, int, int] | None = None
             for _ in range(48):
-                dx, dy, _length = rng.choice(vector_pool)
+                dx, dy, length = rng.choice(candidate_pool)
                 if edges:
-                    prev_x, prev_y = edges[-1]
+                    prev_x, prev_y, _prev_length = edges[-1]
                     if int(prev_x * dy - prev_y * dx) == 0:
                         continue
                 trial_sum_x = int(sum_x + dx)
                 trial_sum_y = int(sum_y + dy)
                 if abs(int(trial_sum_x)) > int(span_limit) or abs(int(trial_sum_y)) > int(span_limit):
                     continue
-                chosen = (int(dx), int(dy))
+                chosen = (int(dx), int(dy), int(length))
                 break
             if chosen is None:
                 valid_prefix = False
@@ -158,14 +176,19 @@ def sample_procedural_polygon_template(
             continue
 
         closing = (int(-sum_x), int(-sum_y))
-        if closing == (0, 0) or closing not in vector_set:
+        if closing == (0, 0) or closing not in vector_lengths:
+            continue
+        closing_length = int(vector_lengths[closing])
+        if required_length is not None and int(required_edge_index) == int(n_sides - 1) and int(closing_length) != int(required_length):
             continue
         if edges:
-            prev_x, prev_y = edges[-1]
+            prev_x, prev_y, _prev_length = edges[-1]
             if int(prev_x * closing[1] - prev_y * closing[0]) == 0:
                 continue
-        edges.append(closing)
+        edges.append((int(closing[0]), int(closing[1]), int(closing_length)))
         if len(edges) != n_sides:
+            continue
+        if required_length is not None and not any(int(length) == int(required_length) for _dx, _dy, length in edges):
             continue
 
         if any(
@@ -178,7 +201,7 @@ def sample_procedural_polygon_template(
         vertices: List[UnitPoint] = [(0, 0)]
         cursor_x = 0
         cursor_y = 0
-        for dx, dy in edges[:-1]:
+        for dx, dy, _length in edges[:-1]:
             cursor_x = int(cursor_x + dx)
             cursor_y = int(cursor_y + dy)
             vertices.append((int(cursor_x), int(cursor_y)))
@@ -208,6 +231,205 @@ def sample_procedural_polygon_template(
         return PolygonTemplate(template_id=str(template_id), vertices=ordered_vertices)
 
     raise ValueError("failed to sample procedural polygon template")
+
+
+@lru_cache(maxsize=64)
+def feasible_polygon_side_lengths(
+    *,
+    sides: int,
+    max_span_units: int,
+    min_edge_length: int = 2,
+    max_edge_length: int = 10,
+    max_abs_component: int = 8,
+    min_area_square_units: int = 4,
+    probe_attempts_per_length: int = 6,
+    template_attempts_per_probe: int = 96,
+) -> Tuple[int, ...]:
+    """Return targeted polygon side lengths that are feasible under current bounds.
+
+    The probe is deterministic and is used when tasks need to sample a target
+    polygon-side answer before scene placement, so smaller/easier layouts do
+    not dominate the realized answer distribution.
+    """
+
+    span_limit = max(3, int(max_span_units))
+    lo = max(1, int(min_edge_length))
+    hi = min(int(max_edge_length), int(span_limit))
+    if int(lo) > int(hi):
+        return tuple()
+
+    feasible: List[int] = []
+    for target_length in range(int(lo), int(hi) + 1):
+        found = False
+        for probe_index in range(max(1, int(probe_attempts_per_length))):
+            probe_rng = random.Random(
+                _polygon_probe_seed(
+                    "polygon_side_support",
+                    int(sides),
+                    int(span_limit),
+                    int(lo),
+                    int(hi),
+                    int(max_abs_component),
+                    int(min_area_square_units),
+                    int(target_length),
+                    int(probe_index),
+                )
+            )
+            try:
+                sample_procedural_polygon_template(
+                    probe_rng,
+                    sides=int(sides),
+                    max_span_units=int(span_limit),
+                    max_abs_component=int(max_abs_component),
+                    min_edge_length=int(lo),
+                    max_edge_length=int(hi),
+                    min_area_square_units=int(min_area_square_units),
+                    required_edge_length=int(target_length),
+                    max_attempts=int(template_attempts_per_probe),
+                )
+                found = True
+                break
+            except ValueError:
+                continue
+        if found:
+            feasible.append(int(target_length))
+    return tuple(int(value) for value in feasible)
+
+
+@lru_cache(maxsize=32)
+def _triangle_integer_edge_specs(max_span_units: int) -> Tuple[Tuple[int, int, int], ...]:
+    """Return `(base_units, apex_x_units, height_units)` specs with integer side lengths."""
+    span_limit = max(2, int(max_span_units))
+    vectors = integer_length_vectors(
+        max_abs_component=int(span_limit),
+        min_edge_length=1,
+        max_edge_length=max(2, int(2 * span_limit)),
+    )
+    by_height: Dict[int, set[int]] = {}
+    for dx, dy, _length in vectors:
+        if int(dy) <= 0:
+            continue
+        by_height.setdefault(int(dy), set()).add(int(dx))
+
+    specs = set()
+    for height_units, x_values in by_height.items():
+        if int(height_units) > int(span_limit):
+            continue
+        sorted_x = sorted(int(value) for value in x_values)
+        for apex_x_units in sorted_x:
+            if int(apex_x_units) <= 0 or int(apex_x_units) > int(span_limit):
+                continue
+            for other_x_units in sorted_x:
+                if int(other_x_units) >= int(apex_x_units):
+                    continue
+                base_units = int(apex_x_units - int(other_x_units))
+                if int(base_units) < 2 or int(base_units) > int(span_limit):
+                    continue
+                specs.add((int(base_units), int(apex_x_units), int(height_units)))
+    return tuple(sorted(specs))
+
+
+def triangle_integer_edge_specs_for_area(
+    *,
+    area_square_units: int,
+    max_span_units: int,
+) -> Tuple[Tuple[int, int, int], ...]:
+    """Return integer-edge triangle specs for one target area under span bounds."""
+    area_value = int(area_square_units)
+    if int(area_value) <= 0:
+        return tuple()
+    matches = []
+    for base_units, apex_x_units, height_units in _triangle_integer_edge_specs(int(max_span_units)):
+        if int(base_units * height_units) != int(2 * area_value):
+            continue
+        matches.append((int(base_units), int(apex_x_units), int(height_units)))
+    return tuple(matches)
+
+
+def feasible_triangle_area_values(
+    *,
+    max_span_units: int,
+    area_min: int | None = None,
+    area_max: int | None = None,
+) -> Tuple[int, ...]:
+    """Return exact integer triangle-area values with integer-edge lattice triangles."""
+    values = set()
+    for base_units, _apex_x_units, height_units in _triangle_integer_edge_specs(int(max_span_units)):
+        product = int(base_units * height_units)
+        if int(product) % 2 != 0:
+            continue
+        area_value = int(product // 2)
+        if area_min is not None and int(area_value) < int(area_min):
+            continue
+        if area_max is not None and int(area_value) > int(area_max):
+            continue
+        values.add(int(area_value))
+    return tuple(sorted(values))
+
+
+def sample_triangle_instance_with_area_on_graph_paper(
+    rng,
+    *,
+    area_square_units: int,
+    canvas_size: int,
+    graph_spacing: int,
+    graph_origin: Point | None = None,
+    padding_units: int = 1,
+    max_attempts: int = 220,
+) -> PolygonInstance:
+    """Sample one graph-paper triangle with the requested integer area."""
+    spacing_px = max(1, int(graph_spacing))
+    estimated_cells_per_side = max(2, int(round(float(int(canvas_size)) / float(spacing_px))))
+    span_limit = max(3, int(estimated_cells_per_side) - 2)
+    area_value = int(area_square_units)
+    triangle_specs = triangle_integer_edge_specs_for_area(
+        area_square_units=int(area_value),
+        max_span_units=int(span_limit),
+    )
+    if not triangle_specs:
+        raise ValueError("no feasible integer-edge triangle specs for requested area and graph span")
+
+    for _ in range(max(1, int(max_attempts))):
+        base_units, apex_x_units, height_units = rng.choice(triangle_specs)
+        unit_vertices: Tuple[UnitPoint, ...] = (
+            (0, 0),
+            (int(base_units), 0),
+            (int(apex_x_units), int(height_units)),
+        )
+        template = PolygonTemplate(
+            template_id=f"triangle_area_{int(area_value)}_{_polygon_signature(unit_vertices)}",
+            vertices=tuple(unit_vertices),
+        )
+        labels = rotate_labels(
+            alphabetic_labels(template.sides, start_index=int(rng.randrange(26))),
+            shift=int(rng.randrange(template.sides)),
+        )
+        transform_index = int(rng.randrange(8))
+        transformed_vertices = transform_unit_vertices(template.vertices, transform_index=transform_index)
+        try:
+            center = sample_polygon_center(
+                rng,
+                canvas_size=int(canvas_size),
+                graph_spacing=int(graph_spacing),
+                graph_origin=(
+                    (float(graph_origin[0]), float(graph_origin[1]))
+                    if graph_origin is not None
+                    else None
+                ),
+                unit_vertices=transformed_vertices,
+                padding_units=int(padding_units),
+            )
+            return build_polygon_instance(
+                template=template,
+                center=center,
+                spacing=int(graph_spacing),
+                transform_index=transform_index,
+                labels=labels,
+                canvas_size=int(canvas_size),
+            )
+        except ValueError:
+            continue
+    raise ValueError("failed to sample triangle instance for requested area and graph-paper constraints")
 
 
 def polygon_area_square_units(vertices: Sequence[UnitPoint]) -> int:
@@ -335,6 +557,10 @@ def sample_polygon_instance_on_graph_paper(
     padding_units: int = 1,
     max_attempts: int = 220,
     min_area_square_units: int = 4,
+    min_edge_length_units: int = 2,
+    max_edge_length_units: int = 10,
+    max_abs_edge_component: int = 8,
+    required_side_length_units: int | None = None,
 ) -> PolygonInstance:
     """Sample one valid procedurally generated polygon instance for a scene."""
     side_options = sorted({int(side) for side in allowed_sides if int(side) >= 3})
@@ -348,7 +574,13 @@ def sample_polygon_instance_on_graph_paper(
             rng,
             sides=int(rng.choice(side_options)),
             max_span_units=int(span_limit),
+            max_abs_component=int(max_abs_edge_component),
+            min_edge_length=int(min_edge_length_units),
+            max_edge_length=int(max_edge_length_units),
             min_area_square_units=int(min_area_square_units),
+            required_edge_length=(
+                None if required_side_length_units is None else int(required_side_length_units)
+            ),
             max_attempts=64,
         )
         labels = rotate_labels(

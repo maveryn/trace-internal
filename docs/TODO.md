@@ -1,7 +1,7 @@
 # TRACE TODO
 
 ## Now (P0)
-1. Regenerate review samples for `task_geometry_measurement_angle`, `task_geometry_measurement_area`, `task_geometry_measurement_perimeter`, and `task_geometry_measurement_length`.
+1. Regenerate review samples for `task_geometry_measurement_perimeter`.
 2. Complete post-refactor cleanup review (remove stale references and dead helper paths).
 
 ## Next (P1)
@@ -36,5 +36,5 @@
 - `task_geometry_measurement_perimeter`
 - `task_geometry_measurement_length`
 - `task_geometry_analytical_2d_area`
-6. Sample-generation CLI with per-task artifacts and combined Excel.
+6. Task-review/sample-generation tooling with per-task artifacts and inspection workbooks.
 7. Pre-finalize prompt validation checks (metadata/bundle/key/placeholder/cardinality).

@@ -96,7 +96,7 @@ prompt:
       bundle_id: geometry_angle_measure_v1
       task_key: measurement_angle_value
       evidence_hint: 'set "evidence" to an array of exactly three graph-paper points for the queried angle: the vertex and the two ray endpoints'
-      answer_hint: set "answer" to the angle measure in degrees rounded to the nearest integer
+      answer_hint: set "answer" to the integer degree value
       json_example: '{"evidence":[[0,2],[0,0],[3,0]],"answer":90}'
       json_example_answer_only: '{"answer":45}'
     task_geometry_measurement_area:

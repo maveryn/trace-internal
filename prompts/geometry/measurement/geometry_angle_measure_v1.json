@@ -13,10 +13,10 @@
   "task_templates": {
     "measurement_angle_value": [
       "{question_text}\nReport the angle in degrees to the nearest integer.",
-      "{question_text}\nGive the angle measure in degrees rounded to the nearest integer.",
-      "{question_text}\nWrite the angle value in degrees as the nearest integer.",
-      "{question_text}\nProvide the angle measure rounded to the nearest degree.",
-      "{question_text}\nReport the angle rounded to the nearest degree."
+      "{question_text}\nGive the nearest-integer degree measure of the angle.",
+      "{question_text}\nWrite the angle measure as an integer number of degrees.",
+      "{question_text}\nProvide the angle's degree measure as the nearest integer.",
+      "{question_text}\nState the angle measure in whole degrees."
     ]
   },
   "required_slots_by_key": {

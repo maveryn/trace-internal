@@ -13,10 +13,10 @@
   "task_templates": {
     "measurement_query": [
       "{question_text}",
-      "Answer this question from the graph-paper image: {question_text}",
-      "Use the graph-paper image to answer: {question_text}",
-      "Based on the graph-paper image, answer this question: {question_text}",
-      "Read the graph-paper image and answer: {question_text}"
+      "Answer this from the figure: {question_text}",
+      "Use the figure to answer: {question_text}",
+      "From the image, answer: {question_text}",
+      "Work from the diagram to answer: {question_text}"
     ]
   },
   "required_slots_by_key": {

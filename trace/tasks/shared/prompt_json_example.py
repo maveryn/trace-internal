@@ -27,8 +27,51 @@ def _example_answer_value(answer_type: str) -> Any:
     return "value"
 
 
+def _canonical_point_examples(count: int) -> List[List[int]] | None:
+    """Return one deterministic, non-degenerate point layout when available."""
+    layouts: Dict[int, List[List[int]]] = {
+        1: [[0, 0]],
+        2: [[0, 0], [4, 0]],
+        3: [[0, 0], [4, 0], [0, 3]],
+        4: [[0, 0], [4, 0], [4, 2], [0, 2]],
+        5: [[0, 0], [4, 0], [5, 2], [2, 4], [-1, 2]],
+    }
+    return layouts.get(int(count))
+
+
+def _mapping_of_point_pairs(value: Any) -> Mapping[str, Any] | None:
+    """Return mapping when all values are point pairs."""
+    if not isinstance(value, Mapping) or not value:
+        return None
+    if all(_is_point_pair(item) for item in value.values()):
+        return value
+    return None
+
+
+def _sequence_of_point_pairs(value: Any) -> Sequence[Any] | None:
+    """Return sequence when all items are point pairs."""
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)) or not value:
+        return None
+    if all(_is_point_pair(item) for item in value):
+        return value
+    return None
+
+
 def _example_like(value: Any, *, index: int) -> Any:
     """Build one lightweight placeholder that preserves JSON shape."""
+    point_map = _mapping_of_point_pairs(value)
+    if point_map is not None:
+        layout = _canonical_point_examples(len(point_map))
+        if layout is not None:
+            out: Dict[str, Any] = {}
+            for offset, key in enumerate(point_map.keys()):
+                out[str(key)] = list(layout[offset])
+            return out
+    point_seq = _sequence_of_point_pairs(value)
+    if point_seq is not None:
+        layout = _canonical_point_examples(len(point_seq))
+        if layout is not None:
+            return [list(point) for point in layout]
     if _is_point_pair(value):
         return [int(index), int(-index)]
     if isinstance(value, bool):

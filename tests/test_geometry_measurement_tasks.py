@@ -356,6 +356,10 @@ def test_polygon_measure_tasks_match_scene_attrs() -> None:
             assert list(example.keys()) == ["evidence", "answer"]
             assert isinstance(example["evidence"], dict)
             assert len(example["evidence"]) == int(attrs["polygon_sides"])
+            if str(task_id) == "task_geometry_measurement_area" and str(shape_variant) == "quadrilateral":
+                assert example == {"evidence": {"A": [0, 0], "B": [4, 0], "C": [4, 2], "D": [0, 2]}, "answer": 8}
+            if str(task_id) == "task_geometry_measurement_perimeter" and str(shape_variant) == "quadrilateral":
+                assert example == {"evidence": {"A": [0, 0], "B": [4, 0], "C": [4, 2], "D": [0, 2]}, "answer": 12}
         else:
             answer_scalar = int(trace["execution_trace"]["answer_scalar"])
             expected_text = "π" if answer_scalar == 1 else f"{answer_scalar}π"
@@ -365,6 +369,9 @@ def test_polygon_measure_tasks_match_scene_attrs() -> None:
                 assert len(evidence_map) == 3
             else:
                 assert len(evidence_map) == 2
+            example = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+            if str(task_id) == "task_geometry_measurement_perimeter" and str(shape_variant) == "circle":
+                assert example == {"evidence": {"A": [0, 0], "B": [4, 0]}, "answer": "8π"}
 
         origin_x, origin_y, spacing = _graph_origin_and_spacing(trace)
         point_map = trace["projected_evidence"]["pixel_point_map"]

@@ -98,6 +98,18 @@ def _required_prompt_text(prompt_defaults: Mapping[str, Any], *, preferred_keys:
     raise ValueError(f"missing required prompt key in {context}: one of {list(preferred_keys)}")
 
 
+def _optional_prompt_text(prompt_defaults: Mapping[str, Any], *, preferred_keys: Sequence[str]) -> str | None:
+    """Return first available non-empty optional prompt text among ordered key candidates."""
+    for key in preferred_keys:
+        value = prompt_defaults.get(str(key))
+        if value is None:
+            continue
+        if isinstance(value, str) and not str(value).strip():
+            continue
+        return str(value)
+    return None
+
+
 class GeometryShapeMeasureBase:
     """Reusable base for geometry area/perimeter tasks over multiple shape variants."""
 
@@ -687,10 +699,32 @@ class GeometryShapeMeasureBase:
             preferred_keys=(f"answer_hint_{answer_family}", "answer_hint"),
             context=f"prompt defaults for {self.task_id}",
         )
-        json_example, json_example_answer_only = build_prompt_json_examples(
-            evidence_value=evidence.get("evidence_value", {}),
-            answer_type=("pi_expression" if str(answer_family) == "pi" else "integer"),
+        json_example = _optional_prompt_text(
+            prompt_defaults,
+            preferred_keys=(
+                f"json_example_{variant_kind}",
+                f"json_example_{prompt_family}",
+                f"json_example_{answer_family}",
+                "json_example",
+            ),
         )
+        json_example_answer_only = _optional_prompt_text(
+            prompt_defaults,
+            preferred_keys=(
+                f"json_example_answer_only_{variant_kind}",
+                f"json_example_answer_only_{answer_family}",
+                "json_example_answer_only",
+            ),
+        )
+        if json_example is None or json_example_answer_only is None:
+            generated_json_example, generated_json_example_answer_only = build_prompt_json_examples(
+                evidence_value=evidence.get("evidence_value", {}),
+                answer_type=("pi_expression" if str(answer_family) == "pi" else "integer"),
+            )
+            if json_example is None:
+                json_example = str(generated_json_example)
+            if json_example_answer_only is None:
+                json_example_answer_only = str(generated_json_example_answer_only)
 
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,

@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import json
 import re
 
 import pytest
 
 from trace.core.prompts import load_prompt_bundle, render_prompt, render_prompt_variants
 from trace.core.prompts.schema import REQUIRED_PROMPT_VARIANTS
+from trace.tasks.shared.prompt_json_example import build_prompt_json_examples
 
 
 def test_render_prompt_is_deterministic() -> None:
@@ -183,6 +185,27 @@ def test_geometry_task_templates_avoid_awkward_comma_question_prefixes() -> None
         bundle = load_prompt_bundle(domain, task_group, bundle_id)
         templates = bundle.task_templates[task_key]
         assert all(", {question_text}" not in str(template) for template in templates)
+
+
+def test_geometry_measurement_task_templates_do_not_repeat_graph_paper_reference() -> None:
+    bundle = load_prompt_bundle("geometry", "measurement", "geometry_measurement_v1")
+    templates = bundle.task_templates["measurement_query"]
+    assert all("graph-paper image" not in str(template).lower() for template in templates)
+    assert all("graph-paper diagram" not in str(template).lower() for template in templates)
+
+
+def test_prompt_json_examples_use_non_degenerate_point_layouts() -> None:
+    example_json, _ = build_prompt_json_examples(
+        evidence_value={"A": [9, 9], "B": [8, 8], "C": [7, 7], "D": [6, 6]},
+        answer_type="integer",
+    )
+    payload = json.loads(example_json)
+    assert payload["evidence"] == {
+        "A": [0, 0],
+        "B": [4, 0],
+        "C": [4, 2],
+        "D": [0, 2],
+    }
 
 
 def test_analytical_area_bundle_renders_deterministically() -> None:

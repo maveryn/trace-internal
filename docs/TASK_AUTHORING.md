@@ -59,13 +59,15 @@ Use this as the implementation checklist for new or modified tasks.
    - `answer_only`: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
    - `answer_and_evidence`: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
 7. Every JSON example shown in prompts (both `answer_only` and `answer_and_evidence`) must itself be a valid answer for that task/variant contract (key order, value type, and evidence cardinality/semantics).
-8. If evidence cardinality/shape differs by variant (for example triangle vs quadrilateral), provide variant-specific `json_example_*` slots and select them deterministically from variant context.
-9. If graph-paper evidence does not require label identity for verification, prefer coordinate-only evidence (`graph_point` for one point, `graph_point_set` for multiple points) and keep any labeled correspondence in projected trace metadata rather than the primary evidence payload; name pixel-space trace projections with a `pixel_` prefix (for example `pixel_point_set`) so they are not confused with prompt-facing evidence types.
-10. If scene/layout capacity changes which answers are feasible, choose the target answer from the feasible support before placement so layout does not silently bias the answer distribution.
-11. If that feasibility probe is reusable across sibling variants (for example polygon-side variants sharing one target-conditioned sampler), implement it in a domain-shared helper instead of task-local resampling code.
-12. If one variant still collapses to a tiny feasible answer set under a generic sampler, switch that variant to a constructive sampler that directly realizes broader valid targets while preserving the task contract.
-13. If a prompt slot value is static for a task (for example a fixed question stem), store it in prompt config/template data rather than task-module constants.
-14. Favor natural, image-led wording in template stems; do not pad bundles with low-quality paraphrases just to increase variant count.
+8. For point-based evidence examples, use simple canonical non-degenerate layouts so the example still represents a valid shape/measurement cue.
+9. If evidence cardinality/shape differs by variant (for example triangle vs quadrilateral), provide variant-specific `json_example_*` slots and select them deterministically from variant context.
+10. If the answer meaning changes across variants even with similar evidence shape (for example area vs perimeter over the same polygon points), prefer variant-specific `json_example_*` slots over generic placeholder examples.
+11. If graph-paper evidence does not require label identity for verification, prefer coordinate-only evidence (`graph_point` for one point, `graph_point_set` for multiple points) and keep any labeled correspondence in projected trace metadata rather than the primary evidence payload; name pixel-space trace projections with a `pixel_` prefix (for example `pixel_point_set`) so they are not confused with prompt-facing evidence types.
+12. If scene/layout capacity changes which answers are feasible, choose the target answer from the feasible support before placement so layout does not silently bias the answer distribution.
+13. If that feasibility probe is reusable across sibling variants (for example polygon-side variants sharing one target-conditioned sampler), implement it in a domain-shared helper instead of task-local resampling code.
+14. If one variant still collapses to a tiny feasible answer set under a generic sampler, switch that variant to a constructive sampler that directly realizes broader valid targets while preserving the task contract.
+15. If a prompt slot value is static for a task (for example a fixed question stem), store it in prompt config/template data rather than task-module constants.
+16. Favor natural, image-led wording in template stems; do not pad bundles with low-quality paraphrases just to increase variant count.
 15. Keep `question_text` semantic-only when task templates already carry formatting or rounding instructions; avoid repeating the same instruction across prompt layers.
 
 ## 4) Config/defaults rules

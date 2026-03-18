@@ -49,6 +49,8 @@ Use this checklist during implementation and refactor reviews.
 33. When a generic procedural sampler collapses one variant to a tiny answer set, prefer a constructive variant-specific sampler that preserves the task contract while broadening feasible support.
 34. When review/sample scripts need the same evidence-projection or overlay-rendering behavior, centralize it in `trace/core/review_overlays.py` so graph-unit evidence is consistently projected into pixel space before drawing.
 35. When trace payloads store pixel-space projections of evidence, prefix those projected keys with `pixel_` (for example `pixel_point_set`, `pixel_point_map`) so they cannot be mistaken for primary evidence-type contracts.
+36. Prompt JSON examples for point-based evidence must use valid non-degenerate layouts (not placeholder collinear points) so examples match the intended task semantics.
+37. When a task ships variant-specific JSON examples in config, prefer those over generic placeholder builders whenever the answer depends on the illustrated geometry (for example area vs perimeter on the same point layout).
 
 ## 3) Process rule
 When a new reusable issue is discovered:

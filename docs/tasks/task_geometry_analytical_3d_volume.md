@@ -21,7 +21,7 @@
    - cylinder/cone/sphere variants: `pi_expression` (`kπ`).
 5. Default `evidence_gt.type`: `measurement_ref_map`.
 6. Evidence value semantics: object keyed by annotation token (`"AB"`, `"CD"`, ...) where each value is the shown measurement value.
-7. Alternate evidence forms: projected `measurement_ref_map` + annotation-center `point_set` in trace.
+7. Alternate evidence forms: projected `measurement_ref_map` + annotation-center `pixel_point_set` / `pixel_annotation_centers` in trace.
 8. Overlap/touch policy: single object only.
 
 ## 3) Prompt contract
@@ -57,4 +57,3 @@
 3. Answer/evidence consistency test: `tests/test_geometry_analytical_3d_volume_tasks.py`.
 4. Prompt metadata/placeholder test: `tests/test_prompt_system.py`.
 5. Constraint-specific tests: per-variant answer-type enforcement and balanced default variant sampling checks.
-

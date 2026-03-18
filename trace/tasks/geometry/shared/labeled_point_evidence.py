@@ -53,10 +53,10 @@ def labeled_grid_point_evidence_artifacts(
             "labels": list(labels),
         },
         "projected_evidence": {
-            "point_map": dict(pixel_map),
+            "pixel_point_map": dict(pixel_map),
             "grid_point_map": dict(grid_map),
-            "point_set": list(pixel_set),
-            "point_path": list(pixel_set),
+            "pixel_point_set": list(pixel_set),
+            "pixel_point_path": list(pixel_set),
             "grid_point_set": list(grid_set),
             "grid_point_path": list(grid_set),
         },
@@ -92,6 +92,39 @@ def graph_point_set_evidence_artifacts(
     return {
         "evidence_type": "graph_point_set",
         "evidence_value": list(grid_set),
+        "required_labels": list(labeled.get("required_labels", [])),
+        "witness_symbolic": dict(labeled["witness_symbolic"]),
+        "projected_evidence": projected,
+    }
+
+
+def graph_point_evidence_artifacts(
+    *,
+    points_by_label: Mapping[str, Sequence[float]],
+    graph_origin: Sequence[float],
+    graph_spacing: int,
+    witness_type: str,
+    ordered_labels: Sequence[str] | None = None,
+) -> Dict[str, Any]:
+    """Build single graph-point evidence while preserving labeled projections."""
+
+    labeled = labeled_grid_point_evidence_artifacts(
+        points_by_label=points_by_label,
+        graph_origin=graph_origin,
+        graph_spacing=graph_spacing,
+        witness_type=witness_type,
+        ordered_labels=ordered_labels,
+    )
+    projected = dict(labeled["projected_evidence"])
+    grid_set = projected.get("grid_point_set", [])
+    if not isinstance(grid_set, list) or len(grid_set) != 1:
+        raise ValueError("graph_point evidence requires exactly one graph point")
+    point = grid_set[0]
+    if not isinstance(point, list) or len(point) != 2:
+        raise ValueError("graph_point evidence must be one [x, y] integer pair")
+    return {
+        "evidence_type": "graph_point",
+        "evidence_value": list(point),
         "required_labels": list(labeled.get("required_labels", [])),
         "witness_symbolic": dict(labeled["witness_symbolic"]),
         "projected_evidence": projected,

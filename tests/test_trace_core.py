@@ -62,7 +62,7 @@ def _register_dummy_tasks() -> None:
                         "render_map": {"image_id": "img0", "anchors": {}},
                         "execution_trace": {"answer": 1},
                         "witness_symbolic": {"type": "id_set", "ids": []},
-                        "projected_evidence": {"point_set": point},
+                        "projected_evidence": {"pixel_point_set": point},
                     },
                     complexity=TaskComplexity(complexity_score=0.1, complexity_components={"variant": "a"}),
                     task_versions={
@@ -117,7 +117,7 @@ def _register_dummy_tasks() -> None:
                         "render_map": {"image_id": "img0", "anchors": {}},
                         "execution_trace": {"answer": 2},
                         "witness_symbolic": {"type": "id_set", "ids": []},
-                        "projected_evidence": {"point_set": point},
+                        "projected_evidence": {"pixel_point_set": point},
                     },
                     complexity=TaskComplexity(complexity_score=0.2, complexity_components={"variant": "b"}),
                     task_versions={
@@ -292,7 +292,7 @@ def test_prompt_validation_error_codes(tmp_path: Path) -> None:
                         "render_map": {"image_id": "img0", "anchors": {}},
                         "execution_trace": {"answer": 3},
                         "witness_symbolic": {"type": "id_set", "ids": []},
-                        "projected_evidence": {"point_set": point},
+                        "projected_evidence": {"pixel_point_set": point},
                     },
                     complexity=TaskComplexity(complexity_score=0.1, complexity_components={}),
                     task_versions={
@@ -347,7 +347,7 @@ def test_prompt_validation_error_codes(tmp_path: Path) -> None:
                         "render_map": {"image_id": "img0", "anchors": {}},
                         "execution_trace": {"answer": 4},
                         "witness_symbolic": {"type": "id_set", "ids": []},
-                        "projected_evidence": {"point_set": point},
+                        "projected_evidence": {"pixel_point_set": point},
                     },
                     complexity=TaskComplexity(complexity_score=0.1, complexity_components={}),
                     task_versions={

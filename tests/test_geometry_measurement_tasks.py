@@ -54,6 +54,12 @@ def _assert_graph_point_set(value: object, *, expected_len: int) -> list[list[in
     return [list(point) for point in value]
 
 
+def _assert_graph_point(value: object) -> list[int]:
+    assert isinstance(value, list) and len(value) == 2
+    assert all(isinstance(coord, int) for coord in value)
+    return list(value)
+
+
 def test_angle_measure_outputs_expected_contract() -> None:
     task = GeometryAngleMeasure2DTask()
     cases = [
@@ -88,7 +94,7 @@ def test_angle_measure_outputs_expected_contract() -> None:
         assert "\nA." not in out.prompt and "\nB." not in out.prompt
 
         origin_x, origin_y, spacing = _graph_origin_and_spacing(trace)
-        projected = trace["projected_evidence"]["point_map"]
+        projected = trace["projected_evidence"]["pixel_point_map"]
         projected_grid = trace["projected_evidence"]["grid_point_map"]
         assert len(projected) == 3
         assert len(projected_grid) == 3
@@ -226,8 +232,8 @@ def test_slope_measure_outputs_expected_contract() -> None:
     assert out.answer_gt.type == "number"
     assert isinstance(out.answer_gt.value, float)
     assert abs((float(out.answer_gt.value) * 10.0) - round(float(out.answer_gt.value) * 10.0)) <= 1e-9
-    assert out.evidence_gt.type == "graph_point_set"
-    evidence_points = _assert_graph_point_set(out.evidence_gt.value, expected_len=1)
+    assert out.evidence_gt.type == "graph_point"
+    crossing = _assert_graph_point(out.evidence_gt.value)
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
     assert trace["execution_trace"]["task_variant"] == "line_slope"
@@ -236,7 +242,6 @@ def test_slope_measure_outputs_expected_contract() -> None:
     assert feasible_answers
     assert float(out.answer_gt.value) in feasible_answers
 
-    crossing = evidence_points[0]
     assert int(crossing[1]) == 0
     attrs = trace["scene_ir"]["entities"][0]["attrs"]
     assert [int(crossing[0]), int(crossing[1])] == [int(attrs["axis_crossing_graph"][0]), int(attrs["axis_crossing_graph"][1])]
@@ -362,7 +367,7 @@ def test_polygon_measure_tasks_match_scene_attrs() -> None:
                 assert len(evidence_map) == 2
 
         origin_x, origin_y, spacing = _graph_origin_and_spacing(trace)
-        point_map = trace["projected_evidence"]["point_map"]
+        point_map = trace["projected_evidence"]["pixel_point_map"]
         grid_point_map = trace["projected_evidence"]["grid_point_map"]
         assert set(point_map.keys()) == set(evidence_map.keys())
         assert set(grid_point_map.keys()) == set(evidence_map.keys())

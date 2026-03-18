@@ -134,7 +134,7 @@ prompt:
     task_geometry_measurement_slope:
       object_description: a straight line
       question_text: What is the slope of the line?
-      evidence_hint: set "evidence" to an array of exactly one graph-paper point where the line crosses the x-axis
+      evidence_hint: set "evidence" to one graph-paper point [x, y] where the line crosses the x-axis
       answer_hint: set "answer" to the slope value rounded to one decimal place
-      json_example: '{"evidence":[[2,0]],"answer":-1.5}'
+      json_example: '{"evidence":[2,0],"answer":-1.5}'
       json_example_answer_only: '{"answer":-1.5}'

@@ -18,7 +18,7 @@
 5. Evidence value semantics:
    - polygons: labeled vertex map in graph units,
    - ellipse: labeled 3-point map (`center`, `axis-x endpoint`, `axis-y endpoint`) in graph units.
-6. Alternate evidence forms: projected `point_map` + `grid_point_map` and derived set/path projections in trace.
+6. Alternate evidence forms: projected `pixel_point_map` + `grid_point_map` and derived pixel/grid set/path projections in trace.
 7. Overlap/touch policy: single object only.
 
 ## 3) Prompt contract

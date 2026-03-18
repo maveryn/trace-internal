@@ -24,7 +24,7 @@ from ...shared.prompt_variants import (
 )
 from ..shared.background_defaults import POST_IMAGE_BACKGROUND_DEFAULTS
 from ..shared.graph_rendering import graph_paper_grid_from_frame, scale_point
-from ..shared.labeled_point_evidence import graph_point_set_evidence_artifacts
+from ..shared.labeled_point_evidence import graph_point_evidence_artifacts
 from ..shared.noise_defaults import POST_IMAGE_NOISE_DEFAULTS
 from ..shared.render_variation import sample_int_render_param
 from ..shared.shape_style import extract_background_anchor_colors, sample_geometry_shape_style
@@ -304,7 +304,7 @@ class GeometrySlopeMeasureTask:
         )
 
         axis_label = "X"
-        evidence = graph_point_set_evidence_artifacts(
+        evidence = graph_point_evidence_artifacts(
             points_by_label={str(axis_label): sample.axis_crossing_pixel},
             graph_origin=context.graph_origin,
             graph_spacing=int(context.graph_spacing),
@@ -314,13 +314,11 @@ class GeometrySlopeMeasureTask:
         evidence_value = evidence.get("evidence_value", [])
         if (
             not isinstance(evidence_value, list)
-            or len(evidence_value) != 1
-            or not isinstance(evidence_value[0], list)
-            or len(evidence_value[0]) != 2
-            or any(not isinstance(coord, int) for coord in evidence_value[0])
+            or len(evidence_value) != 2
+            or any(not isinstance(coord, int) for coord in evidence_value)
         ):
             raise RuntimeError("slope evidence must be one integer graph coordinate")
-        if int(evidence_value[0][1]) != 0:
+        if int(evidence_value[1]) != 0:
             raise RuntimeError("x-axis crossing evidence must have y=0 in graph units")
 
         prompt_defaults = required_group_defaults(

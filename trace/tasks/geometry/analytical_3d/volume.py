@@ -435,9 +435,9 @@ class GeometryAnalyticalVolume3DTask:
             "projected_evidence": {
                 "measurement_ref_map": dict(case.evidence_map),
                 "id_set": list(required_annotations),
-                "point_set": list(projected_point_set),
+                "pixel_point_set": list(projected_point_set),
                 "annotation_labels": dict(case.role_tokens),
-                "annotation_centers": dict(case.annotation_centers),
+                "pixel_annotation_centers": dict(case.annotation_centers),
             },
         }
 
@@ -453,4 +453,3 @@ class GeometryAnalyticalVolume3DTask:
             task_variant=str(case.task_variant),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
-

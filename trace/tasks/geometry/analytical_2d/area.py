@@ -3019,9 +3019,9 @@ class GeometryAnalyticalArea2DTask:
             "projected_evidence": {
                 "measurement_ref_map": dict(evidence_map),
                 "id_set": list(required_annotations),
-                "point_set": list(projected_point_set),
+                "pixel_point_set": list(projected_point_set),
                 "annotation_labels": dict(case.evidence_annotations),
-                "annotation_centers": dict(annotation_centers_by_token),
+                "pixel_annotation_centers": dict(annotation_centers_by_token),
             },
         }
 

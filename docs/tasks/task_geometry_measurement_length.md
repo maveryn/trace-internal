@@ -13,7 +13,7 @@
 4. Default `evidence_gt.type`: `graph_point_set` with variant-specific cardinality:
    - circle variants (`circle_radius`, `circle_diameter`): exactly one graph-paper point for the center,
    - segment / polygon-side / ellipse-axis variants: exactly two graph-paper points for the measured endpoints.
-5. Alternate evidence forms: projected `point_map` + `grid_point_map` and derived set/path projections in trace.
+5. Alternate evidence forms: projected `pixel_point_map` + `grid_point_map` and derived pixel/grid set/path projections in trace.
 6. Overlap/touch policy: single object only (no multi-object overlap constraints needed).
 
 ## 3) Prompt contract

@@ -9,32 +9,23 @@ import os
 import json
 from pathlib import Path
 import re
-from typing import Any, Dict, List, Mapping, Sequence, Tuple
+from typing import Any, Dict, List, Mapping, Sequence
 
 from openpyxl import Workbook
 from openpyxl.drawing.image import Image as XLImage
 from openpyxl.styles import Alignment, Font
 from openpyxl.utils import get_column_letter
 from PIL import Image as PILImage
-from PIL import ImageDraw as PILImageDraw
 from PIL import ImageOps as PILImageOps
 
 from trace.core.answer_distribution import evaluate_answer_distribution
 from trace.core.json_io import write_json_file
+from trace.core.review_overlays import render_evidence_overlay, resolve_overlay_evidence
 from trace.core.task_review_sampling import collect_variant_samples, generate_random_samples
 from trace.tasks import TASK_REGISTRY, create_task
 
 
 _PREVIEW_MAX_SIDE = 384
-_EVIDENCE_COLORS: List[Tuple[int, int, int]] = [
-    (230, 57, 70),
-    (69, 123, 157),
-    (46, 139, 87),
-    (247, 127, 0),
-    (126, 87, 194),
-    (0, 150, 136),
-]
-
 _EXCEL_HEADERS: List[str] = [
     "image",
     "evidence_image",
@@ -438,136 +429,6 @@ def _build_distribution_review_report(
     }
 
 
-def _parse_point(value: Any) -> Tuple[float, float] | None:
-    """Parse one point-like payload value."""
-    if isinstance(value, (list, tuple)) and len(value) == 2:
-        x = _as_float(value[0])
-        y = _as_float(value[1])
-        if x is None or y is None:
-            return None
-        return (float(x), float(y))
-    return None
-
-
-def _parse_bbox(value: Any) -> Tuple[float, float, float, float] | None:
-    """Parse one bbox-like payload value."""
-    if isinstance(value, (list, tuple)) and len(value) == 4:
-        parsed = [_as_float(item) for item in value]
-        if any(item is None for item in parsed):
-            return None
-        x0, y0, x1, y1 = (float(parsed[0]), float(parsed[1]), float(parsed[2]), float(parsed[3]))
-        if x1 <= x0 or y1 <= y0:
-            return None
-        return (x0, y0, x1, y1)
-    return None
-
-
-def _extract_points(value: Any) -> List[Tuple[float, float]]:
-    """Extract all point items from nested evidence payloads."""
-    point = _parse_point(value)
-    if point is not None:
-        return [point]
-    if isinstance(value, list):
-        out: List[Tuple[float, float]] = []
-        for item in value:
-            parsed = _parse_point(item)
-            if parsed is not None:
-                out.append(parsed)
-        return out
-    if isinstance(value, Mapping):
-        out = []
-        for item in value.values():
-            parsed = _parse_point(item)
-            if parsed is not None:
-                out.append(parsed)
-        return out
-    return []
-
-
-def _extract_point_map(value: Any) -> Dict[str, Tuple[float, float]]:
-    """Extract label->point mappings from evidence payloads."""
-    if not isinstance(value, Mapping):
-        return {}
-    out: Dict[str, Tuple[float, float]] = {}
-    for key, item in value.items():
-        parsed = _parse_point(item)
-        if parsed is None:
-            continue
-        out[str(key)] = (float(parsed[0]), float(parsed[1]))
-    return out
-
-
-def _extract_bboxes(value: Any) -> List[Tuple[float, float, float, float]]:
-    """Extract all bbox items from nested evidence payloads."""
-    bbox = _parse_bbox(value)
-    if bbox is not None:
-        return [bbox]
-    if isinstance(value, list):
-        out: List[Tuple[float, float, float, float]] = []
-        for item in value:
-            parsed = _parse_bbox(item)
-            if parsed is not None:
-                out.append(parsed)
-        return out
-    return []
-
-
-def _render_evidence_overlay(source: PILImage.Image, *, evidence_type: str, evidence_value: Any) -> PILImage.Image:
-    """Render one evidence-overlay image for manual review."""
-    image = source.convert("RGB")
-    draw = PILImageDraw.Draw(image, mode="RGBA")
-    width, height = image.size
-    radius = max(3, int(round(min(width, height) * 0.009)))
-    line_width = max(2, int(round(min(width, height) * 0.006)))
-    evidence_kind = str(evidence_type)
-
-    if evidence_kind in {"point_map", "grid_point_map", "annotation_centers"}:
-        point_map = _extract_point_map(evidence_value)
-        for idx, (label, point) in enumerate(point_map.items()):
-            x, y = float(point[0]), float(point[1])
-            color = _EVIDENCE_COLORS[idx % len(_EVIDENCE_COLORS)]
-            draw.ellipse(
-                [x - radius, y - radius, x + radius, y + radius],
-                fill=(color[0], color[1], color[2], 255),
-                outline=(0, 0, 0, 255),
-                width=1,
-            )
-            draw.text((x + float(radius) + 2.0, y - float(radius) - 1.0), str(label), fill=(color[0], color[1], color[2], 255))
-        return image
-
-    if evidence_kind in {"point", "point_set", "point_path"}:
-        points = _extract_points(evidence_value)
-        if evidence_kind == "point_path" and len(points) >= 2:
-            draw.line(points, fill=(220, 20, 60, 180), width=line_width)
-        for idx, (x, y) in enumerate(points):
-            color = _EVIDENCE_COLORS[idx % len(_EVIDENCE_COLORS)]
-            draw.ellipse(
-                [x - radius, y - radius, x + radius, y + radius],
-                fill=(color[0], color[1], color[2], 255),
-                outline=(0, 0, 0, 255),
-                width=1,
-            )
-        return image
-
-    if evidence_kind in {"bbox", "bbox_set"}:
-        bboxes = _extract_bboxes(evidence_value)
-        for idx, (x0, y0, x1, y1) in enumerate(bboxes):
-            color = _EVIDENCE_COLORS[idx % len(_EVIDENCE_COLORS)]
-            draw.rectangle([x0, y0, x1, y1], outline=(color[0], color[1], color[2], 255), width=line_width)
-        return image
-
-    points = _extract_points(evidence_value)
-    for idx, (x, y) in enumerate(points):
-        color = _EVIDENCE_COLORS[idx % len(_EVIDENCE_COLORS)]
-        draw.ellipse(
-            [x - radius, y - radius, x + radius, y + radius],
-            fill=(color[0], color[1], color[2], 255),
-            outline=(0, 0, 0, 255),
-            width=1,
-        )
-    return image
-
-
 def _build_preview_image(source: PILImage.Image, *, max_image_side: int = _PREVIEW_MAX_SIDE) -> PILImage.Image:
     """Resize and border one preview image for workbook embedding."""
     preview = source.convert("RGB")
@@ -635,7 +496,7 @@ def _populate_inspection_sheet(
                 source_rgb = source.convert("RGB")
                 preview = _build_preview_image(source_rgb)
                 evidence_preview = _build_preview_image(
-                    _render_evidence_overlay(
+                    render_evidence_overlay(
                         source_rgb,
                         evidence_type=str(row.get("overlay_evidence_type", row.get("evidence_type", ""))),
                         evidence_value=row.get("overlay_evidence_value", row.get("answer_evidence")),
@@ -723,26 +584,6 @@ def _write_inspection_excel(
     return variant_to_sheet
 
 
-def _resolve_overlay_payload(output: Any) -> Tuple[str, Any]:
-    """Resolve best-effort pixel-space evidence payload for overlay rendering."""
-    evidence_type = str(output.evidence_gt.type)
-    evidence_value = output.evidence_gt.value
-    trace_payload = output.trace_payload if isinstance(output.trace_payload, Mapping) else {}
-    projected = trace_payload.get("projected_evidence", {}) if isinstance(trace_payload, Mapping) else {}
-    if not isinstance(projected, Mapping):
-        return evidence_type, evidence_value
-
-    if evidence_type in {"grid_point_set", "grid_point_path"}:
-        pixel_key = "point_path" if evidence_type == "grid_point_path" else "point_set"
-        if pixel_key in projected:
-            return str(pixel_key), projected.get(pixel_key)
-    if evidence_type == "grid_point_map" and "point_map" in projected:
-        return "point_map", projected.get("point_map")
-    if evidence_type == "measurement_ref_map" and "annotation_centers" in projected:
-        return "annotation_centers", projected.get("annotation_centers")
-    return evidence_type, evidence_value
-
-
 def _safe_variant_dir_name(task_variant: str) -> str:
     """Return filesystem-safe variant directory label."""
     value = str(task_variant).strip()
@@ -802,7 +643,11 @@ def _build_inspection_rows(
             write_json_file(data_path, data_payload)
             rel_data_path = data_path.relative_to(out_root).as_posix()
 
-            overlay_evidence_type, overlay_evidence_value = _resolve_overlay_payload(output)
+            overlay_evidence_type, overlay_evidence_value = resolve_overlay_evidence(
+                evidence_type=str(output.evidence_gt.type),
+                evidence_value=output.evidence_gt.value,
+                trace_payload=output.trace_payload if isinstance(output.trace_payload, Mapping) else {},
+            )
             canonical_answer = {
                 "evidence": output.evidence_gt.value,
                 "answer": output.answer_gt.value,

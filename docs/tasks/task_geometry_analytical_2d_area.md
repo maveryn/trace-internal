@@ -17,7 +17,7 @@
 6. Default `evidence_gt.type`: `measurement_ref_map`.
 7. Evidence value semantics: object keyed by annotation token (`"AB"`, `"CD"`, ...) where each value is the shown measurement value.
 8. Circle area evidence policy: explicit mode uses radius annotation; derived mode uses diameter annotation (not circumference).
-9. Alternate evidence forms: projected `measurement_ref_map` + annotation-center `point_set` in trace.
+9. Alternate evidence forms: projected `measurement_ref_map` + annotation-center `pixel_point_set` / `pixel_annotation_centers` in trace.
 10. Overlap/touch policy: single object only.
 
 ## 3) Prompt contract

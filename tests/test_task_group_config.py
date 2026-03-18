@@ -375,10 +375,8 @@ def test_measurement_prompt_examples_are_task_valid() -> None:
     slope_example = json.loads(str(slope_prompt["json_example"]))
     assert list(slope_example.keys()) == ["evidence", "answer"]
     assert isinstance(slope_example["evidence"], list)
-    assert len(slope_example["evidence"]) == 1
-    only_point = slope_example["evidence"][0]
-    assert isinstance(only_point, list) and len(only_point) == 2
-    assert int(only_point[1]) == 0
+    assert len(slope_example["evidence"]) == 2
+    assert int(slope_example["evidence"][1]) == 0
     assert isinstance(slope_example["answer"], float)
     slope_answer_only_example = json.loads(str(slope_prompt["json_example_answer_only"]))
     assert list(slope_answer_only_example.keys()) == ["answer"]

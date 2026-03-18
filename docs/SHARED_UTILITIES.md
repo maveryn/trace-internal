@@ -21,7 +21,10 @@ Promote helpers when a second consumer appears.
    - `task_group_config` resolves merged defaults and section-level `shared` + `task_overrides` composition.
 6. `trace/core/answer_distribution.py`
    - Canonical answer-distribution degeneracy checks used by `scripts/check_task_answer_distribution.py`.
-7. `trace/core/prompts/*` and `trace/core/visual/*`
+7. `trace/core/review_overlays.py`
+   - Canonical review/sample overlay helpers for projecting evidence into pixel space and drawing workbook previews.
+   - Use this from review/sample scripts instead of duplicating evidence-type adapters or marker rendering logic.
+8. `trace/core/prompts/*` and `trace/core/visual/*`
    - `trace/core/visual/ranges.py` is the canonical visual-layer range parser for integer min/max normalization.
 
 ### Task-shared
@@ -56,7 +59,7 @@ Promote helpers when a second consumer appears.
    - `shape_style.py` is the canonical geometry ink-style sampler and applies Lab-distance constraints against background anchor colors.
    - `render_variation.py` is the canonical integer render-range sampler (for example line-width ranges).
    - `annotation_values.py` provides canonical value formatting + structured annotation->value evidence map helpers for analytical geometry tasks.
-   - `labeled_point_evidence.py` provides canonical graph-point evidence payload builders for both labeled maps (`grid_point_map`) and unlabeled graph-point sets (`graph_point_set`), while keeping projected map/set/path forms in trace.
+   - `labeled_point_evidence.py` provides canonical graph-point evidence payload builders for labeled maps (`grid_point_map`), single graph points (`graph_point`), and unlabeled graph-point sets (`graph_point_set`), while keeping projected pixel-space helpers (`pixel_point_map`, `pixel_point_set`, `pixel_point_path`) plus grid-space projections in trace.
    - `point_labels.py` provides overlap-aware labeled-point rendering helpers reused by conic/point-evidence tasks.
    - `prompt_text.py` provides canonical prompt-fragment helpers such as `append_required_labels_clause(...)` so label-list suffixes keep consistent punctuation across geometry tasks.
    - `slope_geometry.py` provides reusable slope-line feasibility/sampling helpers for graph-paper slope tasks.

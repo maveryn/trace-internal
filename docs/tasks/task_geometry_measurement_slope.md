@@ -10,7 +10,7 @@
 1. Entities/relations: one line entity; no inter-entity relations.
 2. Supported `task_variant` values: `line_slope`.
 3. `answer_gt.type`: `number` (slope value rounded to one decimal place).
-4. `evidence_gt.type`: `graph_point_set` with exactly one graph-paper point for the x-axis crossing.
+4. `evidence_gt.type`: `graph_point` with one graph-paper point `[x, y]` for the x-axis crossing.
 5. Construction constraints:
    - line is finite (`dx != 0`, no infinite slope),
    - line crosses the x-axis at an integer graph coordinate,
@@ -21,7 +21,7 @@
 1. `prompt_bundle_id`: `geometry_measurement_v1`
 2. `task_family_key`: `measurement_single_object`
 3. `task_key`: `measurement_query`
-4. Answer+evidence JSON shape: `{"evidence":[[x,0]],"answer":<SLOPE_TO_ONE_DECIMAL>}`.
+4. Answer+evidence JSON shape: `{"evidence":[x,0],"answer":<SLOPE_TO_ONE_DECIMAL>}`.
 5. Answer-only JSON shape: `{"answer":<SLOPE_TO_ONE_DECIMAL>}`.
 6. Required prompt slots:
    - shared: `object_description`, `question_text`,

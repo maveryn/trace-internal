@@ -264,7 +264,7 @@ class TileShortestPathTask:
             },
             "witness_symbolic": {"type": "id_path", "ids": path_ids},
             "projected_evidence": {
-                "point_path": path_points,
+                "pixel_point_path": path_points,
                 "bbox_set": path_bboxes,
             },
         }

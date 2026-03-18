@@ -11,7 +11,7 @@
 2. Supported `task_variant` values: `primitive_angle`, `intersection_angle`.
 3. `answer_gt.type`: `integer` (angle measure in degrees rounded to the nearest integer).
 4. Default `evidence_gt.type`: `graph_point_set` (exactly 3 integer graph-paper points for the queried angle: the vertex and the two ray endpoints).
-5. Alternate evidence forms: projected `point_map` + `grid_point_map` and derived set/path projections in trace.
+5. Alternate evidence forms: projected `pixel_point_map` + `grid_point_map` and derived pixel/grid set/path projections in trace.
 6. Overlap/touch policy: single object only (no multi-object overlap constraints needed).
 
 ## 3) Prompt contract

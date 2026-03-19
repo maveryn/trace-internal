@@ -7,7 +7,7 @@
 1. Extend objective-first measurement pattern to additional domains.
 2. Add cross-domain `scene_variant` + role-binding spec in architecture/ABI docs.
 3. Improve dataset QA diagnostics/report summaries.
-4. Extend `task_geometry_analytical_2d_area` to additional analytical objectives (`perimeter`, `length`, composite/shaded-region area).
+4. Extend analytical geometry to additional objectives beyond `task_geometry_analytical_2d_area` / `task_geometry_analytical_3d_surface_area` (`perimeter`, `length`, composite/shaded-region area, additional 3D objectives).
 
 ## Later (P2)
 1. Add split-artifact generation with deterministic split policy metadata.

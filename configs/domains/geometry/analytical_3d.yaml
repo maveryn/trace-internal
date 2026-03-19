@@ -2,22 +2,31 @@ generation:
   shared:
     answer_min: 8
     answer_max: 200000
-    variant_weights:
-      rectangular_prism_given_lwh: 1.0
-      triangular_prism_given_b_h_l: 1.0
-      square_pyramid_given_base_height: 1.0
-      cylinder_given_r_h: 1.0
-      cone_given_r_h: 1.0
-      sphere_given_r: 1.0
-    balanced_variant_sampling: true
+    dimension_min: 5
+    dimension_max: 50
+    radius_min: 5
+    radius_max: 50
+    sphere_radius_min: 5
+    sphere_radius_max: 50
   task_overrides:
     task_geometry_analytical_3d_volume:
-      dimension_min: 5
-      dimension_max: 50
-      radius_min: 5
-      radius_max: 50
-      sphere_radius_min: 5
-      sphere_radius_max: 50
+      variant_weights:
+        rectangular_prism_given_lwh: 1.0
+        triangular_prism_given_b_h_l: 1.0
+        square_pyramid_given_base_height: 1.0
+        cylinder_given_r_h: 1.0
+        cone_given_r_h: 1.0
+        sphere_given_r: 1.0
+      balanced_variant_sampling: true
+    task_geometry_analytical_3d_surface_area:
+      variant_weights:
+        rectangular_prism_given_lwh: 1.0
+        triangular_prism_given_a_b_c_l: 1.0
+        square_pyramid_given_base_side_slant_height: 1.0
+        cylinder_given_r_h: 1.0
+        cone_given_r_slant_height: 1.0
+        sphere_given_r: 1.0
+      balanced_variant_sampling: true
 
 rendering:
   shared:
@@ -57,22 +66,31 @@ visual:
 
 prompt:
   shared:
-    bundle_id: geometry_analytical_volume_v1
-    task_family_key: analytical_single_solid
-    task_key: analytical_volume_query
     object_description: an annotated 3D solid
+    task_family_key: analytical_single_solid
     evidence_hint_measurement_map: set "evidence" to a JSON object that maps each required annotation label to its shown measurement value
-    answer_hint_integer: set "answer" to the volume value as an integer
-    answer_hint_pi: set "answer" to the volume value in the form kπ (for example 12π)
+    answer_hint_integer: set "answer" to the value as an integer
+    answer_hint_pi: set "answer" to the value in the form kπ (for example 12π)
     json_example_integer: '{"evidence":{"AB":4,"CD":3},"answer":12}'
     json_example_pi: '{"evidence":{"AB":3,"CD":4},"answer":"12π"}'
     json_example_answer_only_integer: '{"answer":24}'
     json_example_answer_only_pi: '{"answer":"24π"}'
   task_overrides:
     task_geometry_analytical_3d_volume:
+      bundle_id: geometry_analytical_volume_v1
+      task_key: analytical_volume_query
       question_text_rectangular_prism_given_lwh: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?
       question_text_triangular_prism_given_b_h_l: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?
       question_text_square_pyramid_given_base_height: The square pyramid has an annotated base side and vertical height. What is its volume in cubic units?
       question_text_cylinder_given_r_h: The cylinder has an annotated radius and height. What is its volume? Express the result in kπ form.
       question_text_cone_given_r_h: The cone has an annotated radius and height. What is its volume? Express the result in kπ form.
       question_text_sphere_given_r: The sphere has an annotated radius. What is its volume? Express the result in kπ form.
+    task_geometry_analytical_3d_surface_area:
+      bundle_id: geometry_analytical_surface_area_v1
+      task_key: analytical_surface_area_query
+      question_text_rectangular_prism_given_lwh: The rectangular prism has annotated length, width, and height. What is its total surface area in square units?
+      question_text_triangular_prism_given_a_b_c_l: The triangular prism has annotated side lengths for the triangular base and an annotated prism length. What is its total surface area in square units?
+      question_text_square_pyramid_given_base_side_slant_height: The square pyramid has an annotated base side and slant height. What is its total surface area in square units?
+      question_text_cylinder_given_r_h: The cylinder has an annotated radius and height. What is its total surface area? Express the result in kπ form.
+      question_text_cone_given_r_slant_height: The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form.
+      question_text_sphere_given_r: The sphere has an annotated radius. What is its total surface area? Express the result in kπ form.

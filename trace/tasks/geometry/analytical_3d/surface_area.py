@@ -1,4 +1,4 @@
-"""Single-object analytical 3D volume task."""
+"""Single-object analytical 3D surface-area task."""
 
 from __future__ import annotations
 
@@ -23,9 +23,8 @@ from ...shared.prompt_variants import (
 )
 from ...shared.text_rendering import resolve_scene_label_font_size_px
 from ..shared.analytical_3d_solids import (
-    PI_VOLUME_VARIANTS,
-    VOLUME_VARIANTS,
-    sample_analytical_3d_volume_case,
+    SURFACE_AREA_VARIANTS,
+    sample_analytical_3d_surface_area_case,
 )
 from ..shared.analytical_3d_task import (
     required_prompt_text,
@@ -50,11 +49,13 @@ from .defaults import ANALYTICAL_3D_SHARED_DEFAULTS
 
 ANALYTICAL_3D_POST_IMAGE_BACKGROUND_DEFAULTS = load_geometry_background_defaults(task_group="analytical_3d")
 ANALYTICAL_3D_POST_IMAGE_NOISE_DEFAULTS = load_geometry_noise_defaults(task_group="analytical_3d")
-@register_task
-class GeometryAnalyticalVolume3DTask:
-    """Compute volume from one annotated 3D solid."""
 
-    task_id = "task_geometry_analytical_3d_volume"
+
+@register_task
+class GeometryAnalyticalSurfaceArea3DTask:
+    """Compute total surface area from one annotated 3D solid."""
+
+    task_id = "task_geometry_analytical_3d_surface_area"
     domain = "geometry"
     task_group = "analytical_3d"
 
@@ -68,10 +69,10 @@ class GeometryAnalyticalVolume3DTask:
         """Compute complexity from variant family and answer magnitude."""
         variant_weight = {
             "rectangular_prism_given_lwh": 0.28,
-            "triangular_prism_given_b_h_l": 0.44,
-            "square_pyramid_given_base_height": 0.52,
+            "triangular_prism_given_a_b_c_l": 0.48,
+            "square_pyramid_given_base_side_slant_height": 0.54,
             "cylinder_given_r_h": 0.40,
-            "cone_given_r_h": 0.58,
+            "cone_given_r_slant_height": 0.58,
             "sphere_given_r": 0.46,
         }.get(str(task_variant), 0.45)
         magnitude = 0.0
@@ -89,7 +90,7 @@ class GeometryAnalyticalVolume3DTask:
         )
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        """Generate one deterministic analytical 3D volume instance."""
+        """Generate one deterministic analytical 3D surface-area instance."""
         task_group_defaults = get_task_group_defaults(self.domain, self.task_group)
         gen_defaults, render_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
             task_group_defaults if isinstance(task_group_defaults, Mapping) else {},
@@ -108,7 +109,7 @@ class GeometryAnalyticalVolume3DTask:
             instance_seed=int(instance_seed),
             params=params,
             gen_defaults=gen_defaults,
-            supported_variants=VOLUME_VARIANTS,
+            supported_variants=SURFACE_AREA_VARIANTS,
         )
         context_params = dict(params)
         line_width = sample_int_render_param(
@@ -197,7 +198,7 @@ class GeometryAnalyticalVolume3DTask:
                     render_defaults=render_defaults,
                     anchor_colors=extract_background_anchor_colors(background_meta),
                 )
-                case = sample_analytical_3d_volume_case(
+                case = sample_analytical_3d_surface_area_case(
                     scene_rng,
                     draw,
                     task_variant=str(task_variant),
@@ -224,7 +225,7 @@ class GeometryAnalyticalVolume3DTask:
                 continue
 
         if case is None or context is None or image is None or shape_style is None:
-            raise RuntimeError("failed to generate task_geometry_analytical_3d_volume instance") from last_error
+            raise RuntimeError("failed to generate task_geometry_analytical_3d_surface_area instance") from last_error
 
         image, background_meta_final, post_noise_meta = finalize_graph_scene_image(
             image,
@@ -314,7 +315,7 @@ class GeometryAnalyticalVolume3DTask:
         ]
         trace_payload: Dict[str, Any] = {
             "scene_ir": {
-                "scene_kind": "geometry_3d_analytical_volume",
+                "scene_kind": "geometry_3d_analytical_surface_area",
                 "entities": [dict(case.entity)],
                 "relations": {},
                 "frames": {

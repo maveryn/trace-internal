@@ -1,4 +1,4 @@
-"""Reusable 3D analytical-volume sampling and wireframe rendering helpers."""
+"""Reusable 3D analytical-solid sampling and wireframe rendering helpers."""
 
 from __future__ import annotations
 
@@ -43,6 +43,27 @@ PI_VOLUME_VARIANTS = {
     "sphere_given_r",
 }
 
+SURFACE_AREA_VARIANTS: Tuple[str, ...] = (
+    "rectangular_prism_given_lwh",
+    "triangular_prism_given_a_b_c_l",
+    "square_pyramid_given_base_side_slant_height",
+    "cylinder_given_r_h",
+    "cone_given_r_slant_height",
+    "sphere_given_r",
+)
+
+INTEGER_SURFACE_AREA_VARIANTS = {
+    "rectangular_prism_given_lwh",
+    "triangular_prism_given_a_b_c_l",
+    "square_pyramid_given_base_side_slant_height",
+}
+
+PI_SURFACE_AREA_VARIANTS = {
+    "cylinder_given_r_h",
+    "cone_given_r_slant_height",
+    "sphere_given_r",
+}
+
 
 @dataclass(frozen=True)
 class _AnnotationSegment:
@@ -57,8 +78,8 @@ class _AnnotationSegment:
 
 
 @dataclass(frozen=True)
-class Analytical3DVolumeCase:
-    """Fully rendered 3D volume case payload."""
+class Analytical3DSolidCase:
+    """Fully rendered 3D analytical solid case payload."""
 
     task_variant: str
     answer_type: str
@@ -449,6 +470,25 @@ def _dimension_bounds(
     )
 
 
+def _right_triangle_leg_triples(
+    *,
+    min_leg: int,
+    max_leg: int,
+) -> List[Tuple[int, int, int]]:
+    """Return right-triangle leg triples constrained to the configured dimension range."""
+    triples: List[Tuple[int, int, int]] = []
+    for leg_a in range(int(min_leg), int(max_leg) + 1):
+        for leg_b in range(int(leg_a), int(max_leg) + 1):
+            hyp_sq = (int(leg_a) * int(leg_a)) + (int(leg_b) * int(leg_b))
+            hyp = int(math.isqrt(int(hyp_sq)))
+            if int(hyp) * int(hyp) != int(hyp_sq):
+                continue
+            if int(hyp) > int(max_leg):
+                continue
+            triples.append((int(leg_a), int(leg_b), int(hyp)))
+    return triples
+
+
 def _sample_rectangular_prism_case(
     rng,
     draw: ImageDraw.ImageDraw,
@@ -464,7 +504,7 @@ def _sample_rectangular_prism_case(
     label_stroke_width: int,
     answer_min: int,
     answer_max: int,
-) -> Analytical3DVolumeCase:
+) -> Analytical3DSolidCase:
     """Sample and render rectangular-prism volume case."""
     dimension_min, dimension_max, _, _, _, _ = _dimension_bounds(params, generation_defaults)
     for _ in range(260):
@@ -539,7 +579,7 @@ def _sample_rectangular_prism_case(
             label_font_size_px=int(label_font_size_px),
             label_stroke_width=max(1, int(label_stroke_width) * int(scene_scale)),
         )
-        return Analytical3DVolumeCase(
+        return Analytical3DSolidCase(
             task_variant="rectangular_prism_given_lwh",
             answer_type="integer",
             answer_scalar=int(volume),
@@ -582,7 +622,7 @@ def _sample_triangular_prism_case(
     label_stroke_width: int,
     answer_min: int,
     answer_max: int,
-) -> Analytical3DVolumeCase:
+) -> Analytical3DSolidCase:
     """Sample and render triangular-prism volume case."""
     dimension_min, dimension_max, _, _, _, _ = _dimension_bounds(params, generation_defaults)
     for _ in range(280):
@@ -655,7 +695,7 @@ def _sample_triangular_prism_case(
             label_font_size_px=int(label_font_size_px),
             label_stroke_width=max(1, int(label_stroke_width) * int(scene_scale)),
         )
-        return Analytical3DVolumeCase(
+        return Analytical3DSolidCase(
             task_variant="triangular_prism_given_b_h_l",
             answer_type="integer",
             answer_scalar=int(volume),
@@ -703,7 +743,7 @@ def _sample_square_pyramid_case(
     label_stroke_width: int,
     answer_min: int,
     answer_max: int,
-) -> Analytical3DVolumeCase:
+) -> Analytical3DSolidCase:
     """Sample and render square-pyramid volume case."""
     dimension_min, dimension_max, _, _, _, _ = _dimension_bounds(params, generation_defaults)
     for _ in range(280):
@@ -781,7 +821,7 @@ def _sample_square_pyramid_case(
             label_font_size_px=int(label_font_size_px),
             label_stroke_width=max(1, int(label_stroke_width) * int(scene_scale)),
         )
-        return Analytical3DVolumeCase(
+        return Analytical3DSolidCase(
             task_variant="square_pyramid_given_base_height",
             answer_type="integer",
             answer_scalar=int(volume),
@@ -808,7 +848,7 @@ def _sample_square_pyramid_case(
     raise ValueError("failed to sample square-pyramid volume case")
 
 
-def _cylindrical_scale(radius_units: int, height_units: int, *, canvas_size: int) -> float:
+def _cylindrical_scale(radius_units: float, height_units: float, *, canvas_size: int) -> float:
     """Resolve stable visual scale for cylinder/cone-like wireframes."""
     side = float(max(1, int(canvas_size)))
     usable = max(24.0, side - 88.0)
@@ -846,7 +886,7 @@ def _sample_cylinder_case(
     label_stroke_width: int,
     answer_min: int,
     answer_max: int,
-) -> Analytical3DVolumeCase:
+) -> Analytical3DSolidCase:
     """Sample and render cylinder volume case."""
     _, _, radius_min, radius_max, _, _ = _dimension_bounds(params, generation_defaults)
     dimension_min, dimension_max, _, _, _, _ = _dimension_bounds(params, generation_defaults)
@@ -962,7 +1002,7 @@ def _sample_cylinder_case(
             "h_a": h_a,
             "h_b": h_b,
         }
-        return Analytical3DVolumeCase(
+        return Analytical3DSolidCase(
             task_variant="cylinder_given_r_h",
             answer_type="pi_expression",
             answer_scalar=int(coefficient),
@@ -1008,7 +1048,7 @@ def _sample_cone_case(
     label_stroke_width: int,
     answer_min: int,
     answer_max: int,
-) -> Analytical3DVolumeCase:
+) -> Analytical3DSolidCase:
     """Sample and render cone volume case."""
     _, _, radius_min, radius_max, _, _ = _dimension_bounds(params, generation_defaults)
     dimension_min, dimension_max, _, _, _, _ = _dimension_bounds(params, generation_defaults)
@@ -1094,7 +1134,7 @@ def _sample_cone_case(
             "left_base": left_base,
             "right_base": right_base,
         }
-        return Analytical3DVolumeCase(
+        return Analytical3DSolidCase(
             task_variant="cone_given_r_h",
             answer_type="pi_expression",
             answer_scalar=int(coefficient),
@@ -1137,7 +1177,7 @@ def _sample_sphere_case(
     label_stroke_width: int,
     answer_min: int,
     answer_max: int,
-) -> Analytical3DVolumeCase:
+) -> Analytical3DSolidCase:
     """Sample and render sphere volume case."""
     _, _, _, _, sphere_radius_min, sphere_radius_max = _dimension_bounds(params, generation_defaults)
     valid_radii = [
@@ -1207,7 +1247,7 @@ def _sample_sphere_case(
             label_stroke_width=max(1, int(label_stroke_width) * int(scene_scale)),
         )
         points = {"center": center, "right_point": right_point}
-        return Analytical3DVolumeCase(
+        return Analytical3DSolidCase(
             task_variant="sphere_given_r",
             answer_type="pi_expression",
             answer_scalar=int(coefficient),
@@ -1233,6 +1273,705 @@ def _sample_sphere_case(
     raise ValueError("failed to sample sphere volume case")
 
 
+def _sample_rectangular_prism_surface_area_case(
+    rng,
+    draw: ImageDraw.ImageDraw,
+    *,
+    params: Mapping[str, Any],
+    generation_defaults: Mapping[str, Any],
+    canvas_size: int,
+    scene_scale: int,
+    shape_style: GeometryShapeStyle,
+    line_width: int,
+    label_offset_px: float,
+    label_font_size_px: int,
+    label_stroke_width: int,
+    answer_min: int,
+    answer_max: int,
+) -> Analytical3DSolidCase:
+    """Sample and render rectangular-prism total surface area case."""
+    dimension_min, dimension_max, _, _, _, _ = _dimension_bounds(params, generation_defaults)
+    for _ in range(260):
+        length_units = int(rng.randint(int(dimension_min), int(dimension_max)))
+        width_units = int(rng.randint(int(dimension_min), int(dimension_max)))
+        height_units = int(rng.randint(int(dimension_min), int(dimension_max)))
+        surface_area = int(
+            2
+            * (
+                (int(length_units) * int(width_units))
+                + (int(length_units) * int(height_units))
+                + (int(width_units) * int(height_units))
+            )
+        )
+        if int(surface_area) < int(answer_min) or int(surface_area) > int(answer_max):
+            continue
+        points_3d = {
+            "A": (0.0, 0.0, 0.0),
+            "B": (float(length_units), 0.0, 0.0),
+            "C": (float(length_units), float(width_units), 0.0),
+            "D": (0.0, float(width_units), 0.0),
+            "E": (0.0, 0.0, float(height_units)),
+            "F": (float(length_units), 0.0, float(height_units)),
+            "G": (float(length_units), float(width_units), float(height_units)),
+            "H": (0.0, float(width_units), float(height_units)),
+        }
+        points_2d = _fit_projected_points(points_3d, canvas_size=int(canvas_size), margin_px=36.0)
+        edges = [
+            ("A", "B"),
+            ("B", "C"),
+            ("C", "D"),
+            ("D", "A"),
+            ("E", "F"),
+            ("F", "G"),
+            ("G", "H"),
+            ("H", "E"),
+            ("A", "E"),
+            ("B", "F"),
+            ("C", "G"),
+            ("D", "H"),
+        ]
+        segments = [((float(points_2d[a][0]), float(points_2d[a][1])), (float(points_2d[b][0]), float(points_2d[b][1]))) for a, b in edges]
+        _draw_segments(
+            draw,
+            segments=segments,
+            scene_scale=int(scene_scale),
+            color=tuple(int(value) for value in shape_style.line_color),
+            line_width=int(line_width),
+        )
+        annotations = [
+            _AnnotationSegment(role="l", value=int(length_units), point_a=points_2d["A"], point_b=points_2d["B"]),
+            _AnnotationSegment(role="w", value=int(width_units), point_a=points_2d["B"], point_b=points_2d["C"]),
+            _AnnotationSegment(role="h", value=int(height_units), point_a=points_2d["A"], point_b=points_2d["E"]),
+        ]
+        evidence_map, role_tokens, annotation_centers = _render_annotations_and_evidence(
+            rng,
+            draw,
+            annotations=annotations,
+            blocked_segments=segments,
+            scene_scale=int(scene_scale),
+            canvas_size=int(canvas_size),
+            shape_style=shape_style,
+            label_offset_px=float(label_offset_px) * float(scene_scale),
+            label_font_size_px=int(label_font_size_px),
+            label_stroke_width=max(1, int(label_stroke_width) * int(scene_scale)),
+        )
+        return Analytical3DSolidCase(
+            task_variant="rectangular_prism_given_lwh",
+            answer_type="integer",
+            answer_scalar=int(surface_area),
+            answer_value=int(surface_area),
+            formula_expression="SA = 2 * (l*w + l*h + w*h)",
+            evidence_roles=("l", "w", "h"),
+            role_values={"l": int(length_units), "w": int(width_units), "h": int(height_units)},
+            role_tokens=dict(role_tokens),
+            evidence_map=dict(evidence_map),
+            annotation_centers=dict(annotation_centers),
+            entity={
+                "entity_id": "solid_1",
+                "entity_type": "rectangular_prism",
+                "attrs": {
+                    "task_variant": "rectangular_prism_given_lwh",
+                    "length_units": int(length_units),
+                    "width_units": int(width_units),
+                    "height_units": int(height_units),
+                    "surface_area_square_units": int(surface_area),
+                    "points": {key: [float(point[0]), float(point[1])] for key, point in points_2d.items()},
+                },
+            },
+            render_anchor=_render_anchor_from_points(points_2d),
+        )
+    raise ValueError("failed to sample rectangular-prism surface area case")
+
+
+def _sample_triangular_prism_surface_area_case(
+    rng,
+    draw: ImageDraw.ImageDraw,
+    *,
+    params: Mapping[str, Any],
+    generation_defaults: Mapping[str, Any],
+    canvas_size: int,
+    scene_scale: int,
+    shape_style: GeometryShapeStyle,
+    line_width: int,
+    label_offset_px: float,
+    label_font_size_px: int,
+    label_stroke_width: int,
+    answer_min: int,
+    answer_max: int,
+) -> Analytical3DSolidCase:
+    """Sample and render triangular-prism total surface area case."""
+    dimension_min, dimension_max, _, _, _, _ = _dimension_bounds(params, generation_defaults)
+    triples = _right_triangle_leg_triples(min_leg=int(dimension_min), max_leg=int(dimension_max))
+    if not triples:
+        raise ValueError("no feasible right-triangle triples for triangular-prism surface area case")
+    for _ in range(320):
+        leg_a_units, leg_b_units, hyp_units = triples[int(rng.randrange(len(triples)))]
+        prism_length_units = int(rng.randint(int(dimension_min), int(dimension_max)))
+        surface_area = int((int(leg_a_units) * int(leg_b_units)) + (int(prism_length_units) * int(leg_a_units + leg_b_units + hyp_units)))
+        if int(surface_area) < int(answer_min) or int(surface_area) > int(answer_max):
+            continue
+        points_3d = {
+            "A": (0.0, 0.0, 0.0),
+            "B": (float(leg_a_units), 0.0, 0.0),
+            "C": (0.0, 0.0, float(leg_b_units)),
+            "D": (0.0, float(prism_length_units), 0.0),
+            "E": (float(leg_a_units), float(prism_length_units), 0.0),
+            "F": (0.0, float(prism_length_units), float(leg_b_units)),
+        }
+        points_2d = _fit_projected_points(points_3d, canvas_size=int(canvas_size), margin_px=36.0)
+        edges = [
+            ("A", "B"),
+            ("B", "C"),
+            ("C", "A"),
+            ("D", "E"),
+            ("E", "F"),
+            ("F", "D"),
+            ("A", "D"),
+            ("B", "E"),
+            ("C", "F"),
+        ]
+        segments = [((float(points_2d[a][0]), float(points_2d[a][1])), (float(points_2d[b][0]), float(points_2d[b][1]))) for a, b in edges]
+        _draw_segments(
+            draw,
+            segments=segments,
+            scene_scale=int(scene_scale),
+            color=tuple(int(value) for value in shape_style.line_color),
+            line_width=int(line_width),
+        )
+        annotations = [
+            _AnnotationSegment(role="a", value=int(leg_a_units), point_a=points_2d["A"], point_b=points_2d["B"]),
+            _AnnotationSegment(role="b", value=int(leg_b_units), point_a=points_2d["A"], point_b=points_2d["C"]),
+            _AnnotationSegment(role="c", value=int(hyp_units), point_a=points_2d["B"], point_b=points_2d["C"]),
+            _AnnotationSegment(role="L", value=int(prism_length_units), point_a=points_2d["A"], point_b=points_2d["D"]),
+        ]
+        evidence_map, role_tokens, annotation_centers = _render_annotations_and_evidence(
+            rng,
+            draw,
+            annotations=annotations,
+            blocked_segments=segments,
+            scene_scale=int(scene_scale),
+            canvas_size=int(canvas_size),
+            shape_style=shape_style,
+            label_offset_px=float(label_offset_px) * float(scene_scale),
+            label_font_size_px=int(label_font_size_px),
+            label_stroke_width=max(1, int(label_stroke_width) * int(scene_scale)),
+        )
+        return Analytical3DSolidCase(
+            task_variant="triangular_prism_given_a_b_c_l",
+            answer_type="integer",
+            answer_scalar=int(surface_area),
+            answer_value=int(surface_area),
+            formula_expression="SA = a*b + L*(a + b + c)",
+            evidence_roles=("a", "b", "c", "L"),
+            role_values={
+                "a": int(leg_a_units),
+                "b": int(leg_b_units),
+                "c": int(hyp_units),
+                "L": int(prism_length_units),
+            },
+            role_tokens=dict(role_tokens),
+            evidence_map=dict(evidence_map),
+            annotation_centers=dict(annotation_centers),
+            entity={
+                "entity_id": "solid_1",
+                "entity_type": "triangular_prism",
+                "attrs": {
+                    "task_variant": "triangular_prism_given_a_b_c_l",
+                    "leg_a_units": int(leg_a_units),
+                    "leg_b_units": int(leg_b_units),
+                    "hypotenuse_units": int(hyp_units),
+                    "prism_length_units": int(prism_length_units),
+                    "surface_area_square_units": int(surface_area),
+                    "points": {key: [float(point[0]), float(point[1])] for key, point in points_2d.items()},
+                },
+            },
+            render_anchor=_render_anchor_from_points(points_2d),
+        )
+    raise ValueError("failed to sample triangular-prism surface area case")
+
+
+def _sample_square_pyramid_surface_area_case(
+    rng,
+    draw: ImageDraw.ImageDraw,
+    *,
+    params: Mapping[str, Any],
+    generation_defaults: Mapping[str, Any],
+    canvas_size: int,
+    scene_scale: int,
+    shape_style: GeometryShapeStyle,
+    line_width: int,
+    helper_line_width: int,
+    label_offset_px: float,
+    label_font_size_px: int,
+    label_stroke_width: int,
+    answer_min: int,
+    answer_max: int,
+) -> Analytical3DSolidCase:
+    """Sample and render square-pyramid total surface area case."""
+    dimension_min, dimension_max, _, _, _, _ = _dimension_bounds(params, generation_defaults)
+    for _ in range(320):
+        side_units = int(rng.randint(int(dimension_min), int(dimension_max)))
+        min_slant = max(int(dimension_min), int(math.floor(float(side_units) / 2.0)) + 1)
+        if int(min_slant) > int(dimension_max):
+            continue
+        slant_height_units = int(rng.randint(int(min_slant), int(dimension_max)))
+        half_side = 0.5 * float(side_units)
+        height_sq = (float(slant_height_units) * float(slant_height_units)) - (float(half_side) * float(half_side))
+        if float(height_sq) <= 4.0:
+            continue
+        pyramid_height_units = math.sqrt(float(height_sq))
+        surface_area = int((int(side_units) * int(side_units)) + (2 * int(side_units) * int(slant_height_units)))
+        if int(surface_area) < int(answer_min) or int(surface_area) > int(answer_max):
+            continue
+        points_3d = {
+            "A": (0.0, 0.0, 0.0),
+            "B": (float(side_units), 0.0, 0.0),
+            "C": (float(side_units), float(side_units), 0.0),
+            "D": (0.0, float(side_units), 0.0),
+            "E": (0.5 * float(side_units), 0.5 * float(side_units), float(pyramid_height_units)),
+            "M": (0.5 * float(side_units), 0.0, 0.0),
+        }
+        points_2d = _fit_projected_points(points_3d, canvas_size=int(canvas_size), margin_px=36.0)
+        edges = [
+            ("A", "B"),
+            ("B", "C"),
+            ("C", "D"),
+            ("D", "A"),
+            ("A", "E"),
+            ("B", "E"),
+            ("C", "E"),
+            ("D", "E"),
+        ]
+        segments = [((float(points_2d[a][0]), float(points_2d[a][1])), (float(points_2d[b][0]), float(points_2d[b][1]))) for a, b in edges]
+        _draw_segments(
+            draw,
+            segments=segments,
+            scene_scale=int(scene_scale),
+            color=tuple(int(value) for value in shape_style.line_color),
+            line_width=int(line_width),
+        )
+        slant_helper = (
+            (float(points_2d["M"][0]), float(points_2d["M"][1])),
+            (float(points_2d["E"][0]), float(points_2d["E"][1])),
+        )
+        _draw_segments(
+            draw,
+            segments=[slant_helper],
+            scene_scale=int(scene_scale),
+            color=tuple(int(value) for value in shape_style.line_color),
+            line_width=int(helper_line_width),
+        )
+        blocked_segments = [*segments, slant_helper]
+        annotations = [
+            _AnnotationSegment(role="s", value=int(side_units), point_a=points_2d["A"], point_b=points_2d["B"]),
+            _AnnotationSegment(
+                role="l",
+                value=int(slant_height_units),
+                point_a=points_2d["M"],
+                point_b=points_2d["E"],
+                direction=(1.0, 0.0),
+            ),
+        ]
+        evidence_map, role_tokens, annotation_centers = _render_annotations_and_evidence(
+            rng,
+            draw,
+            annotations=annotations,
+            blocked_segments=blocked_segments,
+            scene_scale=int(scene_scale),
+            canvas_size=int(canvas_size),
+            shape_style=shape_style,
+            label_offset_px=float(label_offset_px) * float(scene_scale),
+            label_font_size_px=int(label_font_size_px),
+            label_stroke_width=max(1, int(label_stroke_width) * int(scene_scale)),
+        )
+        return Analytical3DSolidCase(
+            task_variant="square_pyramid_given_base_side_slant_height",
+            answer_type="integer",
+            answer_scalar=int(surface_area),
+            answer_value=int(surface_area),
+            formula_expression="SA = s^2 + 2*s*l",
+            evidence_roles=("s", "l"),
+            role_values={"s": int(side_units), "l": int(slant_height_units)},
+            role_tokens=dict(role_tokens),
+            evidence_map=dict(evidence_map),
+            annotation_centers=dict(annotation_centers),
+            entity={
+                "entity_id": "solid_1",
+                "entity_type": "square_pyramid",
+                "attrs": {
+                    "task_variant": "square_pyramid_given_base_side_slant_height",
+                    "base_side_units": int(side_units),
+                    "slant_height_units": int(slant_height_units),
+                    "height_units": float(pyramid_height_units),
+                    "surface_area_square_units": int(surface_area),
+                    "points": {key: [float(point[0]), float(point[1])] for key, point in points_2d.items()},
+                },
+            },
+            render_anchor=_render_anchor_from_points(points_2d),
+        )
+    raise ValueError("failed to sample square-pyramid surface area case")
+
+
+def _sample_cylinder_surface_area_case(
+    rng,
+    draw: ImageDraw.ImageDraw,
+    *,
+    params: Mapping[str, Any],
+    generation_defaults: Mapping[str, Any],
+    canvas_size: int,
+    scene_scale: int,
+    shape_style: GeometryShapeStyle,
+    line_width: int,
+    helper_line_width: int,
+    label_offset_px: float,
+    label_font_size_px: int,
+    label_stroke_width: int,
+    answer_min: int,
+    answer_max: int,
+) -> Analytical3DSolidCase:
+    """Sample and render cylinder total surface area case."""
+    _, _, radius_min, radius_max, _, _ = _dimension_bounds(params, generation_defaults)
+    dimension_min, dimension_max, _, _, _, _ = _dimension_bounds(params, generation_defaults)
+    for _ in range(260):
+        radius_units = int(rng.randint(int(radius_min), int(radius_max)))
+        height_units = int(rng.randint(int(dimension_min), int(dimension_max)))
+        coefficient = int(2 * int(radius_units) * int(radius_units + height_units))
+        if int(coefficient) < int(answer_min) or int(coefficient) > int(answer_max):
+            continue
+        scale = _cylindrical_scale(float(radius_units), float(height_units), canvas_size=int(canvas_size))
+        radius_px = float(radius_units) * float(scale)
+        height_px = float(height_units) * float(scale)
+        ellipse_radius_y = _cylinder_cap_radius_y(
+            radius_px=float(radius_px),
+            height_px=float(height_px),
+            line_width=int(line_width),
+        )
+        if ellipse_radius_y is None:
+            continue
+        center_x = 0.5 * float(canvas_size)
+        top_center = (float(center_x), 0.5 * float(canvas_size) - (0.5 * float(height_px)))
+        bottom_center = (float(center_x), float(top_center[1] + float(height_px)))
+        left_top = (float(top_center[0] - float(radius_px)), float(top_center[1]))
+        right_top = (float(top_center[0] + float(radius_px)), float(top_center[1]))
+        left_bottom = (float(bottom_center[0] - float(radius_px)), float(bottom_center[1]))
+        right_bottom = (float(bottom_center[0] + float(radius_px)), float(bottom_center[1]))
+        _draw_ellipse_outline(
+            draw,
+            center=top_center,
+            radius_x=float(radius_px),
+            radius_y=float(ellipse_radius_y),
+            scene_scale=int(scene_scale),
+            color=tuple(int(value) for value in shape_style.line_color),
+            line_width=int(line_width),
+        )
+        _draw_ellipse_outline(
+            draw,
+            center=bottom_center,
+            radius_x=float(radius_px),
+            radius_y=float(ellipse_radius_y),
+            scene_scale=int(scene_scale),
+            color=tuple(int(value) for value in shape_style.line_color),
+            line_width=int(line_width),
+        )
+        side_segments = [(left_top, left_bottom), (right_top, right_bottom)]
+        _draw_segments(
+            draw,
+            segments=side_segments,
+            scene_scale=int(scene_scale),
+            color=tuple(int(value) for value in shape_style.line_color),
+            line_width=int(line_width),
+        )
+        height_offset = float(max(10.0, 0.28 * float(radius_px)))
+        h_a = (float(right_top[0] + float(height_offset)), float(top_center[1]))
+        h_b = (float(right_bottom[0] + float(height_offset)), float(bottom_center[1]))
+        helper_segments = [(h_a, h_b), (right_top, h_a), (right_bottom, h_b), (top_center, right_top)]
+        _draw_segments(
+            draw,
+            segments=helper_segments,
+            scene_scale=int(scene_scale),
+            color=tuple(int(value) for value in shape_style.line_color),
+            line_width=int(helper_line_width),
+        )
+        blocked_segments = [*side_segments, *helper_segments, (left_top, right_top), (left_bottom, right_bottom)]
+        annotations = [
+            _AnnotationSegment(role="r", value=int(radius_units), point_a=top_center, point_b=right_top, direction=(0.0, -1.0)),
+            _AnnotationSegment(role="h", value=int(height_units), point_a=h_a, point_b=h_b, direction=(1.0, 0.0)),
+        ]
+        evidence_map, role_tokens, annotation_centers = _render_annotations_and_evidence(
+            rng,
+            draw,
+            annotations=annotations,
+            blocked_segments=blocked_segments,
+            scene_scale=int(scene_scale),
+            canvas_size=int(canvas_size),
+            shape_style=shape_style,
+            label_offset_px=float(label_offset_px) * float(scene_scale),
+            label_font_size_px=int(label_font_size_px),
+            label_stroke_width=max(1, int(label_stroke_width) * int(scene_scale)),
+        )
+        points = {
+            "top_center": top_center,
+            "bottom_center": bottom_center,
+            "left_top": left_top,
+            "right_top": right_top,
+            "left_bottom": left_bottom,
+            "right_bottom": right_bottom,
+            "h_a": h_a,
+            "h_b": h_b,
+        }
+        return Analytical3DSolidCase(
+            task_variant="cylinder_given_r_h",
+            answer_type="pi_expression",
+            answer_scalar=int(coefficient),
+            answer_value=_pi_expression(int(coefficient)),
+            formula_expression="SA = 2 * π * r * (r + h)",
+            evidence_roles=("r", "h"),
+            role_values={"r": int(radius_units), "h": int(height_units)},
+            role_tokens=dict(role_tokens),
+            evidence_map=dict(evidence_map),
+            annotation_centers=dict(annotation_centers),
+            entity={
+                "entity_id": "solid_1",
+                "entity_type": "cylinder",
+                "attrs": {
+                    "task_variant": "cylinder_given_r_h",
+                    "radius_units": int(radius_units),
+                    "height_units": int(height_units),
+                    "surface_area_pi_coefficient": int(coefficient),
+                    "render_radius_px": float(radius_px),
+                    "render_height_px": float(height_px),
+                    "render_cap_radius_y_px": float(ellipse_radius_y),
+                    "points": {key: [float(point[0]), float(point[1])] for key, point in points.items()},
+                },
+            },
+            render_anchor=_render_anchor_from_points(points),
+        )
+    raise ValueError("failed to sample cylinder surface area case")
+
+
+def _sample_cone_surface_area_case(
+    rng,
+    draw: ImageDraw.ImageDraw,
+    *,
+    params: Mapping[str, Any],
+    generation_defaults: Mapping[str, Any],
+    canvas_size: int,
+    scene_scale: int,
+    shape_style: GeometryShapeStyle,
+    line_width: int,
+    helper_line_width: int,
+    label_offset_px: float,
+    label_font_size_px: int,
+    label_stroke_width: int,
+    answer_min: int,
+    answer_max: int,
+) -> Analytical3DSolidCase:
+    """Sample and render cone total surface area case."""
+    _, _, radius_min, radius_max, _, _ = _dimension_bounds(params, generation_defaults)
+    dimension_min, dimension_max, _, _, _, _ = _dimension_bounds(params, generation_defaults)
+    for _ in range(320):
+        radius_units = int(rng.randint(int(radius_min), int(radius_max)))
+        min_slant = max(int(dimension_min), int(radius_units) + 1)
+        if int(min_slant) > int(dimension_max):
+            continue
+        slant_height_units = int(rng.randint(int(min_slant), int(dimension_max)))
+        height_sq = (int(slant_height_units) * int(slant_height_units)) - (int(radius_units) * int(radius_units))
+        if int(height_sq) <= 4:
+            continue
+        height_units = math.sqrt(float(height_sq))
+        coefficient = int(int(radius_units) * int(radius_units + slant_height_units))
+        if int(coefficient) < int(answer_min) or int(coefficient) > int(answer_max):
+            continue
+        scale = _cylindrical_scale(float(radius_units), float(height_units), canvas_size=int(canvas_size))
+        radius_px = float(radius_units) * float(scale)
+        height_px = float(height_units) * float(scale)
+        ellipse_radius_y = max(6.0, 0.34 * float(radius_px))
+        center_x = 0.5 * float(canvas_size)
+        base_center = (float(center_x), 0.58 * float(canvas_size))
+        apex = (float(center_x), float(base_center[1] - float(height_px)))
+        left_base = (float(base_center[0] - float(radius_px)), float(base_center[1]))
+        right_base = (float(base_center[0] + float(radius_px)), float(base_center[1]))
+        _draw_ellipse_outline(
+            draw,
+            center=base_center,
+            radius_x=float(radius_px),
+            radius_y=float(ellipse_radius_y),
+            scene_scale=int(scene_scale),
+            color=tuple(int(value) for value in shape_style.line_color),
+            line_width=int(line_width),
+        )
+        _draw_segments(
+            draw,
+            segments=[(apex, left_base), (apex, right_base)],
+            scene_scale=int(scene_scale),
+            color=tuple(int(value) for value in shape_style.line_color),
+            line_width=int(line_width),
+        )
+        _draw_segments(
+            draw,
+            segments=[(base_center, right_base)],
+            scene_scale=int(scene_scale),
+            color=tuple(int(value) for value in shape_style.line_color),
+            line_width=int(helper_line_width),
+        )
+        blocked_segments = [
+            (apex, left_base),
+            (apex, right_base),
+            (base_center, right_base),
+            (left_base, right_base),
+        ]
+        annotations = [
+            _AnnotationSegment(role="r", value=int(radius_units), point_a=base_center, point_b=right_base, direction=(0.0, 1.0)),
+            _AnnotationSegment(role="l", value=int(slant_height_units), point_a=apex, point_b=right_base, direction=(1.0, 0.0)),
+        ]
+        evidence_map, role_tokens, annotation_centers = _render_annotations_and_evidence(
+            rng,
+            draw,
+            annotations=annotations,
+            blocked_segments=blocked_segments,
+            scene_scale=int(scene_scale),
+            canvas_size=int(canvas_size),
+            shape_style=shape_style,
+            label_offset_px=float(label_offset_px) * float(scene_scale),
+            label_font_size_px=int(label_font_size_px),
+            label_stroke_width=max(1, int(label_stroke_width) * int(scene_scale)),
+        )
+        points = {
+            "apex": apex,
+            "base_center": base_center,
+            "left_base": left_base,
+            "right_base": right_base,
+        }
+        return Analytical3DSolidCase(
+            task_variant="cone_given_r_slant_height",
+            answer_type="pi_expression",
+            answer_scalar=int(coefficient),
+            answer_value=_pi_expression(int(coefficient)),
+            formula_expression="SA = π * r * (r + l)",
+            evidence_roles=("r", "l"),
+            role_values={"r": int(radius_units), "l": int(slant_height_units)},
+            role_tokens=dict(role_tokens),
+            evidence_map=dict(evidence_map),
+            annotation_centers=dict(annotation_centers),
+            entity={
+                "entity_id": "solid_1",
+                "entity_type": "cone",
+                "attrs": {
+                    "task_variant": "cone_given_r_slant_height",
+                    "radius_units": int(radius_units),
+                    "slant_height_units": int(slant_height_units),
+                    "height_units": float(height_units),
+                    "surface_area_pi_coefficient": int(coefficient),
+                    "points": {key: [float(point[0]), float(point[1])] for key, point in points.items()},
+                },
+            },
+            render_anchor=_render_anchor_from_points(points),
+        )
+    raise ValueError("failed to sample cone surface area case")
+
+
+def _sample_sphere_surface_area_case(
+    rng,
+    draw: ImageDraw.ImageDraw,
+    *,
+    params: Mapping[str, Any],
+    generation_defaults: Mapping[str, Any],
+    canvas_size: int,
+    scene_scale: int,
+    shape_style: GeometryShapeStyle,
+    line_width: int,
+    helper_line_width: int,
+    label_offset_px: float,
+    label_font_size_px: int,
+    label_stroke_width: int,
+    answer_min: int,
+    answer_max: int,
+) -> Analytical3DSolidCase:
+    """Sample and render sphere total surface area case."""
+    _, _, _, _, sphere_radius_min, sphere_radius_max = _dimension_bounds(params, generation_defaults)
+    valid_radii = list(range(int(sphere_radius_min), int(sphere_radius_max) + 1))
+    if not valid_radii:
+        raise ValueError("no feasible sphere radii for surface area case")
+    for _ in range(220):
+        radius_units = int(valid_radii[int(rng.randrange(len(valid_radii)))])
+        coefficient = int(4 * int(radius_units) * int(radius_units))
+        if int(coefficient) < int(answer_min) or int(coefficient) > int(answer_max):
+            continue
+        scale = float((float(canvas_size) - 84.0) / max(2.0, 2.0 * float(radius_units)))
+        radius_px = float(radius_units) * float(scale)
+        center = (0.5 * float(canvas_size), 0.52 * float(canvas_size))
+        _draw_ellipse_outline(
+            draw,
+            center=center,
+            radius_x=float(radius_px),
+            radius_y=float(radius_px),
+            scene_scale=int(scene_scale),
+            color=tuple(int(value) for value in shape_style.line_color),
+            line_width=int(line_width),
+        )
+        _draw_ellipse_outline(
+            draw,
+            center=center,
+            radius_x=float(radius_px),
+            radius_y=max(5.0, 0.35 * float(radius_px)),
+            scene_scale=int(scene_scale),
+            color=tuple(int(value) for value in shape_style.line_color),
+            line_width=int(helper_line_width),
+        )
+        right_point = (float(center[0] + float(radius_px)), float(center[1]))
+        _draw_segments(
+            draw,
+            segments=[(center, right_point)],
+            scene_scale=int(scene_scale),
+            color=tuple(int(value) for value in shape_style.line_color),
+            line_width=int(helper_line_width),
+        )
+        blocked_segments = [
+            ((float(center[0] - float(radius_px)), float(center[1])), right_point),
+            (center, right_point),
+        ]
+        annotations = [
+            _AnnotationSegment(role="r", value=int(radius_units), point_a=center, point_b=right_point, direction=(0.0, -1.0))
+        ]
+        evidence_map, role_tokens, annotation_centers = _render_annotations_and_evidence(
+            rng,
+            draw,
+            annotations=annotations,
+            blocked_segments=blocked_segments,
+            scene_scale=int(scene_scale),
+            canvas_size=int(canvas_size),
+            shape_style=shape_style,
+            label_offset_px=float(label_offset_px) * float(scene_scale),
+            label_font_size_px=int(label_font_size_px),
+            label_stroke_width=max(1, int(label_stroke_width) * int(scene_scale)),
+        )
+        points = {"center": center, "right_point": right_point}
+        return Analytical3DSolidCase(
+            task_variant="sphere_given_r",
+            answer_type="pi_expression",
+            answer_scalar=int(coefficient),
+            answer_value=_pi_expression(int(coefficient)),
+            formula_expression="SA = 4 * π * r^2",
+            evidence_roles=("r",),
+            role_values={"r": int(radius_units)},
+            role_tokens=dict(role_tokens),
+            evidence_map=dict(evidence_map),
+            annotation_centers=dict(annotation_centers),
+            entity={
+                "entity_id": "solid_1",
+                "entity_type": "sphere",
+                "attrs": {
+                    "task_variant": "sphere_given_r",
+                    "radius_units": int(radius_units),
+                    "surface_area_pi_coefficient": int(coefficient),
+                    "points": {key: [float(point[0]), float(point[1])] for key, point in points.items()},
+                },
+            },
+            render_anchor=_render_anchor_from_points(points),
+        )
+    raise ValueError("failed to sample sphere surface area case")
+
+
 def sample_analytical_3d_volume_case(
     rng,
     draw: ImageDraw.ImageDraw,
@@ -1250,7 +1989,7 @@ def sample_analytical_3d_volume_case(
     label_stroke_width: int,
     answer_min: int,
     answer_max: int,
-) -> Analytical3DVolumeCase:
+) -> Analytical3DSolidCase:
     """Sample and render one configured analytical 3D volume case."""
     variant_key = str(task_variant)
     if str(variant_key) == "rectangular_prism_given_lwh":
@@ -1354,3 +2093,126 @@ def sample_analytical_3d_volume_case(
             answer_max=int(answer_max),
         )
     raise ValueError(f"unsupported analytical 3d volume variant: {variant_key}")
+
+
+def sample_analytical_3d_surface_area_case(
+    rng,
+    draw: ImageDraw.ImageDraw,
+    *,
+    task_variant: str,
+    params: Mapping[str, Any],
+    generation_defaults: Mapping[str, Any],
+    canvas_size: int,
+    scene_scale: int,
+    shape_style: GeometryShapeStyle,
+    line_width: int,
+    helper_line_width: int,
+    label_offset_px: float,
+    label_font_size_px: int,
+    label_stroke_width: int,
+    answer_min: int,
+    answer_max: int,
+) -> Analytical3DSolidCase:
+    """Sample and render one configured analytical 3D surface-area case."""
+    variant_key = str(task_variant)
+    if str(variant_key) == "rectangular_prism_given_lwh":
+        return _sample_rectangular_prism_surface_area_case(
+            rng,
+            draw,
+            params=params,
+            generation_defaults=generation_defaults,
+            canvas_size=int(canvas_size),
+            scene_scale=int(scene_scale),
+            shape_style=shape_style,
+            line_width=int(line_width),
+            label_offset_px=float(label_offset_px),
+            label_font_size_px=int(label_font_size_px),
+            label_stroke_width=int(label_stroke_width),
+            answer_min=int(answer_min),
+            answer_max=int(answer_max),
+        )
+    if str(variant_key) == "triangular_prism_given_a_b_c_l":
+        return _sample_triangular_prism_surface_area_case(
+            rng,
+            draw,
+            params=params,
+            generation_defaults=generation_defaults,
+            canvas_size=int(canvas_size),
+            scene_scale=int(scene_scale),
+            shape_style=shape_style,
+            line_width=int(line_width),
+            label_offset_px=float(label_offset_px),
+            label_font_size_px=int(label_font_size_px),
+            label_stroke_width=int(label_stroke_width),
+            answer_min=int(answer_min),
+            answer_max=int(answer_max),
+        )
+    if str(variant_key) == "square_pyramid_given_base_side_slant_height":
+        return _sample_square_pyramid_surface_area_case(
+            rng,
+            draw,
+            params=params,
+            generation_defaults=generation_defaults,
+            canvas_size=int(canvas_size),
+            scene_scale=int(scene_scale),
+            shape_style=shape_style,
+            line_width=int(line_width),
+            helper_line_width=int(helper_line_width),
+            label_offset_px=float(label_offset_px),
+            label_font_size_px=int(label_font_size_px),
+            label_stroke_width=int(label_stroke_width),
+            answer_min=int(answer_min),
+            answer_max=int(answer_max),
+        )
+    if str(variant_key) == "cylinder_given_r_h":
+        return _sample_cylinder_surface_area_case(
+            rng,
+            draw,
+            params=params,
+            generation_defaults=generation_defaults,
+            canvas_size=int(canvas_size),
+            scene_scale=int(scene_scale),
+            shape_style=shape_style,
+            line_width=int(line_width),
+            helper_line_width=int(helper_line_width),
+            label_offset_px=float(label_offset_px),
+            label_font_size_px=int(label_font_size_px),
+            label_stroke_width=int(label_stroke_width),
+            answer_min=int(answer_min),
+            answer_max=int(answer_max),
+        )
+    if str(variant_key) == "cone_given_r_slant_height":
+        return _sample_cone_surface_area_case(
+            rng,
+            draw,
+            params=params,
+            generation_defaults=generation_defaults,
+            canvas_size=int(canvas_size),
+            scene_scale=int(scene_scale),
+            shape_style=shape_style,
+            line_width=int(line_width),
+            helper_line_width=int(helper_line_width),
+            label_offset_px=float(label_offset_px),
+            label_font_size_px=int(label_font_size_px),
+            label_stroke_width=int(label_stroke_width),
+            answer_min=int(answer_min),
+            answer_max=int(answer_max),
+        )
+    if str(variant_key) == "sphere_given_r":
+        return _sample_sphere_surface_area_case(
+            rng,
+            draw,
+            params=params,
+            generation_defaults=generation_defaults,
+            canvas_size=int(canvas_size),
+            scene_scale=int(scene_scale),
+            shape_style=shape_style,
+            line_width=int(line_width),
+            helper_line_width=int(helper_line_width),
+            label_offset_px=float(label_offset_px),
+            label_font_size_px=int(label_font_size_px),
+            label_stroke_width=int(label_stroke_width),
+            answer_min=int(answer_min),
+            answer_max=int(answer_max),
+        )
+    raise ValueError(f"unsupported analytical 3d surface-area variant: {variant_key}")

@@ -267,15 +267,14 @@ def test_geometry_analytical_3d_defaults_loaded() -> None:
     generation_shared = cfg["generation"]["shared"]
     assert int(generation_shared["answer_min"]) >= 0
     assert int(generation_shared["answer_max"]) >= int(generation_shared["answer_min"])
-    assert sorted(generation_shared["variant_weights"].keys()) == [
-        "cone_given_r_h",
-        "cylinder_given_r_h",
-        "rectangular_prism_given_lwh",
-        "sphere_given_r",
-        "square_pyramid_given_base_height",
-        "triangular_prism_given_b_h_l",
-    ]
-    assert bool(generation_shared["balanced_variant_sampling"]) is True
+    assert int(generation_shared["dimension_min"]) > 0
+    assert int(generation_shared["dimension_max"]) >= int(generation_shared["dimension_min"])
+    assert int(generation_shared["radius_min"]) > 0
+    assert int(generation_shared["radius_max"]) >= int(generation_shared["radius_min"])
+    assert int(generation_shared["sphere_radius_min"]) > 0
+    assert int(generation_shared["sphere_radius_max"]) >= int(generation_shared["sphere_radius_min"])
+    assert "task_geometry_analytical_3d_volume" in cfg["generation"]["task_overrides"]
+    assert "task_geometry_analytical_3d_surface_area" in cfg["generation"]["task_overrides"]
 
     render_shared = cfg["rendering"]["shared"]
     assert int(render_shared["canvas_size_min"]) > 0
@@ -291,12 +290,15 @@ def test_geometry_analytical_3d_defaults_loaded() -> None:
         cfg,
         task_id="task_geometry_analytical_3d_volume",
     )
-    assert int(gen_defaults["dimension_min"]) > 0
-    assert int(gen_defaults["dimension_max"]) >= int(gen_defaults["dimension_min"])
-    assert int(gen_defaults["radius_min"]) > 0
-    assert int(gen_defaults["radius_max"]) >= int(gen_defaults["radius_min"])
-    assert int(gen_defaults["sphere_radius_min"]) > 0
-    assert int(gen_defaults["sphere_radius_max"]) >= int(gen_defaults["sphere_radius_min"])
+    assert sorted(gen_defaults["variant_weights"].keys()) == [
+        "cone_given_r_h",
+        "cylinder_given_r_h",
+        "rectangular_prism_given_lwh",
+        "sphere_given_r",
+        "square_pyramid_given_base_height",
+        "triangular_prism_given_b_h_l",
+    ]
+    assert bool(gen_defaults["balanced_variant_sampling"]) is True
     assert int(render_defaults["line_width"]) > 0
     assert str(prompt_defaults["bundle_id"]).strip()
     assert str(prompt_defaults["task_family_key"]).strip()
@@ -316,6 +318,31 @@ def test_geometry_analytical_3d_defaults_loaded() -> None:
         "sphere_given_r",
     ):
         assert str(prompt_defaults[f"question_text_{key}"]).strip()
+
+    surface_generation, _surface_rendering, surface_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_analytical_3d_surface_area",
+    )
+    assert sorted(surface_generation["variant_weights"].keys()) == [
+        "cone_given_r_slant_height",
+        "cylinder_given_r_h",
+        "rectangular_prism_given_lwh",
+        "sphere_given_r",
+        "square_pyramid_given_base_side_slant_height",
+        "triangular_prism_given_a_b_c_l",
+    ]
+    assert bool(surface_generation["balanced_variant_sampling"]) is True
+    assert str(surface_prompt["bundle_id"]).strip() == "geometry_analytical_surface_area_v1"
+    assert str(surface_prompt["task_key"]).strip() == "analytical_surface_area_query"
+    for key in (
+        "rectangular_prism_given_lwh",
+        "triangular_prism_given_a_b_c_l",
+        "square_pyramid_given_base_side_slant_height",
+        "cylinder_given_r_h",
+        "cone_given_r_slant_height",
+        "sphere_given_r",
+    ):
+        assert str(surface_prompt[f"question_text_{key}"]).strip()
 
 
 def test_tile_path_defaults_loaded() -> None:

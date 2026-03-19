@@ -1,0 +1,4353 @@
+{
+  "collection": {
+    "collected_variant_counts": {
+      "cone_given_r_slant_height": 100,
+      "cylinder_given_r_h": 100,
+      "rectangular_prism_given_lwh": 100,
+      "sphere_given_r": 100,
+      "square_pyramid_given_base_side_slant_height": 100,
+      "triangular_prism_given_a_b_c_l": 100
+    },
+    "expected_variants": [
+      "cone_given_r_slant_height",
+      "cylinder_given_r_h",
+      "rectangular_prism_given_lwh",
+      "sphere_given_r",
+      "square_pyramid_given_base_side_slant_height",
+      "triangular_prism_given_a_b_c_l"
+    ],
+    "generated_variant_counts": {
+      "cone_given_r_slant_height": 101,
+      "cylinder_given_r_h": 110,
+      "rectangular_prism_given_lwh": 108,
+      "sphere_given_r": 100,
+      "square_pyramid_given_base_side_slant_height": 115,
+      "triangular_prism_given_a_b_c_l": 107
+    },
+    "generation_error_counts": {},
+    "target_count_per_variant": 100,
+    "total_generated": 641
+  },
+  "domain": "geometry",
+  "failed_variants": [],
+  "has_task_variants": true,
+  "incomplete_variants": [],
+  "mode": "per_variant",
+  "no_samples_collected": false,
+  "overall": {
+    "answer_type_counts": {
+      "integer": 300,
+      "pi_expression": 300
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.01,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": null,
+        "pass": null,
+        "status": "not_applicable_non_numeric_answers",
+        "threshold": 0.5
+      },
+      "min_unique_answers": {
+        "observed": 484,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": null,
+    "max_answer_count": 6,
+    "max_answer_frequency": 0.01,
+    "pass": true,
+    "sample_count": 600,
+    "top_answers": [
+      {
+        "answer_label": "1444π",
+        "count": 6
+      },
+      {
+        "answer_label": "400π",
+        "count": 6
+      },
+      {
+        "answer_label": "100π",
+        "count": 5
+      },
+      {
+        "answer_label": "1764π",
+        "count": 5
+      },
+      {
+        "answer_label": "3600π",
+        "count": 5
+      },
+      {
+        "answer_label": "4096π",
+        "count": 5
+      },
+      {
+        "answer_label": "676π",
+        "count": 5
+      },
+      {
+        "answer_label": "10000π",
+        "count": 4
+      },
+      {
+        "answer_label": "2688",
+        "count": 4
+      },
+      {
+        "answer_label": "2880",
+        "count": 4
+      },
+      {
+        "answer_label": "4656π",
+        "count": 4
+      },
+      {
+        "answer_label": "484π",
+        "count": 4
+      },
+      {
+        "answer_label": "4851π",
+        "count": 4
+      },
+      {
+        "answer_label": "4900π",
+        "count": 4
+      },
+      {
+        "answer_label": "1008",
+        "count": 3
+      },
+      {
+        "answer_label": "1440",
+        "count": 3
+      },
+      {
+        "answer_label": "2016",
+        "count": 3
+      },
+      {
+        "answer_label": "2116π",
+        "count": 3
+      },
+      {
+        "answer_label": "256π",
+        "count": 3
+      },
+      {
+        "answer_label": "3364π",
+        "count": 3
+      },
+      {
+        "answer_label": "4320",
+        "count": 3
+      },
+      {
+        "answer_label": "4624π",
+        "count": 3
+      },
+      {
+        "answer_label": "6084π",
+        "count": 3
+      },
+      {
+        "answer_label": "720",
+        "count": 3
+      },
+      {
+        "answer_label": "1092",
+        "count": 2
+      },
+      {
+        "answer_label": "1120",
+        "count": 2
+      },
+      {
+        "answer_label": "1134π",
+        "count": 2
+      },
+      {
+        "answer_label": "1156π",
+        "count": 2
+      },
+      {
+        "answer_label": "1296π",
+        "count": 2
+      },
+      {
+        "answer_label": "1456",
+        "count": 2
+      },
+      {
+        "answer_label": "1512",
+        "count": 2
+      },
+      {
+        "answer_label": "1600π",
+        "count": 2
+      },
+      {
+        "answer_label": "1728π",
+        "count": 2
+      },
+      {
+        "answer_label": "1764",
+        "count": 2
+      },
+      {
+        "answer_label": "1800",
+        "count": 2
+      },
+      {
+        "answer_label": "1936π",
+        "count": 2
+      },
+      {
+        "answer_label": "2070",
+        "count": 2
+      },
+      {
+        "answer_label": "2120π",
+        "count": 2
+      },
+      {
+        "answer_label": "2220π",
+        "count": 2
+      },
+      {
+        "answer_label": "2256",
+        "count": 2
+      },
+      {
+        "answer_label": "2464π",
+        "count": 2
+      },
+      {
+        "answer_label": "2574π",
+        "count": 2
+      },
+      {
+        "answer_label": "2688π",
+        "count": 2
+      },
+      {
+        "answer_label": "2784π",
+        "count": 2
+      },
+      {
+        "answer_label": "2916π",
+        "count": 2
+      },
+      {
+        "answer_label": "2940π",
+        "count": 2
+      },
+      {
+        "answer_label": "3136π",
+        "count": 2
+      },
+      {
+        "answer_label": "3312π",
+        "count": 2
+      },
+      {
+        "answer_label": "3960π",
+        "count": 2
+      },
+      {
+        "answer_label": "4200",
+        "count": 2
+      },
+      {
+        "answer_label": "4356π",
+        "count": 2
+      },
+      {
+        "answer_label": "4588π",
+        "count": 2
+      },
+      {
+        "answer_label": "4662",
+        "count": 2
+      },
+      {
+        "answer_label": "4704π",
+        "count": 2
+      },
+      {
+        "answer_label": "480",
+        "count": 2
+      },
+      {
+        "answer_label": "4928",
+        "count": 2
+      },
+      {
+        "answer_label": "5120",
+        "count": 2
+      },
+      {
+        "answer_label": "576π",
+        "count": 2
+      },
+      {
+        "answer_label": "5776π",
+        "count": 2
+      },
+      {
+        "answer_label": "6400π",
+        "count": 2
+      },
+      {
+        "answer_label": "672π",
+        "count": 2
+      },
+      {
+        "answer_label": "7396π",
+        "count": 2
+      },
+      {
+        "answer_label": "7744π",
+        "count": 2
+      },
+      {
+        "answer_label": "780",
+        "count": 2
+      },
+      {
+        "answer_label": "784",
+        "count": 2
+      },
+      {
+        "answer_label": "8100π",
+        "count": 2
+      },
+      {
+        "answer_label": "840",
+        "count": 2
+      },
+      {
+        "answer_label": "840π",
+        "count": 2
+      },
+      {
+        "answer_label": "960",
+        "count": 2
+      },
+      {
+        "answer_label": "10000",
+        "count": 1
+      },
+      {
+        "answer_label": "1012π",
+        "count": 1
+      },
+      {
+        "answer_label": "1020π",
+        "count": 1
+      },
+      {
+        "answer_label": "1024π",
+        "count": 1
+      },
+      {
+        "answer_label": "1026π",
+        "count": 1
+      },
+      {
+        "answer_label": "1034π",
+        "count": 1
+      },
+      {
+        "answer_label": "1037",
+        "count": 1
+      },
+      {
+        "answer_label": "1040",
+        "count": 1
+      },
+      {
+        "answer_label": "1045π",
+        "count": 1
+      },
+      {
+        "answer_label": "1050",
+        "count": 1
+      },
+      {
+        "answer_label": "10542",
+        "count": 1
+      },
+      {
+        "answer_label": "1060π",
+        "count": 1
+      },
+      {
+        "answer_label": "1065",
+        "count": 1
+      },
+      {
+        "answer_label": "1071",
+        "count": 1
+      },
+      {
+        "answer_label": "1078π",
+        "count": 1
+      },
+      {
+        "answer_label": "1080",
+        "count": 1
+      },
+      {
+        "answer_label": "1098π",
+        "count": 1
+      },
+      {
+        "answer_label": "1100",
+        "count": 1
+      },
+      {
+        "answer_label": "1120π",
+        "count": 1
+      },
+      {
+        "answer_label": "1140",
+        "count": 1
+      },
+      {
+        "answer_label": "1170π",
+        "count": 1
+      },
+      {
+        "answer_label": "1176",
+        "count": 1
+      },
+      {
+        "answer_label": "1176π",
+        "count": 1
+      },
+      {
+        "answer_label": "11926",
+        "count": 1
+      },
+      {
+        "answer_label": "1200",
+        "count": 1
+      },
+      {
+        "answer_label": "1215",
+        "count": 1
+      },
+      {
+        "answer_label": "1222π",
+        "count": 1
+      },
+      {
+        "answer_label": "1224π",
+        "count": 1
+      },
+      {
+        "answer_label": "1235",
+        "count": 1
+      },
+      {
+        "answer_label": "1246",
+        "count": 1
+      },
+      {
+        "answer_label": "1260",
+        "count": 1
+      },
+      {
+        "answer_label": "1260π",
+        "count": 1
+      },
+      {
+        "answer_label": "1276π",
+        "count": 1
+      },
+      {
+        "answer_label": "1296",
+        "count": 1
+      },
+      {
+        "answer_label": "1298π",
+        "count": 1
+      },
+      {
+        "answer_label": "1302π",
+        "count": 1
+      },
+      {
+        "answer_label": "1312π",
+        "count": 1
+      },
+      {
+        "answer_label": "132",
+        "count": 1
+      },
+      {
+        "answer_label": "13240",
+        "count": 1
+      },
+      {
+        "answer_label": "1330",
+        "count": 1
+      },
+      {
+        "answer_label": "1332",
+        "count": 1
+      },
+      {
+        "answer_label": "1334π",
+        "count": 1
+      },
+      {
+        "answer_label": "1364π",
+        "count": 1
+      },
+      {
+        "answer_label": "1380π",
+        "count": 1
+      },
+      {
+        "answer_label": "1449",
+        "count": 1
+      },
+      {
+        "answer_label": "1449π",
+        "count": 1
+      },
+      {
+        "answer_label": "144π",
+        "count": 1
+      },
+      {
+        "answer_label": "1452π",
+        "count": 1
+      },
+      {
+        "answer_label": "1470",
+        "count": 1
+      },
+      {
+        "answer_label": "1485",
+        "count": 1
+      },
+      {
+        "answer_label": "1500",
+        "count": 1
+      },
+      {
+        "answer_label": "1504",
+        "count": 1
+      },
+      {
+        "answer_label": "1504π",
+        "count": 1
+      },
+      {
+        "answer_label": "1508π",
+        "count": 1
+      },
+      {
+        "answer_label": "1522",
+        "count": 1
+      },
+      {
+        "answer_label": "1525",
+        "count": 1
+      },
+      {
+        "answer_label": "1540",
+        "count": 1
+      },
+      {
+        "answer_label": "1560π",
+        "count": 1
+      },
+      {
+        "answer_label": "1564π",
+        "count": 1
+      },
+      {
+        "answer_label": "1593π",
+        "count": 1
+      },
+      {
+        "answer_label": "1600",
+        "count": 1
+      },
+      {
+        "answer_label": "1608π",
+        "count": 1
+      },
+      {
+        "answer_label": "1612π",
+        "count": 1
+      },
+      {
+        "answer_label": "1615",
+        "count": 1
+      },
+      {
+        "answer_label": "1620",
+        "count": 1
+      },
+      {
+        "answer_label": "1622",
+        "count": 1
+      },
+      {
+        "answer_label": "1632",
+        "count": 1
+      },
+      {
+        "answer_label": "1647π",
+        "count": 1
+      },
+      {
+        "answer_label": "1648",
+        "count": 1
+      },
+      {
+        "answer_label": "1652π",
+        "count": 1
+      },
+      {
+        "answer_label": "1664",
+        "count": 1
+      },
+      {
+        "answer_label": "1680",
+        "count": 1
+      },
+      {
+        "answer_label": "1680π",
+        "count": 1
+      },
+      {
+        "answer_label": "1692π",
+        "count": 1
+      },
+      {
+        "answer_label": "1710",
+        "count": 1
+      },
+      {
+        "answer_label": "1720",
+        "count": 1
+      },
+      {
+        "answer_label": "1728",
+        "count": 1
+      },
+      {
+        "answer_label": "1740",
+        "count": 1
+      },
+      {
+        "answer_label": "1742π",
+        "count": 1
+      },
+      {
+        "answer_label": "1743",
+        "count": 1
+      },
+      {
+        "answer_label": "1760",
+        "count": 1
+      },
+      {
+        "answer_label": "1802",
+        "count": 1
+      },
+      {
+        "answer_label": "1806π",
+        "count": 1
+      },
+      {
+        "answer_label": "1812",
+        "count": 1
+      },
+      {
+        "answer_label": "1820π",
+        "count": 1
+      },
+      {
+        "answer_label": "1848",
+        "count": 1
+      },
+      {
+        "answer_label": "1850π",
+        "count": 1
+      },
+      {
+        "answer_label": "1860",
+        "count": 1
+      },
+      {
+        "answer_label": "1863",
+        "count": 1
+      },
+      {
+        "answer_label": "1890π",
+        "count": 1
+      },
+      {
+        "answer_label": "1898π",
+        "count": 1
+      },
+      {
+        "answer_label": "1904π",
+        "count": 1
+      },
+      {
+        "answer_label": "1909",
+        "count": 1
+      },
+      {
+        "answer_label": "1920",
+        "count": 1
+      },
+      {
+        "answer_label": "1971π",
+        "count": 1
+      },
+      {
+        "answer_label": "1972π",
+        "count": 1
+      },
+      {
+        "answer_label": "1976",
+        "count": 1
+      },
+      {
+        "answer_label": "1976π",
+        "count": 1
+      },
+      {
+        "answer_label": "1980",
+        "count": 1
+      },
+      {
+        "answer_label": "1995",
+        "count": 1
+      },
+      {
+        "answer_label": "200π",
+        "count": 1
+      },
+      {
+        "answer_label": "2010π",
+        "count": 1
+      },
+      {
+        "answer_label": "2014π",
+        "count": 1
+      },
+      {
+        "answer_label": "2015π",
+        "count": 1
+      },
+      {
+        "answer_label": "2016π",
+        "count": 1
+      },
+      {
+        "answer_label": "2026",
+        "count": 1
+      },
+      {
+        "answer_label": "2052",
+        "count": 1
+      },
+      {
+        "answer_label": "2059π",
+        "count": 1
+      },
+      {
+        "answer_label": "2062",
+        "count": 1
+      },
+      {
+        "answer_label": "2068π",
+        "count": 1
+      },
+      {
+        "answer_label": "2077π",
+        "count": 1
+      },
+      {
+        "answer_label": "2100π",
+        "count": 1
+      },
+      {
+        "answer_label": "2104",
+        "count": 1
+      },
+      {
+        "answer_label": "2132π",
+        "count": 1
+      },
+      {
+        "answer_label": "2146π",
+        "count": 1
+      },
+      {
+        "answer_label": "2162π",
+        "count": 1
+      },
+      {
+        "answer_label": "2184",
+        "count": 1
+      },
+      {
+        "answer_label": "2184π",
+        "count": 1
+      },
+      {
+        "answer_label": "2185",
+        "count": 1
+      },
+      {
+        "answer_label": "2201π",
+        "count": 1
+      },
+      {
+        "answer_label": "2208",
+        "count": 1
+      },
+      {
+        "answer_label": "2225",
+        "count": 1
+      },
+      {
+        "answer_label": "2232π",
+        "count": 1
+      },
+      {
+        "answer_label": "2240",
+        "count": 1
+      },
+      {
+        "answer_label": "2244π",
+        "count": 1
+      },
+      {
+        "answer_label": "2250",
+        "count": 1
+      },
+      {
+        "answer_label": "225π",
+        "count": 1
+      },
+      {
+        "answer_label": "2268",
+        "count": 1
+      },
+      {
+        "answer_label": "2268π",
+        "count": 1
+      },
+      {
+        "answer_label": "2280",
+        "count": 1
+      },
+      {
+        "answer_label": "2295",
+        "count": 1
+      },
+      {
+        "answer_label": "2304",
+        "count": 1
+      },
+      {
+        "answer_label": "2304π",
+        "count": 1
+      },
+      {
+        "answer_label": "2310π",
+        "count": 1
+      },
+      {
+        "answer_label": "2332",
+        "count": 1
+      },
+      {
+        "answer_label": "2343",
+        "count": 1
+      },
+      {
+        "answer_label": "2349",
+        "count": 1
+      },
+      {
+        "answer_label": "2352",
+        "count": 1
+      },
+      {
+        "answer_label": "2368π",
+        "count": 1
+      },
+      {
+        "answer_label": "2398",
+        "count": 1
+      },
+      {
+        "answer_label": "2400π",
+        "count": 1
+      },
+      {
+        "answer_label": "2408",
+        "count": 1
+      },
+      {
+        "answer_label": "2424",
+        "count": 1
+      },
+      {
+        "answer_label": "2438π",
+        "count": 1
+      },
+      {
+        "answer_label": "2448π",
+        "count": 1
+      },
+      {
+        "answer_label": "2449π",
+        "count": 1
+      },
+      {
+        "answer_label": "2450",
+        "count": 1
+      },
+      {
+        "answer_label": "2499",
+        "count": 1
+      },
+      {
+        "answer_label": "2500",
+        "count": 1
+      },
+      {
+        "answer_label": "2500π",
+        "count": 1
+      },
+      {
+        "answer_label": "2506",
+        "count": 1
+      },
+      {
+        "answer_label": "2520",
+        "count": 1
+      },
+      {
+        "answer_label": "2520π",
+        "count": 1
+      },
+      {
+        "answer_label": "2526",
+        "count": 1
+      },
+      {
+        "answer_label": "2538",
+        "count": 1
+      },
+      {
+        "answer_label": "2544",
+        "count": 1
+      },
+      {
+        "answer_label": "2548",
+        "count": 1
+      },
+      {
+        "answer_label": "2584π",
+        "count": 1
+      },
+      {
+        "answer_label": "2590",
+        "count": 1
+      },
+      {
+        "answer_label": "2592",
+        "count": 1
+      },
+      {
+        "answer_label": "2592π",
+        "count": 1
+      },
+      {
+        "answer_label": "2610",
+        "count": 1
+      },
+      {
+        "answer_label": "2619",
+        "count": 1
+      },
+      {
+        "answer_label": "2625π",
+        "count": 1
+      },
+      {
+        "answer_label": "2632",
+        "count": 1
+      },
+      {
+        "answer_label": "2635",
+        "count": 1
+      },
+      {
+        "answer_label": "265",
+        "count": 1
+      },
+      {
+        "answer_label": "2656",
+        "count": 1
+      },
+      {
+        "answer_label": "266π",
+        "count": 1
+      },
+      {
+        "answer_label": "2704",
+        "count": 1
+      },
+      {
+        "answer_label": "2704π",
+        "count": 1
+      },
+      {
+        "answer_label": "2734",
+        "count": 1
+      },
+      {
+        "answer_label": "2744",
+        "count": 1
+      },
+      {
+        "answer_label": "2783",
+        "count": 1
+      },
+      {
+        "answer_label": "279",
+        "count": 1
+      },
+      {
+        "answer_label": "2790",
+        "count": 1
+      },
+      {
+        "answer_label": "2805",
+        "count": 1
+      },
+      {
+        "answer_label": "2808",
+        "count": 1
+      },
+      {
+        "answer_label": "2820",
+        "count": 1
+      },
+      {
+        "answer_label": "2883",
+        "count": 1
+      },
+      {
+        "answer_label": "2898π",
+        "count": 1
+      },
+      {
+        "answer_label": "2912π",
+        "count": 1
+      },
+      {
+        "answer_label": "2952",
+        "count": 1
+      },
+      {
+        "answer_label": "2958π",
+        "count": 1
+      },
+      {
+        "answer_label": "2992π",
+        "count": 1
+      },
+      {
+        "answer_label": "3006",
+        "count": 1
+      },
+      {
+        "answer_label": "3024π",
+        "count": 1
+      },
+      {
+        "answer_label": "3040",
+        "count": 1
+      },
+      {
+        "answer_label": "304π",
+        "count": 1
+      },
+      {
+        "answer_label": "3052",
+        "count": 1
+      },
+      {
+        "answer_label": "3060",
+        "count": 1
+      },
+      {
+        "answer_label": "3064",
+        "count": 1
+      },
+      {
+        "answer_label": "3071π",
+        "count": 1
+      },
+      {
+        "answer_label": "3100",
+        "count": 1
+      },
+      {
+        "answer_label": "3103",
+        "count": 1
+      },
+      {
+        "answer_label": "3120π",
+        "count": 1
+      },
+      {
+        "answer_label": "3132π",
+        "count": 1
+      },
+      {
+        "answer_label": "3154π",
+        "count": 1
+      },
+      {
+        "answer_label": "3159π",
+        "count": 1
+      },
+      {
+        "answer_label": "3196",
+        "count": 1
+      },
+      {
+        "answer_label": "320π",
+        "count": 1
+      },
+      {
+        "answer_label": "3219π",
+        "count": 1
+      },
+      {
+        "answer_label": "3237",
+        "count": 1
+      },
+      {
+        "answer_label": "3240",
+        "count": 1
+      },
+      {
+        "answer_label": "3258",
+        "count": 1
+      },
+      {
+        "answer_label": "3315π",
+        "count": 1
+      },
+      {
+        "answer_label": "3328",
+        "count": 1
+      },
+      {
+        "answer_label": "3348π",
+        "count": 1
+      },
+      {
+        "answer_label": "3360",
+        "count": 1
+      },
+      {
+        "answer_label": "3360π",
+        "count": 1
+      },
+      {
+        "answer_label": "336π",
+        "count": 1
+      },
+      {
+        "answer_label": "3384",
+        "count": 1
+      },
+      {
+        "answer_label": "340π",
+        "count": 1
+      },
+      {
+        "answer_label": "3444π",
+        "count": 1
+      },
+      {
+        "answer_label": "3485π",
+        "count": 1
+      },
+      {
+        "answer_label": "3496π",
+        "count": 1
+      },
+      {
+        "answer_label": "3502",
+        "count": 1
+      },
+      {
+        "answer_label": "351",
+        "count": 1
+      },
+      {
+        "answer_label": "3528",
+        "count": 1
+      },
+      {
+        "answer_label": "3536",
+        "count": 1
+      },
+      {
+        "answer_label": "3536π",
+        "count": 1
+      },
+      {
+        "answer_label": "3558",
+        "count": 1
+      },
+      {
+        "answer_label": "360",
+        "count": 1
+      },
+      {
+        "answer_label": "3600",
+        "count": 1
+      },
+      {
+        "answer_label": "3604π",
+        "count": 1
+      },
+      {
+        "answer_label": "3612",
+        "count": 1
+      },
+      {
+        "answer_label": "3632",
+        "count": 1
+      },
+      {
+        "answer_label": "3640π",
+        "count": 1
+      },
+      {
+        "answer_label": "3649",
+        "count": 1
+      },
+      {
+        "answer_label": "3675",
+        "count": 1
+      },
+      {
+        "answer_label": "3678",
+        "count": 1
+      },
+      {
+        "answer_label": "368π",
+        "count": 1
+      },
+      {
+        "answer_label": "3712",
+        "count": 1
+      },
+      {
+        "answer_label": "3712π",
+        "count": 1
+      },
+      {
+        "answer_label": "3780",
+        "count": 1
+      },
+      {
+        "answer_label": "3808",
+        "count": 1
+      },
+      {
+        "answer_label": "3811",
+        "count": 1
+      },
+      {
+        "answer_label": "3844π",
+        "count": 1
+      },
+      {
+        "answer_label": "384π",
+        "count": 1
+      },
+      {
+        "answer_label": "3870π",
+        "count": 1
+      },
+      {
+        "answer_label": "3888",
+        "count": 1
+      },
+      {
+        "answer_label": "3910",
+        "count": 1
+      },
+      {
+        "answer_label": "3920",
+        "count": 1
+      },
+      {
+        "answer_label": "3956π",
+        "count": 1
+      },
+      {
+        "answer_label": "396",
+        "count": 1
+      },
+      {
+        "answer_label": "3960",
+        "count": 1
+      },
+      {
+        "answer_label": "3968",
+        "count": 1
+      },
+      {
+        "answer_label": "3999π",
+        "count": 1
+      },
+      {
+        "answer_label": "4017",
+        "count": 1
+      },
+      {
+        "answer_label": "4032",
+        "count": 1
+      },
+      {
+        "answer_label": "405",
+        "count": 1
+      },
+      {
+        "answer_label": "4061",
+        "count": 1
+      },
+      {
+        "answer_label": "4092π",
+        "count": 1
+      },
+      {
+        "answer_label": "410π",
+        "count": 1
+      },
+      {
+        "answer_label": "4126",
+        "count": 1
+      },
+      {
+        "answer_label": "4140π",
+        "count": 1
+      },
+      {
+        "answer_label": "4144",
+        "count": 1
+      },
+      {
+        "answer_label": "4160",
+        "count": 1
+      },
+      {
+        "answer_label": "4168",
+        "count": 1
+      },
+      {
+        "answer_label": "416π",
+        "count": 1
+      },
+      {
+        "answer_label": "4176",
+        "count": 1
+      },
+      {
+        "answer_label": "4184",
+        "count": 1
+      },
+      {
+        "answer_label": "4216π",
+        "count": 1
+      },
+      {
+        "answer_label": "4234",
+        "count": 1
+      },
+      {
+        "answer_label": "4246",
+        "count": 1
+      },
+      {
+        "answer_label": "425",
+        "count": 1
+      },
+      {
+        "answer_label": "4292π",
+        "count": 1
+      },
+      {
+        "answer_label": "432",
+        "count": 1
+      },
+      {
+        "answer_label": "432π",
+        "count": 1
+      },
+      {
+        "answer_label": "4352",
+        "count": 1
+      },
+      {
+        "answer_label": "4354",
+        "count": 1
+      },
+      {
+        "answer_label": "4365",
+        "count": 1
+      },
+      {
+        "answer_label": "4370π",
+        "count": 1
+      },
+      {
+        "answer_label": "440",
+        "count": 1
+      },
+      {
+        "answer_label": "4429",
+        "count": 1
+      },
+      {
+        "answer_label": "4465π",
+        "count": 1
+      },
+      {
+        "answer_label": "4477",
+        "count": 1
+      },
+      {
+        "answer_label": "4478",
+        "count": 1
+      },
+      {
+        "answer_label": "4488",
+        "count": 1
+      },
+      {
+        "answer_label": "4488π",
+        "count": 1
+      },
+      {
+        "answer_label": "450",
+        "count": 1
+      },
+      {
+        "answer_label": "4508",
+        "count": 1
+      },
+      {
+        "answer_label": "4524π",
+        "count": 1
+      },
+      {
+        "answer_label": "4546",
+        "count": 1
+      },
+      {
+        "answer_label": "4563",
+        "count": 1
+      },
+      {
+        "answer_label": "4590",
+        "count": 1
+      },
+      {
+        "answer_label": "4636",
+        "count": 1
+      },
+      {
+        "answer_label": "4648",
+        "count": 1
+      },
+      {
+        "answer_label": "464π",
+        "count": 1
+      },
+      {
+        "answer_label": "4650",
+        "count": 1
+      },
+      {
+        "answer_label": "468π",
+        "count": 1
+      },
+      {
+        "answer_label": "470π",
+        "count": 1
+      },
+      {
+        "answer_label": "4712",
+        "count": 1
+      },
+      {
+        "answer_label": "4840",
+        "count": 1
+      },
+      {
+        "answer_label": "4851",
+        "count": 1
+      },
+      {
+        "answer_label": "4926",
+        "count": 1
+      },
+      {
+        "answer_label": "4960",
+        "count": 1
+      },
+      {
+        "answer_label": "4961",
+        "count": 1
+      },
+      {
+        "answer_label": "4988π",
+        "count": 1
+      },
+      {
+        "answer_label": "5029",
+        "count": 1
+      },
+      {
+        "answer_label": "5040",
+        "count": 1
+      },
+      {
+        "answer_label": "504π",
+        "count": 1
+      },
+      {
+        "answer_label": "5068",
+        "count": 1
+      },
+      {
+        "answer_label": "5082π",
+        "count": 1
+      },
+      {
+        "answer_label": "5138",
+        "count": 1
+      },
+      {
+        "answer_label": "5152",
+        "count": 1
+      },
+      {
+        "answer_label": "5175",
+        "count": 1
+      },
+      {
+        "answer_label": "5184π",
+        "count": 1
+      },
+      {
+        "answer_label": "5208",
+        "count": 1
+      },
+      {
+        "answer_label": "5230",
+        "count": 1
+      },
+      {
+        "answer_label": "5248",
+        "count": 1
+      },
+      {
+        "answer_label": "5265",
+        "count": 1
+      },
+      {
+        "answer_label": "5280",
+        "count": 1
+      },
+      {
+        "answer_label": "5292π",
+        "count": 1
+      },
+      {
+        "answer_label": "5320π",
+        "count": 1
+      },
+      {
+        "answer_label": "5360",
+        "count": 1
+      },
+      {
+        "answer_label": "5376",
+        "count": 1
+      },
+      {
+        "answer_label": "540",
+        "count": 1
+      },
+      {
+        "answer_label": "5406",
+        "count": 1
+      },
+      {
+        "answer_label": "5408",
+        "count": 1
+      },
+      {
+        "answer_label": "5410",
+        "count": 1
+      },
+      {
+        "answer_label": "5421",
+        "count": 1
+      },
+      {
+        "answer_label": "5445",
+        "count": 1
+      },
+      {
+        "answer_label": "5472",
+        "count": 1
+      },
+      {
+        "answer_label": "5472π",
+        "count": 1
+      },
+      {
+        "answer_label": "5476π",
+        "count": 1
+      },
+      {
+        "answer_label": "5508π",
+        "count": 1
+      },
+      {
+        "answer_label": "552",
+        "count": 1
+      },
+      {
+        "answer_label": "5520",
+        "count": 1
+      },
+      {
+        "answer_label": "552π",
+        "count": 1
+      },
+      {
+        "answer_label": "5540",
+        "count": 1
+      },
+      {
+        "answer_label": "5544π",
+        "count": 1
+      },
+      {
+        "answer_label": "5568",
+        "count": 1
+      },
+      {
+        "answer_label": "5662",
+        "count": 1
+      },
+      {
+        "answer_label": "5712",
+        "count": 1
+      },
+      {
+        "answer_label": "5850",
+        "count": 1
+      },
+      {
+        "answer_label": "5862",
+        "count": 1
+      },
+      {
+        "answer_label": "588",
+        "count": 1
+      },
+      {
+        "answer_label": "5904π",
+        "count": 1
+      },
+      {
+        "answer_label": "5986",
+        "count": 1
+      },
+      {
+        "answer_label": "6020π",
+        "count": 1
+      },
+      {
+        "answer_label": "6063",
+        "count": 1
+      },
+      {
+        "answer_label": "6114",
+        "count": 1
+      },
+      {
+        "answer_label": "6132π",
+        "count": 1
+      },
+      {
+        "answer_label": "6156",
+        "count": 1
+      },
+      {
+        "answer_label": "616",
+        "count": 1
+      },
+      {
+        "answer_label": "620",
+        "count": 1
+      },
+      {
+        "answer_label": "6200",
+        "count": 1
+      },
+      {
+        "answer_label": "6224",
+        "count": 1
+      },
+      {
+        "answer_label": "624π",
+        "count": 1
+      },
+      {
+        "answer_label": "6264",
+        "count": 1
+      },
+      {
+        "answer_label": "6302",
+        "count": 1
+      },
+      {
+        "answer_label": "6336",
+        "count": 1
+      },
+      {
+        "answer_label": "6424π",
+        "count": 1
+      },
+      {
+        "answer_label": "6468",
+        "count": 1
+      },
+      {
+        "answer_label": "6508",
+        "count": 1
+      },
+      {
+        "answer_label": "651",
+        "count": 1
+      },
+      {
+        "answer_label": "6528π",
+        "count": 1
+      },
+      {
+        "answer_label": "6568",
+        "count": 1
+      },
+      {
+        "answer_label": "660π",
+        "count": 1
+      },
+      {
+        "answer_label": "6664",
+        "count": 1
+      },
+      {
+        "answer_label": "672",
+        "count": 1
+      },
+      {
+        "answer_label": "6726",
+        "count": 1
+      },
+      {
+        "answer_label": "682π",
+        "count": 1
+      },
+      {
+        "answer_label": "6852",
+        "count": 1
+      },
+      {
+        "answer_label": "686π",
+        "count": 1
+      },
+      {
+        "answer_label": "6922",
+        "count": 1
+      },
+      {
+        "answer_label": "696",
+        "count": 1
+      },
+      {
+        "answer_label": "6986",
+        "count": 1
+      },
+      {
+        "answer_label": "7000",
+        "count": 1
+      },
+      {
+        "answer_label": "702π",
+        "count": 1
+      },
+      {
+        "answer_label": "7042",
+        "count": 1
+      },
+      {
+        "answer_label": "7056π",
+        "count": 1
+      },
+      {
+        "answer_label": "714π",
+        "count": 1
+      },
+      {
+        "answer_label": "7216π",
+        "count": 1
+      },
+      {
+        "answer_label": "7392π",
+        "count": 1
+      },
+      {
+        "answer_label": "744",
+        "count": 1
+      },
+      {
+        "answer_label": "7502",
+        "count": 1
+      },
+      {
+        "answer_label": "750π",
+        "count": 1
+      },
+      {
+        "answer_label": "752",
+        "count": 1
+      },
+      {
+        "answer_label": "7560π",
+        "count": 1
+      },
+      {
+        "answer_label": "7700π",
+        "count": 1
+      },
+      {
+        "answer_label": "7702",
+        "count": 1
+      },
+      {
+        "answer_label": "7776π",
+        "count": 1
+      },
+      {
+        "answer_label": "784π",
+        "count": 1
+      },
+      {
+        "answer_label": "8004π",
+        "count": 1
+      },
+      {
+        "answer_label": "800π",
+        "count": 1
+      },
+      {
+        "answer_label": "8036π",
+        "count": 1
+      },
+      {
+        "answer_label": "812π",
+        "count": 1
+      },
+      {
+        "answer_label": "816π",
+        "count": 1
+      },
+      {
+        "answer_label": "8232π",
+        "count": 1
+      },
+      {
+        "answer_label": "8256π",
+        "count": 1
+      },
+      {
+        "answer_label": "8272π",
+        "count": 1
+      },
+      {
+        "answer_label": "8312",
+        "count": 1
+      },
+      {
+        "answer_label": "8400π",
+        "count": 1
+      },
+      {
+        "answer_label": "8464π",
+        "count": 1
+      },
+      {
+        "answer_label": "8484",
+        "count": 1
+      },
+      {
+        "answer_label": "860π",
+        "count": 1
+      },
+      {
+        "answer_label": "8650",
+        "count": 1
+      },
+      {
+        "answer_label": "870",
+        "count": 1
+      },
+      {
+        "answer_label": "871",
+        "count": 1
+      },
+      {
+        "answer_label": "8836π",
+        "count": 1
+      },
+      {
+        "answer_label": "888π",
+        "count": 1
+      },
+      {
+        "answer_label": "8968",
+        "count": 1
+      },
+      {
+        "answer_label": "900π",
+        "count": 1
+      },
+      {
+        "answer_label": "9024π",
+        "count": 1
+      },
+      {
+        "answer_label": "910",
+        "count": 1
+      },
+      {
+        "answer_label": "912",
+        "count": 1
+      },
+      {
+        "answer_label": "918π",
+        "count": 1
+      },
+      {
+        "answer_label": "920π",
+        "count": 1
+      },
+      {
+        "answer_label": "9216π",
+        "count": 1
+      },
+      {
+        "answer_label": "936",
+        "count": 1
+      },
+      {
+        "answer_label": "9832",
+        "count": 1
+      },
+      {
+        "answer_label": "988π",
+        "count": 1
+      },
+      {
+        "answer_label": "9984",
+        "count": 1
+      }
+    ],
+    "unique_answers": 484
+  },
+  "pass": true,
+  "per_task_variant": {
+    "cone_given_r_slant_height": {
+      "answer_type_counts": {
+        "pi_expression": 100
+      },
+      "checks": {
+        "max_answer_frequency": {
+          "observed": 0.04,
+          "pass": true,
+          "threshold": 0.25
+        },
+        "max_five_bin_frequency": {
+          "observed": null,
+          "pass": null,
+          "status": "not_applicable_non_numeric_answers",
+          "threshold": 0.5
+        },
+        "min_unique_answers": {
+          "observed": 87,
+          "pass": true,
+          "threshold": 5
+        }
+      },
+      "five_bin_numeric": null,
+      "max_answer_count": 4,
+      "max_answer_frequency": 0.04,
+      "pass": true,
+      "sample_count": 100,
+      "top_answers": [
+        {
+          "answer_label": "4656π",
+          "count": 4
+        },
+        {
+          "answer_label": "4851π",
+          "count": 4
+        },
+        {
+          "answer_label": "3600π",
+          "count": 3
+        },
+        {
+          "answer_label": "2220π",
+          "count": 2
+        },
+        {
+          "answer_label": "2464π",
+          "count": 2
+        },
+        {
+          "answer_label": "2574π",
+          "count": 2
+        },
+        {
+          "answer_label": "4704π",
+          "count": 2
+        },
+        {
+          "answer_label": "840π",
+          "count": 2
+        },
+        {
+          "answer_label": "1045π",
+          "count": 1
+        },
+        {
+          "answer_label": "1060π",
+          "count": 1
+        },
+        {
+          "answer_label": "1078π",
+          "count": 1
+        },
+        {
+          "answer_label": "1098π",
+          "count": 1
+        },
+        {
+          "answer_label": "1134π",
+          "count": 1
+        },
+        {
+          "answer_label": "1170π",
+          "count": 1
+        },
+        {
+          "answer_label": "1176π",
+          "count": 1
+        },
+        {
+          "answer_label": "1224π",
+          "count": 1
+        },
+        {
+          "answer_label": "1276π",
+          "count": 1
+        },
+        {
+          "answer_label": "1302π",
+          "count": 1
+        },
+        {
+          "answer_label": "1334π",
+          "count": 1
+        },
+        {
+          "answer_label": "1364π",
+          "count": 1
+        },
+        {
+          "answer_label": "1380π",
+          "count": 1
+        },
+        {
+          "answer_label": "1449π",
+          "count": 1
+        },
+        {
+          "answer_label": "1452π",
+          "count": 1
+        },
+        {
+          "answer_label": "1560π",
+          "count": 1
+        },
+        {
+          "answer_label": "1593π",
+          "count": 1
+        },
+        {
+          "answer_label": "1608π",
+          "count": 1
+        },
+        {
+          "answer_label": "1612π",
+          "count": 1
+        },
+        {
+          "answer_label": "1647π",
+          "count": 1
+        },
+        {
+          "answer_label": "1652π",
+          "count": 1
+        },
+        {
+          "answer_label": "1680π",
+          "count": 1
+        },
+        {
+          "answer_label": "1742π",
+          "count": 1
+        },
+        {
+          "answer_label": "1764π",
+          "count": 1
+        },
+        {
+          "answer_label": "1820π",
+          "count": 1
+        },
+        {
+          "answer_label": "1850π",
+          "count": 1
+        },
+        {
+          "answer_label": "1890π",
+          "count": 1
+        },
+        {
+          "answer_label": "1898π",
+          "count": 1
+        },
+        {
+          "answer_label": "1971π",
+          "count": 1
+        },
+        {
+          "answer_label": "200π",
+          "count": 1
+        },
+        {
+          "answer_label": "2010π",
+          "count": 1
+        },
+        {
+          "answer_label": "2015π",
+          "count": 1
+        },
+        {
+          "answer_label": "2016π",
+          "count": 1
+        },
+        {
+          "answer_label": "2059π",
+          "count": 1
+        },
+        {
+          "answer_label": "2077π",
+          "count": 1
+        },
+        {
+          "answer_label": "2100π",
+          "count": 1
+        },
+        {
+          "answer_label": "2146π",
+          "count": 1
+        },
+        {
+          "answer_label": "2201π",
+          "count": 1
+        },
+        {
+          "answer_label": "2244π",
+          "count": 1
+        },
+        {
+          "answer_label": "225π",
+          "count": 1
+        },
+        {
+          "answer_label": "2310π",
+          "count": 1
+        },
+        {
+          "answer_label": "2449π",
+          "count": 1
+        },
+        {
+          "answer_label": "2520π",
+          "count": 1
+        },
+        {
+          "answer_label": "2625π",
+          "count": 1
+        },
+        {
+          "answer_label": "2940π",
+          "count": 1
+        },
+        {
+          "answer_label": "3024π",
+          "count": 1
+        },
+        {
+          "answer_label": "3071π",
+          "count": 1
+        },
+        {
+          "answer_label": "3120π",
+          "count": 1
+        },
+        {
+          "answer_label": "3154π",
+          "count": 1
+        },
+        {
+          "answer_label": "3159π",
+          "count": 1
+        },
+        {
+          "answer_label": "320π",
+          "count": 1
+        },
+        {
+          "answer_label": "3219π",
+          "count": 1
+        },
+        {
+          "answer_label": "3315π",
+          "count": 1
+        },
+        {
+          "answer_label": "3360π",
+          "count": 1
+        },
+        {
+          "answer_label": "340π",
+          "count": 1
+        },
+        {
+          "answer_label": "3444π",
+          "count": 1
+        },
+        {
+          "answer_label": "3485π",
+          "count": 1
+        },
+        {
+          "answer_label": "368π",
+          "count": 1
+        },
+        {
+          "answer_label": "3870π",
+          "count": 1
+        },
+        {
+          "answer_label": "3956π",
+          "count": 1
+        },
+        {
+          "answer_label": "3960π",
+          "count": 1
+        },
+        {
+          "answer_label": "3999π",
+          "count": 1
+        },
+        {
+          "answer_label": "410π",
+          "count": 1
+        },
+        {
+          "answer_label": "4140π",
+          "count": 1
+        },
+        {
+          "answer_label": "416π",
+          "count": 1
+        },
+        {
+          "answer_label": "432π",
+          "count": 1
+        },
+        {
+          "answer_label": "4370π",
+          "count": 1
+        },
+        {
+          "answer_label": "4465π",
+          "count": 1
+        },
+        {
+          "answer_label": "464π",
+          "count": 1
+        },
+        {
+          "answer_label": "468π",
+          "count": 1
+        },
+        {
+          "answer_label": "624π",
+          "count": 1
+        },
+        {
+          "answer_label": "672π",
+          "count": 1
+        },
+        {
+          "answer_label": "686π",
+          "count": 1
+        },
+        {
+          "answer_label": "702π",
+          "count": 1
+        },
+        {
+          "answer_label": "714π",
+          "count": 1
+        },
+        {
+          "answer_label": "750π",
+          "count": 1
+        },
+        {
+          "answer_label": "860π",
+          "count": 1
+        },
+        {
+          "answer_label": "918π",
+          "count": 1
+        },
+        {
+          "answer_label": "988π",
+          "count": 1
+        }
+      ],
+      "unique_answers": 87
+    },
+    "cylinder_given_r_h": {
+      "answer_type_counts": {
+        "pi_expression": 100
+      },
+      "checks": {
+        "max_answer_frequency": {
+          "observed": 0.02,
+          "pass": true,
+          "threshold": 0.25
+        },
+        "max_five_bin_frequency": {
+          "observed": null,
+          "pass": null,
+          "status": "not_applicable_non_numeric_answers",
+          "threshold": 0.5
+        },
+        "min_unique_answers": {
+          "observed": 94,
+          "pass": true,
+          "threshold": 5
+        }
+      },
+      "five_bin_numeric": null,
+      "max_answer_count": 2,
+      "max_answer_frequency": 0.02,
+      "pass": true,
+      "sample_count": 100,
+      "top_answers": [
+        {
+          "answer_label": "1728π",
+          "count": 2
+        },
+        {
+          "answer_label": "2120π",
+          "count": 2
+        },
+        {
+          "answer_label": "2688π",
+          "count": 2
+        },
+        {
+          "answer_label": "2784π",
+          "count": 2
+        },
+        {
+          "answer_label": "3312π",
+          "count": 2
+        },
+        {
+          "answer_label": "4588π",
+          "count": 2
+        },
+        {
+          "answer_label": "1012π",
+          "count": 1
+        },
+        {
+          "answer_label": "1020π",
+          "count": 1
+        },
+        {
+          "answer_label": "1026π",
+          "count": 1
+        },
+        {
+          "answer_label": "1034π",
+          "count": 1
+        },
+        {
+          "answer_label": "1120π",
+          "count": 1
+        },
+        {
+          "answer_label": "1134π",
+          "count": 1
+        },
+        {
+          "answer_label": "1222π",
+          "count": 1
+        },
+        {
+          "answer_label": "1260π",
+          "count": 1
+        },
+        {
+          "answer_label": "1298π",
+          "count": 1
+        },
+        {
+          "answer_label": "1312π",
+          "count": 1
+        },
+        {
+          "answer_label": "1504π",
+          "count": 1
+        },
+        {
+          "answer_label": "1508π",
+          "count": 1
+        },
+        {
+          "answer_label": "1564π",
+          "count": 1
+        },
+        {
+          "answer_label": "1692π",
+          "count": 1
+        },
+        {
+          "answer_label": "1806π",
+          "count": 1
+        },
+        {
+          "answer_label": "1904π",
+          "count": 1
+        },
+        {
+          "answer_label": "1972π",
+          "count": 1
+        },
+        {
+          "answer_label": "1976π",
+          "count": 1
+        },
+        {
+          "answer_label": "2014π",
+          "count": 1
+        },
+        {
+          "answer_label": "2068π",
+          "count": 1
+        },
+        {
+          "answer_label": "2132π",
+          "count": 1
+        },
+        {
+          "answer_label": "2162π",
+          "count": 1
+        },
+        {
+          "answer_label": "2184π",
+          "count": 1
+        },
+        {
+          "answer_label": "2232π",
+          "count": 1
+        },
+        {
+          "answer_label": "2268π",
+          "count": 1
+        },
+        {
+          "answer_label": "2368π",
+          "count": 1
+        },
+        {
+          "answer_label": "2400π",
+          "count": 1
+        },
+        {
+          "answer_label": "2438π",
+          "count": 1
+        },
+        {
+          "answer_label": "2448π",
+          "count": 1
+        },
+        {
+          "answer_label": "2584π",
+          "count": 1
+        },
+        {
+          "answer_label": "2592π",
+          "count": 1
+        },
+        {
+          "answer_label": "266π",
+          "count": 1
+        },
+        {
+          "answer_label": "2898π",
+          "count": 1
+        },
+        {
+          "answer_label": "2912π",
+          "count": 1
+        },
+        {
+          "answer_label": "2940π",
+          "count": 1
+        },
+        {
+          "answer_label": "2958π",
+          "count": 1
+        },
+        {
+          "answer_label": "2992π",
+          "count": 1
+        },
+        {
+          "answer_label": "304π",
+          "count": 1
+        },
+        {
+          "answer_label": "3132π",
+          "count": 1
+        },
+        {
+          "answer_label": "3348π",
+          "count": 1
+        },
+        {
+          "answer_label": "336π",
+          "count": 1
+        },
+        {
+          "answer_label": "3496π",
+          "count": 1
+        },
+        {
+          "answer_label": "3536π",
+          "count": 1
+        },
+        {
+          "answer_label": "3604π",
+          "count": 1
+        },
+        {
+          "answer_label": "3640π",
+          "count": 1
+        },
+        {
+          "answer_label": "3712π",
+          "count": 1
+        },
+        {
+          "answer_label": "384π",
+          "count": 1
+        },
+        {
+          "answer_label": "3960π",
+          "count": 1
+        },
+        {
+          "answer_label": "4092π",
+          "count": 1
+        },
+        {
+          "answer_label": "4216π",
+          "count": 1
+        },
+        {
+          "answer_label": "4292π",
+          "count": 1
+        },
+        {
+          "answer_label": "4488π",
+          "count": 1
+        },
+        {
+          "answer_label": "4524π",
+          "count": 1
+        },
+        {
+          "answer_label": "470π",
+          "count": 1
+        },
+        {
+          "answer_label": "4988π",
+          "count": 1
+        },
+        {
+          "answer_label": "504π",
+          "count": 1
+        },
+        {
+          "answer_label": "5082π",
+          "count": 1
+        },
+        {
+          "answer_label": "5292π",
+          "count": 1
+        },
+        {
+          "answer_label": "5320π",
+          "count": 1
+        },
+        {
+          "answer_label": "5472π",
+          "count": 1
+        },
+        {
+          "answer_label": "5508π",
+          "count": 1
+        },
+        {
+          "answer_label": "552π",
+          "count": 1
+        },
+        {
+          "answer_label": "5544π",
+          "count": 1
+        },
+        {
+          "answer_label": "5904π",
+          "count": 1
+        },
+        {
+          "answer_label": "6020π",
+          "count": 1
+        },
+        {
+          "answer_label": "6132π",
+          "count": 1
+        },
+        {
+          "answer_label": "6424π",
+          "count": 1
+        },
+        {
+          "answer_label": "6528π",
+          "count": 1
+        },
+        {
+          "answer_label": "660π",
+          "count": 1
+        },
+        {
+          "answer_label": "672π",
+          "count": 1
+        },
+        {
+          "answer_label": "682π",
+          "count": 1
+        },
+        {
+          "answer_label": "7216π",
+          "count": 1
+        },
+        {
+          "answer_label": "7392π",
+          "count": 1
+        },
+        {
+          "answer_label": "7560π",
+          "count": 1
+        },
+        {
+          "answer_label": "7700π",
+          "count": 1
+        },
+        {
+          "answer_label": "7776π",
+          "count": 1
+        },
+        {
+          "answer_label": "8004π",
+          "count": 1
+        },
+        {
+          "answer_label": "800π",
+          "count": 1
+        },
+        {
+          "answer_label": "8036π",
+          "count": 1
+        },
+        {
+          "answer_label": "812π",
+          "count": 1
+        },
+        {
+          "answer_label": "816π",
+          "count": 1
+        },
+        {
+          "answer_label": "8232π",
+          "count": 1
+        },
+        {
+          "answer_label": "8256π",
+          "count": 1
+        },
+        {
+          "answer_label": "8272π",
+          "count": 1
+        },
+        {
+          "answer_label": "8400π",
+          "count": 1
+        },
+        {
+          "answer_label": "888π",
+          "count": 1
+        },
+        {
+          "answer_label": "9024π",
+          "count": 1
+        },
+        {
+          "answer_label": "920π",
+          "count": 1
+        }
+      ],
+      "unique_answers": 94
+    },
+    "rectangular_prism_given_lwh": {
+      "answer_type_counts": {
+        "integer": 100
+      },
+      "checks": {
+        "max_answer_frequency": {
+          "observed": 0.02,
+          "pass": true,
+          "threshold": 0.25
+        },
+        "max_five_bin_frequency": {
+          "observed": 0.36,
+          "pass": true,
+          "threshold": 0.5
+        },
+        "min_unique_answers": {
+          "observed": 99,
+          "pass": true,
+          "threshold": 5
+        }
+      },
+      "five_bin_numeric": {
+        "bin_count": 5,
+        "bins": [
+          {
+            "bin_id": 0,
+            "count": 33,
+            "label": "[588, 3118.4)"
+          },
+          {
+            "bin_id": 1,
+            "count": 36,
+            "label": "[3118.4, 5648.8)"
+          },
+          {
+            "bin_id": 2,
+            "count": 21,
+            "label": "[5648.8, 8179.2)"
+          },
+          {
+            "bin_id": 3,
+            "count": 8,
+            "label": "[8179.2, 10709.6)"
+          },
+          {
+            "bin_id": 4,
+            "count": 2,
+            "label": "[10709.6, 13240]"
+          }
+        ],
+        "max_bin_count": 36,
+        "max_bin_frequency": 0.36,
+        "range_max": 13240.0,
+        "range_min": 588.0
+      },
+      "max_answer_count": 2,
+      "max_answer_frequency": 0.02,
+      "pass": true,
+      "sample_count": 100,
+      "top_answers": [
+        {
+          "answer_label": "4662",
+          "count": 2
+        },
+        {
+          "answer_label": "10000",
+          "count": 1
+        },
+        {
+          "answer_label": "10542",
+          "count": 1
+        },
+        {
+          "answer_label": "11926",
+          "count": 1
+        },
+        {
+          "answer_label": "1246",
+          "count": 1
+        },
+        {
+          "answer_label": "13240",
+          "count": 1
+        },
+        {
+          "answer_label": "1332",
+          "count": 1
+        },
+        {
+          "answer_label": "1522",
+          "count": 1
+        },
+        {
+          "answer_label": "1600",
+          "count": 1
+        },
+        {
+          "answer_label": "1622",
+          "count": 1
+        },
+        {
+          "answer_label": "1632",
+          "count": 1
+        },
+        {
+          "answer_label": "1648",
+          "count": 1
+        },
+        {
+          "answer_label": "1764",
+          "count": 1
+        },
+        {
+          "answer_label": "1802",
+          "count": 1
+        },
+        {
+          "answer_label": "1812",
+          "count": 1
+        },
+        {
+          "answer_label": "2026",
+          "count": 1
+        },
+        {
+          "answer_label": "2062",
+          "count": 1
+        },
+        {
+          "answer_label": "2104",
+          "count": 1
+        },
+        {
+          "answer_label": "2332",
+          "count": 1
+        },
+        {
+          "answer_label": "2398",
+          "count": 1
+        },
+        {
+          "answer_label": "2408",
+          "count": 1
+        },
+        {
+          "answer_label": "2424",
+          "count": 1
+        },
+        {
+          "answer_label": "2450",
+          "count": 1
+        },
+        {
+          "answer_label": "2500",
+          "count": 1
+        },
+        {
+          "answer_label": "2506",
+          "count": 1
+        },
+        {
+          "answer_label": "2526",
+          "count": 1
+        },
+        {
+          "answer_label": "2538",
+          "count": 1
+        },
+        {
+          "answer_label": "2632",
+          "count": 1
+        },
+        {
+          "answer_label": "2656",
+          "count": 1
+        },
+        {
+          "answer_label": "2688",
+          "count": 1
+        },
+        {
+          "answer_label": "2734",
+          "count": 1
+        },
+        {
+          "answer_label": "2744",
+          "count": 1
+        },
+        {
+          "answer_label": "2952",
+          "count": 1
+        },
+        {
+          "answer_label": "3006",
+          "count": 1
+        },
+        {
+          "answer_label": "3052",
+          "count": 1
+        },
+        {
+          "answer_label": "3064",
+          "count": 1
+        },
+        {
+          "answer_label": "3100",
+          "count": 1
+        },
+        {
+          "answer_label": "3258",
+          "count": 1
+        },
+        {
+          "answer_label": "3328",
+          "count": 1
+        },
+        {
+          "answer_label": "3360",
+          "count": 1
+        },
+        {
+          "answer_label": "3502",
+          "count": 1
+        },
+        {
+          "answer_label": "3528",
+          "count": 1
+        },
+        {
+          "answer_label": "3536",
+          "count": 1
+        },
+        {
+          "answer_label": "3558",
+          "count": 1
+        },
+        {
+          "answer_label": "3612",
+          "count": 1
+        },
+        {
+          "answer_label": "3632",
+          "count": 1
+        },
+        {
+          "answer_label": "3678",
+          "count": 1
+        },
+        {
+          "answer_label": "3808",
+          "count": 1
+        },
+        {
+          "answer_label": "3910",
+          "count": 1
+        },
+        {
+          "answer_label": "4126",
+          "count": 1
+        },
+        {
+          "answer_label": "4168",
+          "count": 1
+        },
+        {
+          "answer_label": "4184",
+          "count": 1
+        },
+        {
+          "answer_label": "4234",
+          "count": 1
+        },
+        {
+          "answer_label": "4246",
+          "count": 1
+        },
+        {
+          "answer_label": "4354",
+          "count": 1
+        },
+        {
+          "answer_label": "4478",
+          "count": 1
+        },
+        {
+          "answer_label": "4546",
+          "count": 1
+        },
+        {
+          "answer_label": "4648",
+          "count": 1
+        },
+        {
+          "answer_label": "4650",
+          "count": 1
+        },
+        {
+          "answer_label": "4840",
+          "count": 1
+        },
+        {
+          "answer_label": "4926",
+          "count": 1
+        },
+        {
+          "answer_label": "5068",
+          "count": 1
+        },
+        {
+          "answer_label": "5120",
+          "count": 1
+        },
+        {
+          "answer_label": "5138",
+          "count": 1
+        },
+        {
+          "answer_label": "5230",
+          "count": 1
+        },
+        {
+          "answer_label": "5248",
+          "count": 1
+        },
+        {
+          "answer_label": "5360",
+          "count": 1
+        },
+        {
+          "answer_label": "5406",
+          "count": 1
+        },
+        {
+          "answer_label": "5408",
+          "count": 1
+        },
+        {
+          "answer_label": "5410",
+          "count": 1
+        },
+        {
+          "answer_label": "5540",
+          "count": 1
+        },
+        {
+          "answer_label": "5662",
+          "count": 1
+        },
+        {
+          "answer_label": "5712",
+          "count": 1
+        },
+        {
+          "answer_label": "5850",
+          "count": 1
+        },
+        {
+          "answer_label": "5862",
+          "count": 1
+        },
+        {
+          "answer_label": "588",
+          "count": 1
+        },
+        {
+          "answer_label": "5986",
+          "count": 1
+        },
+        {
+          "answer_label": "6114",
+          "count": 1
+        },
+        {
+          "answer_label": "6156",
+          "count": 1
+        },
+        {
+          "answer_label": "6200",
+          "count": 1
+        },
+        {
+          "answer_label": "6224",
+          "count": 1
+        },
+        {
+          "answer_label": "6302",
+          "count": 1
+        },
+        {
+          "answer_label": "6468",
+          "count": 1
+        },
+        {
+          "answer_label": "6508",
+          "count": 1
+        },
+        {
+          "answer_label": "6568",
+          "count": 1
+        },
+        {
+          "answer_label": "6664",
+          "count": 1
+        },
+        {
+          "answer_label": "6726",
+          "count": 1
+        },
+        {
+          "answer_label": "6852",
+          "count": 1
+        },
+        {
+          "answer_label": "6922",
+          "count": 1
+        },
+        {
+          "answer_label": "6986",
+          "count": 1
+        },
+        {
+          "answer_label": "7042",
+          "count": 1
+        },
+        {
+          "answer_label": "7502",
+          "count": 1
+        },
+        {
+          "answer_label": "7702",
+          "count": 1
+        },
+        {
+          "answer_label": "8312",
+          "count": 1
+        },
+        {
+          "answer_label": "8484",
+          "count": 1
+        },
+        {
+          "answer_label": "8650",
+          "count": 1
+        },
+        {
+          "answer_label": "8968",
+          "count": 1
+        },
+        {
+          "answer_label": "9832",
+          "count": 1
+        },
+        {
+          "answer_label": "9984",
+          "count": 1
+        }
+      ],
+      "unique_answers": 99
+    },
+    "sphere_given_r": {
+      "answer_type_counts": {
+        "pi_expression": 100
+      },
+      "checks": {
+        "max_answer_frequency": {
+          "observed": 0.06,
+          "pass": true,
+          "threshold": 0.25
+        },
+        "max_five_bin_frequency": {
+          "observed": null,
+          "pass": null,
+          "status": "not_applicable_non_numeric_answers",
+          "threshold": 0.5
+        },
+        "min_unique_answers": {
+          "observed": 42,
+          "pass": true,
+          "threshold": 5
+        }
+      },
+      "five_bin_numeric": null,
+      "max_answer_count": 6,
+      "max_answer_frequency": 0.06,
+      "pass": true,
+      "sample_count": 100,
+      "top_answers": [
+        {
+          "answer_label": "1444π",
+          "count": 6
+        },
+        {
+          "answer_label": "400π",
+          "count": 6
+        },
+        {
+          "answer_label": "100π",
+          "count": 5
+        },
+        {
+          "answer_label": "4096π",
+          "count": 5
+        },
+        {
+          "answer_label": "676π",
+          "count": 5
+        },
+        {
+          "answer_label": "10000π",
+          "count": 4
+        },
+        {
+          "answer_label": "1764π",
+          "count": 4
+        },
+        {
+          "answer_label": "484π",
+          "count": 4
+        },
+        {
+          "answer_label": "4900π",
+          "count": 4
+        },
+        {
+          "answer_label": "2116π",
+          "count": 3
+        },
+        {
+          "answer_label": "256π",
+          "count": 3
+        },
+        {
+          "answer_label": "3364π",
+          "count": 3
+        },
+        {
+          "answer_label": "4624π",
+          "count": 3
+        },
+        {
+          "answer_label": "6084π",
+          "count": 3
+        },
+        {
+          "answer_label": "1156π",
+          "count": 2
+        },
+        {
+          "answer_label": "1296π",
+          "count": 2
+        },
+        {
+          "answer_label": "1600π",
+          "count": 2
+        },
+        {
+          "answer_label": "1936π",
+          "count": 2
+        },
+        {
+          "answer_label": "2916π",
+          "count": 2
+        },
+        {
+          "answer_label": "3136π",
+          "count": 2
+        },
+        {
+          "answer_label": "3600π",
+          "count": 2
+        },
+        {
+          "answer_label": "4356π",
+          "count": 2
+        },
+        {
+          "answer_label": "576π",
+          "count": 2
+        },
+        {
+          "answer_label": "5776π",
+          "count": 2
+        },
+        {
+          "answer_label": "6400π",
+          "count": 2
+        },
+        {
+          "answer_label": "7396π",
+          "count": 2
+        },
+        {
+          "answer_label": "7744π",
+          "count": 2
+        },
+        {
+          "answer_label": "8100π",
+          "count": 2
+        },
+        {
+          "answer_label": "1024π",
+          "count": 1
+        },
+        {
+          "answer_label": "144π",
+          "count": 1
+        },
+        {
+          "answer_label": "2304π",
+          "count": 1
+        },
+        {
+          "answer_label": "2500π",
+          "count": 1
+        },
+        {
+          "answer_label": "2704π",
+          "count": 1
+        },
+        {
+          "answer_label": "3844π",
+          "count": 1
+        },
+        {
+          "answer_label": "5184π",
+          "count": 1
+        },
+        {
+          "answer_label": "5476π",
+          "count": 1
+        },
+        {
+          "answer_label": "7056π",
+          "count": 1
+        },
+        {
+          "answer_label": "784π",
+          "count": 1
+        },
+        {
+          "answer_label": "8464π",
+          "count": 1
+        },
+        {
+          "answer_label": "8836π",
+          "count": 1
+        },
+        {
+          "answer_label": "900π",
+          "count": 1
+        },
+        {
+          "answer_label": "9216π",
+          "count": 1
+        }
+      ],
+      "unique_answers": 42
+    },
+    "square_pyramid_given_base_side_slant_height": {
+      "answer_type_counts": {
+        "integer": 100
+      },
+      "checks": {
+        "max_answer_frequency": {
+          "observed": 0.02,
+          "pass": true,
+          "threshold": 0.25
+        },
+        "max_five_bin_frequency": {
+          "observed": 0.3,
+          "pass": true,
+          "threshold": 0.5
+        },
+        "min_unique_answers": {
+          "observed": 98,
+          "pass": true,
+          "threshold": 5
+        }
+      },
+      "five_bin_numeric": {
+        "bin_count": 5,
+        "bins": [
+          {
+            "bin_id": 0,
+            "count": 29,
+            "label": "[132, 1505.6)"
+          },
+          {
+            "bin_id": 1,
+            "count": 30,
+            "label": "[1505.6, 2879.2)"
+          },
+          {
+            "bin_id": 2,
+            "count": 15,
+            "label": "[2879.2, 4252.8)"
+          },
+          {
+            "bin_id": 3,
+            "count": 23,
+            "label": "[4252.8, 5626.4)"
+          },
+          {
+            "bin_id": 4,
+            "count": 3,
+            "label": "[5626.4, 7000]"
+          }
+        ],
+        "max_bin_count": 30,
+        "max_bin_frequency": 0.3,
+        "range_max": 7000.0,
+        "range_min": 132.0
+      },
+      "max_answer_count": 2,
+      "max_answer_frequency": 0.02,
+      "pass": true,
+      "sample_count": 100,
+      "top_answers": [
+        {
+          "answer_label": "4928",
+          "count": 2
+        },
+        {
+          "answer_label": "720",
+          "count": 2
+        },
+        {
+          "answer_label": "1037",
+          "count": 1
+        },
+        {
+          "answer_label": "1065",
+          "count": 1
+        },
+        {
+          "answer_label": "1071",
+          "count": 1
+        },
+        {
+          "answer_label": "1092",
+          "count": 1
+        },
+        {
+          "answer_label": "1100",
+          "count": 1
+        },
+        {
+          "answer_label": "1215",
+          "count": 1
+        },
+        {
+          "answer_label": "1235",
+          "count": 1
+        },
+        {
+          "answer_label": "132",
+          "count": 1
+        },
+        {
+          "answer_label": "1449",
+          "count": 1
+        },
+        {
+          "answer_label": "1456",
+          "count": 1
+        },
+        {
+          "answer_label": "1485",
+          "count": 1
+        },
+        {
+          "answer_label": "1504",
+          "count": 1
+        },
+        {
+          "answer_label": "1525",
+          "count": 1
+        },
+        {
+          "answer_label": "1540",
+          "count": 1
+        },
+        {
+          "answer_label": "1615",
+          "count": 1
+        },
+        {
+          "answer_label": "1664",
+          "count": 1
+        },
+        {
+          "answer_label": "1720",
+          "count": 1
+        },
+        {
+          "answer_label": "1743",
+          "count": 1
+        },
+        {
+          "answer_label": "1760",
+          "count": 1
+        },
+        {
+          "answer_label": "1764",
+          "count": 1
+        },
+        {
+          "answer_label": "1800",
+          "count": 1
+        },
+        {
+          "answer_label": "1863",
+          "count": 1
+        },
+        {
+          "answer_label": "1909",
+          "count": 1
+        },
+        {
+          "answer_label": "1920",
+          "count": 1
+        },
+        {
+          "answer_label": "1976",
+          "count": 1
+        },
+        {
+          "answer_label": "1995",
+          "count": 1
+        },
+        {
+          "answer_label": "2016",
+          "count": 1
+        },
+        {
+          "answer_label": "2185",
+          "count": 1
+        },
+        {
+          "answer_label": "2225",
+          "count": 1
+        },
+        {
+          "answer_label": "2295",
+          "count": 1
+        },
+        {
+          "answer_label": "2343",
+          "count": 1
+        },
+        {
+          "answer_label": "2349",
+          "count": 1
+        },
+        {
+          "answer_label": "2499",
+          "count": 1
+        },
+        {
+          "answer_label": "2544",
+          "count": 1
+        },
+        {
+          "answer_label": "2548",
+          "count": 1
+        },
+        {
+          "answer_label": "2592",
+          "count": 1
+        },
+        {
+          "answer_label": "2619",
+          "count": 1
+        },
+        {
+          "answer_label": "2635",
+          "count": 1
+        },
+        {
+          "answer_label": "265",
+          "count": 1
+        },
+        {
+          "answer_label": "2688",
+          "count": 1
+        },
+        {
+          "answer_label": "2704",
+          "count": 1
+        },
+        {
+          "answer_label": "2783",
+          "count": 1
+        },
+        {
+          "answer_label": "279",
+          "count": 1
+        },
+        {
+          "answer_label": "2805",
+          "count": 1
+        },
+        {
+          "answer_label": "2883",
+          "count": 1
+        },
+        {
+          "answer_label": "3103",
+          "count": 1
+        },
+        {
+          "answer_label": "3196",
+          "count": 1
+        },
+        {
+          "answer_label": "3237",
+          "count": 1
+        },
+        {
+          "answer_label": "3384",
+          "count": 1
+        },
+        {
+          "answer_label": "351",
+          "count": 1
+        },
+        {
+          "answer_label": "3600",
+          "count": 1
+        },
+        {
+          "answer_label": "3649",
+          "count": 1
+        },
+        {
+          "answer_label": "3675",
+          "count": 1
+        },
+        {
+          "answer_label": "3712",
+          "count": 1
+        },
+        {
+          "answer_label": "3811",
+          "count": 1
+        },
+        {
+          "answer_label": "3968",
+          "count": 1
+        },
+        {
+          "answer_label": "4017",
+          "count": 1
+        },
+        {
+          "answer_label": "405",
+          "count": 1
+        },
+        {
+          "answer_label": "4061",
+          "count": 1
+        },
+        {
+          "answer_label": "4176",
+          "count": 1
+        },
+        {
+          "answer_label": "4200",
+          "count": 1
+        },
+        {
+          "answer_label": "425",
+          "count": 1
+        },
+        {
+          "answer_label": "432",
+          "count": 1
+        },
+        {
+          "answer_label": "4352",
+          "count": 1
+        },
+        {
+          "answer_label": "4365",
+          "count": 1
+        },
+        {
+          "answer_label": "4429",
+          "count": 1
+        },
+        {
+          "answer_label": "4477",
+          "count": 1
+        },
+        {
+          "answer_label": "4488",
+          "count": 1
+        },
+        {
+          "answer_label": "4508",
+          "count": 1
+        },
+        {
+          "answer_label": "4563",
+          "count": 1
+        },
+        {
+          "answer_label": "4636",
+          "count": 1
+        },
+        {
+          "answer_label": "4712",
+          "count": 1
+        },
+        {
+          "answer_label": "4851",
+          "count": 1
+        },
+        {
+          "answer_label": "4960",
+          "count": 1
+        },
+        {
+          "answer_label": "4961",
+          "count": 1
+        },
+        {
+          "answer_label": "5029",
+          "count": 1
+        },
+        {
+          "answer_label": "5120",
+          "count": 1
+        },
+        {
+          "answer_label": "5152",
+          "count": 1
+        },
+        {
+          "answer_label": "5175",
+          "count": 1
+        },
+        {
+          "answer_label": "5208",
+          "count": 1
+        },
+        {
+          "answer_label": "5265",
+          "count": 1
+        },
+        {
+          "answer_label": "5421",
+          "count": 1
+        },
+        {
+          "answer_label": "5445",
+          "count": 1
+        },
+        {
+          "answer_label": "552",
+          "count": 1
+        },
+        {
+          "answer_label": "5520",
+          "count": 1
+        },
+        {
+          "answer_label": "6063",
+          "count": 1
+        },
+        {
+          "answer_label": "616",
+          "count": 1
+        },
+        {
+          "answer_label": "620",
+          "count": 1
+        },
+        {
+          "answer_label": "6336",
+          "count": 1
+        },
+        {
+          "answer_label": "651",
+          "count": 1
+        },
+        {
+          "answer_label": "7000",
+          "count": 1
+        },
+        {
+          "answer_label": "752",
+          "count": 1
+        },
+        {
+          "answer_label": "780",
+          "count": 1
+        },
+        {
+          "answer_label": "784",
+          "count": 1
+        },
+        {
+          "answer_label": "871",
+          "count": 1
+        },
+        {
+          "answer_label": "960",
+          "count": 1
+        }
+      ],
+      "unique_answers": 98
+    },
+    "triangular_prism_given_a_b_c_l": {
+      "answer_type_counts": {
+        "integer": 100
+      },
+      "checks": {
+        "max_answer_frequency": {
+          "observed": 0.04,
+          "pass": true,
+          "threshold": 0.25
+        },
+        "max_five_bin_frequency": {
+          "observed": 0.43,
+          "pass": true,
+          "threshold": 0.5
+        },
+        "min_unique_answers": {
+          "observed": 83,
+          "pass": true,
+          "threshold": 5
+        }
+      },
+      "five_bin_numeric": {
+        "bin_count": 5,
+        "bins": [
+          {
+            "bin_id": 0,
+            "count": 43,
+            "label": "[360, 1540.8)"
+          },
+          {
+            "bin_id": 1,
+            "count": 29,
+            "label": "[1540.8, 2721.6)"
+          },
+          {
+            "bin_id": 2,
+            "count": 12,
+            "label": "[2721.6, 3902.4)"
+          },
+          {
+            "bin_id": 3,
+            "count": 11,
+            "label": "[3902.4, 5083.2)"
+          },
+          {
+            "bin_id": 4,
+            "count": 5,
+            "label": "[5083.2, 6264]"
+          }
+        ],
+        "max_bin_count": 43,
+        "max_bin_frequency": 0.43,
+        "range_max": 6264.0,
+        "range_min": 360.0
+      },
+      "max_answer_count": 4,
+      "max_answer_frequency": 0.04,
+      "pass": true,
+      "sample_count": 100,
+      "top_answers": [
+        {
+          "answer_label": "2880",
+          "count": 4
+        },
+        {
+          "answer_label": "1008",
+          "count": 3
+        },
+        {
+          "answer_label": "1440",
+          "count": 3
+        },
+        {
+          "answer_label": "4320",
+          "count": 3
+        },
+        {
+          "answer_label": "1120",
+          "count": 2
+        },
+        {
+          "answer_label": "1512",
+          "count": 2
+        },
+        {
+          "answer_label": "2016",
+          "count": 2
+        },
+        {
+          "answer_label": "2070",
+          "count": 2
+        },
+        {
+          "answer_label": "2256",
+          "count": 2
+        },
+        {
+          "answer_label": "2688",
+          "count": 2
+        },
+        {
+          "answer_label": "480",
+          "count": 2
+        },
+        {
+          "answer_label": "840",
+          "count": 2
+        },
+        {
+          "answer_label": "1040",
+          "count": 1
+        },
+        {
+          "answer_label": "1050",
+          "count": 1
+        },
+        {
+          "answer_label": "1080",
+          "count": 1
+        },
+        {
+          "answer_label": "1092",
+          "count": 1
+        },
+        {
+          "answer_label": "1140",
+          "count": 1
+        },
+        {
+          "answer_label": "1176",
+          "count": 1
+        },
+        {
+          "answer_label": "1200",
+          "count": 1
+        },
+        {
+          "answer_label": "1260",
+          "count": 1
+        },
+        {
+          "answer_label": "1296",
+          "count": 1
+        },
+        {
+          "answer_label": "1330",
+          "count": 1
+        },
+        {
+          "answer_label": "1456",
+          "count": 1
+        },
+        {
+          "answer_label": "1470",
+          "count": 1
+        },
+        {
+          "answer_label": "1500",
+          "count": 1
+        },
+        {
+          "answer_label": "1620",
+          "count": 1
+        },
+        {
+          "answer_label": "1680",
+          "count": 1
+        },
+        {
+          "answer_label": "1710",
+          "count": 1
+        },
+        {
+          "answer_label": "1728",
+          "count": 1
+        },
+        {
+          "answer_label": "1740",
+          "count": 1
+        },
+        {
+          "answer_label": "1800",
+          "count": 1
+        },
+        {
+          "answer_label": "1848",
+          "count": 1
+        },
+        {
+          "answer_label": "1860",
+          "count": 1
+        },
+        {
+          "answer_label": "1980",
+          "count": 1
+        },
+        {
+          "answer_label": "2052",
+          "count": 1
+        },
+        {
+          "answer_label": "2184",
+          "count": 1
+        },
+        {
+          "answer_label": "2208",
+          "count": 1
+        },
+        {
+          "answer_label": "2240",
+          "count": 1
+        },
+        {
+          "answer_label": "2250",
+          "count": 1
+        },
+        {
+          "answer_label": "2268",
+          "count": 1
+        },
+        {
+          "answer_label": "2280",
+          "count": 1
+        },
+        {
+          "answer_label": "2304",
+          "count": 1
+        },
+        {
+          "answer_label": "2352",
+          "count": 1
+        },
+        {
+          "answer_label": "2520",
+          "count": 1
+        },
+        {
+          "answer_label": "2590",
+          "count": 1
+        },
+        {
+          "answer_label": "2610",
+          "count": 1
+        },
+        {
+          "answer_label": "2790",
+          "count": 1
+        },
+        {
+          "answer_label": "2808",
+          "count": 1
+        },
+        {
+          "answer_label": "2820",
+          "count": 1
+        },
+        {
+          "answer_label": "3040",
+          "count": 1
+        },
+        {
+          "answer_label": "3060",
+          "count": 1
+        },
+        {
+          "answer_label": "3240",
+          "count": 1
+        },
+        {
+          "answer_label": "360",
+          "count": 1
+        },
+        {
+          "answer_label": "3780",
+          "count": 1
+        },
+        {
+          "answer_label": "3888",
+          "count": 1
+        },
+        {
+          "answer_label": "3920",
+          "count": 1
+        },
+        {
+          "answer_label": "396",
+          "count": 1
+        },
+        {
+          "answer_label": "3960",
+          "count": 1
+        },
+        {
+          "answer_label": "4032",
+          "count": 1
+        },
+        {
+          "answer_label": "4144",
+          "count": 1
+        },
+        {
+          "answer_label": "4160",
+          "count": 1
+        },
+        {
+          "answer_label": "4200",
+          "count": 1
+        },
+        {
+          "answer_label": "440",
+          "count": 1
+        },
+        {
+          "answer_label": "450",
+          "count": 1
+        },
+        {
+          "answer_label": "4590",
+          "count": 1
+        },
+        {
+          "answer_label": "5040",
+          "count": 1
+        },
+        {
+          "answer_label": "5280",
+          "count": 1
+        },
+        {
+          "answer_label": "5376",
+          "count": 1
+        },
+        {
+          "answer_label": "540",
+          "count": 1
+        },
+        {
+          "answer_label": "5472",
+          "count": 1
+        },
+        {
+          "answer_label": "5568",
+          "count": 1
+        },
+        {
+          "answer_label": "6264",
+          "count": 1
+        },
+        {
+          "answer_label": "672",
+          "count": 1
+        },
+        {
+          "answer_label": "696",
+          "count": 1
+        },
+        {
+          "answer_label": "720",
+          "count": 1
+        },
+        {
+          "answer_label": "744",
+          "count": 1
+        },
+        {
+          "answer_label": "780",
+          "count": 1
+        },
+        {
+          "answer_label": "784",
+          "count": 1
+        },
+        {
+          "answer_label": "870",
+          "count": 1
+        },
+        {
+          "answer_label": "910",
+          "count": 1
+        },
+        {
+          "answer_label": "912",
+          "count": 1
+        },
+        {
+          "answer_label": "936",
+          "count": 1
+        },
+        {
+          "answer_label": "960",
+          "count": 1
+        }
+      ],
+      "unique_answers": 83
+    }
+  },
+  "sampling_axes": {
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {},
+      "expected_source": "",
+      "max_observed_frequency": 0.23,
+      "observed_counts": {
+        "cone_given_r_slant_height": 20,
+        "cylinder_given_r_h": 11,
+        "rectangular_prism_given_lwh": 23,
+        "sphere_given_r": 15,
+        "square_pyramid_given_base_side_slant_height": 16,
+        "triangular_prism_given_a_b_c_l": 15
+      },
+      "sample_count": 100
+    },
+    "variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "cone_given_r_slant_height": 0.16666666666666666,
+        "cylinder_given_r_h": 0.16666666666666666,
+        "rectangular_prism_given_lwh": 0.16666666666666666,
+        "sphere_given_r": 0.16666666666666666,
+        "square_pyramid_given_base_side_slant_height": 0.16666666666666666,
+        "triangular_prism_given_a_b_c_l": 0.16666666666666666
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 1.0,
+      "observed_counts": {
+        "": 100
+      },
+      "sample_count": 100
+    }
+  },
+  "task_group": "analytical_3d",
+  "task_id": "task_geometry_analytical_3d_surface_area",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {},
+    "expected_source": "",
+    "has_variants": true,
+    "observed_counts": {
+      "cone_given_r_slant_height": 20,
+      "cylinder_given_r_h": 11,
+      "rectangular_prism_given_lwh": 23,
+      "sphere_given_r": 15,
+      "square_pyramid_given_base_side_slant_height": 16,
+      "triangular_prism_given_a_b_c_l": 15
+    },
+    "status": "reported"
+  }
+}

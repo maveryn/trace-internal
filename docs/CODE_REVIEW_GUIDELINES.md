@@ -54,6 +54,7 @@ Use this checklist during implementation and refactor reviews.
 38. For polygon-based tasks, reject adjacent collinear vertices in shared polygon samplers so an `n`-gon never visually collapses into fewer effective sides.
 39. When target-answer sampling uses feasible-support cycling, do not key that selection directly off the same raw seed used for task-variant choice; use `_sampling_index` when provided and otherwise derive a namespaced deterministic index so variant choice and target answer do not become accidentally coupled.
 40. When a feasibility probe selects a target answer before layout, carry forward the minimum required scene capacity from that same probe; do not assume a loose bound like `answer + margin` is enough for all constructive variants.
+41. When a second sibling task starts reusing a helper module named after the first task/objective, rename that module to the shared family concept immediately (for example `analytical_3d_volume.py` -> `analytical_3d_solids.py`) instead of keeping a misleading task-specific container.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

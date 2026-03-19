@@ -143,6 +143,7 @@ def test_geometry_measurement_bundles_answer_templates_use_contract_and_avoid_on
 
 def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
     bundle_coords = (
+        ("geometry", "analytical_3d", "geometry_analytical_surface_area_v1"),
         ("geometry", "analytical_3d", "geometry_analytical_volume_v1"),
         ("geometry", "analytical_2d", "geometry_analytical_area_v1"),
         ("geometry", "measurement", "geometry_angle_measure_v1"),
@@ -179,6 +180,7 @@ def test_geometry_task_templates_avoid_awkward_comma_question_prefixes() -> None
     bundle_coords = (
         ("geometry", "measurement", "geometry_measurement_v1", "measurement_query"),
         ("geometry", "analytical_2d", "geometry_analytical_area_v1", "analytical_area_query"),
+        ("geometry", "analytical_3d", "geometry_analytical_surface_area_v1", "analytical_surface_area_query"),
         ("geometry", "analytical_3d", "geometry_analytical_volume_v1", "analytical_volume_query"),
     )
     for domain, task_group, bundle_id, task_key in bundle_coords:

@@ -9,10 +9,11 @@ Required content:
 
 Current task docs:
 1. [task_geometry_analytical_3d_volume.md](task_geometry_analytical_3d_volume.md)
-2. [task_geometry_measurement_angle.md](task_geometry_measurement_angle.md)
-3. [task_geometry_measurement_area.md](task_geometry_measurement_area.md)
-4. [task_geometry_measurement_perimeter.md](task_geometry_measurement_perimeter.md)
-5. [task_geometry_measurement_length.md](task_geometry_measurement_length.md)
-6. [task_geometry_measurement_slope.md](task_geometry_measurement_slope.md)
-7. [task_geometry_analytical_2d_area.md](task_geometry_analytical_2d_area.md)
-8. [task_tile_path_shortest_path.md](task_tile_path_shortest_path.md)
+2. [task_geometry_analytical_3d_surface_area.md](task_geometry_analytical_3d_surface_area.md)
+3. [task_geometry_measurement_angle.md](task_geometry_measurement_angle.md)
+4. [task_geometry_measurement_area.md](task_geometry_measurement_area.md)
+5. [task_geometry_measurement_perimeter.md](task_geometry_measurement_perimeter.md)
+6. [task_geometry_measurement_length.md](task_geometry_measurement_length.md)
+7. [task_geometry_measurement_slope.md](task_geometry_measurement_slope.md)
+8. [task_geometry_analytical_2d_area.md](task_geometry_analytical_2d_area.md)
+9. [task_tile_path_shortest_path.md](task_tile_path_shortest_path.md)

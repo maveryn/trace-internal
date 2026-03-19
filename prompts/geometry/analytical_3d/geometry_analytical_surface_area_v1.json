@@ -1,0 +1,57 @@
+{
+  "bundle_id": "geometry_analytical_surface_area_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "analytical_single_solid": [
+      "You are given an image showing {object_description}.",
+      "The image shows {object_description}.",
+      "Look at the annotated image showing {object_description}.",
+      "Use the image showing {object_description}.",
+      "Work from the annotated figure showing {object_description}."
+    ]
+  },
+  "task_templates": {
+    "analytical_surface_area_query": [
+      "{question_text}",
+      "Answer this question from the image: {question_text}",
+      "Answer this question from the labeled figure: {question_text}",
+      "Read the marked measurements and answer: {question_text}",
+      "Based on the shown values, answer this question: {question_text}"
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:analytical_single_solid": [
+      "object_description"
+    ],
+    "task:analytical_surface_area_query": [
+      "question_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

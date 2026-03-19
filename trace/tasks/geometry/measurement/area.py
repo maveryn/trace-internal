@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Mapping, Tuple
 
 from ...registry import register_task
+from ...shared.deterministic_sampling import resolve_selection_index
 from ..shared.conic_geometry import CircleInstance, EllipseInstance
 from ..shared.graph_paper import resolve_graph_cell_capacity
 from ..shared.polygon_geometry import (
@@ -115,7 +116,11 @@ class GeometryAreaMeasure2DTask(GeometryShapeMeasureBase):
         if not feasible_answers:
             raise ValueError("no feasible triangle area values for requested answer bounds and graph-cell limits")
         probabilities = {str(value): (1.0 / float(len(feasible_answers))) for value in feasible_answers}
-        sampling_index = abs(int(params.get("_sampling_index", instance_seed)))
+        sampling_index = resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{self.task_id}.{variant_kind}.target_answer",
+        )
         selected_answer = int(feasible_answers[int(sampling_index) % len(feasible_answers)])
         triangle_specs = triangle_integer_edge_specs_for_area(
             area_square_units=int(selected_answer),

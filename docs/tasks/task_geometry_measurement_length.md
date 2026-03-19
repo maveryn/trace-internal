@@ -14,7 +14,8 @@
    - circle variants (`circle_radius`, `circle_diameter`): exactly one graph-paper point for the center,
    - segment / polygon-side / ellipse-axis variants: exactly two graph-paper points for the measured endpoints.
 5. Alternate evidence forms: projected `pixel_point_map` + `grid_point_map` and derived pixel/grid set/path projections in trace.
-6. Overlap/touch policy: single object only (no multi-object overlap constraints needed).
+6. Polygon-side variants reject adjacent collinear vertices, so sampled polygons remain visually valid `n`-gons.
+7. Overlap/touch policy: single object only (no multi-object overlap constraints needed).
 
 ## 3) Prompt contract
 1. `prompt_bundle_id`: `geometry_measurement_v1`
@@ -67,6 +68,7 @@
 11. Polygon-side sampling policy:
    - triangle/quadrilateral/pentagon variants select the target side length from the feasible support before scene placement.
    - the rendered polygon is then sampled with at least one side at that target length, and the measured side is chosen from those matching sides.
+   - target-side support also carries forward a minimum required graph-cell count so the chosen target is feasible under the sampled graph-paper span, not just under a looser global bound.
 
 ## 5) Complexity + tests
 1. Complexity definition/components: shape variant + answer magnitude.

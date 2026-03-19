@@ -51,6 +51,9 @@ Promote helpers when a second consumer appears.
 12. `trace/tasks/shared/prompt_json_example.py`
    - Canonical deterministic JSON-example builder for prompt slots (`answer_only` + `answer_and_evidence`) that preserves active evidence schema shape/cardinality.
    - For point-based evidence payloads, it emits small canonical non-degenerate layouts so prompt examples remain visually/semantically valid.
+13. `trace/tasks/shared/deterministic_sampling.py`
+   - Canonical deterministic index selection for target-support cycling.
+   - Use `_sampling_index` when a caller explicitly requests balanced cycling; otherwise use a namespaced hash so target-answer selection does not accidentally correlate with other seed-driven decisions.
 
 ### Domain-shared (current)
 1. Geometry: `trace/tasks/geometry/shared/graph_paper.py`, `graph_rendering.py`, `single_object_scene.py`, `angle_geometry.py`, `polygon_geometry.py`, `slope_geometry.py`, `shape_style.py`, `background_defaults.py`, `noise_defaults.py`, `variant_sampling.py`, `render_variation.py`, `annotation_values.py`, `labeled_point_evidence.py`, `point_labels.py`, `prompt_text.py`
@@ -70,7 +73,9 @@ Promote helpers when a second consumer appears.
    - `variant_sampling.py` in `trace/tasks/geometry/shared/` provides shared balanced variant-selection helpers reused across geometry task groups.
    - `conic_geometry.py` provides reusable circle/ellipse sampling, rendering, and scene-entity payload helpers.
    - `length_geometry.py` provides reusable integer-length segment vectors, sampling, and labeled-segment rendering helpers.
-   - `polygon_geometry.py` provides reusable procedural polygon sampling plus feasible-target support probes for polygon-side measurement tasks and constructive triangle-area helpers for graph-paper area tasks.
+   - `polygon_geometry.py` provides reusable procedural polygon sampling plus feasible-target support probes for polygon-side measurement tasks and constructive triangle-area/perimeter helpers for graph-paper measurement tasks.
+   - Use `required_graph_cells_for_polygon_side_length(...)` when a task selects a polygon-side target before layout so the chosen target also carries forward the minimum graph span it needs.
+   - Procedural polygon templates reject adjacent collinear vertices so sampled `n`-gons do not collapse into visually degenerate lower-side polygons.
 3. Tile: `trace/tasks/tile/shared/path_grid.py`, `maze_sampling.py`, `grid_layout.py`, `maze_scene.py`, `maze_rendering.py`
 
 ## 3) Reuse rules

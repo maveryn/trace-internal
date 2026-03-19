@@ -11,20 +11,16 @@
       "triangle"
     ],
     "generated_variant_counts": {
-      "ellipse": 833,
-      "quadrilateral": 835,
-      "triangle": 100
+      "ellipse": 100,
+      "quadrilateral": 104,
+      "triangle": 106
     },
-    "generation_error_counts": {
-      "RuntimeError": 687
-    },
+    "generation_error_counts": {},
     "target_count_per_variant": 100,
-    "total_generated": 2455
+    "total_generated": 310
   },
   "domain": "geometry",
-  "failed_variants": [
-    "triangle"
-  ],
+  "failed_variants": [],
   "has_task_variants": true,
   "incomplete_variants": [],
   "mode": "per_variant",
@@ -36,7 +32,7 @@
     },
     "checks": {
       "max_answer_frequency": {
-        "observed": 0.15666666666666668,
+        "observed": 0.08333333333333333,
         "pass": true,
         "threshold": 0.25
       },
@@ -47,24 +43,20 @@
         "threshold": 0.5
       },
       "min_unique_answers": {
-        "observed": 48,
+        "observed": 51,
         "pass": true,
         "threshold": 5
       }
     },
     "five_bin_numeric": null,
-    "max_answer_count": 47,
-    "max_answer_frequency": 0.15666666666666668,
+    "max_answer_count": 25,
+    "max_answer_frequency": 0.08333333333333333,
     "pass": true,
     "sample_count": 300,
     "top_answers": [
       {
-        "answer_label": "48",
-        "count": 47
-      },
-      {
-        "answer_label": "84",
-        "count": 44
+        "answer_label": "12",
+        "count": 25
       },
       {
         "answer_label": "12π",
@@ -75,28 +67,44 @@
         "count": 15
       },
       {
-        "answer_label": "12",
+        "answer_label": "24",
+        "count": 15
+      },
+      {
+        "answer_label": "30",
         "count": 14
       },
       {
-        "answer_label": "24",
+        "answer_label": "84",
+        "count": 14
+      },
+      {
+        "answer_label": "36",
+        "count": 13
+      },
+      {
+        "answer_label": "42",
+        "count": 12
+      },
+      {
+        "answer_label": "96",
         "count": 10
       },
       {
-        "answer_label": "66",
-        "count": 10
+        "answer_label": "14",
+        "count": 9
       },
       {
         "answer_label": "20π",
         "count": 9
       },
       {
-        "answer_label": "8π",
+        "answer_label": "54",
         "count": 9
       },
       {
-        "answer_label": "14",
-        "count": 8
+        "answer_label": "8π",
+        "count": 9
       },
       {
         "answer_label": "9π",
@@ -107,11 +115,23 @@
         "count": 7
       },
       {
+        "answer_label": "66",
+        "count": 7
+      },
+      {
         "answer_label": "8",
         "count": 7
       },
       {
+        "answer_label": "28",
+        "count": 6
+      },
+      {
         "answer_label": "40",
+        "count": 6
+      },
+      {
+        "answer_label": "48",
         "count": 6
       },
       {
@@ -131,19 +151,11 @@
         "count": 5
       },
       {
-        "answer_label": "28",
+        "answer_label": "60",
         "count": 5
       },
       {
-        "answer_label": "16",
-        "count": 4
-      },
-      {
         "answer_label": "25π",
-        "count": 4
-      },
-      {
-        "answer_label": "36",
         "count": 4
       },
       {
@@ -152,6 +164,10 @@
       },
       {
         "answer_label": "15",
+        "count": 3
+      },
+      {
+        "answer_label": "16",
         "count": 3
       },
       {
@@ -164,6 +180,10 @@
       },
       {
         "answer_label": "28π",
+        "count": 3
+      },
+      {
+        "answer_label": "32",
         "count": 3
       },
       {
@@ -203,14 +223,6 @@
         "count": 2
       },
       {
-        "answer_label": "30",
-        "count": 2
-      },
-      {
-        "answer_label": "32",
-        "count": 2
-      },
-      {
         "answer_label": "35π",
         "count": 2
       },
@@ -231,10 +243,6 @@
         "count": 1
       },
       {
-        "answer_label": "42",
-        "count": 1
-      },
-      {
         "answer_label": "45π",
         "count": 1
       },
@@ -251,9 +259,9 @@
         "count": 1
       }
     ],
-    "unique_answers": 48
+    "unique_answers": 51
   },
-  "pass": false,
+  "pass": true,
   "per_task_variant": {
     "ellipse": {
       "answer_type_counts": {
@@ -393,7 +401,7 @@
           "threshold": 0.25
         },
         "max_five_bin_frequency": {
-          "observed": 0.41,
+          "observed": 0.42,
           "pass": true,
           "threshold": 0.5
         },
@@ -408,22 +416,22 @@
         "bins": [
           {
             "bin_id": 0,
-            "count": 41,
+            "count": 42,
             "label": "[8, 17.6)"
           },
           {
             "bin_id": 1,
-            "count": 36,
+            "count": 32,
             "label": "[17.6, 27.2)"
           },
           {
             "bin_id": 2,
-            "count": 14,
+            "count": 16,
             "label": "[27.2, 36.8)"
           },
           {
             "bin_id": 3,
-            "count": 7,
+            "count": 8,
             "label": "[36.8, 46.4)"
           },
           {
@@ -432,8 +440,8 @@
             "label": "[46.4, 56]"
           }
         ],
-        "max_bin_count": 41,
-        "max_bin_frequency": 0.41,
+        "max_bin_count": 42,
+        "max_bin_frequency": 0.42,
         "range_max": 56.0,
         "range_min": 8.0
       },
@@ -443,24 +451,28 @@
       "sample_count": 100,
       "top_answers": [
         {
+          "answer_label": "12",
+          "count": 15
+        },
+        {
           "answer_label": "18",
           "count": 15
         },
         {
-          "answer_label": "12",
-          "count": 14
-        },
-        {
-          "answer_label": "24",
-          "count": 10
-        },
-        {
           "answer_label": "14",
-          "count": 8
+          "count": 9
         },
         {
           "answer_label": "8",
           "count": 7
+        },
+        {
+          "answer_label": "24",
+          "count": 6
+        },
+        {
+          "answer_label": "28",
+          "count": 6
         },
         {
           "answer_label": "40",
@@ -471,19 +483,19 @@
           "count": 5
         },
         {
-          "answer_label": "28",
-          "count": 5
-        },
-        {
-          "answer_label": "16",
-          "count": 4
-        },
-        {
           "answer_label": "36",
           "count": 4
         },
         {
           "answer_label": "15",
+          "count": 3
+        },
+        {
+          "answer_label": "16",
+          "count": 3
+        },
+        {
+          "answer_label": "32",
           "count": 3
         },
         {
@@ -511,15 +523,11 @@
           "count": 2
         },
         {
-          "answer_label": "32",
+          "answer_label": "42",
           "count": 2
         },
         {
           "answer_label": "35",
-          "count": 1
-        },
-        {
-          "answer_label": "42",
           "count": 1
         },
         {
@@ -539,18 +547,18 @@
       },
       "checks": {
         "max_answer_frequency": {
-          "observed": 0.46,
-          "pass": false,
+          "observed": 0.14,
+          "pass": true,
           "threshold": 0.25
         },
         "max_five_bin_frequency": {
-          "observed": 0.46,
+          "observed": 0.31,
           "pass": true,
           "threshold": 0.5
         },
         "min_unique_answers": {
-          "observed": 3,
-          "pass": false,
+          "observed": 11,
+          "pass": true,
           "threshold": 5
         }
       },
@@ -559,125 +567,119 @@
         "bins": [
           {
             "bin_id": 0,
-            "count": 46,
-            "label": "[48, 55.2)"
+            "count": 19,
+            "label": "[12, 28.8)"
           },
           {
             "bin_id": 1,
-            "count": 0,
-            "label": "[55.2, 62.4)"
+            "count": 31,
+            "label": "[28.8, 45.6)"
           },
           {
             "bin_id": 2,
-            "count": 10,
-            "label": "[62.4, 69.6)"
+            "count": 19,
+            "label": "[45.6, 62.4)"
           },
           {
             "bin_id": 3,
-            "count": 0,
-            "label": "[69.6, 76.8)"
+            "count": 7,
+            "label": "[62.4, 79.2)"
           },
           {
             "bin_id": 4,
-            "count": 44,
-            "label": "[76.8, 84]"
+            "count": 24,
+            "label": "[79.2, 96]"
           }
         ],
-        "max_bin_count": 46,
-        "max_bin_frequency": 0.46,
-        "range_max": 84.0,
-        "range_min": 48.0
+        "max_bin_count": 31,
+        "max_bin_frequency": 0.31,
+        "range_max": 96.0,
+        "range_min": 12.0
       },
-      "max_answer_count": 46,
-      "max_answer_frequency": 0.46,
-      "pass": false,
+      "max_answer_count": 14,
+      "max_answer_frequency": 0.14,
+      "pass": true,
       "sample_count": 100,
       "top_answers": [
         {
-          "answer_label": "48",
-          "count": 46
+          "answer_label": "84",
+          "count": 14
         },
         {
-          "answer_label": "84",
-          "count": 44
+          "answer_label": "30",
+          "count": 12
+        },
+        {
+          "answer_label": "12",
+          "count": 10
+        },
+        {
+          "answer_label": "42",
+          "count": 10
+        },
+        {
+          "answer_label": "96",
+          "count": 10
+        },
+        {
+          "answer_label": "24",
+          "count": 9
+        },
+        {
+          "answer_label": "36",
+          "count": 9
+        },
+        {
+          "answer_label": "54",
+          "count": 9
         },
         {
           "answer_label": "66",
-          "count": 10
+          "count": 7
+        },
+        {
+          "answer_label": "48",
+          "count": 5
+        },
+        {
+          "answer_label": "60",
+          "count": 5
         }
       ],
-      "unique_answers": 3
+      "unique_answers": 11
     }
   },
   "sampling_axes": {
     "answer_scalar": {
       "expected_conflict": false,
       "expected_probabilities": {
-        "10": 0.017543859649122806,
-        "11": 0.017543859649122806,
-        "12": 0.017543859649122806,
-        "13": 0.017543859649122806,
-        "14": 0.017543859649122806,
-        "15": 0.017543859649122806,
-        "16": 0.017543859649122806,
-        "17": 0.017543859649122806,
-        "18": 0.017543859649122806,
-        "20": 0.017543859649122806,
-        "21": 0.017543859649122806,
-        "22": 0.017543859649122806,
-        "24": 0.017543859649122806,
-        "25": 0.017543859649122806,
-        "26": 0.017543859649122806,
-        "27": 0.017543859649122806,
-        "28": 0.017543859649122806,
-        "30": 0.017543859649122806,
-        "32": 0.017543859649122806,
-        "33": 0.017543859649122806,
-        "34": 0.017543859649122806,
-        "35": 0.017543859649122806,
-        "36": 0.017543859649122806,
-        "39": 0.017543859649122806,
-        "40": 0.017543859649122806,
-        "42": 0.017543859649122806,
-        "44": 0.017543859649122806,
-        "45": 0.017543859649122806,
-        "48": 0.017543859649122806,
-        "49": 0.017543859649122806,
-        "50": 0.017543859649122806,
-        "51": 0.017543859649122806,
-        "52": 0.017543859649122806,
-        "54": 0.017543859649122806,
-        "55": 0.017543859649122806,
-        "56": 0.017543859649122806,
-        "60": 0.017543859649122806,
-        "63": 0.017543859649122806,
-        "64": 0.017543859649122806,
-        "65": 0.017543859649122806,
-        "66": 0.017543859649122806,
-        "68": 0.017543859649122806,
-        "70": 0.017543859649122806,
-        "72": 0.017543859649122806,
-        "75": 0.017543859649122806,
-        "77": 0.017543859649122806,
-        "78": 0.017543859649122806,
-        "8": 0.017543859649122806,
-        "80": 0.017543859649122806,
-        "81": 0.017543859649122806,
-        "84": 0.017543859649122806,
-        "85": 0.017543859649122806,
-        "88": 0.017543859649122806,
-        "9": 0.017543859649122806,
-        "90": 0.017543859649122806,
-        "91": 0.017543859649122806,
-        "96": 0.017543859649122806
+        "12": 0.09090909090909091,
+        "24": 0.09090909090909091,
+        "30": 0.09090909090909091,
+        "36": 0.09090909090909091,
+        "42": 0.09090909090909091,
+        "48": 0.09090909090909091,
+        "54": 0.09090909090909091,
+        "60": 0.09090909090909091,
+        "66": 0.09090909090909091,
+        "84": 0.09090909090909091,
+        "96": 0.09090909090909091
       },
       "expected_source": "execution_trace",
-      "max_observed_frequency": 0.93,
+      "max_observed_frequency": 0.69,
       "observed_counts": {
-        "": 93,
-        "48": 1,
+        "": 69,
+        "12": 2,
+        "24": 2,
+        "30": 3,
+        "36": 3,
+        "42": 4,
+        "48": 3,
+        "54": 4,
+        "60": 5,
         "66": 1,
-        "84": 5
+        "84": 2,
+        "96": 2
       },
       "sample_count": 100
     },
@@ -685,11 +687,11 @@
       "expected_conflict": false,
       "expected_probabilities": {},
       "expected_source": "",
-      "max_observed_frequency": 0.48,
+      "max_observed_frequency": 0.37,
       "observed_counts": {
-        "ellipse": 48,
-        "quadrilateral": 45,
-        "triangle": 7
+        "ellipse": 32,
+        "quadrilateral": 37,
+        "triangle": 31
       },
       "sample_count": 100
     },
@@ -716,9 +718,9 @@
     "expected_source": "",
     "has_variants": true,
     "observed_counts": {
-      "ellipse": 48,
-      "quadrilateral": 45,
-      "triangle": 7
+      "ellipse": 32,
+      "quadrilateral": 37,
+      "triangle": 31
     },
     "status": "reported"
   }

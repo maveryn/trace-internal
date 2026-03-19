@@ -93,6 +93,26 @@ def _is_simple_polygon(vertices: Sequence[UnitPoint]) -> bool:
     return True
 
 
+def _has_adjacent_collinear_vertices(vertices: Sequence[UnitPoint]) -> bool:
+    """Return true when any adjacent polygon triple is collinear.
+
+    Geometry measurement tasks treat `n`-gons as visually distinct polygons, so
+    adjacent collinear vertices are rejected instead of silently accepting a
+    degenerate `n`-gon whose boundary collapses to fewer effective sides.
+    """
+
+    n = int(len(vertices))
+    if n < 3:
+        return True
+    for index in range(n):
+        prev_point = vertices[index - 1]
+        point = vertices[index]
+        next_point = vertices[(index + 1) % n]
+        if int(_segment_orientation(prev_point, point, next_point)) == 0:
+            return True
+    return False
+
+
 def _polygon_signature(vertices: Sequence[UnitPoint]) -> str:
     """Return deterministic short signature for one polygon unit-vertex sequence."""
     payload = ";".join(f"{int(point[0])},{int(point[1])}" for point in vertices)
@@ -207,6 +227,8 @@ def sample_procedural_polygon_template(
             vertices.append((int(cursor_x), int(cursor_y)))
         if len(vertices) != n_sides or len(set(vertices)) != n_sides:
             continue
+        if _has_adjacent_collinear_vertices(vertices):
+            continue
         if not _is_simple_polygon(vertices):
             continue
 
@@ -296,6 +318,63 @@ def feasible_polygon_side_lengths(
     return tuple(int(value) for value in feasible)
 
 
+@lru_cache(maxsize=64)
+def required_graph_cells_for_polygon_side_length(
+    *,
+    sides: int,
+    target_length: int,
+    max_span_units: int,
+    min_edge_length: int = 2,
+    max_edge_length: int = 10,
+    max_abs_component: int = 8,
+    min_area_square_units: int = 4,
+    probe_attempts_per_span: int = 6,
+    template_attempts_per_probe: int = 96,
+) -> int:
+    """Return the minimum graph-cell count that supports one targeted side length."""
+
+    span_limit = max(3, int(max_span_units))
+    side_count = int(sides)
+    edge_length = int(target_length)
+    lo = max(1, int(min_edge_length))
+    hi = min(int(max_edge_length), int(span_limit))
+    if int(edge_length) < int(lo) or int(edge_length) > int(hi):
+        raise ValueError("target_length is outside configured polygon edge bounds")
+
+    min_span_guess = max(2, int(edge_length))
+    for span_units in range(int(min_span_guess), int(span_limit) + 1):
+        for probe_index in range(max(1, int(probe_attempts_per_span))):
+            probe_rng = random.Random(
+                _polygon_probe_seed(
+                    "polygon_side_min_span",
+                    int(side_count),
+                    int(span_units),
+                    int(lo),
+                    int(hi),
+                    int(max_abs_component),
+                    int(min_area_square_units),
+                    int(edge_length),
+                    int(probe_index),
+                )
+            )
+            try:
+                sample_procedural_polygon_template(
+                    probe_rng,
+                    sides=int(side_count),
+                    max_span_units=int(span_units),
+                    max_abs_component=int(max_abs_component),
+                    min_edge_length=int(lo),
+                    max_edge_length=int(hi),
+                    min_area_square_units=int(min_area_square_units),
+                    required_edge_length=int(edge_length),
+                    max_attempts=int(template_attempts_per_probe),
+                )
+                return int(span_units) + 2
+            except ValueError:
+                continue
+    raise ValueError("failed to resolve minimum graph-cell support for polygon side length")
+
+
 @lru_cache(maxsize=32)
 def _triangle_integer_edge_specs(max_span_units: int) -> Tuple[Tuple[int, int, int], ...]:
     """Return `(base_units, apex_x_units, height_units)` specs with integer side lengths."""
@@ -367,6 +446,65 @@ def feasible_triangle_area_values(
     return tuple(sorted(values))
 
 
+def _triangle_perimeter_units_for_spec(
+    *,
+    base_units: int,
+    apex_x_units: int,
+    height_units: int,
+) -> int:
+    """Return integer perimeter for one cached integer-edge triangle spec."""
+    side_a = int(round(math.hypot(float(apex_x_units), float(height_units))))
+    side_b = int(round(math.hypot(float(base_units - apex_x_units), float(height_units))))
+    return int(base_units) + int(side_a) + int(side_b)
+
+
+def triangle_integer_edge_specs_for_perimeter(
+    *,
+    perimeter_units: int,
+    max_span_units: int,
+) -> Tuple[Tuple[int, int, int], ...]:
+    """Return integer-edge triangle specs for one target perimeter under span bounds."""
+    perimeter_value = int(perimeter_units)
+    if int(perimeter_value) <= 0:
+        return tuple()
+    matches = []
+    for base_units, apex_x_units, height_units in _triangle_integer_edge_specs(int(max_span_units)):
+        if int(
+            _triangle_perimeter_units_for_spec(
+                base_units=int(base_units),
+                apex_x_units=int(apex_x_units),
+                height_units=int(height_units),
+            )
+        ) != int(perimeter_value):
+            continue
+        matches.append((int(base_units), int(apex_x_units), int(height_units)))
+    return tuple(matches)
+
+
+def feasible_triangle_perimeter_values(
+    *,
+    max_span_units: int,
+    perimeter_min: int | None = None,
+    perimeter_max: int | None = None,
+) -> Tuple[int, ...]:
+    """Return exact integer triangle perimeters with integer-edge lattice triangles."""
+    values = set()
+    for base_units, apex_x_units, height_units in _triangle_integer_edge_specs(int(max_span_units)):
+        perimeter_value = int(
+            _triangle_perimeter_units_for_spec(
+                base_units=int(base_units),
+                apex_x_units=int(apex_x_units),
+                height_units=int(height_units),
+            )
+        )
+        if perimeter_min is not None and int(perimeter_value) < int(perimeter_min):
+            continue
+        if perimeter_max is not None and int(perimeter_value) > int(perimeter_max):
+            continue
+        values.add(int(perimeter_value))
+    return tuple(sorted(values))
+
+
 def sample_triangle_instance_with_area_on_graph_paper(
     rng,
     *,
@@ -430,6 +568,71 @@ def sample_triangle_instance_with_area_on_graph_paper(
         except ValueError:
             continue
     raise ValueError("failed to sample triangle instance for requested area and graph-paper constraints")
+
+
+def sample_triangle_instance_with_perimeter_on_graph_paper(
+    rng,
+    *,
+    perimeter_units: int,
+    canvas_size: int,
+    graph_spacing: int,
+    graph_origin: Point | None = None,
+    padding_units: int = 1,
+    max_attempts: int = 220,
+) -> PolygonInstance:
+    """Sample one graph-paper triangle with the requested integer perimeter."""
+    spacing_px = max(1, int(graph_spacing))
+    estimated_cells_per_side = max(2, int(round(float(int(canvas_size)) / float(spacing_px))))
+    span_limit = max(3, int(estimated_cells_per_side) - 2)
+    perimeter_value = int(perimeter_units)
+    triangle_specs = triangle_integer_edge_specs_for_perimeter(
+        perimeter_units=int(perimeter_value),
+        max_span_units=int(span_limit),
+    )
+    if not triangle_specs:
+        raise ValueError("no feasible integer-edge triangle specs for requested perimeter and graph span")
+
+    for _ in range(max(1, int(max_attempts))):
+        base_units, apex_x_units, height_units = rng.choice(triangle_specs)
+        unit_vertices: Tuple[UnitPoint, ...] = (
+            (0, 0),
+            (int(base_units), 0),
+            (int(apex_x_units), int(height_units)),
+        )
+        template = PolygonTemplate(
+            template_id=f"triangle_perimeter_{int(perimeter_value)}_{_polygon_signature(unit_vertices)}",
+            vertices=tuple(unit_vertices),
+        )
+        labels = rotate_labels(
+            alphabetic_labels(template.sides, start_index=int(rng.randrange(26))),
+            shift=int(rng.randrange(template.sides)),
+        )
+        transform_index = int(rng.randrange(8))
+        transformed_vertices = transform_unit_vertices(template.vertices, transform_index=transform_index)
+        try:
+            center = sample_polygon_center(
+                rng,
+                canvas_size=int(canvas_size),
+                graph_spacing=int(graph_spacing),
+                graph_origin=(
+                    (float(graph_origin[0]), float(graph_origin[1]))
+                    if graph_origin is not None
+                    else None
+                ),
+                unit_vertices=transformed_vertices,
+                padding_units=int(padding_units),
+            )
+            return build_polygon_instance(
+                template=template,
+                center=center,
+                spacing=int(graph_spacing),
+                transform_index=transform_index,
+                labels=labels,
+                canvas_size=int(canvas_size),
+            )
+        except ValueError:
+            continue
+    raise ValueError("failed to sample triangle instance for requested perimeter and graph-paper constraints")
 
 
 def polygon_area_square_units(vertices: Sequence[UnitPoint]) -> int:

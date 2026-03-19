@@ -57,6 +57,7 @@ from ..shared.polygon_geometry import (
     feasible_polygon_side_lengths,
     polygon_render_anchor,
     polygon_scene_entity,
+    required_graph_cells_for_polygon_side_length,
     sample_polygon_instance_on_graph_paper,
 )
 from ..shared.render_variation import sample_int_render_param
@@ -367,12 +368,14 @@ def _resolve_polygon_target_side_length(
     answer_min: int,
     answer_max: int,
     render_defaults: Mapping[str, Any],
-) -> Tuple[int, Dict[str, float], List[int]]:
+) -> Tuple[int, Dict[str, float], List[int], int]:
     """Select one polygon-side answer from the feasible support before layout.
 
     Sampling the target side length before scene construction prevents shorter,
     easier-to-fit polygon sides from becoming overrepresented by layout
-    feasibility.
+    feasibility. The returned graph-cell requirement is derived from the same
+    support probe so scene-size sampling preserves feasibility for the chosen
+    target.
     """
 
     polygon_sides = int(_POLYGON_VARIANT_TO_SIDES[str(variant_kind)])
@@ -396,7 +399,15 @@ def _resolve_polygon_target_side_length(
     probabilities = {str(value): (1.0 / float(len(feasible_answers))) for value in feasible_answers}
     sampling_index = abs(int(params.get("_sampling_index", instance_seed)))
     selected_answer = int(feasible_answers[int(sampling_index) % len(feasible_answers)])
-    return int(selected_answer), probabilities, [int(value) for value in feasible_answers]
+    required_graph_cells = required_graph_cells_for_polygon_side_length(
+        sides=int(polygon_sides),
+        target_length=int(selected_answer),
+        max_span_units=max(3, int(graph_cells_max) - 2),
+        min_edge_length=int(max(2, int(answer_min))),
+        max_edge_length=int(min(int(answer_max), int(graph_cells_max) - 2)),
+        min_area_square_units=4,
+    )
+    return int(selected_answer), probabilities, [int(value) for value in feasible_answers], int(required_graph_cells)
 
 
 def _prompt_family_for_variant(variant_kind: str) -> str:
@@ -553,11 +564,13 @@ class GeometryLengthMeasure2DTask:
         selected_polygon_target_length_units: int | None = None
         polygon_answer_probabilities: Dict[str, float] = {}
         polygon_feasible_answer_values: List[int] = []
+        polygon_required_graph_cells = 0
         if str(variant_kind) in _POLYGON_VARIANTS:
             (
                 selected_polygon_target_length_units,
                 polygon_answer_probabilities,
                 polygon_feasible_answer_values,
+                polygon_required_graph_cells,
             ) = _resolve_polygon_target_side_length(
                 instance_seed=int(instance_seed),
                 params=params,
@@ -600,8 +613,8 @@ class GeometryLengthMeasure2DTask:
             answer_max=int(answer_max),
             gen_defaults=_GEN_DEFAULTS,
         )
-        if selected_polygon_target_length_units is not None:
-            required_graph_cells = max(int(required_graph_cells), int(selected_polygon_target_length_units) + 2)
+        if int(polygon_required_graph_cells) > 0:
+            required_graph_cells = max(int(required_graph_cells), int(polygon_required_graph_cells))
         if selected_circle_radius_units is not None:
             required_graph_cells = int((2 * int(selected_circle_radius_units)) + 2)
         if selected_ellipse_pair_units is not None:
@@ -785,7 +798,7 @@ class GeometryLengthMeasure2DTask:
                         graph_spacing=int(context.graph_spacing),
                         graph_origin=(float(context.graph_origin[0]), float(context.graph_origin[1])),
                         padding_units=0,
-                        max_attempts=12,
+                        max_attempts=24,
                         min_area_square_units=4,
                         min_edge_length_units=int(max(2, int(answer_min))),
                         max_edge_length_units=int(answer_max),

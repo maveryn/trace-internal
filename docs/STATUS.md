@@ -14,7 +14,7 @@ Date: 2026-03-08
 9. Objective-style geometry measurement tasks (single shape/object per image):
    - angle measure (primitive-angle or line-intersection source) with deterministic balanced source/answer sampling defaults, minimum ray length constraints, axis-aligned-ray construction, and nearest-integer degree query formatting,
    - area measure (triangle/quadrilateral + ellipse variants, with triangle target-area sampling from exact feasible support),
-   - perimeter measure (triangle/quadrilateral + circle variants),
+   - perimeter measure (triangle/quadrilateral + circle variants, with triangle/circle target sampling from exact feasible support),
    - length measure (segment, polygon side, circle radius/diameter, ellipse major/minor axis variants),
    - slope measure (single finite line crossing x-axis at an integer lattice coordinate, with nearest-tenth numeric answers and x-axis crossing-point evidence).
    - angle measure ground-truth answers are nearest-integer degree values with raw-angle tolerance bounded by `0.05°`.

@@ -6,7 +6,7 @@
     },
     "checks": {
       "max_answer_frequency": {
-        "observed": 0.07,
+        "observed": 0.06,
         "pass": true,
         "threshold": 0.25
       },
@@ -23,17 +23,17 @@
       }
     },
     "five_bin_numeric": null,
-    "max_answer_count": 7,
-    "max_answer_frequency": 0.07,
+    "max_answer_count": 6,
+    "max_answer_frequency": 0.06,
     "pass": true,
     "sample_count": 100,
     "top_answers": [
       {
-        "answer_label": "36",
-        "count": 7
+        "answer_label": "18",
+        "count": 6
       },
       {
-        "answer_label": "18",
+        "answer_label": "42",
         "count": 6
       },
       {
@@ -41,19 +41,23 @@
         "count": 5
       },
       {
+        "answer_label": "36",
+        "count": 5
+      },
+      {
+        "answer_label": "60",
+        "count": 5
+      },
+      {
         "answer_label": "24",
         "count": 4
       },
       {
-        "answer_label": "48",
+        "answer_label": "30",
         "count": 4
       },
       {
         "answer_label": "54",
-        "count": 4
-      },
-      {
-        "answer_label": "66",
         "count": 4
       },
       {
@@ -73,23 +77,15 @@
         "count": 3
       },
       {
-        "answer_label": "30",
-        "count": 3
-      },
-      {
         "answer_label": "40",
         "count": 3
       },
       {
-        "answer_label": "42",
+        "answer_label": "48",
         "count": 3
       },
       {
         "answer_label": "8",
-        "count": 3
-      },
-      {
-        "answer_label": "96",
         "count": 3
       },
       {
@@ -102,10 +98,6 @@
       },
       {
         "answer_label": "15π",
-        "count": 2
-      },
-      {
-        "answer_label": "16",
         "count": 2
       },
       {
@@ -137,11 +129,15 @@
         "count": 2
       },
       {
-        "answer_label": "60",
+        "answer_label": "72π",
         "count": 2
       },
       {
-        "answer_label": "72π",
+        "answer_label": "84",
+        "count": 2
+      },
+      {
+        "answer_label": "96",
         "count": 2
       },
       {
@@ -154,6 +150,10 @@
       },
       {
         "answer_label": "14π",
+        "count": 1
+      },
+      {
+        "answer_label": "16",
         "count": 1
       },
       {
@@ -185,7 +185,7 @@
         "count": 1
       },
       {
-        "answer_label": "84",
+        "answer_label": "66",
         "count": 1
       }
     ],
@@ -214,15 +214,15 @@
         "": 69,
         "12": 2,
         "24": 2,
-        "30": 2,
-        "36": 5,
-        "42": 2,
-        "48": 4,
+        "30": 3,
+        "36": 3,
+        "42": 4,
+        "48": 3,
         "54": 4,
-        "60": 2,
-        "66": 4,
-        "84": 1,
-        "96": 3
+        "60": 5,
+        "66": 1,
+        "84": 2,
+        "96": 2
       },
       "sample_count": 100
     },

@@ -19,7 +19,8 @@
    - polygons: labeled vertex map in graph units,
    - circle: labeled 2-point map (`center`, `radius endpoint`) in graph units.
 6. Alternate evidence forms: projected `pixel_point_map` + `grid_point_map` and derived pixel/grid set/path projections in trace.
-7. Overlap/touch policy: single object only.
+7. Polygon variants reject adjacent collinear vertices, so sampled triangles/quadrilaterals remain visually non-degenerate.
+8. Overlap/touch policy: single object only.
 
 ## 3) Prompt contract
 1. `prompt_bundle_id`: `geometry_measurement_v1`
@@ -50,6 +51,7 @@
 7. Graph-paper color variation: minor/major/axis colors are sampled from constrained ranges per instance, with axis lines always darker than grid lines.
 8. Answer bounds: perimeter target scalar `k` is constrained to `[8, 24]` by task-group config (`integer` for polygons, `kπ` coefficient for circle).
 9. Default variant sampling weights: triangle/quadrilateral/circle = 1:1:1.
+10. Triangle and circle variants select the target answer from exact feasible support before scene placement so graph-capacity/layout constraints do not bias the realized answer distribution toward smaller perimeters.
 
 ## 5) Complexity + tests
 1. Complexity definition/components: shape variant + perimeter magnitude.

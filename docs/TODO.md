@@ -1,8 +1,7 @@
 # TRACE TODO
 
 ## Now (P0)
-1. Regenerate review samples for `task_geometry_measurement_perimeter`.
-2. Complete post-refactor cleanup review (remove stale references and dead helper paths).
+1. Complete post-refactor cleanup review (remove stale references and dead helper paths).
 
 ## Next (P1)
 1. Extend objective-first measurement pattern to additional domains.

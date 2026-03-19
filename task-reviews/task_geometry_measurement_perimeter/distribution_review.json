@@ -1,0 +1,526 @@
+{
+  "collection": {
+    "collected_variant_counts": {
+      "circle": 100,
+      "quadrilateral": 100,
+      "triangle": 100
+    },
+    "expected_variants": [
+      "circle",
+      "quadrilateral",
+      "triangle"
+    ],
+    "generated_variant_counts": {
+      "circle": 117,
+      "quadrilateral": 100,
+      "triangle": 108
+    },
+    "generation_error_counts": {},
+    "target_count_per_variant": 100,
+    "total_generated": 325
+  },
+  "domain": "geometry",
+  "failed_variants": [],
+  "has_task_variants": true,
+  "incomplete_variants": [],
+  "mode": "per_variant",
+  "no_samples_collected": false,
+  "overall": {
+    "answer_type_counts": {
+      "integer": 200,
+      "pi_expression": 100
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.09,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": null,
+        "pass": null,
+        "status": "not_applicable_non_numeric_answers",
+        "threshold": 0.5
+      },
+      "min_unique_answers": {
+        "observed": 26,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": null,
+    "max_answer_count": 27,
+    "max_answer_frequency": 0.09,
+    "pass": true,
+    "sample_count": 300,
+    "top_answers": [
+      {
+        "answer_label": "16",
+        "count": 27
+      },
+      {
+        "answer_label": "14π",
+        "count": 20
+      },
+      {
+        "answer_label": "16π",
+        "count": 19
+      },
+      {
+        "answer_label": "8π",
+        "count": 18
+      },
+      {
+        "answer_label": "18π",
+        "count": 17
+      },
+      {
+        "answer_label": "18",
+        "count": 15
+      },
+      {
+        "answer_label": "24",
+        "count": 15
+      },
+      {
+        "answer_label": "30",
+        "count": 15
+      },
+      {
+        "answer_label": "10π",
+        "count": 14
+      },
+      {
+        "answer_label": "20",
+        "count": 13
+      },
+      {
+        "answer_label": "22",
+        "count": 13
+      },
+      {
+        "answer_label": "12",
+        "count": 12
+      },
+      {
+        "answer_label": "12π",
+        "count": 12
+      },
+      {
+        "answer_label": "50",
+        "count": 11
+      },
+      {
+        "answer_label": "42",
+        "count": 10
+      },
+      {
+        "answer_label": "28",
+        "count": 9
+      },
+      {
+        "answer_label": "48",
+        "count": 9
+      },
+      {
+        "answer_label": "32",
+        "count": 8
+      },
+      {
+        "answer_label": "36",
+        "count": 8
+      },
+      {
+        "answer_label": "10",
+        "count": 7
+      },
+      {
+        "answer_label": "26",
+        "count": 7
+      },
+      {
+        "answer_label": "40",
+        "count": 7
+      },
+      {
+        "answer_label": "44",
+        "count": 6
+      },
+      {
+        "answer_label": "14",
+        "count": 5
+      },
+      {
+        "answer_label": "8",
+        "count": 2
+      },
+      {
+        "answer_label": "34",
+        "count": 1
+      }
+    ],
+    "unique_answers": 26
+  },
+  "pass": true,
+  "per_task_variant": {
+    "circle": {
+      "answer_type_counts": {
+        "pi_expression": 100
+      },
+      "checks": {
+        "max_answer_frequency": {
+          "observed": 0.2,
+          "pass": true,
+          "threshold": 0.25
+        },
+        "max_five_bin_frequency": {
+          "observed": null,
+          "pass": null,
+          "status": "not_applicable_non_numeric_answers",
+          "threshold": 0.5
+        },
+        "min_unique_answers": {
+          "observed": 6,
+          "pass": true,
+          "threshold": 5
+        }
+      },
+      "five_bin_numeric": null,
+      "max_answer_count": 20,
+      "max_answer_frequency": 0.2,
+      "pass": true,
+      "sample_count": 100,
+      "top_answers": [
+        {
+          "answer_label": "14π",
+          "count": 20
+        },
+        {
+          "answer_label": "16π",
+          "count": 19
+        },
+        {
+          "answer_label": "8π",
+          "count": 18
+        },
+        {
+          "answer_label": "18π",
+          "count": 17
+        },
+        {
+          "answer_label": "10π",
+          "count": 14
+        },
+        {
+          "answer_label": "12π",
+          "count": 12
+        }
+      ],
+      "unique_answers": 6
+    },
+    "quadrilateral": {
+      "answer_type_counts": {
+        "integer": 100
+      },
+      "checks": {
+        "max_answer_frequency": {
+          "observed": 0.18,
+          "pass": true,
+          "threshold": 0.25
+        },
+        "max_five_bin_frequency": {
+          "observed": 0.3,
+          "pass": true,
+          "threshold": 0.5
+        },
+        "min_unique_answers": {
+          "observed": 14,
+          "pass": true,
+          "threshold": 5
+        }
+      },
+      "five_bin_numeric": {
+        "bin_count": 5,
+        "bins": [
+          {
+            "bin_id": 0,
+            "count": 12,
+            "label": "[8, 13.2)"
+          },
+          {
+            "bin_id": 1,
+            "count": 30,
+            "label": "[13.2, 18.4)"
+          },
+          {
+            "bin_id": 2,
+            "count": 26,
+            "label": "[18.4, 23.6)"
+          },
+          {
+            "bin_id": 3,
+            "count": 24,
+            "label": "[23.6, 28.8)"
+          },
+          {
+            "bin_id": 4,
+            "count": 8,
+            "label": "[28.8, 34]"
+          }
+        ],
+        "max_bin_count": 30,
+        "max_bin_frequency": 0.3,
+        "range_max": 34.0,
+        "range_min": 8.0
+      },
+      "max_answer_count": 18,
+      "max_answer_frequency": 0.18,
+      "pass": true,
+      "sample_count": 100,
+      "top_answers": [
+        {
+          "answer_label": "16",
+          "count": 18
+        },
+        {
+          "answer_label": "20",
+          "count": 13
+        },
+        {
+          "answer_label": "22",
+          "count": 13
+        },
+        {
+          "answer_label": "28",
+          "count": 9
+        },
+        {
+          "answer_label": "24",
+          "count": 8
+        },
+        {
+          "answer_label": "10",
+          "count": 7
+        },
+        {
+          "answer_label": "18",
+          "count": 7
+        },
+        {
+          "answer_label": "26",
+          "count": 7
+        },
+        {
+          "answer_label": "30",
+          "count": 6
+        },
+        {
+          "answer_label": "14",
+          "count": 5
+        },
+        {
+          "answer_label": "12",
+          "count": 3
+        },
+        {
+          "answer_label": "8",
+          "count": 2
+        },
+        {
+          "answer_label": "32",
+          "count": 1
+        },
+        {
+          "answer_label": "34",
+          "count": 1
+        }
+      ],
+      "unique_answers": 14
+    },
+    "triangle": {
+      "answer_type_counts": {
+        "integer": 100
+      },
+      "checks": {
+        "max_answer_frequency": {
+          "observed": 0.11,
+          "pass": true,
+          "threshold": 0.25
+        },
+        "max_five_bin_frequency": {
+          "observed": 0.26,
+          "pass": true,
+          "threshold": 0.5
+        },
+        "min_unique_answers": {
+          "observed": 12,
+          "pass": true,
+          "threshold": 5
+        }
+      },
+      "five_bin_numeric": {
+        "bin_count": 5,
+        "bins": [
+          {
+            "bin_id": 0,
+            "count": 26,
+            "label": "[12, 19.6)"
+          },
+          {
+            "bin_id": 1,
+            "count": 7,
+            "label": "[19.6, 27.2)"
+          },
+          {
+            "bin_id": 2,
+            "count": 16,
+            "label": "[27.2, 34.8)"
+          },
+          {
+            "bin_id": 3,
+            "count": 25,
+            "label": "[34.8, 42.4)"
+          },
+          {
+            "bin_id": 4,
+            "count": 26,
+            "label": "[42.4, 50]"
+          }
+        ],
+        "max_bin_count": 26,
+        "max_bin_frequency": 0.26,
+        "range_max": 50.0,
+        "range_min": 12.0
+      },
+      "max_answer_count": 11,
+      "max_answer_frequency": 0.11,
+      "pass": true,
+      "sample_count": 100,
+      "top_answers": [
+        {
+          "answer_label": "50",
+          "count": 11
+        },
+        {
+          "answer_label": "42",
+          "count": 10
+        },
+        {
+          "answer_label": "12",
+          "count": 9
+        },
+        {
+          "answer_label": "16",
+          "count": 9
+        },
+        {
+          "answer_label": "30",
+          "count": 9
+        },
+        {
+          "answer_label": "48",
+          "count": 9
+        },
+        {
+          "answer_label": "18",
+          "count": 8
+        },
+        {
+          "answer_label": "36",
+          "count": 8
+        },
+        {
+          "answer_label": "24",
+          "count": 7
+        },
+        {
+          "answer_label": "32",
+          "count": 7
+        },
+        {
+          "answer_label": "40",
+          "count": 7
+        },
+        {
+          "answer_label": "44",
+          "count": 6
+        }
+      ],
+      "unique_answers": 12
+    }
+  },
+  "sampling_axes": {
+    "answer_scalar": {
+      "expected_conflict": true,
+      "expected_probabilities": {
+        "10": 0.16666666666666666,
+        "12": 0.16666666666666666,
+        "14": 0.16666666666666666,
+        "16": 0.16666666666666666,
+        "18": 0.16666666666666666,
+        "8": 0.16666666666666666
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.28,
+      "observed_counts": {
+        "": 28,
+        "10": 4,
+        "12": 10,
+        "14": 8,
+        "16": 11,
+        "18": 9,
+        "24": 3,
+        "30": 2,
+        "32": 4,
+        "36": 1,
+        "40": 1,
+        "42": 2,
+        "44": 4,
+        "48": 3,
+        "50": 3,
+        "8": 7
+      },
+      "sample_count": 100
+    },
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {},
+      "expected_source": "",
+      "max_observed_frequency": 0.37,
+      "observed_counts": {
+        "circle": 35,
+        "quadrilateral": 28,
+        "triangle": 37
+      },
+      "sample_count": 100
+    },
+    "variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "circle": 0.3333333333333333,
+        "quadrilateral": 0.3333333333333333,
+        "triangle": 0.3333333333333333
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 1.0,
+      "observed_counts": {
+        "": 100
+      },
+      "sample_count": 100
+    }
+  },
+  "task_group": "measurement",
+  "task_id": "task_geometry_measurement_perimeter",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {},
+    "expected_source": "",
+    "has_variants": true,
+    "observed_counts": {
+      "circle": 35,
+      "quadrilateral": 28,
+      "triangle": 37
+    },
+    "status": "reported"
+  }
+}

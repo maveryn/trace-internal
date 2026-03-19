@@ -35,6 +35,19 @@ def _graph_point(point, *, origin_x: int, origin_y: int, spacing: int) -> tuple[
     )
 
 
+def _has_adjacent_collinear_vertices(vertices) -> bool:
+    if len(vertices) < 3:
+        return True
+    for index in range(len(vertices)):
+        ax, ay = vertices[index - 1]
+        bx, by = vertices[index]
+        cx, cy = vertices[(index + 1) % len(vertices)]
+        cross = (float(bx) - float(ax)) * (float(cy) - float(by)) - (float(by) - float(ay)) * (float(cx) - float(bx))
+        if abs(float(cross)) <= 1e-9:
+            return True
+    return False
+
+
 def _assert_grid_point_map(value: object, *, expected_len: int) -> dict[str, list[int]]:
     assert isinstance(value, dict)
     assert len(value) == int(expected_len)
@@ -342,6 +355,8 @@ def test_polygon_measure_tasks_match_scene_attrs() -> None:
         assert str(task_id).startswith("task_geometry_measurement_")
         assert str(trace["execution_trace"]["shape_variant"]) == str(shape_variant)
         assert str(entity["entity_type"]) == str(entity_type)
+        if str(entity_type) == "polygon":
+            assert _has_adjacent_collinear_vertices(list(attrs["vertices"])) is False
 
         if str(answer_type) == "integer":
             assert int(out.answer_gt.value) == int(attrs[str(answer_attr)])
@@ -365,6 +380,11 @@ def test_polygon_measure_tasks_match_scene_attrs() -> None:
             expected_text = "π" if answer_scalar == 1 else f"{answer_scalar}π"
             assert str(out.answer_gt.value) == expected_text
             assert int(answer_scalar) == int(attrs[str(answer_attr)])
+            feasible_answers = [int(value) for value in trace["execution_trace"].get("feasible_answer_values", [])]
+            if feasible_answers:
+                assert int(answer_scalar) in feasible_answers
+                answer_probabilities = dict(trace["execution_trace"]["answer_scalar_probabilities"])
+                assert set(int(key) for key in answer_probabilities.keys()) == set(feasible_answers)
             if str(shape_variant) == "ellipse":
                 assert len(evidence_map) == 3
             else:

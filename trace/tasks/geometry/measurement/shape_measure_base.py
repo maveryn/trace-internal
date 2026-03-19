@@ -212,6 +212,24 @@ class GeometryShapeMeasureBase:
 
         return None, {}, [], 0
 
+    def _resolve_circle_target_answer(
+        self,
+        *,
+        instance_seed: int,
+        params: Mapping[str, Any],
+        variant_kind: str,
+        answer_min: int | None,
+        answer_max: int | None,
+        gen_defaults: Mapping[str, Any],
+        render_defaults: Mapping[str, Any],
+    ) -> Tuple[int | None, Dict[str, float], List[int], int]:
+        """Return optional target answer support for circle variants.
+
+        Default behavior does not preselect a circle target answer.
+        """
+
+        return None, {}, [], 0
+
     def _sample_polygon_instance(
         self,
         rng,
@@ -273,6 +291,10 @@ class GeometryShapeMeasureBase:
         polygon_answer_probabilities: Dict[str, float] = {}
         polygon_feasible_answer_values: List[int] = []
         polygon_required_graph_cells = 0
+        selected_circle_target_answer = None
+        circle_answer_probabilities: Dict[str, float] = {}
+        circle_feasible_answer_values: List[int] = []
+        circle_required_graph_cells = 0
         if str(variant_kind) in _POLYGON_VARIANTS:
             (
                 selected_polygon_target_answer,
@@ -280,6 +302,21 @@ class GeometryShapeMeasureBase:
                 polygon_feasible_answer_values,
                 polygon_required_graph_cells,
             ) = self._resolve_polygon_target_answer(
+                instance_seed=int(instance_seed),
+                params=params,
+                variant_kind=str(variant_kind),
+                answer_min=answer_min,
+                answer_max=answer_max,
+                gen_defaults=gen_defaults,
+                render_defaults=render_defaults,
+            )
+        if str(variant_kind) == "circle":
+            (
+                selected_circle_target_answer,
+                circle_answer_probabilities,
+                circle_feasible_answer_values,
+                circle_required_graph_cells,
+            ) = self._resolve_circle_target_answer(
                 instance_seed=int(instance_seed),
                 params=params,
                 variant_kind=str(variant_kind),
@@ -296,6 +333,8 @@ class GeometryShapeMeasureBase:
         )
         if int(polygon_required_graph_cells) > 0:
             required_graph_cells = max(int(required_graph_cells), int(polygon_required_graph_cells))
+        if int(circle_required_graph_cells) > 0:
+            required_graph_cells = max(int(required_graph_cells), int(circle_required_graph_cells))
         context_params = dict(params)
         if int(required_graph_cells) > 0:
             if "graph_cells" in context_params:
@@ -401,8 +440,16 @@ class GeometryShapeMeasureBase:
             circle_radii = circle_radii_for_pi_coefficient(
                 radius_min=int(group_default(gen_defaults, "circle_radius_min", MEASUREMENT_SHARED_DEFAULTS.circle_radius_min)),
                 radius_max=int(group_default(gen_defaults, "circle_radius_max", MEASUREMENT_SHARED_DEFAULTS.circle_radius_max)),
-                coefficient_min=(int(answer_min) if answer_min is not None else None),
-                coefficient_max=(int(answer_max) if answer_max is not None else None),
+                coefficient_min=(
+                    int(selected_circle_target_answer)
+                    if selected_circle_target_answer is not None
+                    else (int(answer_min) if answer_min is not None else None)
+                ),
+                coefficient_max=(
+                    int(selected_circle_target_answer)
+                    if selected_circle_target_answer is not None
+                    else (int(answer_max) if answer_max is not None else None)
+                ),
                 coefficient_scale=int(self._circle_answer_coefficient_scale()),
             )
             circle_radii_for_context = feasible_circle_radii_on_graph_paper(
@@ -576,6 +623,12 @@ class GeometryShapeMeasureBase:
                         max_attempts=8,
                     )
                     candidate_answer = int(self._answer_scalar_from_circle_instance(candidate_circle))
+                    if (
+                        selected_circle_target_answer is not None
+                        and int(candidate_answer) != int(selected_circle_target_answer)
+                    ):
+                        range_rejections += 1
+                        continue
                     if answer_min is not None and int(candidate_answer) < int(answer_min):
                         range_rejections += 1
                         continue
@@ -796,6 +849,13 @@ class GeometryShapeMeasureBase:
                     "circle_circumference_pi_coefficient": int(circle_instance.circumference_pi_coefficient),
                 }
             )
+            if circle_feasible_answer_values:
+                execution_trace.update(
+                    {
+                        "feasible_answer_values": [int(value) for value in circle_feasible_answer_values],
+                        "answer_scalar_probabilities": dict(circle_answer_probabilities),
+                    }
+                )
 
         trace_payload = {
             "scene_ir": {

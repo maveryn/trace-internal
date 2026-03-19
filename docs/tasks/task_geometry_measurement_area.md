@@ -19,7 +19,8 @@
    - polygons: labeled vertex map in graph units,
    - ellipse: labeled 3-point map (`center`, `axis-x endpoint`, `axis-y endpoint`) in graph units.
 6. Alternate evidence forms: projected `pixel_point_map` + `grid_point_map` and derived pixel/grid set/path projections in trace.
-7. Overlap/touch policy: single object only.
+7. Polygon variants reject adjacent collinear vertices, so sampled triangles/quadrilaterals remain visually non-degenerate.
+8. Overlap/touch policy: single object only.
 
 ## 3) Prompt contract
 1. `prompt_bundle_id`: `geometry_measurement_v1`

@@ -51,6 +51,9 @@ Use this checklist during implementation and refactor reviews.
 35. When trace payloads store pixel-space projections of evidence, prefix those projected keys with `pixel_` (for example `pixel_point_set`, `pixel_point_map`) so they cannot be mistaken for primary evidence-type contracts.
 36. Prompt JSON examples for point-based evidence must use valid non-degenerate layouts (not placeholder collinear points) so examples match the intended task semantics.
 37. When a task ships variant-specific JSON examples in config, prefer those over generic placeholder builders whenever the answer depends on the illustrated geometry (for example area vs perimeter on the same point layout).
+38. For polygon-based tasks, reject adjacent collinear vertices in shared polygon samplers so an `n`-gon never visually collapses into fewer effective sides.
+39. When target-answer sampling uses feasible-support cycling, do not key that selection directly off the same raw seed used for task-variant choice; use `_sampling_index` when provided and otherwise derive a namespaced deterministic index so variant choice and target answer do not become accidentally coupled.
+40. When a feasibility probe selects a target answer before layout, carry forward the minimum required scene capacity from that same probe; do not assume a loose bound like `answer + margin` is enough for all constructive variants.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

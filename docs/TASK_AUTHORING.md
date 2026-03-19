@@ -91,7 +91,8 @@ Use this as the implementation checklist for new or modified tasks.
 5. For geometry placement with lattice offsets, compute anchor bounds from the selected candidate (not global worst-case margins).
 6. Avoid tiny fixed structure banks; randomize both structural and visual factors whenever constraints allow.
 7. For tasks with both source categories and answer targets, sample both distributions explicitly and verify realized distributions.
-8. For deterministic balance over generated prefixes, use builder `_sampling_index` (not hashed `instance_seed`) when cycling categories/answers.
+8. For deterministic balance over generated prefixes, use builder `_sampling_index` (not hashed `instance_seed`) when cycling categories/answers; if `_sampling_index` is absent, fall back to a namespaced deterministic index so target-answer choice does not couple to unrelated seed-driven decisions such as task-variant selection.
+9. If a target answer is chosen from a feasibility probe before layout, also propagate the probe's minimum required scene capacity (for example graph-cell count/span) into layout sampling; otherwise a globally feasible answer can still fail after the scene size is sampled.
 9. When changing answer/evidence/variant contracts, remove deprecated helper paths and stale trace fields in the same patch.
 
 ## 6) Minimal test checklist

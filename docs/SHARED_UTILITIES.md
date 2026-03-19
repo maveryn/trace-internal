@@ -75,8 +75,9 @@ Promote helpers when a second consumer appears.
    - `variant_sampling.py` in `trace/tasks/geometry/shared/` provides shared balanced variant-selection helpers reused across geometry task groups.
    - `conic_geometry.py` provides reusable circle/ellipse sampling, rendering, and scene-entity payload helpers.
    - `length_geometry.py` provides reusable integer-length segment vectors, sampling, and labeled-segment rendering helpers.
-   - `polygon_geometry.py` provides reusable procedural polygon sampling plus feasible-target support probes for polygon-side measurement tasks and constructive triangle-area/perimeter helpers for graph-paper measurement tasks.
+   - `polygon_geometry.py` provides reusable procedural polygon sampling plus feasible-target support probes for polygon-side measurement tasks, constructive triangle/quadrilateral area helpers and triangle-perimeter helpers for graph-paper measurement tasks, and conservative interior-span calculations for padded graph-paper placement.
    - Use `required_graph_cells_for_polygon_side_length(...)` when a task selects a polygon-side target before layout so the chosen target also carries forward the minimum graph span it needs.
+   - Use `feasible_quadrilateral_area_values(...)`, `required_graph_cells_for_quadrilateral_area(...)`, and `sample_quadrilateral_instance_with_area_on_graph_paper(...)` when a task needs target-first 4-gon area sampling without violating the shared integer-perimeter polygon contract.
    - Procedural polygon templates reject adjacent collinear vertices so sampled `n`-gons do not collapse into visually degenerate lower-side polygons.
 3. Tile: `trace/tasks/tile/shared/path_grid.py`, `maze_sampling.py`, `grid_layout.py`, `maze_scene.py`, `maze_rendering.py`
 

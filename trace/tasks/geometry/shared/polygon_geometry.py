@@ -425,6 +425,141 @@ def triangle_integer_edge_specs_for_area(
     return tuple(matches)
 
 
+def _template_span_units(vertices: Sequence[UnitPoint]) -> int:
+    """Return the maximum axis span covered by one unit-vertex template."""
+    if not vertices:
+        raise ValueError("vertices must be non-empty")
+    x_values = [int(point[0]) for point in vertices]
+    y_values = [int(point[1]) for point in vertices]
+    width_units = int(max(x_values) - min(x_values))
+    height_units = int(max(y_values) - min(y_values))
+    return max(int(width_units), int(height_units))
+
+
+@lru_cache(maxsize=32)
+def _quadrilateral_area_templates(max_span_units: int) -> Tuple[PolygonTemplate, ...]:
+    """Return constructive integer-edge quadrilateral templates for exact areas.
+
+    The catalog is used by measurement tasks that need target-first answer
+    sampling for 4-gon area. We restrict the family to rectangles and
+    integer-edge parallelograms so the resulting `PolygonInstance` remains
+    compatible with the shared perimeter contract while still offering broad
+    answer coverage.
+    """
+
+    span_limit = max(4, int(max_span_units))
+    templates_by_signature: Dict[str, PolygonTemplate] = {}
+    parallelogram_offsets = {
+        (abs(int(dx)), abs(int(dy)))
+        for dx, dy, _length in integer_length_vectors(
+            max_abs_component=int(span_limit),
+            min_edge_length=2,
+            max_edge_length=max(2, int(2 * span_limit)),
+        )
+        if int(dx) > 0 and int(dy) > 0
+    }
+
+    def _register(vertices: Sequence[UnitPoint], *, family: str) -> None:
+        ordered_vertices = tuple((int(x_value), int(y_value)) for x_value, y_value in vertices)
+        if len(set(ordered_vertices)) != 4:
+            return
+        if _has_adjacent_collinear_vertices(ordered_vertices):
+            return
+        if not _is_simple_polygon(ordered_vertices):
+            return
+        if int(_template_span_units(ordered_vertices)) > int(span_limit):
+            return
+        area_value = int(polygon_area_square_units(ordered_vertices))
+        if int(area_value) < 4:
+            return
+        signature = _polygon_signature(ordered_vertices)
+        templates_by_signature.setdefault(
+            signature,
+            PolygonTemplate(
+                template_id=f"{family}_{signature}",
+                vertices=ordered_vertices,
+            ),
+        )
+
+    for width_units in range(2, int(span_limit) + 1):
+        for height_units in range(2, int(span_limit) + 1):
+            _register(
+                (
+                    (0, 0),
+                    (int(width_units), 0),
+                    (int(width_units), int(height_units)),
+                    (0, int(height_units)),
+                ),
+                family="quadrilateral_rectangle",
+            )
+            for shift_units, slant_height_units in sorted(parallelogram_offsets):
+                if int(slant_height_units) != int(height_units):
+                    continue
+                if int(width_units + shift_units) > int(span_limit):
+                    continue
+                _register(
+                    (
+                        (0, 0),
+                        (int(width_units), 0),
+                        (int(width_units + shift_units), int(slant_height_units)),
+                        (int(shift_units), int(slant_height_units)),
+                    ),
+                    family="quadrilateral_parallelogram",
+                )
+
+    return tuple(sorted(templates_by_signature.values(), key=lambda template: str(template.template_id)))
+
+
+def quadrilateral_area_templates_for_area(
+    *,
+    area_square_units: int,
+    max_span_units: int,
+) -> Tuple[PolygonTemplate, ...]:
+    """Return constructive quadrilateral templates for one exact target area."""
+    area_value = int(area_square_units)
+    if int(area_value) <= 0:
+        return tuple()
+    matches = [
+        template
+        for template in _quadrilateral_area_templates(int(max_span_units))
+        if int(polygon_area_square_units(template.vertices)) == int(area_value)
+    ]
+    return tuple(matches)
+
+
+def feasible_quadrilateral_area_values(
+    *,
+    max_span_units: int,
+    area_min: int | None = None,
+    area_max: int | None = None,
+) -> Tuple[int, ...]:
+    """Return exact quadrilateral areas supported by the constructive catalog."""
+    values = set()
+    for template in _quadrilateral_area_templates(int(max_span_units)):
+        area_value = int(polygon_area_square_units(template.vertices))
+        if area_min is not None and int(area_value) < int(area_min):
+            continue
+        if area_max is not None and int(area_value) > int(area_max):
+            continue
+        values.add(int(area_value))
+    return tuple(sorted(values))
+
+
+def required_graph_cells_for_quadrilateral_area(
+    *,
+    area_square_units: int,
+    max_span_units: int,
+) -> int:
+    """Return the minimum graph-cell count that supports one quadrilateral area."""
+    templates = quadrilateral_area_templates_for_area(
+        area_square_units=int(area_square_units),
+        max_span_units=int(max_span_units),
+    )
+    if not templates:
+        raise ValueError("no feasible quadrilateral templates for requested area")
+    return min(int(_template_span_units(template.vertices)) for template in templates) + 4
+
+
 def feasible_triangle_area_values(
     *,
     max_span_units: int,
@@ -505,6 +640,19 @@ def feasible_triangle_perimeter_values(
     return tuple(sorted(values))
 
 
+def _span_limit_for_graph_scene(*, canvas_size: int, graph_spacing: int, padding_units: int) -> int:
+    """Return a conservative unit-span limit for one graph-paper scene.
+
+    The renderer can leave partial cells at the canvas edges, so we keep an
+    extra two-cell safety band beyond the requested interior padding.
+    """
+
+    spacing_px = max(1, int(graph_spacing))
+    estimated_cells_per_side = max(2, int(round(float(int(canvas_size)) / float(spacing_px))))
+    safety_cells = 2 + (2 * max(0, int(padding_units)))
+    return max(3, int(estimated_cells_per_side) - int(safety_cells))
+
+
 def sample_triangle_instance_with_area_on_graph_paper(
     rng,
     *,
@@ -516,9 +664,11 @@ def sample_triangle_instance_with_area_on_graph_paper(
     max_attempts: int = 220,
 ) -> PolygonInstance:
     """Sample one graph-paper triangle with the requested integer area."""
-    spacing_px = max(1, int(graph_spacing))
-    estimated_cells_per_side = max(2, int(round(float(int(canvas_size)) / float(spacing_px))))
-    span_limit = max(3, int(estimated_cells_per_side) - 2)
+    span_limit = _span_limit_for_graph_scene(
+        canvas_size=int(canvas_size),
+        graph_spacing=int(graph_spacing),
+        padding_units=int(padding_units),
+    )
     area_value = int(area_square_units)
     triangle_specs = triangle_integer_edge_specs_for_area(
         area_square_units=int(area_value),
@@ -581,9 +731,11 @@ def sample_triangle_instance_with_perimeter_on_graph_paper(
     max_attempts: int = 220,
 ) -> PolygonInstance:
     """Sample one graph-paper triangle with the requested integer perimeter."""
-    spacing_px = max(1, int(graph_spacing))
-    estimated_cells_per_side = max(2, int(round(float(int(canvas_size)) / float(spacing_px))))
-    span_limit = max(3, int(estimated_cells_per_side) - 2)
+    span_limit = _span_limit_for_graph_scene(
+        canvas_size=int(canvas_size),
+        graph_spacing=int(graph_spacing),
+        padding_units=int(padding_units),
+    )
     perimeter_value = int(perimeter_units)
     triangle_specs = triangle_integer_edge_specs_for_perimeter(
         perimeter_units=int(perimeter_value),
@@ -633,6 +785,70 @@ def sample_triangle_instance_with_perimeter_on_graph_paper(
         except ValueError:
             continue
     raise ValueError("failed to sample triangle instance for requested perimeter and graph-paper constraints")
+
+
+def sample_quadrilateral_instance_with_area_on_graph_paper(
+    rng,
+    *,
+    area_square_units: int,
+    canvas_size: int,
+    graph_spacing: int,
+    graph_origin: Point | None = None,
+    padding_units: int = 1,
+    max_attempts: int = 220,
+) -> PolygonInstance:
+    """Sample one graph-paper quadrilateral with the requested integer area.
+
+    The template catalog is constructive and exact, so target-first area
+    sampling stays balanced instead of drifting toward low-area procedural
+    quadrilaterals.
+    """
+
+    span_limit = _span_limit_for_graph_scene(
+        canvas_size=int(canvas_size),
+        graph_spacing=int(graph_spacing),
+        padding_units=int(padding_units),
+    )
+    area_value = int(area_square_units)
+    templates = quadrilateral_area_templates_for_area(
+        area_square_units=int(area_value),
+        max_span_units=int(span_limit),
+    )
+    if not templates:
+        raise ValueError("no feasible quadrilateral templates for requested area and graph span")
+
+    for _ in range(max(1, int(max_attempts))):
+        template = rng.choice(templates)
+        labels = rotate_labels(
+            alphabetic_labels(template.sides, start_index=int(rng.randrange(26))),
+            shift=int(rng.randrange(template.sides)),
+        )
+        transform_index = int(rng.randrange(8))
+        transformed_vertices = transform_unit_vertices(template.vertices, transform_index=transform_index)
+        try:
+            center = sample_polygon_center(
+                rng,
+                canvas_size=int(canvas_size),
+                graph_spacing=int(graph_spacing),
+                graph_origin=(
+                    (float(graph_origin[0]), float(graph_origin[1]))
+                    if graph_origin is not None
+                    else None
+                ),
+                unit_vertices=transformed_vertices,
+                padding_units=int(padding_units),
+            )
+            return build_polygon_instance(
+                template=template,
+                center=center,
+                spacing=int(graph_spacing),
+                transform_index=transform_index,
+                labels=labels,
+                canvas_size=int(canvas_size),
+            )
+        except ValueError:
+            continue
+    raise ValueError("failed to sample quadrilateral instance for requested area and graph-paper constraints")
 
 
 def polygon_area_square_units(vertices: Sequence[UnitPoint]) -> int:
@@ -769,9 +985,11 @@ def sample_polygon_instance_on_graph_paper(
     side_options = sorted({int(side) for side in allowed_sides if int(side) >= 3})
     if not side_options:
         raise ValueError("allowed_sides must include at least one value >= 3")
-    spacing_px = max(1, int(graph_spacing))
-    estimated_cells_per_side = max(2, int(round(float(int(canvas_size)) / float(spacing_px))))
-    span_limit = max(3, int(estimated_cells_per_side) - 2)
+    span_limit = _span_limit_for_graph_scene(
+        canvas_size=int(canvas_size),
+        graph_spacing=int(graph_spacing),
+        padding_units=int(padding_units),
+    )
     for _ in range(max(1, int(max_attempts))):
         template = sample_procedural_polygon_template(
             rng,
@@ -784,7 +1002,7 @@ def sample_polygon_instance_on_graph_paper(
             required_edge_length=(
                 None if required_side_length_units is None else int(required_side_length_units)
             ),
-            max_attempts=64,
+            max_attempts=192,
         )
         labels = rotate_labels(
             alphabetic_labels(template.sides, start_index=int(rng.randrange(26))),

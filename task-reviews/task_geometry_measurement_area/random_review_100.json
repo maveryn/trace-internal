@@ -6,7 +6,7 @@
     },
     "checks": {
       "max_answer_frequency": {
-        "observed": 0.06,
+        "observed": 0.08,
         "pass": true,
         "threshold": 0.25
       },
@@ -17,31 +17,35 @@
         "threshold": 0.5
       },
       "min_unique_answers": {
-        "observed": 40,
+        "observed": 42,
         "pass": true,
         "threshold": 5
       }
     },
     "five_bin_numeric": null,
-    "max_answer_count": 6,
-    "max_answer_frequency": 0.06,
+    "max_answer_count": 8,
+    "max_answer_frequency": 0.08,
     "pass": true,
     "sample_count": 100,
     "top_answers": [
       {
-        "answer_label": "18",
+        "answer_label": "30",
+        "count": 8
+      },
+      {
+        "answer_label": "96",
         "count": 6
       },
       {
-        "answer_label": "42",
+        "answer_label": "9π",
         "count": 6
       },
       {
-        "answer_label": "12",
+        "answer_label": "12π",
         "count": 5
       },
       {
-        "answer_label": "36",
+        "answer_label": "54",
         "count": 5
       },
       {
@@ -49,23 +53,15 @@
         "count": 5
       },
       {
-        "answer_label": "24",
+        "answer_label": "12",
         "count": 4
       },
       {
-        "answer_label": "30",
+        "answer_label": "42",
         "count": 4
       },
       {
-        "answer_label": "54",
-        "count": 4
-      },
-      {
-        "answer_label": "8π",
-        "count": 4
-      },
-      {
-        "answer_label": "12π",
+        "answer_label": "10π",
         "count": 3
       },
       {
@@ -73,11 +69,11 @@
         "count": 3
       },
       {
-        "answer_label": "28",
+        "answer_label": "18π",
         "count": 3
       },
       {
-        "answer_label": "40",
+        "answer_label": "36",
         "count": 3
       },
       {
@@ -85,23 +81,15 @@
         "count": 3
       },
       {
-        "answer_label": "8",
+        "answer_label": "80",
         "count": 3
       },
       {
-        "answer_label": "14",
-        "count": 2
-      },
-      {
-        "answer_label": "15",
-        "count": 2
+        "answer_label": "84",
+        "count": 3
       },
       {
         "answer_label": "15π",
-        "count": 2
-      },
-      {
-        "answer_label": "18π",
         "count": 2
       },
       {
@@ -109,43 +97,35 @@
         "count": 2
       },
       {
-        "answer_label": "24π",
+        "answer_label": "24",
         "count": 2
       },
       {
-        "answer_label": "25π",
+        "answer_label": "27π",
         "count": 2
       },
       {
-        "answer_label": "26",
+        "answer_label": "28π",
         "count": 2
       },
       {
-        "answer_label": "36π",
+        "answer_label": "45",
         "count": 2
       },
       {
-        "answer_label": "56π",
+        "answer_label": "49",
         "count": 2
       },
       {
-        "answer_label": "72π",
+        "answer_label": "65",
         "count": 2
       },
       {
-        "answer_label": "84",
+        "answer_label": "90",
         "count": 2
       },
       {
-        "answer_label": "96",
-        "count": 2
-      },
-      {
-        "answer_label": "9π",
-        "count": 2
-      },
-      {
-        "answer_label": "10π",
+        "answer_label": "14",
         "count": 1
       },
       {
@@ -161,68 +141,152 @@
         "count": 1
       },
       {
-        "answer_label": "20π",
+        "answer_label": "21π",
         "count": 1
       },
       {
-        "answer_label": "22",
+        "answer_label": "24π",
         "count": 1
       },
       {
-        "answer_label": "32π",
+        "answer_label": "30π",
         "count": 1
       },
       {
-        "answer_label": "35",
+        "answer_label": "42π",
         "count": 1
       },
       {
-        "answer_label": "35π",
+        "answer_label": "55",
         "count": 1
       },
       {
-        "answer_label": "40π",
+        "answer_label": "56",
+        "count": 1
+      },
+      {
+        "answer_label": "64",
         "count": 1
       },
       {
         "answer_label": "66",
         "count": 1
+      },
+      {
+        "answer_label": "72",
+        "count": 1
+      },
+      {
+        "answer_label": "75",
+        "count": 1
+      },
+      {
+        "answer_label": "77",
+        "count": 1
+      },
+      {
+        "answer_label": "81",
+        "count": 1
+      },
+      {
+        "answer_label": "8π",
+        "count": 1
+      },
+      {
+        "answer_label": "9",
+        "count": 1
       }
     ],
-    "unique_answers": 40
+    "unique_answers": 42
   },
   "sample_count": 100,
   "sampling_axes": {
     "answer_scalar": {
-      "expected_conflict": false,
+      "expected_conflict": true,
       "expected_probabilities": {
-        "12": 0.09090909090909091,
-        "24": 0.09090909090909091,
-        "30": 0.09090909090909091,
-        "36": 0.09090909090909091,
-        "42": 0.09090909090909091,
-        "48": 0.09090909090909091,
-        "54": 0.09090909090909091,
-        "60": 0.09090909090909091,
-        "66": 0.09090909090909091,
-        "84": 0.09090909090909091,
-        "96": 0.09090909090909091
+        "10": 0.02,
+        "12": 0.02,
+        "14": 0.02,
+        "15": 0.02,
+        "16": 0.02,
+        "18": 0.02,
+        "20": 0.02,
+        "21": 0.02,
+        "22": 0.02,
+        "24": 0.02,
+        "25": 0.02,
+        "26": 0.02,
+        "27": 0.02,
+        "28": 0.02,
+        "30": 0.02,
+        "32": 0.02,
+        "33": 0.02,
+        "35": 0.02,
+        "36": 0.02,
+        "39": 0.02,
+        "40": 0.02,
+        "42": 0.02,
+        "44": 0.02,
+        "45": 0.02,
+        "48": 0.02,
+        "49": 0.02,
+        "50": 0.02,
+        "52": 0.02,
+        "54": 0.02,
+        "55": 0.02,
+        "56": 0.02,
+        "60": 0.02,
+        "63": 0.02,
+        "64": 0.02,
+        "65": 0.02,
+        "66": 0.02,
+        "70": 0.02,
+        "72": 0.02,
+        "75": 0.02,
+        "77": 0.02,
+        "78": 0.02,
+        "8": 0.02,
+        "80": 0.02,
+        "81": 0.02,
+        "84": 0.02,
+        "88": 0.02,
+        "9": 0.02,
+        "90": 0.02,
+        "91": 0.02,
+        "96": 0.02
       },
       "expected_source": "execution_trace",
-      "max_observed_frequency": 0.69,
+      "max_observed_frequency": 0.32,
       "observed_counts": {
-        "": 69,
-        "12": 2,
+        "": 32,
+        "12": 4,
+        "14": 1,
+        "16": 1,
+        "20": 1,
+        "21": 2,
         "24": 2,
-        "30": 3,
+        "30": 8,
         "36": 3,
         "42": 4,
+        "45": 2,
         "48": 3,
-        "54": 4,
+        "49": 2,
+        "54": 5,
+        "55": 1,
+        "56": 1,
         "60": 5,
+        "64": 1,
+        "65": 2,
         "66": 1,
-        "84": 2,
-        "96": 2
+        "72": 1,
+        "75": 1,
+        "77": 1,
+        "80": 3,
+        "81": 1,
+        "84": 3,
+        "9": 1,
+        "90": 2,
+        "96": 6
       },
       "sample_count": 100
     },

@@ -13,7 +13,7 @@ Date: 2026-03-08
 8. Shared geometry single-object scene helpers (`graph_paper`, `graph_rendering`, `single_object_scene`, `angle_geometry`, `polygon_geometry`).
 9. Objective-style geometry measurement tasks (single shape/object per image):
    - angle measure (primitive-angle or line-intersection source) with deterministic balanced source/answer sampling defaults, minimum ray length constraints, axis-aligned-ray construction, and nearest-integer degree query formatting,
-   - area measure (triangle/quadrilateral + ellipse variants, with triangle target-area sampling from exact feasible support),
+   - area measure (triangle/quadrilateral + ellipse variants, with triangle/quadrilateral target-area sampling from exact feasible support),
    - perimeter measure (triangle/quadrilateral + circle variants, with triangle/circle target sampling from exact feasible support),
    - length measure (segment, polygon side, circle radius/diameter, ellipse major/minor axis variants),
    - slope measure (single finite line crossing x-axis at an integer lattice coordinate, with nearest-tenth numeric answers and x-axis crossing-point evidence).
@@ -27,6 +27,7 @@ Date: 2026-03-08
 16. Geometry analytical_3d volume task supports six annotated-solid variants (rectangular prism, triangular prism, square pyramid, cylinder, cone, sphere) with deterministic balanced variant sampling and typed integer/`kπ` answers.
 17. Geometry analytical_3d surface-area task supports the same six annotated solids with total-surface-area questions, integer/`kπ` answer types, and structured `measurement_ref_map` evidence.
 18. Analytical 2D shape-unit scaling is now decoupled from graph-paper `graph_cells` limits via dedicated render params (`analytical_unit_spacing_px`, `analytical_unit_padding_px`).
+19. Geometry measurement area/perimeter tasks now use unlabeled coordinate-only evidence (`graph_point_set` for polygons, `graph_point` for ellipse/circle) and keep shape vertices/reference points strictly inside the plotted graph-paper interior.
 
 ## Active tasks
 1. `task_tile_path_shortest_path` (`domain=tile`, `task_group=path`)
@@ -42,7 +43,7 @@ Date: 2026-03-08
 ## Current quality baseline
 1. Tests are required to pass before finalize.
 2. Distribution QA uses `scripts/check_task_answer_distribution.py` with per-variant answer-only checks (`unique_answers >= 5`, `max_answer_frequency < 25%`, numeric `max_five_bin_frequency <= 50%`) and multithreaded sample generation (`--workers`).
-3. Task-review tooling writes per-task artifacts under `task-reviews/<task_id>/`, including one inspection workbook with one sheet per task variant.
+3. Task-review tooling writes per-task artifacts under `task-reviews/<task_id>/`, including one inspection workbook named `<task_id>.xlsx` with one sheet per task variant.
 
 ## Next priorities
 1. Continue objective-first refactor for additional domains (tile/icons/charts/graphs/documents).

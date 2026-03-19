@@ -91,7 +91,8 @@ def test_geometry_measurement_defaults_loaded() -> None:
     assert int(area_rendering["line_width"]) > 0
     assert str(area_prompt["question_text_polygon"]).strip()
     assert str(area_prompt["question_text_ellipse"]).strip()
-    assert str(area_prompt["evidence_hint_point_map"]).strip()
+    assert str(area_prompt["evidence_hint_polygon"]).strip()
+    assert str(area_prompt["evidence_hint_ellipse"]).strip()
     assert str(area_prompt["answer_hint_integer"]).strip()
     assert str(area_prompt["answer_hint_pi"]).strip()
     assert str(area_prompt["json_example_triangle"]).strip()
@@ -113,7 +114,8 @@ def test_geometry_measurement_defaults_loaded() -> None:
     assert int(perim_rendering["line_width"]) > 0
     assert str(perim_prompt["question_text_polygon"]).strip()
     assert str(perim_prompt["question_text_circle"]).strip()
-    assert str(perim_prompt["evidence_hint_point_map"]).strip()
+    assert str(perim_prompt["evidence_hint_polygon"]).strip()
+    assert str(perim_prompt["evidence_hint_circle"]).strip()
     assert str(perim_prompt["answer_hint_integer"]).strip()
     assert str(perim_prompt["answer_hint_pi"]).strip()
     assert str(perim_prompt["json_example_triangle"]).strip()
@@ -415,8 +417,8 @@ def test_measurement_prompt_examples_are_task_valid() -> None:
     )
     area_example = json.loads(str(area_prompt["json_example_integer"]))
     assert list(area_example.keys()) == ["evidence", "answer"]
-    assert isinstance(area_example["evidence"], dict)
-    area_points = [[int(point[0]), int(point[1])] for point in area_example["evidence"].values()]
+    assert isinstance(area_example["evidence"], list)
+    area_points = [[int(point[0]), int(point[1])] for point in area_example["evidence"]]
     assert len(area_points) >= 3
     assert int(area_example["answer"]) == int(_polygon_area(area_points))
     for key, expected_points in (
@@ -425,14 +427,13 @@ def test_measurement_prompt_examples_are_task_valid() -> None:
     ):
         polygon_example = json.loads(str(area_prompt[key]))
         assert list(polygon_example.keys()) == ["evidence", "answer"]
-        assert isinstance(polygon_example["evidence"], dict)
-        polygon_points = [[int(point[0]), int(point[1])] for point in polygon_example["evidence"].values()]
+        assert isinstance(polygon_example["evidence"], list)
+        polygon_points = [[int(point[0]), int(point[1])] for point in polygon_example["evidence"]]
         assert len(polygon_points) == int(expected_points)
         assert int(polygon_example["answer"]) == int(_polygon_area(polygon_points))
     area_pi_example = json.loads(str(area_prompt["json_example_pi"]))
     assert list(area_pi_example.keys()) == ["evidence", "answer"]
-    assert isinstance(area_pi_example["evidence"], dict)
-    assert len(area_pi_example["evidence"]) >= 1
+    assert area_pi_example["evidence"] == [[0, 0]]
     assert str(area_pi_example["answer"]).endswith("π")
     area_answer_only_integer = json.loads(str(area_prompt["json_example_answer_only_integer"]))
     assert list(area_answer_only_integer.keys()) == ["answer"]
@@ -447,8 +448,8 @@ def test_measurement_prompt_examples_are_task_valid() -> None:
     )
     perim_example = json.loads(str(perim_prompt["json_example_integer"]))
     assert list(perim_example.keys()) == ["evidence", "answer"]
-    assert isinstance(perim_example["evidence"], dict)
-    perim_points = [[int(point[0]), int(point[1])] for point in perim_example["evidence"].values()]
+    assert isinstance(perim_example["evidence"], list)
+    perim_points = [[int(point[0]), int(point[1])] for point in perim_example["evidence"]]
     assert len(perim_points) >= 3
     assert int(perim_example["answer"]) == int(_polygon_perimeter(perim_points))
     for key, expected_points in (
@@ -457,14 +458,13 @@ def test_measurement_prompt_examples_are_task_valid() -> None:
     ):
         polygon_example = json.loads(str(perim_prompt[key]))
         assert list(polygon_example.keys()) == ["evidence", "answer"]
-        assert isinstance(polygon_example["evidence"], dict)
-        polygon_points = [[int(point[0]), int(point[1])] for point in polygon_example["evidence"].values()]
+        assert isinstance(polygon_example["evidence"], list)
+        polygon_points = [[int(point[0]), int(point[1])] for point in polygon_example["evidence"]]
         assert len(polygon_points) == int(expected_points)
         assert int(polygon_example["answer"]) == int(_polygon_perimeter(polygon_points))
     perim_pi_example = json.loads(str(perim_prompt["json_example_pi"]))
     assert list(perim_pi_example.keys()) == ["evidence", "answer"]
-    assert isinstance(perim_pi_example["evidence"], dict)
-    assert len(perim_pi_example["evidence"]) >= 1
+    assert perim_pi_example["evidence"] == [[0, 0]]
     assert str(perim_pi_example["answer"]).endswith("π")
     perim_answer_only_integer = json.loads(str(perim_prompt["json_example_answer_only_integer"]))
     assert list(perim_answer_only_integer.keys()) == ["answer"]

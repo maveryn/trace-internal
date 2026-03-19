@@ -22,7 +22,6 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ...shared.text_rendering import resolve_scene_label_font_size_px
 from ..shared.conic_geometry import (
     CircleInstance,
     EllipseInstance,
@@ -39,12 +38,9 @@ from ..shared.conic_geometry import (
     sample_ellipse_instance_on_graph_paper,
 )
 from ..shared.graph_rendering import graph_paper_grid_from_frame, scale_point
-from ..shared.labeled_point_evidence import labeled_grid_point_evidence_artifacts
-from ..shared.point_labels import draw_labeled_points
+from ..shared.labeled_point_evidence import graph_point_evidence_artifacts, graph_point_set_evidence_artifacts
 from ..shared.polygon_geometry import (
     PolygonInstance,
-    alphabetic_labels,
-    draw_polygon_labels,
     draw_polygon_outline,
     polygon_render_anchor,
     polygon_scene_entity,
@@ -151,6 +147,10 @@ class GeometryShapeMeasureBase:
         """Return coefficient scale for circle `kπ` answers."""
         return 2
 
+    def _include_required_labels_in_prompt(self, *, variant_kind: str) -> bool:
+        """Return whether prompt text should append one `Required labels:` suffix."""
+        return False
+
     def _resolve_required_graph_cells(
         self,
         *,
@@ -177,7 +177,7 @@ class GeometryShapeMeasureBase:
             if not pairs:
                 raise ValueError("no feasible ellipse semiaxis pairs for requested answer bounds")
             min_extent = min(max(int(semi_x), int(semi_y)) for semi_x, semi_y in pairs)
-            return int((2 * int(min_extent)) + 2)
+            return int((2 * int(min_extent)) + 4)
         if variant == "circle":
             radius_min = int(group_default(gen_defaults, "circle_radius_min", MEASUREMENT_SHARED_DEFAULTS.circle_radius_min))
             radius_max = int(group_default(gen_defaults, "circle_radius_max", MEASUREMENT_SHARED_DEFAULTS.circle_radius_max))
@@ -191,7 +191,7 @@ class GeometryShapeMeasureBase:
             if not radii:
                 raise ValueError("no feasible circle radii for requested answer bounds")
             min_radius = min(int(radius) for radius in radii)
-            return int((2 * int(min_radius)) + 2)
+            return int((2 * int(min_radius)) + 4)
         return 0
 
     def _resolve_polygon_target_answer(
@@ -248,8 +248,8 @@ class GeometryShapeMeasureBase:
             canvas_size=int(context.canvas_size),
             graph_spacing=int(context.graph_spacing),
             graph_origin=(float(context.graph_origin[0]), float(context.graph_origin[1])),
-            padding_units=0,
-            max_attempts=8,
+            padding_units=1,
+            max_attempts=16,
             min_area_square_units=4,
         )
 
@@ -378,29 +378,6 @@ class GeometryShapeMeasureBase:
             max_key="line_width_max",
             minimum_value=1,
         )
-        label_offset_px = float(
-            context_params.get(
-                "label_offset_px",
-                group_default(render_defaults, "label_offset_px", MEASUREMENT_SHARED_DEFAULTS.label_offset_px),
-            )
-        )
-        label_font_size_px = resolve_scene_label_font_size_px(
-            canvas_size=int(context.canvas_size),
-            graph_spacing=int(context.graph_spacing),
-            scene_scale=int(context.scene_scale),
-            min_px=int(group_default(render_defaults, "label_font_size_min", MEASUREMENT_SHARED_DEFAULTS.label_font_size_min)),
-            max_px=int(group_default(render_defaults, "label_font_size_max", MEASUREMENT_SHARED_DEFAULTS.label_font_size_max)),
-        )
-        label_stroke_width = sample_int_render_param(
-            scene_rng,
-            params=context_params,
-            render_defaults=render_defaults,
-            key="label_stroke_width",
-            fallback=int(MEASUREMENT_SHARED_DEFAULTS.label_stroke_width),
-            min_key="label_stroke_width_min",
-            max_key="label_stroke_width_max",
-            minimum_value=1,
-        )
         image, draw, background_meta = make_graph_scene_canvas(
             instance_seed=int(instance_seed),
             context=context,
@@ -412,6 +389,7 @@ class GeometryShapeMeasureBase:
             render_defaults=render_defaults,
             anchor_colors=extract_background_anchor_colors(background_meta),
         )
+        geometry_rng = spawn_rng(instance_seed, "geometry_shape")
 
         ellipse_pairs_for_context: List[Tuple[int, int]] | None = None
         circle_radii_for_context: List[int] | None = None
@@ -430,7 +408,7 @@ class GeometryShapeMeasureBase:
                 graph_spacing=int(context.graph_spacing),
                 graph_origin=(float(context.graph_origin[0]), float(context.graph_origin[1])),
                 axis_pairs=ellipse_pairs,
-                padding_units=0,
+                padding_units=1,
             )
             if not ellipse_pairs_for_context:
                 raise RuntimeError(
@@ -457,7 +435,7 @@ class GeometryShapeMeasureBase:
                 graph_spacing=int(context.graph_spacing),
                 graph_origin=(float(context.graph_origin[0]), float(context.graph_origin[1])),
                 radii=circle_radii,
-                padding_units=0,
+                padding_units=1,
             )
             if not circle_radii_for_context:
                 raise RuntimeError("no feasible circle radii for current graph-paper context and answer bounds")
@@ -478,7 +456,7 @@ class GeometryShapeMeasureBase:
             try:
                 if str(variant_kind) in _POLYGON_VARIANTS:
                     candidate_polygon = self._sample_polygon_instance(
-                        scene_rng,
+                        geometry_rng,
                         variant_kind=str(variant_kind),
                         target_answer_scalar=(
                             None if selected_polygon_target_answer is None else int(selected_polygon_target_answer)
@@ -505,28 +483,17 @@ class GeometryShapeMeasureBase:
                         line_width=max(1, int(line_width) * int(context.scene_scale)),
                         line_color=tuple(int(value) for value in shape_style.line_color),
                     )
-                    draw_polygon_labels(
-                        draw,
-                        vertices=[scale_point(point, int(context.scene_scale)) for point in candidate_polygon.vertices],
-                        labels=list(candidate_polygon.labels),
-                        label_offset_px=float(label_offset_px) * float(context.scene_scale),
-                        font_size_px=int(label_font_size_px),
-                        text_stroke_width=max(1, int(label_stroke_width)),
-                        label_color=tuple(int(value) for value in shape_style.label_color),
-                        label_stroke_color=tuple(int(value) for value in shape_style.label_stroke_color),
-                        canvas_size=int(context.canvas_size) * int(context.scene_scale),
-                    )
                     polygon_instance = candidate_polygon
                     answer_scalar = int(candidate_answer)
                     evidence_points = {
                         str(label): point
                         for label, point in zip(candidate_polygon.labels, candidate_polygon.vertices)
                     }
-                    evidence = labeled_grid_point_evidence_artifacts(
+                    evidence = graph_point_set_evidence_artifacts(
                         points_by_label=evidence_points,
                         graph_origin=context.graph_origin,
                         graph_spacing=int(context.graph_spacing),
-                        witness_type="polygon_vertex_map",
+                        witness_type="polygon_vertex_set",
                         ordered_labels=[str(label) for label in candidate_polygon.labels],
                     )
                     entity = polygon_scene_entity(candidate_polygon)
@@ -535,12 +502,12 @@ class GeometryShapeMeasureBase:
 
                 if str(variant_kind) == "ellipse":
                     candidate_ellipse = sample_ellipse_instance_on_graph_paper(
-                        scene_rng,
+                        geometry_rng,
                         canvas_size=int(context.canvas_size),
                         graph_spacing=int(context.graph_spacing),
                         graph_origin=(float(context.graph_origin[0]), float(context.graph_origin[1])),
                         axis_pairs=(ellipse_pairs_for_context if ellipse_pairs_for_context is not None else []),
-                        padding_units=0,
+                        padding_units=1,
                         max_attempts=8,
                     )
                     candidate_answer = int(self._answer_scalar_from_ellipse_instance(candidate_ellipse))
@@ -559,52 +526,16 @@ class GeometryShapeMeasureBase:
                         line_color=tuple(int(value) for value in shape_style.line_color),
                     )
                     center = (float(candidate_ellipse.center[0]), float(candidate_ellipse.center[1]))
-                    axis_x_endpoint = (
-                        float(center[0] + (int(candidate_ellipse.semi_axis_x_units) * int(context.graph_spacing))),
-                        float(center[1]),
-                    )
-                    axis_y_endpoint = (
-                        float(center[0]),
-                        float(center[1] - (int(candidate_ellipse.semi_axis_y_units) * int(context.graph_spacing))),
-                    )
-                    evidence_labels = list(alphabetic_labels(3, start_index=int(scene_rng.randrange(26))))
-                    evidence_points = {
-                        str(evidence_labels[0]): center,
-                        str(evidence_labels[1]): axis_x_endpoint,
-                        str(evidence_labels[2]): axis_y_endpoint,
-                    }
-                    draw_labeled_points(
-                        draw,
-                        points=[
-                            scale_point(center, int(context.scene_scale)),
-                            scale_point(axis_x_endpoint, int(context.scene_scale)),
-                            scale_point(axis_y_endpoint, int(context.scene_scale)),
-                        ],
-                        labels=evidence_labels,
-                        label_offset_px=float(label_offset_px) * float(context.scene_scale),
-                        font_size_px=int(label_font_size_px),
-                        text_stroke_width=max(1, int(label_stroke_width)),
-                        marker_radius_px=max(1, int(context.scene_scale)),
-                        marker_color=tuple(int(value) for value in shape_style.line_color),
-                        label_color=tuple(int(value) for value in shape_style.label_color),
-                        label_stroke_color=tuple(int(value) for value in shape_style.label_stroke_color),
-                        canvas_size=int(context.canvas_size) * int(context.scene_scale),
-                    )
                     ellipse_instance = candidate_ellipse
                     answer_scalar = int(candidate_answer)
-                    evidence = labeled_grid_point_evidence_artifacts(
-                        points_by_label=evidence_points,
+                    evidence = graph_point_evidence_artifacts(
+                        points_by_label={"center": center},
                         graph_origin=context.graph_origin,
                         graph_spacing=int(context.graph_spacing),
-                        witness_type="ellipse_reference_points",
-                        ordered_labels=evidence_labels,
+                        witness_type="ellipse_center_point",
+                        ordered_labels=["center"],
                     )
                     entity = ellipse_scene_entity(candidate_ellipse)
-                    entity["attrs"]["evidence_labels"] = {
-                        "center": str(evidence_labels[0]),
-                        "axis_x_endpoint": str(evidence_labels[1]),
-                        "axis_y_endpoint": str(evidence_labels[2]),
-                    }
                     anchor = conic_render_anchor(
                         center=candidate_ellipse.center,
                         semi_axis_x_px=int(candidate_ellipse.semi_axis_x_units) * int(context.graph_spacing),
@@ -614,12 +545,12 @@ class GeometryShapeMeasureBase:
 
                 if str(variant_kind) == "circle":
                     candidate_circle = sample_circle_instance_on_graph_paper(
-                        scene_rng,
+                        geometry_rng,
                         canvas_size=int(context.canvas_size),
                         graph_spacing=int(context.graph_spacing),
                         graph_origin=(float(context.graph_origin[0]), float(context.graph_origin[1])),
                         radii=(circle_radii_for_context if circle_radii_for_context is not None else []),
-                        padding_units=0,
+                        padding_units=1,
                         max_attempts=8,
                     )
                     candidate_answer = int(self._answer_scalar_from_circle_instance(candidate_circle))
@@ -643,45 +574,16 @@ class GeometryShapeMeasureBase:
                         line_color=tuple(int(value) for value in shape_style.line_color),
                     )
                     center = (float(candidate_circle.center[0]), float(candidate_circle.center[1]))
-                    radius_endpoint = (
-                        float(center[0] + (int(candidate_circle.radius_units) * int(context.graph_spacing))),
-                        float(center[1]),
-                    )
-                    evidence_labels = list(alphabetic_labels(2, start_index=int(scene_rng.randrange(26))))
-                    evidence_points = {
-                        str(evidence_labels[0]): center,
-                        str(evidence_labels[1]): radius_endpoint,
-                    }
-                    draw_labeled_points(
-                        draw,
-                        points=[
-                            scale_point(center, int(context.scene_scale)),
-                            scale_point(radius_endpoint, int(context.scene_scale)),
-                        ],
-                        labels=evidence_labels,
-                        label_offset_px=float(label_offset_px) * float(context.scene_scale),
-                        font_size_px=int(label_font_size_px),
-                        text_stroke_width=max(1, int(label_stroke_width)),
-                        marker_radius_px=max(1, int(context.scene_scale)),
-                        marker_color=tuple(int(value) for value in shape_style.line_color),
-                        label_color=tuple(int(value) for value in shape_style.label_color),
-                        label_stroke_color=tuple(int(value) for value in shape_style.label_stroke_color),
-                        canvas_size=int(context.canvas_size) * int(context.scene_scale),
-                    )
                     circle_instance = candidate_circle
                     answer_scalar = int(candidate_answer)
-                    evidence = labeled_grid_point_evidence_artifacts(
-                        points_by_label=evidence_points,
+                    evidence = graph_point_evidence_artifacts(
+                        points_by_label={"center": center},
                         graph_origin=context.graph_origin,
                         graph_spacing=int(context.graph_spacing),
-                        witness_type="circle_reference_points",
-                        ordered_labels=evidence_labels,
+                        witness_type="circle_center_point",
+                        ordered_labels=["center"],
                     )
                     entity = circle_scene_entity(candidate_circle)
-                    entity["attrs"]["evidence_labels"] = {
-                        "center": str(evidence_labels[0]),
-                        "radius_endpoint": str(evidence_labels[1]),
-                    }
                     anchor = conic_render_anchor(
                         center=candidate_circle.center,
                         semi_axis_x_px=int(candidate_circle.radius_units) * int(context.graph_spacing),
@@ -746,7 +648,10 @@ class GeometryShapeMeasureBase:
             preferred_keys=(f"evidence_hint_{prompt_family}", "evidence_hint_point_map", "evidence_hint"),
             context=f"prompt defaults for {self.task_id}",
         )
-        evidence_hint = append_required_labels_clause(str(evidence_hint_base), required_labels)
+        if self._include_required_labels_in_prompt(variant_kind=str(variant_kind)):
+            evidence_hint = append_required_labels_clause(str(evidence_hint_base), required_labels)
+        else:
+            evidence_hint = str(evidence_hint_base)
         answer_hint = _required_prompt_text(
             prompt_defaults,
             preferred_keys=(f"answer_hint_{answer_family}", "answer_hint"),

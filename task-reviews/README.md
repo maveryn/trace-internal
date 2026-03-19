@@ -35,7 +35,7 @@ PYTHONPATH=. python scripts/run_task_review.py --tasks <task_id> --mode inspecti
 Each task review writes under `task-reviews/<task_id>/`:
 - `random_review_100.json`
 - `distribution_review.json`
-- `samples.xlsx` (one sheet per task variant)
+- `<task_id>.xlsx` (one sheet per task variant)
 - `manifest.json` (`workbook_sheets` maps variant -> sheet name)
 - `images/<variant>/...`
 - `data/<variant>/...`

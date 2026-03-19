@@ -14,13 +14,16 @@
 3. `answer_gt.type`:
    - polygons: `integer` (square units),
    - ellipse: `pi_expression` (`kπ`).
-4. Default `evidence_gt.type`: `grid_point_map`.
+4. `evidence_gt.type`:
+   - polygon variants: `graph_point_set`,
+   - ellipse variant: `graph_point`.
 5. Evidence value semantics:
-   - polygons: labeled vertex map in graph units,
-   - ellipse: labeled 3-point map (`center`, `axis-x endpoint`, `axis-y endpoint`) in graph units.
+   - polygons: unlabeled graph-paper vertex set in graph units,
+   - ellipse: one graph-paper center point `[x, y]`.
 6. Alternate evidence forms: projected `pixel_point_map` + `grid_point_map` and derived pixel/grid set/path projections in trace.
 7. Polygon variants reject adjacent collinear vertices, so sampled triangles/quadrilaterals remain visually non-degenerate.
-8. Overlap/touch policy: single object only.
+8. The rendered image does not place vertex/reference labels on the shape; evidence is coordinate-only.
+9. Overlap/touch policy: single object only.
 
 ## 3) Prompt contract
 1. `prompt_bundle_id`: `geometry_measurement_v1`
@@ -34,7 +37,7 @@
 6. Slot source:
    - shared JSON-format contracts from `configs/domains/geometry/base.yaml` (`prompt.shared`),
    - measurement-family prompt slots from `configs/domains/geometry/measurement.yaml` (`prompt.shared`),
-   - shape-specific question/example slots from `prompt.task_overrides.task_geometry_measurement_area` (`question_text_polygon`, `question_text_ellipse`, and polygon side-count matched `json_example_triangle|quadrilateral`).
+   - shape-specific question/evidence/example slots from `prompt.task_overrides.task_geometry_measurement_area` (`question_text_polygon`, `question_text_ellipse`, `evidence_hint_polygon`, `evidence_hint_ellipse`, and polygon side-count matched `json_example_triangle|quadrilateral`).
 7. Answer-only JSON shape: `{"answer":<value>}` where `<value>` is integer or `kπ` per variant.
 8. Variant counts (task-family/task/mode): exactly 5 templates per required key.
 9. Output modes:
@@ -54,6 +57,9 @@
 10. Triangle sampling policy:
    - triangle area targets are sampled from exact feasible support before scene placement.
    - triangles are then constructed from integer-edge lattice specs that realize the selected area, avoiding collapse to a tiny answer set under generic polygon rejection.
+11. Quadrilateral sampling policy:
+   - quadrilateral area targets are sampled from exact feasible support before scene placement.
+   - selected targets are realized by a constructive integer-edge quadrilateral catalog (rectangles + parallelograms), so answer balancing improves without breaking the shared polygon perimeter contract.
 
 ## 5) Complexity + tests
 1. Complexity definition/components: shape variant + area magnitude.

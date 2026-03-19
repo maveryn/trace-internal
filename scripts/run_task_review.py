@@ -680,7 +680,7 @@ def _build_inspection_rows(
         )
         inspection_total += int(len(rows_by_variant[str(task_variant)]))
 
-    workbook_path = task_dir / "samples.xlsx"
+    workbook_path = task_dir / f"{task_id}.xlsx"
     workbook_sheets = _write_inspection_excel(rows_by_variant, workbook_path, out_root=out_root)
 
     manifest = {

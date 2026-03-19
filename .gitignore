@@ -212,7 +212,7 @@ tmp/
 # Task review generated artifacts
 task-reviews/task_*/data/
 task-reviews/task_*/images/
-task-reviews/task_*/samples.xlsx
+task-reviews/task_*/*.xlsx
 task-reviews/task_*/manifest.json
 task-reviews/task_*/.ipynb_checkpoints/
 task-reviews/generated_samples/

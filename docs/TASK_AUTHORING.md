@@ -130,7 +130,11 @@ PYTHONPATH=. python scripts/run_task_review.py --tasks <task_id> --mode full
 This writes review artifacts under `task-reviews/<task_id>/`:
 - `random_review_100.json` (100 random samples, includes variant/sampling-axis distributions)
 - `distribution_review.json` (100 answers per variant when variants exist; otherwise single 100-sample check)
-- `samples.xlsx` (25 manual-inspection samples per variant, one sheet per task variant)
+- `<task_id>.xlsx` (25 manual-inspection samples per variant, one sheet per task variant)
+
+Prompt wording rule:
+- when the task-family stem already establishes the image/diagram context, keep the task-layer line focused on the question itself instead of repeating phrases like `from the image` or `from the diagram`.
+- when graph-paper geometry must stay strictly inside the plotted grid, compute scene-capacity bounds against the visible interior cells (not just the raw sampled `graph_cells` target) before locking target answers or placements.
 
 Use `--mode inspection` when only visual/prompt inspection is needed and distribution checks should be skipped.
 

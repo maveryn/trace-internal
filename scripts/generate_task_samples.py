@@ -996,7 +996,7 @@ def main() -> int:
         rows_by_domain_task[str(summary["domain"])][str(summary["task"])] = list(rows)
 
         task_dir = out_root / str(summary["domain"]) / str(summary["task_group"]) / str(summary["task"])
-        task_excel_path = task_dir / "samples.xlsx"
+        task_excel_path = task_dir / f"{summary['task']}.xlsx"
         _write_task_excel(rows, task_excel_path, out_root=out_root)
 
         if int(summary["accepted_samples"]) < int(summary["requested_samples"]):

@@ -55,6 +55,9 @@ Use this checklist during implementation and refactor reviews.
 39. When target-answer sampling uses feasible-support cycling, do not key that selection directly off the same raw seed used for task-variant choice; use `_sampling_index` when provided and otherwise derive a namespaced deterministic index so variant choice and target answer do not become accidentally coupled.
 40. When a feasibility probe selects a target answer before layout, carry forward the minimum required scene capacity from that same probe; do not assume a loose bound like `answer + margin` is enough for all constructive variants.
 41. When a second sibling task starts reusing a helper module named after the first task/objective, rename that module to the shared family concept immediately (for example `analytical_3d_volume.py` -> `analytical_3d_solids.py`) instead of keeping a misleading task-specific container.
+42. When a prompt-family stem already describes the image context, keep task-layer prompt variants focused on the question itself; do not repeat phrases like `from the image`, `from the figure`, or `from the diagram` on the next line.
+43. For graph-paper tasks that require points strictly inside the plotted grid, compute feasibility/capacity against the visible interior cell span (including padding/partial-edge effects) before selecting target answers or scene layouts.
+44. When adding constructive shape catalogs that feed a shared instance type, validate every shared invariant that instance encodes (for example integer perimeter on `PolygonInstance`), not just the task's primary target metric.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

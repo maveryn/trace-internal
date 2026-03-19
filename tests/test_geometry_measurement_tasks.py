@@ -342,13 +342,9 @@ def test_polygon_measure_tasks_match_scene_attrs() -> None:
         trace = out.trace_payload
         assert str(out.task_variant).strip()
         assert out.answer_gt.type == str(answer_type)
-        assert out.evidence_gt.type == "grid_point_map"
-        evidence_map = _assert_grid_point_map(
-            out.evidence_gt.value,
-            expected_len=len(trace["execution_trace"]["required_evidence_labels"]),
-        )
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
         assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
+        assert "Required labels:" not in out.prompt
 
         entity = trace["scene_ir"]["entities"][0]
         attrs = entity["attrs"]
@@ -366,15 +362,18 @@ def test_polygon_measure_tasks_match_scene_attrs() -> None:
                 assert int(out.answer_gt.value) in feasible_answers
                 answer_probabilities = dict(trace["execution_trace"]["answer_scalar_probabilities"])
                 assert set(int(key) for key in answer_probabilities.keys()) == set(feasible_answers)
-            assert len(evidence_map) == int(attrs["polygon_sides"])
+            assert out.evidence_gt.type == "graph_point_set"
+            evidence_points = _assert_graph_point_set(out.evidence_gt.value, expected_len=int(attrs["polygon_sides"]))
             example = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
             assert list(example.keys()) == ["evidence", "answer"]
-            assert isinstance(example["evidence"], dict)
+            assert isinstance(example["evidence"], list)
             assert len(example["evidence"]) == int(attrs["polygon_sides"])
             if str(task_id) == "task_geometry_measurement_area" and str(shape_variant) == "quadrilateral":
-                assert example == {"evidence": {"A": [0, 0], "B": [4, 0], "C": [4, 2], "D": [0, 2]}, "answer": 8}
+                assert example == {"evidence": [[0, 0], [4, 0], [4, 2], [0, 2]], "answer": 8}
             if str(task_id) == "task_geometry_measurement_perimeter" and str(shape_variant) == "quadrilateral":
-                assert example == {"evidence": {"A": [0, 0], "B": [4, 0], "C": [4, 2], "D": [0, 2]}, "answer": 12}
+                assert example == {"evidence": [[0, 0], [4, 0], [4, 2], [0, 2]], "answer": 12}
+            projected_grid_set = trace["projected_evidence"]["grid_point_set"]
+            assert sorted(projected_grid_set) == sorted(evidence_points)
         else:
             answer_scalar = int(trace["execution_trace"]["answer_scalar"])
             expected_text = "π" if answer_scalar == 1 else f"{answer_scalar}π"
@@ -385,19 +384,21 @@ def test_polygon_measure_tasks_match_scene_attrs() -> None:
                 assert int(answer_scalar) in feasible_answers
                 answer_probabilities = dict(trace["execution_trace"]["answer_scalar_probabilities"])
                 assert set(int(key) for key in answer_probabilities.keys()) == set(feasible_answers)
-            if str(shape_variant) == "ellipse":
-                assert len(evidence_map) == 3
-            else:
-                assert len(evidence_map) == 2
+            assert out.evidence_gt.type == "graph_point"
+            evidence_point = _assert_graph_point(out.evidence_gt.value)
             example = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+            assert isinstance(example["evidence"], list)
+            assert len(example["evidence"]) == 1
             if str(task_id) == "task_geometry_measurement_perimeter" and str(shape_variant) == "circle":
-                assert example == {"evidence": {"A": [0, 0], "B": [4, 0]}, "answer": "8π"}
+                assert example == {"evidence": [[0, 0]], "answer": "8π"}
+            if str(task_id) == "task_geometry_measurement_area" and str(shape_variant) == "ellipse":
+                assert example == {"evidence": [[0, 0]], "answer": "6π"}
+            assert trace["projected_evidence"]["grid_point_set"] == [evidence_point]
 
         origin_x, origin_y, spacing = _graph_origin_and_spacing(trace)
         point_map = trace["projected_evidence"]["pixel_point_map"]
         grid_point_map = trace["projected_evidence"]["grid_point_map"]
-        assert set(point_map.keys()) == set(evidence_map.keys())
-        assert set(grid_point_map.keys()) == set(evidence_map.keys())
+        assert len(point_map) == len(grid_point_map)
         for label in point_map:
             pixel_point = point_map[label]
             graph_point = grid_point_map[label]

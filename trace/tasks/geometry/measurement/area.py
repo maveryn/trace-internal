@@ -11,6 +11,10 @@ from ..shared.graph_paper import resolve_graph_cell_capacity
 from ..shared.polygon_geometry import (
     PolygonInstance,
     feasible_triangle_area_values,
+    feasible_quadrilateral_area_values,
+    required_graph_cells_for_quadrilateral_area,
+    sample_quadrilateral_instance_with_area_on_graph_paper,
+    sample_polygon_instance_on_graph_paper,
     sample_triangle_instance_with_area_on_graph_paper,
     triangle_integer_edge_specs_for_area,
 )
@@ -66,6 +70,8 @@ class GeometryAreaMeasure2DTask(GeometryShapeMeasureBase):
             )
         )
         if str(variant_kind) != "triangle" or answer_min is None:
+            if str(variant_kind) == "quadrilateral":
+                return max(int(required), 8)
             return int(required)
         minimum = int(answer_min)
         if minimum <= 6:
@@ -89,6 +95,43 @@ class GeometryAreaMeasure2DTask(GeometryShapeMeasureBase):
     ) -> Tuple[int | None, Dict[str, float], List[int], int]:
         """Select triangle-area targets from exact feasible support before layout."""
 
+        if str(variant_kind) == "quadrilateral":
+            _explicit_graph_cells, graph_cells_max = resolve_graph_cell_capacity(
+                params=params,
+                render_defaults=render_defaults,
+                fallback_min=int(MEASUREMENT_SHARED_DEFAULTS.graph_cells_min),
+                fallback_max=int(MEASUREMENT_SHARED_DEFAULTS.graph_cells_max),
+            )
+            max_span_units = max(4, int(graph_cells_max) - 4)
+            feasible_answers = list(
+                feasible_quadrilateral_area_values(
+                    max_span_units=int(max_span_units),
+                    area_min=(None if answer_min is None else int(answer_min)),
+                    area_max=(None if answer_max is None else int(answer_max)),
+                )
+            )
+            if not feasible_answers:
+                raise ValueError(
+                    "no feasible quadrilateral area values for requested answer bounds and graph-cell limits"
+                )
+            probabilities = {str(value): (1.0 / float(len(feasible_answers))) for value in feasible_answers}
+            sampling_index = resolve_selection_index(
+                params=params,
+                instance_seed=int(instance_seed),
+                namespace=f"{self.task_id}.{variant_kind}.target_answer",
+            )
+            selected_answer = int(feasible_answers[int(sampling_index) % len(feasible_answers)])
+            required_graph_cells = required_graph_cells_for_quadrilateral_area(
+                area_square_units=int(selected_answer),
+                max_span_units=int(max_span_units),
+            )
+            return (
+                int(selected_answer),
+                probabilities,
+                [int(value) for value in feasible_answers],
+                int(required_graph_cells),
+            )
+
         if str(variant_kind) != "triangle":
             return super()._resolve_polygon_target_answer(
                 instance_seed=int(instance_seed),
@@ -105,7 +148,7 @@ class GeometryAreaMeasure2DTask(GeometryShapeMeasureBase):
             fallback_min=int(MEASUREMENT_SHARED_DEFAULTS.graph_cells_min),
             fallback_max=int(MEASUREMENT_SHARED_DEFAULTS.graph_cells_max),
         )
-        max_span_units = max(3, int(graph_cells_max) - 2)
+        max_span_units = max(3, int(graph_cells_max) - 4)
         feasible_answers = list(
             feasible_triangle_area_values(
                 max_span_units=int(max_span_units),
@@ -129,7 +172,7 @@ class GeometryAreaMeasure2DTask(GeometryShapeMeasureBase):
         required_graph_cells = min(
             max(int(base_units), int(apex_x_units), int(height_units))
             for base_units, apex_x_units, height_units in triangle_specs
-        ) + 2
+        ) + 4
         return int(selected_answer), probabilities, [int(value) for value in feasible_answers], int(required_graph_cells)
 
     def _sample_polygon_instance(
@@ -150,8 +193,33 @@ class GeometryAreaMeasure2DTask(GeometryShapeMeasureBase):
                 canvas_size=int(context.canvas_size),
                 graph_spacing=int(context.graph_spacing),
                 graph_origin=(float(context.graph_origin[0]), float(context.graph_origin[1])),
-                padding_units=0,
+                padding_units=1,
                 max_attempts=12,
+            )
+        if str(variant_kind) == "quadrilateral":
+            if target_answer_scalar is not None:
+                return sample_quadrilateral_instance_with_area_on_graph_paper(
+                    rng,
+                    area_square_units=int(target_answer_scalar),
+                    canvas_size=int(context.canvas_size),
+                    graph_spacing=int(context.graph_spacing),
+                    graph_origin=(float(context.graph_origin[0]), float(context.graph_origin[1])),
+                    padding_units=1,
+                    max_attempts=12,
+                )
+            min_area_square_units = max(
+                4,
+                int(gen_defaults.get("answer_min", 8)),
+            )
+            return sample_polygon_instance_on_graph_paper(
+                rng,
+                allowed_sides=[4],
+                canvas_size=int(context.canvas_size),
+                graph_spacing=int(context.graph_spacing),
+                graph_origin=(float(context.graph_origin[0]), float(context.graph_origin[1])),
+                padding_units=1,
+                max_attempts=16,
+                min_area_square_units=int(min_area_square_units),
             )
         return super()._sample_polygon_instance(
             rng,

@@ -14,13 +14,16 @@
 3. `answer_gt.type`:
    - polygons: `integer` (graph units),
    - circle: `pi_expression` (`kπ`).
-4. Default `evidence_gt.type`: `grid_point_map`.
+4. `evidence_gt.type`:
+   - polygon variants: `graph_point_set`,
+   - circle variant: `graph_point`.
 5. Evidence value semantics:
-   - polygons: labeled vertex map in graph units,
-   - circle: labeled 2-point map (`center`, `radius endpoint`) in graph units.
+   - polygons: unlabeled graph-paper vertex set in graph units,
+   - circle: one graph-paper center point `[x, y]`.
 6. Alternate evidence forms: projected `pixel_point_map` + `grid_point_map` and derived pixel/grid set/path projections in trace.
 7. Polygon variants reject adjacent collinear vertices, so sampled triangles/quadrilaterals remain visually non-degenerate.
-8. Overlap/touch policy: single object only.
+8. The rendered image does not place vertex/reference labels on the shape; evidence is coordinate-only.
+9. Overlap/touch policy: single object only.
 
 ## 3) Prompt contract
 1. `prompt_bundle_id`: `geometry_measurement_v1`
@@ -34,7 +37,7 @@
 6. Slot source:
    - shared JSON-format contracts from `configs/domains/geometry/base.yaml` (`prompt.shared`),
    - measurement-family prompt slots from `configs/domains/geometry/measurement.yaml` (`prompt.shared`),
-   - shape-specific question/example slots from `prompt.task_overrides.task_geometry_measurement_perimeter` (`question_text_polygon`, `question_text_circle`, and polygon side-count matched `json_example_triangle|quadrilateral`).
+   - shape-specific question/evidence/example slots from `prompt.task_overrides.task_geometry_measurement_perimeter` (`question_text_polygon`, `question_text_circle`, `evidence_hint_polygon`, `evidence_hint_circle`, and polygon side-count matched `json_example_triangle|quadrilateral`).
 7. Answer-only JSON shape: `{"answer":<value>}` where `<value>` is integer or `kπ` per variant.
 8. Variant counts (task-family/task/mode): exactly 5 templates per required key.
 9. Output modes:
@@ -49,7 +52,7 @@
 5. Structural diversity policy: polygons are procedurally sampled per instance (not from a tiny fixed template bank) to reduce cross-seed visual similarity.
 6. Graph-paper reference cues: center-origin marker includes axis arrows plus signed integer scale labels across the full visible axis range (no origin text label).
 7. Graph-paper color variation: minor/major/axis colors are sampled from constrained ranges per instance, with axis lines always darker than grid lines.
-8. Answer bounds: perimeter target scalar `k` is constrained to `[8, 24]` by task-group config (`integer` for polygons, `kπ` coefficient for circle).
+8. Answer bounds: perimeter target scalar `k` is constrained to `[8, 64]` by task-group config (`integer` for polygons, `kπ` coefficient for circle).
 9. Default variant sampling weights: triangle/quadrilateral/circle = 1:1:1.
 10. Triangle and circle variants select the target answer from exact feasible support before scene placement so graph-capacity/layout constraints do not bias the realized answer distribution toward smaller perimeters.
 

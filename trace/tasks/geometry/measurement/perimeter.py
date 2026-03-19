@@ -77,7 +77,7 @@ class GeometryPerimeterMeasure2DTask(GeometryShapeMeasureBase):
             fallback_min=int(MEASUREMENT_SHARED_DEFAULTS.graph_cells_min),
             fallback_max=int(MEASUREMENT_SHARED_DEFAULTS.graph_cells_max),
         )
-        max_span_units = max(3, int(graph_cells_max) - 2)
+        max_span_units = max(3, int(graph_cells_max) - 4)
         feasible_answers = list(
             feasible_triangle_perimeter_values(
                 max_span_units=int(max_span_units),
@@ -101,7 +101,7 @@ class GeometryPerimeterMeasure2DTask(GeometryShapeMeasureBase):
         required_graph_cells = min(
             max(int(base_units), int(apex_x_units), int(height_units))
             for base_units, apex_x_units, height_units in triangle_specs
-        ) + 2
+        ) + 4
         return int(selected_answer), probabilities, [int(value) for value in feasible_answers], int(required_graph_cells)
 
     def _resolve_circle_target_answer(
@@ -142,7 +142,7 @@ class GeometryPerimeterMeasure2DTask(GeometryShapeMeasureBase):
                 continue
             if answer_max is not None and int(coefficient) > int(answer_max):
                 continue
-            if int((2 * int(radius_units)) + 2) > int(graph_cells_max):
+            if int((2 * int(radius_units)) + 4) > int(graph_cells_max):
                 continue
             feasible_coefficients.append(int(coefficient))
         if not feasible_coefficients:
@@ -154,7 +154,7 @@ class GeometryPerimeterMeasure2DTask(GeometryShapeMeasureBase):
             namespace=f"{self.task_id}.{variant_kind}.target_answer",
         )
         selected_answer = int(feasible_coefficients[int(sampling_index) % len(feasible_coefficients)])
-        required_graph_cells = int(selected_answer) + 2
+        required_graph_cells = int(selected_answer) + 4
         return int(selected_answer), probabilities, [int(value) for value in feasible_coefficients], int(required_graph_cells)
 
     def _sample_polygon_instance(
@@ -175,7 +175,7 @@ class GeometryPerimeterMeasure2DTask(GeometryShapeMeasureBase):
                 canvas_size=int(context.canvas_size),
                 graph_spacing=int(context.graph_spacing),
                 graph_origin=(float(context.graph_origin[0]), float(context.graph_origin[1])),
-                padding_units=0,
+                padding_units=1,
                 max_attempts=12,
             )
         return super()._sample_polygon_instance(

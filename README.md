@@ -31,6 +31,6 @@ PYTHONPATH=. python scripts/run_task_review.py --tasks task_geometry_measurement
 This writes:
 - `task-reviews/<task_id>/random_review_100.json`
 - `task-reviews/<task_id>/distribution_review.json`
-- `task-reviews/<task_id>/samples.xlsx` (one sheet per task variant)
+- `task-reviews/<task_id>/<task_id>.xlsx` (one sheet per task variant)
 - `task-reviews/<task_id>/manifest.json`
 - `task-reviews/review_summary.json`

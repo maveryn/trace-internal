@@ -132,13 +132,13 @@ def test_geometry_measurement_bundles_answer_templates_use_contract_and_avoid_on
             assert len({str(template) for template in task_templates}) == REQUIRED_PROMPT_VARIANTS
             assert all("{question_text}" in str(template) for template in task_templates)
             assert all("option" not in str(template).lower() for template in task_templates)
-            assert any(
-                ("nearest degree" in str(template).lower()) or ("nearest integer" in str(template).lower())
-                for template in task_templates
-            )
+            assert all("nearest integer" in str(template).lower() for template in task_templates)
         else:
             assert len({str(template) for template in task_templates}) == REQUIRED_PROMPT_VARIANTS
             assert all("{question_text}" in str(template) for template in task_templates)
+            assert all("figure" not in str(template).lower() for template in task_templates)
+            assert all("image" not in str(template).lower() for template in task_templates)
+            assert all("diagram" not in str(template).lower() for template in task_templates)
 
 
 def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:

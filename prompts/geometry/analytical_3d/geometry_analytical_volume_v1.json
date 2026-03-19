@@ -13,8 +13,8 @@
   "task_templates": {
     "analytical_volume_query": [
       "{question_text}",
-      "Answer this question from the image: {question_text}",
-      "Answer this question from the labeled figure: {question_text}",
+      "Question: {question_text}",
+      "Task: {question_text}",
       "Read the marked measurements and answer: {question_text}",
       "Based on the shown values, answer this question: {question_text}"
     ]

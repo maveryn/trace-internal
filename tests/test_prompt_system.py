@@ -196,6 +196,21 @@ def test_geometry_measurement_task_templates_do_not_repeat_graph_paper_reference
     assert all("graph-paper diagram" not in str(template).lower() for template in templates)
 
 
+def test_geometry_analytical_task_templates_do_not_repeat_image_reference() -> None:
+    bundle_coords = (
+        ("geometry", "analytical_2d", "geometry_analytical_area_v1", "analytical_area_query"),
+        ("geometry", "analytical_3d", "geometry_analytical_volume_v1", "analytical_volume_query"),
+        ("geometry", "analytical_3d", "geometry_analytical_surface_area_v1", "analytical_surface_area_query"),
+    )
+    for domain, task_group, bundle_id, task_key in bundle_coords:
+        bundle = load_prompt_bundle(domain, task_group, bundle_id)
+        templates = bundle.task_templates[task_key]
+        lowered = [str(template).lower() for template in templates]
+        assert all("from the image" not in template for template in lowered)
+        assert all("from the figure" not in template for template in lowered)
+        assert all("from the diagram" not in template for template in lowered)
+
+
 def test_prompt_json_examples_use_non_degenerate_point_layouts() -> None:
     example_json, _ = build_prompt_json_examples(
         evidence_value={"A": [9, 9], "B": [8, 8], "C": [7, 7], "D": [6, 6]},

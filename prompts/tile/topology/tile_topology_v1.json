@@ -1,0 +1,59 @@
+{
+  "bundle_id": "tile_topology_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "rectangular_tile_board": [
+      "The image shows one rectangular tile board with {rows} rows and {cols} columns. Row labels are on the left and column labels are on the top.",
+      "Use the single rectangular tile board in the image. It has {rows} rows and {cols} columns, with rows labeled on the left and columns labeled on the top.",
+      "Look at the rectangular tile board with {rows} rows and {cols} columns. The board uses row labels on the left and column labels on the top.",
+      "You are given one rectangular tile board on a {rows} by {cols} grid. Read rows from the left labels and columns from the top labels.",
+      "Work from the labeled rectangular tile board in the image. It has {rows} rows and {cols} columns with visible row and column indices."
+    ]
+  },
+  "task_templates": {
+    "hole_count_query": [
+      "How many {hole_color} holes are fully enclosed by {wall_color} tiles? A hole is a 4-neighbor {hole_color} region that does not touch the board boundary.",
+      "Count the enclosed {hole_color} holes formed by the {wall_color} tiles. Treat a hole as a 4-neighbor {hole_color} region that never touches the board edge.",
+      "Determine how many {hole_color} regions are completely surrounded by {wall_color} tiles. Only count 4-neighbor {hole_color} regions that do not touch the boundary.",
+      "Using the board only, find the number of enclosed {hole_color} holes. Count a hole only when its 4-neighbor {hole_color} region stays off the board boundary and is surrounded by {wall_color} tiles.",
+      "Find the number of {hole_color} holes inside the {wall_color} structure. Here a hole means a 4-neighbor {hole_color} region that is enclosed and does not touch the outer boundary."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:rectangular_tile_board": [
+      "rows",
+      "cols"
+    ],
+    "task:hole_count_query": [
+      "wall_color",
+      "hole_color"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

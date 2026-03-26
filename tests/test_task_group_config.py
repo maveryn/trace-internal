@@ -571,7 +571,7 @@ def test_tile_reachability_defaults_loaded() -> None:
     assert float(generation["obstacle_fraction_max"]) >= float(generation["obstacle_fraction_min"])
     assert float(generation["reachable_fraction_min"]) > 0.0
     assert float(generation["reachable_fraction_max"]) <= 1.0
-    assert int(generation["answer_max"]) == 20
+    assert int(generation["answer_max"]) == 12
     assert int(rendering["short_side_px_min"]) >= 32
     assert str(prompt["bundle_id"]).strip() == "tile_reachability_v1"
     assert str(prompt["task_key"]).strip() == "reachable_count_query"
@@ -581,6 +581,32 @@ def test_tile_reachability_defaults_loaded() -> None:
     assert example == {"evidence": [[0, 0], [0, 1], [1, 1], [2, 1]], "answer": 4}
     answer_only_example = json.loads(str(prompt["json_example_answer_only"]))
     assert answer_only_example == {"answer": 4}
+
+
+def test_tile_topology_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("tile", "topology")
+    for section in ("generation", "rendering", "prompt", "visual"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation, rendering, prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_tile_topology_hole_count",
+    )
+    assert int(generation["rows_min"]) >= 3
+    assert int(generation["rows_max"]) == 7
+    assert int(generation["cols_min"]) >= 3
+    assert int(generation["cols_max"]) == 7
+    assert int(generation["answer_min"]) == 1
+    assert int(generation["answer_max"]) == 5
+    assert int(rendering["short_side_px_min"]) >= 32
+    assert str(prompt["bundle_id"]).strip() == "tile_topology_v1"
+    assert str(prompt["task_key"]).strip() == "hole_count_query"
+    assert str(prompt["answer_hint"]).strip()
+    assert str(prompt["evidence_hint"]).strip()
+    example = json.loads(str(prompt["json_example"]))
+    assert example == {"evidence": [[2, 2], [4, 4]], "answer": 2}
+    answer_only_example = json.loads(str(prompt["json_example_answer_only"]))
+    assert answer_only_example == {"answer": 2}
 
 
 def test_domain_defaults_and_missing_group_behavior() -> None:

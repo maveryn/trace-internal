@@ -75,7 +75,7 @@ class _TaskDefaults:
     obstacle_fraction_max: float = 0.38
     reachable_fraction_min: float = 0.20
     reachable_fraction_max: float = 0.85
-    answer_max: int = 20
+    answer_max: int = 12
 
 
 _DEFAULTS = _TaskDefaults()

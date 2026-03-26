@@ -52,8 +52,8 @@ def test_tile_reachable_count_outputs_expected_contract() -> None:
     assert evidence_coords == sorted(evidence_coords, key=lambda item: (int(item[0]), int(item[1])))
     assert evidence_coords == execution["reachable_coords"]
     assert int(out.answer_gt.value) == len(evidence_coords)
-    assert int(out.answer_gt.value) <= 20
-    assert int(execution["answer_max"]) == 20
+    assert int(out.answer_gt.value) <= 12
+    assert int(execution["answer_max"]) == 12
     assert execution["start_coord"] in evidence_coords
     assert str(execution["obstacle_color_label"]).endswith("[#000000]")
     assert str(execution["start_color_label"]) in str(out.prompt)

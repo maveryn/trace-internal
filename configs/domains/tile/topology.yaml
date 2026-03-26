@@ -1,0 +1,17 @@
+generation:
+  task_overrides:
+    task_tile_topology_hole_count:
+      answer_min: 1
+      answer_max: 5
+
+prompt:
+  shared:
+    bundle_id: tile_topology_v1
+    task_family_key: rectangular_tile_board
+  task_overrides:
+    task_tile_topology_hole_count:
+      task_key: hole_count_query
+      answer_hint: set "answer" to the number of enclosed white holes as an integer
+      evidence_hint: set "evidence" to the row-major list of one representative [row, col] coordinate inside each enclosed white hole
+      json_example: '{"evidence":[[2,2],[4,4]],"answer":2}'
+      json_example_answer_only: '{"answer":2}'

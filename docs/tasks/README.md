@@ -25,3 +25,4 @@ Current task docs:
 15. [task_tile_reachability_reachable_count.md](task_tile_reachability_reachable_count.md)
 16. [task_tile_symmetry_violation_count.md](task_tile_symmetry_violation_count.md)
 17. [task_tile_transition_gravity_max_drop.md](task_tile_transition_gravity_max_drop.md)
+18. [task_tile_topology_hole_count.md](task_tile_topology_hole_count.md)

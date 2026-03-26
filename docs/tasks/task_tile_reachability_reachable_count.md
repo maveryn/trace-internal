@@ -19,7 +19,7 @@
    - obstacle tiles are blocked and use the reserved black role,
    - reachable count is computed symbolically with 4-neighbor BFS over non-obstacle cells,
    - sampled boards are rejected unless reachable fraction is within configured bounds,
-   - sampled boards are rejected when reachable count exceeds configured `answer_max`,
+   - sampled boards are rejected when reachable count exceeds the task default `answer_max=12` unless the task config overrides it,
    - the start-tile color is sampled from the shared 10-color named palette.
 
 ## 3) Prompt contract

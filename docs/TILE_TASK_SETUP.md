@@ -46,6 +46,8 @@ It is the source of truth for board geometry, coordinate grounding, and evidence
 2. Default policy: render column labels across the top gutter and row labels down the left gutter.
 3. Do not place text inside every tile by default; keep the board visually clean unless a task specifically requires per-tile text.
 4. The board may be centered within the canvas, but centering must not change the coordinate contract.
+5. Tile tasks must not use external graph-paper or grid backgrounds by default, because those create a second competing coordinate system around the board.
+6. Default tile-domain backgrounds should be solid or otherwise low-structure so the board itself remains the only grid-like scaffold in the image.
 
 ## Tile Geometry
 1. Each board uses one uniform tile width and one uniform tile height.

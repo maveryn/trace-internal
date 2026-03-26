@@ -1,6 +1,6 @@
 # TRACE Status
 
-Date: 2026-03-21
+Date: 2026-03-26
 
 ## Implemented
 1. Deterministic build pipeline with sidecar trace shards and atomic finalize.
@@ -30,18 +30,20 @@ Date: 2026-03-21
 19. Geometry measurement area/perimeter tasks now use unlabeled coordinate-only evidence (`graph_point_set` for polygons, `graph_point` for ellipse/circle) and keep shape vertices/reference points strictly inside the plotted graph-paper interior.
 20. Geometry analytical_2d length task supports six derived annotated-scene variants (triangle altitude, rectangle diagonal, rhombus diagonals, isosceles trapezoid height, inscribed square, circle chord) with decimal answers rounded to one decimal place and structured `measurement_ref_map` evidence.
 21. Analytical 2D length rendering now reserves explicit scene margin and uses local collision-aware text placement so labels/value annotations stay off geometry and away from the canvas edge more reliably.
+22. Tile count now includes `task_tile_count_color_count`, the first single-board `rectangular_tiling` task with dynamic canvas sizing, left/top coordinate gutters, coordinate-grounded `grid_point_set` evidence, and shared rectangular-board helpers.
 
 ## Active tasks
-1. `task_tile_path_shortest_path` (`domain=tile`, `task_group=path`)
-2. `task_geometry_measurement_angle` (`domain=geometry`, `task_group=measurement`)
-3. `task_geometry_measurement_area` (`domain=geometry`, `task_group=measurement`)
-4. `task_geometry_measurement_perimeter` (`domain=geometry`, `task_group=measurement`)
-5. `task_geometry_measurement_length` (`domain=geometry`, `task_group=measurement`)
-6. `task_geometry_measurement_slope` (`domain=geometry`, `task_group=measurement`)
-7. `task_geometry_analytical_2d_area` (`domain=geometry`, `task_group=analytical_2d`)
-8. `task_geometry_analytical_2d_length` (`domain=geometry`, `task_group=analytical_2d`)
-9. `task_geometry_analytical_3d_volume` (`domain=geometry`, `task_group=analytical_3d`)
-10. `task_geometry_analytical_3d_surface_area` (`domain=geometry`, `task_group=analytical_3d`)
+1. `task_tile_count_color_count` (`domain=tile`, `task_group=count`)
+2. `task_tile_path_shortest_path` (`domain=tile`, `task_group=path`)
+3. `task_geometry_measurement_angle` (`domain=geometry`, `task_group=measurement`)
+4. `task_geometry_measurement_area` (`domain=geometry`, `task_group=measurement`)
+5. `task_geometry_measurement_perimeter` (`domain=geometry`, `task_group=measurement`)
+6. `task_geometry_measurement_length` (`domain=geometry`, `task_group=measurement`)
+7. `task_geometry_measurement_slope` (`domain=geometry`, `task_group=measurement`)
+8. `task_geometry_analytical_2d_area` (`domain=geometry`, `task_group=analytical_2d`)
+9. `task_geometry_analytical_2d_length` (`domain=geometry`, `task_group=analytical_2d`)
+10. `task_geometry_analytical_3d_volume` (`domain=geometry`, `task_group=analytical_3d`)
+11. `task_geometry_analytical_3d_surface_area` (`domain=geometry`, `task_group=analytical_3d`)
 
 ## Current quality baseline
 1. Tests are required to pass before finalize.

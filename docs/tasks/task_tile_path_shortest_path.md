@@ -36,5 +36,6 @@
 
 ## 5) Visual policy
 1. Background defaults come from `configs/domains/tile/path.yaml`.
-2. Post-image noise defaults are disabled (`apply_prob = 0.0`).
-3. Applied background/noise metadata is emitted in trace.
+2. Tile-domain defaults for this task use non-grid backgrounds only; graph-paper or external grid backgrounds are not allowed.
+3. Post-image noise defaults are disabled (`apply_prob = 0.0`).
+4. Applied background/noise metadata is emitted in trace.

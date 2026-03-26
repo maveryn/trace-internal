@@ -48,10 +48,12 @@ Promote helpers when a second consumer appears.
    - Canonical color-distance helpers (`rgb` + Lab CIE76/ΔE\*ab) and constrained color sampling for visibility-safe task styling.
    - Includes shared palette sampling (`sample_color_palette_with_distance_constraints`) that enforces anchor + pairwise separation.
    - Global defaults live here (`color_min_distance=60`, `color_distance_space=lab`) and can be overridden by task params/config hierarchy.
-12. `trace/tasks/shared/prompt_json_example.py`
+12. `trace/tasks/shared/color_format.py`
+   - Canonical prompt-facing color text helpers (`#RRGGBB` formatting and `name [#RRGGBB]` labels) for any task that queries or names colors in the prompt.
+13. `trace/tasks/shared/prompt_json_example.py`
    - Canonical deterministic JSON-example builder for prompt slots (`answer_only` + `answer_and_evidence`) that preserves active evidence schema shape/cardinality.
    - For point-based evidence payloads, it emits small canonical non-degenerate layouts so prompt examples remain visually/semantically valid.
-13. `trace/tasks/shared/deterministic_sampling.py`
+14. `trace/tasks/shared/deterministic_sampling.py`
    - Canonical deterministic index selection for target-support cycling.
    - Use `_sampling_index` when a caller explicitly requests balanced cycling; otherwise use a namespaced hash so target-answer selection does not accidentally correlate with other seed-driven decisions.
 
@@ -79,7 +81,11 @@ Promote helpers when a second consumer appears.
    - Use `required_graph_cells_for_polygon_side_length(...)` when a task selects a polygon-side target before layout so the chosen target also carries forward the minimum graph span it needs.
    - Use `feasible_quadrilateral_area_values(...)`, `required_graph_cells_for_quadrilateral_area(...)`, and `sample_quadrilateral_instance_with_area_on_graph_paper(...)` when a task needs target-first 4-gon area sampling without violating the shared integer-perimeter polygon contract.
    - Procedural polygon templates reject adjacent collinear vertices so sampled `n`-gons do not collapse into visually degenerate lower-side polygons.
-3. Tile: `trace/tasks/tile/shared/path_grid.py`, `maze_sampling.py`, `grid_layout.py`, `maze_scene.py`, `maze_rendering.py`
+3. Tile: `trace/tasks/tile/shared/path_grid.py`, `maze_sampling.py`, `grid_layout.py`, `maze_scene.py`, `maze_rendering.py`, `tile_scene.py`, `tile_evidence.py`, `rectangular_board.py`, `tile_colors.py`
+   - `tile_scene.py` is the canonical dense-board `tile_cell` entity builder for non-maze tile tasks.
+   - `tile_evidence.py` is the canonical coordinate-grounded tile evidence helper layer (`grid_point_set` / `grid_point_path` plus pixel projections).
+   - `rectangular_board.py` is the canonical dynamic rectangular-board layout/rendering helper for single-board tile tasks.
+   - `tile_colors.py` centralizes the named color palette used by color-driven tile tasks.
 
 ## 3) Reuse rules
 1. Do not duplicate deterministic utilities.

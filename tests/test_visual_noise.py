@@ -74,7 +74,7 @@ def test_tile_post_noise_override_is_deterministic_and_changes_pixels() -> None:
         **common,
         "visual": {
             "background": {
-                "style_name": "grid_light",
+                "style_name": "solid_light",
             },
             "noise": {
                 "apply_prob": 1.0,
@@ -98,4 +98,4 @@ def test_tile_post_noise_override_is_deterministic_and_changes_pixels() -> None:
     assert len(noise_meta["edits"]) == 1
     assert noise_meta["edits"][0]["type"] == "downsample"
     assert float(noise_meta["edits"][0]["params"]["scale"]) == pytest.approx(0.65, rel=1e-9)
-    assert background_meta["selected_style"] == "grid_light"
+    assert background_meta["selected_style"] == "solid_light"

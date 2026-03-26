@@ -61,6 +61,9 @@ Use this checklist during implementation and refactor reviews.
 45. When a second analytical objective needs the same prompt-slot, answer-bound, or variant-resolution helper flow, move those helpers into an analytical-family shared module instead of keeping them under a 3D-only or objective-only filename.
 46. In supersampled scenes, verify that geometry primitives and label/annotation placement use the same coordinate scale; mismatched scaled-vs-unscaled drawing can make text appear detached even when placement logic is correct.
 47. For analytical scenes with segment- or point-anchored text, cap scene occupancy and use collision-aware local placement so numeric annotations and labels fall beside geometry instead of crossing lines or crowding the border.
+48. When a new board/scene family needs dynamic rectangular canvases, extend shared visual/background helpers to support non-square sizes instead of adding task-local background rendering forks.
+49. When prompts query a named color, include its canonical hex code in square brackets (`name [#RRGGBB]`) and route that formatting through a shared helper rather than task-local string assembly.
+50. Tile-domain boards should not sit on graph-paper or external grid backgrounds unless the task explicitly depends on that second coordinate scaffold; keep the board as the only grid-like structure in tile scenes.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

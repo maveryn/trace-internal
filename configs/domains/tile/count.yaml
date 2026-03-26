@@ -1,0 +1,15 @@
+generation:
+  task_overrides:
+    task_tile_count_color_count:
+      palette_size_min: 3
+      palette_size_max: 6
+
+prompt:
+  shared:
+    bundle_id: tile_count_v1
+    task_family_key: rectangular_tile_board
+  task_overrides:
+    task_tile_count_color_count:
+      task_key: color_count_query
+      answer_hint: set "answer" to the number of tiles matching the query color as an integer
+      evidence_hint: set "evidence" to the row-major list of [row, col] coordinates for every tile matching the query color

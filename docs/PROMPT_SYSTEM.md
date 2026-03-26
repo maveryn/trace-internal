@@ -17,6 +17,7 @@ Prompt text is externalized and deterministic.
    - `answer_and_evidence` uses `{"evidence": ..., "answer": ...}`
 7. Prefer slot-based composition for reusable format rules (for example shared `json_output_contract*` in domain/task-group config, with task-level `evidence_hint`/`answer_hint`/example overrides).
 8. For mixed-shape tasks, keep one bundle and switch shape-specific wording via slots (`object_description_*`, `question_text_*`, evidence/answer hint families).
+9. When a prompt asks about a named color, include the canonical hex code in the prompt-facing color label using the format `<color_name> [#RRGGBB]`.
 
 ## 2) Bundle schema (v1)
 Required fields:
@@ -60,7 +61,8 @@ Bundles:
 4. `prompts/geometry/analytical_2d/geometry_analytical_length_v1.json`
 5. `prompts/geometry/analytical_3d/geometry_analytical_volume_v1.json`
 6. `prompts/geometry/analytical_3d/geometry_analytical_surface_area_v1.json`
-7. `prompts/tile/path/tile_path_v1.json`
+7. `prompts/tile/count/tile_count_v1.json`
+8. `prompts/tile/path/tile_path_v1.json`
 
 Tasks:
 1. `task_geometry_measurement_angle` (bundle override: `geometry_angle_measure_v1`)
@@ -72,4 +74,5 @@ Tasks:
 7. `task_geometry_analytical_2d_length` (bundle: `geometry_analytical_length_v1`)
 8. `task_geometry_analytical_3d_volume` (bundle: `geometry_analytical_volume_v1`)
 9. `task_geometry_analytical_3d_surface_area` (bundle: `geometry_analytical_surface_area_v1`)
-10. `task_tile_path_shortest_path`
+10. `task_tile_count_color_count`
+11. `task_tile_path_shortest_path`

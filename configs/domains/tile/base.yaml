@@ -1,3 +1,48 @@
+generation:
+  shared:
+    rows_min: 3
+    rows_max: 8
+    cols_min: 3
+    cols_max: 8
+
+rendering:
+  shared:
+    short_side_px_min: 32
+    short_side_px_max: 48
+    aspect_ratio_min: 1.0
+    aspect_ratio_max: 2.0
+    outer_padding_fraction_min: 0.08
+    outer_padding_fraction_max: 0.12
+    placement_jitter_fraction_min: 0.02
+    placement_jitter_fraction_max: 0.06
+
+visual:
+  background:
+    enabled: true
+    styles:
+      solid_light:
+        kind: solid
+        color: [246, 246, 246]
+    weights:
+      solid_light: 1.0
+  noise:
+    apply_prob: 0.5
+    edit_types:
+      - blur
+      - downsample
+      - jpeg
+      - noise
+    edit_count_range: [1, 1]
+    value_ranges:
+      blur:
+        radius: [0.15, 0.4]
+      downsample:
+        scale: [0.92, 0.97]
+      jpeg:
+        quality: [82, 94]
+      noise:
+        alpha: [0.01, 0.04]
+
 prompt:
   shared:
     json_output_contract: Return a valid JSON object with keys "evidence" and "answer" in that order.

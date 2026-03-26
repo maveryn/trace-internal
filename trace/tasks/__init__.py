@@ -10,6 +10,7 @@ from .geometry.measurement import area as _task_geometry_measurement_area
 from .geometry.measurement import length as _task_geometry_measurement_length
 from .geometry.measurement import perimeter as _task_geometry_measurement_perimeter
 from .geometry.measurement import slope as _task_geometry_measurement_slope
+from .tile.count import color_count as _task_tile_count_color_count
 from .tile.path import shortest_path as _task_tile_path_shortest_path
 
 __all__ = [

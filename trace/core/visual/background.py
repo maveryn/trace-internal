@@ -402,16 +402,27 @@ def _lattice_positions_within_bounds(*, lower: int, upper: int, spacing: int, or
     return [int(value) for value in range(int(start), int(hi) + 1, int(step))]
 
 
-def compute_grid_axis_origin(*, canvas_size: int, spacing: int, inset: int = 0) -> Tuple[int, int]:
-    """Compute graph-paper center-origin pixel coordinates for square canvases."""
-    size = max(1, int(canvas_size))
+def compute_grid_axis_origin_for_canvas(*, width: int, height: int, spacing: int, inset: int = 0) -> Tuple[int, int]:
+    """Compute graph-paper center-origin pixel coordinates for one rectangular canvas."""
+    canvas_width = max(1, int(width))
+    canvas_height = max(1, int(height))
     left = max(0, int(inset))
     top = max(0, int(inset))
-    right = max(int(left), int(size) - 1 - int(inset))
-    bottom = max(int(top), int(size) - 1 - int(inset))
+    right = max(int(left), int(canvas_width) - 1 - int(inset))
+    bottom = max(int(top), int(canvas_height) - 1 - int(inset))
     x = _axis_origin_for_bounds(lower=int(left), upper=int(right), spacing=int(spacing))
     y = _axis_origin_for_bounds(lower=int(top), upper=int(bottom), spacing=int(spacing))
     return (x, y)
+
+
+def compute_grid_axis_origin(*, canvas_size: int, spacing: int, inset: int = 0) -> Tuple[int, int]:
+    """Compute graph-paper center-origin pixel coordinates for square canvases."""
+    return compute_grid_axis_origin_for_canvas(
+        width=int(canvas_size),
+        height=int(canvas_size),
+        spacing=int(spacing),
+        inset=int(inset),
+    )
 
 
 def _draw_center_axes(
@@ -686,14 +697,16 @@ def _draw_axis_scale_labels(
         _draw_centered(label_neg, x=x_pos, y=float(y_neg))
 
 
-def _render_style(canvas_size: int, style_spec: Mapping[str, Any], *, rng=None) -> tuple[Image.Image, Dict[str, Any]]:
+def _render_style(canvas_width: int, canvas_height: int, style_spec: Mapping[str, Any], *, rng=None) -> tuple[Image.Image, Dict[str, Any]]:
     """Render one background style and return image plus resolved style metadata."""
     resolved_spec = dict(style_spec)
     kind = str(style_spec.get("kind", "solid"))
+    width = max(1, int(canvas_width))
+    height = max(1, int(canvas_height))
     if kind == "solid":
         color = _normalize_rgb(style_spec.get("color"), _DEFAULT_BASE_COLOR)
         resolved_spec["color"] = list(color)
-        return Image.new("RGB", (canvas_size, canvas_size), color), resolved_spec
+        return Image.new("RGB", (width, height), color), resolved_spec
 
     if kind == "grid":
         base_color = _normalize_rgb(style_spec.get("base_color"), _DEFAULT_BASE_COLOR)
@@ -781,7 +794,8 @@ def _render_style(canvas_size: int, style_spec: Mapping[str, Any], *, rng=None) 
         resolved_spec["origin_label_color"] = list(origin_label_color)
         resolved_spec["color_variation_applied"] = bool(variation_applied)
 
-        render_size = int(canvas_size) * int(supersample_scale)
+        render_width = int(width) * int(supersample_scale)
+        render_height = int(height) * int(supersample_scale)
         scaled_spacing = int(spacing) * int(supersample_scale)
         scaled_line_width = int(line_width) * int(supersample_scale)
         scaled_major_line_width = int(major_line_width) * int(supersample_scale)
@@ -789,22 +803,23 @@ def _render_style(canvas_size: int, style_spec: Mapping[str, Any], *, rng=None) 
         scaled_axis_arrow_size = int(axis_arrow_size) * int(supersample_scale)
         scaled_center_point_radius = int(center_point_radius) * int(supersample_scale)
         scaled_outer_margin_px = int(outer_margin_px) * int(supersample_scale)
-        max_scaled_margin = max(0, (int(render_size) - 8) // 2)
+        max_scaled_margin = max(0, (min(int(render_width), int(render_height)) - 8) // 2)
         scaled_outer_margin_px = min(int(scaled_outer_margin_px), int(max_scaled_margin))
         resolved_spec["outer_margin_px_scaled"] = int(scaled_outer_margin_px)
 
-        image = Image.new("RGB", (render_size, render_size), base_color)
+        image = Image.new("RGB", (render_width, render_height), base_color)
         draw = ImageDraw.Draw(image)
-        centered_origin = compute_grid_axis_origin(
-            canvas_size=int(render_size),
+        centered_origin = compute_grid_axis_origin_for_canvas(
+            width=int(render_width),
+            height=int(render_height),
             spacing=int(scaled_spacing),
             inset=int(scaled_outer_margin_px),
         )
         resolved_spec["origin_pixel"] = [int(centered_origin[0]), int(centered_origin[1])]
         _draw_grid_lines(
             draw,
-            width=render_size,
-            height=render_size,
+            width=render_width,
+            height=render_height,
             spacing=scaled_spacing,
             line_color=line_color,
             line_width=scaled_line_width,
@@ -818,8 +833,8 @@ def _render_style(canvas_size: int, style_spec: Mapping[str, Any], *, rng=None) 
         if axis_enabled:
             center_origin = _draw_center_axes(
                 draw,
-                width=render_size,
-                height=render_size,
+                width=render_width,
+                height=render_height,
                 spacing=scaled_spacing,
                 axis_color=axis_color,
                 axis_line_width=scaled_axis_line_width,
@@ -829,8 +844,8 @@ def _render_style(canvas_size: int, style_spec: Mapping[str, Any], *, rng=None) 
             if axis_arrows_enabled:
                 _draw_axis_arrows(
                     draw,
-                    width=render_size,
-                    height=render_size,
+                    width=render_width,
+                    height=render_height,
                     origin_x=int(center_origin[0]),
                     origin_y=int(center_origin[1]),
                     color=axis_color,
@@ -848,8 +863,8 @@ def _render_style(canvas_size: int, style_spec: Mapping[str, Any], *, rng=None) 
             if axis_scale_labels_enabled:
                 _draw_axis_scale_labels(
                     draw,
-                    width=render_size,
-                    height=render_size,
+                    width=render_width,
+                    height=render_height,
                     origin_x=int(center_origin[0]),
                     origin_y=int(center_origin[1]),
                     spacing=int(scaled_spacing),
@@ -860,8 +875,8 @@ def _render_style(canvas_size: int, style_spec: Mapping[str, Any], *, rng=None) 
             if origin_label_enabled:
                 _draw_origin_label(
                     draw,
-                    width=render_size,
-                    height=render_size,
+                    width=render_width,
+                    height=render_height,
                     origin_x=int(center_origin[0]),
                     origin_y=int(center_origin[1]),
                     spacing=int(scaled_spacing),
@@ -870,28 +885,40 @@ def _render_style(canvas_size: int, style_spec: Mapping[str, Any], *, rng=None) 
                     inset=int(scaled_outer_margin_px),
                 )
         if supersample_scale > 1:
-            image = image.resize((int(canvas_size), int(canvas_size)), resample=Image.Resampling.LANCZOS)
+            image = image.resize((int(width), int(height)), resample=Image.Resampling.LANCZOS)
         return image, resolved_spec
 
-    return Image.new("RGB", (canvas_size, canvas_size), _DEFAULT_BASE_COLOR), resolved_spec
+    return Image.new("RGB", (width, height), _DEFAULT_BASE_COLOR), resolved_spec
 
 
 def make_background_canvas(
     *,
-    canvas_size: int,
+    canvas_size: int | None = None,
+    canvas_width: int | None = None,
+    canvas_height: int | None = None,
     instance_seed: int,
     params: Mapping[str, Any],
     default_config: Mapping[str, Any] | None = None,
     fallback_color: Tuple[int, int, int] = _DEFAULT_BASE_COLOR,
 ) -> tuple[Image.Image, Dict[str, Any]]:
-    """Create deterministic background canvas plus trace metadata."""
+    """Create deterministic background canvas plus trace metadata.
+
+    Callers may pass `canvas_size` for a square canvas or explicit
+    `canvas_width`/`canvas_height` for rectangular canvases.
+    """
+    if canvas_size is not None:
+        width = max(1, int(canvas_size))
+        height = max(1, int(canvas_size))
+    else:
+        width = max(1, int(canvas_width) if canvas_width is not None else 1)
+        height = max(1, int(canvas_height) if canvas_height is not None else width)
     cfg = _resolve_background_config(params, default_config=default_config)
     enabled = bool(cfg["enabled"])
     styles = cfg.get("styles", {})
 
     if not enabled or not styles:
         return (
-            Image.new("RGB", (canvas_size, canvas_size), _normalize_rgb(fallback_color, _DEFAULT_BASE_COLOR)),
+            Image.new("RGB", (width, height), _normalize_rgb(fallback_color, _DEFAULT_BASE_COLOR)),
             {
                 "enabled": False,
                 "selected_style": None,
@@ -910,7 +937,7 @@ def make_background_canvas(
 
     selected_spec = dict(styles[selected_style])
     render_rng = spawn_rng(instance_seed, f"visual.background_render.{selected_style}")
-    image, resolved_style_spec = _render_style(canvas_size, selected_spec, rng=render_rng)
+    image, resolved_style_spec = _render_style(width, height, selected_spec, rng=render_rng)
     metadata = {
         "enabled": True,
         "selected_style": selected_style,

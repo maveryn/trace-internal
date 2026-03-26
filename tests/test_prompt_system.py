@@ -149,6 +149,7 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
         ("geometry", "analytical_2d", "geometry_analytical_length_v1"),
         ("geometry", "measurement", "geometry_angle_measure_v1"),
         ("geometry", "measurement", "geometry_measurement_v1"),
+        ("tile", "count", "tile_count_v1"),
         ("tile", "path", "tile_path_v1"),
     )
     for domain, task_group, bundle_id in bundle_coords:

@@ -409,6 +409,40 @@ def test_tile_path_defaults_loaded() -> None:
     assert str(prompt["json_example_answer_only"]).strip()
 
 
+def test_tile_count_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("tile", "count")
+    for section in ("generation", "rendering", "prompt", "visual"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["rows_min"]) == 3
+    assert int(generation_shared["rows_max"]) == 8
+    assert int(generation_shared["cols_min"]) == 3
+    assert int(generation_shared["cols_max"]) == 8
+
+    rendering_shared = cfg["rendering"]["shared"]
+    assert int(rendering_shared["short_side_px_min"]) >= 32
+    assert int(rendering_shared["short_side_px_max"]) >= int(rendering_shared["short_side_px_min"])
+    assert float(rendering_shared["aspect_ratio_min"]) >= 1.0
+    assert float(rendering_shared["aspect_ratio_max"]) >= float(rendering_shared["aspect_ratio_min"])
+
+    generation, rendering, prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_tile_count_color_count",
+    )
+    assert int(generation["palette_size_min"]) >= 2
+    assert int(generation["palette_size_max"]) >= int(generation["palette_size_min"])
+    assert float(rendering["outer_padding_fraction_min"]) > 0.0
+    assert float(rendering["outer_padding_fraction_max"]) >= float(rendering["outer_padding_fraction_min"])
+    assert str(prompt["bundle_id"]).strip() == "tile_count_v1"
+    assert str(prompt["task_family_key"]).strip() == "rectangular_tile_board"
+    assert str(prompt["task_key"]).strip() == "color_count_query"
+    assert str(prompt["json_output_contract"]).strip()
+    assert str(prompt["json_output_contract_answer_only"]).strip()
+    assert str(prompt["answer_hint"]).strip()
+    assert str(prompt["evidence_hint"]).strip()
+
+
 def test_domain_defaults_and_missing_group_behavior() -> None:
     assert get_task_group_defaults("missing_domain", "missing_group") == {}
     domain_cfg = get_domain_defaults("geometry")

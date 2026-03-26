@@ -69,6 +69,7 @@ Use this as the implementation checklist for new or modified tasks.
 15. If a prompt slot value is static for a task (for example a fixed question stem), store it in prompt config/template data rather than task-module constants.
 16. Favor natural, image-led wording in template stems; do not pad bundles with low-quality paraphrases just to increase variant count.
 17. Keep `question_text` semantic-only when task templates already carry formatting or rounding instructions; avoid repeating the same instruction across prompt layers.
+18. When a task prompt refers to a specific color, pass the color to templates as a combined label `<color_name> [#RRGGBB]` so color-name ambiguity is reduced consistently across the repo.
 
 ## 4) Config/defaults rules
 1. Precedence: `domain -> task_group -> task/params`.
@@ -78,11 +79,13 @@ Use this as the implementation checklist for new or modified tasks.
 5. Task-variant weights are resolved inside each task from config/params; builder-level sampling weights apply only across tasks.
 6. Visual defaults/noise should route through shared visual modules.
 7. Geometry `measurement` tasks should keep graph-paper/anchor alignment policy consistent; geometry `analytical_2d` tasks should use non-graph-paper backgrounds unless a task explicitly requires visible grid cues.
-8. For sibling variants of one objective family (for example area/perimeter), keep shared generation/prompt/trace flow in one task-group shared base helper and keep task modules thin.
-9. Required prompt/config slots should be enforced with fail-fast shared helpers (no hardcoded fallback prompt literals in task code).
-10. If the same fallback constants are used by multiple sibling tasks, move them to a task-group shared defaults module.
-11. For cross-domain shared utilities, keep global fallback constants in the shared utility module and treat domain/task-group config keys as optional overrides.
-12. For analytical scenes with free-form numeric annotations, reserve explicit border margin and use collision-aware local placement so labels/value text do not sit directly on geometry or hug the canvas edge.
+8. Tile-domain tasks should use non-grid backgrounds unless the task contract explicitly depends on an external grid distinct from the board itself.
+9. For sibling variants of one objective family (for example area/perimeter), keep shared generation/prompt/trace flow in one task-group shared base helper and keep task modules thin.
+10. Required prompt/config slots should be enforced with fail-fast shared helpers (no hardcoded fallback prompt literals in task code).
+11. If the same fallback constants are used by multiple sibling tasks, move them to a task-group shared defaults module.
+12. For cross-domain shared utilities, keep global fallback constants in the shared utility module and treat domain/task-group config keys as optional overrides.
+13. For analytical scenes with free-form numeric annotations, reserve explicit border margin and use collision-aware local placement so labels/value text do not sit directly on geometry or hug the canvas edge.
+14. If a board/scene family needs non-square image sizes, extend the shared visual/background path to accept rectangular canvases instead of creating task-local background renderers.
 
 ## 5) Sampling rules
 1. Global sampling unit is `task`.

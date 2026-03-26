@@ -220,10 +220,38 @@ def slot_centers_graph_units(*, object_count: int, graph_cells: int, rng) -> Lis
     return list(all_slots[: int(object_count)])
 
 
+def bulky_slot_centers_graph_units(
+    *,
+    object_count: int,
+    graph_cells: int,
+    rng,
+) -> List[Tuple[int, int]]:
+    """Resolve a roomier subset of graph-unit slot centers for bulky objects.
+
+    Comparison tasks over area/perimeter tend to need larger footprints than
+    angle or segment scenes, so they use a wider two-column slot bank.
+    """
+
+    half_span = max(8, int(graph_cells // 2))
+    x_step = min(max(6, int(round(float(graph_cells) * 0.34))), max(6, int(half_span - 3)))
+    y_step = min(max(5, int(round(float(graph_cells) * 0.30))), max(5, int(half_span - 3)))
+    all_slots = [
+        (-int(x_step), int(y_step)),
+        (int(x_step), int(y_step)),
+        (-int(x_step), 0),
+        (int(x_step), 0),
+        (-int(x_step), -int(y_step)),
+        (int(x_step), -int(y_step)),
+    ]
+    rng.shuffle(all_slots)
+    return list(all_slots[: int(object_count)])
+
+
 __all__ = [
     "COMPARISON_ANSWER_LABEL_POOL",
     "COMPARISON_QUERY_TYPES",
     "apply_balanced_comparison_axes",
+    "bulky_slot_centers_graph_units",
     "comparison_complexity_score",
     "graph_units_to_pixel",
     "resolve_comparison_object_count",

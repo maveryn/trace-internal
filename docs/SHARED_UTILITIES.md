@@ -84,10 +84,11 @@ Promote helpers when a second consumer appears.
    - Use `required_graph_cells_for_polygon_side_length(...)` when a task selects a polygon-side target before layout so the chosen target also carries forward the minimum graph span it needs.
    - Use `feasible_quadrilateral_area_values(...)`, `required_graph_cells_for_quadrilateral_area(...)`, and `sample_quadrilateral_instance_with_area_on_graph_paper(...)` when a task needs target-first 4-gon area sampling without violating the shared integer-perimeter polygon contract.
    - Procedural polygon templates reject adjacent collinear vertices so sampled `n`-gons do not collapse into visually degenerate lower-side polygons.
-3. Geometry comparison task-group: `trace/tasks/geometry/comparison/shared.py`, `trace/tasks/geometry/comparison/defaults.py`
+3. Geometry comparison task-group: `trace/tasks/geometry/comparison/shared.py`, `trace/tasks/geometry/comparison/defaults.py`, `trace/tasks/geometry/comparison/rectangle_scene.py`
    - `comparison/shared.py` provides canonical query/object-count/winner-label balancing for geometry comparison tasks plus graph-paper slot placement helpers; use it once a second comparison task would otherwise duplicate the same label-choice scaffolding.
    - Use `slot_centers_graph_units(...)` for line-like comparison scenes and `bulky_slot_centers_graph_units(...)` when objects have larger footprints (for example rectangles) and need a roomier two-column layout.
    - `comparison/defaults.py` centralizes task-group fallback defaults reused across geometry/comparison tasks.
+   - `comparison/rectangle_scene.py` provides reusable target-conditioned rectangle sampling, layout, and rendering for sibling rectangle-based comparison tasks (currently area and perimeter); keep object-family samplers/renderers there instead of duplicating near-identical task-local scene builders.
 4. Tile: `trace/tasks/tile/shared/path_grid.py`, `maze_sampling.py`, `grid_layout.py`, `maze_scene.py`, `maze_rendering.py`
 
 ## 3) Reuse rules

@@ -66,6 +66,7 @@ Use this checklist during implementation and refactor reviews.
 50. For label-answer comparison tasks, randomize visible object labels independently of layout/slot order so answer-label distributions are not biased toward fixed positions like top-left or first-drawn objects.
 51. When a second geometry comparison task needs the same query/object-count/winner-label balancing or graph-paper slot placement, promote that logic into comparison-family shared helpers instead of cloning the first task's sampler/layout code.
 52. For bulky graph-paper comparison scenes (for example area/perimeter objects), do not reuse the same dense slot bank as line-like scenes; use a roomier layout matched to the object footprint so larger outlines and labels do not crowd or overlap.
+53. When sibling comparison tasks use the same object family with only the compared metric changing (for example rectangle area vs rectangle perimeter), move the object-family scene sampler/renderer into one shared helper module instead of maintaining parallel task-local copies.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

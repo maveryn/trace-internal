@@ -49,7 +49,7 @@ from .shared import (
 
 @dataclass(frozen=True)
 class _TaskDefaults:
-    """Stable fallback defaults for area-comparison generation."""
+    """Stable fallback defaults for perimeter-comparison generation."""
 
     canvas_size_min: int = COMPARISON_SHARED_DEFAULTS.canvas_size_min
     canvas_size_max: int = COMPARISON_SHARED_DEFAULTS.canvas_size_max
@@ -67,21 +67,22 @@ class _TaskDefaults:
     max_rectangle_width: int = 6
     min_rectangle_height: int = 2
     max_rectangle_height: int = 6
-    min_absolute_gap_square_units: float = 6.0
+    min_absolute_gap_units: float = 4.0
 
 
 _DEFAULTS = _TaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("geometry", "comparison")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id="task_geometry_comparison_area",
+    task_id="task_geometry_comparison_perimeter",
 )
 
-@register_task
-class GeometryComparisonAreaTask:
-    """Compare multiple labeled rectangles and choose the largest/smallest area."""
 
-    task_id = "task_geometry_comparison_area"
+@register_task
+class GeometryComparisonPerimeterTask:
+    """Compare multiple labeled rectangles and choose the largest/smallest perimeter."""
+
+    task_id = "task_geometry_comparison_perimeter"
     domain = "geometry"
     task_group = "comparison"
 
@@ -149,24 +150,20 @@ class GeometryComparisonAreaTask:
                 group_default(_GEN_DEFAULTS, "min_normalized_gap", _DEFAULTS.min_normalized_gap),
             )
         )
-        min_absolute_gap_square_units = float(
+        min_absolute_gap_units = float(
             params.get(
-                "min_absolute_gap_square_units",
-                group_default(
-                    _GEN_DEFAULTS,
-                    "min_absolute_gap_square_units",
-                    _DEFAULTS.min_absolute_gap_square_units,
-                ),
+                "min_absolute_gap_units",
+                group_default(_GEN_DEFAULTS, "min_absolute_gap_units", _DEFAULTS.min_absolute_gap_units),
             )
         )
         if int(min_rectangle_width) >= int(max_rectangle_width):
-            raise ValueError("min_rectangle_width must be < max_rectangle_width for comparison area task")
+            raise ValueError("min_rectangle_width must be < max_rectangle_width for comparison perimeter task")
         if int(min_rectangle_height) >= int(max_rectangle_height):
-            raise ValueError("min_rectangle_height must be < max_rectangle_height for comparison area task")
+            raise ValueError("min_rectangle_height must be < max_rectangle_height for comparison perimeter task")
         if float(min_normalized_gap) < 0.0:
             raise ValueError("min_normalized_gap must be >= 0")
-        if float(min_absolute_gap_square_units) < 0.0:
-            raise ValueError("min_absolute_gap_square_units must be >= 0")
+        if float(min_absolute_gap_units) < 0.0:
+            raise ValueError("min_absolute_gap_units must be >= 0")
 
         context_params = dict(params)
         context = None
@@ -204,20 +201,8 @@ class GeometryComparisonAreaTask:
                         canvas_size=int(context_attempt.canvas_size),
                         graph_spacing=int(context_attempt.graph_spacing),
                         scene_scale=int(context_attempt.scene_scale),
-                        min_px=int(
-                            group_default(
-                                _RENDER_DEFAULTS,
-                                "label_font_size_min",
-                                _DEFAULTS.label_font_size_min,
-                            )
-                        ),
-                        max_px=int(
-                            group_default(
-                                _RENDER_DEFAULTS,
-                                "label_font_size_max",
-                                _DEFAULTS.label_font_size_max,
-                            )
-                        ),
+                        min_px=int(group_default(_RENDER_DEFAULTS, "label_font_size_min", _DEFAULTS.label_font_size_min)),
+                        max_px=int(group_default(_RENDER_DEFAULTS, "label_font_size_max", _DEFAULTS.label_font_size_max)),
                     ),
                 )
             )
@@ -258,13 +243,13 @@ class GeometryComparisonAreaTask:
                     context=context_attempt,
                     query_type=str(query_type),
                     object_count=int(object_count),
-                    metric_kind="area_square_units",
+                    metric_kind="perimeter_units",
                     min_rectangle_width=int(min_rectangle_width),
                     max_rectangle_width=int(max_rectangle_width),
                     min_rectangle_height=int(min_rectangle_height),
                     max_rectangle_height=int(max_rectangle_height),
                     min_normalized_gap=float(min_normalized_gap),
-                    min_absolute_gap=float(min_absolute_gap_square_units),
+                    min_absolute_gap=float(min_absolute_gap_units),
                     line_width=int(line_width_attempt),
                     label_font_size_px=int(label_font_size_px_attempt),
                     label_stroke_width=int(label_stroke_width_scene_attempt),
@@ -295,7 +280,7 @@ class GeometryComparisonAreaTask:
             or label_stroke_width_scene is None
             or line_width is None
         ):
-            raise RuntimeError("failed to generate task_geometry_comparison_area instance") from last_error
+            raise RuntimeError("failed to generate task_geometry_comparison_perimeter instance") from last_error
 
         evidence = graph_point_set_evidence_artifacts(
             points_by_label=scene_payload.evidence_points_by_label,
@@ -311,7 +296,7 @@ class GeometryComparisonAreaTask:
             or any(not isinstance(point, list) or len(point) != 2 for point in evidence_value)
             or any(not isinstance(coord, int) for point in evidence_value for coord in point)
         ):
-            raise RuntimeError("comparison-area evidence must include four integer graph-lattice points")
+            raise RuntimeError("comparison-perimeter evidence must include four integer graph-lattice points")
 
         image, background_meta_final, post_noise_meta = finalize_graph_scene_image(
             image,
@@ -368,7 +353,7 @@ class GeometryComparisonAreaTask:
         answer_gt = TypedValue(type="option_letter", value=str(winner_label))
         evidence_gt = TypedValue(type="graph_point_set", value=list(evidence_value))
         values_by_label = {
-            str(obj.label): int(obj.area_square_units)
+            str(obj.label): int(obj.perimeter_units)
             for obj in scene_payload.objects
         }
         query_params = {
@@ -383,11 +368,11 @@ class GeometryComparisonAreaTask:
             "min_rectangle_height": int(min_rectangle_height),
             "max_rectangle_height": int(max_rectangle_height),
             "min_normalized_gap": float(min_normalized_gap),
-            "min_absolute_gap_square_units": float(min_absolute_gap_square_units),
+            "min_absolute_gap_units": float(min_absolute_gap_units),
         }
         trace_payload = {
             "scene_ir": {
-                "scene_kind": "geometry_2d_area_comparison",
+                "scene_kind": "geometry_2d_perimeter_comparison",
                 "entities": [
                     {
                         "entity_id": f"rectangle_{str(obj.label)}",
@@ -396,6 +381,7 @@ class GeometryComparisonAreaTask:
                             "label": str(obj.label),
                             "shape_family": "rectangle",
                             "area_square_units": int(obj.area_square_units),
+                            "perimeter_units": int(obj.perimeter_units),
                             "width_units": int(obj.width_units),
                             "height_units": int(obj.height_units),
                             "vertices": [[float(point[0]), float(point[1])] for point in obj.vertices],
@@ -404,7 +390,7 @@ class GeometryComparisonAreaTask:
                     for obj in scene_payload.objects
                 ],
                 "relations": {
-                    "comparison_target": "area_square_units",
+                    "comparison_target": "perimeter_units",
                     "query_type": str(query_type),
                     "winner_label": str(winner_label),
                 },

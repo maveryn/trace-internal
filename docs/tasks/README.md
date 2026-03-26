@@ -22,4 +22,5 @@ Current task docs:
 12. [task_geometry_comparison_angle.md](task_geometry_comparison_angle.md)
 13. [task_geometry_comparison_area.md](task_geometry_comparison_area.md)
 14. [task_geometry_comparison_length.md](task_geometry_comparison_length.md)
-15. [task_tile_path_shortest_path.md](task_tile_path_shortest_path.md)
+15. [task_geometry_comparison_perimeter.md](task_geometry_comparison_perimeter.md)
+16. [task_tile_path_shortest_path.md](task_tile_path_shortest_path.md)

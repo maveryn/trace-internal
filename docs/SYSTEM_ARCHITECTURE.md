@@ -62,17 +62,18 @@ Implementation map for the contracts in `docs/BLUEPRINT.md`.
 2. `trace/tasks/geometry/comparison/angle.py`
 3. `trace/tasks/geometry/comparison/area.py`
 4. `trace/tasks/geometry/comparison/length.py`
-5. `trace/tasks/geometry/measurement/angle.py`
-6. `trace/tasks/geometry/measurement/area.py`
-7. `trace/tasks/geometry/measurement/perimeter.py`
-8. `trace/tasks/geometry/measurement/length.py`
-9. `trace/tasks/geometry/measurement/slope.py`
-10. `trace/tasks/geometry/analytical_2d/area.py`
-11. `trace/tasks/geometry/analytical_2d/composite_area.py`
-12. `trace/tasks/geometry/analytical_2d/length.py`
-13. `trace/tasks/geometry/analytical_2d/perimeter.py`
-14. `trace/tasks/geometry/analytical_3d/volume.py`
-15. `trace/tasks/geometry/analytical_3d/surface_area.py`
+5. `trace/tasks/geometry/comparison/perimeter.py`
+6. `trace/tasks/geometry/measurement/angle.py`
+7. `trace/tasks/geometry/measurement/area.py`
+8. `trace/tasks/geometry/measurement/perimeter.py`
+9. `trace/tasks/geometry/measurement/length.py`
+10. `trace/tasks/geometry/measurement/slope.py`
+11. `trace/tasks/geometry/analytical_2d/area.py`
+12. `trace/tasks/geometry/analytical_2d/composite_area.py`
+13. `trace/tasks/geometry/analytical_2d/length.py`
+14. `trace/tasks/geometry/analytical_2d/perimeter.py`
+15. `trace/tasks/geometry/analytical_3d/volume.py`
+16. `trace/tasks/geometry/analytical_3d/surface_area.py`
 
 ## 5) Architecture invariants
 1. Determinism from config + seeds + versions.

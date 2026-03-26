@@ -374,6 +374,7 @@ def test_geometry_comparison_defaults_loaded() -> None:
     assert "task_geometry_comparison_angle" in generation_overrides
     assert "task_geometry_comparison_area" in generation_overrides
     assert "task_geometry_comparison_length" in generation_overrides
+    assert "task_geometry_comparison_perimeter" in generation_overrides
 
     render_shared = cfg["rendering"]["shared"]
     assert int(render_shared["canvas_size_min"]) > 0
@@ -421,6 +422,22 @@ def test_geometry_comparison_defaults_loaded() -> None:
     assert str(area_prompt["question_text_smallest"]).strip()
     assert str(area_prompt["evidence_hint"]).strip()
     assert str(area_prompt["answer_hint"]).strip()
+
+    perimeter_generation, perimeter_rendering, perimeter_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_comparison_perimeter",
+    )
+    assert int(perimeter_generation["min_rectangle_width"]) < int(perimeter_generation["max_rectangle_width"])
+    assert int(perimeter_generation["min_rectangle_height"]) < int(perimeter_generation["max_rectangle_height"])
+    assert sorted(perimeter_generation["query_type_weights"].keys()) == ["largest", "smallest"]
+    assert sorted(perimeter_generation["object_count_weights"].keys()) == ["4", "5", "6"]
+    assert float(perimeter_generation["min_absolute_gap_units"]) > 0.0
+    assert int(perimeter_rendering["line_width"]) > 0
+    assert str(perimeter_prompt["object_description"]).strip()
+    assert str(perimeter_prompt["question_text_largest"]).strip()
+    assert str(perimeter_prompt["question_text_smallest"]).strip()
+    assert str(perimeter_prompt["evidence_hint"]).strip()
+    assert str(perimeter_prompt["answer_hint"]).strip()
 
     length_generation, length_rendering, length_prompt = split_generation_rendering_prompt_defaults(
         cfg,

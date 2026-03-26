@@ -101,6 +101,7 @@ Use this as the implementation checklist for new or modified tasks.
 13. For comparison-style tasks with label answers, randomize visible labels separately from spatial layout so fixed slots do not skew answer-label distributions or make one label easier by construction.
 14. When adding a second task inside a comparison-style family, reuse one shared query/object-count/winner-label balancing helper and one shared scene-slot layout helper instead of keeping parallel task-local copies.
 15. For comparison tasks with bulkier shapes, choose a slot layout sized for the rendered footprint instead of reusing the tighter line/angle layout by default.
+16. When two comparison tasks operate on the same object family (for example rectangles for area and perimeter), extract one shared scene sampler/renderer for that object family instead of duplicating nearly identical task-local geometry generation.
 
 ## 6) Minimal test checklist
 1. Determinism for fixed seed.

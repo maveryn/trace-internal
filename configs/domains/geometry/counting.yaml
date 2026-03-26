@@ -45,6 +45,23 @@ generation:
         "6": 1.0
         "7": 1.0
         "8": 1.0
+    task_geometry_counting_quadrilateral:
+      object_count_min: 5
+      object_count_max: 7
+      min_extent_units: 3.0
+      max_extent_units: 5.8
+      min_side_gap_units: 0.8
+      min_slant_units: 1.0
+      variant_weights:
+        parallelogram_only: 1.0
+        rectangle_non_square: 1.0
+        rhombus_non_square: 1.0
+        square: 1.0
+      balanced_variant_sampling: true
+      object_count_weights:
+        "5": 1.0
+        "6": 1.0
+        "7": 1.0
 
 rendering:
   shared:
@@ -64,6 +81,10 @@ rendering:
       graph_cells_min: 24
       graph_cells_max: 32
       object_label_offset_px: 16
+    task_geometry_counting_quadrilateral:
+      graph_cells_min: 26
+      graph_cells_max: 34
+      object_label_offset_px: 18
 
 visual:
   background:
@@ -111,3 +132,13 @@ prompt:
       answer_hint: set "answer" to the count as an integer
       json_example: '{"evidence":["A","C","F"],"answer":3}'
       json_example_answer_only: '{"answer":3}'
+    task_geometry_counting_quadrilateral:
+      object_description: several labeled quadrilaterals
+      question_text_square: How many labeled quadrilaterals are squares?
+      question_text_rectangle_non_square: How many labeled quadrilaterals are rectangles but not squares?
+      question_text_rhombus_non_square: How many labeled quadrilaterals are rhombuses but not squares?
+      question_text_parallelogram_only: How many labeled quadrilaterals are parallelograms that are neither rectangles nor rhombuses?
+      evidence_hint: set "evidence" to a sorted JSON array of the labels of all quadrilaterals that match the requested type
+      answer_hint: set "answer" to the count as an integer
+      json_example: '{"evidence":["B","E"],"answer":2}'
+      json_example_answer_only: '{"answer":2}'

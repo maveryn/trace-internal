@@ -87,6 +87,7 @@ Use this as the implementation checklist for new or modified tasks.
 13. For analytical composite/shaded objectives, keep region-fill semantics in the shared analytical scene helper so sibling tasks can reuse shaded-target and cutout rendering without task-local draw-order hacks.
 14. If a non-measurement geometry task-group needs its own background policy (for example counting on solid backgrounds), load geometry background/noise defaults for that task group explicitly instead of importing measurement-scoped constants.
 15. For counting/classification tasks with overlapping textbook definitions (for example isosceles vs equilateral), encode the intended exclusivity directly in the prompt/config wording instead of assuming one convention.
+16. For counting tasks where the answer is the matched-object count itself, prefer global target-count support sampling (for example `resolve_counting_cardinality_pair(...)`) over choosing object count first when the latter would skew answers toward smaller counts.
 
 ## 5) Sampling rules
 1. Global sampling unit is `task`.

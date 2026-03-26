@@ -73,6 +73,7 @@ Promote helpers when a second consumer appears.
    - `slope_geometry.py` provides reusable slope-line feasibility/sampling helpers for graph-paper slope tasks.
    - `multi_angle_scene.py` provides reusable target-conditioned multi-angle geometry construction plus object-label placement for sibling angle tasks across geometry task groups.
    - `multi_polygon_scene.py` provides reusable outline + object-label rendering for sibling multi-polygon scenes across geometry task groups.
+   - `quadrilateral_prototypes.py` provides reusable centered quadrilateral-class samplers/classifiers shared by quadrilateral counting scenes and future mixed shape-type scenes.
    - `analytical_2d_scene.py` provides reusable analytical 2D scene fitting, collision-aware annotation/label placement, and shared polygon/circle/helper rendering for annotated analytical objectives.
    - Use `fill_kind="shaded"` / `fill_kind="background"` on analytical polygon entities when a shaded-region objective needs persistent filled target regions or visible cutouts; keep that fill behavior in the shared analytical scene helper rather than bespoke task-local drawing.
    - `analytical_3d_solids.py` provides reusable 3D-solid rendering/sampling helpers shared by analytical 3D objectives (currently `volume` and `surface_area`).

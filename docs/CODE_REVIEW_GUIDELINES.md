@@ -70,6 +70,7 @@ Use this checklist during implementation and refactor reviews.
 54. When a new geometry task group needs a different background policy than measurement, do not reuse measurement-scoped background/noise constants; call the geometry task-group loaders directly so solid/non-grid scenes stay consistent with their own config.
 55. When a second geometry task group reuses the same hidden graph-unit projection or object-family scene logic, promote that logic to geometry domain-shared helpers (for example `graph_units_to_pixel` or `multi_angle_scene.py`) instead of duplicating or importing another task group's private helpers.
 56. For counting/classification tasks with overlapping textbook definitions (for example isosceles vs equilateral), make the exclusivity explicit in prompt/config wording instead of leaving the task to unstated conventions.
+57. For counting tasks whose final answer is the matched-object count itself, check whether picking `object_count` first skews answers toward smaller counts; if it does, sample the target count from the global feasible support first and then choose a compatible object count.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

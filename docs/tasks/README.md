@@ -25,4 +25,5 @@ Current task docs:
 15. [task_geometry_comparison_perimeter.md](task_geometry_comparison_perimeter.md)
 16. [task_geometry_counting_angle.md](task_geometry_counting_angle.md)
 17. [task_geometry_counting_triangle.md](task_geometry_counting_triangle.md)
-18. [task_tile_path_shortest_path.md](task_tile_path_shortest_path.md)
+18. [task_geometry_counting_quadrilateral.md](task_geometry_counting_quadrilateral.md)
+19. [task_tile_path_shortest_path.md](task_tile_path_shortest_path.md)

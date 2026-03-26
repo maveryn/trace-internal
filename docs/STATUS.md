@@ -34,7 +34,7 @@ Date: 2026-03-21
 23. Geometry analytical_2d composite-area task supports five shaded/composite polygon variants (inner-rectangle cutout, triangle cutout, rectangle+triangle union, L-shape cutout, step-rectangle union) with integer answers and structured `measurement_ref_map` evidence.
 24. Shared analytical 2D scene rendering now supports reusable polygon fill semantics (`shaded`, `background`) so composite/shaded objectives can reuse one collision-aware render stack instead of task-local draw overlays.
 25. Geometry comparison now includes `task_geometry_comparison_angle`, `task_geometry_comparison_length`, `task_geometry_comparison_area`, and `task_geometry_comparison_perimeter`, each with 4–6 labeled graph-paper objects, `largest`/`smallest` winner queries, `option_letter` answers, and winner-evidence graph-point sets.
-26. Geometry counting now includes `task_geometry_counting_angle` and `task_geometry_counting_triangle`, both non-graph-paper multi-object scenes with integer answers and sorted `label_set` evidence; angle scenes count acute/right/obtuse classes and triangle scenes count equilateral / isosceles-but-not-equilateral / scalene / right / acute / obtuse classes.
+26. Geometry counting now includes `task_geometry_counting_angle`, `task_geometry_counting_triangle`, and `task_geometry_counting_quadrilateral`, all non-graph-paper multi-object scenes with integer answers and sorted `label_set` evidence; angle scenes count acute/right/obtuse classes, triangle scenes count equilateral / isosceles-but-not-equilateral / scalene / right / acute / obtuse classes, and quadrilateral scenes count square / rectangle-but-not-square / rhombus-but-not-square / parallelogram-only classes.
 
 ## Active tasks
 1. `task_tile_path_shortest_path` (`domain=tile`, `task_group=path`)
@@ -44,23 +44,24 @@ Date: 2026-03-21
 5. `task_geometry_comparison_perimeter` (`domain=geometry`, `task_group=comparison`)
 6. `task_geometry_counting_angle` (`domain=geometry`, `task_group=counting`)
 7. `task_geometry_counting_triangle` (`domain=geometry`, `task_group=counting`)
-8. `task_geometry_measurement_angle` (`domain=geometry`, `task_group=measurement`)
-9. `task_geometry_measurement_area` (`domain=geometry`, `task_group=measurement`)
-10. `task_geometry_measurement_perimeter` (`domain=geometry`, `task_group=measurement`)
-11. `task_geometry_measurement_length` (`domain=geometry`, `task_group=measurement`)
-12. `task_geometry_measurement_slope` (`domain=geometry`, `task_group=measurement`)
-13. `task_geometry_analytical_2d_area` (`domain=geometry`, `task_group=analytical_2d`)
-14. `task_geometry_analytical_2d_length` (`domain=geometry`, `task_group=analytical_2d`)
-15. `task_geometry_analytical_2d_perimeter` (`domain=geometry`, `task_group=analytical_2d`)
-16. `task_geometry_analytical_2d_composite_area` (`domain=geometry`, `task_group=analytical_2d`)
-17. `task_geometry_analytical_3d_volume` (`domain=geometry`, `task_group=analytical_3d`)
-18. `task_geometry_analytical_3d_surface_area` (`domain=geometry`, `task_group=analytical_3d`)
+8. `task_geometry_counting_quadrilateral` (`domain=geometry`, `task_group=counting`)
+9. `task_geometry_measurement_angle` (`domain=geometry`, `task_group=measurement`)
+10. `task_geometry_measurement_area` (`domain=geometry`, `task_group=measurement`)
+11. `task_geometry_measurement_perimeter` (`domain=geometry`, `task_group=measurement`)
+12. `task_geometry_measurement_length` (`domain=geometry`, `task_group=measurement`)
+13. `task_geometry_measurement_slope` (`domain=geometry`, `task_group=measurement`)
+14. `task_geometry_analytical_2d_area` (`domain=geometry`, `task_group=analytical_2d`)
+15. `task_geometry_analytical_2d_length` (`domain=geometry`, `task_group=analytical_2d`)
+16. `task_geometry_analytical_2d_perimeter` (`domain=geometry`, `task_group=analytical_2d`)
+17. `task_geometry_analytical_2d_composite_area` (`domain=geometry`, `task_group=analytical_2d`)
+18. `task_geometry_analytical_3d_volume` (`domain=geometry`, `task_group=analytical_3d`)
+19. `task_geometry_analytical_3d_surface_area` (`domain=geometry`, `task_group=analytical_3d`)
 
 ## Current quality baseline
 1. Tests are required to pass before finalize.
 2. Distribution QA uses `scripts/check_task_answer_distribution.py` with per-variant answer-only checks (`unique_answers >= 5`, `max_answer_frequency < 25%`) and multithreaded sample generation (`--workers`); numeric 5-bin summaries remain reported for review but are not hard pass/fail gates.
 3. Task-review tooling writes per-task artifacts under `task-reviews/<task_id>/`, including one inspection workbook named `<task_id>.xlsx` with one sheet per task variant.
-4. The current active geometry review set (4 comparison + 2 counting + 5 measurement + 4 analytical_2d + 2 analytical_3d tasks) passes distribution review under the active gates.
+4. The current active geometry review set (4 comparison + 3 counting + 5 measurement + 4 analytical_2d + 2 analytical_3d tasks) passes distribution review under the active gates.
 
 ## Next priorities
 1. Continue objective-first refactor for additional domains (tile/icons/charts/graphs/documents).

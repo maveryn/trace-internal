@@ -12,6 +12,7 @@ from .geometry.comparison import area as _task_geometry_comparison_area
 from .geometry.comparison import length as _task_geometry_comparison_length
 from .geometry.comparison import perimeter as _task_geometry_comparison_perimeter
 from .geometry.counting import angle as _task_geometry_counting_angle
+from .geometry.counting import quadrilateral as _task_geometry_counting_quadrilateral
 from .geometry.counting import triangle as _task_geometry_counting_triangle
 from .geometry.measurement import angle as _task_geometry_measurement_angle
 from .geometry.measurement import area as _task_geometry_measurement_area

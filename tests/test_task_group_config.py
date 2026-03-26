@@ -469,6 +469,7 @@ def test_geometry_counting_defaults_loaded() -> None:
     generation_overrides = cfg["generation"]["task_overrides"]
     assert "task_geometry_counting_angle" in generation_overrides
     assert "task_geometry_counting_triangle" in generation_overrides
+    assert "task_geometry_counting_quadrilateral" in generation_overrides
 
     render_shared = cfg["rendering"]["shared"]
     assert int(render_shared["canvas_size_min"]) > 0
@@ -535,6 +536,33 @@ def test_geometry_counting_defaults_loaded() -> None:
     assert str(triangle_prompt["answer_hint"]).strip()
     assert str(triangle_prompt["json_example"]).strip()
     assert str(triangle_prompt["json_example_answer_only"]).strip()
+
+    quadrilateral_generation, quadrilateral_rendering, quadrilateral_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_counting_quadrilateral",
+    )
+    assert float(quadrilateral_generation["min_extent_units"]) < float(quadrilateral_generation["max_extent_units"])
+    assert float(quadrilateral_generation["min_side_gap_units"]) > 0.0
+    assert float(quadrilateral_generation["min_slant_units"]) > 0.0
+    assert sorted(quadrilateral_generation["variant_weights"].keys()) == [
+        "parallelogram_only",
+        "rectangle_non_square",
+        "rhombus_non_square",
+        "square",
+    ]
+    assert bool(quadrilateral_generation["balanced_variant_sampling"]) is True
+    assert sorted(quadrilateral_generation["object_count_weights"].keys()) == ["5", "6", "7"]
+    assert int(quadrilateral_rendering["graph_cells_min"]) < int(quadrilateral_rendering["graph_cells_max"])
+    assert int(quadrilateral_rendering["object_label_offset_px"]) > 0
+    assert str(quadrilateral_prompt["object_description"]).strip()
+    assert str(quadrilateral_prompt["question_text_square"]).strip()
+    assert str(quadrilateral_prompt["question_text_rectangle_non_square"]).strip()
+    assert str(quadrilateral_prompt["question_text_rhombus_non_square"]).strip()
+    assert str(quadrilateral_prompt["question_text_parallelogram_only"]).strip()
+    assert str(quadrilateral_prompt["evidence_hint"]).strip()
+    assert str(quadrilateral_prompt["answer_hint"]).strip()
+    assert str(quadrilateral_prompt["json_example"]).strip()
+    assert str(quadrilateral_prompt["json_example_answer_only"]).strip()
 
 
 def test_geometry_analytical_3d_defaults_loaded() -> None:

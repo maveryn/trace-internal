@@ -7,7 +7,7 @@
 1. Extend objective-first measurement pattern to additional domains.
 2. Add cross-domain `scene_variant` + role-binding spec in architecture/ABI docs.
 3. Improve dataset QA diagnostics/report summaries.
-4. Extend geometry counting beyond angle/triangle (quadrilateral, mixed shape-type counting) using the same integer-answer + `label_set` evidence contract.
+4. Extend geometry counting beyond angle/triangle/quadrilateral (mixed shape-type counting) using the same integer-answer + `label_set` evidence contract.
 5. Extend geometry comparison beyond angle/length/area/perimeter using the same label-answer + winner-gap contract.
 6. Extend analytical geometry to additional objectives beyond the current analytical set (additional 3D objectives, richer conic/composite-region reasoning).
 
@@ -43,6 +43,7 @@
 - `task_geometry_comparison_perimeter`
 - `task_geometry_counting_angle`
 - `task_geometry_counting_triangle`
+- `task_geometry_counting_quadrilateral`
 - `task_geometry_analytical_2d_area`
 - `task_geometry_analytical_2d_composite_area`
 - `task_geometry_analytical_2d_length`

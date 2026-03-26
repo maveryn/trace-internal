@@ -62,6 +62,27 @@ generation:
         "5": 1.0
         "6": 1.0
         "7": 1.0
+    task_geometry_counting_shape_type:
+      object_count_min: 6
+      object_count_max: 9
+      min_extent_units: 2.6
+      max_extent_units: 4.8
+      ellipse_axis_ratio_min: 1.35
+      min_side_gap_units: 0.8
+      min_slant_units: 1.0
+      variant_weights:
+        circle: 1.0
+        ellipse: 1.0
+        hexagon: 1.0
+        pentagon: 1.0
+        quadrilateral: 1.0
+        triangle: 1.0
+      balanced_variant_sampling: true
+      object_count_weights:
+        "6": 1.0
+        "7": 1.0
+        "8": 1.0
+        "9": 1.0
 
 rendering:
   shared:
@@ -84,6 +105,10 @@ rendering:
     task_geometry_counting_quadrilateral:
       graph_cells_min: 26
       graph_cells_max: 34
+      object_label_offset_px: 18
+    task_geometry_counting_shape_type:
+      graph_cells_min: 28
+      graph_cells_max: 36
       object_label_offset_px: 18
 
 visual:
@@ -142,3 +167,15 @@ prompt:
       answer_hint: set "answer" to the count as an integer
       json_example: '{"evidence":["B","E"],"answer":2}'
       json_example_answer_only: '{"answer":2}'
+    task_geometry_counting_shape_type:
+      object_description: several labeled shapes
+      question_text_triangle: How many labeled shapes are triangles?
+      question_text_quadrilateral: How many labeled shapes are quadrilaterals?
+      question_text_pentagon: How many labeled shapes are pentagons?
+      question_text_hexagon: How many labeled shapes are hexagons?
+      question_text_circle: How many labeled shapes are circles?
+      question_text_ellipse: How many labeled shapes are ellipses?
+      evidence_hint: set "evidence" to a sorted JSON array of the labels of all shapes that match the requested type
+      answer_hint: set "answer" to the count as an integer
+      json_example: '{"evidence":["A","D","F"],"answer":3}'
+      json_example_answer_only: '{"answer":3}'

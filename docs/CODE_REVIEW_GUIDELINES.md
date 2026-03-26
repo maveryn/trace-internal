@@ -71,6 +71,7 @@ Use this checklist during implementation and refactor reviews.
 55. When a second geometry task group reuses the same hidden graph-unit projection or object-family scene logic, promote that logic to geometry domain-shared helpers (for example `graph_units_to_pixel` or `multi_angle_scene.py`) instead of duplicating or importing another task group's private helpers.
 56. For counting/classification tasks with overlapping textbook definitions (for example isosceles vs equilateral), make the exclusivity explicit in prompt/config wording instead of leaving the task to unstated conventions.
 57. For counting tasks whose final answer is the matched-object count itself, check whether picking `object_count` first skews answers toward smaller counts; if it does, sample the target count from the global feasible support first and then choose a compatible object count.
+58. For mixed-shape classification/counting tasks, keep visually adjacent classes separated by explicit sampler margins (for example a minimum ellipse aspect ratio so circles and ellipses remain distinguishable from the rendered image alone).
 
 ## 3) Process rule
 When a new reusable issue is discovered:

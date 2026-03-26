@@ -97,6 +97,7 @@ Promote helpers when a second consumer appears.
    - `counting/shared.py` provides canonical object-count/target-count balancing, label assignment, lightweight complexity helpers, and the flatter `resolve_counting_cardinality_pair(...)` sampler for counting tasks whose integer answers are the matched-object counts themselves.
    - `counting/defaults.py` centralizes task-group fallback defaults reused across geometry/counting tasks.
    - For class-counting tasks with overlapping school definitions (for example isosceles vs equilateral), keep the exclusive wording in prompt/config slots instead of relying on unstated conventions.
+   - `multi_shape_scene.py` provides reusable mixed polygon/circle/ellipse rendering plus object-label placement for sibling mixed-shape geometry scenes; use it when a second task needs the same object-family mix instead of creating another task-local renderer.
 5. Tile: `trace/tasks/tile/shared/path_grid.py`, `maze_sampling.py`, `grid_layout.py`, `maze_scene.py`, `maze_rendering.py`
 
 ## 3) Reuse rules

@@ -70,6 +70,7 @@ Use this as the implementation checklist for new or modified tasks.
 16. Favor natural, image-led wording in template stems; do not pad bundles with low-quality paraphrases just to increase variant count.
 17. Keep `question_text` semantic-only when task templates already carry formatting or rounding instructions; avoid repeating the same instruction across prompt layers.
 18. For multi-object counting tasks, label whole objects and use sorted `label_set` evidence unless geometry coordinates are truly necessary for verification.
+19. For mixed-shape classification/counting tasks, enforce visible separation between visually adjacent classes (for example circles vs ellipses) in the sampler itself instead of leaving borderline cases to human interpretation.
 
 ## 4) Config/defaults rules
 1. Precedence: `domain -> task_group -> task/params`.

@@ -11,6 +11,7 @@ Update this table after each review run.
 | task_geometry_counting_angle | task_geometry_counting_angle | alright_for_now | distribution pass |
 | task_geometry_counting_triangle | task_geometry_counting_triangle | alright_for_now | distribution pass |
 | task_geometry_counting_quadrilateral | task_geometry_counting_quadrilateral | alright_for_now | distribution pass |
+| task_geometry_counting_shape_type | task_geometry_counting_shape_type | alright_for_now | distribution pass |
 | task_geometry_measurement_angle | task_geometry_measurement_angle | alright_for_now | distribution pass |
 | task_geometry_measurement_area | task_geometry_measurement_area | alright_for_now | distribution pass |
 | task_geometry_measurement_perimeter | task_geometry_measurement_perimeter | alright_for_now | distribution pass |

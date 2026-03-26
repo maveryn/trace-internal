@@ -27,7 +27,7 @@ from ..shared.analytical_3d_solids import (
     VOLUME_VARIANTS,
     sample_analytical_3d_volume_case,
 )
-from ..shared.analytical_3d_task import (
+from ..shared.analytical_task import (
     required_prompt_text,
     resolve_answer_bounds,
     resolve_task_variant,

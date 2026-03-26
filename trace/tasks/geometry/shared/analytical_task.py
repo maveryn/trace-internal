@@ -1,4 +1,4 @@
-"""Shared task-module helpers for geometry analytical 3D objectives."""
+"""Shared task-module helpers for geometry analytical objectives."""
 
 from __future__ import annotations
 
@@ -29,7 +29,7 @@ def resolve_answer_bounds(
     fallback_min: int,
     fallback_max: int,
 ) -> Tuple[int, int]:
-    """Resolve inclusive integer answer bounds for an analytical 3D task."""
+    """Resolve inclusive integer answer bounds for one analytical task."""
     answer_min, answer_max = resolve_optional_int_bounds(
         params,
         gen_defaults,
@@ -52,7 +52,7 @@ def resolve_task_variant(
     gen_defaults: Mapping[str, Any],
     supported_variants: Sequence[str],
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve one analytical 3D task variant with deterministic balancing."""
+    """Resolve one analytical task variant with deterministic balancing."""
     selected_variant, variant_probabilities = resolve_variant(
         rng,
         params=params,

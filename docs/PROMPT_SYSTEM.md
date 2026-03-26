@@ -57,9 +57,10 @@ Bundles:
 1. `prompts/geometry/measurement/geometry_angle_measure_v1.json`
 2. `prompts/geometry/measurement/geometry_measurement_v1.json`
 3. `prompts/geometry/analytical_2d/geometry_analytical_area_v1.json`
-4. `prompts/geometry/analytical_3d/geometry_analytical_volume_v1.json`
-5. `prompts/geometry/analytical_3d/geometry_analytical_surface_area_v1.json`
-6. `prompts/tile/path/tile_path_v1.json`
+4. `prompts/geometry/analytical_2d/geometry_analytical_length_v1.json`
+5. `prompts/geometry/analytical_3d/geometry_analytical_volume_v1.json`
+6. `prompts/geometry/analytical_3d/geometry_analytical_surface_area_v1.json`
+7. `prompts/tile/path/tile_path_v1.json`
 
 Tasks:
 1. `task_geometry_measurement_angle` (bundle override: `geometry_angle_measure_v1`)
@@ -68,6 +69,7 @@ Tasks:
 4. `task_geometry_measurement_length` (bundle: `geometry_measurement_v1`)
 5. `task_geometry_measurement_slope` (bundle: `geometry_measurement_v1`)
 6. `task_geometry_analytical_2d_area` (bundle: `geometry_analytical_area_v1`)
-7. `task_geometry_analytical_3d_volume` (bundle: `geometry_analytical_volume_v1`)
-8. `task_geometry_analytical_3d_surface_area` (bundle: `geometry_analytical_surface_area_v1`)
-9. `task_tile_path_shortest_path`
+7. `task_geometry_analytical_2d_length` (bundle: `geometry_analytical_length_v1`)
+8. `task_geometry_analytical_3d_volume` (bundle: `geometry_analytical_volume_v1`)
+9. `task_geometry_analytical_3d_surface_area` (bundle: `geometry_analytical_surface_area_v1`)
+10. `task_tile_path_shortest_path`

@@ -26,7 +26,7 @@ from ..shared.analytical_3d_solids import (
     SURFACE_AREA_VARIANTS,
     sample_analytical_3d_surface_area_case,
 )
-from ..shared.analytical_3d_task import (
+from ..shared.analytical_task import (
     required_prompt_text,
     resolve_answer_bounds,
     resolve_task_variant,

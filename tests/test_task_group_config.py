@@ -215,6 +215,7 @@ def test_geometry_analytical_defaults_loaded() -> None:
     assert int(render_shared["label_stroke_width_max"]) >= int(render_shared["label_stroke_width_min"])
     assert int(render_shared["analytical_unit_spacing_px"]) >= 2
     assert int(render_shared["analytical_unit_padding_px"]) >= 0
+    assert 0.0 < float(render_shared["analytical_scene_fill_ratio"]) < 1.0
     visual_background = cfg["visual"]["background"]
     assert bool(visual_background["enabled"]) is True
     assert {"solid_cool", "solid_offwhite", "solid_warm"}.issubset(set(visual_background["styles"].keys()))
@@ -259,6 +260,40 @@ def test_geometry_analytical_defaults_loaded() -> None:
     ):
         assert str(prompt_defaults[f"question_text_{key}"]).strip()
         assert str(prompt_defaults[f"json_example_{key}"]).strip()
+
+    length_generation, length_rendering, length_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_analytical_2d_length",
+    )
+    assert sorted(length_generation["variant_weights"].keys()) == [
+        "circle_chord_length",
+        "inscribed_square_side",
+        "isosceles_trapezoid_leg",
+        "rectangle_diagonal_side",
+        "rhombus_diagonal_side",
+        "triangle_altitude_side",
+    ]
+    assert bool(length_generation["balanced_variant_sampling"]) is True
+    assert int(length_generation["dimension_min"]) >= 1
+    assert int(length_generation["dimension_max"]) >= int(length_generation["dimension_min"])
+    assert int(length_generation["circle_radius_min"]) >= 1
+    assert int(length_generation["circle_radius_max"]) >= int(length_generation["circle_radius_min"])
+    assert int(length_rendering["line_width"]) > 0
+    assert str(length_prompt["bundle_id"]).strip() == "geometry_analytical_length_v1"
+    assert str(length_prompt["task_key"]).strip() == "analytical_length_query"
+    assert str(length_prompt["task_family_key"]).strip() == "analytical_length_scene"
+    assert str(length_prompt["object_description"]).strip()
+    assert str(length_prompt["evidence_hint_measurement_map"]).strip()
+    assert str(length_prompt["answer_hint_number"]).strip()
+    for key in (
+        "triangle_altitude_side",
+        "rectangle_diagonal_side",
+        "rhombus_diagonal_side",
+        "isosceles_trapezoid_leg",
+        "inscribed_square_side",
+        "circle_chord_length",
+    ):
+        assert str(length_prompt[f"question_text_{key}"]).strip()
 
 
 def test_geometry_analytical_3d_defaults_loaded() -> None:
@@ -538,6 +573,20 @@ def test_analytical_prompt_examples_are_task_valid() -> None:
             assert str(parsed["answer"]).endswith("π")
         else:
             assert int(parsed["answer"]) >= 0
+
+    _length_generation, _length_rendering, length_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_analytical_2d_length",
+    )
+    for key in (
+        "triangle_altitude_side",
+        "rectangle_diagonal_side",
+        "rhombus_diagonal_side",
+        "isosceles_trapezoid_leg",
+        "inscribed_square_side",
+        "circle_chord_length",
+    ):
+        assert str(length_prompt[f"question_text_{key}"]).strip()
 
 
 def test_section_defaults_require_shared_and_task_overrides_schema() -> None:

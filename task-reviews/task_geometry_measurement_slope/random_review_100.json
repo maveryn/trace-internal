@@ -11,8 +11,8 @@
       },
       "max_five_bin_frequency": {
         "observed": 0.45,
-        "pass": true,
-        "threshold": 0.5
+        "pass": null,
+        "status": "reported_not_gated_numeric_answers"
       },
       "min_unique_answers": {
         "observed": 31,

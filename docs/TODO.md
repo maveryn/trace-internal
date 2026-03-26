@@ -1,13 +1,13 @@
 # TRACE TODO
 
 ## Now (P0)
-1. Complete post-refactor cleanup review (remove stale references and dead helper paths).
+1. No immediate P0 cleanup blockers; keep follow-up review findings flowing into docs/tests as new task families land.
 
 ## Next (P1)
 1. Extend objective-first measurement pattern to additional domains.
 2. Add cross-domain `scene_variant` + role-binding spec in architecture/ABI docs.
 3. Improve dataset QA diagnostics/report summaries.
-4. Extend analytical geometry to additional objectives beyond `task_geometry_analytical_2d_area` / `task_geometry_analytical_3d_surface_area` (`perimeter`, `length`, composite/shaded-region area, additional 3D objectives).
+4. Extend analytical geometry to additional objectives beyond `task_geometry_analytical_2d_area` / `task_geometry_analytical_3d_surface_area` (`perimeter`, composite/shaded-region area, additional 3D objectives).
 
 ## Later (P2)
 1. Add split-artifact generation with deterministic split policy metadata.
@@ -34,6 +34,10 @@
 - `task_geometry_measurement_area`
 - `task_geometry_measurement_perimeter`
 - `task_geometry_measurement_length`
+- `task_geometry_measurement_slope`
 - `task_geometry_analytical_2d_area`
+- `task_geometry_analytical_2d_length`
+- `task_geometry_analytical_3d_volume`
+- `task_geometry_analytical_3d_surface_area`
 6. Task-review/sample-generation tooling with per-task artifacts and inspection workbooks.
 7. Pre-finalize prompt validation checks (metadata/bundle/key/placeholder/cardinality).

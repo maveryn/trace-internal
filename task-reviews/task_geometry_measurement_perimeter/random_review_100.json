@@ -13,8 +13,7 @@
       "max_five_bin_frequency": {
         "observed": null,
         "pass": null,
-        "status": "not_applicable_non_numeric_answers",
-        "threshold": 0.5
+        "status": "not_applicable_non_numeric_answers"
       },
       "min_unique_answers": {
         "observed": 23,

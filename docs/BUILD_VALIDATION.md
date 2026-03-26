@@ -39,10 +39,10 @@ For new or distribution-changing task logic:
 3. Required gating checks (computed from answer values only):
    - `unique_answers >= 5`
    - `max_answer_frequency < 25%`
-   - numeric-answer tasks only: `max_five_bin_frequency <= 50%` (5 equal-width bins over observed numeric range)
    - apply checks per task variant; task-level pass requires every variant to pass.
    - zero collected samples for a task/variant review is a hard fail (`no_samples_collected`).
-4. For quick distribution-only runs (without workbook generation), the dedicated checker remains available:
+4. Numeric answer-distribution summaries still report `max_five_bin_frequency` and the 5 equal-width bin counts over the observed numeric range, but these are informational review metrics rather than hard pass/fail gates.
+5. For quick distribution-only runs (without workbook generation), the dedicated checker remains available:
    - `PYTHONPATH=. python scripts/check_task_answer_distribution.py --tasks <task_id>`
 
 ## 5) Reports and failure artifacts

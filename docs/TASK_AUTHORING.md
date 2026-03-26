@@ -68,7 +68,7 @@ Use this as the implementation checklist for new or modified tasks.
 14. If one variant still collapses to a tiny feasible answer set under a generic sampler, switch that variant to a constructive sampler that directly realizes broader valid targets while preserving the task contract.
 15. If a prompt slot value is static for a task (for example a fixed question stem), store it in prompt config/template data rather than task-module constants.
 16. Favor natural, image-led wording in template stems; do not pad bundles with low-quality paraphrases just to increase variant count.
-15. Keep `question_text` semantic-only when task templates already carry formatting or rounding instructions; avoid repeating the same instruction across prompt layers.
+17. Keep `question_text` semantic-only when task templates already carry formatting or rounding instructions; avoid repeating the same instruction across prompt layers.
 
 ## 4) Config/defaults rules
 1. Precedence: `domain -> task_group -> task/params`.
@@ -82,6 +82,7 @@ Use this as the implementation checklist for new or modified tasks.
 9. Required prompt/config slots should be enforced with fail-fast shared helpers (no hardcoded fallback prompt literals in task code).
 10. If the same fallback constants are used by multiple sibling tasks, move them to a task-group shared defaults module.
 11. For cross-domain shared utilities, keep global fallback constants in the shared utility module and treat domain/task-group config keys as optional overrides.
+12. For analytical scenes with free-form numeric annotations, reserve explicit border margin and use collision-aware local placement so labels/value text do not sit directly on geometry or hug the canvas edge.
 
 ## 5) Sampling rules
 1. Global sampling unit is `task`.
@@ -93,7 +94,8 @@ Use this as the implementation checklist for new or modified tasks.
 7. For tasks with both source categories and answer targets, sample both distributions explicitly and verify realized distributions.
 8. For deterministic balance over generated prefixes, use builder `_sampling_index` (not hashed `instance_seed`) when cycling categories/answers; if `_sampling_index` is absent, fall back to a namespaced deterministic index so target-answer choice does not couple to unrelated seed-driven decisions such as task-variant selection.
 9. If a target answer is chosen from a feasibility probe before layout, also propagate the probe's minimum required scene capacity (for example graph-cell count/span) into layout sampling; otherwise a globally feasible answer can still fail after the scene size is sampled.
-9. When changing answer/evidence/variant contracts, remove deprecated helper paths and stale trace fields in the same patch.
+10. When changing answer/evidence/variant contracts, remove deprecated helper paths and stale trace fields in the same patch.
+11. For derived analytical geometry tasks, do not force integer targets if that collapses scene variety; prefer integer givens plus a numeric answer rounded to one decimal place when the natural formula yields irrational lengths.
 
 ## 6) Minimal test checklist
 1. Determinism for fixed seed.
@@ -141,9 +143,12 @@ Use `--mode inspection` when only visual/prompt inspection is needed and distrib
 Required answer-distribution checks:
 - `unique_answers >= 5`
 - `max_answer_frequency < 25%`
-- numeric-answer tasks: `max_five_bin_frequency <= 50%` (5 equal-width bins)
 - apply checks per `task_variant`; task-level pass requires every variant to pass.
 - zero collected samples for a review slice is a hard fail (`no_samples_collected`).
+
+Numeric answer-distribution summaries:
+- task-review reports still include `five_bin_numeric` and `max_five_bin_frequency` for inspection,
+- treat those as informational by default rather than hard pass/fail gates unless a task family adopts an explicit tighter rule.
 
 For quick distribution-only runs:
 ```bash

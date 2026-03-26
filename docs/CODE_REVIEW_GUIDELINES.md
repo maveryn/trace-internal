@@ -38,7 +38,7 @@ Use this checklist during implementation and refactor reviews.
 22. Keep test suites compact by merging overlapping assertions into behavior-centric tests; avoid parallel tests that validate the same contract surface.
 23. Treat prompt-slot values as punctuation-neutral fragments; keep sentence punctuation in template variants to avoid duplicated punctuation in rendered prompts.
 24. For task-group visual defaults, remove zero-weight/no-op style keys and avoid fallback style merge when a family requires a strict style subset.
-25. For new/distribution-changing tasks, run answer-distribution checks at least at 100 samples and report: `unique_answers`, `max_answer_count / sample_count`, and numeric `max_five_bin_frequency`.
+25. For new/distribution-changing tasks, run answer-distribution checks at least at 100 samples and report: `unique_answers`, `max_answer_count / sample_count`, and numeric bin summaries such as `max_five_bin_frequency`; use the first two as hard anti-degeneracy gates unless a task family explicitly adds tighter distribution rules.
 26. Distribution-check tooling must evaluate rules per task variant at fixed per-variant sample targets, and worker parallelism must not change collected-answer outcomes for fixed seeds.
 27. Keep prompt bundles tight: use exactly 5 strong variants per required template list, and remove filler paraphrases that make prompts less natural or less precise.
 28. When prompt fragments append variant-specific label lists, route that formatting through one shared helper so punctuation and sentence boundaries stay consistent across tasks.
@@ -58,6 +58,9 @@ Use this checklist during implementation and refactor reviews.
 42. When a prompt-family stem already describes the image context, keep task-layer prompt variants focused on the question itself; do not repeat phrases like `from the image`, `from the figure`, or `from the diagram` on the next line.
 43. For graph-paper tasks that require points strictly inside the plotted grid, compute feasibility/capacity against the visible interior cell span (including padding/partial-edge effects) before selecting target answers or scene layouts.
 44. When adding constructive shape catalogs that feed a shared instance type, validate every shared invariant that instance encodes (for example integer perimeter on `PolygonInstance`), not just the task's primary target metric.
+45. When a second analytical objective needs the same prompt-slot, answer-bound, or variant-resolution helper flow, move those helpers into an analytical-family shared module instead of keeping them under a 3D-only or objective-only filename.
+46. In supersampled scenes, verify that geometry primitives and label/annotation placement use the same coordinate scale; mismatched scaled-vs-unscaled drawing can make text appear detached even when placement logic is correct.
+47. For analytical scenes with segment- or point-anchored text, cap scene occupancy and use collision-aware local placement so numeric annotations and labels fall beside geometry instead of crossing lines or crowding the border.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

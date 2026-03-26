@@ -342,7 +342,7 @@ def _evaluate_rows(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
             "checks": {
                 "min_unique_answers": {"pass": False},
                 "max_answer_frequency": {"pass": False},
-                "max_five_bin_frequency": {"pass": False, "observed": None},
+                "max_five_bin_frequency": {"pass": None, "observed": None, "status": "not_reported_no_samples"},
             },
             "pass": False,
         }

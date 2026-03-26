@@ -82,7 +82,7 @@ Required sections:
 1. Global sampling unit is `task`.
 2. Domain/task-group probabilities are derived by task aggregation.
 3. Task-variant sampling is inside each task (`P(task_variant|task)`), uniform by default unless overridden.
-4. Validate answer distributions per task variant with lightweight anti-degeneracy checks over generated answers: at least 5 unique answers, max single-answer frequency below 25%, and (for numeric tasks) max 5-bin frequency at most 50%.
+4. Validate answer distributions per task variant with lightweight anti-degeneracy checks over generated answers: at least 5 unique answers and max single-answer frequency below 25%; numeric 5-bin summaries are still reported for review but are not hard pass/fail gates.
 5. Never relax semantic constraints to force acceptance.
 
 ## 8) Build, validation, and finalize

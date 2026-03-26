@@ -52,8 +52,8 @@
       },
       "max_five_bin_frequency": {
         "observed": 0.3625,
-        "pass": true,
-        "threshold": 0.5
+        "pass": null,
+        "status": "reported_not_gated_numeric_answers"
       },
       "min_unique_answers": {
         "observed": 18,
@@ -189,8 +189,8 @@
         },
         "max_five_bin_frequency": {
           "observed": 0.26,
-          "pass": true,
-          "threshold": 0.5
+          "pass": null,
+          "status": "reported_not_gated_numeric_answers"
         },
         "min_unique_answers": {
           "observed": 8,
@@ -284,8 +284,8 @@
         },
         "max_five_bin_frequency": {
           "observed": 0.32,
-          "pass": true,
-          "threshold": 0.5
+          "pass": null,
+          "status": "reported_not_gated_numeric_answers"
         },
         "min_unique_answers": {
           "observed": 8,
@@ -379,8 +379,8 @@
         },
         "max_five_bin_frequency": {
           "observed": 0.35,
-          "pass": true,
-          "threshold": 0.5
+          "pass": null,
+          "status": "reported_not_gated_numeric_answers"
         },
         "min_unique_answers": {
           "observed": 7,
@@ -470,8 +470,8 @@
         },
         "max_five_bin_frequency": {
           "observed": 0.37,
-          "pass": true,
-          "threshold": 0.5
+          "pass": null,
+          "status": "reported_not_gated_numeric_answers"
         },
         "min_unique_answers": {
           "observed": 7,
@@ -561,8 +561,8 @@
         },
         "max_five_bin_frequency": {
           "observed": 0.36,
-          "pass": true,
-          "threshold": 0.5
+          "pass": null,
+          "status": "reported_not_gated_numeric_answers"
         },
         "min_unique_answers": {
           "observed": 8,
@@ -656,8 +656,8 @@
         },
         "max_five_bin_frequency": {
           "observed": 0.27,
-          "pass": true,
-          "threshold": 0.5
+          "pass": null,
+          "status": "reported_not_gated_numeric_answers"
         },
         "min_unique_answers": {
           "observed": 8,
@@ -751,8 +751,8 @@
         },
         "max_five_bin_frequency": {
           "observed": 0.43,
-          "pass": true,
-          "threshold": 0.5
+          "pass": null,
+          "status": "reported_not_gated_numeric_answers"
         },
         "min_unique_answers": {
           "observed": 18,
@@ -886,8 +886,8 @@
         },
         "max_five_bin_frequency": {
           "observed": 0.34,
-          "pass": true,
-          "threshold": 0.5
+          "pass": null,
+          "status": "reported_not_gated_numeric_answers"
         },
         "min_unique_answers": {
           "observed": 6,

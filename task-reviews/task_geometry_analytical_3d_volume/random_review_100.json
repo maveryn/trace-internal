@@ -1,8 +1,8 @@
 {
   "answer_distribution": {
     "answer_type_counts": {
-      "integer": 54,
-      "pi_expression": 46
+      "integer": 50,
+      "pi_expression": 50
     },
     "checks": {
       "max_answer_frequency": {
@@ -28,367 +28,367 @@
     "sample_count": 100,
     "top_answers": [
       {
-        "answer_label": "400π",
+        "answer_label": "147456π",
         "count": 3
       },
       {
-        "answer_label": "100π",
+        "answer_label": "18432π",
+        "count": 3
+      },
+      {
+        "answer_label": "2304π",
+        "count": 3
+      },
+      {
+        "answer_label": "121500π",
         "count": 2
       },
       {
-        "answer_label": "1444π",
+        "answer_label": "12348π",
         "count": 2
       },
       {
-        "answer_label": "1764",
+        "answer_label": "288π",
         "count": 2
       },
       {
-        "answer_label": "2016",
-        "count": 2
-      },
-      {
-        "answer_label": "2116π",
-        "count": 2
-      },
-      {
-        "answer_label": "2574π",
-        "count": 2
+        "answer_label": "10140",
+        "count": 1
       },
       {
-        "answer_label": "2688",
-        "count": 2
+        "answer_label": "108",
+        "count": 1
       },
       {
-        "answer_label": "10542",
+        "answer_label": "1083",
         "count": 1
       },
       {
-        "answer_label": "1060π",
+        "answer_label": "1089π",
         "count": 1
       },
       {
-        "answer_label": "1156π",
+        "answer_label": "10920",
         "count": 1
       },
       {
-        "answer_label": "1222π",
+        "answer_label": "1100π",
         "count": 1
       },
       {
-        "answer_label": "1260π",
+        "answer_label": "11025π",
         "count": 1
       },
       {
-        "answer_label": "132",
+        "answer_label": "1152",
         "count": 1
       },
       {
-        "answer_label": "1440",
+        "answer_label": "12250",
         "count": 1
       },
       {
-        "answer_label": "1456",
+        "answer_label": "1225π",
         "count": 1
       },
       {
-        "answer_label": "1500",
+        "answer_label": "12276",
         "count": 1
       },
       {
-        "answer_label": "1512",
+        "answer_label": "12943π",
         "count": 1
       },
       {
-        "answer_label": "1600",
+        "answer_label": "12996",
         "count": 1
       },
       {
-        "answer_label": "1600π",
+        "answer_label": "1323",
         "count": 1
       },
       {
-        "answer_label": "1608π",
+        "answer_label": "13583π",
         "count": 1
       },
       {
-        "answer_label": "1664",
+        "answer_label": "14288",
         "count": 1
       },
       {
-        "answer_label": "1710",
+        "answer_label": "14592",
         "count": 1
       },
       {
-        "answer_label": "1728π",
+        "answer_label": "15925",
         "count": 1
       },
       {
-        "answer_label": "1764π",
+        "answer_label": "16810π",
         "count": 1
       },
       {
-        "answer_label": "1802",
+        "answer_label": "17496π",
         "count": 1
       },
       {
-        "answer_label": "1848",
+        "answer_label": "19040",
         "count": 1
       },
       {
-        "answer_label": "1971π",
+        "answer_label": "2015",
         "count": 1
       },
       {
-        "answer_label": "200π",
+        "answer_label": "20172π",
         "count": 1
       },
       {
-        "answer_label": "2016π",
+        "answer_label": "20328",
         "count": 1
       },
       {
-        "answer_label": "2059π",
+        "answer_label": "2112π",
         "count": 1
       },
       {
-        "answer_label": "2070",
+        "answer_label": "2116",
         "count": 1
       },
       {
-        "answer_label": "2100π",
+        "answer_label": "22308",
         "count": 1
       },
       {
-        "answer_label": "2185",
+        "answer_label": "22464π",
         "count": 1
       },
       {
-        "answer_label": "2295",
+        "answer_label": "2304",
         "count": 1
       },
       {
-        "answer_label": "2332",
+        "answer_label": "2380",
         "count": 1
       },
       {
-        "answer_label": "2398",
+        "answer_label": "2400π",
         "count": 1
       },
       {
-        "answer_label": "2424",
+        "answer_label": "256",
         "count": 1
       },
       {
-        "answer_label": "2520π",
+        "answer_label": "25900",
         "count": 1
       },
       {
-        "answer_label": "2625π",
+        "answer_label": "26112",
         "count": 1
       },
       {
-        "answer_label": "2656",
+        "answer_label": "26180",
         "count": 1
       },
       {
-        "answer_label": "2820",
+        "answer_label": "27132",
         "count": 1
       },
       {
-        "answer_label": "2883",
+        "answer_label": "29172",
         "count": 1
       },
       {
-        "answer_label": "2952",
+        "answer_label": "2945",
         "count": 1
       },
       {
-        "answer_label": "3064",
+        "answer_label": "29601",
         "count": 1
       },
       {
-        "answer_label": "3154π",
+        "answer_label": "3075",
         "count": 1
       },
       {
-        "answer_label": "340π",
+        "answer_label": "312",
         "count": 1
       },
       {
-        "answer_label": "3604π",
+        "answer_label": "31939π",
         "count": 1
       },
       {
-        "answer_label": "3811",
+        "answer_label": "32912π",
         "count": 1
       },
       {
-        "answer_label": "3870π",
+        "answer_label": "33075",
         "count": 1
       },
       {
-        "answer_label": "3920",
+        "answer_label": "3420",
         "count": 1
       },
       {
-        "answer_label": "396",
+        "answer_label": "360",
         "count": 1
       },
       {
-        "answer_label": "410π",
+        "answer_label": "3600",
         "count": 1
       },
       {
-        "answer_label": "4140π",
+        "answer_label": "36000",
         "count": 1
       },
       {
-        "answer_label": "416π",
+        "answer_label": "36425",
         "count": 1
       },
       {
-        "answer_label": "432",
+        "answer_label": "3696",
         "count": 1
       },
       {
-        "answer_label": "4508",
+        "answer_label": "4056π",
         "count": 1
       },
       {
-        "answer_label": "4546",
+        "answer_label": "42471π",
         "count": 1
       },
       {
-        "answer_label": "4588π",
+        "answer_label": "43050",
         "count": 1
       },
       {
-        "answer_label": "4662",
+        "answer_label": "45084π",
         "count": 1
       },
       {
-        "answer_label": "4704π",
+        "answer_label": "4510",
         "count": 1
       },
       {
-        "answer_label": "4900π",
+        "answer_label": "47916π",
         "count": 1
       },
       {
-        "answer_label": "4926",
+        "answer_label": "500",
         "count": 1
       },
       {
-        "answer_label": "5040",
+        "answer_label": "5200",
         "count": 1
       },
       {
-        "answer_label": "5082π",
+        "answer_label": "52416",
         "count": 1
       },
       {
-        "answer_label": "5138",
+        "answer_label": "53016π",
         "count": 1
       },
       {
-        "answer_label": "5208",
+        "answer_label": "540",
         "count": 1
       },
       {
-        "answer_label": "5265",
+        "answer_label": "56700π",
         "count": 1
       },
       {
-        "answer_label": "5472",
+        "answer_label": "6075π",
         "count": 1
       },
       {
-        "answer_label": "5472π",
+        "answer_label": "61017π",
         "count": 1
       },
       {
-        "answer_label": "5508π",
+        "answer_label": "62208π",
         "count": 1
       },
       {
-        "answer_label": "552π",
+        "answer_label": "6720π",
         "count": 1
       },
       {
-        "answer_label": "5850",
+        "answer_label": "676π",
         "count": 1
       },
       {
-        "answer_label": "6156",
+        "answer_label": "7020",
         "count": 1
       },
       {
-        "answer_label": "6224",
+        "answer_label": "7500π",
         "count": 1
       },
       {
-        "answer_label": "624π",
+        "answer_label": "756",
         "count": 1
       },
       {
-        "answer_label": "6400π",
+        "answer_label": "7644",
         "count": 1
       },
       {
-        "answer_label": "6424π",
+        "answer_label": "7776",
         "count": 1
       },
       {
-        "answer_label": "6508",
+        "answer_label": "7776π",
         "count": 1
       },
       {
-        "answer_label": "6726",
+        "answer_label": "8050",
         "count": 1
       },
       {
-        "answer_label": "696",
+        "answer_label": "81733π",
         "count": 1
       },
       {
-        "answer_label": "7042",
+        "answer_label": "8410π",
         "count": 1
       },
       {
-        "answer_label": "744",
+        "answer_label": "8448",
         "count": 1
       },
       {
-        "answer_label": "7502",
+        "answer_label": "8928",
         "count": 1
       },
       {
-        "answer_label": "752",
+        "answer_label": "9072π",
         "count": 1
       },
       {
-        "answer_label": "8400π",
+        "answer_label": "9472π",
         "count": 1
       },
       {
-        "answer_label": "8650",
+        "answer_label": "9548",
         "count": 1
       },
       {
-        "answer_label": "871",
+        "answer_label": "9583π",
         "count": 1
       },
       {
-        "answer_label": "8836π",
+        "answer_label": "9600π",
         "count": 1
       },
       {
-        "answer_label": "936",
+        "answer_label": "9680π",
         "count": 1
       },
       {
-        "answer_label": "988π",
+        "answer_label": "9900π",
         "count": 1
       }
     ],
@@ -400,26 +400,26 @@
       "expected_conflict": false,
       "expected_probabilities": {},
       "expected_source": "",
-      "max_observed_frequency": 0.23,
+      "max_observed_frequency": 0.2,
       "observed_counts": {
-        "cone_given_r_slant_height": 20,
-        "cylinder_given_r_h": 11,
-        "rectangular_prism_given_lwh": 23,
-        "sphere_given_r": 15,
-        "square_pyramid_given_base_side_slant_height": 16,
-        "triangular_prism_given_a_b_c_l": 15
+        "cone_given_r_h": 13,
+        "cylinder_given_r_h": 19,
+        "rectangular_prism_given_lwh": 10,
+        "sphere_given_r": 18,
+        "square_pyramid_given_base_height": 20,
+        "triangular_prism_given_b_h_l": 20
       },
       "sample_count": 100
     },
     "variant": {
       "expected_conflict": false,
       "expected_probabilities": {
-        "cone_given_r_slant_height": 0.16666666666666666,
+        "cone_given_r_h": 0.16666666666666666,
         "cylinder_given_r_h": 0.16666666666666666,
         "rectangular_prism_given_lwh": 0.16666666666666666,
         "sphere_given_r": 0.16666666666666666,
-        "square_pyramid_given_base_side_slant_height": 0.16666666666666666,
-        "triangular_prism_given_a_b_c_l": 0.16666666666666666
+        "square_pyramid_given_base_height": 0.16666666666666666,
+        "triangular_prism_given_b_h_l": 0.16666666666666666
       },
       "expected_source": "execution_trace",
       "max_observed_frequency": 1.0,
@@ -429,19 +429,19 @@
       "sample_count": 100
     }
   },
-  "task_id": "task_geometry_analytical_3d_surface_area",
+  "task_id": "task_geometry_analytical_3d_volume",
   "task_variant_distribution": {
     "expected_conflict": false,
     "expected_probabilities": {},
     "expected_source": "",
     "has_variants": true,
     "observed_counts": {
-      "cone_given_r_slant_height": 20,
-      "cylinder_given_r_h": 11,
-      "rectangular_prism_given_lwh": 23,
-      "sphere_given_r": 15,
-      "square_pyramid_given_base_side_slant_height": 16,
-      "triangular_prism_given_a_b_c_l": 15
+      "cone_given_r_h": 13,
+      "cylinder_given_r_h": 19,
+      "rectangular_prism_given_lwh": 10,
+      "sphere_given_r": 18,
+      "square_pyramid_given_base_height": 20,
+      "triangular_prism_given_b_h_l": 20
     },
     "status": "reported"
   }

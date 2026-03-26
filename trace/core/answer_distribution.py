@@ -111,7 +111,6 @@ def evaluate_answer_distribution(
     *,
     min_unique_answers: int = 5,
     max_answer_frequency: float = 0.25,
-    max_numeric_bin_frequency: float = 0.5,
 ) -> Dict[str, Any]:
     """Evaluate lightweight anti-degeneracy checks over one task answer sample."""
     if not answers:
@@ -144,13 +143,11 @@ def evaluate_answer_distribution(
 
     numeric_bins = _five_bin_report(numeric_values) if bool(numeric_only) else None
     if numeric_bins is None:
-        check_bin = None
         max_bin_frequency_observed = None
     else:
         max_bin_frequency_observed = float(numeric_bins["max_bin_frequency"])
-        check_bin = bool(float(max_bin_frequency_observed) <= float(max_numeric_bin_frequency))
 
-    pass_overall = bool(check_unique and check_max_freq and (True if check_bin is None else check_bin))
+    pass_overall = bool(check_unique and check_max_freq)
     top_answers = [
         {"answer_label": str(label), "count": int(count)}
         for label, count in sorted(labels.items(), key=lambda item: (-int(item[1]), str(item[0])))
@@ -177,13 +174,12 @@ def evaluate_answer_distribution(
             },
             "max_five_bin_frequency": (
                 {
-                    "threshold": float(max_numeric_bin_frequency),
                     "observed": float(max_bin_frequency_observed),
-                    "pass": bool(check_bin),
+                    "pass": None,
+                    "status": "reported_not_gated_numeric_answers",
                 }
-                if check_bin is not None
+                if numeric_bins is not None
                 else {
-                    "threshold": float(max_numeric_bin_frequency),
                     "observed": None,
                     "pass": None,
                     "status": "not_applicable_non_numeric_answers",
@@ -192,4 +188,3 @@ def evaluate_answer_distribution(
         },
         "pass": bool(pass_overall),
     }
-

@@ -1,0 +1,472 @@
+{
+  "answer_distribution": {
+    "answer_type_counts": {
+      "number": 100
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.03,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": 0.4,
+        "pass": null,
+        "status": "reported_not_gated_numeric_answers"
+      },
+      "min_unique_answers": {
+        "observed": 89,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": {
+      "bin_count": 5,
+      "bins": [
+        {
+          "bin_id": 0,
+          "count": 21,
+          "label": "[5, 17.42)"
+        },
+        {
+          "bin_id": 1,
+          "count": 22,
+          "label": "[17.42, 29.84)"
+        },
+        {
+          "bin_id": 2,
+          "count": 40,
+          "label": "[29.84, 42.26)"
+        },
+        {
+          "bin_id": 3,
+          "count": 12,
+          "label": "[42.26, 54.68)"
+        },
+        {
+          "bin_id": 4,
+          "count": 5,
+          "label": "[54.68, 67.1]"
+        }
+      ],
+      "max_bin_count": 40,
+      "max_bin_frequency": 0.4,
+      "range_max": 67.1,
+      "range_min": 5.0
+    },
+    "max_answer_count": 3,
+    "max_answer_frequency": 0.03,
+    "pass": true,
+    "sample_count": 100,
+    "top_answers": [
+      {
+        "answer_label": "38.2",
+        "count": 3
+      },
+      {
+        "answer_label": "17.1",
+        "count": 2
+      },
+      {
+        "answer_label": "26.2",
+        "count": 2
+      },
+      {
+        "answer_label": "27.9",
+        "count": 2
+      },
+      {
+        "answer_label": "32",
+        "count": 2
+      },
+      {
+        "answer_label": "32.2",
+        "count": 2
+      },
+      {
+        "answer_label": "34.7",
+        "count": 2
+      },
+      {
+        "answer_label": "35.4",
+        "count": 2
+      },
+      {
+        "answer_label": "39.6",
+        "count": 2
+      },
+      {
+        "answer_label": "47.8",
+        "count": 2
+      },
+      {
+        "answer_label": "10.2",
+        "count": 1
+      },
+      {
+        "answer_label": "11.3",
+        "count": 1
+      },
+      {
+        "answer_label": "12.7",
+        "count": 1
+      },
+      {
+        "answer_label": "14.2",
+        "count": 1
+      },
+      {
+        "answer_label": "14.4",
+        "count": 1
+      },
+      {
+        "answer_label": "14.8",
+        "count": 1
+      },
+      {
+        "answer_label": "15.6",
+        "count": 1
+      },
+      {
+        "answer_label": "15.8",
+        "count": 1
+      },
+      {
+        "answer_label": "16.6",
+        "count": 1
+      },
+      {
+        "answer_label": "16.9",
+        "count": 1
+      },
+      {
+        "answer_label": "17",
+        "count": 1
+      },
+      {
+        "answer_label": "18.3",
+        "count": 1
+      },
+      {
+        "answer_label": "18.4",
+        "count": 1
+      },
+      {
+        "answer_label": "19.5",
+        "count": 1
+      },
+      {
+        "answer_label": "19.6",
+        "count": 1
+      },
+      {
+        "answer_label": "19.8",
+        "count": 1
+      },
+      {
+        "answer_label": "20.2",
+        "count": 1
+      },
+      {
+        "answer_label": "20.4",
+        "count": 1
+      },
+      {
+        "answer_label": "21.1",
+        "count": 1
+      },
+      {
+        "answer_label": "22",
+        "count": 1
+      },
+      {
+        "answer_label": "22.2",
+        "count": 1
+      },
+      {
+        "answer_label": "22.5",
+        "count": 1
+      },
+      {
+        "answer_label": "23.2",
+        "count": 1
+      },
+      {
+        "answer_label": "25.7",
+        "count": 1
+      },
+      {
+        "answer_label": "26.4",
+        "count": 1
+      },
+      {
+        "answer_label": "27.1",
+        "count": 1
+      },
+      {
+        "answer_label": "27.3",
+        "count": 1
+      },
+      {
+        "answer_label": "28.4",
+        "count": 1
+      },
+      {
+        "answer_label": "28.5",
+        "count": 1
+      },
+      {
+        "answer_label": "30.1",
+        "count": 1
+      },
+      {
+        "answer_label": "30.4",
+        "count": 1
+      },
+      {
+        "answer_label": "30.6",
+        "count": 1
+      },
+      {
+        "answer_label": "30.8",
+        "count": 1
+      },
+      {
+        "answer_label": "30.9",
+        "count": 1
+      },
+      {
+        "answer_label": "31",
+        "count": 1
+      },
+      {
+        "answer_label": "31.1",
+        "count": 1
+      },
+      {
+        "answer_label": "31.3",
+        "count": 1
+      },
+      {
+        "answer_label": "32.1",
+        "count": 1
+      },
+      {
+        "answer_label": "32.5",
+        "count": 1
+      },
+      {
+        "answer_label": "32.6",
+        "count": 1
+      },
+      {
+        "answer_label": "33.4",
+        "count": 1
+      },
+      {
+        "answer_label": "33.9",
+        "count": 1
+      },
+      {
+        "answer_label": "34",
+        "count": 1
+      },
+      {
+        "answer_label": "34.2",
+        "count": 1
+      },
+      {
+        "answer_label": "35.5",
+        "count": 1
+      },
+      {
+        "answer_label": "35.6",
+        "count": 1
+      },
+      {
+        "answer_label": "36",
+        "count": 1
+      },
+      {
+        "answer_label": "36.1",
+        "count": 1
+      },
+      {
+        "answer_label": "36.2",
+        "count": 1
+      },
+      {
+        "answer_label": "37",
+        "count": 1
+      },
+      {
+        "answer_label": "37.4",
+        "count": 1
+      },
+      {
+        "answer_label": "39.3",
+        "count": 1
+      },
+      {
+        "answer_label": "40.2",
+        "count": 1
+      },
+      {
+        "answer_label": "40.7",
+        "count": 1
+      },
+      {
+        "answer_label": "41",
+        "count": 1
+      },
+      {
+        "answer_label": "41.4",
+        "count": 1
+      },
+      {
+        "answer_label": "42.5",
+        "count": 1
+      },
+      {
+        "answer_label": "45",
+        "count": 1
+      },
+      {
+        "answer_label": "45.2",
+        "count": 1
+      },
+      {
+        "answer_label": "45.3",
+        "count": 1
+      },
+      {
+        "answer_label": "45.6",
+        "count": 1
+      },
+      {
+        "answer_label": "46.7",
+        "count": 1
+      },
+      {
+        "answer_label": "47.2",
+        "count": 1
+      },
+      {
+        "answer_label": "49.7",
+        "count": 1
+      },
+      {
+        "answer_label": "5",
+        "count": 1
+      },
+      {
+        "answer_label": "50.9",
+        "count": 1
+      },
+      {
+        "answer_label": "54.3",
+        "count": 1
+      },
+      {
+        "answer_label": "59.7",
+        "count": 1
+      },
+      {
+        "answer_label": "6.5",
+        "count": 1
+      },
+      {
+        "answer_label": "60",
+        "count": 1
+      },
+      {
+        "answer_label": "60.8",
+        "count": 1
+      },
+      {
+        "answer_label": "62",
+        "count": 1
+      },
+      {
+        "answer_label": "67.1",
+        "count": 1
+      },
+      {
+        "answer_label": "7.3",
+        "count": 1
+      },
+      {
+        "answer_label": "7.4",
+        "count": 1
+      },
+      {
+        "answer_label": "9.2",
+        "count": 1
+      },
+      {
+        "answer_label": "9.4",
+        "count": 1
+      },
+      {
+        "answer_label": "9.8",
+        "count": 1
+      },
+      {
+        "answer_label": "9.9",
+        "count": 1
+      }
+    ],
+    "unique_answers": 89
+  },
+  "sample_count": 100,
+  "sampling_axes": {
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {},
+      "expected_source": "",
+      "max_observed_frequency": 0.21,
+      "observed_counts": {
+        "circle_chord_length": 17,
+        "inscribed_square_side": 16,
+        "isosceles_trapezoid_leg": 16,
+        "rectangle_diagonal_side": 19,
+        "rhombus_diagonal_side": 11,
+        "triangle_altitude_side": 21
+      },
+      "sample_count": 100
+    },
+    "variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "circle_chord_length": 0.16666666666666666,
+        "inscribed_square_side": 0.16666666666666666,
+        "isosceles_trapezoid_leg": 0.16666666666666666,
+        "rectangle_diagonal_side": 0.16666666666666666,
+        "rhombus_diagonal_side": 0.16666666666666666,
+        "triangle_altitude_side": 0.16666666666666666
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 1.0,
+      "observed_counts": {
+        "": 100
+      },
+      "sample_count": 100
+    }
+  },
+  "task_id": "task_geometry_analytical_2d_length",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {},
+    "expected_source": "",
+    "has_variants": true,
+    "observed_counts": {
+      "circle_chord_length": 17,
+      "inscribed_square_side": 16,
+      "isosceles_trapezoid_leg": 16,
+      "rectangle_diagonal_side": 19,
+      "rhombus_diagonal_side": 11,
+      "triangle_altitude_side": 21
+    },
+    "status": "reported"
+  }
+}

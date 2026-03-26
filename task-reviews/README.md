@@ -5,10 +5,16 @@
 ## Standard review workflow
 For each task, run these steps in order:
 1. Generate **100 random samples** and report task-variant distribution (skip variant distribution if the task has no variants).
-2. Generate **100 samples per task variant** and report answer-distribution checks and any discovered sampling-axis distributions.
+2. Generate **100 samples per task variant** and report answer-distribution checks plus any discovered sampling-axis distributions.
 3. Generate **25 samples per task variant** for manual review in one Excel workbook per task.
 
 When a task has no variants, distribution review uses a single 100-sample run.
+
+Hard distribution gates:
+- `unique_answers >= 5`
+- `max_answer_frequency < 25%`
+
+Numeric reviews also include a 5-bin summary (`five_bin_numeric`, `max_five_bin_frequency`) for inspection, but that bin summary is informational unless a task family defines a stricter rule.
 
 ## Review statuses
 Use `task-reviews/REVIEW_STATUS.md` to track each task as:

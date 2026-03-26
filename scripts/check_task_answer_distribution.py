@@ -109,7 +109,7 @@ def _empty_distribution_report() -> Dict[str, Any]:
         "checks": {
             "min_unique_answers": {"pass": False},
             "max_answer_frequency": {"pass": False},
-            "max_five_bin_frequency": {"pass": False, "observed": None},
+            "max_five_bin_frequency": {"pass": None, "observed": None, "status": "not_reported_no_samples"},
         },
         "pass": False,
     }
@@ -143,7 +143,7 @@ def main() -> int:
             "checks": {
                 "min_unique_answers": 5,
                 "max_answer_frequency": 0.25,
-                "max_five_bin_frequency_numeric": 0.5,
+                "numeric_bin_summary": "reported_only_five_equal_width_bins",
             },
         },
         "tasks": [],

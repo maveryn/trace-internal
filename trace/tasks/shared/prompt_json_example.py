@@ -113,3 +113,31 @@ def build_prompt_json_examples(*, evidence_value: Any, answer_type: str) -> Tupl
         json.dumps(example_answer_and_evidence, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps(example_answer_only, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
     )
+
+
+def resolve_prompt_json_examples(
+    prompt_defaults: Mapping[str, Any],
+    *,
+    evidence_value: Any,
+    answer_type: str,
+) -> Tuple[str, str]:
+    """Resolve configured prompt examples with deterministic generated fallback."""
+    json_example = prompt_defaults.get("json_example")
+    json_example_answer_only = prompt_defaults.get("json_example_answer_only")
+    if isinstance(json_example, str) and json_example.strip() and isinstance(json_example_answer_only, str) and json_example_answer_only.strip():
+        return str(json_example), str(json_example_answer_only)
+    generated_json_example, generated_json_example_answer_only = build_prompt_json_examples(
+        evidence_value=evidence_value,
+        answer_type=str(answer_type),
+    )
+    if not (isinstance(json_example, str) and json_example.strip()):
+        json_example = str(generated_json_example)
+    if not (isinstance(json_example_answer_only, str) and json_example_answer_only.strip()):
+        json_example_answer_only = str(generated_json_example_answer_only)
+    return str(json_example), str(json_example_answer_only)
+
+
+__all__ = [
+    "build_prompt_json_examples",
+    "resolve_prompt_json_examples",
+]

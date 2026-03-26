@@ -1,0 +1,19 @@
+generation:
+  task_overrides:
+    task_tile_reachability_reachable_count:
+      obstacle_fraction_min: 0.12
+      obstacle_fraction_max: 0.38
+      reachable_fraction_min: 0.20
+      reachable_fraction_max: 0.85
+
+prompt:
+  shared:
+    bundle_id: tile_reachability_v1
+    task_family_key: rectangular_tile_board
+  task_overrides:
+    task_tile_reachability_reachable_count:
+      task_key: reachable_count_query
+      answer_hint: set "answer" to the number of reachable tiles, including the start tile, as an integer
+      evidence_hint: set "evidence" to the row-major list of [row, col] coordinates for every reachable tile, including the start tile
+      json_example: '{"evidence":[[0,0],[0,1],[1,1],[2,1]],"answer":4}'
+      json_example_answer_only: '{"answer":4}'

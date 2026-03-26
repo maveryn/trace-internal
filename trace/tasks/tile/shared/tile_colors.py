@@ -28,6 +28,15 @@ def available_named_tile_colors() -> Sequence[NamedColor]:
     return tuple(_TILE_COLOR_PALETTE)
 
 
+def named_tile_color(name: str) -> Color:
+    """Return one canonical named tile color by name."""
+    needle = str(name).strip().lower()
+    for entry_name, rgb in _TILE_COLOR_PALETTE:
+        if str(entry_name).strip().lower() == needle:
+            return (int(rgb[0]), int(rgb[1]), int(rgb[2]))
+    raise KeyError(f"unknown named tile color: {name}")
+
+
 def sample_named_tile_palette(rng, *, palette_size: int, exclude_names: Iterable[str] = ()) -> List[NamedColor]:
     """Sample one deterministic named color palette."""
     excluded = {str(name).strip().lower() for name in exclude_names if str(name).strip()}
@@ -43,5 +52,6 @@ __all__ = [
     "Color",
     "NamedColor",
     "available_named_tile_colors",
+    "named_tile_color",
     "sample_named_tile_palette",
 ]

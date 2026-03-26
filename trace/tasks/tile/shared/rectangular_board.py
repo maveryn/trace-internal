@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, Mapping, Tuple
+from typing import Any, Dict, Mapping, Tuple
 
 from PIL import ImageDraw
 
@@ -219,11 +219,57 @@ def render_rectangular_tile_board(
     return bbox_map
 
 
+def build_rectangular_board_render_spec(
+    *,
+    rows: int,
+    cols: int,
+    layout: RectangularBoardLayout,
+    tile_spec: RectangularTileSpec,
+    background_meta: Mapping[str, Any],
+    post_noise_meta: Mapping[str, Any],
+) -> Dict[str, Any]:
+    """Build shared render metadata for one rectangular tile board."""
+    return {
+        "coord_space": "tile_grid",
+        "tiling_type": "rectangular_tiling",
+        "canvas_width_px": int(layout.canvas_width_px),
+        "canvas_height_px": int(layout.canvas_height_px),
+        "rows": int(rows),
+        "cols": int(cols),
+        "tile_width_px": int(layout.tile_width_px),
+        "tile_height_px": int(layout.tile_height_px),
+        "board_origin_px": [int(layout.board_origin_x_px), int(layout.board_origin_y_px)],
+        "board_size_px": [int(layout.board_width_px), int(layout.board_height_px)],
+        "coordinate_gutters_px": {
+            "left": int(layout.left_label_gutter_px),
+            "top": int(layout.top_label_gutter_px),
+        },
+        "outer_padding_px": {
+            "x": int(layout.outer_padding_x_px),
+            "y": int(layout.outer_padding_y_px),
+        },
+        "placement_offset_px": {
+            "x": int(layout.placement_offset_x_px),
+            "y": int(layout.placement_offset_y_px),
+        },
+        "label_style": {
+            "font_size_px": int(layout.label_font_size_px),
+            "stroke_width_px": int(layout.label_stroke_width_px),
+        },
+        "tile_outline_width_px": int(layout.tile_outline_width_px),
+        "tile_aspect_ratio": round(float(tile_spec.aspect_ratio), 6),
+        "tile_orientation": str(tile_spec.orientation),
+        "background_style": dict(background_meta),
+        "post_image_noise": dict(post_noise_meta),
+    }
+
+
 __all__ = [
     "Color",
     "Coord",
     "RectangularBoardLayout",
     "RectangularTileSpec",
+    "build_rectangular_board_render_spec",
     "build_rectangular_tile_bbox_map",
     "render_rectangular_tile_board",
     "resolve_rectangular_board_layout",

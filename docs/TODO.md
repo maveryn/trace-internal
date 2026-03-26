@@ -33,6 +33,7 @@
 - `task_tile_path_shortest_path`
 - `task_tile_count_color_count`
 - `task_tile_count_color_components`
+- `task_tile_reachability_reachable_count`
 - `task_geometry_measurement_angle`
 - `task_geometry_measurement_area`
 - `task_geometry_measurement_perimeter`

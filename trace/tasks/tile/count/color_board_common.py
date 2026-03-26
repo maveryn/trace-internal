@@ -12,10 +12,10 @@ from ....core.visual.noise import apply_post_image_noise
 from ...shared.bbox_projection import BBox
 from ...shared.color_format import format_named_color_with_hex, rgb_to_hex
 from ...shared.config_defaults import resolve_required_float_bounds, resolve_required_int_bounds
-from ...shared.prompt_json_example import build_prompt_json_examples
 from ..shared.rectangular_board import (
     RectangularBoardLayout,
     RectangularTileSpec,
+    build_rectangular_board_render_spec,
     render_rectangular_tile_board,
     resolve_rectangular_board_layout,
     sample_rectangular_tile_spec,
@@ -247,39 +247,14 @@ def build_palette_trace(palette: Sequence[NamedColor]) -> List[Dict[str, Any]]:
 
 def build_rectangular_color_board_render_spec(scene: RectangularColorBoardScene) -> Dict[str, Any]:
     """Build shared render metadata for one rectangular color-board scene."""
-    return {
-        "coord_space": "tile_grid",
-        "tiling_type": "rectangular_tiling",
-        "canvas_width_px": int(scene.layout.canvas_width_px),
-        "canvas_height_px": int(scene.layout.canvas_height_px),
-        "rows": int(scene.rows),
-        "cols": int(scene.cols),
-        "tile_width_px": int(scene.layout.tile_width_px),
-        "tile_height_px": int(scene.layout.tile_height_px),
-        "board_origin_px": [int(scene.layout.board_origin_x_px), int(scene.layout.board_origin_y_px)],
-        "board_size_px": [int(scene.layout.board_width_px), int(scene.layout.board_height_px)],
-        "coordinate_gutters_px": {
-            "left": int(scene.layout.left_label_gutter_px),
-            "top": int(scene.layout.top_label_gutter_px),
-        },
-        "outer_padding_px": {
-            "x": int(scene.layout.outer_padding_x_px),
-            "y": int(scene.layout.outer_padding_y_px),
-        },
-        "placement_offset_px": {
-            "x": int(scene.layout.placement_offset_x_px),
-            "y": int(scene.layout.placement_offset_y_px),
-        },
-        "label_style": {
-            "font_size_px": int(scene.layout.label_font_size_px),
-            "stroke_width_px": int(scene.layout.label_stroke_width_px),
-        },
-        "tile_outline_width_px": int(scene.layout.tile_outline_width_px),
-        "tile_aspect_ratio": round(float(scene.tile_spec.aspect_ratio), 6),
-        "tile_orientation": str(scene.tile_spec.orientation),
-        "background_style": dict(scene.background_meta),
-        "post_image_noise": dict(scene.post_noise_meta),
-    }
+    return build_rectangular_board_render_spec(
+        rows=int(scene.rows),
+        cols=int(scene.cols),
+        layout=scene.layout,
+        tile_spec=scene.tile_spec,
+        background_meta=scene.background_meta,
+        post_noise_meta=scene.post_noise_meta,
+    )
 
 
 def build_color_board_scene_entities(
@@ -308,28 +283,6 @@ def build_color_board_scene_entities(
     )
 
 
-def resolve_prompt_json_examples(
-    prompt_defaults: Mapping[str, Any],
-    *,
-    evidence_value: Any,
-    answer_type: str,
-) -> Tuple[str, str]:
-    """Resolve task-specific prompt examples with generated fallback."""
-    json_example = prompt_defaults.get("json_example")
-    json_example_answer_only = prompt_defaults.get("json_example_answer_only")
-    if isinstance(json_example, str) and json_example.strip() and isinstance(json_example_answer_only, str) and json_example_answer_only.strip():
-        return str(json_example), str(json_example_answer_only)
-    generated_json_example, generated_json_example_answer_only = build_prompt_json_examples(
-        evidence_value=evidence_value,
-        answer_type=str(answer_type),
-    )
-    if not (isinstance(json_example, str) and json_example.strip()):
-        json_example = str(generated_json_example)
-    if not (isinstance(json_example_answer_only, str) and json_example_answer_only.strip()):
-        json_example_answer_only = str(generated_json_example_answer_only)
-    return str(json_example), str(json_example_answer_only)
-
-
 __all__ = [
     "Coord",
     "RectangularColorBoardScene",
@@ -338,6 +291,5 @@ __all__ = [
     "build_palette_trace",
     "build_rectangular_color_board_render_spec",
     "build_rectangular_color_board_scene",
-    "resolve_prompt_json_examples",
     "sample_color_board",
 ]

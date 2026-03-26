@@ -63,6 +63,7 @@ Bundles:
 6. `prompts/geometry/analytical_3d/geometry_analytical_surface_area_v1.json`
 7. `prompts/tile/count/tile_count_v1.json`
 8. `prompts/tile/path/tile_path_v1.json`
+9. `prompts/tile/reachability/tile_reachability_v1.json`
 
 Tasks:
 1. `task_geometry_measurement_angle` (bundle override: `geometry_angle_measure_v1`)
@@ -77,3 +78,4 @@ Tasks:
 10. `task_tile_count_color_count`
 11. `task_tile_count_color_components`
 12. `task_tile_path_shortest_path`
+13. `task_tile_reachability_reachable_count`

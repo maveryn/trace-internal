@@ -1,4 +1,4 @@
-"""Background-style defaults for the tile/path task group."""
+"""Background-style defaults for the tile/reachability task group."""
 
 from __future__ import annotations
 
@@ -8,8 +8,8 @@ from ..shared.visual_defaults import load_tile_background_defaults
 
 
 def _load_task_group_background_defaults() -> Dict[str, Any]:
-    """Load tile/path background defaults from task-group config."""
-    return load_tile_background_defaults(task_group="path")
+    """Load tile/reachability background defaults from merged task-group config."""
+    return load_tile_background_defaults(task_group="reachability")
 
 
 POST_IMAGE_BACKGROUND_DEFAULTS: Dict[str, Any] = _load_task_group_background_defaults()

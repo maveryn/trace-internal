@@ -65,6 +65,7 @@ Use this checklist during implementation and refactor reviews.
 49. When prompts query a named color, include its canonical hex code in square brackets (`name [#RRGGBB]`) and route that formatting through a shared helper rather than task-local string assembly.
 50. Tile-domain boards should not sit on graph-paper or external grid backgrounds unless the task explicitly depends on that second coordinate scaffold; keep the board as the only grid-like structure in tile scenes.
 51. When a second tile objective needs 4-neighbor grid helpers outside shortest-path logic, move those helpers into a grid-family shared module (for example `grid_graph.py`) instead of reusing or extending a path-named module.
+52. When multiple tile task groups use the same background/noise fallback plumbing, promote those loaders into one tile-shared visual-defaults module instead of cloning near-identical task-group wrappers.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

@@ -51,7 +51,7 @@ Promote helpers when a second consumer appears.
 12. `trace/tasks/shared/color_format.py`
    - Canonical prompt-facing color text helpers (`#RRGGBB` formatting and `name [#RRGGBB]` labels) for any task that queries or names colors in the prompt.
 13. `trace/tasks/shared/prompt_json_example.py`
-   - Canonical deterministic JSON-example builder for prompt slots (`answer_only` + `answer_and_evidence`) that preserves active evidence schema shape/cardinality.
+   - Canonical deterministic JSON-example builder/resolver for prompt slots (`answer_only` + `answer_and_evidence`) that preserves active evidence schema shape/cardinality.
    - For point-based evidence payloads, it emits small canonical non-degenerate layouts so prompt examples remain visually/semantically valid.
 14. `trace/tasks/shared/deterministic_sampling.py`
    - Canonical deterministic index selection for target-support cycling.
@@ -81,8 +81,9 @@ Promote helpers when a second consumer appears.
    - Use `required_graph_cells_for_polygon_side_length(...)` when a task selects a polygon-side target before layout so the chosen target also carries forward the minimum graph span it needs.
    - Use `feasible_quadrilateral_area_values(...)`, `required_graph_cells_for_quadrilateral_area(...)`, and `sample_quadrilateral_instance_with_area_on_graph_paper(...)` when a task needs target-first 4-gon area sampling without violating the shared integer-perimeter polygon contract.
    - Procedural polygon templates reject adjacent collinear vertices so sampled `n`-gons do not collapse into visually degenerate lower-side polygons.
-3. Tile: `trace/tasks/tile/shared/grid_graph.py`, `maze_sampling.py`, `grid_layout.py`, `maze_scene.py`, `maze_rendering.py`, `tile_scene.py`, `tile_evidence.py`, `rectangular_board.py`, `tile_colors.py`, `trace/tasks/tile/count/color_board_common.py`
+3. Tile: `trace/tasks/tile/shared/grid_graph.py`, `visual_defaults.py`, `maze_sampling.py`, `grid_layout.py`, `maze_scene.py`, `maze_rendering.py`, `tile_scene.py`, `tile_evidence.py`, `rectangular_board.py`, `tile_colors.py`, `trace/tasks/tile/count/color_board_common.py`
    - `grid_graph.py` is the canonical 4-neighbor rectangular-tile graph helper layer (stable `cell_id`, open-grid adjacency, shortest-path adapters, and active-cell connected-components helpers).
+   - `visual_defaults.py` is the canonical tile-domain background/noise loader layer shared across tile task groups.
    - `tile_scene.py` is the canonical dense-board `tile_cell` entity builder for non-maze tile tasks.
    - `tile_evidence.py` is the canonical coordinate-grounded tile evidence helper layer (`grid_point_set` / `grid_point_path` plus pixel projections).
    - `rectangular_board.py` is the canonical dynamic rectangular-board layout/rendering helper for single-board tile tasks.

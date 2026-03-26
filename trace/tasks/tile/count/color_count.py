@@ -16,6 +16,7 @@ from ...shared.config_defaults import (
     split_generation_rendering_prompt_defaults,
 )
 from ...shared.output_metadata import default_task_versions
+from ...shared.prompt_json_example import resolve_prompt_json_examples
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
     build_prompt_trace_artifacts,
@@ -29,7 +30,6 @@ from .color_board_common import (
     build_palette_trace,
     build_rectangular_color_board_render_spec,
     build_rectangular_color_board_scene,
-    resolve_prompt_json_examples,
 )
 from .noise_defaults import POST_IMAGE_NOISE_DEFAULTS
 

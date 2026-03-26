@@ -19,6 +19,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
 3. Canonical tile coordinates are zero-based `(row, col)` with top-left origin.
 4. New tile tasks should prefer coordinate-grounded evidence (`grid_point_set`, `grid_point_path`) and keep pixel overlays as derived trace projections.
 5. See `TILE_TASK_SETUP.md` for the concrete board-geometry, metadata, and evidence contract.
+6. Reachability-style tile tasks should treat black obstacle tiles and marked start tiles as semantic board roles, not as generic query colors.
 
 ## Planned geometry measurement variants
 1. **Angle measurement**

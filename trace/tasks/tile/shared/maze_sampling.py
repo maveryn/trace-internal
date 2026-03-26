@@ -16,6 +16,7 @@ def sample_unique_shortest_path_maze(
     rows: int,
     cols: int,
     min_shortest_len: int,
+    target_shortest_len: int | None = None,
     obstacle_prob_min: float,
     obstacle_prob_max: float,
     max_attempts: int,
@@ -38,6 +39,8 @@ def sample_unique_shortest_path_maze(
         dist_start, count_start = bfs_dist_count(rows, cols, blocked, start)
         shortest = dist_start[goal[0]][goal[1]]
         if shortest < int(min_shortest_len):
+            continue
+        if target_shortest_len is not None and int(shortest) != int(target_shortest_len):
             continue
         if count_start[goal[0]][goal[1]] != 1:
             continue

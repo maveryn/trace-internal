@@ -32,9 +32,9 @@ class RectangularColorBoardTaskDefaults:
     """Stable defaults shared by rectangular color-board count tasks."""
 
     rows_min: int = 3
-    rows_max: int = 8
+    rows_max: int = 7
     cols_min: int = 3
-    cols_max: int = 8
+    cols_max: int = 7
     palette_size_min: int = 3
     palette_size_max: int = 6
     short_side_px_min: int = 32

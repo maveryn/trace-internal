@@ -11,7 +11,12 @@ from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.bbox_projection import pixel_anchor_map_from_bboxes
 from ...shared.color_format import format_named_color_with_hex, rgb_to_hex
-from ...shared.config_defaults import required_group_defaults, split_generation_rendering_prompt_defaults
+from ...shared.config_defaults import (
+    group_default,
+    required_group_defaults,
+    resolve_required_int_bounds,
+    split_generation_rendering_prompt_defaults,
+)
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_json_example import resolve_prompt_json_examples
 from ...shared.prompt_variants import (
@@ -50,38 +55,121 @@ class TileColorComponentsTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         task_rng = spawn_rng(instance_seed, "task")
-        scene = build_rectangular_color_board_scene(
-            instance_seed,
-            task_rng=task_rng,
-            params=params,
-            generation_defaults=_GEN_DEFAULTS,
-            rendering_defaults=_RENDER_DEFAULTS,
-            background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,
-            noise_defaults=POST_IMAGE_NOISE_DEFAULTS,
-            defaults=_DEFAULTS,
+        _rows_min, rows_max = resolve_required_int_bounds(
+            params,
+            _GEN_DEFAULTS,
+            min_key="rows_min",
+            max_key="rows_max",
+            fallback_min=int(_DEFAULTS.rows_min),
+            fallback_max=int(_DEFAULTS.rows_max),
+            context=f"generation defaults for {self.task_id}",
         )
+        _cols_min, cols_max = resolve_required_int_bounds(
+            params,
+            _GEN_DEFAULTS,
+            min_key="cols_min",
+            max_key="cols_max",
+            fallback_min=int(_DEFAULTS.cols_min),
+            fallback_max=int(_DEFAULTS.cols_max),
+            context=f"generation defaults for {self.task_id}",
+        )
+        default_target_component_count_max = max(int(rows_max), int(cols_max))
+        target_component_count_min = int(
+            params.get(
+                "target_component_count_min",
+                group_default(_GEN_DEFAULTS, "target_component_count_min", 1),
+            )
+        )
+        target_component_count_max = int(
+            params.get(
+                "target_component_count_max",
+                group_default(
+                    _GEN_DEFAULTS,
+                    "target_component_count_max",
+                    int(default_target_component_count_max),
+                ),
+            )
+        )
+        if int(target_component_count_min) > int(target_component_count_max):
+            raise ValueError("target_component_count_min must be <= target_component_count_max")
 
-        query_color_name, query_color_rgb = task_rng.choice(list(scene.palette))
+        target_component_count = int(
+            task_rng.randint(int(target_component_count_min), int(target_component_count_max))
+        )
+        target_range_size = max(1, int(target_component_count_max) - int(target_component_count_min) + 1)
+
+        selected_option: Dict[str, Any] | None = None
+        available_component_answers: List[int] = []
+        counts_by_color: Dict[str, int] = {}
+        scene = None
+        for _ in range(int(max_attempts) * int(target_range_size)):
+            scene = build_rectangular_color_board_scene(
+                instance_seed,
+                task_rng=task_rng,
+                params=params,
+                generation_defaults=_GEN_DEFAULTS,
+                rendering_defaults=_RENDER_DEFAULTS,
+                background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,
+                noise_defaults=POST_IMAGE_NOISE_DEFAULTS,
+                defaults=_DEFAULTS,
+            )
+
+            component_options_by_answer: Dict[int, List[Dict[str, Any]]] = {}
+            counts_by_color = {}
+            for palette_color_name, palette_color_rgb in scene.palette:
+                matching_coords = sort_coords_row_major(
+                    [
+                        (int(row), int(col))
+                        for (row, col), (name, _rgb) in scene.board_colors.items()
+                        if str(name) == str(palette_color_name)
+                    ]
+                )
+                if not matching_coords:
+                    raise RuntimeError("sampled query color must appear at least once on the board")
+                component_coords = [
+                    sort_coords_row_major(component)
+                    for component in connected_components_for_active_coords(matching_coords)
+                ]
+                component_options_by_answer.setdefault(int(len(component_coords)), []).append(
+                    {
+                        "query_color_name": str(palette_color_name),
+                        "query_color_rgb": [int(palette_color_rgb[0]), int(palette_color_rgb[1]), int(palette_color_rgb[2])],
+                        "matching_coords": [[int(row), int(col)] for row, col in matching_coords],
+                        "component_coords": [
+                            [[int(row), int(col)] for row, col in component]
+                            for component in component_coords
+                        ],
+                    }
+                )
+                counts_by_color[str(palette_color_name)] = int(len(matching_coords))
+
+            available_component_answers = sorted(int(answer) for answer in component_options_by_answer.keys())
+            if int(target_component_count) not in component_options_by_answer:
+                continue
+            selected_option = task_rng.choice(component_options_by_answer[int(target_component_count)])
+            break
+
+        if scene is None or selected_option is None:
+            raise RuntimeError("failed to sample rectangular tile board for target component count")
+
+        query_color_name = str(selected_option["query_color_name"])
+        query_color_rgb = (
+            int(selected_option["query_color_rgb"][0]),
+            int(selected_option["query_color_rgb"][1]),
+            int(selected_option["query_color_rgb"][2]),
+        )
+        matching_coords = [tuple(int(value) for value in coord) for coord in selected_option["matching_coords"]]
+        component_coords = [
+            [tuple(int(value) for value in coord) for coord in component]
+            for component in selected_option["component_coords"]
+        ]
         query_color_hex = rgb_to_hex(query_color_rgb)
         query_color_label = format_named_color_with_hex(query_color_name, query_color_rgb)
-        matching_coords = sort_coords_row_major(
-            [
-                (int(row), int(col))
-                for (row, col), (name, _rgb) in scene.board_colors.items()
-                if str(name) == str(query_color_name)
-            ]
-        )
-        if not matching_coords:
-            raise RuntimeError("sampled query color must appear at least once on the board")
 
         evidence_artifacts = coordinate_set_evidence_artifacts(
             coords=matching_coords,
             bbox_map=scene.bbox_map,
         )
-        component_coords = [
-            sort_coords_row_major(component)
-            for component in connected_components_for_active_coords(matching_coords)
-        ]
         component_ids = [
             [cell_id((int(row), int(col))) for row, col in component]
             for component in component_coords
@@ -91,7 +179,7 @@ class TileColorComponentsTask:
             for component_index, component in enumerate(component_coords)
             for row, col in component
         }
-        answer_value = int(len(component_coords))
+        answer_value = int(target_component_count)
 
         all_prompt_defaults = dict(_PROMPT_DEFAULTS if isinstance(_PROMPT_DEFAULTS, dict) else {})
         prompt_defaults = required_group_defaults(
@@ -146,10 +234,6 @@ class TileColorComponentsTask:
                 for coord in component_index_by_coord
             },
         )
-        counts_by_color = {
-            str(name): sum(1 for cell_name, _rgb in scene.board_colors.values() if str(cell_name) == str(name))
-            for name, _rgb in scene.palette
-        }
 
         trace_payload = {
             "scene_ir": {
@@ -205,6 +289,13 @@ class TileColorComponentsTask:
                 "query_color_rgb": [int(query_color_rgb[0]), int(query_color_rgb[1]), int(query_color_rgb[2])],
                 "query_color_hex": str(query_color_hex),
                 "query_color_label": str(query_color_label),
+                "query_selection_strategy": "uniform_over_target_component_range_with_rejection",
+                "target_component_count": int(target_component_count),
+                "target_component_count_range": [
+                    int(target_component_count_min),
+                    int(target_component_count_max),
+                ],
+                "available_component_answers": [int(answer) for answer in available_component_answers],
                 "counts_by_color_name": dict(counts_by_color),
                 "matching_coords": [[int(row), int(col)] for row, col in matching_coords],
                 "matching_ids": list(evidence_artifacts["witness_symbolic"]["ids"]),

@@ -18,7 +18,9 @@
    - exactly one start tile,
    - obstacle tiles are blocked and use the reserved black role,
    - reachable count is computed symbolically with 4-neighbor BFS over non-obstacle cells,
-   - sampled boards are rejected unless reachable fraction is within configured bounds.
+   - sampled boards are rejected unless reachable fraction is within configured bounds,
+   - sampled boards are rejected when reachable count exceeds configured `answer_max`,
+   - the start-tile color is sampled from the shared 10-color named palette.
 
 ## 3) Prompt contract
 1. Bundle: `tile_reachability_v1`
@@ -45,6 +47,8 @@
    - `bbox_set`
 4. `scene_ir.relations.adjacency_open` stores the open-cell 4-neighbor relation keyed by stable tile ids.
 5. `execution_trace` records:
+   - configured `answer_max`,
+   - start color name/rgb/label,
    - start coordinate/id,
    - blocked coordinates/ids,
    - reachable coordinates/ids,
@@ -53,7 +57,7 @@
 ## 5) Visual policy
 1. Background and post-image noise use the merged tile-domain visual defaults from `configs/domains/tile/base.yaml`.
 2. Tile-domain defaults for this task use non-grid backgrounds only; graph-paper or external grid backgrounds are not allowed.
-3. Obstacles are rendered as black tiles, the start tile uses the canonical purple swatch, and other open tiles use a neutral light fill.
+3. Obstacles are rendered as black tiles, the start tile uses one sampled color from the shared 10-color named palette, and other open tiles use a neutral light fill.
 4. Row labels are rendered on the left gutter and column labels are rendered on the top gutter.
 5. Canvas size is derived from the sampled board geometry rather than fixed globally.
 

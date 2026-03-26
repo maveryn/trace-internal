@@ -1,9 +1,9 @@
 generation:
   shared:
     rows_min: 3
-    rows_max: 8
+    rows_max: 7
     cols_min: 3
-    cols_max: 8
+    cols_max: 7
 
 rendering:
   shared:

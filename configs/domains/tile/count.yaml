@@ -4,8 +4,9 @@ generation:
       palette_size_min: 3
       palette_size_max: 6
     task_tile_count_color_components:
-      palette_size_min: 3
-      palette_size_max: 6
+      palette_size_min: 2
+      palette_size_max: 3
+      target_component_count_min: 1
 
 prompt:
   shared:

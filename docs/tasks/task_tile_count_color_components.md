@@ -17,7 +17,11 @@
 5. Generation guarantees:
    - sampled named-color palette size is in the configured range,
    - every sampled palette color appears at least once on the board,
-   - the queried color therefore has at least one matching tile.
+   - the queried color therefore has at least one matching tile,
+   - each instance samples a target component-count answer uniformly from the configured range,
+   - by default, the target range is `[1, max(rows_max, cols_max)]` for the resolved board-bounds config,
+   - boards are rejected unless at least one sampled palette color realizes that target answer,
+   - the queried color is then sampled uniformly from the colors that realize the target answer on the accepted board.
 6. Connectivity rule:
    - component counting uses 4-neighbor adjacency only (`up`, `down`, `left`, `right`),
    - diagonal touching does not merge components.
@@ -50,6 +54,11 @@
    - row-major tile coordinates,
    - matching stable tile ids.
 5. `scene_ir.entities` annotate each matched tile with `query_component_index`.
+6. `execution_trace` also records:
+   - `query_selection_strategy`,
+   - `target_component_count`,
+   - `target_component_count_range`,
+   - `available_component_answers`.
 
 ## 5) Visual policy
 1. Background and post-image noise use the merged tile-domain visual defaults from `configs/domains/tile/base.yaml`.

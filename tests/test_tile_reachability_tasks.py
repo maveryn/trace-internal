@@ -52,9 +52,11 @@ def test_tile_reachable_count_outputs_expected_contract() -> None:
     assert evidence_coords == sorted(evidence_coords, key=lambda item: (int(item[0]), int(item[1])))
     assert evidence_coords == execution["reachable_coords"]
     assert int(out.answer_gt.value) == len(evidence_coords)
+    assert int(out.answer_gt.value) <= 20
+    assert int(execution["answer_max"]) == 20
     assert execution["start_coord"] in evidence_coords
     assert str(execution["obstacle_color_label"]).endswith("[#000000]")
-    assert "purple [#963ACA]" in str(out.prompt)
+    assert str(execution["start_color_label"]) in str(out.prompt)
 
     blocked_coords = {tuple(coord) for coord in execution["blocked_coords"]}
     assert tuple(execution["start_coord"]) not in blocked_coords
@@ -64,7 +66,9 @@ def test_tile_reachable_count_outputs_expected_contract() -> None:
         if bool(entity["attrs"]["is_reachable"])
     ]
     assert len(reachable_entities) == len(evidence_coords)
-    assert any(bool(entity["attrs"]["is_start"]) for entity in reachable_entities)
+    start_entities = [entity for entity in reachable_entities if bool(entity["attrs"]["is_start"])]
+    assert len(start_entities) == 1
+    assert start_entities[0]["attrs"]["fill_rgb"] == execution["start_color_rgb"]
 
 
 def test_tile_reachable_count_is_deterministic() -> None:
@@ -86,6 +90,10 @@ def test_tile_reachable_count_is_deterministic() -> None:
     assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
     assert out_a.trace_payload["witness_symbolic"] == out_b.trace_payload["witness_symbolic"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
+    assert (
+        out_a.trace_payload["execution_trace"]["start_color_label"]
+        == out_b.trace_payload["execution_trace"]["start_color_label"]
+    )
     assert out_a.prompt == out_b.prompt
     assert out_a.image.size == out_b.image.size
     assert out_a.image.tobytes() == out_b.image.tobytes()

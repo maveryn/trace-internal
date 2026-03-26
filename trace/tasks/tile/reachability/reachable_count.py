@@ -17,6 +17,7 @@ from ...registry import register_task
 from ...shared.bbox_projection import pixel_anchor_map_from_bboxes
 from ...shared.color_format import format_named_color_with_hex
 from ...shared.config_defaults import (
+    group_default,
     required_group_defaults,
     resolve_required_float_bounds,
     resolve_required_int_bounds,
@@ -41,7 +42,7 @@ from ..shared.rectangular_board import (
     resolve_rectangular_board_layout,
     sample_rectangular_tile_spec,
 )
-from ..shared.tile_colors import named_tile_color
+from ..shared.tile_colors import available_named_tile_colors
 from ..shared.tile_evidence import coordinate_set_evidence_artifacts, sort_coords_row_major
 from ..shared.tile_scene import build_tile_cell_entities
 from .background_defaults import POST_IMAGE_BACKGROUND_DEFAULTS
@@ -52,7 +53,6 @@ Coord = Tuple[int, int]
 
 _OBSTACLE_RGB = (0, 0, 0)
 _OPEN_RGB = (250, 250, 250)
-_START_RGB = named_tile_color("purple")
 
 
 @dataclass(frozen=True)
@@ -60,9 +60,9 @@ class _TaskDefaults:
     """Stable defaults for the rectangular tile reachability task."""
 
     rows_min: int = 3
-    rows_max: int = 8
+    rows_max: int = 7
     cols_min: int = 3
-    cols_max: int = 8
+    cols_max: int = 7
     short_side_px_min: int = 32
     short_side_px_max: int = 48
     aspect_ratio_min: float = 1.0
@@ -75,6 +75,7 @@ class _TaskDefaults:
     obstacle_fraction_max: float = 0.38
     reachable_fraction_min: float = 0.20
     reachable_fraction_max: float = 0.85
+    answer_max: int = 20
 
 
 _DEFAULTS = _TaskDefaults()
@@ -94,9 +95,10 @@ def _sample_reachability_scene(
     obstacle_fraction_max: float,
     reachable_fraction_min: float,
     reachable_fraction_max: float,
+    answer_max: int,
     max_attempts: int,
 ) -> Tuple[List[List[bool]], Coord, List[Coord], float, float]:
-    """Sample one blocked board whose reachable fraction stays within bounds."""
+    """Sample one blocked board whose reachable set stays within configured bounds."""
     all_coords = [(int(row), int(col)) for row in range(int(rows)) for col in range(int(cols))]
     board_cell_count = max(1, int(rows) * int(cols))
     for _ in range(int(max_attempts)):
@@ -119,6 +121,8 @@ def _sample_reachability_scene(
                 if int(dist_map[row][col]) >= 0
             ]
         )
+        if len(reachable_coords) > int(answer_max):
+            continue
         reachable_fraction = float(len(reachable_coords)) / float(board_cell_count)
         if reachable_fraction < float(reachable_fraction_min) or reachable_fraction > float(reachable_fraction_max):
             continue
@@ -174,6 +178,14 @@ class TileReachableCountTask:
             fallback_max=float(_DEFAULTS.reachable_fraction_max),
             context=f"generation defaults for {self.task_id}",
         )
+        answer_max = int(
+            params.get(
+                "answer_max",
+                group_default(_GEN_DEFAULTS, "answer_max", int(_DEFAULTS.answer_max)),
+            )
+        )
+        if int(answer_max) <= 0:
+            raise ValueError(f"answer_max must be > 0 for {self.task_id}")
         short_side_px_min, short_side_px_max = resolve_required_int_bounds(
             params,
             _RENDER_DEFAULTS,
@@ -214,6 +226,7 @@ class TileReachableCountTask:
         task_rng = spawn_rng(instance_seed, "task")
         rows = int(task_rng.randint(int(rows_min), int(rows_max)))
         cols = int(task_rng.randint(int(cols_min), int(cols_max)))
+        start_color_name, start_color_rgb = task_rng.choice(list(available_named_tile_colors()))
         blocked, start, reachable_coords, realized_obstacle_fraction, reachable_fraction = _sample_reachability_scene(
             task_rng,
             rows=int(rows),
@@ -222,6 +235,7 @@ class TileReachableCountTask:
             obstacle_fraction_max=float(obstacle_fraction_max),
             reachable_fraction_min=float(reachable_fraction_min),
             reachable_fraction_max=float(reachable_fraction_max),
+            answer_max=int(answer_max),
             max_attempts=int(max_attempts),
         )
         tile_spec = sample_rectangular_tile_spec(
@@ -254,7 +268,7 @@ class TileReachableCountTask:
         draw = ImageDraw.Draw(base_image)
         fill_colors_by_coord = {
             (int(row), int(col)): (
-                tuple(int(value) for value in _START_RGB)
+                tuple(int(value) for value in start_color_rgb)
                 if (int(row), int(col)) == (int(start[0]), int(start[1]))
                 else (_OBSTACLE_RGB if bool(blocked[row][col]) else _OPEN_RGB)
             )
@@ -297,7 +311,7 @@ class TileReachableCountTask:
             context=f"prompt defaults for {self.task_id}",
         )
         obstacle_color_label = format_named_color_with_hex("black", _OBSTACLE_RGB)
-        start_color_label = format_named_color_with_hex("purple", _START_RGB)
+        start_color_label = format_named_color_with_hex(str(start_color_name), start_color_rgb)
         json_example, json_example_answer_only = resolve_prompt_json_examples(
             prompt_defaults_all,
             evidence_value=[[0, 0], [0, 1], [1, 1], [2, 1]],
@@ -403,7 +417,10 @@ class TileReachableCountTask:
                 "task_variant": "reachable_count",
                 "rows": int(rows),
                 "cols": int(cols),
+                "answer_max": int(answer_max),
                 "obstacle_color_label": str(obstacle_color_label),
+                "start_color_name": str(start_color_name),
+                "start_color_rgb": [int(value) for value in start_color_rgb],
                 "start_color_label": str(start_color_label),
                 "start_coord": [int(start[0]), int(start[1])],
                 "start_id": str(start_id),

@@ -145,6 +145,10 @@ def test_tile_color_components_outputs_expected_contract() -> None:
     components = execution["components"]
     assert int(out.answer_gt.value) == len(components)
     assert int(out.answer_gt.value) >= 1
+    assert execution["query_selection_strategy"] == "uniform_over_target_component_range_with_rejection"
+    assert int(execution["target_component_count"]) == int(out.answer_gt.value)
+    assert execution["target_component_count_range"] == [1, 5]
+    assert int(out.answer_gt.value) in [int(value) for value in execution["available_component_answers"]]
     flattened = [coord for component in components for coord in component["coords"]]
     assert sorted(flattened) == sorted(evidence_coords)
     assert execution["component_sizes"] == [len(component["coords"]) for component in components]

@@ -60,31 +60,37 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Query variants: `acute_angle`, `right_angle`, `obtuse_angle`.
    - Answer type: integer count.
    - Evidence: sorted `label_set` of the matching angle labels.
-6. **Analytical area (`task_geometry_analytical_2d_area`)**
+6. **Counting triangle (`task_geometry_counting_triangle`)**
+   - One non-graph-paper image with 5–8 labeled triangles.
+   - Query variants: `equilateral_triangle`, `isosceles_triangle`, `scalene_triangle`, `right_triangle`, `acute_triangle`, `obtuse_triangle`.
+   - Answer type: integer count.
+   - Evidence: sorted `label_set` of the matching triangle labels.
+   - Overlap wording: the isosceles query is phrased as `isosceles triangles but not equilateral triangles` so the task does not rely on competing textbook conventions.
+7. **Analytical area (`task_geometry_analytical_2d_area`)**
    - One annotated shape per image: rectangle, triangle, parallelogram, trapezoid, rhombus, circle, ellipse.
    - One explicit + one derived variant per shape.
    - Ask for area (`integer` for polygonal shapes, `kπ` for circle/ellipse).
    - Evidence: structured `measurement_ref_map` (`annotation -> value`) for all quantities used in the area computation.
-7. **Analytical length (`task_geometry_analytical_2d_length`)**
+8. **Analytical length (`task_geometry_analytical_2d_length`)**
    - One annotated analytical scene per image, including auxiliary constructions or coupled shapes.
    - Derived-only variants: triangle altitude side, rectangle diagonal side, rhombus diagonal side, isosceles trapezoid leg, inscribed square side, circle chord length.
    - Ask for a target segment length rounded to one decimal place.
    - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the givens used in the derivation.
-8. **Analytical perimeter (`task_geometry_analytical_2d_perimeter`)**
+9. **Analytical perimeter (`task_geometry_analytical_2d_perimeter`)**
    - One annotated analytical scene per image, including auxiliary constructions or coupled shapes.
    - Derived-only variants: right triangle from leg+hypotenuse, rectangle from side+diagonal, rhombus from diagonals, isosceles trapezoid from bases+height, inscribed square from circle diameter.
    - Ask for the perimeter rounded to one decimal place.
    - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the givens used in the derivation.
-9. **Analytical composite area (`task_geometry_analytical_2d_composite_area`)**
+10. **Analytical composite area (`task_geometry_analytical_2d_composite_area`)**
    - One annotated analytical scene per image with one shaded target region; auxiliary cuts/unions and coupled polygons are allowed.
    - Derived-only variants: inner-rectangle cutout, triangle cutout, rectangle+triangle union, L-shape cutout, step-rectangle union.
    - Ask for the shaded/composite area as an integer number of square units.
    - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the givens used in the derivation.
-10. **Analytical 3D volume (`task_geometry_analytical_3d_volume`)**
+11. **Analytical 3D volume (`task_geometry_analytical_3d_volume`)**
    - One annotated 3D solid per image: rectangular prism, triangular prism, square pyramid, cylinder, cone, sphere.
    - Ask for volume (`integer` for polyhedra, `kπ` for cylinder/cone/sphere).
    - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the required measurement labels.
-11. **Analytical 3D surface area (`task_geometry_analytical_3d_surface_area`)**
+12. **Analytical 3D surface area (`task_geometry_analytical_3d_surface_area`)**
    - One annotated 3D solid per image: rectangular prism, triangular prism, square pyramid, cylinder, cone, sphere.
    - Ask for total surface area (`integer` for polyhedra, `kπ` for cylinder/cone/sphere).
    - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the required measurement labels.

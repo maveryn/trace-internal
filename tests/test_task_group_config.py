@@ -468,6 +468,7 @@ def test_geometry_counting_defaults_loaded() -> None:
 
     generation_overrides = cfg["generation"]["task_overrides"]
     assert "task_geometry_counting_angle" in generation_overrides
+    assert "task_geometry_counting_triangle" in generation_overrides
 
     render_shared = cfg["rendering"]["shared"]
     assert int(render_shared["canvas_size_min"]) > 0
@@ -503,6 +504,37 @@ def test_geometry_counting_defaults_loaded() -> None:
     assert str(angle_prompt["answer_hint"]).strip()
     assert str(angle_prompt["json_example"]).strip()
     assert str(angle_prompt["json_example_answer_only"]).strip()
+
+    triangle_generation, triangle_rendering, triangle_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_counting_triangle",
+    )
+    assert float(triangle_generation["min_side_units"]) < float(triangle_generation["max_side_units"])
+    assert float(triangle_generation["right_angle_margin_degrees"]) > 0.0
+    assert float(triangle_generation["min_side_gap_units"]) > 0.0
+    assert sorted(triangle_generation["variant_weights"].keys()) == [
+        "acute_triangle",
+        "equilateral_triangle",
+        "isosceles_triangle",
+        "obtuse_triangle",
+        "right_triangle",
+        "scalene_triangle",
+    ]
+    assert bool(triangle_generation["balanced_variant_sampling"]) is True
+    assert sorted(triangle_generation["object_count_weights"].keys()) == ["5", "6", "7", "8"]
+    assert int(triangle_rendering["graph_cells_min"]) < int(triangle_rendering["graph_cells_max"])
+    assert int(triangle_rendering["object_label_offset_px"]) > 0
+    assert str(triangle_prompt["object_description"]).strip()
+    assert str(triangle_prompt["question_text_equilateral_triangle"]).strip()
+    assert str(triangle_prompt["question_text_isosceles_triangle"]).strip()
+    assert str(triangle_prompt["question_text_scalene_triangle"]).strip()
+    assert str(triangle_prompt["question_text_right_triangle"]).strip()
+    assert str(triangle_prompt["question_text_acute_triangle"]).strip()
+    assert str(triangle_prompt["question_text_obtuse_triangle"]).strip()
+    assert str(triangle_prompt["evidence_hint"]).strip()
+    assert str(triangle_prompt["answer_hint"]).strip()
+    assert str(triangle_prompt["json_example"]).strip()
+    assert str(triangle_prompt["json_example_answer_only"]).strip()
 
 
 def test_geometry_analytical_3d_defaults_loaded() -> None:

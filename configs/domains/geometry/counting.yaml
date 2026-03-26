@@ -23,6 +23,28 @@ generation:
         "8": 1.0
         "9": 1.0
         "10": 1.0
+    task_geometry_counting_triangle:
+      object_count_min: 5
+      object_count_max: 8
+      min_side_units: 3.0
+      max_side_units: 5.6
+      right_angle_margin_degrees: 8.0
+      max_acute_angle_degrees: 80.0
+      min_obtuse_angle_degrees: 102.0
+      min_side_gap_units: 0.8
+      variant_weights:
+        acute_triangle: 1.0
+        equilateral_triangle: 1.0
+        isosceles_triangle: 1.0
+        obtuse_triangle: 1.0
+        right_triangle: 1.0
+        scalene_triangle: 1.0
+      balanced_variant_sampling: true
+      object_count_weights:
+        "5": 1.0
+        "6": 1.0
+        "7": 1.0
+        "8": 1.0
 
 rendering:
   shared:
@@ -37,6 +59,11 @@ rendering:
     label_stroke_width: 1
     label_stroke_width_min: 1
     label_stroke_width_max: 2
+  task_overrides:
+    task_geometry_counting_triangle:
+      graph_cells_min: 24
+      graph_cells_max: 32
+      object_label_offset_px: 16
 
 visual:
   background:
@@ -72,3 +99,15 @@ prompt:
       answer_hint: set "answer" to the count as an integer
       json_example: '{"evidence":["B","D"],"answer":2}'
       json_example_answer_only: '{"answer":2}'
+    task_geometry_counting_triangle:
+      object_description: several labeled triangles
+      question_text_equilateral_triangle: How many labeled triangles are equilateral triangles?
+      question_text_isosceles_triangle: How many labeled triangles are isosceles triangles but not equilateral triangles?
+      question_text_scalene_triangle: How many labeled triangles are scalene triangles?
+      question_text_right_triangle: How many labeled triangles are right triangles?
+      question_text_acute_triangle: How many labeled triangles are acute triangles?
+      question_text_obtuse_triangle: How many labeled triangles are obtuse triangles?
+      evidence_hint: set "evidence" to a sorted JSON array of the labels of all triangles that match the requested type
+      answer_hint: set "answer" to the count as an integer
+      json_example: '{"evidence":["A","C","F"],"answer":3}'
+      json_example_answer_only: '{"answer":3}'

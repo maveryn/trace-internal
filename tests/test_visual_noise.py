@@ -56,8 +56,8 @@ def test_tile_post_noise_override_is_deterministic_and_changes_pixels() -> None:
     common = {
         "rows": 7,
         "cols": 7,
-        "min_shortest_len": 5,
-        "evidence_type": "point_path",
+        "target_shortest_len_min": 4,
+        "target_shortest_len_max": 10,
     }
 
     clean = task.generate(

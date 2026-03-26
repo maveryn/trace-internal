@@ -66,6 +66,7 @@ Use this checklist during implementation and refactor reviews.
 50. Tile-domain boards should not sit on graph-paper or external grid backgrounds unless the task explicitly depends on that second coordinate scaffold; keep the board as the only grid-like structure in tile scenes.
 51. When a second tile objective needs 4-neighbor grid helpers outside shortest-path logic, move those helpers into a grid-family shared module (for example `grid_graph.py`) instead of reusing or extending a path-named module.
 52. When multiple tile task groups use the same background/noise fallback plumbing, promote those loaders into one tile-shared visual-defaults module instead of cloning near-identical task-group wrappers.
+53. For tile path tasks whose answer is a uniform per-step graph distance, use square cells and tile-coordinate path evidence so the image does not imply unequal horizontal vs vertical move costs.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

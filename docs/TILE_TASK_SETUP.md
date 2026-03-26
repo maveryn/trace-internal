@@ -25,6 +25,7 @@ It is the source of truth for board geometry, coordinate grounding, and evidence
 3. Every coordinate `(row, col)` with `0 <= row < rows` and `0 <= col < cols` names exactly one tile.
 4. Tasks may mark tiles as blocked, empty, colored, highlighted, or target-bearing, but they must not treat in-bounds coordinates as missing.
 5. Rectangular boards are allowed; tile shape is a uniform rectangle and is not required to be square.
+6. Shared rectangular tile-board defaults use `rows, cols in [3, 7]`; larger boards should be treated as explicit task overrides rather than the domain default.
 
 ## Coordinate Frames
 
@@ -59,6 +60,7 @@ It is the source of truth for board geometry, coordinate grounding, and evidence
    - tall: `(tile_width_px, tile_height_px) = (short_side_px, round(short_side_px * aspect_ratio))`
 6. All tiles in the same board share the same realized `tile_width_px` and `tile_height_px`.
 7. If a sampled board does not fit the target canvas while keeping `short_side_px >= 32`, resample board/layout parameters instead of shrinking below the minimum.
+8. Task-specific render overrides may force square tiles when equal-cost movement would look visually misleading under rectangular cells; `task_tile_path_shortest_path` is the current example.
 
 ## Adjacency / Topology
 1. `rectangular_tiling` uses 4-neighbor adjacency by default: up, down, left, right.
@@ -95,7 +97,7 @@ It is the source of truth for board geometry, coordinate grounding, and evidence
    - `grid_point_set`: row-major sorted `[[row, col], ...]`
    - `grid_point_path`: path order `[[row, col], ...]`
 5. Keep pixel-space projections in trace for overlays/review, but do not make them the primary evidence contract unless a task specifically needs pixel boxes.
-6. Existing tile tasks that still emit `point_path` or `bbox_set` are legacy exceptions and should be aligned to the coordinate-grounded contract as they are touched.
+6. Active rectangular tile tasks should use `grid_point_set` / `grid_point_path` as the public evidence contract unless a task-specific doc explicitly justifies a different primary evidence type.
 
 ## Answer-Type Guidance
 1. Current registered answer types favor scalar outputs (`integer`, `number`, etc.), while tile coordinates already fit naturally in evidence via `grid_point_set` and `grid_point_path`.
@@ -111,6 +113,5 @@ It is the source of truth for board geometry, coordinate grounding, and evidence
 4. Pure "return the set of tiles" answer tasks can come later if we add a dedicated answer-type contract or a stable JSON encoding policy for coordinate answers.
 
 ## Compatibility Note
-1. `task_tile_path_shortest_path` predates this setup.
-2. The existing task already uses stable `cell_{row}_{col}` ids and row/column scene entities, which should be preserved.
-3. Future work should align its rendering/evidence contract with this document's rectangular-tiling and tile-coordinate policy as the task family expands.
+1. `task_tile_path_shortest_path` now follows this document's rectangular-board and tile-coordinate evidence policy.
+2. Its only deliberate geometry exception is square-only cells, which keep per-step shortest-path costs visually uniform.

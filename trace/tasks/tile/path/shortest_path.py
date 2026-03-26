@@ -1,9 +1,9 @@
-"""Tile shortest-path task with unique-answer-by-construction generation."""
+"""Tile shortest-path task aligned to the shared rectangular tile-board contract."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 
 from PIL import ImageDraw
 
@@ -14,14 +14,13 @@ from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.bbox_projection import (
-    ordered_ids_to_point_path_and_bbox_set,
-    pixel_anchor_map_from_bboxes,
-)
+from ...shared.bbox_projection import pixel_anchor_map_from_bboxes
+from ...shared.color_format import format_named_color_with_hex
 from ...shared.config_defaults import (
     group_default,
     required_group_defaults,
     resolve_required_float_bounds,
+    resolve_required_int_bounds,
     split_generation_rendering_prompt_defaults,
 )
 from ...shared.prompt_variants import (
@@ -30,29 +29,49 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.output_metadata import default_task_versions
+from ...shared.prompt_json_example import resolve_prompt_json_examples
 from ..shared.maze_sampling import sample_unique_shortest_path_maze, validate_open_path_entities
-from ..shared.maze_scene import (
-    build_tile_cell_entities,
-    open_adjacency_by_cell,
-)
+from ..shared.maze_scene import open_adjacency_by_cell
 from ..shared.grid_graph import cell_id
-from ..shared.maze_rendering import render_path_maze_scene
+from ..shared.rectangular_board import (
+    RectangularTileSpec,
+    build_rectangular_board_render_spec,
+    render_rectangular_tile_board,
+    resolve_rectangular_board_layout,
+)
+from ..shared.tile_colors import named_tile_color
+from ..shared.tile_evidence import coordinate_path_evidence_artifacts
+from ..shared.tile_scene import build_tile_cell_entities
 from .background_defaults import POST_IMAGE_BACKGROUND_DEFAULTS
 from .noise_defaults import POST_IMAGE_NOISE_DEFAULTS
+
+
+Coord = Tuple[int, int]
+
+_OBSTACLE_RGB = (0, 0, 0)
+_OPEN_RGB = (250, 250, 250)
+_START_RGB = named_tile_color("green")
+_GOAL_RGB = named_tile_color("red")
 
 
 @dataclass(frozen=True)
 class _TaskDefaults:
     """Stable defaults for the tile shortest-path task."""
 
-    rows: int = 8
-    cols: int = 8
-    min_shortest_len: int = 6
+    rows: int = 7
+    cols: int = 7
+    target_shortest_len_min: int = 4
+    target_shortest_len_max: int = 13
     obstacle_prob_min: float = 0.16
     obstacle_prob_max: float = 0.36
-    canvas_size: int = 640
-    margin: int = 24
-    evidence_type: str = "point_path"
+    short_side_px_min: int = 32
+    short_side_px_max: int = 48
+    aspect_ratio_min: float = 1.0
+    aspect_ratio_max: float = 1.0
+    outer_padding_fraction_min: float = 0.08
+    outer_padding_fraction_max: float = 0.12
+    placement_jitter_fraction_min: float = 0.02
+    placement_jitter_fraction_max: float = 0.06
 
 
 _DEFAULTS = _TaskDefaults()
@@ -63,9 +82,46 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 )
 
 
+def _sample_square_tile_spec(rng, *, short_side_px_min: int, short_side_px_max: int) -> RectangularTileSpec:
+    """Return one square tile spec for equal-cost grid-path rendering."""
+    short_side_px = int(rng.randint(int(short_side_px_min), int(short_side_px_max)))
+    return RectangularTileSpec(
+        short_side_px=int(short_side_px),
+        aspect_ratio=1.0,
+        orientation="square",
+        tile_width_px=int(short_side_px),
+        tile_height_px=int(short_side_px),
+    )
+
+
+def _build_fill_colors_by_coord(
+    *,
+    rows: int,
+    cols: int,
+    blocked,
+    start: Coord,
+    goal: Coord,
+) -> Dict[Coord, Tuple[int, int, int]]:
+    """Build per-cell fill colors for one shortest-path board scene."""
+    fill_colors: Dict[Coord, Tuple[int, int, int]] = {}
+    for row in range(int(rows)):
+        for col in range(int(cols)):
+            coord = (int(row), int(col))
+            if bool(blocked[row][col]):
+                fill = _OBSTACLE_RGB
+            elif coord == (int(start[0]), int(start[1])):
+                fill = _START_RGB
+            elif coord == (int(goal[0]), int(goal[1])):
+                fill = _GOAL_RGB
+            else:
+                fill = _OPEN_RGB
+            fill_colors[coord] = tuple(int(channel) for channel in fill)
+    return fill_colors
+
+
 @register_task
 class TileShortestPathTask:
-    """Task emitting shortest-path length with grounded path evidence."""
+    """Return shortest-path length with coordinate-grounded path evidence."""
 
     task_id = "task_tile_path_shortest_path"
     domain = "tile"
@@ -74,7 +130,20 @@ class TileShortestPathTask:
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         rows = int(params.get("rows", group_default(_GEN_DEFAULTS, "rows", _DEFAULTS.rows)))
         cols = int(params.get("cols", group_default(_GEN_DEFAULTS, "cols", _DEFAULTS.cols)))
-        min_shortest_len = int(params.get("min_shortest_len", group_default(_GEN_DEFAULTS, "min_shortest_len", _DEFAULTS.min_shortest_len)))
+        target_shortest_len_min = int(
+            params.get(
+                "target_shortest_len_min",
+                group_default(_GEN_DEFAULTS, "target_shortest_len_min", _DEFAULTS.target_shortest_len_min),
+            )
+        )
+        target_shortest_len_max = int(
+            params.get(
+                "target_shortest_len_max",
+                group_default(_GEN_DEFAULTS, "target_shortest_len_max", _DEFAULTS.target_shortest_len_max),
+            )
+        )
+        if int(target_shortest_len_min) > int(target_shortest_len_max):
+            raise ValueError("target_shortest_len_min must be <= target_shortest_len_max")
         obstacle_prob_min, obstacle_prob_max = resolve_required_float_bounds(
             params,
             _GEN_DEFAULTS,
@@ -84,21 +153,59 @@ class TileShortestPathTask:
             fallback_max=float(_DEFAULTS.obstacle_prob_max),
             context=f"generation defaults for {self.task_id}",
         )
-        canvas_size = int(params.get("canvas_size", group_default(_RENDER_DEFAULTS, "canvas_size", _DEFAULTS.canvas_size)))
-        margin = int(params.get("margin", group_default(_RENDER_DEFAULTS, "margin", _DEFAULTS.margin)))
-        evidence_type = str(params.get("evidence_type", group_default(_GEN_DEFAULTS, "evidence_type", _DEFAULTS.evidence_type)))
-        if evidence_type not in {"point_path", "bbox_set"}:
-            raise ValueError(f"unsupported evidence_type: {evidence_type}")
+        short_side_px_min, short_side_px_max = resolve_required_int_bounds(
+            params,
+            _RENDER_DEFAULTS,
+            min_key="short_side_px_min",
+            max_key="short_side_px_max",
+            fallback_min=int(_DEFAULTS.short_side_px_min),
+            fallback_max=int(_DEFAULTS.short_side_px_max),
+            context=f"rendering defaults for {self.task_id}",
+        )
+        aspect_ratio_min, aspect_ratio_max = resolve_required_float_bounds(
+            params,
+            _RENDER_DEFAULTS,
+            min_key="aspect_ratio_min",
+            max_key="aspect_ratio_max",
+            fallback_min=float(_DEFAULTS.aspect_ratio_min),
+            fallback_max=float(_DEFAULTS.aspect_ratio_max),
+            context=f"rendering defaults for {self.task_id}",
+        )
+        if abs(float(aspect_ratio_min) - 1.0) > 1e-9 or abs(float(aspect_ratio_max) - 1.0) > 1e-9:
+            raise ValueError(f"{self.task_id} requires square tiles; set aspect_ratio_min=max=1.0")
+        outer_padding_fraction_min, outer_padding_fraction_max = resolve_required_float_bounds(
+            params,
+            _RENDER_DEFAULTS,
+            min_key="outer_padding_fraction_min",
+            max_key="outer_padding_fraction_max",
+            fallback_min=float(_DEFAULTS.outer_padding_fraction_min),
+            fallback_max=float(_DEFAULTS.outer_padding_fraction_max),
+            context=f"rendering defaults for {self.task_id}",
+        )
+        placement_jitter_fraction_min, placement_jitter_fraction_max = resolve_required_float_bounds(
+            params,
+            _RENDER_DEFAULTS,
+            min_key="placement_jitter_fraction_min",
+            max_key="placement_jitter_fraction_max",
+            fallback_min=float(_DEFAULTS.placement_jitter_fraction_min),
+            fallback_max=float(_DEFAULTS.placement_jitter_fraction_max),
+            context=f"rendering defaults for {self.task_id}",
+        )
 
         task_rng = spawn_rng(instance_seed, "task")
+        target_shortest_len = int(task_rng.randint(int(target_shortest_len_min), int(target_shortest_len_max)))
+        target_range_size = max(1, int(target_shortest_len_max) - int(target_shortest_len_min) + 1)
         blocked, start, goal, path, shortest_len = sample_unique_shortest_path_maze(
             task_rng,
             rows=rows,
             cols=cols,
-            min_shortest_len=min_shortest_len,
+            min_shortest_len=target_shortest_len,
+            target_shortest_len=target_shortest_len,
             obstacle_prob_min=obstacle_prob_min,
             obstacle_prob_max=obstacle_prob_max,
-            max_attempts=max_attempts,
+            # Exact target-length sampling is harder than simple minimum-length rejection,
+            # so widen the internal search budget in proportion to the target range width.
+            max_attempts=int(max_attempts) * int(target_range_size),
         )
         validate_open_path_entities(
             blocked=blocked,
@@ -106,25 +213,43 @@ class TileShortestPathTask:
             goal=goal,
             path=path,
         )
+        tile_spec = _sample_square_tile_spec(
+            task_rng,
+            short_side_px_min=int(short_side_px_min),
+            short_side_px_max=int(short_side_px_max),
+        )
+        layout = resolve_rectangular_board_layout(
+            task_rng,
+            rows=int(rows),
+            cols=int(cols),
+            tile_width_px=int(tile_spec.tile_width_px),
+            tile_height_px=int(tile_spec.tile_height_px),
+            outer_padding_fraction_min=float(outer_padding_fraction_min),
+            outer_padding_fraction_max=float(outer_padding_fraction_max),
+            placement_jitter_fraction_min=float(placement_jitter_fraction_min),
+            placement_jitter_fraction_max=float(placement_jitter_fraction_max),
+        )
 
         base_image, background_meta = make_background_canvas(
-            canvas_size=canvas_size,
+            canvas_width=int(layout.canvas_width_px),
+            canvas_height=int(layout.canvas_height_px),
             instance_seed=instance_seed,
             params=params,
             default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
             fallback_color=(246, 246, 246),
         )
         draw = ImageDraw.Draw(base_image)
-        bbox_map = render_path_maze_scene(
-            rows,
-            cols,
-            blocked,
-            start,
-            goal,
-            path,
-            draw=draw,
-            canvas_size=canvas_size,
-            margin=margin,
+        fill_colors_by_coord = _build_fill_colors_by_coord(
+            rows=int(rows),
+            cols=int(cols),
+            blocked=blocked,
+            start=(int(start[0]), int(start[1])),
+            goal=(int(goal[0]), int(goal[1])),
+        )
+        bbox_map = render_rectangular_tile_board(
+            draw,
+            layout=layout,
+            fill_colors_by_coord=fill_colors_by_coord,
         )
         image = base_image
         image, post_noise_meta = apply_post_image_noise(
@@ -134,20 +259,15 @@ class TileShortestPathTask:
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
 
-        path_ids = [cell_id(rc) for rc in path]
-        path_points, path_bboxes = ordered_ids_to_point_path_and_bbox_set(
-            ordered_ids=path_ids,
+        evidence_artifacts = coordinate_path_evidence_artifacts(
+            coords=path,
             bbox_map=bbox_map,
         )
+        path_ids = list(evidence_artifacts["witness_symbolic"]["ids"])
 
-        evidence_value: Any
-        if evidence_type == "point_path":
-            evidence_value = path_points
-        else:
-            evidence_value = path_bboxes
-
+        all_prompt_defaults = dict(_PROMPT_DEFAULTS if isinstance(_PROMPT_DEFAULTS, dict) else {})
         prompt_defaults = required_group_defaults(
-            _PROMPT_DEFAULTS,
+            all_prompt_defaults,
             (
                 "bundle_id",
                 "task_family_key",
@@ -155,27 +275,21 @@ class TileShortestPathTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint",
-                "json_example_answer_only",
-                "evidence_hint_point_path",
-                "evidence_hint_bbox_set",
-                "json_example_point_path",
-                "json_example_bbox_set",
+                "evidence_hint",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
         prompt_bundle_id = str(prompt_defaults["bundle_id"])
         prompt_task_family_key = str(prompt_defaults["task_family_key"])
         prompt_task_key = str(prompt_defaults["task_key"])
-        evidence_hint = (
-            str(prompt_defaults["evidence_hint_point_path"])
-            if evidence_type == "point_path"
-            else str(prompt_defaults["evidence_hint_bbox_set"])
+        json_example, json_example_answer_only = resolve_prompt_json_examples(
+            all_prompt_defaults,
+            evidence_value=[[0, 0], [0, 1], [1, 1], [1, 2]],
+            answer_type="integer",
         )
-        json_example = (
-            str(prompt_defaults["json_example_point_path"])
-            if evidence_type == "point_path"
-            else str(prompt_defaults["json_example_bbox_set"])
-        )
+        obstacle_color_label = format_named_color_with_hex("black", _OBSTACLE_RGB)
+        start_color_label = format_named_color_with_hex("green", _START_RGB)
+        goal_color_label = format_named_color_with_hex("red", _GOAL_RGB)
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -186,12 +300,15 @@ class TileShortestPathTask:
             slots={
                 "rows": int(rows),
                 "cols": int(cols),
+                "obstacle_color": str(obstacle_color_label),
+                "start_color": str(start_color_label),
+                "goal_color": str(goal_color_label),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": evidence_hint,
+                "evidence_hint": str(prompt_defaults["evidence_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
-                "json_example": json_example,
-                "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
+                "json_example": str(json_example),
+                "json_example_answer_only": str(json_example_answer_only),
             },
             instance_seed=instance_seed,
         )
@@ -204,12 +321,30 @@ class TileShortestPathTask:
             cols=cols,
             blocked=blocked,
         )
+        blocked_coords = [
+            [int(row), int(col)]
+            for row in range(int(rows))
+            for col in range(int(cols))
+            if bool(blocked[row][col])
+        ]
+        blocked_ids = [cell_id((int(row), int(col))) for row, col in blocked_coords]
+        path_coords = [[int(row), int(col)] for row, col in path]
+        path_coord_set = {(int(row), int(col)) for row, col in path}
         scene_entities = build_tile_cell_entities(
             rows=rows,
             cols=cols,
-            blocked=blocked,
-            start=start,
-            goal=goal,
+            attrs_by_coord={
+                (int(row), int(col)): {
+                    "blocked": bool(blocked[row][col]),
+                    "is_open": not bool(blocked[row][col]),
+                    "is_start": bool((int(row), int(col)) == (int(start[0]), int(start[1]))),
+                    "is_goal": bool((int(row), int(col)) == (int(goal[0]), int(goal[1]))),
+                    "is_on_shortest_path": bool((int(row), int(col)) in path_coord_set),
+                    "fill_rgb": list(fill_colors_by_coord[(int(row), int(col))]),
+                }
+                for row in range(int(rows))
+                for col in range(int(cols))
+            },
         )
 
         render_map = {
@@ -219,7 +354,7 @@ class TileShortestPathTask:
 
         trace_payload = {
             "scene_ir": {
-                "scene_kind": "tile_maze",
+                "scene_kind": "rectangular_tile_path_board",
                 "entities": scene_entities,
                 "relations": {"adjacency_open": adjacency_open},
             },
@@ -244,29 +379,55 @@ class TileShortestPathTask:
                         "start": cell_id(start),
                         "goal": cell_id(goal),
                     },
+                    {
+                        "out": "evidence",
+                        "op": "project_coords",
+                        "in": "path",
+                        "coord_space": "tile_grid",
+                        "coord_type": "grid_point_path",
+                        "ordering": "path_order",
+                    },
                     {"out": "answer", "op": "path_length", "in": "path"},
                 ],
             },
-            "render_spec": {
-                "canvas_size": canvas_size,
-                "margin": margin,
-                "rows": rows,
-                "cols": cols,
-                "coord_space": "pixel",
-                "background_style": dict(background_meta),
-                "post_image_noise": dict(post_noise_meta),
-            },
+            "render_spec": build_rectangular_board_render_spec(
+                rows=int(rows),
+                cols=int(cols),
+                layout=layout,
+                tile_spec=tile_spec,
+                background_meta=background_meta,
+                post_noise_meta=post_noise_meta,
+            ),
             "render_map": render_map,
             "execution_trace": {
+                "task_variant": "shortest_path",
+                "rows": int(rows),
+                "cols": int(cols),
+                "target_shortest_len": target_shortest_len,
+                "target_shortest_len_range": [int(target_shortest_len_min), int(target_shortest_len_max)],
                 "shortest_path_len": shortest_len,
-                "path_ids": path_ids,
+                "obstacle_color_name": "black",
+                "obstacle_color_rgb": list(_OBSTACLE_RGB),
+                "obstacle_color_label": str(obstacle_color_label),
+                "start_color_name": "green",
+                "start_color_rgb": list(_START_RGB),
+                "start_color_label": str(start_color_label),
+                "goal_color_name": "red",
+                "goal_color_rgb": list(_GOAL_RGB),
+                "goal_color_label": str(goal_color_label),
+                "start_coord": [int(start[0]), int(start[1])],
+                "start_id": cell_id(start),
+                "goal_coord": [int(goal[0]), int(goal[1])],
+                "goal_id": cell_id(goal),
+                "blocked_coords": list(blocked_coords),
+                "blocked_ids": list(blocked_ids),
+                "path_coords": list(path_coords),
+                "path_ids": list(path_ids),
                 "path_cell_count": len(path_ids),
+                "answer_value": int(shortest_len),
             },
-            "witness_symbolic": {"type": "id_path", "ids": path_ids},
-            "projected_evidence": {
-                "pixel_point_path": path_points,
-                "bbox_set": path_bboxes,
-            },
+            "witness_symbolic": dict(evidence_artifacts["witness_symbolic"]),
+            "projected_evidence": dict(evidence_artifacts["projected_evidence"]),
         }
 
         complexity_score = min(1.0, max(0.0, float(shortest_len) / float(rows * cols)))
@@ -283,7 +444,10 @@ class TileShortestPathTask:
         return TaskOutput(
             prompt=prompt,
             answer_gt=TypedValue(type="integer", value=int(shortest_len)),
-            evidence_gt=TypedValue(type=evidence_type, value=evidence_value),
+            evidence_gt=TypedValue(
+                type=str(evidence_artifacts["evidence_type"]),
+                value=list(evidence_artifacts["evidence_value"]),
+            ),
             image=image,
             image_id="img0",
             trace_payload=trace_payload,

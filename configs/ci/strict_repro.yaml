@@ -10,7 +10,9 @@ tasks:
   - task_id: task_tile_path_shortest_path
     count: 5
     params:
-      rows: 8
-      cols: 8
-      min_shortest_len: 6
-      evidence_type: point_path
+      rows: 7
+      cols: 7
+      target_shortest_len_min: 4
+      target_shortest_len_max: 13
+      aspect_ratio_min: 1.0
+      aspect_ratio_max: 1.0

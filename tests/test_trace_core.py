@@ -139,7 +139,12 @@ def test_canonical_non_finite_rejected() -> None:
 
 def test_tile_shortest_path_deterministic() -> None:
     task = TileShortestPathTask()
-    params = {"rows": 7, "cols": 7, "min_shortest_len": 5, "evidence_type": "point_path"}
+    params = {
+        "rows": 7,
+        "cols": 7,
+        "target_shortest_len_min": 4,
+        "target_shortest_len_max": 10,
+    }
 
     out_a = task.generate(123456, params=params, max_attempts=120)
     out_b = task.generate(123456, params=params, max_attempts=120)
@@ -149,6 +154,7 @@ def test_tile_shortest_path_deterministic() -> None:
     assert out_a.trace_payload["witness_symbolic"] == out_b.trace_payload["witness_symbolic"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "tile_path_v1"
+    assert out_a.trace_payload["execution_trace"]["target_shortest_len"] == out_b.trace_payload["execution_trace"]["target_shortest_len"]
     assert sorted(out_a.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert out_a.prompt == out_a.prompt_variants["answer_and_evidence"]
     assert out_a.image.tobytes() == out_b.image.tobytes()
@@ -165,7 +171,7 @@ def test_instance_id_ignores_image_path() -> None:
         "prompt_variants": {"answer_only": "p0", "answer_and_evidence": "p1"},
         "images": [{"image_id": "img0", "format": "png", "image_hash": "blake3:abc", "path": "a.png"}],
         "answer_gt": {"type": "integer", "value": 5},
-        "evidence_gt": {"type": "point_path", "value": [[1.0, 2.0]]},
+        "evidence_gt": {"type": "grid_point_path", "value": [[1, 2], [1, 3]]},
         "versions": {"dsl_spec_version": "v1"},
     }
     variant = dict(base)
@@ -184,7 +190,12 @@ def test_build_dataset_end_to_end_and_strict_repro(tmp_path: Path) -> None:
             BuildTaskConfig(
                 task_id="task_tile_path_shortest_path",
                 count=4,
-                params={"rows": 7, "cols": 7, "min_shortest_len": 5, "evidence_type": "point_path"},
+                params={
+                    "rows": 7,
+                    "cols": 7,
+                    "target_shortest_len_min": 4,
+                    "target_shortest_len_max": 10,
+                },
             )
         ],
         strict_repro=False,
@@ -201,7 +212,7 @@ def test_build_dataset_end_to_end_and_strict_repro(tmp_path: Path) -> None:
         assert instance["trace_ref"]["shard_id"] == "trace_shard_0001.jsonl.zst"
         assert not Path(instance["images"][0]["path"]).is_absolute()
         assert instance["answer_gt"]["type"] == "integer"
-        assert instance["evidence_gt"]["type"] == "point_path"
+        assert instance["evidence_gt"]["type"] == "grid_point_path"
         assert sorted(instance["prompt_variants"].keys()) == ["answer_and_evidence", "answer_only"]
         assert instance["prompt"] == instance["prompt_variants"]["answer_and_evidence"]
 
@@ -222,7 +233,12 @@ def test_build_dataset_end_to_end_and_strict_repro(tmp_path: Path) -> None:
             BuildTaskConfig(
                 task_id="task_tile_path_shortest_path",
                 count=3,
-                params={"rows": 6, "cols": 6, "min_shortest_len": 4, "evidence_type": "point_path"},
+                params={
+                    "rows": 6,
+                    "cols": 6,
+                    "target_shortest_len_min": 4,
+                    "target_shortest_len_max": 8,
+                },
             )
         ],
         strict_repro=True,

@@ -395,17 +395,20 @@ def test_tile_path_defaults_loaded() -> None:
         task_id="task_tile_path_shortest_path",
     )
     assert int(generation["rows"]) > 0
-    assert int(rendering["canvas_size"]) > 0
+    assert int(generation["rows"]) == 7
+    assert int(generation["cols"]) == 7
+    assert int(generation["target_shortest_len_min"]) == 4
+    assert int(generation["target_shortest_len_max"]) == 13
+    assert float(rendering["aspect_ratio_min"]) == pytest.approx(1.0, rel=1e-9)
+    assert float(rendering["aspect_ratio_max"]) == pytest.approx(1.0, rel=1e-9)
     assert str(prompt["bundle_id"]).strip()
-    assert str(prompt["task_family_key"]).strip()
+    assert str(prompt["task_family_key"]).strip() == "rectangular_tile_board"
     assert str(prompt["task_key"]).strip()
     assert str(prompt["json_output_contract"]).strip()
     assert str(prompt["json_output_contract_answer_only"]).strip()
     assert str(prompt["answer_hint"]).strip()
-    assert str(prompt["evidence_hint_point_path"]).strip()
-    assert str(prompt["evidence_hint_bbox_set"]).strip()
-    assert str(prompt["json_example_point_path"]).strip()
-    assert str(prompt["json_example_bbox_set"]).strip()
+    assert str(prompt["evidence_hint"]).strip()
+    assert str(prompt["json_example"]).strip()
     assert str(prompt["json_example_answer_only"]).strip()
 
 
@@ -416,9 +419,9 @@ def test_tile_count_defaults_loaded() -> None:
 
     generation_shared = cfg["generation"]["shared"]
     assert int(generation_shared["rows_min"]) == 3
-    assert int(generation_shared["rows_max"]) == 8
+    assert int(generation_shared["rows_max"]) == 7
     assert int(generation_shared["cols_min"]) == 3
-    assert int(generation_shared["cols_max"]) == 8
+    assert int(generation_shared["cols_max"]) == 7
 
     rendering_shared = cfg["rendering"]["shared"]
     assert int(rendering_shared["short_side_px_min"]) >= 32
@@ -446,8 +449,10 @@ def test_tile_count_defaults_loaded() -> None:
         cfg,
         task_id="task_tile_count_color_components",
     )
-    assert int(generation_components["palette_size_min"]) >= 2
-    assert int(generation_components["palette_size_max"]) >= int(generation_components["palette_size_min"])
+    assert int(generation_components["palette_size_min"]) == 2
+    assert int(generation_components["palette_size_max"]) == 3
+    assert int(generation_components["target_component_count_min"]) == 1
+    assert "target_component_count_max" not in generation_components
     assert str(prompt_components["bundle_id"]).strip() == "tile_count_v1"
     assert str(prompt_components["task_key"]).strip() == "color_component_count_query"
     assert str(prompt_components["answer_hint"]).strip()
@@ -468,11 +473,14 @@ def test_tile_reachability_defaults_loaded() -> None:
         task_id="task_tile_reachability_reachable_count",
     )
     assert int(generation["rows_min"]) >= 3
+    assert int(generation["rows_max"]) == 7
     assert int(generation["cols_min"]) >= 3
+    assert int(generation["cols_max"]) == 7
     assert float(generation["obstacle_fraction_min"]) > 0.0
     assert float(generation["obstacle_fraction_max"]) >= float(generation["obstacle_fraction_min"])
     assert float(generation["reachable_fraction_min"]) > 0.0
     assert float(generation["reachable_fraction_max"]) <= 1.0
+    assert int(generation["answer_max"]) == 20
     assert int(rendering["short_side_px_min"]) >= 32
     assert str(prompt["bundle_id"]).strip() == "tile_reachability_v1"
     assert str(prompt["task_key"]).strip() == "reachable_count_query"

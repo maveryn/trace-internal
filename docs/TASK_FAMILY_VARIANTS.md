@@ -13,6 +13,13 @@ Define how we split tasks into reusable families so each dataset slice stays com
 2. Multi-object value-query geometry tasks belong under `comparison` (separate from single-object `measurement`).
 3. `analytical_2d` should use one primary annotated scene where area/length/perimeter must be inferred from symbolic/numeric relationships (not direct readout); auxiliary constructions or coupled shapes are acceptable when they are part of the derivation.
 
+## Planned tile direction
+1. Tile tasks should use one board per image and keep prompts grounded in board coordinates rather than raw pixel positions.
+2. V1 tile scene geometry uses `rectangular_tiling`; square tiles are one sampled aspect-ratio case, not a separate tiling family.
+3. Canonical tile coordinates are zero-based `(row, col)` with top-left origin.
+4. New tile tasks should prefer coordinate-grounded evidence (`grid_point_set`, `grid_point_path`) and keep pixel overlays as derived trace projections.
+5. See `TILE_TASK_SETUP.md` for the concrete board-geometry, metadata, and evidence contract.
+
 ## Planned geometry measurement variants
 1. **Angle measurement**
    - One angle per image.

@@ -5,9 +5,10 @@
 
 ## Next (P1)
 1. Extend objective-first measurement pattern to additional domains.
-2. Add cross-domain `scene_variant` + role-binding spec in architecture/ABI docs.
-3. Improve dataset QA diagnostics/report summaries.
-4. Extend analytical geometry to additional objectives beyond `task_geometry_analytical_2d_area` / `task_geometry_analytical_3d_surface_area` (`perimeter`, composite/shaded-region area, additional 3D objectives).
+2. Implement the v1 `rectangular_tiling` tile setup for single-board coordinate-grounded tasks and align future tile ports to `TILE_TASK_SETUP.md`.
+3. Add cross-domain `scene_variant` + role-binding spec in architecture/ABI docs.
+4. Improve dataset QA diagnostics/report summaries.
+5. Extend analytical geometry to additional objectives beyond `task_geometry_analytical_2d_area` / `task_geometry_analytical_3d_surface_area` (`perimeter`, composite/shaded-region area, additional 3D objectives).
 
 ## Later (P2)
 1. Add split-artifact generation with deterministic split policy metadata.

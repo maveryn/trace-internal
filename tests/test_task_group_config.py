@@ -456,6 +456,55 @@ def test_geometry_comparison_defaults_loaded() -> None:
     assert str(length_prompt["answer_hint"]).strip()
 
 
+def test_geometry_counting_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("geometry", "counting")
+    for section in ("generation", "rendering", "prompt"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["object_count_min"]) >= 2
+    assert int(generation_shared["object_count_max"]) >= int(generation_shared["object_count_min"])
+    assert bool(generation_shared["balanced_sampling"]) is True
+
+    generation_overrides = cfg["generation"]["task_overrides"]
+    assert "task_geometry_counting_angle" in generation_overrides
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_size_min"]) > 0
+    assert int(render_shared["canvas_size_max"]) >= int(render_shared["canvas_size_min"])
+    assert int(render_shared["graph_cells_min"]) > 0
+    assert int(render_shared["graph_cells_max"]) >= int(render_shared["graph_cells_min"])
+    assert int(render_shared["line_width_min"]) >= 1
+    assert int(render_shared["line_width_max"]) >= int(render_shared["line_width_min"])
+    assert int(render_shared["label_stroke_width_min"]) >= 1
+    assert int(render_shared["label_stroke_width_max"]) >= int(render_shared["label_stroke_width_min"])
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip()
+    assert str(prompt_shared["task_family_key"]).strip()
+    assert str(prompt_shared["task_key"]).strip()
+
+    angle_generation, angle_rendering, angle_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_counting_angle",
+    )
+    assert int(angle_generation["min_angle"]) < int(angle_generation["max_angle"])
+    assert int(angle_generation["angle_step"]) > 0
+    assert sorted(angle_generation["variant_weights"].keys()) == ["acute_angle", "obtuse_angle", "right_angle"]
+    assert bool(angle_generation["balanced_variant_sampling"]) is True
+    assert sorted(angle_generation["object_count_weights"].keys()) == ["10", "6", "7", "8", "9"]
+    assert float(angle_generation["boundary_margin_degrees"]) >= 0.0
+    assert int(angle_rendering["line_width"]) > 0
+    assert str(angle_prompt["object_description"]).strip()
+    assert str(angle_prompt["question_text_acute_angle"]).strip()
+    assert str(angle_prompt["question_text_right_angle"]).strip()
+    assert str(angle_prompt["question_text_obtuse_angle"]).strip()
+    assert str(angle_prompt["evidence_hint"]).strip()
+    assert str(angle_prompt["answer_hint"]).strip()
+    assert str(angle_prompt["json_example"]).strip()
+    assert str(angle_prompt["json_example_answer_only"]).strip()
+
+
 def test_geometry_analytical_3d_defaults_loaded() -> None:
     cfg = get_task_group_defaults("geometry", "analytical_3d")
     for section in ("generation", "rendering", "prompt"):

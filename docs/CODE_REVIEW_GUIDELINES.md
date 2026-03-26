@@ -67,6 +67,8 @@ Use this checklist during implementation and refactor reviews.
 51. When a second geometry comparison task needs the same query/object-count/winner-label balancing or graph-paper slot placement, promote that logic into comparison-family shared helpers instead of cloning the first task's sampler/layout code.
 52. For bulky graph-paper comparison scenes (for example area/perimeter objects), do not reuse the same dense slot bank as line-like scenes; use a roomier layout matched to the object footprint so larger outlines and labels do not crowd or overlap.
 53. When sibling comparison tasks use the same object family with only the compared metric changing (for example rectangle area vs rectangle perimeter), move the object-family scene sampler/renderer into one shared helper module instead of maintaining parallel task-local copies.
+54. When a new geometry task group needs a different background policy than measurement, do not reuse measurement-scoped background/noise constants; call the geometry task-group loaders directly so solid/non-grid scenes stay consistent with their own config.
+55. When a second geometry task group reuses the same hidden graph-unit projection or object-family scene logic, promote that logic to geometry domain-shared helpers (for example `graph_units_to_pixel` or `multi_angle_scene.py`) instead of duplicating or importing another task group's private helpers.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

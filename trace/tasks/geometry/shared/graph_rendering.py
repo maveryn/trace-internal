@@ -134,6 +134,24 @@ def scale_point(point: Point, scale: int) -> Point:
     return (float(point[0]) * float(scale), float(point[1]) * float(scale))
 
 
+def graph_units_to_pixel(
+    point: tuple[int, int],
+    *,
+    origin: Point | None = None,
+    graph_origin: Point | None = None,
+    spacing: int,
+) -> Point:
+    """Project one integer graph-unit point into canonical pixel coordinates."""
+
+    resolved_origin = origin if origin is not None else graph_origin
+    if resolved_origin is None:
+        raise ValueError("graph_units_to_pixel requires origin or graph_origin")
+    return (
+        float(resolved_origin[0]) + (float(point[0]) * float(spacing)),
+        float(resolved_origin[1]) - (float(point[1]) * float(spacing)),
+    )
+
+
 def pixel_point_to_graph_units(
     point: Point,
     *,

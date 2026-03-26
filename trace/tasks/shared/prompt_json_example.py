@@ -57,6 +57,15 @@ def _sequence_of_point_pairs(value: Any) -> Sequence[Any] | None:
     return None
 
 
+def _sequence_of_strings(value: Any) -> Sequence[str] | None:
+    """Return sequence when all items are plain strings."""
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)) or not value:
+        return None
+    if all(isinstance(item, str) for item in value):
+        return [str(item) for item in value]
+    return None
+
+
 def _example_like(value: Any, *, index: int) -> Any:
     """Build one lightweight placeholder that preserves JSON shape."""
     point_map = _mapping_of_point_pairs(value)
@@ -72,6 +81,12 @@ def _example_like(value: Any, *, index: int) -> Any:
         layout = _canonical_point_examples(len(point_seq))
         if layout is not None:
             return [list(point) for point in layout]
+    string_seq = _sequence_of_strings(value)
+    if string_seq is not None:
+        alphabet = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+        count = min(len(alphabet), len(string_seq))
+        start = 1 if count > 1 else 0
+        return [str(alphabet[(start + index) % len(alphabet)]) for index in range(count)]
     if _is_point_pair(value):
         return [int(index), int(-index)]
     if isinstance(value, bool):

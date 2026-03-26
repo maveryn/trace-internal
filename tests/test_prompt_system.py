@@ -144,6 +144,7 @@ def test_geometry_measurement_bundles_answer_templates_use_contract_and_avoid_on
 def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
     bundle_coords = (
         ("geometry", "comparison", "geometry_comparison_v1"),
+        ("geometry", "counting", "geometry_counting_v1"),
         ("geometry", "analytical_3d", "geometry_analytical_surface_area_v1"),
         ("geometry", "analytical_3d", "geometry_analytical_volume_v1"),
         ("geometry", "analytical_2d", "geometry_analytical_area_v1"),
@@ -183,6 +184,7 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
 def test_geometry_task_templates_avoid_awkward_comma_question_prefixes() -> None:
     bundle_coords = (
         ("geometry", "comparison", "geometry_comparison_v1", "comparison_query"),
+        ("geometry", "counting", "geometry_counting_v1", "counting_query"),
         ("geometry", "measurement", "geometry_measurement_v1", "measurement_query"),
         ("geometry", "analytical_2d", "geometry_analytical_area_v1", "analytical_area_query"),
         ("geometry", "analytical_2d", "geometry_analytical_composite_area_v1", "analytical_composite_area_query"),
@@ -213,6 +215,16 @@ def test_geometry_comparison_bundle_uses_label_answer_without_text_options() -> 
     assert all("{question_text}" in str(template) for template in bundle.task_templates["comparison_query"])
     assert all("option" not in str(template).lower() for template in bundle.task_templates["comparison_query"])
     assert all("\nA." not in str(template) and "\nB." not in str(template) for template in bundle.answer_or_evidence_templates["answer_only"])
+
+
+def test_geometry_counting_bundle_uses_integer_answer_and_label_evidence() -> None:
+    bundle = load_prompt_bundle("geometry", "counting", "geometry_counting_v1")
+    assert len(bundle.task_family_templates["counting_scene"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_templates["counting_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.answer_or_evidence_templates["answer_only"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.answer_or_evidence_templates["answer_and_evidence"]) == REQUIRED_PROMPT_VARIANTS
+    assert all("{question_text}" in str(template) for template in bundle.task_templates["counting_query"])
+    assert all("graph-paper" not in str(template).lower() for template in bundle.task_family_templates["counting_scene"])
 
 
 def test_geometry_analytical_task_templates_do_not_repeat_image_reference() -> None:

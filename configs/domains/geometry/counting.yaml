@@ -1,0 +1,74 @@
+generation:
+  shared:
+    object_count_min: 6
+    object_count_max: 10
+    balanced_sampling: true
+  task_overrides:
+    task_geometry_counting_angle:
+      min_angle: 25
+      max_angle: 155
+      angle_step: 1
+      max_catalog_quantization_error_degrees: 2.0
+      max_abs_vector_component: 8
+      min_ray_length_units: 2.0
+      boundary_margin_degrees: 10.0
+      variant_weights:
+        acute_angle: 1.0
+        right_angle: 1.0
+        obtuse_angle: 1.0
+      balanced_variant_sampling: true
+      object_count_weights:
+        "6": 1.0
+        "7": 1.0
+        "8": 1.0
+        "9": 1.0
+        "10": 1.0
+
+rendering:
+  shared:
+    graph_cells_min: 20
+    graph_cells_max: 28
+    line_width: 4
+    line_width_min: 2
+    line_width_max: 5
+    object_label_offset_px: 14
+    label_font_size_min: 14
+    label_font_size_max: 30
+    label_stroke_width: 1
+    label_stroke_width_min: 1
+    label_stroke_width_max: 2
+
+visual:
+  background:
+    enabled: true
+    styles:
+      solid_offwhite:
+        kind: solid
+        color: [252, 252, 252]
+      solid_cool:
+        kind: solid
+        color: [246, 248, 252]
+      solid_warm:
+        kind: solid
+        color: [252, 249, 245]
+    weights:
+      graph_paper: 0.0
+      solid_offwhite: 0.5
+      solid_cool: 0.25
+      solid_warm: 0.25
+
+prompt:
+  shared:
+    bundle_id: geometry_counting_v1
+    task_family_key: counting_scene
+    task_key: counting_query
+  task_overrides:
+    task_geometry_counting_angle:
+      object_description: several labeled angles
+      question_text_acute_angle: How many labeled angles are acute angles?
+      question_text_right_angle: How many labeled angles are right angles?
+      question_text_obtuse_angle: How many labeled angles are obtuse angles?
+      evidence_hint: set "evidence" to a sorted JSON array of the labels of all angles that match the requested type
+      answer_hint: set "answer" to the count as an integer
+      json_example: '{"evidence":["B","D"],"answer":2}'
+      json_example_answer_only: '{"answer":2}'

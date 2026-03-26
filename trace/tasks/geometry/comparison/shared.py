@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.sampling import normalize_positive_weights, weighted_choice
 from ...shared.deterministic_sampling import resolve_selection_index
+from ..shared.graph_rendering import graph_units_to_pixel
 from ..shared.variant_sampling import has_non_null_param, is_uniform_probability_map
 
 COMPARISON_QUERY_TYPES: Tuple[str, str] = ("largest", "smallest")
@@ -186,20 +187,6 @@ def comparison_complexity_score(*, object_count: int, gap_normalized: float) -> 
     count_factor = min(1.0, max(0.0, (float(object_count) - 4.0) / 2.0))
     ambiguity_factor = 1.0 - min(1.0, max(0.0, float(gap_normalized)))
     return max(0.0, min(1.0, 0.38 + (0.22 * count_factor) + (0.34 * ambiguity_factor)))
-
-
-def graph_units_to_pixel(
-    point_units: Tuple[int, int],
-    *,
-    graph_origin: Tuple[float, float],
-    graph_spacing: int,
-) -> Tuple[float, float]:
-    """Project one integer graph-unit point into canonical pixel space."""
-
-    return (
-        float(graph_origin[0]) + (float(point_units[0]) * float(graph_spacing)),
-        float(graph_origin[1]) - (float(point_units[1]) * float(graph_spacing)),
-    )
 
 
 def slot_centers_graph_units(*, object_count: int, graph_cells: int, rng) -> List[Tuple[int, int]]:

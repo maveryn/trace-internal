@@ -69,6 +69,7 @@ Use this as the implementation checklist for new or modified tasks.
 15. If a prompt slot value is static for a task (for example a fixed question stem), store it in prompt config/template data rather than task-module constants.
 16. Favor natural, image-led wording in template stems; do not pad bundles with low-quality paraphrases just to increase variant count.
 17. Keep `question_text` semantic-only when task templates already carry formatting or rounding instructions; avoid repeating the same instruction across prompt layers.
+18. For multi-object counting tasks, label whole objects and use sorted `label_set` evidence unless geometry coordinates are truly necessary for verification.
 
 ## 4) Config/defaults rules
 1. Precedence: `domain -> task_group -> task/params`.
@@ -84,6 +85,7 @@ Use this as the implementation checklist for new or modified tasks.
 11. For cross-domain shared utilities, keep global fallback constants in the shared utility module and treat domain/task-group config keys as optional overrides.
 12. For analytical scenes with free-form numeric annotations, reserve explicit border margin and use collision-aware local placement so labels/value text do not sit directly on geometry or hug the canvas edge.
 13. For analytical composite/shaded objectives, keep region-fill semantics in the shared analytical scene helper so sibling tasks can reuse shaded-target and cutout rendering without task-local draw-order hacks.
+14. If a non-measurement geometry task-group needs its own background policy (for example counting on solid backgrounds), load geometry background/noise defaults for that task group explicitly instead of importing measurement-scoped constants.
 
 ## 5) Sampling rules
 1. Global sampling unit is `task`.
@@ -101,6 +103,7 @@ Use this as the implementation checklist for new or modified tasks.
 13. For comparison-style tasks with label answers, randomize visible labels separately from spatial layout so fixed slots do not skew answer-label distributions or make one label easier by construction.
 14. When adding a second task inside a comparison-style family, reuse one shared query/object-count/winner-label balancing helper and one shared scene-slot layout helper instead of keeping parallel task-local copies.
 15. For comparison tasks with bulkier shapes, choose a slot layout sized for the rendered footprint instead of reusing the tighter line/angle layout by default.
+16. When a second geometry task-group needs the same hidden graph-unit projection or object-family scene construction (for example comparison + counting angle scenes), promote that logic into geometry domain-shared helpers rather than importing private task-group utilities.
 16. When two comparison tasks operate on the same object family (for example rectangles for area and perimeter), extract one shared scene sampler/renderer for that object family instead of duplicating nearly identical task-local geometry generation.
 
 ## 6) Minimal test checklist

@@ -1,0 +1,4 @@
+build:
+  task_id: task_geometry_counting_angle
+  count: 8
+  params: {}

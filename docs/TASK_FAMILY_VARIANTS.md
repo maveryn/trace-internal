@@ -11,8 +11,9 @@ Define how we split tasks into reusable families so each dataset slice stays com
 ## Geometry direction (current)
 1. `measurement` should use **one primary object per image**.
 2. Multi-object value-query geometry tasks belong under `comparison` (separate from single-object `measurement`).
-3. `analytical_2d` should use one primary annotated scene where area/length/perimeter must be inferred from symbolic/numeric relationships (not direct readout); auxiliary constructions or coupled shapes are acceptable when they are part of the derivation.
-4. `comparison` should enforce exactly one winner by construction and use one reusable winner-gap policy (`gap_norm >= 0.20` plus optional task-level absolute floors) so scenes stay readable without hand-tuned per-instance ambiguity checks.
+3. Multi-object geometry class-membership tasks belong under `counting`; scenes should label whole objects and count how many match one requested class.
+4. `analytical_2d` should use one primary annotated scene where area/length/perimeter must be inferred from symbolic/numeric relationships (not direct readout); auxiliary constructions or coupled shapes are acceptable when they are part of the derivation.
+5. `comparison` should enforce exactly one winner by construction and use one reusable winner-gap policy (`gap_norm >= 0.20` plus optional task-level absolute floors) so scenes stay readable without hand-tuned per-instance ambiguity checks.
 
 ## Planned geometry measurement variants
 1. **Angle measurement**
@@ -54,31 +55,36 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Query type: `largest` or `smallest`.
    - Answer type: winner label (`option_letter`) with no textual option list in the prompt.
    - Evidence: `graph_point_set` for the winning rectangle vertices.
-5. **Analytical area (`task_geometry_analytical_2d_area`)**
+5. **Counting angle (`task_geometry_counting_angle`)**
+   - One non-graph-paper image with 6–10 labeled angles.
+   - Query variants: `acute_angle`, `right_angle`, `obtuse_angle`.
+   - Answer type: integer count.
+   - Evidence: sorted `label_set` of the matching angle labels.
+6. **Analytical area (`task_geometry_analytical_2d_area`)**
    - One annotated shape per image: rectangle, triangle, parallelogram, trapezoid, rhombus, circle, ellipse.
    - One explicit + one derived variant per shape.
    - Ask for area (`integer` for polygonal shapes, `kπ` for circle/ellipse).
    - Evidence: structured `measurement_ref_map` (`annotation -> value`) for all quantities used in the area computation.
-6. **Analytical length (`task_geometry_analytical_2d_length`)**
+7. **Analytical length (`task_geometry_analytical_2d_length`)**
    - One annotated analytical scene per image, including auxiliary constructions or coupled shapes.
    - Derived-only variants: triangle altitude side, rectangle diagonal side, rhombus diagonal side, isosceles trapezoid leg, inscribed square side, circle chord length.
    - Ask for a target segment length rounded to one decimal place.
    - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the givens used in the derivation.
-7. **Analytical perimeter (`task_geometry_analytical_2d_perimeter`)**
+8. **Analytical perimeter (`task_geometry_analytical_2d_perimeter`)**
    - One annotated analytical scene per image, including auxiliary constructions or coupled shapes.
    - Derived-only variants: right triangle from leg+hypotenuse, rectangle from side+diagonal, rhombus from diagonals, isosceles trapezoid from bases+height, inscribed square from circle diameter.
    - Ask for the perimeter rounded to one decimal place.
    - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the givens used in the derivation.
-8. **Analytical composite area (`task_geometry_analytical_2d_composite_area`)**
+9. **Analytical composite area (`task_geometry_analytical_2d_composite_area`)**
    - One annotated analytical scene per image with one shaded target region; auxiliary cuts/unions and coupled polygons are allowed.
    - Derived-only variants: inner-rectangle cutout, triangle cutout, rectangle+triangle union, L-shape cutout, step-rectangle union.
    - Ask for the shaded/composite area as an integer number of square units.
    - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the givens used in the derivation.
-9. **Analytical 3D volume (`task_geometry_analytical_3d_volume`)**
+10. **Analytical 3D volume (`task_geometry_analytical_3d_volume`)**
    - One annotated 3D solid per image: rectangular prism, triangular prism, square pyramid, cylinder, cone, sphere.
    - Ask for volume (`integer` for polyhedra, `kπ` for cylinder/cone/sphere).
    - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the required measurement labels.
-10. **Analytical 3D surface area (`task_geometry_analytical_3d_surface_area`)**
+11. **Analytical 3D surface area (`task_geometry_analytical_3d_surface_area`)**
    - One annotated 3D solid per image: rectangular prism, triangular prism, square pyramid, cylinder, cone, sphere.
    - Ask for total surface area (`integer` for polyhedra, `kπ` for cylinder/cone/sphere).
    - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the required measurement labels.
@@ -92,3 +98,4 @@ Define how we split tasks into reusable families so each dataset slice stays com
 1. Evidence coordinate frame is task/domain declared (`graph_unit`, `pixel`, `cell`, etc.), not globally fixed.
 2. If exact integer projection is impossible for a shape family, keep values as close as possible and document canonicalization in task docs.
 3. Evidence schema must be declared in each task contract and remain stable for verifier compatibility.
+4. For counting families with object labels, prefer `label_set` evidence over geometric coordinates so multi-object grounding stays compact and readable.

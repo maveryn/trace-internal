@@ -39,6 +39,20 @@ generation:
         inscribed_square_side: 1.0
         circle_chord_length: 1.0
       balanced_variant_sampling: true
+    task_geometry_analytical_2d_perimeter:
+      answer_min: 8
+      answer_max: 250
+      dimension_min: 4
+      dimension_max: 40
+      circle_radius_min: 6
+      circle_radius_max: 36
+      variant_weights:
+        right_triangle_leg_hypotenuse: 1.0
+        rectangle_side_diagonal: 1.0
+        rhombus_diagonals: 1.0
+        isosceles_trapezoid_bases_height: 1.0
+        inscribed_square_diameter: 1.0
+      balanced_variant_sampling: true
 
 rendering:
   shared:
@@ -134,3 +148,14 @@ prompt:
       question_text_isosceles_trapezoid_leg: The isosceles trapezoid shows both bases and a height. What is the length of segment {target_annotation}?
       question_text_inscribed_square_side: The square is inscribed in the circle, and a diameter is annotated. What is the length of segment {target_annotation}?
       question_text_circle_chord_length: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment {target_annotation}?
+    task_geometry_analytical_2d_perimeter:
+      bundle_id: geometry_analytical_perimeter_v1
+      task_family_key: analytical_perimeter_scene
+      task_key: analytical_perimeter_query
+      object_description: a geometric scene with measurement annotations
+      answer_hint_number: set "answer" to the perimeter value rounded to one decimal place
+      question_text_right_triangle_leg_hypotenuse: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?
+      question_text_rectangle_side_diagonal: The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?
+      question_text_rhombus_diagonals: The rhombus shows both diagonals. What is the perimeter of the rhombus?
+      question_text_isosceles_trapezoid_bases_height: The isosceles trapezoid shows both bases and a height. What is the perimeter of the trapezoid?
+      question_text_inscribed_square_diameter: The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?

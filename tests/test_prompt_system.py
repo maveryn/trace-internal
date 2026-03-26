@@ -147,6 +147,7 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
         ("geometry", "analytical_3d", "geometry_analytical_volume_v1"),
         ("geometry", "analytical_2d", "geometry_analytical_area_v1"),
         ("geometry", "analytical_2d", "geometry_analytical_length_v1"),
+        ("geometry", "analytical_2d", "geometry_analytical_perimeter_v1"),
         ("geometry", "measurement", "geometry_angle_measure_v1"),
         ("geometry", "measurement", "geometry_measurement_v1"),
         ("tile", "path", "tile_path_v1"),
@@ -182,6 +183,7 @@ def test_geometry_task_templates_avoid_awkward_comma_question_prefixes() -> None
         ("geometry", "measurement", "geometry_measurement_v1", "measurement_query"),
         ("geometry", "analytical_2d", "geometry_analytical_area_v1", "analytical_area_query"),
         ("geometry", "analytical_2d", "geometry_analytical_length_v1", "analytical_length_query"),
+        ("geometry", "analytical_2d", "geometry_analytical_perimeter_v1", "analytical_perimeter_query"),
         ("geometry", "analytical_3d", "geometry_analytical_surface_area_v1", "analytical_surface_area_query"),
         ("geometry", "analytical_3d", "geometry_analytical_volume_v1", "analytical_volume_query"),
     )
@@ -202,6 +204,7 @@ def test_geometry_analytical_task_templates_do_not_repeat_image_reference() -> N
     bundle_coords = (
         ("geometry", "analytical_2d", "geometry_analytical_area_v1", "analytical_area_query"),
         ("geometry", "analytical_2d", "geometry_analytical_length_v1", "analytical_length_query"),
+        ("geometry", "analytical_2d", "geometry_analytical_perimeter_v1", "analytical_perimeter_query"),
         ("geometry", "analytical_3d", "geometry_analytical_volume_v1", "analytical_volume_query"),
         ("geometry", "analytical_3d", "geometry_analytical_surface_area_v1", "analytical_surface_area_query"),
     )

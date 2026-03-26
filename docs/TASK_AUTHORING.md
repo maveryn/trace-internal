@@ -96,6 +96,7 @@ Use this as the implementation checklist for new or modified tasks.
 9. If a target answer is chosen from a feasibility probe before layout, also propagate the probe's minimum required scene capacity (for example graph-cell count/span) into layout sampling; otherwise a globally feasible answer can still fail after the scene size is sampled.
 10. When changing answer/evidence/variant contracts, remove deprecated helper paths and stale trace fields in the same patch.
 11. For derived analytical geometry tasks, do not force integer targets if that collapses scene variety; prefer integer givens plus a numeric answer rounded to one decimal place when the natural formula yields irrational lengths.
+12. When adding another analytical 2D objective that reuses the same scene-fitting and annotation-rendering flow, move that shared machinery into a domain-shared analytical scene helper instead of cloning a second task-local render stack.
 
 ## 6) Minimal test checklist
 1. Determinism for fixed seed.

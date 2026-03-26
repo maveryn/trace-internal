@@ -56,7 +56,7 @@ Promote helpers when a second consumer appears.
    - Use `_sampling_index` when a caller explicitly requests balanced cycling; otherwise use a namespaced hash so target-answer selection does not accidentally correlate with other seed-driven decisions.
 
 ### Domain-shared (current)
-1. Geometry: `trace/tasks/geometry/shared/graph_paper.py`, `graph_rendering.py`, `single_object_scene.py`, `angle_geometry.py`, `polygon_geometry.py`, `slope_geometry.py`, `shape_style.py`, `background_defaults.py`, `noise_defaults.py`, `variant_sampling.py`, `render_variation.py`, `annotation_values.py`, `labeled_point_evidence.py`, `point_labels.py`, `prompt_text.py`, `analytical_3d_solids.py`, `analytical_task.py`
+1. Geometry: `trace/tasks/geometry/shared/graph_paper.py`, `graph_rendering.py`, `single_object_scene.py`, `angle_geometry.py`, `polygon_geometry.py`, `slope_geometry.py`, `shape_style.py`, `background_defaults.py`, `noise_defaults.py`, `variant_sampling.py`, `render_variation.py`, `annotation_values.py`, `labeled_point_evidence.py`, `point_labels.py`, `prompt_text.py`, `analytical_2d_scene.py`, `analytical_3d_solids.py`, `analytical_task.py`
    - `graph_paper.offset_point_by_grid_vector` is the canonical pixel-space translation helper for lattice vector offsets.
    - `background_defaults.load_geometry_background_defaults(...)` is the canonical geometry-domain loader for background defaults (domain baseline with optional task-group override).
    - `noise_defaults.load_geometry_noise_defaults(...)` is the canonical geometry-domain loader for post-image noise defaults (domain baseline with optional task-group override).
@@ -67,6 +67,7 @@ Promote helpers when a second consumer appears.
    - `point_labels.py` provides overlap-aware labeled-point rendering helpers reused by conic/point-evidence tasks.
    - `prompt_text.py` provides canonical prompt-fragment helpers such as `append_required_labels_clause(...)` so label-list suffixes keep consistent punctuation across geometry tasks.
    - `slope_geometry.py` provides reusable slope-line feasibility/sampling helpers for graph-paper slope tasks.
+   - `analytical_2d_scene.py` provides reusable analytical 2D scene fitting, collision-aware annotation/label placement, and shared polygon/circle/helper rendering for annotated analytical objectives.
    - `analytical_3d_solids.py` provides reusable 3D-solid rendering/sampling helpers shared by analytical 3D objectives (currently `volume` and `surface_area`).
    - `analytical_task.py` provides shared prompt-slot, answer-bound, and variant-resolution helpers reused by analytical geometry task modules.
 2. Geometry measurement task-group: `trace/tasks/geometry/measurement/defaults.py`, `shape_measure_base.py`, `trace/tasks/geometry/shared/conic_geometry.py`, `trace/tasks/geometry/shared/length_geometry.py`

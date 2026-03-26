@@ -295,6 +295,38 @@ def test_geometry_analytical_defaults_loaded() -> None:
     ):
         assert str(length_prompt[f"question_text_{key}"]).strip()
 
+    perimeter_generation, perimeter_rendering, perimeter_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_analytical_2d_perimeter",
+    )
+    assert sorted(perimeter_generation["variant_weights"].keys()) == [
+        "inscribed_square_diameter",
+        "isosceles_trapezoid_bases_height",
+        "rectangle_side_diagonal",
+        "rhombus_diagonals",
+        "right_triangle_leg_hypotenuse",
+    ]
+    assert bool(perimeter_generation["balanced_variant_sampling"]) is True
+    assert int(perimeter_generation["dimension_min"]) >= 1
+    assert int(perimeter_generation["dimension_max"]) >= int(perimeter_generation["dimension_min"])
+    assert int(perimeter_generation["circle_radius_min"]) >= 1
+    assert int(perimeter_generation["circle_radius_max"]) >= int(perimeter_generation["circle_radius_min"])
+    assert int(perimeter_rendering["line_width"]) > 0
+    assert str(perimeter_prompt["bundle_id"]).strip() == "geometry_analytical_perimeter_v1"
+    assert str(perimeter_prompt["task_key"]).strip() == "analytical_perimeter_query"
+    assert str(perimeter_prompt["task_family_key"]).strip() == "analytical_perimeter_scene"
+    assert str(perimeter_prompt["object_description"]).strip()
+    assert str(perimeter_prompt["evidence_hint_measurement_map"]).strip()
+    assert str(perimeter_prompt["answer_hint_number"]).strip()
+    for key in (
+        "right_triangle_leg_hypotenuse",
+        "rectangle_side_diagonal",
+        "rhombus_diagonals",
+        "isosceles_trapezoid_bases_height",
+        "inscribed_square_diameter",
+    ):
+        assert str(perimeter_prompt[f"question_text_{key}"]).strip()
+
 
 def test_geometry_analytical_3d_defaults_loaded() -> None:
     cfg = get_task_group_defaults("geometry", "analytical_3d")
@@ -587,6 +619,19 @@ def test_analytical_prompt_examples_are_task_valid() -> None:
         "circle_chord_length",
     ):
         assert str(length_prompt[f"question_text_{key}"]).strip()
+
+    _perimeter_generation, _perimeter_rendering, perimeter_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_analytical_2d_perimeter",
+    )
+    for key in (
+        "right_triangle_leg_hypotenuse",
+        "rectangle_side_diagonal",
+        "rhombus_diagonals",
+        "isosceles_trapezoid_bases_height",
+        "inscribed_square_diameter",
+    ):
+        assert str(perimeter_prompt[f"question_text_{key}"]).strip()
 
 
 def test_section_defaults_require_shared_and_task_overrides_schema() -> None:

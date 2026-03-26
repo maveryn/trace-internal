@@ -3,6 +3,7 @@
 from .registry import TASK_REGISTRY, create_task
 from .geometry.analytical_2d import area as _task_geometry_analytical_2d_area
 from .geometry.analytical_2d import length as _task_geometry_analytical_2d_length
+from .geometry.analytical_2d import perimeter as _task_geometry_analytical_2d_perimeter
 from .geometry.analytical_3d import surface_area as _task_geometry_analytical_3d_surface_area
 from .geometry.analytical_3d import volume as _task_geometry_analytical_3d_volume
 from .geometry.measurement import angle as _task_geometry_measurement_angle

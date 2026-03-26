@@ -43,11 +43,16 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Derived-only variants: triangle altitude side, rectangle diagonal side, rhombus diagonal side, isosceles trapezoid leg, inscribed square side, circle chord length.
    - Ask for a target segment length rounded to one decimal place.
    - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the givens used in the derivation.
-3. **Analytical 3D volume (`task_geometry_analytical_3d_volume`)**
+3. **Analytical perimeter (`task_geometry_analytical_2d_perimeter`)**
+   - One annotated analytical scene per image, including auxiliary constructions or coupled shapes.
+   - Derived-only variants: right triangle from leg+hypotenuse, rectangle from side+diagonal, rhombus from diagonals, isosceles trapezoid from bases+height, inscribed square from circle diameter.
+   - Ask for the perimeter rounded to one decimal place.
+   - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the givens used in the derivation.
+4. **Analytical 3D volume (`task_geometry_analytical_3d_volume`)**
    - One annotated 3D solid per image: rectangular prism, triangular prism, square pyramid, cylinder, cone, sphere.
    - Ask for volume (`integer` for polyhedra, `kπ` for cylinder/cone/sphere).
    - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the required measurement labels.
-4. **Analytical 3D surface area (`task_geometry_analytical_3d_surface_area`)**
+5. **Analytical 3D surface area (`task_geometry_analytical_3d_surface_area`)**
    - One annotated 3D solid per image: rectangular prism, triangular prism, square pyramid, cylinder, cone, sphere.
    - Ask for total surface area (`integer` for polyhedra, `kπ` for cylinder/cone/sphere).
    - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the required measurement labels.

@@ -17,4 +17,5 @@ Current task docs:
 7. [task_geometry_measurement_slope.md](task_geometry_measurement_slope.md)
 8. [task_geometry_analytical_2d_area.md](task_geometry_analytical_2d_area.md)
 9. [task_geometry_analytical_2d_length.md](task_geometry_analytical_2d_length.md)
-10. [task_tile_path_shortest_path.md](task_tile_path_shortest_path.md)
+10. [task_geometry_analytical_2d_perimeter.md](task_geometry_analytical_2d_perimeter.md)
+11. [task_tile_path_shortest_path.md](task_tile_path_shortest_path.md)

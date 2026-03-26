@@ -66,8 +66,9 @@ Implementation map for the contracts in `docs/BLUEPRINT.md`.
 6. `trace/tasks/geometry/measurement/slope.py`
 7. `trace/tasks/geometry/analytical_2d/area.py`
 8. `trace/tasks/geometry/analytical_2d/length.py`
-9. `trace/tasks/geometry/analytical_3d/volume.py`
-10. `trace/tasks/geometry/analytical_3d/surface_area.py`
+9. `trace/tasks/geometry/analytical_2d/perimeter.py`
+10. `trace/tasks/geometry/analytical_3d/volume.py`
+11. `trace/tasks/geometry/analytical_3d/surface_area.py`
 
 ## 5) Architecture invariants
 1. Determinism from config + seeds + versions.

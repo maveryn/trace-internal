@@ -30,6 +30,7 @@ Date: 2026-03-21
 19. Geometry measurement area/perimeter tasks now use unlabeled coordinate-only evidence (`graph_point_set` for polygons, `graph_point` for ellipse/circle) and keep shape vertices/reference points strictly inside the plotted graph-paper interior.
 20. Geometry analytical_2d length task supports six derived annotated-scene variants (triangle altitude, rectangle diagonal, rhombus diagonals, isosceles trapezoid height, inscribed square, circle chord) with decimal answers rounded to one decimal place and structured `measurement_ref_map` evidence.
 21. Analytical 2D length rendering now reserves explicit scene margin and uses local collision-aware text placement so labels/value annotations stay off geometry and away from the canvas edge more reliably.
+22. Geometry analytical_2d perimeter task supports five derived annotated-scene variants (right triangle, rectangle, rhombus, isosceles trapezoid, inscribed square) with decimal answers rounded to one decimal place and structured `measurement_ref_map` evidence.
 
 ## Active tasks
 1. `task_tile_path_shortest_path` (`domain=tile`, `task_group=path`)
@@ -40,14 +41,15 @@ Date: 2026-03-21
 6. `task_geometry_measurement_slope` (`domain=geometry`, `task_group=measurement`)
 7. `task_geometry_analytical_2d_area` (`domain=geometry`, `task_group=analytical_2d`)
 8. `task_geometry_analytical_2d_length` (`domain=geometry`, `task_group=analytical_2d`)
-9. `task_geometry_analytical_3d_volume` (`domain=geometry`, `task_group=analytical_3d`)
-10. `task_geometry_analytical_3d_surface_area` (`domain=geometry`, `task_group=analytical_3d`)
+9. `task_geometry_analytical_2d_perimeter` (`domain=geometry`, `task_group=analytical_2d`)
+10. `task_geometry_analytical_3d_volume` (`domain=geometry`, `task_group=analytical_3d`)
+11. `task_geometry_analytical_3d_surface_area` (`domain=geometry`, `task_group=analytical_3d`)
 
 ## Current quality baseline
 1. Tests are required to pass before finalize.
 2. Distribution QA uses `scripts/check_task_answer_distribution.py` with per-variant answer-only checks (`unique_answers >= 5`, `max_answer_frequency < 25%`) and multithreaded sample generation (`--workers`); numeric 5-bin summaries remain reported for review but are not hard pass/fail gates.
 3. Task-review tooling writes per-task artifacts under `task-reviews/<task_id>/`, including one inspection workbook named `<task_id>.xlsx` with one sheet per task variant.
-4. The current active geometry review set (5 measurement + 2 analytical_2d + 2 analytical_3d tasks) passes distribution review under the active gates.
+4. The current active geometry review set (5 measurement + 3 analytical_2d + 2 analytical_3d tasks) passes distribution review under the active gates.
 
 ## Next priorities
 1. Continue objective-first refactor for additional domains (tile/icons/charts/graphs/documents).

@@ -1,4 +1,4 @@
-"""Shared named-color board sampling and rendering helpers for tile tasks."""
+"""Shared named-color board sampling, rendering, and scene-entity helpers."""
 
 from __future__ import annotations
 
@@ -21,6 +21,7 @@ from .rectangular_board import (
     sample_rectangular_tile_spec,
 )
 from .tile_colors import NamedColor, sample_named_tile_palette
+from .tile_scene import build_tile_cell_entities
 
 
 Coord = Tuple[int, int]
@@ -302,10 +303,37 @@ def build_rectangular_named_color_board_render_spec(scene: RectangularNamedColor
     )
 
 
+def build_color_board_scene_entities(
+    scene: RectangularNamedColorBoardScene,
+    *,
+    query_color_name: str,
+    extra_attrs_by_coord: Mapping[Coord, Mapping[str, Any]] | None = None,
+) -> list[dict[str, Any]]:
+    """Build `tile_cell` scene entities for one named-color board with query annotations."""
+    extra_attrs = dict(extra_attrs_by_coord) if isinstance(extra_attrs_by_coord, Mapping) else {}
+    attrs_by_coord: Dict[Coord, Dict[str, Any]] = {}
+    for coord, (name, rgb) in scene.board_colors.items():
+        attrs: Dict[str, Any] = {
+            "color_name": str(name),
+            "fill_rgb": [int(rgb[0]), int(rgb[1]), int(rgb[2])],
+            "is_query_match": bool(str(name) == str(query_color_name)),
+        }
+        per_coord = extra_attrs.get(coord, {})
+        if isinstance(per_coord, Mapping):
+            attrs.update({str(key): value for key, value in per_coord.items()})
+        attrs_by_coord[(int(coord[0]), int(coord[1]))] = attrs
+    return build_tile_cell_entities(
+        rows=int(scene.rows),
+        cols=int(scene.cols),
+        attrs_by_coord=attrs_by_coord,
+    )
+
+
 __all__ = [
     "Coord",
     "RectangularNamedColorBoardScene",
     "RectangularNamedColorBoardTaskDefaults",
+    "build_color_board_scene_entities",
     "build_palette_trace",
     "build_rectangular_named_color_board_render_spec",
     "build_rectangular_named_color_board_scene",

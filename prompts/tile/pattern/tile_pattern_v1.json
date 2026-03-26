@@ -1,0 +1,60 @@
+{
+  "bundle_id": "tile_pattern_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "rectangular_tile_board": [
+      "The image shows one rectangular tile board with {rows} rows and {cols} columns. Row labels are on the left and column labels are on the top.",
+      "Use the single rectangular tile board in the image. It has {rows} rows and {cols} columns, with rows labeled on the left and columns labeled on the top.",
+      "Look at the rectangular tile board with {rows} rows and {cols} columns. The board uses row labels on the left and column labels on the top.",
+      "You are given one rectangular tile board on a {rows} by {cols} grid. Read rows from the left labels and columns from the top labels.",
+      "Work from the labeled rectangular tile board in the image. It has {rows} rows and {cols} columns with visible row and column indices."
+    ]
+  },
+  "task_templates": {
+    "match3_run_count_query": [
+      "How many {line_axis} contain at least one run of {run_length} or more consecutive {query_color} tiles?",
+      "Count the {line_axis} that include a contiguous run of at least {run_length} {query_color} tiles.",
+      "Determine how many {line_axis} have at least one consecutive {query_color} run of length {run_length} or greater.",
+      "Using the queried color only, how many {line_axis} contain a run of {run_length}+ consecutive {query_color} tiles?",
+      "Find the number of {line_axis} that contain at least one contiguous {query_color} segment of length {run_length} or more."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:rectangular_tile_board": [
+      "rows",
+      "cols"
+    ],
+    "task:match3_run_count_query": [
+      "line_axis",
+      "run_length",
+      "query_color"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

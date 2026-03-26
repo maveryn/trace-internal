@@ -69,6 +69,7 @@ Use this checklist during implementation and refactor reviews.
 53. For tile path tasks whose answer is a uniform per-step graph distance, use square cells and tile-coordinate path evidence so the image does not imply unequal horizontal vs vertical move costs.
 54. When a second tile task group needs named-color board rendering or palette/scene serialization, move that logic into a tile-shared named-color board module instead of importing helpers from a `tile/count`-named file.
 55. For extremum-over-components tasks, reject non-unique winning components and expose only the winning component as prompt-facing evidence; keep the full component partition in trace.
+56. For row/column run-count tasks, expose one canonical witness run per qualifying line in prompt-facing evidence instead of every overlapping or repeated run on that same line.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

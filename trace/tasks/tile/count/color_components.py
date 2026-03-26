@@ -25,12 +25,12 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ..shared.grid_graph import cell_id
+from ..shared.named_color_board import build_color_board_scene_entities
 from ..shared.tile_evidence import coordinate_set_evidence_artifacts
 from .background_defaults import POST_IMAGE_BACKGROUND_DEFAULTS
 from .color_board_common import (
     RectangularColorBoardTaskDefaults,
     build_color_component_catalog,
-    build_color_board_scene_entities,
     build_palette_trace,
     build_rectangular_color_board_render_spec,
     build_rectangular_color_board_scene,

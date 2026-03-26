@@ -412,6 +412,34 @@ def test_tile_path_defaults_loaded() -> None:
     assert str(prompt["json_example_answer_only"]).strip()
 
 
+def test_tile_pattern_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("tile", "pattern")
+    for section in ("generation", "rendering", "prompt", "visual"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation, rendering, prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_tile_pattern_match3_run_count",
+    )
+    assert int(generation["palette_size_min"]) == 2
+    assert int(generation["palette_size_max"]) == 3
+    assert int(generation["run_length"]) == 3
+    assert int(generation["target_qualifying_line_count_min"]) == 1
+    assert "target_qualifying_line_count_max" not in generation
+    assert int(rendering["short_side_px_min"]) >= 32
+    assert str(prompt["bundle_id"]).strip() == "tile_pattern_v1"
+    assert str(prompt["task_family_key"]).strip() == "rectangular_tile_board"
+    assert str(prompt["task_key"]).strip() == "match3_run_count_query"
+    assert str(prompt["answer_hint"]).strip()
+    assert str(prompt["evidence_hint"]).strip()
+    rows_example = json.loads(str(prompt["json_example_rows"]))
+    cols_example = json.loads(str(prompt["json_example_cols"]))
+    assert rows_example == {"evidence": [[0, 1], [0, 2], [0, 3], [2, 0], [2, 1], [2, 2]], "answer": 2}
+    assert cols_example == {"evidence": [[0, 1], [0, 3], [1, 1], [1, 3], [2, 1], [2, 3]], "answer": 2}
+    answer_only_example = json.loads(str(prompt["json_example_answer_only"]))
+    assert answer_only_example == {"answer": 2}
+
+
 def test_tile_symmetry_defaults_loaded() -> None:
     cfg = get_task_group_defaults("tile", "symmetry")
     for section in ("generation", "rendering", "prompt", "visual"):

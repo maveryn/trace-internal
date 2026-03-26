@@ -3,6 +3,9 @@ generation:
     task_tile_count_color_count:
       palette_size_min: 3
       palette_size_max: 6
+    task_tile_count_color_components:
+      palette_size_min: 3
+      palette_size_max: 6
 
 prompt:
   shared:
@@ -13,3 +16,9 @@ prompt:
       task_key: color_count_query
       answer_hint: set "answer" to the number of tiles matching the query color as an integer
       evidence_hint: set "evidence" to the row-major list of [row, col] coordinates for every tile matching the query color
+    task_tile_count_color_components:
+      task_key: color_component_count_query
+      answer_hint: set "answer" to the number of 4-neighbor connected components formed by the query-color tiles as an integer
+      evidence_hint: set "evidence" to the row-major list of [row, col] coordinates for every tile matching the query color
+      json_example: '{"evidence":[[0,0],[0,1],[2,2]],"answer":2}'
+      json_example_answer_only: '{"answer":2}'

@@ -35,7 +35,7 @@ from ..shared.maze_scene import (
     build_tile_cell_entities,
     open_adjacency_by_cell,
 )
-from ..shared.path_grid import cell_id
+from ..shared.grid_graph import cell_id
 from ..shared.maze_rendering import render_path_maze_scene
 from .background_defaults import POST_IMAGE_BACKGROUND_DEFAULTS
 from .noise_defaults import POST_IMAGE_NOISE_DEFAULTS

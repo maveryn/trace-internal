@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import List, Sequence, Tuple
 
-from .path_grid import bfs_dist_count, reconstruct_unique_shortest_path
+from .grid_graph import bfs_dist_count, reconstruct_unique_shortest_path
 
 
 Coord = Tuple[int, int]

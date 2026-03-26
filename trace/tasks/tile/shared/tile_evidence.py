@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ...shared.bbox_projection import BBox, ordered_ids_to_point_path_and_bbox_set
-from .path_grid import cell_id
+from .grid_graph import cell_id
 
 
 Coord = Tuple[int, int]

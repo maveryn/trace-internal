@@ -75,4 +75,5 @@ Tasks:
 8. `task_geometry_analytical_3d_volume` (bundle: `geometry_analytical_volume_v1`)
 9. `task_geometry_analytical_3d_surface_area` (bundle: `geometry_analytical_surface_area_v1`)
 10. `task_tile_count_color_count`
-11. `task_tile_path_shortest_path`
+11. `task_tile_count_color_components`
+12. `task_tile_path_shortest_path`

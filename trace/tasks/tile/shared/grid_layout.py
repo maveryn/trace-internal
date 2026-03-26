@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Dict
 
 from ...shared.bbox_projection import BBox
-from .path_grid import cell_id
+from .grid_graph import cell_id
 
 
 @dataclass(frozen=True)

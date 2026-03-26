@@ -1,4 +1,4 @@
-"""Tile blocked-grid graph adapters and helpers."""
+"""Shared 4-neighbor graph adapters for rectangular tile grids."""
 
 from __future__ import annotations
 
@@ -6,6 +6,7 @@ from typing import Dict, Iterable, List, Mapping, Sequence, Tuple
 
 from ...shared.graph_algorithms import (
     bfs_dist_count_by_adjacency,
+    connected_components_by_adjacency,
     reconstruct_unique_shortest_path_by_adjacency,
 )
 
@@ -13,17 +14,13 @@ from ...shared.graph_algorithms import (
 Coord = Tuple[int, int]
 
 
-def _neighbors(cell: Coord, rows: int, cols: int) -> Iterable[Coord]:
-    """Yield valid 4-neighbor cells for one grid coordinate."""
-    row, col = cell
-    if row > 0:
-        yield (row - 1, col)
-    if row + 1 < rows:
-        yield (row + 1, col)
-    if col > 0:
-        yield (row, col - 1)
-    if col + 1 < cols:
-        yield (row, col + 1)
+def iter_four_neighbors(cell: Coord) -> Iterable[Coord]:
+    """Yield the four axis-aligned neighboring grid coordinates."""
+    row, col = int(cell[0]), int(cell[1])
+    yield (int(row - 1), int(col))
+    yield (int(row + 1), int(col))
+    yield (int(row), int(col - 1))
+    yield (int(row), int(col + 1))
 
 
 def open_grid_adjacency(
@@ -32,19 +29,44 @@ def open_grid_adjacency(
     cols: int,
     blocked: Sequence[Sequence[bool]],
 ) -> Dict[Coord, List[Coord]]:
-    """Build open-cell adjacency map for one blocked grid."""
+    """Build open-cell adjacency map for one blocked rectangular grid."""
     adjacency: Dict[Coord, List[Coord]] = {}
     for row in range(int(rows)):
         for col in range(int(cols)):
             if blocked[row][col]:
                 continue
             node = (int(row), int(col))
-            adjacency[node] = [
-                (int(next_row), int(next_col))
-                for next_row, next_col in _neighbors(node, int(rows), int(cols))
-                if not blocked[next_row][next_col]
-            ]
+            neighbors: List[Coord] = []
+            if row > 0 and not blocked[row - 1][col]:
+                neighbors.append((int(row - 1), int(col)))
+            if row + 1 < int(rows) and not blocked[row + 1][col]:
+                neighbors.append((int(row + 1), int(col)))
+            if col > 0 and not blocked[row][col - 1]:
+                neighbors.append((int(row), int(col - 1)))
+            if col + 1 < int(cols) and not blocked[row][col + 1]:
+                neighbors.append((int(row), int(col + 1)))
+            adjacency[node] = neighbors
     return adjacency
+
+
+def active_coord_adjacency(active_coords: Sequence[Coord]) -> Dict[Coord, List[Coord]]:
+    """Build 4-neighbor adjacency for one deterministic set of active coordinates."""
+    active = sorted({(int(row), int(col)) for row, col in active_coords})
+    active_set = set(active)
+    return {
+        coord: [neighbor for neighbor in iter_four_neighbors(coord) if neighbor in active_set]
+        for coord in active
+    }
+
+
+def connected_components_for_active_coords(active_coords: Sequence[Coord]) -> List[List[Coord]]:
+    """Return row-major connected components for active 4-neighbor tile coordinates."""
+    ordered = sorted({(int(row), int(col)) for row, col in active_coords})
+    adjacency = active_coord_adjacency(ordered)
+    return [
+        [(int(row), int(col)) for row, col in component]
+        for component in connected_components_by_adjacency(adjacency, node_order=ordered)
+    ]
 
 
 def coord_adjacency_to_cell_ids(adjacency: Mapping[Coord, Sequence[Coord]]) -> Dict[str, List[str]]:
@@ -114,9 +136,12 @@ def cell_id(coord: Coord) -> str:
 
 
 __all__ = [
-    "open_grid_adjacency",
-    "coord_adjacency_to_cell_ids",
+    "active_coord_adjacency",
     "bfs_dist_count",
-    "reconstruct_unique_shortest_path",
     "cell_id",
+    "connected_components_for_active_coords",
+    "coord_adjacency_to_cell_ids",
+    "iter_four_neighbors",
+    "open_grid_adjacency",
+    "reconstruct_unique_shortest_path",
 ]

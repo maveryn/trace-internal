@@ -18,4 +18,5 @@ Current task docs:
 8. [task_geometry_analytical_2d_area.md](task_geometry_analytical_2d_area.md)
 9. [task_geometry_analytical_2d_length.md](task_geometry_analytical_2d_length.md)
 10. [task_tile_count_color_count.md](task_tile_count_color_count.md)
-11. [task_tile_path_shortest_path.md](task_tile_path_shortest_path.md)
+11. [task_tile_count_color_components.md](task_tile_count_color_components.md)
+12. [task_tile_path_shortest_path.md](task_tile_path_shortest_path.md)

@@ -1,8 +1,8 @@
-"""Single-board rectangular-tile color-count task."""
+"""Single-board rectangular-tile connected-components counting task."""
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
@@ -11,16 +11,14 @@ from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.bbox_projection import pixel_anchor_map_from_bboxes
 from ...shared.color_format import format_named_color_with_hex, rgb_to_hex
-from ...shared.config_defaults import (
-    required_group_defaults,
-    split_generation_rendering_prompt_defaults,
-)
+from ...shared.config_defaults import required_group_defaults, split_generation_rendering_prompt_defaults
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
+from ..shared.grid_graph import cell_id, connected_components_for_active_coords
 from ..shared.tile_evidence import coordinate_set_evidence_artifacts, sort_coords_row_major
 from .background_defaults import POST_IMAGE_BACKGROUND_DEFAULTS
 from .color_board_common import (
@@ -38,15 +36,15 @@ _DEFAULTS = RectangularColorBoardTaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("tile", "count")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, dict) else {},
-    task_id="task_tile_count_color_count",
+    task_id="task_tile_count_color_components",
 )
 
 
 @register_task
-class TileColorCountTask:
-    """Count the number of tiles matching a queried color."""
+class TileColorComponentsTask:
+    """Count 4-neighbor connected components formed by one queried tile color."""
 
-    task_id = "task_tile_count_color_count"
+    task_id = "task_tile_count_color_components"
     domain = "tile"
     task_group = "count"
 
@@ -80,7 +78,20 @@ class TileColorCountTask:
             coords=matching_coords,
             bbox_map=scene.bbox_map,
         )
-        answer_value = int(len(matching_coords))
+        component_coords = [
+            sort_coords_row_major(component)
+            for component in connected_components_for_active_coords(matching_coords)
+        ]
+        component_ids = [
+            [cell_id((int(row), int(col))) for row, col in component]
+            for component in component_coords
+        ]
+        component_index_by_coord = {
+            (int(row), int(col)): int(component_index)
+            for component_index, component in enumerate(component_coords)
+            for row, col in component
+        }
+        answer_value = int(len(component_coords))
 
         all_prompt_defaults = dict(_PROMPT_DEFAULTS if isinstance(_PROMPT_DEFAULTS, dict) else {})
         prompt_defaults = required_group_defaults(
@@ -101,7 +112,7 @@ class TileColorCountTask:
         prompt_task_key = str(prompt_defaults["task_key"])
         json_example, json_example_answer_only = resolve_prompt_json_examples(
             all_prompt_defaults,
-            evidence_value=[[0, 1], [1, 0], [1, 2]],
+            evidence_value=[[0, 0], [0, 1], [2, 2]],
             answer_type="integer",
         )
         prompt_selection = render_task_prompt_variants(
@@ -127,14 +138,18 @@ class TileColorCountTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         palette_trace = build_palette_trace(scene.palette)
+        scene_entities = build_color_board_scene_entities(
+            scene,
+            query_color_name=str(query_color_name),
+            extra_attrs_by_coord={
+                coord: {"query_component_index": int(component_index_by_coord[coord])}
+                for coord in component_index_by_coord
+            },
+        )
         counts_by_color = {
             str(name): sum(1 for cell_name, _rgb in scene.board_colors.values() if str(cell_name) == str(name))
             for name, _rgb in scene.palette
         }
-        scene_entities = build_color_board_scene_entities(
-            scene,
-            query_color_name=str(query_color_name),
-        )
 
         trace_payload = {
             "scene_ir": {
@@ -143,8 +158,8 @@ class TileColorCountTask:
                 "relations": {},
             },
             "query_spec": {
-                "task_variant": "color_count",
-                "template_id": "color_count_v1",
+                "task_variant": "color_components",
+                "template_id": "color_components_v1",
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
@@ -164,7 +179,13 @@ class TileColorCountTask:
                         "coord_type": "grid_point_set",
                         "ordering": "row_major",
                     },
-                    {"out": "answer", "op": "count", "in": "query_cells"},
+                    {
+                        "out": "components",
+                        "op": "connected_components",
+                        "in": "query_cells",
+                        "connectivity": "4_neighbor",
+                    },
+                    {"out": "answer", "op": "count", "in": "components"},
                 ],
             },
             "render_spec": {
@@ -175,7 +196,7 @@ class TileColorCountTask:
                 "anchors": pixel_anchor_map_from_bboxes(scene.bbox_map),
             },
             "execution_trace": {
-                "task_variant": "color_count",
+                "task_variant": "color_components",
                 "rows": int(scene.rows),
                 "cols": int(scene.cols),
                 "palette": list(palette_trace),
@@ -187,6 +208,15 @@ class TileColorCountTask:
                 "counts_by_color_name": dict(counts_by_color),
                 "matching_coords": [[int(row), int(col)] for row, col in matching_coords],
                 "matching_ids": list(evidence_artifacts["witness_symbolic"]["ids"]),
+                "components": [
+                    {
+                        "component_index": int(index),
+                        "coords": [[int(row), int(col)] for row, col in component],
+                        "ids": list(component_ids[index]),
+                    }
+                    for index, component in enumerate(component_coords)
+                ],
+                "component_sizes": [int(len(component)) for component in component_coords],
                 "answer_value": int(answer_value),
             },
             "witness_symbolic": dict(evidence_artifacts["witness_symbolic"]),
@@ -194,6 +224,7 @@ class TileColorCountTask:
         }
 
         board_cell_count = int(scene.rows) * int(scene.cols)
+        matched_cell_count = int(len(matching_coords))
         complexity = TaskComplexity(
             complexity_score=min(
                 1.0,
@@ -202,7 +233,7 @@ class TileColorCountTask:
                     (
                         (float(board_cell_count) / 64.0)
                         + (float(scene.palette_size) / 6.0)
-                        + (float(answer_value) / float(max(1, board_cell_count)))
+                        + (float(answer_value) / float(max(1, matched_cell_count)))
                     )
                     / 3.0,
                 ),
@@ -212,7 +243,8 @@ class TileColorCountTask:
                 "cols": int(scene.cols),
                 "palette_size": int(scene.palette_size),
                 "answer_count": int(answer_value),
-                "match_fraction": float(answer_value) / float(max(1, board_cell_count)),
+                "match_count": int(matched_cell_count),
+                "component_sizes": [int(len(component)) for component in component_coords],
             },
         )
 
@@ -228,6 +260,6 @@ class TileColorCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            task_variant="color_count",
+            task_variant="color_components",
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

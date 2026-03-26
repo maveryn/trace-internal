@@ -8,7 +8,7 @@ from PIL import ImageDraw
 
 from ...shared.bbox_projection import BBox, bbox_center
 from .grid_layout import build_cell_bbox_map, resolve_centered_grid_layout
-from .path_grid import cell_id
+from .grid_graph import cell_id
 
 
 Coord = Tuple[int, int]

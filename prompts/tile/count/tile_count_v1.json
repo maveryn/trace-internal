@@ -17,6 +17,13 @@
       "Determine how many board tiles have color {query_color}.",
       "Find the total number of tiles colored {query_color}.",
       "How many board cells are {query_color}?"
+    ],
+    "color_component_count_query": [
+      "How many connected components of {query_color} are there using 4-neighbor connectivity?",
+      "Count the number of 4-neighbor connected components formed by the {query_color} tiles.",
+      "Determine how many 4-neighbor connected groups the {query_color} tiles form.",
+      "Using 4-neighbor connectivity, how many connected groups of {query_color} tiles are on the board?",
+      "Find the total number of 4-neighbor connected components made by the {query_color} tiles."
     ]
   },
   "required_slots_by_key": {
@@ -25,6 +32,9 @@
       "cols"
     ],
     "task:color_count_query": [
+      "query_color"
+    ],
+    "task:color_component_count_query": [
       "query_color"
     ],
     "answer_or_evidence:answer_only": [

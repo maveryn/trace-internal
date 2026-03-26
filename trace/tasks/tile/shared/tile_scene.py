@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Mapping, Tuple
 
-from .path_grid import cell_id
+from .grid_graph import cell_id
 
 
 Coord = Tuple[int, int]

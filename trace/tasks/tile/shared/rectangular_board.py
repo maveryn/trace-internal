@@ -9,7 +9,7 @@ from PIL import ImageDraw
 
 from ...shared.bbox_projection import BBox
 from ...shared.text_rendering import draw_text_centered, load_font
-from .path_grid import cell_id
+from .grid_graph import cell_id
 
 
 Coord = Tuple[int, int]

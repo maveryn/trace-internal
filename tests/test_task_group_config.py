@@ -442,6 +442,21 @@ def test_tile_count_defaults_loaded() -> None:
     assert str(prompt["answer_hint"]).strip()
     assert str(prompt["evidence_hint"]).strip()
 
+    generation_components, _rendering_components, prompt_components = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_tile_count_color_components",
+    )
+    assert int(generation_components["palette_size_min"]) >= 2
+    assert int(generation_components["palette_size_max"]) >= int(generation_components["palette_size_min"])
+    assert str(prompt_components["bundle_id"]).strip() == "tile_count_v1"
+    assert str(prompt_components["task_key"]).strip() == "color_component_count_query"
+    assert str(prompt_components["answer_hint"]).strip()
+    assert str(prompt_components["evidence_hint"]).strip()
+    component_example = json.loads(str(prompt_components["json_example"]))
+    assert component_example == {"evidence": [[0, 0], [0, 1], [2, 2]], "answer": 2}
+    component_answer_only_example = json.loads(str(prompt_components["json_example_answer_only"]))
+    assert component_answer_only_example == {"answer": 2}
+
 
 def test_domain_defaults_and_missing_group_behavior() -> None:
     assert get_task_group_defaults("missing_domain", "missing_group") == {}

@@ -178,6 +178,14 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
         }.issubset(set(bundle.required_slots_by_key.get("answer_or_evidence:answer_and_evidence", ())))
 
 
+def test_tile_count_bundle_supports_both_count_and_component_queries() -> None:
+    bundle = load_prompt_bundle("tile", "count", "tile_count_v1")
+    assert len(bundle.task_templates["color_count_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_templates["color_component_count_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task:color_count_query"]) == ["query_color"]
+    assert list(bundle.required_slots_by_key["task:color_component_count_query"]) == ["query_color"]
+
+
 def test_geometry_task_templates_avoid_awkward_comma_question_prefixes() -> None:
     bundle_coords = (
         ("geometry", "measurement", "geometry_measurement_v1", "measurement_query"),

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Sequence, Tuple
 
-from .path_grid import cell_id, coord_adjacency_to_cell_ids, open_grid_adjacency
+from .grid_graph import cell_id, coord_adjacency_to_cell_ids, open_grid_adjacency
 from .tile_scene import build_tile_cell_entities as build_generic_tile_cell_entities
 
 

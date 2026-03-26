@@ -80,7 +80,37 @@ def reconstruct_unique_shortest_path_by_adjacency(
     return path
 
 
+def connected_components_by_adjacency(
+    adjacency: Mapping[NodeT, Sequence[NodeT]],
+    *,
+    node_order: Sequence[NodeT] | None = None,
+) -> List[List[NodeT]]:
+    """Return deterministic connected components for one undirected adjacency map."""
+    ordered_nodes = list(node_order) if node_order is not None else list(adjacency.keys())
+    visited: set[NodeT] = set()
+    components: List[List[NodeT]] = []
+
+    for node in ordered_nodes:
+        if node in visited or node not in adjacency:
+            continue
+        queue: deque[NodeT] = deque([node])
+        visited.add(node)
+        component: List[NodeT] = []
+        while queue:
+            current = queue.popleft()
+            component.append(current)
+            for neighbor in adjacency.get(current, ()):
+                if neighbor in visited:
+                    continue
+                visited.add(neighbor)
+                queue.append(neighbor)
+        components.append(component)
+
+    return components
+
+
 __all__ = [
     "bfs_dist_count_by_adjacency",
+    "connected_components_by_adjacency",
     "reconstruct_unique_shortest_path_by_adjacency",
 ]

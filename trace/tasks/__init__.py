@@ -7,6 +7,7 @@ from .geometry.analytical_2d import length as _task_geometry_analytical_2d_lengt
 from .geometry.analytical_2d import perimeter as _task_geometry_analytical_2d_perimeter
 from .geometry.analytical_3d import surface_area as _task_geometry_analytical_3d_surface_area
 from .geometry.analytical_3d import volume as _task_geometry_analytical_3d_volume
+from .geometry.comparison import angle as _task_geometry_comparison_angle
 from .geometry.measurement import angle as _task_geometry_measurement_angle
 from .geometry.measurement import area as _task_geometry_measurement_area
 from .geometry.measurement import length as _task_geometry_measurement_length

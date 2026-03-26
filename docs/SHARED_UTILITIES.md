@@ -54,6 +54,9 @@ Promote helpers when a second consumer appears.
 13. `trace/tasks/shared/deterministic_sampling.py`
    - Canonical deterministic index selection for target-support cycling.
    - Use `_sampling_index` when a caller explicitly requests balanced cycling; otherwise use a namespaced hash so target-answer selection does not accidentally correlate with other seed-driven decisions.
+14. `trace/tasks/shared/comparison_sampling.py`
+   - Canonical winner/runner-up gap metrics for comparison-style tasks.
+   - Use `compute_comparison_gap_metrics(...)` and `comparison_gap_is_valid(...)` when a task needs one shared ambiguity rule over ranked scalar values.
 
 ### Domain-shared (current)
 1. Geometry: `trace/tasks/geometry/shared/graph_paper.py`, `graph_rendering.py`, `single_object_scene.py`, `angle_geometry.py`, `polygon_geometry.py`, `slope_geometry.py`, `shape_style.py`, `background_defaults.py`, `noise_defaults.py`, `variant_sampling.py`, `render_variation.py`, `annotation_values.py`, `labeled_point_evidence.py`, `point_labels.py`, `prompt_text.py`, `analytical_2d_scene.py`, `analytical_3d_solids.py`, `analytical_task.py`

@@ -19,4 +19,5 @@ Current task docs:
 9. [task_geometry_analytical_2d_length.md](task_geometry_analytical_2d_length.md)
 10. [task_geometry_analytical_2d_perimeter.md](task_geometry_analytical_2d_perimeter.md)
 11. [task_geometry_analytical_2d_composite_area.md](task_geometry_analytical_2d_composite_area.md)
-12. [task_tile_path_shortest_path.md](task_tile_path_shortest_path.md)
+12. [task_geometry_comparison_angle.md](task_geometry_comparison_angle.md)
+13. [task_tile_path_shortest_path.md](task_tile_path_shortest_path.md)

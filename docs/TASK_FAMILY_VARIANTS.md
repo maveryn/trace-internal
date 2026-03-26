@@ -12,6 +12,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
 1. `measurement` should use **one primary object per image**.
 2. Multi-object value-query geometry tasks belong under `comparison` (separate from single-object `measurement`).
 3. `analytical_2d` should use one primary annotated scene where area/length/perimeter must be inferred from symbolic/numeric relationships (not direct readout); auxiliary constructions or coupled shapes are acceptable when they are part of the derivation.
+4. `comparison` should enforce exactly one winner by construction and use one reusable winner-gap policy (`gap_norm >= 0.20` plus optional task-level absolute floors) so scenes stay readable without hand-tuned per-instance ambiguity checks.
 
 ## Planned geometry measurement variants
 1. **Angle measurement**
@@ -33,31 +34,36 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Evidence: one x-axis crossing lattice point.
 
 ## Implemented analytical variant
-1. **Analytical area (`task_geometry_analytical_2d_area`)**
+1. **Comparison angle (`task_geometry_comparison_angle`)**
+   - One graph-paper image with 4–6 labeled angles.
+   - Query type: `largest` or `smallest`.
+   - Answer type: winner label (`option_letter`) with no textual option list in the prompt.
+   - Evidence: `graph_point_set` for the winning angle's vertex + two ray endpoints.
+2. **Analytical area (`task_geometry_analytical_2d_area`)**
    - One annotated shape per image: rectangle, triangle, parallelogram, trapezoid, rhombus, circle, ellipse.
    - One explicit + one derived variant per shape.
    - Ask for area (`integer` for polygonal shapes, `kπ` for circle/ellipse).
    - Evidence: structured `measurement_ref_map` (`annotation -> value`) for all quantities used in the area computation.
-2. **Analytical length (`task_geometry_analytical_2d_length`)**
+3. **Analytical length (`task_geometry_analytical_2d_length`)**
    - One annotated analytical scene per image, including auxiliary constructions or coupled shapes.
    - Derived-only variants: triangle altitude side, rectangle diagonal side, rhombus diagonal side, isosceles trapezoid leg, inscribed square side, circle chord length.
    - Ask for a target segment length rounded to one decimal place.
    - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the givens used in the derivation.
-3. **Analytical perimeter (`task_geometry_analytical_2d_perimeter`)**
+4. **Analytical perimeter (`task_geometry_analytical_2d_perimeter`)**
    - One annotated analytical scene per image, including auxiliary constructions or coupled shapes.
    - Derived-only variants: right triangle from leg+hypotenuse, rectangle from side+diagonal, rhombus from diagonals, isosceles trapezoid from bases+height, inscribed square from circle diameter.
    - Ask for the perimeter rounded to one decimal place.
    - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the givens used in the derivation.
-4. **Analytical composite area (`task_geometry_analytical_2d_composite_area`)**
+5. **Analytical composite area (`task_geometry_analytical_2d_composite_area`)**
    - One annotated analytical scene per image with one shaded target region; auxiliary cuts/unions and coupled polygons are allowed.
    - Derived-only variants: inner-rectangle cutout, triangle cutout, rectangle+triangle union, L-shape cutout, step-rectangle union.
    - Ask for the shaded/composite area as an integer number of square units.
    - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the givens used in the derivation.
-5. **Analytical 3D volume (`task_geometry_analytical_3d_volume`)**
+6. **Analytical 3D volume (`task_geometry_analytical_3d_volume`)**
    - One annotated 3D solid per image: rectangular prism, triangular prism, square pyramid, cylinder, cone, sphere.
    - Ask for volume (`integer` for polyhedra, `kπ` for cylinder/cone/sphere).
    - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the required measurement labels.
-6. **Analytical 3D surface area (`task_geometry_analytical_3d_surface_area`)**
+7. **Analytical 3D surface area (`task_geometry_analytical_3d_surface_area`)**
    - One annotated 3D solid per image: rectangular prism, triangular prism, square pyramid, cylinder, cone, sphere.
    - Ask for total surface area (`integer` for polyhedra, `kπ` for cylinder/cone/sphere).
    - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the required measurement labels.

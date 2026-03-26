@@ -1,0 +1,50 @@
+generation:
+  shared:
+    object_count_min: 4
+    object_count_max: 6
+    balanced_sampling: true
+    min_normalized_gap: 0.2
+  task_overrides:
+    task_geometry_comparison_angle:
+      min_angle: 30
+      max_angle: 150
+      angle_step: 1
+      max_catalog_quantization_error_degrees: 2.0
+      max_abs_vector_component: 8
+      min_ray_length_units: 2.0
+      min_absolute_gap_degrees: 10.0
+      query_type_weights:
+        largest: 1.0
+        smallest: 1.0
+      object_count_weights:
+        "4": 1.0
+        "5": 1.0
+        "6": 1.0
+
+rendering:
+  shared:
+    graph_cells_min: 18
+    graph_cells_max: 24
+    line_width: 4
+    line_width_min: 2
+    line_width_max: 5
+    label_offset_px: 14
+    object_label_offset_px: 14
+    label_font_size_min: 14
+    label_font_size_max: 30
+    label_stroke_width: 1
+    label_stroke_width_min: 1
+    label_stroke_width_max: 2
+
+prompt:
+  shared:
+    bundle_id: geometry_comparison_v1
+    task_family_key: comparison_graph_scene
+    task_key: comparison_query
+  task_overrides:
+    task_geometry_comparison_angle:
+      object_description: several labeled angles
+      question_text_largest: Which labeled angle has the greatest measure?
+      question_text_smallest: Which labeled angle has the smallest measure?
+      evidence_hint: 'set "evidence" to an array of exactly three graph-paper points for the winning angle: the vertex and the two ray endpoints'
+      answer_hint: 'set "answer" to the single-letter label of the correct angle'

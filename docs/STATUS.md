@@ -36,6 +36,7 @@ Date: 2026-03-26
 25. Shared rectangular tile-board defaults now cap board sides at `7` instead of `8`; example/strict-repro configs plus `task_tile_path_shortest_path` are aligned to that ceiling, and shortest-path generation now samples exact target path lengths while emitting `grid_point_path` tile-coordinate evidence on the same labeled square-cell board contract as the other tile tasks.
 26. Tile symmetry now includes `task_tile_symmetry_violation_count`, a single-board rectangular named-color task with deterministic `vertical` / `horizontal` variants, exact target-count construction over a uniform `1..10` violation range, and counted-side `grid_point_set` evidence.
 27. Tile pattern now includes `task_tile_pattern_match3_run_count`, a single-board rectangular named-color task with deterministic `rows` / `cols` variants, exact target-count construction over qualifying-line counts, fixed run length `3`, query-color prompts with hex labels, and one canonical witness run per counted line.
+28. Tile transition now includes `task_tile_transition_gravity_max_drop`, a single-board rectangular state-transition task with one colored tile per column, black bottom-contiguous obstacles, uniformly sampled target max-drop distances, a unique winning column by construction, and `grid_point_path` trajectory evidence for the winning drop.
 
 ## Active tasks
 1. `task_tile_count_color_count` (`domain=tile`, `task_group=count`)
@@ -45,15 +46,16 @@ Date: 2026-03-26
 5. `task_tile_pattern_match3_run_count` (`domain=tile`, `task_group=pattern`)
 6. `task_tile_reachability_reachable_count` (`domain=tile`, `task_group=reachability`)
 7. `task_tile_symmetry_violation_count` (`domain=tile`, `task_group=symmetry`)
-8. `task_geometry_measurement_angle` (`domain=geometry`, `task_group=measurement`)
-9. `task_geometry_measurement_area` (`domain=geometry`, `task_group=measurement`)
-10. `task_geometry_measurement_perimeter` (`domain=geometry`, `task_group=measurement`)
-11. `task_geometry_measurement_length` (`domain=geometry`, `task_group=measurement`)
-12. `task_geometry_measurement_slope` (`domain=geometry`, `task_group=measurement`)
-13. `task_geometry_analytical_2d_area` (`domain=geometry`, `task_group=analytical_2d`)
-14. `task_geometry_analytical_2d_length` (`domain=geometry`, `task_group=analytical_2d`)
-15. `task_geometry_analytical_3d_volume` (`domain=geometry`, `task_group=analytical_3d`)
-16. `task_geometry_analytical_3d_surface_area` (`domain=geometry`, `task_group=analytical_3d`)
+8. `task_tile_transition_gravity_max_drop` (`domain=tile`, `task_group=transition`)
+9. `task_geometry_measurement_angle` (`domain=geometry`, `task_group=measurement`)
+10. `task_geometry_measurement_area` (`domain=geometry`, `task_group=measurement`)
+11. `task_geometry_measurement_perimeter` (`domain=geometry`, `task_group=measurement`)
+12. `task_geometry_measurement_length` (`domain=geometry`, `task_group=measurement`)
+13. `task_geometry_measurement_slope` (`domain=geometry`, `task_group=measurement`)
+14. `task_geometry_analytical_2d_area` (`domain=geometry`, `task_group=analytical_2d`)
+15. `task_geometry_analytical_2d_length` (`domain=geometry`, `task_group=analytical_2d`)
+16. `task_geometry_analytical_3d_volume` (`domain=geometry`, `task_group=analytical_3d`)
+17. `task_geometry_analytical_3d_surface_area` (`domain=geometry`, `task_group=analytical_3d`)
 
 ## Current quality baseline
 1. Tests are required to pass before finalize.

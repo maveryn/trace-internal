@@ -440,6 +440,29 @@ def test_tile_pattern_defaults_loaded() -> None:
     assert answer_only_example == {"answer": 2}
 
 
+def test_tile_transition_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("tile", "transition")
+    for section in ("generation", "rendering", "prompt", "visual"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation, rendering, prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_tile_transition_gravity_max_drop",
+    )
+    assert int(generation["target_max_drop_min"]) == 1
+    assert "target_max_drop_max" not in generation
+    assert int(rendering["short_side_px_min"]) >= 32
+    assert str(prompt["bundle_id"]).strip() == "tile_transition_v1"
+    assert str(prompt["task_family_key"]).strip() == "rectangular_tile_board"
+    assert str(prompt["task_key"]).strip() == "gravity_max_drop_query"
+    assert str(prompt["answer_hint"]).strip()
+    assert str(prompt["evidence_hint"]).strip()
+    example = json.loads(str(prompt["json_example"]))
+    assert example == {"evidence": [[0, 1], [1, 1], [2, 1]], "answer": 2}
+    answer_only_example = json.loads(str(prompt["json_example_answer_only"]))
+    assert answer_only_example == {"answer": 2}
+
+
 def test_tile_symmetry_defaults_loaded() -> None:
     cfg = get_task_group_defaults("tile", "symmetry")
     for section in ("generation", "rendering", "prompt", "visual"):

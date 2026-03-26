@@ -115,3 +115,4 @@ It is the source of truth for board geometry, coordinate grounding, and evidence
 ## Compatibility Note
 1. `task_tile_path_shortest_path` now follows this document's rectangular-board and tile-coordinate evidence policy.
 2. Its only deliberate geometry exception is square-only cells, which keep per-step shortest-path costs visually uniform.
+3. `task_tile_transition_gravity_max_drop` is a current example of a scalar transition task that still uses tile-coordinate `grid_point_path` evidence for the winning mover trajectory.

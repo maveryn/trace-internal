@@ -17,6 +17,7 @@ from .tile.path import shortest_path as _task_tile_path_shortest_path
 from .tile.pattern import run_count as _task_tile_pattern_match3_run_count
 from .tile.reachability import reachable_count as _task_tile_reachability_reachable_count
 from .tile.symmetry import violation_count as _task_tile_symmetry_violation_count
+from .tile.transition import gravity_max_drop as _task_tile_transition_gravity_max_drop
 
 __all__ = [
     "TASK_REGISTRY",

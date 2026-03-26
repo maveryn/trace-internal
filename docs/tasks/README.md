@@ -24,3 +24,4 @@ Current task docs:
 14. [task_tile_pattern_match3_run_count.md](task_tile_pattern_match3_run_count.md)
 15. [task_tile_reachability_reachable_count.md](task_tile_reachability_reachable_count.md)
 16. [task_tile_symmetry_violation_count.md](task_tile_symmetry_violation_count.md)
+17. [task_tile_transition_gravity_max_drop.md](task_tile_transition_gravity_max_drop.md)

@@ -62,6 +62,7 @@ Use this checklist during implementation and refactor reviews.
 46. In supersampled scenes, verify that geometry primitives and label/annotation placement use the same coordinate scale; mismatched scaled-vs-unscaled drawing can make text appear detached even when placement logic is correct.
 47. For analytical scenes with segment- or point-anchored text, cap scene occupancy and use collision-aware local placement so numeric annotations and labels fall beside geometry instead of crossing lines or crowding the border.
 48. When a second analytical 2D objective reuses the same scene-fitting and annotation-rendering flow, promote that machinery into a shared analytical 2D scene helper instead of cloning another task-local render stack.
+49. When analytical shaded/composite tasks need persistent fills or cutouts, extend the shared analytical scene renderer with explicit fill semantics (`shaded`, `background`) instead of drawing ad-hoc overlays inside one task module.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

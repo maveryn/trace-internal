@@ -34,11 +34,18 @@ class Analytical2DAnnotationSpec:
 
 @dataclass(frozen=True)
 class Analytical2DPolygonEntitySpec:
-    """One polygon-like rendered entity."""
+    """One polygon-like rendered entity.
+
+    `fill_kind` controls reusable shaded-region rendering:
+    - `none`: outline only,
+    - `shaded`: light filled target region,
+    - `background`: cutout/erased region filled with the scene background.
+    """
 
     entity_id: str
     entity_type: str
     point_ids: Tuple[str, ...]
+    fill_kind: str = "none"
 
 
 @dataclass(frozen=True)
@@ -87,6 +94,47 @@ class Analytical2DRenderedScene:
     annotation_centers: Dict[str, List[float]]
     entities: List[Dict[str, Any]]
     render_anchor: Dict[str, Any]
+
+
+def _blend_fill_color(
+    line_color: Tuple[int, int, int],
+    *,
+    background_fill_color: Tuple[int, int, int] | None,
+    mix: float,
+) -> Tuple[int, int, int]:
+    """Blend one line color toward the background for soft shaded fills."""
+    background = tuple(int(value) for value in (background_fill_color or (252, 252, 252)))
+    clamped_mix = max(0.0, min(1.0, float(mix)))
+    return tuple(
+        int(
+            round(
+                (float(line_color[index]) * float(clamped_mix))
+                + (float(background[index]) * (1.0 - float(clamped_mix)))
+            )
+        )
+        for index in range(3)
+    )
+
+
+def _resolve_polygon_fill_color(
+    fill_kind: str,
+    *,
+    shape_style: GeometryShapeStyle,
+    background_fill_color: Tuple[int, int, int] | None,
+) -> Tuple[int, int, int] | None:
+    """Return one fill color for polygon entities or `None` for outline-only polygons."""
+    normalized = str(fill_kind).strip().lower()
+    if normalized in {"", "none"}:
+        return None
+    if normalized == "shaded":
+        return _blend_fill_color(
+            tuple(int(value) for value in shape_style.line_color),
+            background_fill_color=background_fill_color,
+            mix=0.18,
+        )
+    if normalized == "background":
+        return tuple(int(value) for value in (background_fill_color or (252, 252, 252)))
+    raise ValueError(f"unsupported analytical polygon fill_kind: {fill_kind}")
 
 
 def analytical_unit_spacing_px(context: GraphSceneContext) -> int:
@@ -463,6 +511,7 @@ def render_analytical_2d_scene(
     label_font_size_px: int,
     label_stroke_width: int,
     fill_ratio: float,
+    background_fill_color: Tuple[int, int, int] | None = None,
 ) -> Analytical2DRenderedScene:
     """Render one analytical 2D scene and build shared evidence payloads."""
     scale, offset_x, offset_y = fit_points_to_canvas(
@@ -483,6 +532,16 @@ def render_analytical_2d_scene(
     for polygon in blueprint.polygon_entities:
         points = [point_positions[point_id] for point_id in polygon.point_ids]
         draw_points = [scale_point((float(point[0]), float(point[1])), int(context.scene_scale)) for point in points]
+        polygon_fill = _resolve_polygon_fill_color(
+            str(polygon.fill_kind),
+            shape_style=shape_style,
+            background_fill_color=background_fill_color,
+        )
+        if polygon_fill is not None:
+            draw.polygon(
+                draw_points,
+                fill=tuple(int(value) for value in polygon_fill),
+            )
         _draw_polygon_outline(
             draw,
             draw_points,
@@ -494,7 +553,10 @@ def render_analytical_2d_scene(
             {
                 "entity_id": str(polygon.entity_id),
                 "entity_type": str(polygon.entity_type),
-                "attrs": {"vertices": [[float(point[0]), float(point[1])] for point in points]},
+                "attrs": {
+                    "vertices": [[float(point[0]), float(point[1])] for point in points],
+                    "fill_kind": str(polygon.fill_kind),
+                },
             }
         )
 

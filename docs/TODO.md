@@ -7,13 +7,13 @@
 1. Extend objective-first measurement pattern to additional domains.
 2. Add cross-domain `scene_variant` + role-binding spec in architecture/ABI docs.
 3. Improve dataset QA diagnostics/report summaries.
-4. Extend analytical geometry to additional objectives beyond the current analytical set (composite/shaded-region area, additional 3D objectives).
+4. Extend analytical geometry to additional objectives beyond the current analytical set (additional 3D objectives, richer conic/composite-region reasoning).
 
 ## Later (P2)
 1. Add split-artifact generation with deterministic split policy metadata.
 2. Add richer dataset inspection tooling around trace shards and build reports.
 3. Keep future tile task groups aligned with `configs/domains/tile/base.yaml` shared defaults.
-4. Expand geometry analytical task suite with multi-step composite-region and shaded-area reasoning.
+4. Expand geometry analytical task suite with more complex multi-step composite-region and conic-region reasoning.
 5. Add geometry `estimate` task track for non-exact quantitative reasoning (for example count graph squares, count angles `< 90°`).
 
 ## Deferred
@@ -36,6 +36,7 @@
 - `task_geometry_measurement_length`
 - `task_geometry_measurement_slope`
 - `task_geometry_analytical_2d_area`
+- `task_geometry_analytical_2d_composite_area`
 - `task_geometry_analytical_2d_length`
 - `task_geometry_analytical_2d_perimeter`
 - `task_geometry_analytical_3d_volume`

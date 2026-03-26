@@ -68,6 +68,7 @@ Promote helpers when a second consumer appears.
    - `prompt_text.py` provides canonical prompt-fragment helpers such as `append_required_labels_clause(...)` so label-list suffixes keep consistent punctuation across geometry tasks.
    - `slope_geometry.py` provides reusable slope-line feasibility/sampling helpers for graph-paper slope tasks.
    - `analytical_2d_scene.py` provides reusable analytical 2D scene fitting, collision-aware annotation/label placement, and shared polygon/circle/helper rendering for annotated analytical objectives.
+   - Use `fill_kind="shaded"` / `fill_kind="background"` on analytical polygon entities when a shaded-region objective needs persistent filled target regions or visible cutouts; keep that fill behavior in the shared analytical scene helper rather than bespoke task-local drawing.
    - `analytical_3d_solids.py` provides reusable 3D-solid rendering/sampling helpers shared by analytical 3D objectives (currently `volume` and `surface_area`).
    - `analytical_task.py` provides shared prompt-slot, answer-bound, and variant-resolution helpers reused by analytical geometry task modules.
 2. Geometry measurement task-group: `trace/tasks/geometry/measurement/defaults.py`, `shape_measure_base.py`, `trace/tasks/geometry/shared/conic_geometry.py`, `trace/tasks/geometry/shared/length_geometry.py`

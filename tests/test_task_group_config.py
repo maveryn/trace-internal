@@ -295,6 +295,37 @@ def test_geometry_analytical_defaults_loaded() -> None:
     ):
         assert str(length_prompt[f"question_text_{key}"]).strip()
 
+    composite_generation, composite_rendering, composite_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_analytical_2d_composite_area",
+    )
+    assert sorted(composite_generation["variant_weights"].keys()) == [
+        "l_shape_cutout",
+        "rectangle_inner_cutout",
+        "rectangle_triangle_cutout",
+        "rectangle_triangle_union",
+        "step_rectangles_union",
+    ]
+    assert bool(composite_generation["balanced_variant_sampling"]) is True
+    assert int(composite_generation["dimension_min"]) >= 1
+    assert int(composite_generation["dimension_max"]) >= int(composite_generation["dimension_min"])
+    assert int(composite_rendering["line_width"]) > 0
+    assert float(composite_rendering["analytical_scene_fill_ratio"]) < float(render_shared["analytical_scene_fill_ratio"])
+    assert str(composite_prompt["bundle_id"]).strip() == "geometry_analytical_composite_area_v1"
+    assert str(composite_prompt["task_key"]).strip() == "analytical_composite_area_query"
+    assert str(composite_prompt["task_family_key"]).strip() == "analytical_composite_area_scene"
+    assert str(composite_prompt["object_description"]).strip()
+    assert str(composite_prompt["evidence_hint_measurement_map"]).strip()
+    assert str(composite_prompt["answer_hint_integer"]).strip()
+    for key in (
+        "rectangle_inner_cutout",
+        "rectangle_triangle_cutout",
+        "rectangle_triangle_union",
+        "l_shape_cutout",
+        "step_rectangles_union",
+    ):
+        assert str(composite_prompt[f"question_text_{key}"]).strip()
+
     perimeter_generation, perimeter_rendering, perimeter_prompt = split_generation_rendering_prompt_defaults(
         cfg,
         task_id="task_geometry_analytical_2d_perimeter",

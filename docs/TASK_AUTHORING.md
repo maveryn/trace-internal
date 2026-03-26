@@ -83,6 +83,7 @@ Use this as the implementation checklist for new or modified tasks.
 10. If the same fallback constants are used by multiple sibling tasks, move them to a task-group shared defaults module.
 11. For cross-domain shared utilities, keep global fallback constants in the shared utility module and treat domain/task-group config keys as optional overrides.
 12. For analytical scenes with free-form numeric annotations, reserve explicit border margin and use collision-aware local placement so labels/value text do not sit directly on geometry or hug the canvas edge.
+13. For analytical composite/shaded objectives, keep region-fill semantics in the shared analytical scene helper so sibling tasks can reuse shaded-target and cutout rendering without task-local draw-order hacks.
 
 ## 5) Sampling rules
 1. Global sampling unit is `task`.

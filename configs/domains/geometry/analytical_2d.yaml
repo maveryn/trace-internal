@@ -53,6 +53,18 @@ generation:
         isosceles_trapezoid_bases_height: 1.0
         inscribed_square_diameter: 1.0
       balanced_variant_sampling: true
+    task_geometry_analytical_2d_composite_area:
+      answer_min: 20
+      answer_max: 2500
+      dimension_min: 4
+      dimension_max: 40
+      variant_weights:
+        rectangle_inner_cutout: 1.0
+        rectangle_triangle_cutout: 1.0
+        rectangle_triangle_union: 1.0
+        l_shape_cutout: 1.0
+        step_rectangles_union: 1.0
+      balanced_variant_sampling: true
 
 rendering:
   shared:
@@ -73,6 +85,9 @@ rendering:
     analytical_unit_spacing_px: 10
     analytical_unit_padding_px: 20
     analytical_scene_fill_ratio: 0.74
+  task_overrides:
+    task_geometry_analytical_2d_composite_area:
+      analytical_scene_fill_ratio: 0.68
 
 visual:
   background:
@@ -159,3 +174,13 @@ prompt:
       question_text_rhombus_diagonals: The rhombus shows both diagonals. What is the perimeter of the rhombus?
       question_text_isosceles_trapezoid_bases_height: The isosceles trapezoid shows both bases and a height. What is the perimeter of the trapezoid?
       question_text_inscribed_square_diameter: The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?
+    task_geometry_analytical_2d_composite_area:
+      bundle_id: geometry_analytical_composite_area_v1
+      task_family_key: analytical_composite_area_scene
+      task_key: analytical_composite_area_query
+      object_description: a shaded composite geometric region with measurement annotations
+      question_text_rectangle_inner_cutout: The shaded region is an outer rectangle with one inner rectangular cutout. What is the area of the shaded region in square units?
+      question_text_rectangle_triangle_cutout: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?
+      question_text_rectangle_triangle_union: The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?
+      question_text_l_shape_cutout: The shaded figure is an L-shaped region formed from a rectangle with one corner removed. What is the area of the shaded region in square units?
+      question_text_step_rectangles_union: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?

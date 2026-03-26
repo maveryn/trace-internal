@@ -372,6 +372,7 @@ def test_geometry_comparison_defaults_loaded() -> None:
 
     generation_overrides = cfg["generation"]["task_overrides"]
     assert "task_geometry_comparison_angle" in generation_overrides
+    assert "task_geometry_comparison_length" in generation_overrides
 
     render_shared = cfg["rendering"]["shared"]
     assert int(render_shared["canvas_size_min"]) > 0
@@ -403,6 +404,22 @@ def test_geometry_comparison_defaults_loaded() -> None:
     assert str(angle_prompt["question_text_smallest"]).strip()
     assert str(angle_prompt["evidence_hint"]).strip()
     assert str(angle_prompt["answer_hint"]).strip()
+
+    length_generation, length_rendering, length_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_comparison_length",
+    )
+    assert int(length_generation["min_segment_length"]) < int(length_generation["max_segment_length"])
+    assert int(length_generation["max_abs_vector_component"]) > 0
+    assert sorted(length_generation["query_type_weights"].keys()) == ["largest", "smallest"]
+    assert sorted(length_generation["object_count_weights"].keys()) == ["4", "5", "6"]
+    assert float(length_generation["min_absolute_gap_units"]) > 0.0
+    assert int(length_rendering["line_width"]) > 0
+    assert str(length_prompt["object_description"]).strip()
+    assert str(length_prompt["question_text_largest"]).strip()
+    assert str(length_prompt["question_text_smallest"]).strip()
+    assert str(length_prompt["evidence_hint"]).strip()
+    assert str(length_prompt["answer_hint"]).strip()
 
 
 def test_geometry_analytical_3d_defaults_loaded() -> None:

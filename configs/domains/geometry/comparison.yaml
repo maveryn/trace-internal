@@ -20,6 +20,18 @@ generation:
         "4": 1.0
         "5": 1.0
         "6": 1.0
+    task_geometry_comparison_length:
+      min_segment_length: 2
+      max_segment_length: 10
+      max_abs_vector_component: 10
+      min_absolute_gap_units: 2.0
+      query_type_weights:
+        largest: 1.0
+        smallest: 1.0
+      object_count_weights:
+        "4": 1.0
+        "5": 1.0
+        "6": 1.0
 
 rendering:
   shared:
@@ -48,3 +60,9 @@ prompt:
       question_text_smallest: Which labeled angle has the smallest measure?
       evidence_hint: 'set "evidence" to an array of exactly three graph-paper points for the winning angle: the vertex and the two ray endpoints'
       answer_hint: 'set "answer" to the single-letter label of the correct angle'
+    task_geometry_comparison_length:
+      object_description: several labeled line segments
+      question_text_largest: Which labeled segment is the longest?
+      question_text_smallest: Which labeled segment is the shortest?
+      evidence_hint: 'set "evidence" to an array of exactly two graph-paper points for the winning segment endpoints'
+      answer_hint: 'set "answer" to the single-letter label of the correct segment'

@@ -64,6 +64,7 @@ Use this checklist during implementation and refactor reviews.
 48. When a second analytical 2D objective reuses the same scene-fitting and annotation-rendering flow, promote that machinery into a shared analytical 2D scene helper instead of cloning another task-local render stack.
 49. When analytical shaded/composite tasks need persistent fills or cutouts, extend the shared analytical scene renderer with explicit fill semantics (`shaded`, `background`) instead of drawing ad-hoc overlays inside one task module.
 50. For label-answer comparison tasks, randomize visible object labels independently of layout/slot order so answer-label distributions are not biased toward fixed positions like top-left or first-drawn objects.
+51. When a second geometry comparison task needs the same query/object-count/winner-label balancing or graph-paper slot placement, promote that logic into comparison-family shared helpers instead of cloning the first task's sampler/layout code.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

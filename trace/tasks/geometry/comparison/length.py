@@ -1,4 +1,4 @@
-"""Graph-paper geometry comparison task over multiple labeled angles."""
+"""Graph-paper geometry comparison task over multiple labeled line segments."""
 
 from __future__ import annotations
 
@@ -23,7 +23,6 @@ from ...shared.config_defaults import (
     required_group_defaults,
     split_generation_rendering_prompt_defaults,
 )
-from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.geometry_primitives import Point, point_inside_square_canvas
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_json_example import build_prompt_json_examples
@@ -38,11 +37,10 @@ from ...shared.text_rendering import (
     resolve_scene_label_font_size_px,
     resolve_text_label_center,
 )
-from ..shared.angle_geometry import primitive_angle_pair_catalog
 from ..shared.background_defaults import POST_IMAGE_BACKGROUND_DEFAULTS
-from ..shared.graph_paper import offset_point_by_grid_vector
 from ..shared.graph_rendering import graph_paper_grid_from_frame, scale_point
 from ..shared.labeled_point_evidence import graph_point_set_evidence_artifacts
+from ..shared.length_geometry import integer_length_vectors
 from ..shared.noise_defaults import POST_IMAGE_NOISE_DEFAULTS
 from ..shared.render_variation import sample_int_render_param
 from ..shared.shape_style import (
@@ -72,49 +70,43 @@ from .shared import (
 
 @dataclass(frozen=True)
 class _TaskDefaults:
-    """Stable fallback defaults for angle-comparison generation."""
+    """Stable fallback defaults for length-comparison generation."""
 
     canvas_size_min: int = COMPARISON_SHARED_DEFAULTS.canvas_size_min
     canvas_size_max: int = COMPARISON_SHARED_DEFAULTS.canvas_size_max
     graph_cells_min: int = COMPARISON_SHARED_DEFAULTS.graph_cells_min
     graph_cells_max: int = COMPARISON_SHARED_DEFAULTS.graph_cells_max
     line_width: int = COMPARISON_SHARED_DEFAULTS.line_width
-    label_offset_px: float = COMPARISON_SHARED_DEFAULTS.label_offset_px
     label_font_size_min: int = COMPARISON_SHARED_DEFAULTS.label_font_size_min
     label_font_size_max: int = COMPARISON_SHARED_DEFAULTS.label_font_size_max
     label_stroke_width: int = COMPARISON_SHARED_DEFAULTS.label_stroke_width
     object_count_min: int = COMPARISON_SHARED_DEFAULTS.object_count_min
     object_count_max: int = COMPARISON_SHARED_DEFAULTS.object_count_max
-    min_angle: int = 30
-    max_angle: int = 150
-    angle_step: int = 1
-    max_catalog_quantization_error_degrees: float = 2.0
-    max_abs_vector_component: int = 8
-    min_ray_length_units: float = 2.0
     min_normalized_gap: float = COMPARISON_SHARED_DEFAULTS.min_normalized_gap
-    min_absolute_gap_degrees: float = 10.0
     object_label_offset_px: float = COMPARISON_SHARED_DEFAULTS.object_label_offset_px
+    min_segment_length: int = 2
+    max_segment_length: int = 10
+    max_abs_vector_component: int = 10
+    min_absolute_gap_units: float = 2.0
 
 
 @dataclass(frozen=True)
-class _AngleObject:
-    """One labeled angle object rendered in the comparison scene."""
+class _SegmentObject:
+    """One labeled segment object rendered in the comparison scene."""
 
     label: str
-    vertex: Point
-    point_a: Point
-    point_b: Point
-    target_angle_degrees: int
-    raw_angle_degrees: float
+    endpoint_a: Point
+    endpoint_b: Point
+    length_units: int
 
 
 @dataclass(frozen=True)
 class _ScenePayload:
-    """Trace-ready scene payload for one multi-angle comparison instance."""
+    """Trace-ready scene payload for one multi-segment comparison instance."""
 
     query_type: str
     object_count: int
-    objects: Tuple[_AngleObject, ...]
+    objects: Tuple[_SegmentObject, ...]
     winner_metrics: ComparisonGapMetrics
     winner_label: str
     evidence_points_by_label: Dict[str, Point]
@@ -126,58 +118,86 @@ _DEFAULTS = _TaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("geometry", "comparison")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id="task_geometry_comparison_angle",
+    task_id="task_geometry_comparison_length",
 )
 
 
-def _sample_target_angles(
+def _length_vectors_by_length(
+    *,
+    min_segment_length: int,
+    max_segment_length: int,
+    max_abs_vector_component: int,
+) -> Dict[int, List[Tuple[int, int]]]:
+    """Group feasible integer-length lattice vectors by segment length."""
+
+    grouped: Dict[int, List[Tuple[int, int]]] = {}
+    for dx, dy, length in integer_length_vectors(
+        max_abs_component=int(max_abs_vector_component),
+        min_edge_length=int(min_segment_length),
+        max_edge_length=int(max_segment_length),
+    ):
+        grouped.setdefault(int(length), []).append((int(dx), int(dy)))
+    return grouped
+
+
+def _sample_target_lengths(
     rng,
     *,
-    candidate_angles: Sequence[int],
+    candidate_lengths: Sequence[int],
     object_count: int,
     query_type: str,
     min_normalized_gap: float,
-    min_absolute_gap_degrees: float,
+    min_absolute_gap_units: float,
 ) -> List[int]:
-    """Sample distinct target angles whose winner gap is visually meaningful."""
+    """Sample distinct target lengths whose winner gap is visually meaningful."""
 
-    candidates = [int(value) for value in candidate_angles]
+    candidates = [int(value) for value in candidate_lengths]
     if len(candidates) < int(object_count):
-        raise ValueError("not enough feasible angle candidates for requested object_count")
+        raise ValueError("not enough feasible length candidates for requested object_count")
     for _ in range(800):
         selected = [int(value) for value in rng.sample(candidates, int(object_count))]
         if comparison_gap_is_valid(
             [float(value) for value in selected],
             query_type=str(query_type),
             min_normalized_gap=float(min_normalized_gap),
-            min_absolute_gap=float(min_absolute_gap_degrees),
+            min_absolute_gap=float(min_absolute_gap_units),
         ):
             return selected
-    raise ValueError("failed to sample comparison angles with the configured gap rule")
+    raise ValueError("failed to sample comparison lengths with the configured gap rule")
 
 
-def _screen_bisector_direction(obj: _AngleObject) -> Point:
-    """Return one stable screen-space bisector direction for object-label placement."""
+def _segment_points_from_slot(
+    slot_units: Tuple[int, int],
+    *,
+    dx: int,
+    dy: int,
+    graph_origin: Point,
+    graph_spacing: int,
+) -> Tuple[Point, Point]:
+    """Return pixel-space segment endpoints centered near one slot."""
 
-    vec_a = (float(obj.point_a[0]) - float(obj.vertex[0]), float(obj.point_a[1]) - float(obj.vertex[1]))
-    vec_b = (float(obj.point_b[0]) - float(obj.vertex[0]), float(obj.point_b[1]) - float(obj.vertex[1]))
-    mag_a = math.hypot(float(vec_a[0]), float(vec_a[1]))
-    mag_b = math.hypot(float(vec_b[0]), float(vec_b[1]))
-    if mag_a <= 1e-9 or mag_b <= 1e-9:
-        return (1.0, -1.0)
-    bisector = (
-        (float(vec_a[0]) / float(mag_a)) + (float(vec_b[0]) / float(mag_b)),
-        (float(vec_a[1]) / float(mag_a)) + (float(vec_b[1]) / float(mag_b)),
+    base_x = int(slot_units[0]) - int(dx // 2)
+    base_y = int(slot_units[1]) - int(dy // 2)
+    endpoint_a_units = (int(base_x), int(base_y))
+    endpoint_b_units = (int(base_x + dx), int(base_y + dy))
+    return (
+        graph_units_to_pixel(
+            endpoint_a_units,
+            graph_origin=(float(graph_origin[0]), float(graph_origin[1])),
+            graph_spacing=int(graph_spacing),
+        ),
+        graph_units_to_pixel(
+            endpoint_b_units,
+            graph_origin=(float(graph_origin[0]), float(graph_origin[1])),
+            graph_spacing=int(graph_spacing),
+        ),
     )
-    if math.hypot(float(bisector[0]), float(bisector[1])) <= 1e-9:
-        return (float(-(vec_a[1]) / float(mag_a)), float(vec_a[0] / float(mag_a)))
-    return bisector
 
 
-def _draw_angle_scene(
+def _draw_segment_scene(
     draw: ImageDraw.ImageDraw,
     *,
-    objects: Sequence[_AngleObject],
+    objects: Sequence[_SegmentObject],
     scene_scale: int,
     line_width: int,
     label_font_size_px: int,
@@ -186,14 +206,13 @@ def _draw_angle_scene(
     render_canvas_size: int,
     shape_style: GeometryShapeStyle,
 ) -> Dict[str, List[float]]:
-    """Draw all angles plus comparison labels and return unscaled label centers."""
+    """Draw all compared segments plus object labels and return label centers."""
 
     scaled_objects = [
         {
             "label": str(obj.label),
-            "vertex": scale_point(obj.vertex, int(scene_scale)),
-            "point_a": scale_point(obj.point_a, int(scene_scale)),
-            "point_b": scale_point(obj.point_b, int(scene_scale)),
+            "endpoint_a": scale_point(obj.endpoint_a, int(scene_scale)),
+            "endpoint_b": scale_point(obj.endpoint_b, int(scene_scale)),
             "raw": obj,
         }
         for obj in objects
@@ -201,40 +220,60 @@ def _draw_angle_scene(
     blocked_segments: List[Tuple[Point, Point]] = []
     line_color = tuple(int(value) for value in shape_style.line_color)
     for scaled in scaled_objects:
-        point_a = scaled["point_a"]
-        vertex = scaled["vertex"]
-        point_b = scaled["point_b"]
-        draw.line([point_a[0], point_a[1], vertex[0], vertex[1]], fill=line_color, width=max(1, int(line_width)))
-        draw.line([vertex[0], vertex[1], point_b[0], point_b[1]], fill=line_color, width=max(1, int(line_width)))
-        blocked_segments.extend(
-            [
-                ((float(point_a[0]), float(point_a[1])), (float(vertex[0]), float(vertex[1]))),
-                ((float(vertex[0]), float(vertex[1])), (float(point_b[0]), float(point_b[1]))),
-            ]
+        endpoint_a = scaled["endpoint_a"]
+        endpoint_b = scaled["endpoint_b"]
+        draw.line(
+            [endpoint_a[0], endpoint_a[1], endpoint_b[0], endpoint_b[1]],
+            fill=line_color,
+            width=max(1, int(line_width)),
+        )
+        blocked_segments.append(
+            (
+                (float(endpoint_a[0]), float(endpoint_a[1])),
+                (float(endpoint_b[0]), float(endpoint_b[1])),
+            )
         )
 
     font = load_font(int(label_font_size_px), bold=True)
     occupied_boxes: List[Tuple[float, float, float, float]] = []
     label_centers: Dict[str, List[float]] = {}
+    label_offset_scaled = max(
+        float(object_label_offset_px) * float(scene_scale),
+        0.65 * float(max(8, int(label_font_size_px))),
+    )
+    line_clearance_px = max(
+        6.0,
+        0.45 * float(max(8, int(label_font_size_px))),
+        1.4 * float(max(1, int(line_width))),
+    )
     for scaled in scaled_objects:
-        obj = scaled["raw"]
-        direction = _screen_bisector_direction(obj)
+        endpoint_a = scaled["endpoint_a"]
+        endpoint_b = scaled["endpoint_b"]
+        midpoint = (
+            0.5 * (float(endpoint_a[0]) + float(endpoint_b[0])),
+            0.5 * (float(endpoint_a[1]) + float(endpoint_b[1])),
+        )
+        dx = float(endpoint_b[0]) - float(endpoint_a[0])
+        dy = float(endpoint_b[1]) - float(endpoint_a[1])
+        perpendicular = (-float(dy), float(dx))
+        if math.hypot(float(perpendicular[0]), float(perpendicular[1])) <= 1e-9:
+            perpendicular = (0.0, -1.0)
         center, bbox = resolve_text_label_center(
             draw,
-            text=str(obj.label),
-            anchor=(float(scaled["vertex"][0]), float(scaled["vertex"][1])),
-            base_direction=(float(direction[0]), float(direction[1])),
-            offset_px=float(object_label_offset_px) * float(scene_scale),
+            text=str(scaled["label"]),
+            anchor=midpoint,
+            base_direction=(float(perpendicular[0]), float(perpendicular[1])),
+            offset_px=float(label_offset_scaled),
             font=font,
             blocked_segments=blocked_segments,
             occupied_boxes=occupied_boxes,
             stroke_width=int(label_stroke_width),
-            line_clearance_px=max(4.0, 0.9 * float(max(1, int(line_width)))),
+            line_clearance_px=float(line_clearance_px),
             canvas_size=int(render_canvas_size),
         )
         draw_text_centered(
             draw,
-            text=str(obj.label),
+            text=str(scaled["label"]),
             center=(float(center[0]), float(center[1])),
             font=font,
             fill=tuple(int(value) for value in shape_style.label_color),
@@ -242,7 +281,7 @@ def _draw_angle_scene(
             stroke_width=int(label_stroke_width),
         )
         occupied_boxes.append(bbox)
-        label_centers[str(obj.label)] = [
+        label_centers[str(scaled["label"])] = [
             float(center[0]) / float(max(1, int(scene_scale))),
             float(center[1]) / float(max(1, int(scene_scale))),
         ]
@@ -256,14 +295,11 @@ def _sample_scene(
     context: GraphSceneContext,
     query_type: str,
     object_count: int,
-    min_angle: int,
-    max_angle: int,
-    angle_step: int,
-    max_catalog_quantization_error_degrees: float,
+    min_segment_length: int,
+    max_segment_length: int,
     max_abs_vector_component: int,
-    min_ray_length_units: float,
     min_normalized_gap: float,
-    min_absolute_gap_degrees: float,
+    min_absolute_gap_units: float,
     line_width: int,
     label_font_size_px: int,
     label_stroke_width: int,
@@ -271,23 +307,24 @@ def _sample_scene(
     draw: ImageDraw.ImageDraw,
     shape_style: GeometryShapeStyle,
 ) -> _ScenePayload:
-    """Sample and draw one multi-angle comparison scene."""
+    """Sample and draw one multi-segment comparison scene."""
 
-    catalog = primitive_angle_pair_catalog(
-        angle_step=int(angle_step),
-        min_angle=int(min_angle),
-        max_angle=int(max_angle),
+    vectors_by_length = _length_vectors_by_length(
+        min_segment_length=int(min_segment_length),
+        max_segment_length=int(max_segment_length),
         max_abs_vector_component=int(max_abs_vector_component),
-        max_quantization_error=float(max_catalog_quantization_error_degrees),
-        min_vector_length_units=float(min_ray_length_units),
     )
-    candidate_angles = [int(value) for value in sorted(catalog.keys())]
+    candidate_lengths = [int(value) for value in sorted(vectors_by_length.keys())]
     render_canvas_size = int(context.canvas_size) * int(context.scene_scale)
     endpoint_padding_px = max(3.0, 0.75 * float(context.graph_spacing) * float(context.scene_scale))
 
     last_error: Exception | None = None
     for _ in range(700):
-        labels = [str(label) for label in COMPARISON_ANSWER_LABEL_POOL if str(label) != str(winner_label)]
+        labels = [
+            str(label)
+            for label in COMPARISON_ANSWER_LABEL_POOL
+            if str(label) != str(winner_label)
+        ]
         rng.shuffle(labels)
         selected_labels = [str(winner_label), *labels[: max(0, int(object_count) - 1)]]
         rng.shuffle(selected_labels)
@@ -296,66 +333,48 @@ def _sample_scene(
             graph_cells=int(context.graph_cells),
             rng=rng,
         )
-        sampled_target_angles = _sample_target_angles(
+        sampled_target_lengths = _sample_target_lengths(
             rng,
-            candidate_angles=candidate_angles,
+            candidate_lengths=candidate_lengths,
             object_count=int(object_count),
             query_type=str(query_type),
             min_normalized_gap=float(min_normalized_gap),
-            min_absolute_gap_degrees=float(min_absolute_gap_degrees),
+            min_absolute_gap_units=float(min_absolute_gap_units),
         )
-        winner_target_angle = (
-            int(max(sampled_target_angles))
+        winner_target_length = (
+            int(max(sampled_target_lengths))
             if str(query_type) == "largest"
-            else int(min(sampled_target_angles))
+            else int(min(sampled_target_lengths))
         )
-        other_target_angles = [
-            int(value)
-            for value in sampled_target_angles
-            if int(value) != int(winner_target_angle)
+        other_target_lengths = [
+            int(value) for value in sampled_target_lengths if int(value) != int(winner_target_length)
         ]
-        rng.shuffle(other_target_angles)
+        rng.shuffle(other_target_lengths)
 
-        objects: List[_AngleObject] = []
+        objects: List[_SegmentObject] = []
         try:
             for label, slot_units in zip(selected_labels, slots):
-                target_angle = (
-                    int(winner_target_angle)
+                target_length = (
+                    int(winner_target_length)
                     if str(label) == str(winner_label)
-                    else int(other_target_angles.pop())
+                    else int(other_target_lengths.pop())
                 )
-                vertex = graph_units_to_pixel(
-                    (int(slot_units[0]), int(slot_units[1])),
-                    graph_origin=context.graph_origin,
-                    graph_spacing=int(context.graph_spacing),
-                )
-                pairs = list(catalog[int(target_angle)])
-                rng.shuffle(pairs)
-                selected_object: _AngleObject | None = None
-                for vector_a, vector_b, raw_angle in pairs:
-                    if bool(rng.randint(0, 1)):
-                        vector_a, vector_b = vector_b, vector_a
-                    point_a = offset_point_by_grid_vector(
-                        vertex,
-                        (int(vector_a[0]), int(vector_a[1])),
-                        spacing=int(context.graph_spacing),
+                candidates = list(vectors_by_length[int(target_length)])
+                rng.shuffle(candidates)
+                selected_object: _SegmentObject | None = None
+                for dx, dy in candidates:
+                    endpoint_a, endpoint_b = _segment_points_from_slot(
+                        slot_units,
+                        dx=int(dx),
+                        dy=int(dy),
+                        graph_origin=context.graph_origin,
+                        graph_spacing=int(context.graph_spacing),
                     )
-                    point_b = offset_point_by_grid_vector(
-                        vertex,
-                        (int(vector_b[0]), int(vector_b[1])),
-                        spacing=int(context.graph_spacing),
-                    )
-                    scaled_point_a = scale_point(point_a, int(context.scene_scale))
-                    scaled_vertex = scale_point(vertex, int(context.scene_scale))
-                    scaled_point_b = scale_point(point_b, int(context.scene_scale))
+                    scaled_point_a = scale_point(endpoint_a, int(context.scene_scale))
+                    scaled_point_b = scale_point(endpoint_b, int(context.scene_scale))
                     if not (
                         point_inside_square_canvas(
                             scaled_point_a,
-                            canvas_size=int(render_canvas_size),
-                            padding=float(endpoint_padding_px),
-                        )
-                        and point_inside_square_canvas(
-                            scaled_vertex,
                             canvas_size=int(render_canvas_size),
                             padding=float(endpoint_padding_px),
                         )
@@ -366,35 +385,33 @@ def _sample_scene(
                         )
                     ):
                         continue
-                    selected_object = _AngleObject(
+                    selected_object = _SegmentObject(
                         label=str(label),
-                        vertex=(float(vertex[0]), float(vertex[1])),
-                        point_a=(float(point_a[0]), float(point_a[1])),
-                        point_b=(float(point_b[0]), float(point_b[1])),
-                        target_angle_degrees=int(target_angle),
-                        raw_angle_degrees=float(raw_angle),
+                        endpoint_a=(float(endpoint_a[0]), float(endpoint_a[1])),
+                        endpoint_b=(float(endpoint_b[0]), float(endpoint_b[1])),
+                        length_units=int(target_length),
                     )
                     break
                 if selected_object is None:
-                    raise ValueError(f"no feasible angle geometry for target {target_angle}")
+                    raise ValueError(f"no feasible segment geometry for target {target_length}")
                 objects.append(selected_object)
         except Exception as exc:
             last_error = exc
             continue
 
-        raw_values = [float(obj.raw_angle_degrees) for obj in objects]
-        metrics = compute_comparison_gap_metrics(raw_values, query_type=str(query_type))
+        values = [float(obj.length_units) for obj in objects]
+        metrics = compute_comparison_gap_metrics(values, query_type=str(query_type))
         if str(objects[int(metrics.winner_index)].label) != str(winner_label):
             continue
         if not comparison_gap_is_valid(
-            raw_values,
+            values,
             query_type=str(query_type),
             min_normalized_gap=float(min_normalized_gap),
-            min_absolute_gap=float(min_absolute_gap_degrees),
+            min_absolute_gap=float(min_absolute_gap_units),
         ):
             continue
 
-        label_centers = _draw_angle_scene(
+        label_centers = _draw_segment_scene(
             draw,
             objects=tuple(objects),
             scene_scale=int(context.scene_scale),
@@ -406,6 +423,10 @@ def _sample_scene(
             shape_style=shape_style,
         )
         winner = objects[int(metrics.winner_index)]
+        midpoint = (
+            0.5 * (float(winner.endpoint_a[0]) + float(winner.endpoint_b[0])),
+            0.5 * (float(winner.endpoint_a[1]) + float(winner.endpoint_b[1])),
+        )
         return _ScenePayload(
             query_type=str(query_type),
             object_count=int(object_count),
@@ -413,30 +434,32 @@ def _sample_scene(
             winner_metrics=metrics,
             winner_label=str(winner.label),
             evidence_points_by_label={
-                "ray_a": (float(winner.point_a[0]), float(winner.point_a[1])),
-                "vertex": (float(winner.vertex[0]), float(winner.vertex[1])),
-                "ray_b": (float(winner.point_b[0]), float(winner.point_b[1])),
+                "endpoint_a": (float(winner.endpoint_a[0]), float(winner.endpoint_a[1])),
+                "endpoint_b": (float(winner.endpoint_b[0]), float(winner.endpoint_b[1])),
             },
             object_label_centers=label_centers,
             render_anchor={
                 "winner_label": str(winner.label),
-                "winner_vertex": [float(winner.vertex[0]), float(winner.vertex[1])],
+                "winner_midpoint": [float(midpoint[0]), float(midpoint[1])],
+                "winner_segment": [
+                    [float(winner.endpoint_a[0]), float(winner.endpoint_a[1])],
+                    [float(winner.endpoint_b[0]), float(winner.endpoint_b[1])],
+                ],
             },
         )
-
-    raise RuntimeError("failed to sample angle-comparison scene") from last_error
+    raise RuntimeError("failed to sample length-comparison scene") from last_error
 
 
 @register_task
-class GeometryComparisonAngleTask:
-    """Compare multiple labeled angles and choose the largest/smallest one."""
+class GeometryComparisonLengthTask:
+    """Compare multiple labeled segments and choose the longest/shortest one."""
 
-    task_id = "task_geometry_comparison_angle"
+    task_id = "task_geometry_comparison_length"
     domain = "geometry"
     task_group = "comparison"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        """Generate one deterministic multi-angle comparison instance."""
+        """Generate one deterministic multi-segment comparison instance."""
 
         scene_rng = spawn_rng(int(instance_seed), "scene")
 
@@ -469,29 +492,26 @@ class GeometryComparisonAngleTask:
             query_types=COMPARISON_QUERY_TYPES,
         )
 
-        min_angle = int(params.get("min_angle", group_default(_GEN_DEFAULTS, "min_angle", _DEFAULTS.min_angle)))
-        max_angle = int(params.get("max_angle", group_default(_GEN_DEFAULTS, "max_angle", _DEFAULTS.max_angle)))
-        angle_step = int(params.get("angle_step", group_default(_GEN_DEFAULTS, "angle_step", _DEFAULTS.angle_step)))
-        max_catalog_quantization_error = float(
+        min_segment_length = int(
             params.get(
-                "max_catalog_quantization_error_degrees",
-                group_default(
-                    _GEN_DEFAULTS,
-                    "max_catalog_quantization_error_degrees",
-                    _DEFAULTS.max_catalog_quantization_error_degrees,
-                ),
+                "min_segment_length",
+                group_default(_GEN_DEFAULTS, "min_segment_length", _DEFAULTS.min_segment_length),
+            )
+        )
+        max_segment_length = int(
+            params.get(
+                "max_segment_length",
+                group_default(_GEN_DEFAULTS, "max_segment_length", _DEFAULTS.max_segment_length),
             )
         )
         max_abs_vector_component = int(
             params.get(
                 "max_abs_vector_component",
-                group_default(_GEN_DEFAULTS, "max_abs_vector_component", _DEFAULTS.max_abs_vector_component),
-            )
-        )
-        min_ray_length_units = float(
-            params.get(
-                "min_ray_length_units",
-                group_default(_GEN_DEFAULTS, "min_ray_length_units", _DEFAULTS.min_ray_length_units),
+                group_default(
+                    _GEN_DEFAULTS,
+                    "max_abs_vector_component",
+                    _DEFAULTS.max_abs_vector_component,
+                ),
             )
         )
         min_normalized_gap = float(
@@ -500,22 +520,20 @@ class GeometryComparisonAngleTask:
                 group_default(_GEN_DEFAULTS, "min_normalized_gap", _DEFAULTS.min_normalized_gap),
             )
         )
-        min_absolute_gap_degrees = float(
+        min_absolute_gap_units = float(
             params.get(
-                "min_absolute_gap_degrees",
-                group_default(_GEN_DEFAULTS, "min_absolute_gap_degrees", _DEFAULTS.min_absolute_gap_degrees),
+                "min_absolute_gap_units",
+                group_default(_GEN_DEFAULTS, "min_absolute_gap_units", _DEFAULTS.min_absolute_gap_units),
             )
         )
-        if int(min_angle) >= int(max_angle):
-            raise ValueError("min_angle must be < max_angle for comparison angle task")
-        if int(angle_step) <= 0:
-            raise ValueError("angle_step must be > 0")
-        if float(min_ray_length_units) <= 0.0:
-            raise ValueError("min_ray_length_units must be > 0")
+        if int(min_segment_length) >= int(max_segment_length):
+            raise ValueError("min_segment_length must be < max_segment_length for comparison length task")
+        if int(max_abs_vector_component) <= 0:
+            raise ValueError("max_abs_vector_component must be > 0")
         if float(min_normalized_gap) < 0.0:
             raise ValueError("min_normalized_gap must be >= 0")
-        if float(min_absolute_gap_degrees) < 0.0:
-            raise ValueError("min_absolute_gap_degrees must be >= 0")
+        if float(min_absolute_gap_units) < 0.0:
+            raise ValueError("min_absolute_gap_units must be >= 0")
 
         context_params = dict(params)
         context = None
@@ -607,14 +625,11 @@ class GeometryComparisonAngleTask:
                     context=context_attempt,
                     query_type=str(query_type),
                     object_count=int(object_count),
-                    min_angle=int(min_angle),
-                    max_angle=int(max_angle),
-                    angle_step=int(angle_step),
-                    max_catalog_quantization_error_degrees=float(max_catalog_quantization_error),
+                    min_segment_length=int(min_segment_length),
+                    max_segment_length=int(max_segment_length),
                     max_abs_vector_component=int(max_abs_vector_component),
-                    min_ray_length_units=float(min_ray_length_units),
                     min_normalized_gap=float(min_normalized_gap),
-                    min_absolute_gap_degrees=float(min_absolute_gap_degrees),
+                    min_absolute_gap_units=float(min_absolute_gap_units),
                     line_width=int(line_width_attempt),
                     label_font_size_px=int(label_font_size_px_attempt),
                     label_stroke_width=int(label_stroke_width_scene_attempt),
@@ -645,23 +660,23 @@ class GeometryComparisonAngleTask:
             or label_stroke_width_scene is None
             or line_width is None
         ):
-            raise RuntimeError("failed to generate task_geometry_comparison_angle instance") from last_error
+            raise RuntimeError("failed to generate task_geometry_comparison_length instance") from last_error
 
         evidence = graph_point_set_evidence_artifacts(
             points_by_label=scene_payload.evidence_points_by_label,
             graph_origin=context.graph_origin,
             graph_spacing=int(context.graph_spacing),
-            witness_type="winning_angle_triplet",
-            ordered_labels=("ray_a", "vertex", "ray_b"),
+            witness_type="winning_segment_endpoints",
+            ordered_labels=("endpoint_a", "endpoint_b"),
         )
         evidence_value = evidence.get("evidence_value", [])
         if (
             not isinstance(evidence_value, list)
-            or len(evidence_value) != 3
+            or len(evidence_value) != 2
             or any(not isinstance(point, list) or len(point) != 2 for point in evidence_value)
             or any(not isinstance(coord, int) for point in evidence_value for coord in point)
         ):
-            raise RuntimeError("comparison-angle evidence must include three integer graph-lattice points")
+            raise RuntimeError("comparison-length evidence must include two integer graph-lattice points")
 
         image, background_meta_final, post_noise_meta = finalize_graph_scene_image(
             image,
@@ -717,9 +732,8 @@ class GeometryComparisonAngleTask:
         winner_label = str(scene_payload.winner_label)
         answer_gt = TypedValue(type="option_letter", value=str(winner_label))
         evidence_gt = TypedValue(type="graph_point_set", value=list(evidence_value))
-
         values_by_label = {
-            str(obj.label): round(float(obj.raw_angle_degrees), 6)
+            str(obj.label): int(obj.length_units)
             for obj in scene_payload.objects
         }
         query_params = {
@@ -729,36 +743,32 @@ class GeometryComparisonAngleTask:
             "object_count_probabilities": dict(object_count_probabilities),
             "winner_label": str(winner_label),
             "winner_label_probabilities": dict(winner_label_probabilities),
-            "min_angle": int(min_angle),
-            "max_angle": int(max_angle),
-            "angle_step": int(angle_step),
-            "min_normalized_gap": float(min_normalized_gap),
-            "min_absolute_gap_degrees": float(min_absolute_gap_degrees),
+            "min_segment_length": int(min_segment_length),
+            "max_segment_length": int(max_segment_length),
             "max_abs_vector_component": int(max_abs_vector_component),
-            "min_ray_length_units": float(min_ray_length_units),
+            "min_normalized_gap": float(min_normalized_gap),
+            "min_absolute_gap_units": float(min_absolute_gap_units),
         }
         trace_payload = {
             "scene_ir": {
-                "scene_kind": "geometry_2d_angle_comparison",
+                "scene_kind": "geometry_2d_length_comparison",
                 "entities": [
                     {
-                        "entity_id": f"angle_{str(obj.label)}",
-                        "entity_type": "angle",
+                        "entity_id": f"segment_{str(obj.label)}",
+                        "entity_type": "segment",
                         "attrs": {
                             "label": str(obj.label),
-                            "target_angle_degrees": int(obj.target_angle_degrees),
-                            "raw_angle_degrees": float(obj.raw_angle_degrees),
+                            "length_units": int(obj.length_units),
                             "points": {
-                                "arm_a": [float(obj.point_a[0]), float(obj.point_a[1])],
-                                "vertex": [float(obj.vertex[0]), float(obj.vertex[1])],
-                                "arm_b": [float(obj.point_b[0]), float(obj.point_b[1])],
+                                "endpoint_a": [float(obj.endpoint_a[0]), float(obj.endpoint_a[1])],
+                                "endpoint_b": [float(obj.endpoint_b[0]), float(obj.endpoint_b[1])],
                             },
                         },
                     }
                     for obj in scene_payload.objects
                 ],
                 "relations": {
-                    "comparison_target": "angle_measure",
+                    "comparison_target": "segment_length",
                     "query_type": str(query_type),
                     "winner_label": str(winner_label),
                 },
@@ -773,7 +783,7 @@ class GeometryComparisonAngleTask:
                 },
             },
             "query_spec": {
-                "task_variant": "primitive_angle_set",
+                "task_variant": "segment_set",
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -799,7 +809,7 @@ class GeometryComparisonAngleTask:
                 "object_label_centers": dict(scene_payload.object_label_centers),
             },
             "execution_trace": {
-                "scene_variant": "primitive_angle_set",
+                "scene_variant": "segment_set",
                 "query_type": str(query_type),
                 "query_type_probabilities": dict(query_type_probabilities),
                 "object_count": int(object_count),
@@ -813,7 +823,7 @@ class GeometryComparisonAngleTask:
                 "runner_up_value": float(scene_payload.winner_metrics.runner_up_value),
                 "winner_gap_abs": float(scene_payload.winner_metrics.gap_abs),
                 "winner_gap_normalized": float(scene_payload.winner_metrics.gap_normalized),
-                "required_evidence_labels": ["ray_a", "vertex", "ray_b"],
+                "required_evidence_labels": ["endpoint_a", "endpoint_b"],
                 "question_format": "label_choice_no_text_options",
             },
             "witness_symbolic": {
@@ -843,6 +853,6 @@ class GeometryComparisonAngleTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            task_variant="primitive_angle_set",
+            task_variant="segment_set",
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

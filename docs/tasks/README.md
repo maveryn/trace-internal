@@ -21,3 +21,4 @@ Current task docs:
 11. [task_tile_count_color_components.md](task_tile_count_color_components.md)
 12. [task_tile_path_shortest_path.md](task_tile_path_shortest_path.md)
 13. [task_tile_reachability_reachable_count.md](task_tile_reachability_reachable_count.md)
+14. [task_tile_symmetry_violation_count.md](task_tile_symmetry_violation_count.md)

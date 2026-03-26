@@ -412,6 +412,29 @@ def test_tile_path_defaults_loaded() -> None:
     assert str(prompt["json_example_answer_only"]).strip()
 
 
+def test_tile_symmetry_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("tile", "symmetry")
+    for section in ("generation", "rendering", "prompt", "visual"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation, rendering, prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_tile_symmetry_violation_count",
+    )
+    assert int(generation["palette_size_min"]) == 2
+    assert int(generation["palette_size_max"]) == 4
+    assert int(generation["target_violation_count_min"]) == 1
+    assert int(generation["target_violation_count_max"]) == 10
+    assert int(rendering["short_side_px_min"]) >= 32
+    assert str(prompt["bundle_id"]).strip() == "tile_symmetry_v1"
+    assert str(prompt["task_family_key"]).strip() == "rectangular_tile_board"
+    assert str(prompt["task_key"]).strip() == "symmetry_violation_count_query"
+    assert str(prompt["answer_hint"]).strip()
+    assert str(prompt["evidence_hint"]).strip()
+    assert str(prompt["json_example"]).strip()
+    assert str(prompt["json_example_answer_only"]).strip()
+
+
 def test_tile_count_defaults_loaded() -> None:
     cfg = get_task_group_defaults("tile", "count")
     for section in ("generation", "rendering", "prompt", "visual"):

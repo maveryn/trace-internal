@@ -7,6 +7,11 @@ generation:
       palette_size_min: 2
       palette_size_max: 3
       target_component_count_min: 1
+    task_tile_count_largest_component_size:
+      palette_size_min: 2
+      palette_size_max: 3
+      target_largest_component_size_min: 2
+      target_largest_component_size_max: 10
 
 prompt:
   shared:
@@ -23,3 +28,9 @@ prompt:
       evidence_hint: set "evidence" to the row-major list of [row, col] coordinates for every tile matching the query color
       json_example: '{"evidence":[[0,0],[0,1],[2,2]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
+    task_tile_count_largest_component_size:
+      task_key: largest_component_size_query
+      answer_hint: set "answer" to the size of the largest 4-neighbor connected component formed by the query-color tiles as an integer
+      evidence_hint: set "evidence" to the row-major list of [row, col] coordinates for the tiles in that largest query-color component
+      json_example: '{"evidence":[[0,0],[0,1],[1,1],[1,2]],"answer":4}'
+      json_example_answer_only: '{"answer":4}'

@@ -1,4 +1,4 @@
-"""Single-board rectangular-tile connected-components counting task."""
+"""Single-board rectangular-tile largest-component-size task."""
 
 from __future__ import annotations
 
@@ -17,6 +17,7 @@ from ...shared.config_defaults import (
     resolve_required_int_bounds,
     split_generation_rendering_prompt_defaults,
 )
+from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_json_example import resolve_prompt_json_examples
 from ...shared.prompt_variants import (
@@ -42,15 +43,15 @@ _DEFAULTS = RectangularColorBoardTaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("tile", "count")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, dict) else {},
-    task_id="task_tile_count_color_components",
+    task_id="task_tile_count_largest_component_size",
 )
 
 
 @register_task
-class TileColorComponentsTask:
-    """Count 4-neighbor connected components formed by one queried tile color."""
+class TileLargestComponentSizeTask:
+    """Return the size of the unique largest queried-color component."""
 
-    task_id = "task_tile_count_color_components"
+    task_id = "task_tile_count_largest_component_size"
     domain = "tile"
     task_group = "count"
 
@@ -74,34 +75,58 @@ class TileColorComponentsTask:
             fallback_max=int(_DEFAULTS.cols_max),
             context=f"generation defaults for {self.task_id}",
         )
-        default_target_component_count_max = max(int(rows_max), int(cols_max))
-        target_component_count_min = int(
+        palette_size_min, _palette_size_max = resolve_required_int_bounds(
+            params,
+            _GEN_DEFAULTS,
+            min_key="palette_size_min",
+            max_key="palette_size_max",
+            fallback_min=int(_DEFAULTS.palette_size_min),
+            fallback_max=int(_DEFAULTS.palette_size_max),
+            context=f"generation defaults for {self.task_id}",
+        )
+        target_largest_component_size_min = int(
             params.get(
-                "target_component_count_min",
-                group_default(_GEN_DEFAULTS, "target_component_count_min", 1),
+                "target_largest_component_size_min",
+                group_default(_GEN_DEFAULTS, "target_largest_component_size_min", 2),
             )
         )
-        target_component_count_max = int(
+        target_largest_component_size_max = int(
             params.get(
-                "target_component_count_max",
-                group_default(
-                    _GEN_DEFAULTS,
-                    "target_component_count_max",
-                    int(default_target_component_count_max),
-                ),
+                "target_largest_component_size_max",
+                group_default(_GEN_DEFAULTS, "target_largest_component_size_max", 10),
             )
         )
-        if int(target_component_count_min) > int(target_component_count_max):
-            raise ValueError("target_component_count_min must be <= target_component_count_max")
+        if int(target_largest_component_size_min) > int(target_largest_component_size_max):
+            raise ValueError("target_largest_component_size_min must be <= target_largest_component_size_max")
 
-        target_component_count = int(
-            task_rng.randint(int(target_component_count_min), int(target_component_count_max))
+        max_board_cells = int(rows_max) * int(cols_max)
+        feasible_target_max = int(max_board_cells) - int(palette_size_min)
+        effective_target_largest_component_size_max = min(
+            int(target_largest_component_size_max),
+            int(feasible_target_max),
         )
-        target_range_size = max(1, int(target_component_count_max) - int(target_component_count_min) + 1)
+        if int(effective_target_largest_component_size_max) < int(target_largest_component_size_min):
+            raise ValueError(
+                "largest component target range is infeasible for the resolved board/palette bounds"
+            )
+
+        target_range_size = max(
+            1,
+            int(effective_target_largest_component_size_max) - int(target_largest_component_size_min) + 1,
+        )
+        target_selection_index = resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{self.task_id}:target_largest_component_size",
+        )
+        target_largest_component_size = int(target_largest_component_size_min) + (
+            int(target_selection_index) % int(target_range_size)
+        )
 
         selected_option: Dict[str, Any] | None = None
-        available_component_answers: List[int] = []
+        available_largest_component_sizes: List[int] = []
         counts_by_color: Dict[str, int] = {}
+        component_counts_by_color: Dict[str, int] = {}
         scene = None
         for _ in range(int(max_attempts) * int(target_range_size)):
             scene = build_rectangular_color_board_scene(
@@ -115,27 +140,54 @@ class TileColorComponentsTask:
                 defaults=_DEFAULTS,
             )
 
-            component_options_by_answer: Dict[int, List[Dict[str, Any]]] = {}
+            options_by_answer: Dict[int, List[Dict[str, Any]]] = {}
             counts_by_color = {}
+            component_counts_by_color = {}
             for entry in build_color_component_catalog(scene):
-                component_options_by_answer.setdefault(int(entry["component_count"]), []).append(
+                query_color_name = str(entry["query_color_name"])
+                matching_coords = list(entry["matching_coords"])
+                component_coords = list(entry["component_coords"])
+                component_sizes = [int(value) for value in entry["component_sizes"]]
+                largest_component_size = int(entry["largest_component_size"])
+                largest_component_indices = [int(value) for value in entry["largest_component_indices"]]
+                component_count = int(entry["component_count"])
+
+                counts_by_color[query_color_name] = int(len(matching_coords))
+                component_counts_by_color[query_color_name] = int(component_count)
+
+                if int(component_count) < 2:
+                    continue
+                if len(largest_component_indices) != 1:
+                    continue
+                if not (
+                    int(target_largest_component_size_min)
+                    <= int(largest_component_size)
+                    <= int(effective_target_largest_component_size_max)
+                ):
+                    continue
+
+                largest_component_index = int(largest_component_indices[0])
+                winning_component_coords = list(component_coords[largest_component_index])
+                options_by_answer.setdefault(int(largest_component_size), []).append(
                     {
-                        "query_color_name": str(entry["query_color_name"]),
+                        "query_color_name": str(query_color_name),
                         "query_color_rgb": list(entry["query_color_rgb"]),
-                        "matching_coords": list(entry["matching_coords"]),
-                        "component_coords": list(entry["component_coords"]),
+                        "matching_coords": list(matching_coords),
+                        "component_coords": list(component_coords),
+                        "component_sizes": [int(value) for value in component_sizes],
+                        "largest_component_index": int(largest_component_index),
+                        "winning_component_coords": list(winning_component_coords),
                     }
                 )
-                counts_by_color[str(entry["query_color_name"])] = int(len(entry["matching_coords"]))
 
-            available_component_answers = sorted(int(answer) for answer in component_options_by_answer.keys())
-            if int(target_component_count) not in component_options_by_answer:
+            available_largest_component_sizes = sorted(int(answer) for answer in options_by_answer.keys())
+            if int(target_largest_component_size) not in options_by_answer:
                 continue
-            selected_option = task_rng.choice(component_options_by_answer[int(target_component_count)])
+            selected_option = task_rng.choice(options_by_answer[int(target_largest_component_size)])
             break
 
         if scene is None or selected_option is None:
-            raise RuntimeError("failed to sample rectangular tile board for target component count")
+            raise RuntimeError("failed to sample rectangular tile board for target largest component size")
 
         query_color_name = str(selected_option["query_color_name"])
         query_color_rgb = (
@@ -148,11 +200,17 @@ class TileColorComponentsTask:
             [tuple(int(value) for value in coord) for coord in component]
             for component in selected_option["component_coords"]
         ]
+        component_sizes = [int(value) for value in selected_option["component_sizes"]]
+        largest_component_index = int(selected_option["largest_component_index"])
+        winning_component_coords = [
+            tuple(int(value) for value in coord)
+            for coord in selected_option["winning_component_coords"]
+        ]
         query_color_hex = rgb_to_hex(query_color_rgb)
         query_color_label = format_named_color_with_hex(query_color_name, query_color_rgb)
 
         evidence_artifacts = coordinate_set_evidence_artifacts(
-            coords=matching_coords,
+            coords=winning_component_coords,
             bbox_map=scene.bbox_map,
         )
         component_ids = [
@@ -164,7 +222,11 @@ class TileColorComponentsTask:
             for component_index, component in enumerate(component_coords)
             for row, col in component
         }
-        answer_value = int(target_component_count)
+        winning_component_coord_set = {
+            (int(row), int(col))
+            for row, col in winning_component_coords
+        }
+        answer_value = int(target_largest_component_size)
 
         all_prompt_defaults = dict(_PROMPT_DEFAULTS if isinstance(_PROMPT_DEFAULTS, dict) else {})
         prompt_defaults = required_group_defaults(
@@ -180,20 +242,17 @@ class TileColorComponentsTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
-        prompt_bundle_id = str(prompt_defaults["bundle_id"])
-        prompt_task_family_key = str(prompt_defaults["task_family_key"])
-        prompt_task_key = str(prompt_defaults["task_key"])
         json_example, json_example_answer_only = resolve_prompt_json_examples(
             all_prompt_defaults,
-            evidence_value=[[0, 0], [0, 1], [2, 2]],
+            evidence_value=[[0, 0], [0, 1], [1, 1], [1, 2]],
             answer_type="integer",
         )
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
-            bundle_id=prompt_bundle_id,
-            task_family_key=prompt_task_family_key,
-            task_key=prompt_task_key,
+            bundle_id=str(prompt_defaults["bundle_id"]),
+            task_family_key=str(prompt_defaults["task_family_key"]),
+            task_key=str(prompt_defaults["task_key"]),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "rows": int(scene.rows),
@@ -215,7 +274,10 @@ class TileColorComponentsTask:
             scene,
             query_color_name=str(query_color_name),
             extra_attrs_by_coord={
-                coord: {"query_component_index": int(component_index_by_coord[coord])}
+                coord: {
+                    "query_component_index": int(component_index_by_coord[coord]),
+                    "is_largest_component": bool(coord in winning_component_coord_set),
+                }
                 for coord in component_index_by_coord
             },
         )
@@ -227,8 +289,8 @@ class TileColorComponentsTask:
                 "relations": {},
             },
             "query_spec": {
-                "task_variant": "color_components",
-                "template_id": "color_components_v1",
+                "task_variant": "largest_component_size",
+                "template_id": "largest_component_size_v1",
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
@@ -241,20 +303,26 @@ class TileColorComponentsTask:
                         "predicate": {"color_name": str(query_color_name)},
                     },
                     {
-                        "out": "evidence",
-                        "op": "project_coords",
-                        "in": "query_cells",
-                        "coord_space": "tile_grid",
-                        "coord_type": "grid_point_set",
-                        "ordering": "row_major",
-                    },
-                    {
                         "out": "components",
                         "op": "connected_components",
                         "in": "query_cells",
                         "connectivity": "4_neighbor",
                     },
-                    {"out": "answer", "op": "count", "in": "components"},
+                    {
+                        "out": "largest_component",
+                        "op": "argmax_component_size",
+                        "in": "components",
+                        "tie_break": "reject_non_unique",
+                    },
+                    {
+                        "out": "evidence",
+                        "op": "project_coords",
+                        "in": "largest_component",
+                        "coord_space": "tile_grid",
+                        "coord_type": "grid_point_set",
+                        "ordering": "row_major",
+                    },
+                    {"out": "answer", "op": "count", "in": "largest_component"},
                 ],
             },
             "render_spec": {
@@ -265,7 +333,7 @@ class TileColorComponentsTask:
                 "anchors": pixel_anchor_map_from_bboxes(scene.bbox_map),
             },
             "execution_trace": {
-                "task_variant": "color_components",
+                "task_variant": "largest_component_size",
                 "rows": int(scene.rows),
                 "cols": int(scene.cols),
                 "palette": list(palette_trace),
@@ -274,25 +342,35 @@ class TileColorComponentsTask:
                 "query_color_rgb": [int(query_color_rgb[0]), int(query_color_rgb[1]), int(query_color_rgb[2])],
                 "query_color_hex": str(query_color_hex),
                 "query_color_label": str(query_color_label),
-                "query_selection_strategy": "uniform_over_target_component_range_with_rejection",
-                "target_component_count": int(target_component_count),
-                "target_component_count_range": [
-                    int(target_component_count_min),
-                    int(target_component_count_max),
+                "query_selection_strategy": "uniform_over_target_largest_component_size_range_with_rejection",
+                "target_largest_component_size": int(target_largest_component_size),
+                "target_largest_component_size_range": [
+                    int(target_largest_component_size_min),
+                    int(effective_target_largest_component_size_max),
                 ],
-                "available_component_answers": [int(answer) for answer in available_component_answers],
+                "available_largest_component_sizes": [int(answer) for answer in available_largest_component_sizes],
                 "counts_by_color_name": dict(counts_by_color),
+                "component_counts_by_color_name": dict(component_counts_by_color),
                 "matching_coords": [[int(row), int(col)] for row, col in matching_coords],
-                "matching_ids": list(evidence_artifacts["witness_symbolic"]["ids"]),
+                "matching_ids": [cell_id((int(row), int(col))) for row, col in matching_coords],
                 "components": [
                     {
                         "component_index": int(index),
                         "coords": [[int(row), int(col)] for row, col in component],
                         "ids": list(component_ids[index]),
+                        "size": int(component_sizes[index]),
+                        "is_largest_component": bool(int(index) == int(largest_component_index)),
                     }
                     for index, component in enumerate(component_coords)
                 ],
-                "component_sizes": [int(len(component)) for component in component_coords],
+                "component_sizes": [int(value) for value in component_sizes],
+                "query_component_count": int(len(component_coords)),
+                "largest_component_index": int(largest_component_index),
+                "winning_component_coords": [
+                    [int(row), int(col)]
+                    for row, col in winning_component_coords
+                ],
+                "winning_component_ids": list(evidence_artifacts["witness_symbolic"]["ids"]),
                 "answer_value": int(answer_value),
             },
             "witness_symbolic": dict(evidence_artifacts["witness_symbolic"]),
@@ -300,27 +378,26 @@ class TileColorComponentsTask:
         }
 
         board_cell_count = int(scene.rows) * int(scene.cols)
-        matched_cell_count = int(len(matching_coords))
         complexity = TaskComplexity(
             complexity_score=min(
                 1.0,
                 max(
                     0.0,
                     (
-                        (float(board_cell_count) / 64.0)
-                        + (float(scene.palette_size) / 6.0)
-                        + (float(answer_value) / float(max(1, matched_cell_count)))
+                        (float(board_cell_count) / 49.0)
+                        + (float(scene.palette_size) / 3.0)
+                        + (float(answer_value) / 10.0)
+                        + (float(len(component_coords)) / 6.0)
                     )
-                    / 3.0,
+                    / 4.0,
                 ),
             ),
             complexity_components={
                 "rows": int(scene.rows),
                 "cols": int(scene.cols),
                 "palette_size": int(scene.palette_size),
-                "answer_count": int(answer_value),
-                "match_count": int(matched_cell_count),
-                "component_sizes": [int(len(component)) for component in component_coords],
+                "answer_size": int(answer_value),
+                "query_component_count": int(len(component_coords)),
             },
         )
 
@@ -336,6 +413,6 @@ class TileColorComponentsTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            task_variant="color_components",
+            task_variant="largest_component_size",
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

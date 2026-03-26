@@ -12,6 +12,7 @@ from .geometry.measurement import perimeter as _task_geometry_measurement_perime
 from .geometry.measurement import slope as _task_geometry_measurement_slope
 from .tile.count import color_components as _task_tile_count_color_components
 from .tile.count import color_count as _task_tile_count_color_count
+from .tile.count import largest_component_size as _task_tile_count_largest_component_size
 from .tile.path import shortest_path as _task_tile_path_shortest_path
 from .tile.reachability import reachable_count as _task_tile_reachability_reachable_count
 from .tile.symmetry import violation_count as _task_tile_symmetry_violation_count

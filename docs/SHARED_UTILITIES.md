@@ -89,7 +89,7 @@ Promote helpers when a second consumer appears.
    - `rectangular_board.py` is the canonical dynamic rectangular-board layout/rendering helper for single-board tile tasks.
    - `tile_colors.py` centralizes the named color palette used by color-driven tile tasks.
    - `named_color_board.py` is the canonical named-color board sampling/rendering layer shared across tile task groups.
-   - `color_board_common.py` now provides count-task adapters over the tile-shared named-color board helpers, plus query-match scene-entity construction for `tile/count`.
+   - `color_board_common.py` now provides count-task adapters over the tile-shared named-color board helpers, plus query-match scene-entity construction and reusable per-color component analysis for `tile/count`.
 
 ## 3) Reuse rules
 1. Do not duplicate deterministic utilities.

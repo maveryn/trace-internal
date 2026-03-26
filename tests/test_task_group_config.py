@@ -485,6 +485,23 @@ def test_tile_count_defaults_loaded() -> None:
     component_answer_only_example = json.loads(str(prompt_components["json_example_answer_only"]))
     assert component_answer_only_example == {"answer": 2}
 
+    generation_largest, _rendering_largest, prompt_largest = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_tile_count_largest_component_size",
+    )
+    assert int(generation_largest["palette_size_min"]) == 2
+    assert int(generation_largest["palette_size_max"]) == 3
+    assert int(generation_largest["target_largest_component_size_min"]) == 2
+    assert int(generation_largest["target_largest_component_size_max"]) == 10
+    assert str(prompt_largest["bundle_id"]).strip() == "tile_count_v1"
+    assert str(prompt_largest["task_key"]).strip() == "largest_component_size_query"
+    assert str(prompt_largest["answer_hint"]).strip()
+    assert str(prompt_largest["evidence_hint"]).strip()
+    largest_example = json.loads(str(prompt_largest["json_example"]))
+    assert largest_example == {"evidence": [[0, 0], [0, 1], [1, 1], [1, 2]], "answer": 4}
+    largest_answer_only_example = json.loads(str(prompt_largest["json_example_answer_only"]))
+    assert largest_answer_only_example == {"answer": 4}
+
 
 def test_tile_reachability_defaults_loaded() -> None:
     cfg = get_task_group_defaults("tile", "reachability")

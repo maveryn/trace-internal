@@ -68,6 +68,7 @@ Use this checklist during implementation and refactor reviews.
 52. When multiple tile task groups use the same background/noise fallback plumbing, promote those loaders into one tile-shared visual-defaults module instead of cloning near-identical task-group wrappers.
 53. For tile path tasks whose answer is a uniform per-step graph distance, use square cells and tile-coordinate path evidence so the image does not imply unequal horizontal vs vertical move costs.
 54. When a second tile task group needs named-color board rendering or palette/scene serialization, move that logic into a tile-shared named-color board module instead of importing helpers from a `tile/count`-named file.
+55. For extremum-over-components tasks, reject non-unique winning components and expose only the winning component as prompt-facing evidence; keep the full component partition in trace.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

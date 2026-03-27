@@ -34,6 +34,11 @@ SUPPORTED_MULTISERIES_CHART_SCENE_VARIANTS: Tuple[str, ...] = (
     "grouped_lollipop",
 )
 
+SUPPORTED_DISTRIBUTION_CHART_SCENE_VARIANTS: Tuple[str, ...] = (
+    "boxplot",
+    "histogram",
+)
+
 _MULTISERIES_GROUP_WIDTH_FRACTION = 0.60
 _MULTISERIES_LEGEND_WIDTH_FRACTION = 0.18
 _MULTISERIES_LEGEND_WIDTH_MAX_FRACTION = 0.24
@@ -59,6 +64,32 @@ class MultiSeriesChartMarkSpec:
     category_rank: int
     series_rank: int
     value: int
+    fill_rgb: ChartColor | None = None
+    outline_rgb: ChartColor | None = None
+
+
+@dataclass(frozen=True)
+class HistogramBinSpec:
+    """One numeric histogram bin."""
+
+    label: str
+    count: int
+    interval_start: int
+    interval_end: int
+    fill_rgb: ChartColor | None = None
+    outline_rgb: ChartColor | None = None
+
+
+@dataclass(frozen=True)
+class BoxPlotSpec:
+    """One rendered categorical boxplot."""
+
+    label: str
+    whisker_min: int
+    q1: int
+    median: int
+    q3: int
+    whisker_max: int
     fill_rgb: ChartColor | None = None
     outline_rgb: ChartColor | None = None
 
@@ -1600,13 +1631,386 @@ def render_multiseries_chart_scene(
     )
 
 
+def render_histogram_scene(
+    background: Image.Image,
+    *,
+    bins: Sequence[HistogramBinSpec],
+    render_params: ChartRenderParams,
+) -> RenderedChartScene:
+    """Render one contiguous-bin histogram scene."""
+
+    if len(bins) < 2:
+        raise ValueError("histograms require at least two bins")
+
+    image = background.convert("RGB")
+    draw = ImageDraw.Draw(image)
+    plot_left, plot_top, plot_right, plot_bottom = _resolve_plot_bbox(render_params)
+    plot_bbox = (int(plot_left), int(plot_top), int(plot_right), int(plot_bottom))
+    draw.rectangle(plot_bbox, fill=render_params.plot_fill_rgb)
+
+    max_count = max(int(bin_spec.count) for bin_spec in bins)
+    y_axis_max = max(4, int(max_count) + 1)
+    y_ticks = tuple(range(0, int(y_axis_max) + 1))
+    tick_font = load_font(int(render_params.tick_font_size_px), bold=False)
+    label_font = load_font(int(render_params.label_font_size_px), bold=True)
+    axis_color = tuple(int(value) for value in render_params.axis_color_rgb)
+    grid_color = tuple(int(value) for value in render_params.grid_color_rgb)
+
+    for tick_value in y_ticks:
+        y_px = _tick_y(
+            int(tick_value),
+            y_axis_max=int(y_axis_max),
+            plot_top=int(plot_top),
+            plot_bottom=int(plot_bottom),
+        )
+        draw.line(
+            [(float(plot_left), float(y_px)), (float(plot_right), float(y_px))],
+            fill=grid_color,
+            width=int(render_params.grid_line_width_px),
+        )
+        draw.line(
+            [
+                (float(plot_left) - float(render_params.tick_length_px), float(y_px)),
+                (float(plot_left), float(y_px)),
+            ],
+            fill=axis_color,
+            width=int(render_params.axis_line_width_px),
+        )
+        draw_text_centered(
+            draw,
+            text=str(tick_value),
+            center=(
+                float(plot_left) - float(render_params.tick_length_px) - 18.0,
+                float(y_px),
+            ),
+            font=tick_font,
+            fill=render_params.text_color_rgb,
+            stroke_fill=render_params.text_stroke_rgb,
+            stroke_width=max(1, int(round(0.06 * float(render_params.tick_font_size_px)))),
+        )
+
+    draw.line(
+        [(float(plot_left), float(plot_top)), (float(plot_left), float(plot_bottom))],
+        fill=axis_color,
+        width=int(render_params.axis_line_width_px),
+    )
+    draw.line(
+        [(float(plot_left), float(plot_bottom)), (float(plot_right), float(plot_bottom))],
+        fill=axis_color,
+        width=int(render_params.axis_line_width_px),
+    )
+
+    plot_width = float(max(1, int(plot_right) - int(plot_left)))
+    slot_width = float(plot_width / max(1, len(bins)))
+    mark_traces: List[Dict[str, Any]] = []
+    entities: List[Dict[str, Any]] = []
+    for index, bin_spec in enumerate(bins):
+        left = float(plot_left) + float(index) * float(slot_width)
+        right = float(plot_left) + float(index + 1) * float(slot_width)
+        top = _tick_y(
+            int(bin_spec.count),
+            y_axis_max=int(y_axis_max),
+            plot_top=int(plot_top),
+            plot_bottom=int(plot_bottom),
+        )
+        bar_bbox = (float(left), float(top), float(right), float(plot_bottom))
+        fill_rgb = (
+            tuple(int(channel) for channel in bin_spec.fill_rgb)
+            if isinstance(bin_spec.fill_rgb, tuple)
+            else tuple(int(value) for value in render_params.mark_fill_rgb)
+        )
+        outline_rgb = (
+            tuple(int(channel) for channel in bin_spec.outline_rgb)
+            if isinstance(bin_spec.outline_rgb, tuple)
+            else tuple(int(value) for value in render_params.mark_outline_rgb)
+        )
+        draw.rectangle(
+            bar_bbox,
+            fill=fill_rgb,
+            outline=outline_rgb,
+            width=int(render_params.mark_outline_width_px),
+        )
+        x_center = 0.5 * float(left + right)
+        label_center = (
+            float(x_center),
+            float(plot_bottom) + float(max(18, int(render_params.label_font_size_px) + 6)),
+        )
+        draw_text_centered(
+            draw,
+            text=str(bin_spec.label),
+            center=label_center,
+            font=tick_font,
+            fill=render_params.text_color_rgb,
+            stroke_fill=render_params.text_stroke_rgb,
+            stroke_width=max(1, int(round(0.06 * float(render_params.tick_font_size_px)))),
+        )
+        label_bbox = _text_bbox(draw, text=str(bin_spec.label), center=label_center, font=tick_font)
+        mark_center = (float(x_center), float(0.5 * (float(top) + float(plot_bottom))))
+        mark_trace = {
+            "entity_id": f"bin_{index}",
+            "label": str(bin_spec.label),
+            "value": int(bin_spec.count),
+            "x_rank": int(index),
+            "interval_start": int(bin_spec.interval_start),
+            "interval_end": int(bin_spec.interval_end),
+            "mark_center_px": [round(float(mark_center[0]), 3), round(float(mark_center[1]), 3)],
+            "mark_bbox_px": [round(float(value), 3) for value in bar_bbox],
+            "label_center_px": [round(float(label_center[0]), 3), round(float(label_center[1]), 3)],
+            "label_bbox_px": [round(float(value), 3) for value in label_bbox],
+            "mark_fill_rgb": [int(channel) for channel in fill_rgb],
+            "mark_outline_rgb": [int(channel) for channel in outline_rgb],
+        }
+        mark_traces.append(mark_trace)
+        entities.append(
+            {
+                "entity_id": str(mark_trace["entity_id"]),
+                "entity_type": "bin",
+                "attrs": {
+                    "label": str(bin_spec.label),
+                    "count": int(bin_spec.count),
+                    "x_rank": int(index),
+                    "interval_start": int(bin_spec.interval_start),
+                    "interval_end": int(bin_spec.interval_end),
+                    "scene_variant": "histogram",
+                    "mark_center_px": list(mark_trace["mark_center_px"]),
+                    "mark_bbox_px": list(mark_trace["mark_bbox_px"]),
+                    "label_center_px": list(mark_trace["label_center_px"]),
+                    "mark_fill_rgb": list(mark_trace["mark_fill_rgb"]),
+                    "mark_outline_rgb": list(mark_trace["mark_outline_rgb"]),
+                },
+            }
+        )
+
+    return RenderedChartScene(
+        image=image,
+        mark_traces=tuple(dict(item) for item in mark_traces),
+        entities=tuple(dict(item) for item in entities),
+        plot_bbox_px=tuple(int(value) for value in plot_bbox),
+        y_axis_max=int(y_axis_max),
+        y_ticks=tuple(int(value) for value in y_ticks),
+        scene_variant="histogram",
+    )
+
+
+def render_boxplot_scene(
+    background: Image.Image,
+    *,
+    boxplots: Sequence[BoxPlotSpec],
+    render_params: ChartRenderParams,
+) -> RenderedChartScene:
+    """Render one categorical boxplot scene."""
+
+    if len(boxplots) < 2:
+        raise ValueError("boxplot scenes require at least two categories")
+
+    image = background.convert("RGB")
+    draw = ImageDraw.Draw(image)
+    plot_left, plot_top, plot_right, plot_bottom = _resolve_plot_bbox(render_params)
+    plot_bbox = (int(plot_left), int(plot_top), int(plot_right), int(plot_bottom))
+    draw.rectangle(plot_bbox, fill=render_params.plot_fill_rgb)
+
+    max_value = max(int(spec.whisker_max) for spec in boxplots)
+    y_axis_max = max(4, int(max_value) + 1)
+    y_ticks = tuple(range(0, int(y_axis_max) + 1))
+    tick_font = load_font(int(render_params.tick_font_size_px), bold=False)
+    label_font = load_font(int(render_params.label_font_size_px), bold=True)
+    axis_color = tuple(int(value) for value in render_params.axis_color_rgb)
+    grid_color = tuple(int(value) for value in render_params.grid_color_rgb)
+
+    for tick_value in y_ticks:
+        y_px = _tick_y(
+            int(tick_value),
+            y_axis_max=int(y_axis_max),
+            plot_top=int(plot_top),
+            plot_bottom=int(plot_bottom),
+        )
+        draw.line(
+            [(float(plot_left), float(y_px)), (float(plot_right), float(y_px))],
+            fill=grid_color,
+            width=int(render_params.grid_line_width_px),
+        )
+        draw.line(
+            [
+                (float(plot_left) - float(render_params.tick_length_px), float(y_px)),
+                (float(plot_left), float(y_px)),
+            ],
+            fill=axis_color,
+            width=int(render_params.axis_line_width_px),
+        )
+        draw_text_centered(
+            draw,
+            text=str(tick_value),
+            center=(
+                float(plot_left) - float(render_params.tick_length_px) - 18.0,
+                float(y_px),
+            ),
+            font=tick_font,
+            fill=render_params.text_color_rgb,
+            stroke_fill=render_params.text_stroke_rgb,
+            stroke_width=max(1, int(round(0.06 * float(render_params.tick_font_size_px)))),
+        )
+
+    draw.line(
+        [(float(plot_left), float(plot_top)), (float(plot_left), float(plot_bottom))],
+        fill=axis_color,
+        width=int(render_params.axis_line_width_px),
+    )
+    draw.line(
+        [(float(plot_left), float(plot_bottom)), (float(plot_right), float(plot_bottom))],
+        fill=axis_color,
+        width=int(render_params.axis_line_width_px),
+    )
+
+    centers = _slot_centers(count=len(boxplots), plot_left=int(plot_left), plot_right=int(plot_right))
+    slot_width = float(max(1.0, (float(plot_right) - float(plot_left)) / max(1, len(boxplots))))
+    box_width = float(max(18.0, float(render_params.bar_width_fraction) * float(slot_width)))
+    whisker_cap = float(max(14.0, 0.55 * float(box_width)))
+
+    mark_traces: List[Dict[str, Any]] = []
+    entities: List[Dict[str, Any]] = []
+    for index, spec in enumerate(boxplots):
+        x_center = float(centers[index])
+        y_whisker_min = _tick_y(int(spec.whisker_min), y_axis_max=int(y_axis_max), plot_top=int(plot_top), plot_bottom=int(plot_bottom))
+        y_q1 = _tick_y(int(spec.q1), y_axis_max=int(y_axis_max), plot_top=int(plot_top), plot_bottom=int(plot_bottom))
+        y_median = _tick_y(int(spec.median), y_axis_max=int(y_axis_max), plot_top=int(plot_top), plot_bottom=int(plot_bottom))
+        y_q3 = _tick_y(int(spec.q3), y_axis_max=int(y_axis_max), plot_top=int(plot_top), plot_bottom=int(plot_bottom))
+        y_whisker_max = _tick_y(int(spec.whisker_max), y_axis_max=int(y_axis_max), plot_top=int(plot_top), plot_bottom=int(plot_bottom))
+
+        fill_rgb = (
+            tuple(int(channel) for channel in spec.fill_rgb)
+            if isinstance(spec.fill_rgb, tuple)
+            else tuple(int(value) for value in render_params.mark_fill_rgb)
+        )
+        outline_rgb = (
+            tuple(int(channel) for channel in spec.outline_rgb)
+            if isinstance(spec.outline_rgb, tuple)
+            else tuple(int(value) for value in render_params.mark_outline_rgb)
+        )
+
+        draw.line(
+            [(float(x_center), float(y_whisker_max)), (float(x_center), float(y_whisker_min))],
+            fill=outline_rgb,
+            width=max(1, int(render_params.line_width_px) - 1),
+        )
+        draw.line(
+            [
+                (float(x_center - 0.5 * whisker_cap), float(y_whisker_max)),
+                (float(x_center + 0.5 * whisker_cap), float(y_whisker_max)),
+            ],
+            fill=outline_rgb,
+            width=max(1, int(render_params.line_width_px) - 1),
+        )
+        draw.line(
+            [
+                (float(x_center - 0.5 * whisker_cap), float(y_whisker_min)),
+                (float(x_center + 0.5 * whisker_cap), float(y_whisker_min)),
+            ],
+            fill=outline_rgb,
+            width=max(1, int(render_params.line_width_px) - 1),
+        )
+
+        box_bbox = (
+            float(x_center - 0.5 * float(box_width)),
+            float(y_q3),
+            float(x_center + 0.5 * float(box_width)),
+            float(y_q1),
+        )
+        draw.rectangle(
+            box_bbox,
+            fill=fill_rgb,
+            outline=outline_rgb,
+            width=int(render_params.mark_outline_width_px),
+        )
+        draw.line(
+            [(float(box_bbox[0]), float(y_median)), (float(box_bbox[2]), float(y_median))],
+            fill=outline_rgb,
+            width=max(1, int(render_params.line_width_px) - 1),
+        )
+
+        label_center = (
+            float(x_center),
+            float(plot_bottom) + float(max(18, int(render_params.label_font_size_px) + 6)),
+        )
+        draw_text_centered(
+            draw,
+            text=str(spec.label),
+            center=label_center,
+            font=label_font,
+            fill=render_params.text_color_rgb,
+            stroke_fill=render_params.text_stroke_rgb,
+            stroke_width=int(render_params.label_stroke_width_px),
+        )
+        label_bbox = _text_bbox(draw, text=str(spec.label), center=label_center, font=label_font)
+        mark_bbox = (
+            float(box_bbox[0]),
+            float(min(y_whisker_max, y_whisker_min)),
+            float(box_bbox[2]),
+            float(max(y_whisker_max, y_whisker_min)),
+        )
+        mark_center = (float(x_center), float(0.5 * (float(box_bbox[1]) + float(box_bbox[3]))))
+        mark_trace = {
+            "entity_id": f"boxplot_{str(spec.label)}",
+            "label": str(spec.label),
+            "value": int(spec.median),
+            "x_rank": int(index),
+            "whisker_min": int(spec.whisker_min),
+            "q1": int(spec.q1),
+            "median": int(spec.median),
+            "q3": int(spec.q3),
+            "whisker_max": int(spec.whisker_max),
+            "mark_center_px": [round(float(mark_center[0]), 3), round(float(mark_center[1]), 3)],
+            "mark_bbox_px": [round(float(value), 3) for value in mark_bbox],
+            "label_center_px": [round(float(label_center[0]), 3), round(float(label_center[1]), 3)],
+            "label_bbox_px": [round(float(value), 3) for value in label_bbox],
+            "mark_fill_rgb": [int(channel) for channel in fill_rgb],
+            "mark_outline_rgb": [int(channel) for channel in outline_rgb],
+        }
+        mark_traces.append(mark_trace)
+        entities.append(
+            {
+                "entity_id": str(mark_trace["entity_id"]),
+                "entity_type": "boxplot",
+                "attrs": {
+                    "label": str(spec.label),
+                    "x_rank": int(index),
+                    "scene_variant": "boxplot",
+                    "whisker_min": int(spec.whisker_min),
+                    "q1": int(spec.q1),
+                    "median": int(spec.median),
+                    "q3": int(spec.q3),
+                    "whisker_max": int(spec.whisker_max),
+                    "mark_center_px": list(mark_trace["mark_center_px"]),
+                    "mark_bbox_px": list(mark_trace["mark_bbox_px"]),
+                    "label_center_px": list(mark_trace["label_center_px"]),
+                    "mark_fill_rgb": list(mark_trace["mark_fill_rgb"]),
+                    "mark_outline_rgb": list(mark_trace["mark_outline_rgb"]),
+                },
+            }
+        )
+
+    return RenderedChartScene(
+        image=image,
+        mark_traces=tuple(dict(item) for item in mark_traces),
+        entities=tuple(dict(item) for item in entities),
+        plot_bbox_px=tuple(int(value) for value in plot_bbox),
+        y_axis_max=int(y_axis_max),
+        y_ticks=tuple(int(value) for value in y_ticks),
+        scene_variant="boxplot",
+    )
+
+
 __all__ = [
+    "BoxPlotSpec",
     "ChartMarkSpec",
     "ChartRenderParams",
+    "HistogramBinSpec",
     "MultiSeriesChartMarkSpec",
     "RenderedChartScene",
     "SUPPORTED_CHART_SCENE_VARIANTS",
+    "SUPPORTED_DISTRIBUTION_CHART_SCENE_VARIANTS",
     "SUPPORTED_MULTISERIES_CHART_SCENE_VARIANTS",
+    "render_boxplot_scene",
+    "render_histogram_scene",
     "render_labeled_chart_scene",
     "render_multiseries_chart_scene",
     "resolve_chart_render_params",

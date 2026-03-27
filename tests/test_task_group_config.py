@@ -253,6 +253,70 @@ def test_charts_statistics_defaults_loaded() -> None:
     assert str(label_prompt["json_example_median_label"]).strip()
 
 
+def test_charts_distribution_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("charts", "distribution")
+    for section in ("generation", "rendering", "prompt"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["bin_count_min"]) >= 4
+    assert int(generation_shared["bin_count_max"]) >= int(generation_shared["bin_count_min"])
+    assert int(generation_shared["bin_width_min"]) >= 1
+    assert int(generation_shared["bin_width_max"]) >= int(generation_shared["bin_width_min"])
+    assert int(generation_shared["bin_frequency_min"]) >= 1
+    assert int(generation_shared["bin_frequency_max"]) >= int(generation_shared["bin_frequency_min"])
+    assert int(generation_shared["category_count_min"]) >= 4
+    assert int(generation_shared["category_count_max"]) >= int(generation_shared["category_count_min"])
+    assert sorted(cfg["generation"]["task_overrides"]["task_charts_distribution_histogram_count"]["task_variant_weights"].keys()) == [
+        "cumulative_count_to_bin",
+        "interval_mass",
+        "modal_bin_count",
+    ]
+    assert sorted(cfg["generation"]["task_overrides"]["task_charts_distribution_boxplot_label"]["task_variant_weights"].keys()) == [
+        "highest_median",
+        "largest_iqr",
+        "smallest_iqr",
+    ]
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_width"]) > 0
+    assert int(render_shared["canvas_height"]) > 0
+    assert int(render_shared["plot_margin_bottom_px"]) > 0
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "charts_distribution_v1"
+    assert str(prompt_shared["task_family_key"]).strip() == "distribution_chart"
+    assert str(prompt_shared["task_key"]).strip() == "histogram_count_query"
+    assert str(prompt_shared["object_description_histogram"]).strip()
+    assert str(prompt_shared["json_example_interval_mass"]).strip()
+
+    histogram_generation, histogram_rendering, histogram_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_charts_distribution_histogram_count",
+    )
+    assert {
+        "modal_bin_count",
+        "interval_mass",
+        "cumulative_count_to_bin",
+    }.issubset(set(histogram_generation["task_variant_weights"].keys()))
+    assert int(histogram_rendering["canvas_width"]) > 0
+    assert str(histogram_prompt["bundle_id"]).strip() == "charts_distribution_v1"
+    assert str(histogram_prompt["object_description_histogram"]).strip()
+
+    boxplot_generation, _, boxplot_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_charts_distribution_boxplot_label",
+    )
+    assert {
+        "highest_median",
+        "largest_iqr",
+        "smallest_iqr",
+    }.issubset(set(boxplot_generation["task_variant_weights"].keys()))
+    assert str(boxplot_prompt["task_key"]).strip() == "boxplot_label_query"
+    assert str(boxplot_prompt["answer_hint"]).strip()
+    assert str(boxplot_prompt["evidence_hint_largest_iqr"]).strip()
+
+
 def test_charts_multiseries_defaults_loaded() -> None:
     cfg = get_task_group_defaults("charts", "multiseries")
     for section in ("generation", "rendering", "prompt"):

@@ -12,6 +12,7 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
    - `counting`
    - `readout`
    - `multiseries`
+   - `distribution`
 3. First concrete statistics tasks:
    - `task_charts_statistics_summary_value`
    - `task_charts_statistics_summary_label`
@@ -21,7 +22,10 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
    - `task_charts_readout_subset_value`
 6. First concrete multiseries task:
    - `task_charts_multiseries_pairwise_comparison_count`
-7. First supported single-series chart-type renderings:
+7. First concrete distribution tasks:
+   - `task_charts_distribution_histogram_count`
+   - `task_charts_distribution_boxplot_label`
+8. First supported single-series chart-type renderings:
    - `area`
    - `bar`
    - `pie`
@@ -32,11 +36,14 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
    - `scatter`
    - `dot_plot`
    - `lollipop`
-8. First supported multiseries chart-type renderings:
+9. First supported multiseries chart-type renderings:
    - `grouped_bar`
    - `grouped_horizontal_bar`
    - `multi_line`
    - `grouped_lollipop`
+10. First supported distribution chart-type renderings:
+   - `histogram`
+   - `boxplot`
 
 ## Taxonomy
 1. Keep the normal TRACE split:
@@ -53,8 +60,11 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
 5. For the first multiseries family:
    - `task_group = multiseries`
    - active task: `pairwise_comparison_count`
-6. The semantic query type is the public `task_variant`.
-7. The chart type is the visual `scene_variant`.
+6. For the first distribution family:
+   - `task_group = distribution`
+   - active tasks: `histogram_count`, `boxplot_label`
+7. The semantic query type is the public `task_variant`.
+8. The chart type is the visual `scene_variant`.
 
 ### V1 variant axes
 1. `task_variant`:
@@ -81,12 +91,16 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
    - `grouped_horizontal_bar`
    - `multi_line`
    - `grouped_lollipop`
+4. Active distribution chart tasks currently use fixed `scene_variant` values:
+   - `histogram`
+   - `boxplot`
 
 Note:
 1. Charts are the first planned domain where one task naturally has both a semantic axis and a chart-type axis.
 2. Until the cross-domain `scene_variant` ABI note is fully written in core docs, treat this file as the domain-local contract for that split.
 3. `task_charts_statistics_summary_value` currently stays on the axis-based scene variants `area|bar|horizontal_bar|line|scatter|dot_plot|lollipop`; `pie`, `donut`, and `radar` remain enabled only on the tasks where their semantics still fit cleanly.
 4. `task_charts_multiseries_pairwise_comparison_count` is the first active multiseries chart task; it uses `2..3` named series, `5..10` labeled categories, category-label `label_set` evidence, and the multiseries scene variants `grouped_bar|grouped_horizontal_bar|multi_line|grouped_lollipop`.
+5. `task_charts_distribution_histogram_count` and `task_charts_distribution_boxplot_label` are the first active distribution tasks; they use fixed `scene_variant` values `histogram` and `boxplot` instead of sampling across the broader chart-variant pool.
 
 ## Scene contract
 1. One chart per image.
@@ -99,6 +113,9 @@ Note:
 8. Sample one random mark color per instance and use it consistently across all bars/points in that single-series chart.
 9. In v1, that mark color should be at least Lab distance `40` from white/light chart backgrounds.
 10. Pie-like scenes (`pie`, `donut`) are the exception: they use a distinct sampled color per slice and a legend on the right that maps slice colors to labels.
+11. Distribution scenes use their own semantics:
+   - histograms render contiguous numeric interval bins and treat bar height as count/frequency,
+   - boxplots render quartile/whisker summaries per labeled category.
 
 ### Chart-type semantics
 1. `area`
@@ -136,6 +153,12 @@ Note:
    - each category contains one point per series, and each series point sequence is connected by a colored line.
 14. `grouped_lollipop`
    - each category contains one colored lollipop stem/point per series without cumulative stacking.
+15. `histogram`
+   - the x-axis represents ordered numeric bins rather than arbitrary categories.
+   - adjacent bars should visually touch so the scene reads as a real histogram.
+16. `boxplot`
+   - each label denotes one categorical boxplot.
+   - the median is the line inside the box, the box spans `Q1..Q3`, and the whiskers show the minimum and maximum shown.
 
 ## Mark labels
 1. Every single-series mark uses one unique randomized uppercase label.

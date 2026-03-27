@@ -1,0 +1,221 @@
+{
+  "answer_distribution": {
+    "answer_type_counts": {
+      "integer": 100
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.1,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": 0.39,
+        "pass": null,
+        "status": "reported_not_gated_numeric_answers"
+      },
+      "min_unique_answers": {
+        "observed": 30,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": {
+      "bin_count": 5,
+      "bins": [
+        {
+          "bin_id": 0,
+          "count": 39,
+          "label": "[4, 10.4)"
+        },
+        {
+          "bin_id": 1,
+          "count": 25,
+          "label": "[10.4, 16.8)"
+        },
+        {
+          "bin_id": 2,
+          "count": 21,
+          "label": "[16.8, 23.2)"
+        },
+        {
+          "bin_id": 3,
+          "count": 8,
+          "label": "[23.2, 29.6)"
+        },
+        {
+          "bin_id": 4,
+          "count": 7,
+          "label": "[29.6, 36]"
+        }
+      ],
+      "max_bin_count": 39,
+      "max_bin_frequency": 0.39,
+      "range_max": 36.0,
+      "range_min": 4.0
+    },
+    "max_answer_count": 10,
+    "max_answer_frequency": 0.1,
+    "pass": true,
+    "sample_count": 100,
+    "top_answers": [
+      {
+        "answer_label": "10",
+        "count": 10
+      },
+      {
+        "answer_label": "12",
+        "count": 10
+      },
+      {
+        "answer_label": "7",
+        "count": 8
+      },
+      {
+        "answer_label": "5",
+        "count": 7
+      },
+      {
+        "answer_label": "11",
+        "count": 6
+      },
+      {
+        "answer_label": "6",
+        "count": 6
+      },
+      {
+        "answer_label": "18",
+        "count": 5
+      },
+      {
+        "answer_label": "20",
+        "count": 5
+      },
+      {
+        "answer_label": "24",
+        "count": 5
+      },
+      {
+        "answer_label": "16",
+        "count": 4
+      },
+      {
+        "answer_label": "17",
+        "count": 4
+      },
+      {
+        "answer_label": "8",
+        "count": 4
+      },
+      {
+        "answer_label": "15",
+        "count": 3
+      },
+      {
+        "answer_label": "22",
+        "count": 3
+      },
+      {
+        "answer_label": "23",
+        "count": 2
+      },
+      {
+        "answer_label": "36",
+        "count": 2
+      },
+      {
+        "answer_label": "4",
+        "count": 2
+      },
+      {
+        "answer_label": "9",
+        "count": 2
+      },
+      {
+        "answer_label": "13",
+        "count": 1
+      },
+      {
+        "answer_label": "14",
+        "count": 1
+      },
+      {
+        "answer_label": "19",
+        "count": 1
+      },
+      {
+        "answer_label": "21",
+        "count": 1
+      },
+      {
+        "answer_label": "27",
+        "count": 1
+      },
+      {
+        "answer_label": "28",
+        "count": 1
+      },
+      {
+        "answer_label": "29",
+        "count": 1
+      },
+      {
+        "answer_label": "30",
+        "count": 1
+      },
+      {
+        "answer_label": "31",
+        "count": 1
+      },
+      {
+        "answer_label": "32",
+        "count": 1
+      },
+      {
+        "answer_label": "34",
+        "count": 1
+      },
+      {
+        "answer_label": "35",
+        "count": 1
+      }
+    ],
+    "unique_answers": 30
+  },
+  "sample_count": 100,
+  "sampling_axes": {
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "cumulative_count_to_bin": 0.3333333333333333,
+        "interval_mass": 0.3333333333333333,
+        "modal_bin_count": 0.3333333333333333
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.34,
+      "observed_counts": {
+        "cumulative_count_to_bin": 33,
+        "interval_mass": 34,
+        "modal_bin_count": 33
+      },
+      "sample_count": 100
+    }
+  },
+  "task_id": "task_charts_distribution_histogram_count",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {
+      "cumulative_count_to_bin": 0.3333333333333333,
+      "interval_mass": 0.3333333333333333,
+      "modal_bin_count": 0.3333333333333333
+    },
+    "expected_source": "execution_trace",
+    "has_variants": true,
+    "observed_counts": {
+      "cumulative_count_to_bin": 33,
+      "interval_mass": 34,
+      "modal_bin_count": 33
+    },
+    "status": "reported"
+  }
+}

@@ -30,13 +30,15 @@ These are the chart types we expect to support most naturally across multiple ch
 12. `bubble`
 13. `pie`
 14. `donut`
-15. `heatmap`
+15. `histogram`
+16. `boxplot`
+17. `heatmap`
 
 ### Additional chart types we want to keep on the long-term consideration list
 These are valid future targets, but they are not part of the initial implementation scope yet.
 
 1. `stacked_area`
-2. `box_plot`
+2. `boxplot`
 3. `violin_plot`
 4. `hexbin`
 5. `density_contour`
@@ -48,7 +50,7 @@ These are valid future targets, but they are not part of the initial implementat
 
 ## Initial implementation target
 
-The first implementation step is now active: `task_charts_statistics_summary_value`, `task_charts_statistics_summary_label`, `task_charts_counting_value_count`, `task_charts_readout_subset_value`, and `task_charts_multiseries_pairwise_comparison_count` under `domain=charts`.
+The first implementation step is now active: `task_charts_statistics_summary_value`, `task_charts_statistics_summary_label`, `task_charts_counting_value_count`, `task_charts_readout_subset_value`, `task_charts_multiseries_pairwise_comparison_count`, `task_charts_distribution_histogram_count`, and `task_charts_distribution_boxplot_label` under `domain=charts`.
 
 The concrete v1 contract for the first rollout now lives in `CHART_TASK_SETUP.md`.
 
@@ -97,21 +99,26 @@ These are the active multiseries chart variants we currently support in the `mul
 3. `multi_line`
 4. `grouped_lollipop`
 
+### First active distribution chart variants
+These are the active distribution-style chart variants we currently support in the `distribution` family.
+
+1. `histogram`
+2. `boxplot`
+
 ### Deferred chart variants
 These remain under consideration, but they are not part of the current active chart contract.
 
 1. `stacked_bar`
 2. `bubble`
-3. `box_plot`
-4. `violin_plot`
+3. `violin_plot`
 5. `candlestick`
 6. `treemap`
 7. `heatmap`
-8. `histogram`
 
 Notes:
-1. `histogram` should only return as a chart variant if it uses true ordered numeric-bin semantics rather than acting as a visual alias of `bar`.
+1. `histogram` is now active only because it uses true ordered numeric-bin semantics rather than acting as a visual alias of `bar`.
 2. `grouped_bar` and `multi_line` are no longer deferred; they are active through `task_charts_multiseries_pairwise_comparison_count`.
+3. `boxplot` is now active as a distribution-family chart type rather than a drop-in single-series scene variant.
 
 ## Active and planned chart families
 1. Active:
@@ -119,6 +126,7 @@ Notes:
    - `counting`
    - `readout`
    - `multiseries`
+   - `distribution`
 2. Planned next:
    - `comparison`
    - `trend`

@@ -41,8 +41,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
 9. `task_charts_statistics_summary_label`, `task_charts_counting_value_count`, and `task_charts_readout_subset_value` additionally support `pie` and `donut` as composition-style scene variants with percentage slices and a right-side legend.
 10. Those same three chart tasks also support `radar` as a spoke-and-polygon scene variant with printed point values near the radar markers.
 11. `task_charts_multiseries_pairwise_comparison_count` supports `grouped_bar`, `multi_line`, `grouped_dot_plot`, and `grouped_lollipop`.
-12. `histogram` and `heatmap` remain under consideration for later chart-family support after the first rollout stabilizes.
-13. Keep the broader chart-type universe in `CHART_DOMAIN_PLAN.md` and the concrete v1 contract in `CHART_TASK_SETUP.md`.
+12. Keep the broader chart-type universe in `CHART_DOMAIN_PLAN.md` and the concrete active contract in `CHART_TASK_SETUP.md`; do not reintroduce `histogram` unless it returns with true numeric-bin semantics distinct from `bar`.
 
 ## Planned geometry measurement variants
 1. **Angle measurement**

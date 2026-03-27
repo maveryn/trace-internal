@@ -1,4 +1,4 @@
-"""Chart counting task over labeled bar, line, and scatter scenes."""
+"""Chart counting task over supported labeled single-series chart scenes."""
 
 from __future__ import annotations
 

@@ -3,7 +3,7 @@
 ## Purpose
 Capture the chart types currently under consideration for `domain=charts` and the initial implementation scope we plan to build first.
 
-This is a planning/source-of-truth note for chart-domain scope, not an active-task inventory yet.
+This is a planning/source-of-truth note for chart-domain scope and active chart-type direction, not the per-task contract layer.
 
 ## Taxonomy direction
 1. Keep the same high-level split we use elsewhere: `domain -> task_group -> task -> task_variant`.
@@ -35,18 +35,16 @@ These are the chart types we expect to support most naturally across multiple ch
 ### Additional chart types we want to keep on the long-term consideration list
 These are valid future targets, but they are not part of the initial implementation scope yet.
 
-1. `area`
-2. `stacked_area`
-3. `box_plot`
-4. `violin_plot`
-5. `hexbin`
-6. `density_contour`
-7. `radar`
-8. `treemap`
-9. `waterfall`
-10. `funnel`
-11. `candlestick`
-12. `gantt`
+1. `stacked_area`
+2. `box_plot`
+3. `violin_plot`
+4. `hexbin`
+5. `density_contour`
+6. `treemap`
+7. `waterfall`
+8. `funnel`
+9. `candlestick`
+10. `gantt`
 
 ## Initial implementation target
 
@@ -54,9 +52,9 @@ The first implementation step is now active: `task_charts_statistics_summary_val
 
 The concrete v1 contract for the first rollout now lives in `CHART_TASK_SETUP.md`.
 
-### First family
-1. The first planned chart family is `statistics`.
-2. This family should cover summary-value reasoning over the displayed data rather than chart-type-specific heuristics.
+### Initial family
+1. The chart rollout started with `statistics`.
+2. That family covers summary-value reasoning over the displayed data rather than chart-type-specific heuristics.
 3. The first concrete tasks in that family are:
    - `task_charts_statistics_summary_value`
    - `task_charts_statistics_summary_label`
@@ -73,8 +71,8 @@ The concrete v1 contract for the first rollout now lives in `CHART_TASK_SETUP.md
    - `argmin`
    - `median_label`
 
-### First chart variants to implement
-These are the first chart variants we currently plan to support across the active chart tasks.
+### First active single-series chart variants
+These are the active single-series chart variants we currently support across the chart domain.
 
 1. `bar`
 2. `area`
@@ -91,21 +89,29 @@ Note:
 1. `pie` and `donut` are composition-style chart variants: slices use distinct colors, the legend on the right maps colors to labels, and the numeric contract uses printed percentages rather than raw integer values.
 2. Those pie-like variants should only be enabled on tasks whose semantics still make sense under percentage composition; they are not required for every active chart task.
 
-### Chart variants we may add after the first statistics rollout stabilizes
-1. `histogram`
-2. `heatmap`
-
-### Chart variants we are explicitly not planning for the first statistics rollout
-These may still become later chart-family variants, but they are not part of the initial `statistics` implementation target.
+### First active multiseries chart variants
+These are the active multiseries chart variants we currently support in the `multiseries` family.
 
 1. `grouped_bar`
-2. `stacked_bar`
-3. `multi_line`
-4. `bubble`
-5. `box_plot`
-6. `violin_plot`
-7. `candlestick`
-8. `treemap`
+2. `multi_line`
+3. `grouped_dot_plot`
+4. `grouped_lollipop`
+
+### Deferred chart variants
+These remain under consideration, but they are not part of the current active chart contract.
+
+1. `stacked_bar`
+2. `bubble`
+3. `box_plot`
+4. `violin_plot`
+5. `candlestick`
+6. `treemap`
+7. `heatmap`
+8. `histogram`
+
+Notes:
+1. `histogram` should only return as a chart variant if it uses true ordered numeric-bin semantics rather than acting as a visual alias of `bar`.
+2. `grouped_bar` and `multi_line` are no longer deferred; they are active through `task_charts_multiseries_pairwise_comparison_count`.
 
 ## Active and planned chart families
 1. Active:

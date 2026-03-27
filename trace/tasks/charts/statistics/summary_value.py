@@ -1,4 +1,4 @@
-"""Chart statistics task over labeled bar, line, and scatter scenes."""
+"""Chart statistics task over labeled single-series axis-based chart scenes."""
 
 from __future__ import annotations
 

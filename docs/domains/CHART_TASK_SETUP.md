@@ -21,7 +21,7 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
    - `task_charts_readout_subset_value`
 6. First concrete multiseries task:
    - `task_charts_multiseries_pairwise_comparison_count`
-7. First supported chart-type renderings:
+7. First supported single-series chart-type renderings:
    - `area`
    - `bar`
    - `pie`
@@ -32,6 +32,11 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
    - `scatter`
    - `dot_plot`
    - `lollipop`
+8. First supported multiseries chart-type renderings:
+   - `grouped_bar`
+   - `multi_line`
+   - `grouped_dot_plot`
+   - `grouped_lollipop`
 
 ## Taxonomy
 1. Keep the normal TRACE split:
@@ -60,7 +65,7 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
    - `median`
    - `sum`
    - `mode`
-2. `scene_variant`:
+2. Active single-series chart tasks use these `scene_variant` values:
    - `area`
    - `bar`
    - `pie`
@@ -71,7 +76,7 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
    - `scatter`
    - `dot_plot`
    - `lollipop`
-3. Multiseries scenes currently use:
+3. Active multiseries chart tasks currently use these `scene_variant` values:
    - `grouped_bar`
    - `multi_line`
    - `grouped_dot_plot`
@@ -85,13 +90,15 @@ Note:
 
 ## Scene contract
 1. One chart per image.
-2. One data series only in v1.
-3. Use a clean light background with one chart frame/axis scaffold.
-4. Every chart mark must have one visible unique label.
-5. The label is the canonical mark identity for prompt-facing evidence.
-6. Sample one random mark color per instance and use it consistently across all bars/points in that chart.
-7. In v1, that mark color should be at least Lab distance `40` from white/light chart backgrounds.
-8. Pie-like scenes (`pie`, `donut`) are the exception: they use a distinct sampled color per slice and a legend on the right that maps slice colors to labels.
+2. Active single-series chart tasks use one data series per chart in v1.
+3. Active multiseries chart tasks use `2..3` named series and `5..10` labeled categories in v1.
+4. Use a clean light background with one chart frame/axis scaffold.
+5. Every single-series chart mark must have one visible unique label.
+6. In multiseries charts, every category must have one visible unique uppercase label and every series must have one visible legend label.
+7. Labels remain the canonical prompt-facing identities for both mark-level and category-level evidence.
+8. Sample one random mark color per instance and use it consistently across all bars/points in that single-series chart.
+9. In v1, that mark color should be at least Lab distance `40` from white/light chart backgrounds.
+10. Pie-like scenes (`pie`, `donut`) are the exception: they use a distinct sampled color per slice and a legend on the right that maps slice colors to labels.
 
 ### Chart-type semantics
 1. `area`
@@ -121,9 +128,17 @@ Note:
 10. `radar`
    - when supported, the numeric contract uses the printed point values near the polygon markers.
    - each label owns one spoke, and the polygon/rings provide the visual radar structure rather than Cartesian axes.
+11. `grouped_bar`
+   - each category contains one bar per series, and each bar height encodes that series value for the category.
+12. `multi_line`
+   - each category contains one point per series, and each series point sequence is connected by a colored line.
+13. `grouped_dot_plot`
+   - each category contains one colored point per series without connecting lines.
+14. `grouped_lollipop`
+   - each category contains one colored lollipop stem/point per series without cumulative stacking.
 
 ## Mark labels
-1. Every mark uses one unique randomized uppercase label.
+1. Every single-series mark uses one unique randomized uppercase label.
 2. Labels may be one or two letters.
 3. Labels must be assigned independently of:
    - rank,
@@ -135,11 +150,14 @@ Note:
 6. Recommended initial mark count: `5..10` for axis-based scenes.
 7. `pie` and `donut` should use a tighter default effective mark-count cap such as `5..8` so the legend and printed percentages remain readable.
 8. `radar` should use a tighter default effective mark-count cap such as `5..7` so the perimeter labels and printed point values remain readable.
+9. Multiseries charts should keep randomized uppercase category labels separate from series legend labels so category evidence and series references never share one identity namespace.
+10. Multiseries series labels should come from a short legend-name pool rather than the uppercase category-label pool.
 
 ## Value range
 1. Axis-based chart marks should use integer values in the range `1..20`.
 2. Pie/donut scenes should use positive integer percentages that sum to `100`.
-3. Statistic-specific target-answer ranges may still be narrower than the full displayed value range.
+3. Multiseries chart values should also use integer values in the range `1..20` unless a later family needs a stricter bound.
+4. Statistic-specific target-answer ranges may still be narrower than the full displayed value range.
 
 ## Answer contract
 1. `answer_gt.type = integer`

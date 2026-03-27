@@ -1,4 +1,4 @@
-"""Chart readout task over ordered values from two queried labels."""
+"""Chart readout task over ordered values from two queried labels in supported single-series charts."""
 
 from __future__ import annotations
 

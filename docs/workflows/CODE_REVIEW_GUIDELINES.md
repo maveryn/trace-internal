@@ -104,6 +104,7 @@ Use this checklist during implementation and refactor reviews.
 88. When chart scene variants expand, update all active chart task groups' `scene_variant` support, `object_description_<scene_variant>` config keys, and review coverage together so scene variety does not drift across sibling chart families.
 89. When a task's prompt-facing evidence is symbolic rather than geometric (for example `label_set`, `integer`, or `integer_list` on charts), emit matching pixel-space witness projections in `projected_evidence` so shared review overlays can still highlight the supporting objects in inspection workbooks.
 90. When a domain adds a second scene contract with different structural semantics (for example single-series vs multiseries charts), split the shared generation/render helpers by contract instead of overloading the first helper module with branching task-family logic.
+91. When scene-variant support expands in a domain, audit setup/plan docs and task-module docstrings for stale support lists or outdated contract wording (for example single-series-only text after multiseries tasks land) in the same patch as the code change.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

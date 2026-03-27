@@ -44,3 +44,4 @@ Current task docs:
 34. [task_tile_transition_gravity_max_drop.md](task_tile_transition_gravity_max_drop.md)
 35. [task_charts_statistics_summary_value.md](task_charts_statistics_summary_value.md)
 36. [task_charts_statistics_summary_label.md](task_charts_statistics_summary_label.md)
+37. [task_charts_counting_value_count.md](task_charts_counting_value_count.md)

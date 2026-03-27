@@ -49,7 +49,7 @@ These are valid future targets, but they are not part of the initial implementat
 
 ## Initial implementation target
 
-The first implementation step is now active: `task_charts_statistics_summary_value` and `task_charts_statistics_summary_label` under `domain=charts`, `task_group=statistics`.
+The first implementation step is now active: `task_charts_statistics_summary_value`, `task_charts_statistics_summary_label`, and `task_charts_counting_value_count` under `domain=charts`.
 
 The concrete v1 contract for the first rollout now lives in `CHART_TASK_SETUP.md`.
 
@@ -97,14 +97,15 @@ These may still become later chart-family variants, but they are not part of the
 8. `candlestick`
 9. `treemap`
 
-## Planned future chart families
-These are not fully specified yet, but they are the main reasoning families currently under consideration after `statistics`.
-
-1. `counting`
-2. `comparison`
-3. `trend`
-4. `spatial`
-5. `relation`
+## Active and planned chart families
+1. Active:
+   - `statistics`
+   - `counting`
+2. Planned next:
+   - `comparison`
+   - `trend`
+   - `spatial`
+   - `relation`
 
 ## Notes
 1. The chart-type universe above is intentionally broader than the first implementation target so we can return to it later without redoing discovery.

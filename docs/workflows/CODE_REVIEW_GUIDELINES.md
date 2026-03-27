@@ -99,6 +99,7 @@ Use this checklist during implementation and refactor reviews.
 83. When docs move or the repo doc layout changes, update all repo-entry surfaces in the same patch (`docs/README.md`, `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, and any skills that point at those docs) so navigation never fragments.
 84. When a second domain needs a representation-agnostic helper that currently lives under one domain's `shared/`, promote it to `trace/tasks/shared/` in the same patch instead of adding a cross-domain import back into the original domain namespace.
 85. When trace metadata stores sampled render/style overrides (for example randomized colors), verify the renderer consumes those exact resolved values; do not treat trace-only style sampling as sufficient if the image path still falls back to a stale hardcoded default.
+86. When a second chart task group reuses a helper module named after the first chart family (for example `statistics_common.py`), rename that helper to the chart-wide concept immediately (for example `labeled_chart_common.py`) instead of importing counting/comparison code from a misleading family-specific module.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

@@ -143,6 +143,7 @@ def test_geometry_measurement_bundles_answer_templates_use_contract_and_avoid_on
 
 def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
     bundle_coords = (
+        ("charts", "counting", "charts_counting_v1"),
         ("charts", "statistics", "charts_statistics_v1"),
         ("geometry", "comparison", "geometry_comparison_v1"),
         ("geometry", "counting", "geometry_counting_v1"),
@@ -251,6 +252,15 @@ def test_charts_statistics_bundle_supports_summary_variants() -> None:
     assert len(bundle.task_variant_templates["argmin"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_variant_templates["median_label"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["task_family:labeled_chart_statistics"]) == ["object_description"]
+
+
+def test_charts_counting_bundle_supports_value_count_variants() -> None:
+    bundle = load_prompt_bundle("charts", "counting", "charts_counting_v1")
+    assert len(bundle.task_templates["value_count_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["above_threshold"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["below_threshold"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["in_interval"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_family:labeled_chart_counting"]) == ["object_description"]
 
 
 def test_geometry_task_templates_avoid_awkward_comma_question_prefixes() -> None:

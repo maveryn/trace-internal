@@ -242,6 +242,47 @@ def test_charts_statistics_defaults_loaded() -> None:
     assert str(label_prompt["json_example_median_label"]).strip()
 
 
+def test_charts_counting_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("charts", "counting")
+    for section in ("generation", "rendering", "prompt"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["mark_count_min"]) >= 5
+    assert int(generation_shared["mark_count_max"]) == 10
+    assert int(generation_shared["value_max"]) == 20
+    assert int(generation_shared["target_answer_min"]) == 0
+    assert int(generation_shared["target_answer_max"]) == 10
+    assert sorted(generation_shared["task_variant_weights"].keys()) == [
+        "above_threshold",
+        "below_threshold",
+        "in_interval",
+    ]
+    assert sorted(generation_shared["scene_variant_weights"].keys()) == ["bar", "line", "scatter"]
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_width"]) > 0
+    assert int(render_shared["canvas_height"]) > 0
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "charts_counting_v1"
+    assert str(prompt_shared["task_family_key"]).strip() == "labeled_chart_counting"
+    assert str(prompt_shared["task_key"]).strip() == "value_count_query"
+    assert str(prompt_shared["object_description_bar"]).strip()
+    assert str(prompt_shared["evidence_hint_in_interval"]).strip()
+    assert str(prompt_shared["json_example_below_threshold"]).strip()
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_charts_counting_value_count",
+    )
+    assert int(generation_defaults["mark_count_min"]) >= 5
+    assert int(generation_defaults["mark_count_max"]) == 10
+    assert int(generation_defaults["target_answer_max"]) == 10
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip() == "charts_counting_v1"
+
+
 def test_geometry_analytical_defaults_loaded() -> None:
     cfg = get_task_group_defaults("geometry", "analytical_2d")
     for section in ("generation", "rendering", "prompt"):

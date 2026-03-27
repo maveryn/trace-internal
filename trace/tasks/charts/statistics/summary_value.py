@@ -18,9 +18,9 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ..shared.chart_scene import ChartMarkSpec, render_labeled_chart_scene
-from ..shared.statistics_common import (
-    ChartStatisticsDefaults,
-    SUPPORTED_STATISTICS_SCENE_VARIANTS,
+from ..shared.labeled_chart_common import (
+    LabeledChartDefaults,
+    SUPPORTED_LABELED_CHART_SCENE_VARIANTS,
     build_summary_statistics_dataset_for_variant,
     resolve_chart_axis_variant,
     resolve_chart_mark_colors,
@@ -51,7 +51,7 @@ _TARGET_ANSWER_RANGES: Dict[str, Tuple[int, int]] = {
     "mode": (3, 10),
 }
 
-_DEFAULTS = ChartStatisticsDefaults()
+_DEFAULTS = LabeledChartDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("charts", "statistics")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
@@ -84,7 +84,7 @@ def _resolve_scene_variant(params: Mapping[str, Any], *, instance_seed: int) -> 
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_STATISTICS_SCENE_VARIANTS,
+        supported_variants=SUPPORTED_LABELED_CHART_SCENE_VARIANTS,
         task_id=TASK_ID,
         explicit_key="scene_variant",
         weights_key="scene_variant_weights",

@@ -50,7 +50,8 @@ Date: 2026-03-27
 39. Icons transformation now includes `task_icons_transformation_pair_count`, a two-panel `Reference` + labeled `Scene` grid task with integer answers and sorted `label_set` evidence; the Reference pair shows one canonical D4 transform, Scene cells each show `icon -> transformed icon`, and the task counts how many cells apply the same rule. The task uses the curated asymmetric icon pool, rejects icon/transform pairs that collapse visually under rendered-silhouette checks, and records the sampled transform ids plus per-icon subtle noise in trace metadata.
 40. Charts now includes `task_charts_statistics_summary_value`, the first `statistics` family task under `domain=charts`, with semantic `task_variant` values `max|min|range|mean|median|sum|mode`, visual `scene_variant` values `bar|line|scatter`, integer answers, `label_set` evidence over the supporting labeled marks, randomized uppercase mark labels, and one per-instance chart color sampled randomly with a Lab-distance floor from the white/light chart background.
 41. Charts also includes `task_charts_statistics_summary_label`, a companion `statistics` task that reuses the same bar/line/scatter scenes but asks for the winning mark label on `argmax|argmin|median_label` queries, with `option_letter` answers and integer evidence carrying the winning statistic value.
-42. Shared deterministic variant-selection helpers now live in `trace/tasks/shared/variant_sampling.py`; geometry imports were updated to use the cross-domain helper, and charts reuse its namespaced balanced-cycling path for separate semantic and scene axes.
+42. Charts now also includes `task_charts_counting_value_count`, the first `counting` family task under `domain=charts`, with semantic `task_variant` values `above_threshold|below_threshold|in_interval`, visual `scene_variant` values `bar|line|scatter`, integer answers, sorted `label_set` evidence over the matching marks, and target-balanced count sampling over the default answer support `0..10`.
+43. Shared deterministic variant-selection helpers now live in `trace/tasks/shared/variant_sampling.py`; geometry imports were updated to use the cross-domain helper, and charts reuse its namespaced balanced-cycling path for separate semantic and scene axes.
 
 ## Active tasks
 1. `task_tile_count_color_count` (`domain=tile`, `task_group=count`)
@@ -89,12 +90,13 @@ Date: 2026-03-27
 34. `task_icons_transformation_pair_count` (`domain=icons`, `task_group=transformation`)
 35. `task_charts_statistics_summary_value` (`domain=charts`, `task_group=statistics`)
 36. `task_charts_statistics_summary_label` (`domain=charts`, `task_group=statistics`)
+37. `task_charts_counting_value_count` (`domain=charts`, `task_group=counting`)
 
 ## Current quality baseline
 1. Tests are required to pass before finalize.
 2. Distribution QA uses `scripts/check_task_answer_distribution.py` with per-variant answer-only checks (`unique_answers >= 5`, `max_answer_frequency < 25%`) and multithreaded sample generation (`--workers`); numeric 5-bin summaries remain reported for review but are not hard pass/fail gates.
 3. Task-review tooling writes per-task artifacts under `task-reviews/<task_id>/`, including one inspection workbook named `<task_id>.xlsx` with one sheet per task variant.
-4. The current active reviewed task set (10 tile tasks + 20 geometry tasks + 4 icons tasks + 2 charts tasks) passes distribution review under the active gates.
+4. The current active reviewed task set (10 tile tasks + 20 geometry tasks + 4 icons tasks + 3 charts tasks) passes distribution review under the active gates.
 
 ## Next priorities
 1. Extend icons beyond counting/transformation using the new curated Prism asset pipeline (relation/comparison are the next natural families).

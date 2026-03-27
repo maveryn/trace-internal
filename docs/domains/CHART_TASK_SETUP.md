@@ -1,17 +1,21 @@
 # Chart Task Setup
 
 ## Purpose
-Define the concrete v1 setup for the first chart-domain task family.
+Define the concrete v1 setup for the first chart-domain task families.
 
 This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a source-of-truth note for the first implementation wave, not just a long-term idea list.
 
 ## V1 scope
 1. `domain = charts`
-2. First `task_group = statistics`
+2. First active `task_group`s:
+   - `statistics`
+   - `counting`
 3. First concrete statistics tasks:
    - `task_charts_statistics_summary_value`
    - `task_charts_statistics_summary_label`
-4. First supported chart-type renderings:
+4. First concrete counting task:
+   - `task_charts_counting_value_count`
+5. First supported chart-type renderings:
    - `bar`
    - `line`
    - `scatter`
@@ -19,11 +23,14 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
 ## Taxonomy
 1. Keep the normal TRACE split:
    - `domain -> task_group -> task`
-2. For this family:
+2. For the first statistics family:
    - `task_group = statistics`
    - active tasks: `summary_value`, `summary_label`
-3. The semantic statistic is the public `task_variant`.
-4. The chart type is the visual `scene_variant`.
+3. For the first counting family:
+   - `task_group = counting`
+   - active task: `value_count`
+4. The semantic query type is the public `task_variant`.
+5. The chart type is the visual `scene_variant`.
 
 ### V1 variant axes
 1. `task_variant`:
@@ -209,3 +216,16 @@ Note:
    - `evidence_gt.type = integer`
 4. Prompt-facing evidence is the winning numeric statistic value, while the answer is the visible label of the winning mark.
 5. The label-answer task intentionally excludes `mean`, `sum`, `range`, and `mode` because those statistics do not map cleanly to one unique label answer in v1.
+
+## Counting follow-up task
+1. The first counting-family task is `task_charts_counting_value_count`.
+2. It reuses the same chart scenes and `scene_variant` values (`bar|line|scatter`) but changes the semantic `task_variant` set to:
+   - `above_threshold`
+   - `below_threshold`
+   - `in_interval`
+3. Its contract is:
+   - `answer_gt.type = integer`
+   - `evidence_gt.type = label_set`
+4. Threshold queries use strict comparisons (`>` for `above_threshold`, `<` for `below_threshold`).
+5. Interval queries use inclusive `[interval_min, interval_max]` bounds.
+6. Empty `label_set` evidence is valid when the answer count is `0`.

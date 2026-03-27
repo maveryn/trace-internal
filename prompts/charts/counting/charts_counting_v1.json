@@ -1,0 +1,77 @@
+{
+  "bundle_id": "charts_counting_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "labeled_chart_counting": [
+      "The image shows {object_description}.",
+      "Use the chart in the image. It shows {object_description}.",
+      "Work from the labeled chart shown in the image: {object_description}.",
+      "Look at the chart in the image. It shows {object_description}.",
+      "You are given a labeled chart: {object_description}."
+    ]
+  },
+  "task_templates": {
+    "value_count_query": [
+      "Answer this question.",
+      "Count the labeled marks that satisfy the requested value condition.",
+      "Use the chart values to answer the counting question.",
+      "Determine how many labeled marks meet the stated value condition.",
+      "Read the chart values and count the matching marks."
+    ]
+  },
+  "task_variant_templates": {
+    "above_threshold": [
+      "How many labeled marks have value greater than {threshold}?",
+      "Count the labeled marks with values above {threshold}.",
+      "Determine how many marks show values strictly greater than {threshold}.",
+      "What number of labeled marks have values higher than {threshold}?",
+      "Find how many labeled marks exceed {threshold}."
+    ],
+    "below_threshold": [
+      "How many labeled marks have value less than {threshold}?",
+      "Count the labeled marks with values below {threshold}.",
+      "Determine how many marks show values strictly less than {threshold}.",
+      "What number of labeled marks have values lower than {threshold}?",
+      "Find how many labeled marks are under {threshold}."
+    ],
+    "in_interval": [
+      "How many labeled marks have value in the inclusive interval [{interval_min}, {interval_max}]?",
+      "Count the labeled marks whose values fall in [{interval_min}, {interval_max}], inclusive.",
+      "Determine how many marks have values between {interval_min} and {interval_max}, inclusive.",
+      "What number of labeled marks lie in the inclusive interval [{interval_min}, {interval_max}]?",
+      "Find how many labeled marks have values from {interval_min} to {interval_max}, inclusive."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:labeled_chart_counting": [
+      "object_description"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

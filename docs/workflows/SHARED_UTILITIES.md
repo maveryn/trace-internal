@@ -131,7 +131,7 @@ Promote helpers when a second consumer appears.
    - `icon_style.sample_single_icon_tint(...)` is the canonical single-color sampler for icon tasks that intentionally keep one shared tint across the whole scene.
    - `icon_transform.py` is the canonical home for D4 transform ids and image-space transform application; use it for icon rotation/mirror families instead of encoding transform names task-locally.
    - `icon_grid_scene.py` provides reusable compact labeled-grid slot layouts plus horizontal row slot layouts for icon tasks whose semantic unit is the cell rather than one free-placed icon.
-   - `icon_sequence_scene.py` provides the reusable Reference-plus-sequence renderer for icon tasks that show a horizontal row of cell boxes with one missing target cell; keep row-cell placement and `?`-slot rendering there instead of cloning it inside each sequence task.
+   - `icon_sequence_scene.py` provides the reusable single-panel sequence-row renderer for icon tasks that show a horizontal row of cell boxes with one missing target cell; keep row-cell placement, dynamic row-box sizing, and `?`-slot rendering there instead of cloning it inside each sequence task.
    - `icon_pair_grid_scene.py` provides the reusable Reference-pair + labeled Scene-grid renderer for icon transformation-style tasks; use cell labels from this renderer as evidence instead of inventing task-local grid containers.
    - `icon_overlap_grid_scene.py` provides the reusable Reference-overlap + labeled Scene-grid renderer for pairwise occlusion-order tasks; use cell labels from this renderer when the semantic target is the whole overlapping pair rather than one icon bbox.
 

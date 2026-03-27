@@ -49,10 +49,19 @@ def resolve_icon_render_params(
         "reference_panel_width_px": int(
             params.get(
                 "reference_panel_width_px",
-                group_default(render_defaults, "reference_panel_width_px", fallback_defaults.reference_panel_width_px),
+                group_default(
+                    render_defaults,
+                    "reference_panel_width_px",
+                    getattr(fallback_defaults, "reference_panel_width_px", 0),
+                ),
             )
         ),
-        "panel_gap_px": int(params.get("panel_gap_px", group_default(render_defaults, "panel_gap_px", fallback_defaults.panel_gap_px))),
+        "panel_gap_px": int(
+            params.get(
+                "panel_gap_px",
+                group_default(render_defaults, "panel_gap_px", getattr(fallback_defaults, "panel_gap_px", 0)),
+            )
+        ),
         "outer_margin_px": int(
             params.get("outer_margin_px", group_default(render_defaults, "outer_margin_px", fallback_defaults.outer_margin_px))
         ),
@@ -80,7 +89,11 @@ def resolve_icon_render_params(
         "reference_icon_size_px": int(
             params.get(
                 "reference_icon_size_px",
-                group_default(render_defaults, "reference_icon_size_px", fallback_defaults.reference_icon_size_px),
+                group_default(
+                    render_defaults,
+                    "reference_icon_size_px",
+                    getattr(fallback_defaults, "reference_icon_size_px", 0),
+                ),
             )
         ),
         "reference_icon_size_min_px": int(
@@ -89,7 +102,11 @@ def resolve_icon_render_params(
                 group_default(
                     render_defaults,
                     "reference_icon_size_min_px",
-                    getattr(fallback_defaults, "reference_icon_size_min_px", fallback_defaults.reference_icon_size_px),
+                    getattr(
+                        fallback_defaults,
+                        "reference_icon_size_min_px",
+                        getattr(fallback_defaults, "reference_icon_size_px", 0),
+                    ),
                 ),
             )
         ),
@@ -99,7 +116,11 @@ def resolve_icon_render_params(
                 group_default(
                     render_defaults,
                     "reference_icon_size_max_px",
-                    getattr(fallback_defaults, "reference_icon_size_max_px", fallback_defaults.reference_icon_size_px),
+                    getattr(
+                        fallback_defaults,
+                        "reference_icon_size_max_px",
+                        getattr(fallback_defaults, "reference_icon_size_px", 0),
+                    ),
                 ),
             )
         ),

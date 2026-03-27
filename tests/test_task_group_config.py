@@ -717,6 +717,7 @@ def test_icons_counting_defaults_loaded() -> None:
     assert int(generation_shared["distractor_count_max"]) == 10
     assert bool(generation_shared["balanced_sampling"]) is True
     assert "task_icons_counting_color" in cfg["generation"]["task_overrides"]
+    assert "task_icons_counting_exact_match" in cfg["generation"]["task_overrides"]
     assert "task_icons_counting_size_relation" in cfg["generation"]["task_overrides"]
     assert "task_icons_counting_type" in cfg["generation"]["task_overrides"]
     assert "task_icons_counting_orientation" in cfg["generation"]["task_overrides"]
@@ -758,6 +759,22 @@ def test_icons_counting_defaults_loaded() -> None:
     assert str(color_prompt["answer_hint"]).strip()
     assert str(color_prompt["json_example"]).strip()
     assert str(color_prompt["json_example_answer_only"]).strip()
+
+    exact_generation, exact_rendering, exact_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_icons_counting_exact_match",
+    )
+    assert str(exact_generation["pool_manifest"]).strip() == "non_symmetry.txt"
+    assert list(exact_generation["rotation_candidates_degrees"]) == [0, 90, 180, 270]
+    assert float(exact_rendering["min_color_distance"]) == 60.0
+    assert int(exact_rendering["palette_size_min"]) == 4
+    assert int(exact_rendering["palette_size_max"]) == 6
+    assert str(exact_prompt["object_description"]).strip()
+    assert str(exact_prompt["question_text"]).strip()
+    assert str(exact_prompt["evidence_hint"]).strip()
+    assert str(exact_prompt["answer_hint"]).strip()
+    assert str(exact_prompt["json_example"]).strip()
+    assert str(exact_prompt["json_example_answer_only"]).strip()
 
     size_generation, size_rendering, size_prompt = split_generation_rendering_prompt_defaults(
         cfg,
@@ -962,14 +979,15 @@ def test_icons_sequence_defaults_loaded() -> None:
     assert "task_icons_sequence_missing_count" in cfg["generation"]["task_overrides"]
 
     render_shared = cfg["rendering"]["shared"]
-    assert int(render_shared["canvas_width"]) > 0
-    assert int(render_shared["canvas_height"]) > 0
-    assert int(render_shared["reference_panel_width_px"]) > 0
     assert int(render_shared["scene_icon_size_min_px"]) == 24
     assert int(render_shared["scene_icon_size_max_px"]) == 40
     assert float(render_shared["scene_max_overlap_fraction"]) == pytest.approx(0.20, rel=1e-9)
     assert int(render_shared["cell_padding_px"]) > 0
     assert int(render_shared["cell_icon_padding_px"]) >= 0
+    assert int(render_shared["cell_box_width_min_px"]) == 112
+    assert int(render_shared["cell_box_width_max_px"]) == 160
+    assert int(render_shared["cell_box_height_min_px"]) == 96
+    assert int(render_shared["cell_box_height_max_px"]) == 144
     assert int(render_shared["missing_mark_font_size_px"]) > 0
 
     prompt_shared = cfg["prompt"]["shared"]
@@ -985,7 +1003,6 @@ def test_icons_sequence_defaults_loaded() -> None:
     )
     assert str(generation["pool_manifest"]).strip() == "all_icons.txt"
     assert list(generation["rotation_candidates_degrees"]) == [0, 90, 180, 270]
-    assert int(rendering["canvas_width"]) == 1104
     assert int(rendering["scene_icon_size_min_px"]) == 24
     assert int(rendering["scene_icon_size_max_px"]) == 40
     assert str(prompt["object_description"]).strip()

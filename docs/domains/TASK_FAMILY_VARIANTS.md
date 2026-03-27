@@ -148,7 +148,14 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Count support: `target_count` in `0..10`, `distractor_count` in `1..10`, total scene icons in `1..20`.
    - Answer type: integer count.
    - Evidence: scene-only `bbox_set` in final image coordinates.
-19. **Icons counting size relation (`task_icons_counting_size_relation`)**
+19. **Icons counting exact match (`task_icons_counting_exact_match`)**
+   - One two-panel image with a `Reference` icon and a `Scene` panel of icons.
+   - Query: how many scene icons match the reference exactly in icon type, color, and orientation.
+   - Scene uses the asymmetric curated icon pool so orientation stays meaningful, and distractors are built mostly from structured `2-of-3` and `1-of-3` partial matches instead of easy all-wrong negatives.
+   - Count support: `target_count` in `0..10`, `distractor_count` in `1..10`, total scene icons in `1..20`.
+   - Answer type: integer count.
+   - Evidence: scene-only `bbox_set` in final image coordinates.
+20. **Icons counting size relation (`task_icons_counting_size_relation`)**
    - One two-panel image with a `Reference` icon and a `Scene` panel of icons.
    - Query variants: count scene icons that are `smaller` or `larger` than the reference icon.
    - Scene keeps the same icon type as the reference while randomizing tint and rotation; size is the only matching predicate.
@@ -156,7 +163,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Size distinction rule: reference nominal size is sampled from `64..96` px, scene nominal sizes from `40..120` px, and every scene icon must satisfy `|scene_size-reference_size| >= 12` px so there are no same-size near misses.
    - Answer type: integer count.
    - Evidence: scene-only `bbox_set` in final image coordinates.
-20. **Icons transformation pair count (`task_icons_transformation_pair_count`)**
+21. **Icons transformation pair count (`task_icons_transformation_pair_count`)**
    - One two-panel image with a `Reference` pair and a labeled `Scene` grid of icon pairs.
    - Query: how many Scene cells apply the same transformation as the Reference pair.
    - Transform vocabulary: `rot90`, `rot180`, `rot270`, `flip_h`, `flip_v`, `flip_diag_main`, `flip_diag_anti`.
@@ -164,24 +171,24 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Answer type: integer count.
    - Evidence: sorted `label_set` of the matching Scene cell labels.
    - Visual distinction rule: candidate icons are accepted only when the sampled transform and at least one distractor transform remain visually distinct from identity and from the reference transform.
-21. **Icons relation relative-position type (`task_icons_relation_relative_position_type`)**
+22. **Icons relation relative-position type (`task_icons_relation_relative_position_type`)**
    - One two-panel image with a `Reference` icon on the left and a `Scene` panel of icons on the right; exactly one Scene icon is visibly marked as the `Anchor`.
    - Query variants: `left_of_anchor`, `right_of_anchor`, `above_anchor`, `below_anchor`.
    - Count support: `target_count` in `0..5`, `distractor_count` in `max(1, target_count + 1)..10`, with the Anchor excluded from the counted candidate set.
    - Answer type: integer count.
    - Evidence: scene-only `bbox_set` in final image coordinates.
    - Spatial distinction rule: evaluate left/right/above/below strictly from rendered bboxes, mix distractors across same-type wrong-side and different-type queried-side cases so the scene cannot be solved from one-sided occupancy alone, and require same-type wrong-side distractors to sit mostly outside the queried region (Prism-style relaxed margin rule).
-22. **Icons relation occlusion order (`task_icons_relation_occlusion_order`)**
+23. **Icons relation occlusion order (`task_icons_relation_occlusion_order`)**
    - One two-panel image with a `Reference` cell on the left and a labeled `Scene` grid of overlapping icon pairs on the right.
    - Query: how many labeled Scene cells show the same front-to-back order as the Reference cell.
    - Count support: `target_count` in `0..6`, `distractor_count` in `1..6`, total Scene cells in `2..12`.
    - Answer type: integer count.
    - Evidence: sorted `label_set` of the matching Scene cell labels.
-23. **Icons sequence missing count (`task_icons_sequence_missing_count`)**
-   - One two-panel image with a `Reference` icon on the left and a horizontal row of `4..6` Scene boxes on the right.
-   - Query: how many icons of the same type as the Reference icon should appear in the missing Scene box to continue the sequence.
+24. **Icons sequence missing count (`task_icons_sequence_missing_count`)**
+   - One single-panel image with a horizontal row of `4..6` Scene boxes.
+   - Query: how many icons should appear in the missing Scene box to continue the sequence.
    - Sequence rule: visible box counts follow one arithmetic progression with hidden answer support `0..10` and integer step `±1..±3`.
-   - Visual rule: all visible Scene icons keep the same icon type and tint as the Reference icon, may vary by rotation, use the smaller `24..40` px size band, and stay within `20%` pairwise overlap inside each box.
+   - Visual rule: all visible Scene icons keep one shared icon type and tint, may vary by rotation, use the smaller `24..40` px size band, stay within `20%` pairwise overlap inside each box, and each instance samples one row box width/height with the final canvas fit to that row geometry.
    - Answer type: integer count.
    - Evidence: one-box `bbox_set` for the missing Scene box in final image coordinates.
 

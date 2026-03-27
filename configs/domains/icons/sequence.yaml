@@ -14,16 +14,15 @@ generation:
 
 rendering:
   shared:
-    canvas_width: 1104
-    canvas_height: 544
-    reference_panel_width_px: 248
-    panel_gap_px: 24
     outer_margin_px: 24
     panel_padding_px: 20
     panel_corner_radius_px: 18
     scene_icon_size_min_px: 24
     scene_icon_size_max_px: 40
-    reference_icon_size_px: 136
+    cell_box_width_min_px: 112
+    cell_box_width_max_px: 160
+    cell_box_height_min_px: 96
+    cell_box_height_max_px: 144
     scene_max_overlap_fraction: 0.20
     scene_placement_max_attempts: 160
     scene_size_shrink_rounds: 6
@@ -60,12 +59,12 @@ rendering:
 prompt:
   shared:
     bundle_id: icons_sequence_v1
-    task_family_key: reference_sequence_missing_count
+    task_family_key: sequence_missing_count
     task_key: missing_count_query
   task_overrides:
     task_icons_sequence_missing_count:
-      object_description: a Reference icon on the left and a horizontal sequence of Scene boxes on the right, where one box is missing and marked with a question mark
-      question_text: How many icons of the same type as the Reference icon should be in the missing box to continue the sequence?
+      object_description: a horizontal row of Scene boxes, where one box is missing and marked with a question mark
+      question_text: How many icons should be in the missing box to continue the sequence?
       evidence_hint: set "evidence" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the missing Scene box
       answer_hint: set "answer" to the missing count as an integer
       json_example: '{"evidence":[[540,126,654,458]],"answer":5}'

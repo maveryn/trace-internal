@@ -39,16 +39,14 @@ def test_icons_sequence_missing_count_contract_matches_scene() -> None:
     trace = out.trace_payload
     execution = trace["execution_trace"]
     entities = trace["scene_ir"]["entities"]
-    reference_entities = [entity for entity in entities if str(entity["entity_kind"]) == "reference_icon"]
     cell_entities = [entity for entity in entities if str(entity["entity_kind"]) == "sequence_cell"]
     icon_entities = [entity for entity in entities if str(entity["entity_kind"]) == "scene_icon"]
 
-    assert len(reference_entities) == 1
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 4
     assert out.evidence_gt.type == "bbox_set"
     assert len(out.evidence_gt.value) == 1
-    assert trace["scene_ir"]["scene_kind"] == "icons_reference_sequence_missing_count"
+    assert trace["scene_ir"]["scene_kind"] == "icons_sequence_missing_count"
     assert execution["question_format"] == "infer_missing_sequence_count"
     assert execution["task_variant"] == "arithmetic_progression"
     assert int(execution["sequence_length"]) == 5
@@ -57,19 +55,20 @@ def test_icons_sequence_missing_count_contract_matches_scene() -> None:
     assert execution["full_sequence_counts"] == [2, 3, 4, 5, 6]
     assert len(cell_entities) == 5
     assert len(icon_entities) == 16
+    assert 112 <= int(execution["cell_box_width_px"]) <= 160
+    assert 96 <= int(execution["cell_box_height_px"]) <= 144
 
-    reference_entity = reference_entities[0]
-    assert 0 <= int(reference_entity["rotation_degrees"]) < 360
-    reference_color = tuple(int(channel) for channel in reference_entity["tint_rgb"])
+    scene_colors: set[tuple[int, int, int]] = set()
     scene_icons_by_cell: dict[int, list[dict]] = {}
     for entity in icon_entities:
         scene_icons_by_cell.setdefault(int(entity["cell_index"]), []).append(entity)
-        assert str(entity["icon_id"]) == str(reference_entity["icon_id"])
-        assert tuple(int(channel) for channel in entity["tint_rgb"]) == reference_color
+        assert str(entity["icon_id"]) == str(execution["sequence_icon_id"])
+        scene_colors.add(tuple(int(channel) for channel in entity["tint_rgb"]))
         assert int(entity["nominal_size_px"]) >= 24
         assert int(entity["nominal_size_px"]) <= 40
         assert int(entity["rotation_degrees"]) in {0, 90, 180, 270}
         assert isinstance(entity["noise_edits"], list)
+    assert len(scene_colors) == 1
 
     missing_boxes = out.evidence_gt.value
     assert missing_boxes == trace["projected_evidence"]["bbox_set"]
@@ -83,6 +82,11 @@ def test_icons_sequence_missing_count_contract_matches_scene() -> None:
     expected_visible_counts = {0: 2, 1: 3, 3: 5, 4: 6}
     for cell in cell_entities:
         cell_index = int(cell["cell_index"])
+        bbox = cell["cell_bbox_xyxy"]
+        cell_width = int(bbox[2]) - int(bbox[0])
+        cell_height = int(bbox[3]) - int(bbox[1])
+        assert abs(cell_width - int(execution["cell_box_width_px"])) <= 2
+        assert abs(cell_height - int(execution["cell_box_height_px"])) <= 2
         if bool(cell["is_missing"]):
             continue
         rendered_icons = scene_icons_by_cell.get(cell_index, [])

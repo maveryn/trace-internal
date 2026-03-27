@@ -57,6 +57,16 @@ class IconPanelLayout:
 
 
 @dataclass(frozen=True)
+class SingleIconPanelLayout:
+    """Resolved geometry for one single-panel icon image."""
+
+    canvas_width: int
+    canvas_height: int
+    scene_panel_xyxy: Tuple[int, int, int, int]
+    scene_content_xyxy: Tuple[int, int, int, int]
+
+
+@dataclass(frozen=True)
 class RenderedIconScene:
     """Full render output for one icon counting scene."""
 
@@ -120,6 +130,38 @@ def resolve_two_panel_layout(
     )
 
 
+def resolve_single_panel_layout(
+    *,
+    canvas_width: int,
+    canvas_height: int,
+    outer_margin_px: int,
+    panel_padding_px: int,
+    title_font_size_px: int,
+) -> SingleIconPanelLayout:
+    """Resolve one single-panel layout for icon tasks without a reference pane."""
+
+    width = int(canvas_width)
+    height = int(canvas_height)
+    margin = int(outer_margin_px)
+    if width <= (2 * margin) + 120:
+        raise ValueError("canvas width is too small for icon single-panel layout")
+    if height <= (2 * margin) + 120:
+        raise ValueError("canvas height is too small for icon single-panel layout")
+
+    scene_panel = (int(margin), int(margin), int(width - margin), int(height - margin))
+    _, scene_content = _fit_header_band(
+        scene_panel,
+        padding_px=int(panel_padding_px),
+        title_font_size_px=int(title_font_size_px),
+    )
+    return SingleIconPanelLayout(
+        canvas_width=width,
+        canvas_height=height,
+        scene_panel_xyxy=scene_panel,
+        scene_content_xyxy=scene_content,
+    )
+
+
 def _panel_title_center(panel_bbox: BBox, *, title_font_size_px: int) -> Tuple[float, float]:
     """Return the centered title anchor for one panel."""
 
@@ -165,6 +207,40 @@ def draw_two_panel_panels(
             stroke_fill=tuple(int(v) for v in panel_fill_rgb),
             stroke_width=2,
         )
+
+
+def draw_single_panel(
+    *,
+    image: Image.Image,
+    layout: SingleIconPanelLayout,
+    background_rgb: Tuple[int, int, int],
+    panel_fill_rgb: Tuple[int, int, int],
+    panel_border_rgb: Tuple[int, int, int],
+    title_color_rgb: Tuple[int, int, int],
+    corner_radius_px: int,
+    title_font_size_px: int,
+    scene_title: str = "Scene",
+) -> None:
+    """Draw single-panel chrome and title on one icon scene image."""
+
+    draw = ImageDraw.Draw(image)
+    draw.rectangle((0, 0, image.size[0], image.size[1]), fill=tuple(int(v) for v in background_rgb))
+    draw.rounded_rectangle(
+        layout.scene_panel_xyxy,
+        radius=max(0, int(corner_radius_px)),
+        fill=tuple(int(v) for v in panel_fill_rgb),
+        outline=tuple(int(v) for v in panel_border_rgb),
+        width=2,
+    )
+    draw_text_centered(
+        draw,
+        text=str(scene_title),
+        center=_panel_title_center(layout.scene_panel_xyxy, title_font_size_px=int(title_font_size_px)),
+        font=load_font(int(title_font_size_px), bold=True),
+        fill=tuple(int(v) for v in title_color_rgb),
+        stroke_fill=tuple(int(v) for v in panel_fill_rgb),
+        stroke_width=2,
+    )
 
 
 def _grid_slots(content_bbox: BBox, *, rows: int, cols: int, inner_padding_px: int) -> List[BBox]:
@@ -459,17 +535,31 @@ def panel_geometry_to_trace(layout: IconPanelLayout) -> Dict[str, Any]:
     }
 
 
+def single_panel_geometry_to_trace(layout: SingleIconPanelLayout) -> Dict[str, Any]:
+    """Return one JSON-serializable panel-geometry payload for single-panel icon scenes."""
+
+    return {
+        "canvas_size": [int(layout.canvas_width), int(layout.canvas_height)],
+        "scene_panel_xyxy": list(layout.scene_panel_xyxy),
+        "scene_content_xyxy": list(layout.scene_content_xyxy),
+    }
+
+
 __all__ = [
     "IconInstanceSpec",
     "IconPanelLayout",
+    "SingleIconPanelLayout",
     "RenderedIconInstance",
     "RenderedIconScene",
+    "draw_single_panel",
     "draw_two_panel_panels",
     "max_overlap_with_existing",
     "overlap_fraction_smaller",
     "panel_geometry_to_trace",
     "random_paste_bbox",
     "render_two_panel_icon_scene",
+    "resolve_single_panel_layout",
     "resolve_two_panel_layout",
+    "single_panel_geometry_to_trace",
     "sort_bboxes_reading_order",
 ]

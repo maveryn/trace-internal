@@ -1,4 +1,4 @@
-"""Infer the missing icon count in a reference-guided arithmetic sequence."""
+"""Infer the missing icon count in a single-panel arithmetic icon sequence."""
 
 from __future__ import annotations
 
@@ -26,10 +26,10 @@ from ...shared.prompt_variants import (
 )
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.icon_assets import resolve_icon_pool
-from ..shared.icon_scene import panel_geometry_to_trace, sort_bboxes_reading_order
+from ..shared.icon_scene import single_panel_geometry_to_trace, sort_bboxes_reading_order
 from ..shared.icon_sequence_scene import (
     IconSequenceCellSpec,
-    render_two_panel_icon_sequence_scene,
+    render_icon_sequence_scene,
 )
 from ..shared.icon_style import sample_single_icon_tint
 from ..shared.icon_task_rendering import (
@@ -52,14 +52,15 @@ class _TaskDefaults:
     step_abs_max: int = 3
     canvas_width: int = 1104
     canvas_height: int = ICON_SHARED_DEFAULTS.canvas_height
-    reference_panel_width_px: int = ICON_SHARED_DEFAULTS.reference_panel_width_px
-    panel_gap_px: int = ICON_SHARED_DEFAULTS.panel_gap_px
     outer_margin_px: int = ICON_SHARED_DEFAULTS.outer_margin_px
     panel_padding_px: int = ICON_SHARED_DEFAULTS.panel_padding_px
     panel_corner_radius_px: int = ICON_SHARED_DEFAULTS.panel_corner_radius_px
     scene_icon_size_min_px: int = 24
     scene_icon_size_max_px: int = 40
-    reference_icon_size_px: int = ICON_SHARED_DEFAULTS.reference_icon_size_px
+    cell_box_width_min_px: int = 112
+    cell_box_width_max_px: int = 160
+    cell_box_height_min_px: int = 96
+    cell_box_height_max_px: int = 144
     scene_max_overlap_fraction: float = 0.20
     scene_placement_max_attempts: int = 160
     scene_size_shrink_rounds: int = ICON_SHARED_DEFAULTS.scene_size_shrink_rounds
@@ -112,13 +113,13 @@ class _ScenePayload:
     missing_cell_index: int
     step_delta: int
     full_sequence_counts: Tuple[int, ...]
-    reference_icon_id: str
-    reference_rotation_degrees: int
+    sequence_icon_id: str
     scene_rotations_by_cell: Tuple[Tuple[int, ...], ...]
     missing_cell_bbox: Tuple[int, int, int, int]
     sampled_palette_rgb: Tuple[Tuple[int, int, int], ...]
+    cell_box_width_px: int
+    cell_box_height_px: int
     panel_geometry: Dict[str, Any]
-    reference_instance: Dict[str, Any]
     scene_cells: Tuple[Dict[str, Any], ...]
     scene_icon_instances: Tuple[Dict[str, Any], ...]
 
@@ -257,6 +258,30 @@ def _serialize_rendered_instance(instance: Any, *, entity_kind: str, cell_index:
     return payload
 
 
+def _resolve_sequence_canvas_size(
+    *,
+    sequence_length: int,
+    cell_box_width_px: int,
+    cell_box_height_px: int,
+    render_params: Mapping[str, Any],
+) -> Tuple[int, int]:
+    """Derive a canvas size that fits the sampled row cell geometry."""
+
+    cell_padding_px = int(render_params["cell_padding_px"])
+    panel_padding_px = int(render_params["panel_padding_px"])
+    outer_margin_px = int(render_params["outer_margin_px"])
+    title_font_size_px = int(render_params["panel_title_font_size_px"])
+    title_band_height = max(40, int(round(float(title_font_size_px) * 1.8)))
+
+    content_width = int(sequence_length) * int(int(cell_box_width_px) + (2 * cell_padding_px))
+    content_height = int(int(cell_box_height_px) + (2 * cell_padding_px))
+    panel_width = int(content_width + (2 * panel_padding_px))
+    panel_height = int(content_height + title_band_height + panel_padding_px + (panel_padding_px // 2))
+    canvas_width = int(panel_width + (2 * outer_margin_px))
+    canvas_height = int(panel_height + (2 * outer_margin_px))
+    return canvas_width, canvas_height
+
+
 def _sample_scene(
     rng,
     *,
@@ -266,12 +291,12 @@ def _sample_scene(
     rotation_candidates: Tuple[int, ...],
     render_params: Mapping[str, Any],
 ) -> Tuple[_ScenePayload, Any]:
-    """Sample and render one icon sequence missing-count scene."""
+    """Sample and render one single-panel icon sequence missing-count scene."""
 
     pool = list(resolve_icon_pool(str(pool_manifest)))
     if not pool:
         raise ValueError("sequence pool resolved no icons")
-    reference_icon_id = str(rng.choice(pool))
+    sequence_icon_id = str(rng.choice(pool))
     tint_rgb, sampled_palette_rgb = sample_single_icon_tint(
         rng,
         channel_min=int(render_params["color_channel_min"]),
@@ -285,10 +310,22 @@ def _sample_scene(
         min_color_distance=float(render_params["min_color_distance"]),
         distance_space=str(render_params["color_distance_space"]),
     )
-    reference_rotation = int(rng.choice(rotation_candidates))
-    reference_noise_edits, reference_noise_seed = sample_icon_instance_noise(
-        instance_seed=int(instance_seed),
-        namespace=f"{IconsSequenceMissingCountTask.task_id}:reference_icon",
+    cell_box_width_px = int(
+        rng.randint(
+            int(render_params["cell_box_width_min_px"]),
+            int(render_params["cell_box_width_max_px"]),
+        )
+    )
+    cell_box_height_px = int(
+        rng.randint(
+            int(render_params["cell_box_height_min_px"]),
+            int(render_params["cell_box_height_max_px"]),
+        )
+    )
+    canvas_width, canvas_height = _resolve_sequence_canvas_size(
+        sequence_length=int(sequence_spec.sequence_length),
+        cell_box_width_px=int(cell_box_width_px),
+        cell_box_height_px=int(cell_box_height_px),
         render_params=render_params,
     )
     cell_specs: List[IconSequenceCellSpec] = []
@@ -309,7 +346,7 @@ def _sample_scene(
             )
             icon_specs.append(
                 IconInstanceSpec(
-                    icon_id=str(reference_icon_id),
+                    icon_id=str(sequence_icon_id),
                     rotation_degrees=int(rotation),
                     tint_rgb=tuple(int(value) for value in tint_rgb),
                     noise_edits=tuple(noise_edits),
@@ -320,22 +357,12 @@ def _sample_scene(
         cell_specs.append(IconSequenceCellSpec(icon_instances=tuple(icon_specs), is_missing=False))
         scene_rotations_by_cell.append(tuple(int(value) for value in rotations))
 
-    rendered = render_two_panel_icon_sequence_scene(
+    rendered = render_icon_sequence_scene(
         rng=rng,
-        reference_icon=IconInstanceSpec(
-            icon_id=str(reference_icon_id),
-            nominal_size_px=int(render_params["reference_icon_size_px"]),
-            rotation_degrees=int(reference_rotation),
-            tint_rgb=tuple(int(value) for value in tint_rgb),
-            noise_edits=tuple(reference_noise_edits),
-            noise_seed=int(reference_noise_seed),
-        ),
         scene_cells=tuple(cell_specs),
-        canvas_width=int(render_params["canvas_width"]),
-        canvas_height=int(render_params["canvas_height"]),
-        reference_panel_width_px=int(render_params["reference_panel_width_px"]),
+        canvas_width=int(canvas_width),
+        canvas_height=int(canvas_height),
         outer_margin_px=int(render_params["outer_margin_px"]),
-        panel_gap_px=int(render_params["panel_gap_px"]),
         panel_padding_px=int(render_params["panel_padding_px"]),
         panel_corner_radius_px=int(render_params["panel_corner_radius_px"]),
         cell_padding_px=int(render_params["cell_padding_px"]),
@@ -343,7 +370,6 @@ def _sample_scene(
         cell_corner_radius_px=int(render_params["cell_corner_radius_px"]),
         scene_icon_size_min_px=int(render_params["scene_icon_size_min_px"]),
         scene_icon_size_max_px=int(render_params["scene_icon_size_max_px"]),
-        reference_icon_size_px=int(render_params["reference_icon_size_px"]),
         scene_max_overlap_fraction=float(render_params["scene_max_overlap_fraction"]),
         scene_placement_max_attempts=int(render_params["scene_placement_max_attempts"]),
         scene_size_shrink_rounds=int(render_params["scene_size_shrink_rounds"]),
@@ -358,10 +384,6 @@ def _sample_scene(
         missing_mark_color_rgb=tuple(int(v) for v in render_params["missing_mark_color_rgb"]),
     )
 
-    reference_instance = _serialize_rendered_instance(
-        rendered.reference_instance,
-        entity_kind="reference_icon",
-    )
     scene_cells: List[Dict[str, Any]] = []
     scene_icon_instances: List[Dict[str, Any]] = []
     missing_cell_bbox = None
@@ -399,13 +421,13 @@ def _sample_scene(
         missing_cell_index=int(sequence_spec.missing_cell_index),
         step_delta=int(sequence_spec.step_delta),
         full_sequence_counts=tuple(int(value) for value in sequence_spec.full_sequence_counts),
-        reference_icon_id=str(reference_icon_id),
-        reference_rotation_degrees=int(reference_rotation),
+        sequence_icon_id=str(sequence_icon_id),
         scene_rotations_by_cell=tuple(tuple(int(value) for value in rotations) for rotations in scene_rotations_by_cell),
         missing_cell_bbox=tuple(int(value) for value in missing_cell_bbox),
         sampled_palette_rgb=tuple(tuple(int(channel) for channel in color) for color in sampled_palette_rgb),
-        panel_geometry=panel_geometry_to_trace(rendered.layout),
-        reference_instance=reference_instance,
+        cell_box_width_px=int(cell_box_width_px),
+        cell_box_height_px=int(cell_box_height_px),
+        panel_geometry=single_panel_geometry_to_trace(rendered.layout),
         scene_cells=tuple(scene_cells),
         scene_icon_instances=tuple(scene_icon_instances),
     ), rendered.image
@@ -413,7 +435,7 @@ def _sample_scene(
 
 @register_task
 class IconsSequenceMissingCountTask:
-    """Infer the missing icon count in a reference-guided sequence row."""
+    """Infer the missing icon count in a single-panel sequence row."""
 
     task_id = "task_icons_sequence_missing_count"
     domain = "icons"
@@ -444,6 +466,30 @@ class IconsSequenceMissingCountTask:
                 group_default(_RENDER_DEFAULTS, "cell_corner_radius_px", _DEFAULTS.cell_corner_radius_px),
             )
         )
+        render_params["cell_box_width_min_px"] = int(
+            params.get(
+                "cell_box_width_min_px",
+                group_default(_RENDER_DEFAULTS, "cell_box_width_min_px", _DEFAULTS.cell_box_width_min_px),
+            )
+        )
+        render_params["cell_box_width_max_px"] = int(
+            params.get(
+                "cell_box_width_max_px",
+                group_default(_RENDER_DEFAULTS, "cell_box_width_max_px", _DEFAULTS.cell_box_width_max_px),
+            )
+        )
+        render_params["cell_box_height_min_px"] = int(
+            params.get(
+                "cell_box_height_min_px",
+                group_default(_RENDER_DEFAULTS, "cell_box_height_min_px", _DEFAULTS.cell_box_height_min_px),
+            )
+        )
+        render_params["cell_box_height_max_px"] = int(
+            params.get(
+                "cell_box_height_max_px",
+                group_default(_RENDER_DEFAULTS, "cell_box_height_max_px", _DEFAULTS.cell_box_height_max_px),
+            )
+        )
         render_params["cell_border_rgb"] = tuple(
             params.get("cell_border_rgb", group_default(_RENDER_DEFAULTS, "cell_border_rgb", _DEFAULTS.cell_border_rgb))
         )
@@ -459,6 +505,10 @@ class IconsSequenceMissingCountTask:
                 group_default(_RENDER_DEFAULTS, "missing_mark_color_rgb", _DEFAULTS.missing_mark_color_rgb),
             )
         )
+        if int(render_params["cell_box_width_min_px"]) > int(render_params["cell_box_width_max_px"]):
+            raise ValueError("cell_box_width_min_px must be <= cell_box_width_max_px")
+        if int(render_params["cell_box_height_min_px"]) > int(render_params["cell_box_height_max_px"]):
+            raise ValueError("cell_box_height_min_px must be <= cell_box_height_max_px")
         pool_manifest = str(params.get("pool_manifest", group_default(_GEN_DEFAULTS, "pool_manifest", _DEFAULTS.pool_manifest)))
         rotation_candidates = _rotation_candidates(params)
 
@@ -526,15 +576,14 @@ class IconsSequenceMissingCountTask:
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
         trace_payload = {
             "scene_ir": {
-                "scene_kind": "icons_reference_sequence_missing_count",
+                "scene_kind": "icons_sequence_missing_count",
                 "entities": [
-                    dict(scene_payload.reference_instance),
                     *[dict(cell) for cell in scene_payload.scene_cells],
                     *[dict(instance) for instance in scene_payload.scene_icon_instances],
                 ],
                 "relations": {
                     "sequence_rule": "arithmetic_progression",
-                    "reference_icon_id": str(scene_payload.reference_icon_id),
+                    "sequence_icon_id": str(scene_payload.sequence_icon_id),
                     "full_sequence_counts": list(scene_payload.full_sequence_counts),
                     "missing_cell_index": int(scene_payload.missing_cell_index),
                     "step_delta": int(scene_payload.step_delta),
@@ -559,10 +608,12 @@ class IconsSequenceMissingCountTask:
                     "step_delta": int(scene_payload.step_delta),
                     "pool_manifest": str(pool_manifest),
                     "rotation_candidates_degrees": [int(value) for value in rotation_candidates],
+                    "cell_box_width_px": int(scene_payload.cell_box_width_px),
+                    "cell_box_height_px": int(scene_payload.cell_box_height_px),
                 },
             },
             "render_spec": {
-                "canvas_size": [int(render_params["canvas_width"]), int(render_params["canvas_height"])],
+                "canvas_size": list(scene_payload.panel_geometry["canvas_size"]),
                 "coord_space": "pixel",
                 "panel_geometry": dict(scene_payload.panel_geometry),
                 "style": {
@@ -573,6 +624,18 @@ class IconsSequenceMissingCountTask:
                     "cell_padding_px": int(render_params["cell_padding_px"]),
                     "cell_icon_padding_px": int(render_params["cell_icon_padding_px"]),
                     "cell_corner_radius_px": int(render_params["cell_corner_radius_px"]),
+                    "cell_box_width_range_px": [
+                        int(render_params["cell_box_width_min_px"]),
+                        int(render_params["cell_box_width_max_px"]),
+                    ],
+                    "cell_box_height_range_px": [
+                        int(render_params["cell_box_height_min_px"]),
+                        int(render_params["cell_box_height_max_px"]),
+                    ],
+                    "sampled_cell_box_size_px": [
+                        int(scene_payload.cell_box_width_px),
+                        int(scene_payload.cell_box_height_px),
+                    ],
                     "missing_mark_font_size_px": int(render_params["missing_mark_font_size_px"]),
                     "missing_mark_color_rgb": list(render_params["missing_mark_color_rgb"]),
                 },
@@ -580,12 +643,11 @@ class IconsSequenceMissingCountTask:
             "render_map": {
                 "image_id": "img0",
                 "anchors": {
-                    "reference_icon": dict(scene_payload.reference_instance),
                     "missing_cell_bbox": list(scene_payload.missing_cell_bbox),
                 },
             },
             "execution_trace": {
-                "scene_variant": "reference_sequence_row",
+                "scene_variant": "single_panel_sequence_row",
                 "task_variant": str(task_variant),
                 "sequence_length": int(scene_payload.sequence_length),
                 "sequence_length_probabilities": dict(sequence_spec.sequence_length_probabilities),
@@ -594,8 +656,9 @@ class IconsSequenceMissingCountTask:
                 "missing_cell_index": int(scene_payload.missing_cell_index),
                 "step_delta": int(scene_payload.step_delta),
                 "full_sequence_counts": list(scene_payload.full_sequence_counts),
-                "reference_icon_id": str(scene_payload.reference_icon_id),
-                "reference_rotation_degrees": int(scene_payload.reference_rotation_degrees),
+                "sequence_icon_id": str(scene_payload.sequence_icon_id),
+                "cell_box_width_px": int(scene_payload.cell_box_width_px),
+                "cell_box_height_px": int(scene_payload.cell_box_height_px),
                 "scene_rotations_degrees_by_cell": [list(rotations) for rotations in scene_payload.scene_rotations_by_cell],
                 "question_format": "infer_missing_sequence_count",
             },

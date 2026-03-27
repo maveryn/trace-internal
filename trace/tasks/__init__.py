@@ -22,6 +22,7 @@ from .geometry.measurement import length as _task_geometry_measurement_length
 from .geometry.measurement import perimeter as _task_geometry_measurement_perimeter
 from .geometry.measurement import slope as _task_geometry_measurement_slope
 from .icons.counting import color as _task_icons_counting_color
+from .icons.counting import exact_match as _task_icons_counting_exact_match
 from .icons.counting import orientation as _task_icons_counting_orientation
 from .icons.counting import size_relation as _task_icons_counting_size_relation
 from .icons.counting import type as _task_icons_counting_type

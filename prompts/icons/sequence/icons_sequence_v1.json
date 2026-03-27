@@ -2,7 +2,7 @@
   "bundle_id": "icons_sequence_v1",
   "schema_version": "v1",
   "task_family_templates": {
-    "reference_sequence_missing_count": [
+    "sequence_missing_count": [
       "You are given an image with {object_description}.",
       "The image shows {object_description}.",
       "Look at the image with {object_description}.",
@@ -20,7 +20,7 @@
     ]
   },
   "required_slots_by_key": {
-    "task_family:reference_sequence_missing_count": [
+    "task_family:sequence_missing_count": [
       "object_description"
     ],
     "task:missing_count_query": [

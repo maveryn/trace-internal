@@ -10,12 +10,15 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
 2. First active `task_group`s:
    - `statistics`
    - `counting`
+   - `readout`
 3. First concrete statistics tasks:
    - `task_charts_statistics_summary_value`
    - `task_charts_statistics_summary_label`
 4. First concrete counting task:
    - `task_charts_counting_value_count`
-5. First supported chart-type renderings:
+5. First concrete readout task:
+   - `task_charts_readout_subset_value`
+6. First supported chart-type renderings:
    - `bar`
    - `line`
    - `scatter`
@@ -29,8 +32,11 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
 3. For the first counting family:
    - `task_group = counting`
    - active task: `value_count`
-4. The semantic query type is the public `task_variant`.
-5. The chart type is the visual `scene_variant`.
+4. For the first readout family:
+   - `task_group = readout`
+   - active task: `subset_value`
+5. The semantic query type is the public `task_variant`.
+6. The chart type is the visual `scene_variant`.
 
 ### V1 variant axes
 1. `task_variant`:
@@ -99,7 +105,7 @@ Note:
 8. `sum` should use the full feasible support implied by the active mark-count and per-mark value bounds, not an additional narrow task-local cap.
 
 ## Evidence contract
-1. V1 default `evidence_gt.type = label_set`
+1. V1 default `evidence_gt.type` for the statistics family is `label_set`.
 2. The evidence is the set of labeled marks that directly witness the requested statistic.
 3. Label order must be deterministic.
 
@@ -229,3 +235,17 @@ Note:
 4. Threshold queries use strict comparisons (`>` for `above_threshold`, `<` for `below_threshold`).
 5. Interval queries use inclusive `[interval_min, interval_max]` bounds.
 6. Empty `label_set` evidence is valid when the answer count is `0`.
+
+## Readout follow-up task
+1. The first readout-family task is `task_charts_readout_subset_value`.
+2. It reuses the same chart scenes and `scene_variant` values (`bar|line|scatter`) and introduces semantic `task_variant` values:
+   - `sum_two`
+   - `difference_two_abs`
+   - `max_two`
+   - `min_two`
+   - `mean_two`
+3. Its contract is:
+   - `answer_gt.type = integer`
+   - `evidence_gt.type = integer_list`
+4. Prompt-facing evidence is the ordered pair of queried values, in the same order the two queried labels appear in the prompt.
+5. Readout tasks keep the queried labels in trace/query metadata and keep the full label->value table in trace so the integer-list evidence order remains explicit and auditable.

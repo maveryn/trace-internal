@@ -957,6 +957,193 @@ def build_value_count_dataset_for_variant(
     return [int(value) for value in values], int(target_answer), evidence_labels, trace_extras
 
 
+def _default_readout_answer_range(
+    readout_variant: str,
+    *,
+    value_min: int,
+    value_max: int,
+) -> Tuple[int, int]:
+    """Return the default target-answer support for one two-label readout variant."""
+
+    if str(readout_variant) == "sum_two":
+        return int(2 * int(value_min)), int(2 * int(value_max))
+    if str(readout_variant) == "difference_two_abs":
+        return 0, int(value_max) - int(value_min)
+    if str(readout_variant) in {"max_two", "min_two", "mean_two"}:
+        return int(value_min), int(value_max)
+    raise ValueError(f"unsupported readout_variant: {readout_variant}")
+
+
+def _build_query_pair_for_readout(
+    readout_variant: str,
+    *,
+    target_answer: int,
+    value_min: int,
+    value_max: int,
+    instance_seed: int,
+    namespace: str,
+) -> List[int]:
+    """Construct the ordered queried values for one two-label readout variant."""
+
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    if str(readout_variant) == "sum_two":
+        low = max(int(value_min), int(target_answer) - int(value_max))
+        high = min(int(value_max), int(target_answer) - int(value_min))
+        if int(low) > int(high):
+            raise ValueError("sum_two target is outside feasible pair support")
+        first = int(rng.randint(int(low), int(high)))
+        second = int(target_answer) - int(first)
+        values = [int(first), int(second)]
+    elif str(readout_variant) == "difference_two_abs":
+        if int(target_answer) < 0 or int(target_answer) > int(value_max) - int(value_min):
+            raise ValueError("difference_two_abs target is outside feasible support")
+        if int(target_answer) == 0:
+            repeated = int(rng.randint(int(value_min), int(value_max)))
+            values = [int(repeated), int(repeated)]
+        else:
+            low = int(rng.randint(int(value_min), int(value_max) - int(target_answer)))
+            high = int(low) + int(target_answer)
+            values = [int(low), int(high)]
+    elif str(readout_variant) == "max_two":
+        if int(target_answer) < int(value_min) or int(target_answer) > int(value_max):
+            raise ValueError("max_two target is outside feasible support")
+        other = int(rng.randint(int(value_min), int(target_answer)))
+        values = [int(target_answer), int(other)]
+    elif str(readout_variant) == "min_two":
+        if int(target_answer) < int(value_min) or int(target_answer) > int(value_max):
+            raise ValueError("min_two target is outside feasible support")
+        other = int(rng.randint(int(target_answer), int(value_max)))
+        values = [int(target_answer), int(other)]
+    elif str(readout_variant) == "mean_two":
+        if int(target_answer) < int(value_min) or int(target_answer) > int(value_max):
+            raise ValueError("mean_two target is outside feasible support")
+        max_delta = max_symmetric_delta(int(target_answer), value_min=int(value_min), value_max=int(value_max))
+        delta = int(rng.randint(0, int(max_delta)))
+        values = [int(target_answer) - int(delta), int(target_answer) + int(delta)]
+    else:
+        raise ValueError(f"unsupported readout_variant: {readout_variant}")
+    if int(rng.randint(0, 1)) == 1:
+        values = [int(values[1]), int(values[0])]
+    return [int(value) for value in values]
+
+
+def build_value_readout_dataset_for_variant(
+    *,
+    readout_variant: str,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    gen_defaults: Mapping[str, Any],
+    defaults: LabeledChartDefaults,
+    task_id: str,
+) -> Tuple[List[int], int, List[int], Dict[str, Any]]:
+    """Construct one labeled chart dataset for two-label numeric readout tasks."""
+
+    value_min, value_max = resolve_value_bounds(params, gen_defaults=gen_defaults, defaults=defaults, task_id=task_id)
+    mark_count_min, mark_count_max = resolve_mark_count_bounds(
+        params,
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        task_id=task_id,
+    )
+    default_answer_min, default_answer_max = _default_readout_answer_range(
+        str(readout_variant),
+        value_min=int(value_min),
+        value_max=int(value_max),
+    )
+    explicit_min = params.get("target_answer_min")
+    explicit_max = params.get("target_answer_max")
+    supported_answer_min = int(default_answer_min if explicit_min is None else explicit_min)
+    supported_answer_max = int(default_answer_max if explicit_max is None else explicit_max)
+    if int(supported_answer_min) > int(supported_answer_max):
+        raise ValueError("target_answer_min must be <= target_answer_max")
+
+    answer_candidates = [
+        int(value)
+        for value in range(int(supported_answer_min), int(supported_answer_max) + 1)
+        if int(default_answer_min) <= int(value) <= int(default_answer_max)
+    ]
+    if not answer_candidates:
+        raise ValueError("no feasible target answers for requested readout range")
+    target_answer = balanced_choice_from_values(
+        answer_candidates,
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}.target_answer:{str(readout_variant)}",
+    )
+    feasible_counts = [int(count) for count in range(int(mark_count_min), int(mark_count_max) + 1) if int(count) >= 2]
+    mark_count = choose_mark_count(
+        feasible_counts,
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}.mark_count:{str(readout_variant)}:{int(target_answer)}",
+    )
+    labels = list(sample_chart_labels(count=int(mark_count), instance_seed=int(instance_seed)))
+    query_rng = spawn_rng(int(instance_seed), f"{task_id}.query_labels:{str(readout_variant)}")
+    query_indices = list(range(int(mark_count)))
+    query_rng.shuffle(query_indices)
+    first_index, second_index = int(query_indices[0]), int(query_indices[1])
+    query_labels = [str(labels[first_index]), str(labels[second_index])]
+    query_values = _build_query_pair_for_readout(
+        str(readout_variant),
+        target_answer=int(target_answer),
+        value_min=int(value_min),
+        value_max=int(value_max),
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}.query_values:{str(readout_variant)}",
+    )
+    remaining_rng = spawn_rng(int(instance_seed), f"{task_id}.other_values:{str(readout_variant)}")
+    remaining_values = _sample_int_values(
+        remaining_rng,
+        count=int(mark_count) - 2,
+        min_value=int(value_min),
+        max_value=int(value_max),
+    )
+    values_by_label: Dict[str, int] = {}
+    remaining_iter = iter(int(value) for value in remaining_values)
+    for index, label in enumerate(labels):
+        if int(index) == int(first_index):
+            values_by_label[str(label)] = int(query_values[0])
+        elif int(index) == int(second_index):
+            values_by_label[str(label)] = int(query_values[1])
+        else:
+            values_by_label[str(label)] = int(next(remaining_iter))
+    values = [int(values_by_label[str(label)]) for label in labels]
+    evidence_values = [int(values_by_label[str(label)]) for label in query_labels]
+
+    if str(readout_variant) == "sum_two":
+        answer_value = int(sum(evidence_values))
+    elif str(readout_variant) == "difference_two_abs":
+        answer_value = int(abs(int(evidence_values[0]) - int(evidence_values[1])))
+    elif str(readout_variant) == "max_two":
+        answer_value = int(max(evidence_values))
+    elif str(readout_variant) == "min_two":
+        answer_value = int(min(evidence_values))
+    elif str(readout_variant) == "mean_two":
+        total = int(sum(evidence_values))
+        if int(total) % 2 != 0:
+            raise RuntimeError("mean_two evidence values must sum to an even number")
+        answer_value = int(total // 2)
+    else:
+        raise ValueError(f"unsupported readout_variant: {readout_variant}")
+
+    if int(answer_value) != int(target_answer):
+        raise RuntimeError("constructed readout dataset does not match requested answer")
+
+    trace_extras: Dict[str, Any] = {
+        "value_min": int(value_min),
+        "value_max": int(value_max),
+        "target_answer_range": [int(supported_answer_min), int(supported_answer_max)],
+        "mark_count_range": [int(mark_count_min), int(mark_count_max)],
+        "target_answer": int(target_answer),
+        "mark_count": int(mark_count),
+        "labels": [str(label) for label in labels],
+        "values_by_label": {str(label): int(values_by_label[str(label)]) for label in labels},
+        "query_labels": [str(label) for label in query_labels],
+        "query_values": [int(value) for value in evidence_values],
+    }
+    return [int(value) for value in values], int(answer_value), [int(value) for value in evidence_values], trace_extras
+
+
 def resolve_chart_render_params_for_task(
     params: Mapping[str, Any],
     *,
@@ -999,6 +1186,7 @@ __all__ = [
     "StatisticKind",
     "SceneVariant",
     "balanced_choice_from_values",
+    "build_value_readout_dataset_for_variant",
     "build_summary_statistics_dataset_for_variant",
     "build_value_count_dataset_for_variant",
     "resolve_chart_axis_variant",

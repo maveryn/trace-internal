@@ -132,7 +132,7 @@ Promote helpers when a second consumer appears.
    - `icon_pair_grid_scene.py` provides the reusable Reference-pair + labeled Scene-grid renderer for icon transformation-style tasks; use cell labels from this renderer as evidence instead of inventing task-local grid containers.
 7. Charts: `trace/tasks/charts/shared/chart_scene.py`, `labeled_chart_common.py`, `visual_defaults.py`
    - `chart_scene.py` is the canonical labeled-chart renderer for the active chart families; it owns the shared axis/grid scaffold plus mark/label trace geometry for `bar`, `line`, and `scatter`.
-   - `labeled_chart_common.py` is the shared construction layer for labeled chart tasks; it owns mark-count/value bounds, balanced semantic/scene variant sampling, randomized label/color sampling, reusable statistic builders, and reusable threshold/interval counting dataset builders.
+   - `labeled_chart_common.py` is the shared construction layer for labeled chart tasks; it owns mark-count/value bounds, balanced semantic/scene variant sampling, randomized label/color sampling, reusable statistic builders, reusable threshold/interval counting dataset builders, and reusable two-label readout dataset builders.
    - Chart mark colors should be sampled once per instance and then reused consistently across all marks in that chart; keep the renderer wired to the resolved per-instance fill/outline colors rather than tracing one style and drawing another.
    - `visual_defaults.py` is the canonical chart-domain background/noise loader layer shared across future chart task groups.
 

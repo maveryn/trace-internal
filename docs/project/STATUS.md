@@ -52,6 +52,7 @@ Date: 2026-03-27
 41. Charts also includes `task_charts_statistics_summary_label`, a companion `statistics` task that reuses the same bar/line/scatter scenes but asks for the winning mark label on `argmax|argmin|median_label` queries, with `option_letter` answers and integer evidence carrying the winning statistic value.
 42. Charts now also includes `task_charts_counting_value_count`, the first `counting` family task under `domain=charts`, with semantic `task_variant` values `above_threshold|below_threshold|in_interval`, visual `scene_variant` values `bar|line|scatter`, integer answers, sorted `label_set` evidence over the matching marks, and target-balanced count sampling over the default answer support `0..10`.
 43. Shared deterministic variant-selection helpers now live in `trace/tasks/shared/variant_sampling.py`; geometry imports were updated to use the cross-domain helper, and charts reuse its namespaced balanced-cycling path for separate semantic and scene axes.
+44. Charts now also includes `task_charts_readout_subset_value`, the first `readout` family task under `domain=charts`, with semantic `task_variant` values `sum_two|difference_two_abs|max_two|min_two|mean_two`, visual `scene_variant` values `bar|line|scatter`, integer answers, and ordered `integer_list` evidence carrying the two queried values in the same label order used in the prompt.
 
 ## Active tasks
 1. `task_tile_count_color_count` (`domain=tile`, `task_group=count`)
@@ -91,12 +92,13 @@ Date: 2026-03-27
 35. `task_charts_statistics_summary_value` (`domain=charts`, `task_group=statistics`)
 36. `task_charts_statistics_summary_label` (`domain=charts`, `task_group=statistics`)
 37. `task_charts_counting_value_count` (`domain=charts`, `task_group=counting`)
+38. `task_charts_readout_subset_value` (`domain=charts`, `task_group=readout`)
 
 ## Current quality baseline
 1. Tests are required to pass before finalize.
 2. Distribution QA uses `scripts/check_task_answer_distribution.py` with per-variant answer-only checks (`unique_answers >= 5`, `max_answer_frequency < 25%`) and multithreaded sample generation (`--workers`); numeric 5-bin summaries remain reported for review but are not hard pass/fail gates.
 3. Task-review tooling writes per-task artifacts under `task-reviews/<task_id>/`, including one inspection workbook named `<task_id>.xlsx` with one sheet per task variant.
-4. The current active reviewed task set (10 tile tasks + 20 geometry tasks + 4 icons tasks + 3 charts tasks) passes distribution review under the active gates.
+4. The current active reviewed task set (10 tile tasks + 20 geometry tasks + 4 icons tasks + 4 charts tasks) passes distribution review under the active gates.
 
 ## Next priorities
 1. Extend icons beyond counting/transformation using the new curated Prism asset pipeline (relation/comparison are the next natural families).

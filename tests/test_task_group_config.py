@@ -283,6 +283,47 @@ def test_charts_counting_defaults_loaded() -> None:
     assert str(prompt_defaults["bundle_id"]).strip() == "charts_counting_v1"
 
 
+def test_charts_readout_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("charts", "readout")
+    for section in ("generation", "rendering", "prompt"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["mark_count_min"]) >= 5
+    assert int(generation_shared["mark_count_max"]) == 10
+    assert int(generation_shared["value_max"]) == 20
+    assert sorted(generation_shared["task_variant_weights"].keys()) == [
+        "difference_two_abs",
+        "max_two",
+        "mean_two",
+        "min_two",
+        "sum_two",
+    ]
+    assert sorted(generation_shared["scene_variant_weights"].keys()) == ["bar", "line", "scatter"]
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_width"]) > 0
+    assert int(render_shared["canvas_height"]) > 0
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "charts_readout_v1"
+    assert str(prompt_shared["task_family_key"]).strip() == "labeled_chart_readout"
+    assert str(prompt_shared["task_key"]).strip() == "subset_value_query"
+    assert str(prompt_shared["evidence_hint"]).strip()
+    assert str(prompt_shared["json_example_sum_two"]).strip()
+    assert str(prompt_shared["json_example_answer_only_mean_two"]).strip()
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_charts_readout_subset_value",
+    )
+    assert int(generation_defaults["mark_count_min"]) >= 5
+    assert int(generation_defaults["mark_count_max"]) == 10
+    assert int(generation_defaults["value_max"]) == 20
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip() == "charts_readout_v1"
+
+
 def test_geometry_analytical_defaults_loaded() -> None:
     cfg = get_task_group_defaults("geometry", "analytical_2d")
     for section in ("generation", "rendering", "prompt"):

@@ -45,3 +45,4 @@ Current task docs:
 35. [task_charts_statistics_summary_value.md](task_charts_statistics_summary_value.md)
 36. [task_charts_statistics_summary_label.md](task_charts_statistics_summary_label.md)
 37. [task_charts_counting_value_count.md](task_charts_counting_value_count.md)
+38. [task_charts_readout_subset_value.md](task_charts_readout_subset_value.md)

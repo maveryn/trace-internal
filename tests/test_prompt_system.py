@@ -263,6 +263,18 @@ def test_charts_counting_bundle_supports_value_count_variants() -> None:
     assert list(bundle.required_slots_by_key["task_family:labeled_chart_counting"]) == ["object_description"]
 
 
+def test_charts_readout_bundle_supports_subset_value_variants() -> None:
+    bundle = load_prompt_bundle("charts", "readout", "charts_readout_v1")
+    assert len(bundle.task_templates["subset_value_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["sum_two"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["difference_two_abs"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["max_two"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["min_two"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["mean_two"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_family:labeled_chart_readout"]) == ["object_description"]
+    assert list(bundle.required_slots_by_key["task:subset_value_query"]) == ["query_label_a", "query_label_b"]
+
+
 def test_geometry_task_templates_avoid_awkward_comma_question_prefixes() -> None:
     bundle_coords = (
         ("geometry", "measurement", "geometry_measurement_v1", "measurement_query"),

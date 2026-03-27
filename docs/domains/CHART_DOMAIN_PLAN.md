@@ -8,7 +8,7 @@ This is a planning/source-of-truth note for chart-domain scope, not an active-ta
 ## Taxonomy direction
 1. Keep the same high-level split we use elsewhere: `domain -> task_group -> task -> task_variant`.
 2. For charts, `task_group` should encode the reasoning family (for example `statistics`, `counting`, `comparison`), not the chart type.
-3. Chart type should usually be a `task_variant` inside a family/task, unless a later chart family truly needs a dedicated structural split.
+3. Chart type should usually be a `scene_variant` inside a family/task, unless a later chart family truly needs a dedicated structural split.
 4. One chart per image should remain the default starting point for the domain.
 
 ## Chart types under consideration
@@ -49,7 +49,7 @@ These are valid future targets, but they are not part of the initial implementat
 
 ## Initial implementation target
 
-The first implementation step is now active: `task_charts_statistics_summary_value`, `task_charts_statistics_summary_label`, and `task_charts_counting_value_count` under `domain=charts`.
+The first implementation step is now active: `task_charts_statistics_summary_value`, `task_charts_statistics_summary_label`, `task_charts_counting_value_count`, and `task_charts_readout_subset_value` under `domain=charts`.
 
 The concrete v1 contract for the first rollout now lives in `CHART_TASK_SETUP.md`.
 
@@ -101,6 +101,7 @@ These may still become later chart-family variants, but they are not part of the
 1. Active:
    - `statistics`
    - `counting`
+   - `readout`
 2. Planned next:
    - `comparison`
    - `trend`

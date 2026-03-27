@@ -1,0 +1,69 @@
+generation:
+  shared:
+    mark_count_min: 5
+    mark_count_max: 10
+    value_min: 1
+    value_max: 20
+    task_variant_weights:
+      sum_two: 1.0
+      difference_two_abs: 1.0
+      max_two: 1.0
+      min_two: 1.0
+      mean_two: 1.0
+    scene_variant_weights:
+      bar: 1.0
+      line: 1.0
+      scatter: 1.0
+    balanced_task_variant_sampling: true
+    balanced_scene_variant_sampling: true
+
+rendering:
+  shared:
+    canvas_width: 800
+    canvas_height: 600
+    plot_margin_left_px: 92
+    plot_margin_right_px: 46
+    plot_margin_top_px: 44
+    plot_margin_bottom_px: 92
+    axis_line_width_px: 2
+    grid_line_width_px: 1
+    tick_length_px: 8
+    label_font_size_px: 22
+    tick_font_size_px: 18
+    label_stroke_width_px: 2
+    mark_outline_width_px: 2
+    line_width_px: 4
+    point_radius_px: 8
+    bar_width_fraction: 0.58
+    mark_color_channel_min: 0
+    mark_color_channel_max: 220
+    mark_color_min_distance: 40.0
+    mark_color_distance_space: lab
+    axis_color_rgb: [74, 78, 86]
+    grid_color_rgb: [224, 227, 232]
+    text_color_rgb: [38, 41, 48]
+    text_stroke_rgb: [255, 255, 255]
+    plot_fill_rgb: [255, 255, 255]
+
+prompt:
+  shared:
+    bundle_id: charts_readout_v1
+    task_family_key: labeled_chart_readout
+    task_key: subset_value_query
+    json_output_contract: Return a valid JSON object with keys "evidence" and "answer" in that order.
+    json_output_contract_answer_only: Return a valid JSON object with key "answer".
+    evidence_hint: set "evidence" to an array [v1, v2] containing the two queried values in the same label order as the question
+    answer_hint: set "answer" to the requested integer value
+    object_description_bar: a labeled bar chart. Each bar's numeric height can be read from the vertical axis
+    object_description_line: a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis
+    object_description_scatter: a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis
+    json_example_sum_two: '{"evidence":[7,11],"answer":18}'
+    json_example_difference_two_abs: '{"evidence":[14,9],"answer":5}'
+    json_example_max_two: '{"evidence":[6,13],"answer":13}'
+    json_example_min_two: '{"evidence":[6,13],"answer":6}'
+    json_example_mean_two: '{"evidence":[6,10],"answer":8}'
+    json_example_answer_only_sum_two: '{"answer":18}'
+    json_example_answer_only_difference_two_abs: '{"answer":5}'
+    json_example_answer_only_max_two: '{"answer":13}'
+    json_example_answer_only_min_two: '{"answer":6}'
+    json_example_answer_only_mean_two: '{"answer":8}'

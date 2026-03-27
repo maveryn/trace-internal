@@ -387,6 +387,7 @@ def test_tile_path_defaults_loaded() -> None:
     for section in ("generation", "rendering", "prompt", "visual"):
         assert isinstance(cfg.get(section), dict)
     assert "task_tile_path_shortest_path" in cfg["generation"]["task_overrides"]
+    assert "task_tile_path_reachable_target_count" in cfg["generation"]["task_overrides"]
     assert isinstance(cfg["visual"]["background"]["styles"], dict)
     assert cfg["visual"]["background"]["styles"]
 
@@ -410,6 +411,24 @@ def test_tile_path_defaults_loaded() -> None:
     assert str(prompt["evidence_hint"]).strip()
     assert str(prompt["json_example"]).strip()
     assert str(prompt["json_example_answer_only"]).strip()
+
+    reachable_generation, reachable_rendering, reachable_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_tile_path_reachable_target_count",
+    )
+    assert int(reachable_generation["rows"]) == 7
+    assert int(reachable_generation["cols"]) == 7
+    assert int(reachable_generation["target_reachable_target_count_min"]) == 0
+    assert int(reachable_generation["target_reachable_target_count_max"]) == 6
+    assert float(reachable_rendering["aspect_ratio_min"]) == pytest.approx(1.0, rel=1e-9)
+    assert float(reachable_rendering["aspect_ratio_max"]) == pytest.approx(1.0, rel=1e-9)
+    assert str(reachable_prompt["bundle_id"]).strip() == "tile_path_v1"
+    assert str(reachable_prompt["task_family_key"]).strip() == "rectangular_tile_board"
+    assert str(reachable_prompt["task_key"]).strip() == "reachable_target_count_query"
+    assert str(reachable_prompt["answer_hint"]).strip()
+    assert str(reachable_prompt["evidence_hint"]).strip()
+    assert json.loads(str(reachable_prompt["json_example"])) == {"evidence": [[0, 2], [2, 1]], "answer": 2}
+    assert json.loads(str(reachable_prompt["json_example_answer_only"])) == {"answer": 2}
 
 
 def test_tile_pattern_defaults_loaded() -> None:
@@ -561,7 +580,7 @@ def test_tile_reachability_defaults_loaded() -> None:
 
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_tile_reachability_reachable_count",
+        task_id="task_tile_reachability_region_size",
     )
     assert int(generation["rows_min"]) >= 3
     assert int(generation["rows_max"]) == 7
@@ -574,7 +593,7 @@ def test_tile_reachability_defaults_loaded() -> None:
     assert int(generation["answer_max"]) == 12
     assert int(rendering["short_side_px_min"]) >= 32
     assert str(prompt["bundle_id"]).strip() == "tile_reachability_v1"
-    assert str(prompt["task_key"]).strip() == "reachable_count_query"
+    assert str(prompt["task_key"]).strip() == "region_size_query"
     assert str(prompt["answer_hint"]).strip()
     assert str(prompt["evidence_hint"]).strip()
     example = json.loads(str(prompt["json_example"]))
@@ -583,32 +602,27 @@ def test_tile_reachability_defaults_loaded() -> None:
     assert answer_only_example == {"answer": 4}
 
 
-def test_tile_graph_defaults_loaded() -> None:
-    cfg = get_task_group_defaults("tile", "graph")
+def test_tile_relation_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("tile", "relation")
     for section in ("generation", "rendering", "prompt", "visual"):
         assert isinstance(cfg.get(section), dict)
 
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_tile_graph_degree_count",
+        task_id="task_tile_relation_min_distance",
     )
-    assert int(generation["rows_min"]) >= 3
-    assert int(generation["rows_max"]) == 7
-    assert int(generation["cols_min"]) >= 3
-    assert int(generation["cols_max"]) == 7
-    assert int(generation["palette_size_min"]) == 2
-    assert int(generation["palette_size_max"]) == 3
-    assert int(generation["target_degree_min"]) == 0
-    assert int(generation["target_degree_max"]) == 3
-    assert int(generation["target_answer_count_min"]) == 1
-    assert int(generation["target_answer_count_max"]) == 10
+    assert int(generation["target_distance_min"]) == 2
+    assert int(generation["target_distance_max"]) == 6
+    assert int(generation["component_size_min"]) == 1
+    assert int(generation["component_size_max"]) == 6
     assert int(rendering["short_side_px_min"]) >= 32
-    assert str(prompt["bundle_id"]).strip() == "tile_graph_v1"
-    assert str(prompt["task_key"]).strip() == "degree_count_query"
+    assert str(prompt["bundle_id"]).strip() == "tile_relation_v1"
+    assert str(prompt["task_family_key"]).strip() == "rectangular_tile_board"
+    assert str(prompt["task_key"]).strip() == "min_distance_query"
     assert str(prompt["answer_hint"]).strip()
     assert str(prompt["evidence_hint"]).strip()
     example = json.loads(str(prompt["json_example"]))
-    assert example == {"evidence": [[0, 1], [2, 2]], "answer": 2}
+    assert example == {"evidence": [[1, 1], [1, 2], [1, 3]], "answer": 2}
     answer_only_example = json.loads(str(prompt["json_example_answer_only"]))
     assert answer_only_example == {"answer": 2}
 

@@ -1,5 +1,5 @@
 {
-  "bundle_id": "tile_reachability_v1",
+  "bundle_id": "tile_relation_v1",
   "schema_version": "v1",
   "task_family_templates": {
     "rectangular_tile_board": [
@@ -11,12 +11,12 @@
     ]
   },
   "task_templates": {
-    "region_size_query": [
-      "Obstacles are {obstacle_color} tiles, and the start tile is {start_color}. Using 4-neighbor moves through non-obstacle tiles, what is the size of the reachable region from the start?",
-      "The {obstacle_color} tiles are blocked, and the {start_color} tile marks the start. Using 4-neighbor moves through non-obstacle tiles, determine the size of the reachable region from the start.",
-      "Treat the {obstacle_color} tiles as obstacles. The start tile is {start_color}. With 4-neighbor movement through non-obstacle tiles, what is the reachable region size from the start?",
-      "The board uses {obstacle_color} tiles for obstacles and {start_color} for the start tile. Using 4-neighbor moves through non-obstacle tiles, find the size of the reachable region from the start.",
-      "Blocked tiles are {obstacle_color}, and the start tile is {start_color}. What is the size of the reachable region from the start using 4-neighbor moves through non-obstacle tiles?"
+    "min_distance_query": [
+      "On the {background_color} board, what is the minimum number of orthogonal steps between any {color_a} tile and any {color_b} tile?",
+      "Count the smallest 4-neighbor step distance between the {color_a} region and the {color_b} region on the {background_color} board.",
+      "Determine the minimum orthogonal step distance from any {color_a} tile to any {color_b} tile on the {background_color} board.",
+      "Using 4-neighbor movement only, what is the fewest number of steps needed to go from a {color_a} tile to a {color_b} tile on the {background_color} board?",
+      "Find the minimum orthogonal tile distance between the {color_a} component and the {color_b} component on the {background_color} board."
     ]
   },
   "required_slots_by_key": {
@@ -24,9 +24,10 @@
       "rows",
       "cols"
     ],
-    "task:region_size_query": [
-      "obstacle_color",
-      "start_color"
+    "task:min_distance_query": [
+      "background_color",
+      "color_a",
+      "color_b"
     ],
     "answer_or_evidence:answer_only": [
       "json_output_contract_answer_only",

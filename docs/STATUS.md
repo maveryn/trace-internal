@@ -1,6 +1,6 @@
 # TRACE Status
 
-Date: 2026-03-26
+Date: 2026-03-27
 
 ## Implemented
 1. Deterministic build pipeline with sidecar trace shards and atomic finalize.
@@ -30,34 +30,37 @@ Date: 2026-03-26
 19. Geometry measurement area/perimeter tasks now use unlabeled coordinate-only evidence (`graph_point_set` for polygons, `graph_point` for ellipse/circle) and keep shape vertices/reference points strictly inside the plotted graph-paper interior.
 20. Geometry analytical_2d length task supports six derived annotated-scene variants (triangle altitude, rectangle diagonal, rhombus diagonals, isosceles trapezoid height, inscribed square, circle chord) with decimal answers rounded to one decimal place and structured `measurement_ref_map` evidence.
 21. Analytical 2D length rendering now reserves explicit scene margin and uses local collision-aware text placement so labels/value annotations stay off geometry and away from the canvas edge more reliably.
-22. Tile count now includes `task_tile_count_color_count`, `task_tile_count_color_components`, and `task_tile_count_largest_component_size`, single-board `rectangular_tiling` tasks with dynamic canvas sizing, left/top coordinate gutters, coordinate-grounded `grid_point_set` evidence, shared rectangular-board count-family helpers, a reusable per-color component catalog, target-answer-balanced component-count queries, and unique-largest-component evidence for extremum-style component questions.
-23. Tile shared 4-neighbor graph helpers now live under `trace/tasks/tile/shared/grid_graph.py`, which is reused across pathfinding and color-component counting instead of staying under a path-specific module name.
-24. Tile reachability now includes `task_tile_reachability_reachable_count`, a single-board rectangular blocked-grid task with one start tile sampled from the shared 10-color named palette, black obstacle tiles, row/column coordinate gutters, coordinate-grounded reachable-set evidence, and a default reachable-answer cap of `12`.
-25. Shared rectangular tile-board defaults now cap board sides at `7` instead of `8`; example/strict-repro configs plus `task_tile_path_shortest_path` are aligned to that ceiling, and shortest-path generation now samples exact target path lengths while emitting `grid_point_path` tile-coordinate evidence on the same labeled square-cell board contract as the other tile tasks.
-26. Tile symmetry now includes `task_tile_symmetry_violation_count`, a single-board rectangular named-color task with deterministic `vertical` / `horizontal` variants, exact target-count construction over a uniform `1..10` violation range, and counted-side `grid_point_set` evidence.
-27. Tile pattern now includes `task_tile_pattern_match3_run_count`, a single-board rectangular named-color task with deterministic `rows` / `cols` variants, exact target-count construction over qualifying-line counts, fixed run length `3`, query-color prompts with hex labels, and one canonical witness run per counted line.
-28. Tile transition now includes `task_tile_transition_gravity_max_drop`, a single-board rectangular state-transition task with one colored tile per column, black bottom-contiguous obstacles, uniformly sampled target max-drop distances, a unique winning column by construction, and `grid_point_path` trajectory evidence for the winning drop.
-29. Tile graph now includes `task_tile_graph_degree_count`, a single-board rectangular named-color task that asks for the number of queried-color tiles with an exact same-color orthogonal-neighbor degree, balances exact answer targets by construction, and uses the matching tile coordinates themselves as `grid_point_set` evidence.
+22. Tile tasks now keep concrete task modules flat under `trace/tasks/tile/<task_group>_<task_name>.py` and route shared helpers/noise-default loading through `trace/tasks/tile/shared/` instead of per-task-group wrapper packages.
+23. Tile count now includes `task_tile_count_color_count`, `task_tile_count_color_components`, and `task_tile_count_largest_component_size`, single-board `rectangular_tiling` tasks with dynamic canvas sizing, left/top coordinate gutters, coordinate-grounded `grid_point_set` evidence, shared rectangular-board count-family helpers, a reusable per-color component catalog, target-answer-balanced component-count queries, and unique-largest-component evidence for extremum-style component questions.
+24. Tile shared 4-neighbor graph helpers now live under `trace/tasks/tile/shared/grid_graph.py`, which is reused across pathfinding and color-component counting instead of staying under a path-specific module name.
+25. Tile reachability now includes `task_tile_reachability_region_size`, a single-board rectangular blocked-grid task with one start tile sampled from the shared 10-color named palette, black obstacle tiles, row/column coordinate gutters, coordinate-grounded reachable-set evidence, and a default reachable-answer cap of `12`.
+26. Shared rectangular tile-board defaults now cap board sides at `7` instead of `8`; example/strict-repro configs plus `task_tile_path_shortest_path` are aligned to that ceiling, and shortest-path generation now samples exact target path lengths while emitting `grid_point_path` tile-coordinate evidence on the same labeled square-cell board contract as the other tile tasks.
+27. Tile symmetry now includes `task_tile_symmetry_violation_count`, a single-board rectangular named-color task with deterministic `vertical` / `horizontal` variants, exact target-count construction over a uniform `1..10` violation range, and counted-side `grid_point_set` evidence.
+28. Tile pattern now includes `task_tile_pattern_match3_run_count`, a single-board rectangular named-color task with deterministic `rows` / `cols` variants, exact target-count construction over qualifying-line counts, fixed run length `3`, query-color prompts with hex labels, and one canonical witness run per counted line.
+29. Tile transition now includes `task_tile_transition_gravity_max_drop`, a single-board rectangular state-transition task with one colored tile per column, black bottom-contiguous obstacles, uniformly sampled target max-drop distances, a unique winning column by construction, and `grid_point_path` trajectory evidence for the winning drop.
+30. Tile path now also includes `task_tile_path_reachable_target_count`, a square-cell blocked-grid task with one green start tile, multiple red marked targets, exact target-answer sampling over reachable-target counts `0..6`, and `grid_point_set` evidence for only the reachable targets.
+31. Tile relation now also includes `task_tile_relation_min_distance`, a white-background rectangular-board task with exactly two connected colored regions, uniform target-answer sampling over minimum orthogonal distances `2..6`, and a unique straight `grid_point_path` witness between the unique closest pair.
 
 ## Active tasks
 1. `task_tile_count_color_count` (`domain=tile`, `task_group=count`)
 2. `task_tile_count_color_components` (`domain=tile`, `task_group=count`)
 3. `task_tile_count_largest_component_size` (`domain=tile`, `task_group=count`)
-4. `task_tile_graph_degree_count` (`domain=tile`, `task_group=graph`)
-5. `task_tile_path_shortest_path` (`domain=tile`, `task_group=path`)
+4. `task_tile_path_shortest_path` (`domain=tile`, `task_group=path`)
+5. `task_tile_path_reachable_target_count` (`domain=tile`, `task_group=path`)
 6. `task_tile_pattern_match3_run_count` (`domain=tile`, `task_group=pattern`)
-7. `task_tile_reachability_reachable_count` (`domain=tile`, `task_group=reachability`)
-8. `task_tile_symmetry_violation_count` (`domain=tile`, `task_group=symmetry`)
-9. `task_tile_transition_gravity_max_drop` (`domain=tile`, `task_group=transition`)
-10. `task_geometry_measurement_angle` (`domain=geometry`, `task_group=measurement`)
-11. `task_geometry_measurement_area` (`domain=geometry`, `task_group=measurement`)
-12. `task_geometry_measurement_perimeter` (`domain=geometry`, `task_group=measurement`)
-13. `task_geometry_measurement_length` (`domain=geometry`, `task_group=measurement`)
-14. `task_geometry_measurement_slope` (`domain=geometry`, `task_group=measurement`)
-15. `task_geometry_analytical_2d_area` (`domain=geometry`, `task_group=analytical_2d`)
-16. `task_geometry_analytical_2d_length` (`domain=geometry`, `task_group=analytical_2d`)
-17. `task_geometry_analytical_3d_volume` (`domain=geometry`, `task_group=analytical_3d`)
-18. `task_geometry_analytical_3d_surface_area` (`domain=geometry`, `task_group=analytical_3d`)
+7. `task_tile_reachability_region_size` (`domain=tile`, `task_group=reachability`)
+8. `task_tile_relation_min_distance` (`domain=tile`, `task_group=relation`)
+9. `task_tile_symmetry_violation_count` (`domain=tile`, `task_group=symmetry`)
+10. `task_tile_transition_gravity_max_drop` (`domain=tile`, `task_group=transition`)
+11. `task_geometry_measurement_angle` (`domain=geometry`, `task_group=measurement`)
+12. `task_geometry_measurement_area` (`domain=geometry`, `task_group=measurement`)
+13. `task_geometry_measurement_perimeter` (`domain=geometry`, `task_group=measurement`)
+14. `task_geometry_measurement_length` (`domain=geometry`, `task_group=measurement`)
+15. `task_geometry_measurement_slope` (`domain=geometry`, `task_group=measurement`)
+16. `task_geometry_analytical_2d_area` (`domain=geometry`, `task_group=analytical_2d`)
+17. `task_geometry_analytical_2d_length` (`domain=geometry`, `task_group=analytical_2d`)
+18. `task_geometry_analytical_3d_volume` (`domain=geometry`, `task_group=analytical_3d`)
+19. `task_geometry_analytical_3d_surface_area` (`domain=geometry`, `task_group=analytical_3d`)
 
 ## Current quality baseline
 1. Tests are required to pass before finalize.

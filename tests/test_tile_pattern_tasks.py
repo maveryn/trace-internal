@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from trace.tasks.tile.pattern.run_count import TileMatch3RunCountTask
+from trace.tasks.tile.pattern_match3_run_count import TileMatch3RunCountTask
 
 
 def _extract_prompt_json_example(prompt: str) -> dict:

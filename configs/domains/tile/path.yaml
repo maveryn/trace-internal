@@ -7,10 +7,22 @@ generation:
       target_shortest_len_max: 13
       obstacle_prob_min: 0.16
       obstacle_prob_max: 0.36
+    task_tile_path_reachable_target_count:
+      rows: 7
+      cols: 7
+      target_reachable_target_count_min: 0
+      target_reachable_target_count_max: 6
+      obstacle_prob_min: 0.16
+      obstacle_prob_max: 0.36
+      reachable_fraction_min: 0.20
+      reachable_fraction_max: 0.85
 
 rendering:
   task_overrides:
     task_tile_path_shortest_path:
+      aspect_ratio_min: 1.0
+      aspect_ratio_max: 1.0
+    task_tile_path_reachable_target_count:
       aspect_ratio_min: 1.0
       aspect_ratio_max: 1.0
 
@@ -18,11 +30,19 @@ prompt:
   shared:
     bundle_id: tile_path_v1
     task_family_key: rectangular_tile_board
-    task_key: shortest_path_query
-    answer_hint: set "answer" to the shortest path length as an integer
-    evidence_hint: set "evidence" to the ordered list of [row, col] coordinates along one shortest path from the start tile to the goal tile, inclusive
-    json_example: '{"evidence":[[0,0],[0,1],[1,1],[1,2]],"answer":3}'
-    json_example_answer_only: '{"answer":3}'
+  task_overrides:
+    task_tile_path_shortest_path:
+      task_key: shortest_path_query
+      answer_hint: set "answer" to the shortest path length as an integer
+      evidence_hint: set "evidence" to the ordered list of [row, col] coordinates along one shortest path from the start tile to the goal tile, inclusive
+      json_example: '{"evidence":[[0,0],[0,1],[1,1],[1,2]],"answer":3}'
+      json_example_answer_only: '{"answer":3}'
+    task_tile_path_reachable_target_count:
+      task_key: reachable_target_count_query
+      answer_hint: set "answer" to the number of reachable target tiles as an integer
+      evidence_hint: set "evidence" to the row-major list of [row, col] coordinates for the reachable target tiles
+      json_example: '{"evidence":[[0,2],[2,1]],"answer":2}'
+      json_example_answer_only: '{"answer":2}'
 visual:
   background:
     enabled: true

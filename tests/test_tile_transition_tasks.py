@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from trace.tasks.tile.transition.gravity_max_drop import TileGravityMaxDropTask
+from trace.tasks.tile.transition_gravity_max_drop import TileGravityMaxDropTask
 
 
 def _extract_prompt_json_example(prompt: str) -> dict:

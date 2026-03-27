@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from trace.tasks.geometry.measurement.angle import GeometryAngleMeasure2DTask
-from trace.tasks.tile.path.shortest_path import TileShortestPathTask
+from trace.tasks.tile.path_shortest_path import TileShortestPathTask
 
 
 def test_geometry_measurement_default_noise_prob() -> None:

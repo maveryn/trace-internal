@@ -150,9 +150,12 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
         ("geometry", "measurement", "geometry_angle_measure_v1"),
         ("geometry", "measurement", "geometry_measurement_v1"),
         ("tile", "count", "tile_count_v1"),
-        ("tile", "graph", "tile_graph_v1"),
+        ("tile", "pattern", "tile_pattern_v1"),
+        ("tile", "relation", "tile_relation_v1"),
         ("tile", "reachability", "tile_reachability_v1"),
         ("tile", "path", "tile_path_v1"),
+        ("tile", "symmetry", "tile_symmetry_v1"),
+        ("tile", "transition", "tile_transition_v1"),
     )
     for domain, task_group, bundle_id in bundle_coords:
         bundle = load_prompt_bundle(domain, task_group, bundle_id)
@@ -188,16 +191,46 @@ def test_tile_count_bundle_supports_both_count_and_component_queries() -> None:
     assert list(bundle.required_slots_by_key["task:color_component_count_query"]) == ["query_color"]
 
 
-def test_tile_reachability_bundle_supports_reachable_count_query() -> None:
+def test_tile_reachability_bundle_supports_region_size_query() -> None:
     bundle = load_prompt_bundle("tile", "reachability", "tile_reachability_v1")
-    assert len(bundle.task_templates["reachable_count_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["task:reachable_count_query"]) == ["obstacle_color", "start_color"]
+    assert len(bundle.task_templates["region_size_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task:region_size_query"]) == ["obstacle_color", "start_color"]
 
 
-def test_tile_graph_bundle_supports_degree_count_query() -> None:
-    bundle = load_prompt_bundle("tile", "graph", "tile_graph_v1")
-    assert len(bundle.task_templates["degree_count_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["task:degree_count_query"]) == ["query_color", "neighbor_degree"]
+def test_tile_path_bundle_supports_shortest_path_and_reachable_target_queries() -> None:
+    bundle = load_prompt_bundle("tile", "path", "tile_path_v1")
+    assert len(bundle.task_templates["shortest_path_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_templates["reachable_target_count_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task:shortest_path_query"]) == [
+        "obstacle_color",
+        "start_color",
+        "goal_color",
+    ]
+    assert list(bundle.required_slots_by_key["task:reachable_target_count_query"]) == [
+        "obstacle_color",
+        "start_color",
+        "target_color",
+    ]
+
+
+def test_tile_pattern_bundle_supports_match3_query() -> None:
+    bundle = load_prompt_bundle("tile", "pattern", "tile_pattern_v1")
+    assert len(bundle.task_templates["match3_run_count_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task:match3_run_count_query"]) == [
+        "line_axis",
+        "run_length",
+        "query_color",
+    ]
+
+
+def test_tile_relation_bundle_supports_min_distance_query() -> None:
+    bundle = load_prompt_bundle("tile", "relation", "tile_relation_v1")
+    assert len(bundle.task_templates["min_distance_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task:min_distance_query"]) == [
+        "background_color",
+        "color_a",
+        "color_b",
+    ]
 
 
 def test_geometry_task_templates_avoid_awkward_comma_question_prefixes() -> None:

@@ -63,7 +63,11 @@ Bundles:
 6. `prompts/geometry/analytical_3d/geometry_analytical_surface_area_v1.json`
 7. `prompts/tile/count/tile_count_v1.json`
 8. `prompts/tile/path/tile_path_v1.json`
-9. `prompts/tile/reachability/tile_reachability_v1.json`
+9. `prompts/tile/pattern/tile_pattern_v1.json`
+10. `prompts/tile/reachability/tile_reachability_v1.json`
+11. `prompts/tile/relation/tile_relation_v1.json`
+12. `prompts/tile/symmetry/tile_symmetry_v1.json`
+13. `prompts/tile/transition/tile_transition_v1.json`
 
 Tasks:
 1. `task_geometry_measurement_angle` (bundle override: `geometry_angle_measure_v1`)
@@ -77,5 +81,11 @@ Tasks:
 9. `task_geometry_analytical_3d_surface_area` (bundle: `geometry_analytical_surface_area_v1`)
 10. `task_tile_count_color_count`
 11. `task_tile_count_color_components`
-12. `task_tile_path_shortest_path`
-13. `task_tile_reachability_reachable_count`
+12. `task_tile_count_largest_component_size`
+13. `task_tile_path_shortest_path`
+14. `task_tile_path_reachable_target_count`
+15. `task_tile_pattern_match3_run_count`
+16. `task_tile_reachability_region_size`
+17. `task_tile_relation_min_distance`
+18. `task_tile_symmetry_violation_count`
+19. `task_tile_transition_gravity_max_drop`

@@ -15,7 +15,7 @@ from trace.core.identity import compute_instance_id
 from trace.core.types import TaskComplexity, TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import TASK_REGISTRY, register_task
-from trace.tasks.tile.path.shortest_path import TileShortestPathTask
+from trace.tasks.tile.path_shortest_path import TileShortestPathTask
 from tests.helpers import read_jsonl
 
 

@@ -60,7 +60,7 @@ It is the source of truth for board geometry, coordinate grounding, and evidence
    - tall: `(tile_width_px, tile_height_px) = (short_side_px, round(short_side_px * aspect_ratio))`
 6. All tiles in the same board share the same realized `tile_width_px` and `tile_height_px`.
 7. If a sampled board does not fit the target canvas while keeping `short_side_px >= 32`, resample board/layout parameters instead of shrinking below the minimum.
-8. Task-specific render overrides may force square tiles when equal-cost movement would look visually misleading under rectangular cells; `task_tile_path_shortest_path` is the current example.
+8. Task-specific render overrides may force square tiles when equal-cost movement would look visually misleading under rectangular cells; `task_tile_path_shortest_path` and `task_tile_path_reachable_target_count` are the current examples.
 
 ## Adjacency / Topology
 1. `rectangular_tiling` uses 4-neighbor adjacency by default: up, down, left, right.
@@ -113,6 +113,7 @@ It is the source of truth for board geometry, coordinate grounding, and evidence
 4. Pure "return the set of tiles" answer tasks can come later if we add a dedicated answer-type contract or a stable JSON encoding policy for coordinate answers.
 
 ## Compatibility Note
-1. `task_tile_path_shortest_path` now follows this document's rectangular-board and tile-coordinate evidence policy.
-2. Its only deliberate geometry exception is square-only cells, which keep per-step shortest-path costs visually uniform.
+1. `task_tile_path_shortest_path` and `task_tile_path_reachable_target_count` now follow this document's rectangular-board and tile-coordinate evidence policy.
+2. Their deliberate geometry exception is square-only cells, which keep movement cues visually uniform.
 3. `task_tile_transition_gravity_max_drop` is a current example of a scalar transition task that still uses tile-coordinate `grid_point_path` evidence for the winning mover trajectory.
+4. `task_tile_relation_min_distance` is a current example of a rectangular-cell task that still uses `grid_point_path` evidence because its witness is a unique straight row/column segment and the answer is defined in orthogonal steps rather than free-form movement cost.

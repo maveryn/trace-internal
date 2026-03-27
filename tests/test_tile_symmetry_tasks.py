@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from trace.tasks.tile.symmetry.violation_count import TileSymmetryViolationCountTask
+from trace.tasks.tile.symmetry_violation_count import TileSymmetryViolationCountTask
 
 
 def _extract_prompt_json_example(prompt: str) -> dict:

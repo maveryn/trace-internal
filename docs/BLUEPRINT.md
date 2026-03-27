@@ -21,7 +21,7 @@ Rules:
 5. Build-task weights control cross-task sampling; task-variant weights are resolved inside the task from config/params.
 6. Task-id naming is mandatory: `task_<domain>_<task_group>_<task_name>` (all lowercase snake_case).
 7. `task_id` domain/task_group segments must match class `domain` and `task_group`.
-8. Task module naming is mandatory: file path `trace/tasks/<domain>/<task_group>/<task_name>.py` (do not repeat full `task_id` in filename).
+8. Task module naming is mandatory: use file path `trace/tasks/<domain>/<task_group>/<task_name>.py` by default (do not repeat full `task_id` in filename); tile is the current exception and keeps concrete tasks flat under `trace/tasks/tile/<task_group>_<task_name>.py` with shared helpers in `trace/tasks/tile/shared/`.
 
 ## 3) Required artifacts
 ### 3.1 Train instance (lightweight)

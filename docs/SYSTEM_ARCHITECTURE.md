@@ -55,22 +55,28 @@ Implementation map for the contracts in `docs/BLUEPRINT.md`.
 1. `trace/tasks/registry.py` — registration and creation.
 2. `trace/tasks/base.py` — task protocol and `TaskOutput`.
 3. `trace/tasks/shared/*` — reusable query/layout/evidence/config/prompt helpers.
-4. `trace/tasks/<domain>/<task_group>/*.py` — concrete tasks plus reusable task-group bases (for example `trace/tasks/geometry/measurement/shape_measure_base.py`).
+4. `trace/tasks/<domain>/<task_group>/*.py` — concrete tasks plus reusable task-group bases by default (for example `trace/tasks/geometry/measurement/shape_measure_base.py`); tile is the current exception and keeps concrete task modules flat under `trace/tasks/tile/<task_group>_<task_name>.py` with shared helpers in `trace/tasks/tile/shared/`.
 
 ## 4) Current active tasks
-1. `trace/tasks/tile/count/color_count.py`
-2. `trace/tasks/tile/count/color_components.py`
-3. `trace/tasks/tile/path/shortest_path.py`
-4. `trace/tasks/tile/reachability/reachable_count.py`
-5. `trace/tasks/geometry/measurement/angle.py`
-6. `trace/tasks/geometry/measurement/area.py`
-7. `trace/tasks/geometry/measurement/perimeter.py`
-8. `trace/tasks/geometry/measurement/length.py`
-9. `trace/tasks/geometry/measurement/slope.py`
-10. `trace/tasks/geometry/analytical_2d/area.py`
-11. `trace/tasks/geometry/analytical_2d/length.py`
-12. `trace/tasks/geometry/analytical_3d/volume.py`
-13. `trace/tasks/geometry/analytical_3d/surface_area.py`
+1. `trace/tasks/tile/count_color_count.py`
+2. `trace/tasks/tile/count_color_components.py`
+3. `trace/tasks/tile/count_largest_component_size.py`
+4. `trace/tasks/tile/path_shortest_path.py`
+5. `trace/tasks/tile/path_reachable_target_count.py`
+6. `trace/tasks/tile/pattern_match3_run_count.py`
+7. `trace/tasks/tile/reachability_region_size.py`
+8. `trace/tasks/tile/relation_min_distance.py`
+9. `trace/tasks/tile/symmetry_violation_count.py`
+10. `trace/tasks/tile/transition_gravity_max_drop.py`
+11. `trace/tasks/geometry/measurement/angle.py`
+12. `trace/tasks/geometry/measurement/area.py`
+13. `trace/tasks/geometry/measurement/perimeter.py`
+14. `trace/tasks/geometry/measurement/length.py`
+15. `trace/tasks/geometry/measurement/slope.py`
+16. `trace/tasks/geometry/analytical_2d/area.py`
+17. `trace/tasks/geometry/analytical_2d/length.py`
+18. `trace/tasks/geometry/analytical_3d/volume.py`
+19. `trace/tasks/geometry/analytical_3d/surface_area.py`
 
 ## 5) Architecture invariants
 1. Determinism from config + seeds + versions.

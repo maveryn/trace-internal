@@ -17,6 +17,13 @@
       "Using up/down/left/right moves through tiles that are not {obstacle_color}, find the shortest-path length in steps from {start_color} to {goal_color}.",
       "Find the shortest valid path length in steps from the {start_color} start tile to the {goal_color} goal tile, moving only through tiles that are not {obstacle_color} with 4-neighbor movement.",
       "With {obstacle_color} tiles blocked and no diagonal movement allowed, compute the shortest-path step count from {start_color} to {goal_color}."
+    ],
+    "reachable_target_count_query": [
+      "Obstacle tiles are {obstacle_color}. The start tile is {start_color}, and the marked target tiles are {target_color}. Using 4-neighbor moves through non-obstacle tiles, how many target tiles are reachable from the start?",
+      "Treat the {obstacle_color} tiles as blocked. The start tile is {start_color} and the marked target tiles are {target_color}. Count the targets reachable with 4-neighbor movement from the start.",
+      "Using up/down/left/right moves through tiles that are not {obstacle_color}, determine how many {target_color} target tiles can be reached from the {start_color} start tile.",
+      "Find how many marked {target_color} target tiles are reachable from the {start_color} start tile when movement is limited to 4-neighbor steps through tiles that are not {obstacle_color}.",
+      "With {obstacle_color} tiles blocked and no diagonal movement allowed, compute how many {target_color} targets are reachable from the {start_color} start tile."
     ]
   },
   "required_slots_by_key": {
@@ -28,6 +35,11 @@
       "obstacle_color",
       "start_color",
       "goal_color"
+    ],
+    "task:reachable_target_count_query": [
+      "obstacle_color",
+      "start_color",
+      "target_color"
     ],
     "answer_or_evidence:answer_only": [
       "json_output_contract_answer_only",

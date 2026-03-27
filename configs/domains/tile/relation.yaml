@@ -1,0 +1,19 @@
+generation:
+  task_overrides:
+    task_tile_relation_min_distance:
+      target_distance_min: 2
+      target_distance_max: 6
+      component_size_min: 1
+      component_size_max: 6
+
+prompt:
+  shared:
+    bundle_id: tile_relation_v1
+    task_family_key: rectangular_tile_board
+  task_overrides:
+    task_tile_relation_min_distance:
+      task_key: min_distance_query
+      answer_hint: set "answer" to the minimum number of orthogonal steps between the two queried colors as an integer
+      evidence_hint: set "evidence" to the ordered list of [row, col] coordinates for one unique shortest path between the closest queried-color tiles, including both endpoints
+      json_example: '{"evidence":[[1,1],[1,2],[1,3]],"answer":2}'
+      json_example_answer_only: '{"answer":2}'

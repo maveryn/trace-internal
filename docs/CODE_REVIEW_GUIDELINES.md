@@ -10,7 +10,7 @@ Use this checklist during implementation and refactor reviews.
 5. Determinism holds for fixed seeds and emitted ordering.
 6. Public API surfaces (`__all__`, package exports) only include active consumers.
 7. Docs were updated for changed contracts or module boundaries.
-8. Task naming contract holds: `task_id` matches `task_<domain>_<task_group>_<task_name>` and module filename is `<task_name>.py` in the corresponding domain/task-group path.
+8. Task naming contract holds: `task_id` matches `task_<domain>_<task_group>_<task_name>` and module filename is `<task_name>.py` in the documented domain layout (default `trace/tasks/<domain>/<task_group>/`, tile exception `trace/tasks/tile/<task_group>_<task_name>.py`).
 9. Task docs stay in sync: each active `task_id` has `docs/tasks/<task_id>.md` and `docs/tasks/README.md` links match active tasks.
 
 ## 2) Distilled recurring findings
@@ -71,6 +71,11 @@ Use this checklist during implementation and refactor reviews.
 55. For extremum-over-components tasks, reject non-unique winning components and expose only the winning component as prompt-facing evidence; keep the full component partition in trace.
 56. For row/column run-count tasks, expose one canonical witness run per qualifying line in prompt-facing evidence instead of every overlapping or repeated run on that same line.
 57. For transition tasks with one uniquely optimal mover, keep all mover outcomes in trace but expose only the winning mover's trajectory as prompt-facing evidence.
+58. For motif-count tasks that count composite tile shapes, expose one canonical anchor tile per counted motif as prompt-facing evidence and keep the full motif cell sets in trace.
+59. When task reviews do not pass `_sampling_index`, validate any fallback target-answer selector against the actual review seed stream; if one namespace/salt creates variant-specific skew, switch to a decorrelated deterministic selector and add a regression test for the review collector pattern.
+60. When a second blocked-grid tile task needs start/reachable/unreachable scene partitions, promote the target-agnostic board sampler into a tile-shared reachability helper instead of duplicating task-local rejection loops.
+61. For open-grid closest-pair relation tasks, enforce uniqueness at construction time by growing each colored component away from the witness boundary; do not rely on post-hoc filtering to remove ambiguous equal-distance pairs.
+62. Tile tasks should keep concrete task modules flat under `trace/tasks/tile/` and share reusable helpers/noise-default loaders through `trace/tasks/tile/shared/`; do not recreate per-task-group tile wrapper packages unless a materially different tile board family appears.
 
 
 ## 3) Process rule

@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import json
 
-from trace.tasks.tile.count.color_components import TileColorComponentsTask
-from trace.tasks.tile.count.color_count import TileColorCountTask
-from trace.tasks.tile.count.largest_component_size import TileLargestComponentSizeTask
+from trace.tasks.tile.count_color_components import TileColorComponentsTask
+from trace.tasks.tile.count_color_count import TileColorCountTask
+from trace.tasks.tile.count_largest_component_size import TileLargestComponentSizeTask
 
 
 def _extract_prompt_json_example(prompt: str) -> dict:

@@ -5,7 +5,7 @@ Use this as the implementation checklist for new or modified tasks.
 ## 1) Before coding
 1. Confirm taxonomy: `domain`, `task_group`, `task_id`.
 2. Task-id format is required: `task_<domain>_<task_group>_<task_name>` (lowercase snake_case).
-3. Task module filename is required: `<task_name>.py` under `trace/tasks/<domain>/<task_group>/`.
+3. Task module filename is required: `<task_name>.py` in the documented domain layout. Default layout is `trace/tasks/<domain>/<task_group>/`; tile is the current exception and keeps concrete tasks flat under `trace/tasks/tile/<task_group>_<task_name>.py`.
 4. Confirm family/variant fit using `docs/TASK_FAMILY_VARIANTS.md` before introducing a new task group.
 5. Define task contracts:
    - scene,
@@ -17,11 +17,11 @@ Use this as the implementation checklist for new or modified tasks.
    - `trace/core`
    - `trace/tasks/shared`
    - `trace/tasks/<domain>/shared`
-   - existing task-group shared modules (for example `trace/tasks/<domain>/<task_group>/*_base.py`)
+   - existing task-group shared modules (for example `trace/tasks/<domain>/<task_group>/*_base.py`) or tile-domain shared modules under `trace/tasks/tile/shared/`
 7. Keep helper placement at the narrowest reusable layer.
 
 ## 2) Required implementation behavior
-1. Add the task module at `trace/tasks/<domain>/<task_group>/<task_name>.py`.
+1. Add the task module in the documented domain layout. Default is `trace/tasks/<domain>/<task_group>/<task_name>.py`; tile tasks live at `trace/tasks/tile/<task_group>_<task_name>.py`.
 2. Register task with `@register_task`.
 3. Import the task module in `trace/tasks/__init__.py` so registration executes at runtime.
 4. Keep prompt text in external bundles only.

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from trace.tasks.tile.reachability.reachable_count import TileReachableCountTask
+from trace.tasks.tile.reachability_region_size import TileRegionSizeTask
 
 
 def _extract_prompt_json_example(prompt: str) -> dict:
@@ -14,8 +14,8 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     return json.loads(payload)
 
 
-def test_tile_reachable_count_outputs_expected_contract() -> None:
-    task = TileReachableCountTask()
+def test_tile_region_size_outputs_expected_contract() -> None:
+    task = TileRegionSizeTask()
     out = task.generate(
         6601,
         params={
@@ -38,7 +38,7 @@ def test_tile_reachable_count_outputs_expected_contract() -> None:
     execution = trace["execution_trace"]
     render = trace["render_spec"]
 
-    assert str(out.task_variant) == "reachable_count"
+    assert str(out.task_variant) == "region_size"
     assert out.answer_gt.type == "integer"
     assert out.evidence_gt.type == "grid_point_set"
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
@@ -71,8 +71,8 @@ def test_tile_reachable_count_outputs_expected_contract() -> None:
     assert start_entities[0]["attrs"]["fill_rgb"] == execution["start_color_rgb"]
 
 
-def test_tile_reachable_count_is_deterministic() -> None:
-    task = TileReachableCountTask()
+def test_tile_region_size_is_deterministic() -> None:
+    task = TileRegionSizeTask()
     params = {
         "rows_min": 3,
         "rows_max": 7,
@@ -99,8 +99,8 @@ def test_tile_reachable_count_is_deterministic() -> None:
     assert out_a.image.tobytes() == out_b.image.tobytes()
 
 
-def test_tile_reachable_count_prompt_example_matches_contract() -> None:
-    task = TileReachableCountTask()
+def test_tile_region_size_prompt_example_matches_contract() -> None:
+    task = TileRegionSizeTask()
     out = task.generate(6629, params={}, max_attempts=80)
     example = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
     assert list(example.keys()) == ["evidence", "answer"]

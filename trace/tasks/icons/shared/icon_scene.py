@@ -20,6 +20,7 @@ class IconInstanceSpec:
     """One icon instance to place into the scene panel."""
 
     icon_id: str
+    nominal_size_px: int | None = None
     rotation_degrees: int = 0
     mirror_x: bool = False
     tint_rgb: Tuple[int, int, int] = (33, 39, 52)
@@ -35,6 +36,7 @@ class RenderedIconInstance:
     icon_id: str
     panel: str
     bbox_xyxy: Tuple[int, int, int, int]
+    nominal_size_px: int
     rotation_degrees: int
     mirror_x: bool
     tint_rgb: Tuple[int, int, int]
@@ -331,7 +333,11 @@ def render_two_panel_icon_scene(
 
     reference_rgba = render_icon_rgba(
         icon_id=str(reference_icon.icon_id),
-        size_px=int(reference_icon_size_px),
+        size_px=int(
+            reference_icon.nominal_size_px
+            if reference_icon.nominal_size_px is not None
+            else reference_icon_size_px
+        ),
         tint_rgb=tuple(int(value) for value in reference_icon.tint_rgb),
         rotation_degrees=int(reference_icon.rotation_degrees),
         mirror_x=bool(reference_icon.mirror_x),
@@ -351,6 +357,11 @@ def render_two_panel_icon_scene(
         icon_id=str(reference_icon.icon_id),
         panel="reference",
         bbox_xyxy=(int(ref_box[0]), int(ref_box[1]), int(ref_box[0] + ref_w), int(ref_box[1] + ref_h)),
+        nominal_size_px=int(
+            reference_icon.nominal_size_px
+            if reference_icon.nominal_size_px is not None
+            else reference_icon_size_px
+        ),
         rotation_degrees=int(reference_icon.rotation_degrees) % 360,
         mirror_x=bool(reference_icon.mirror_x),
         tint_rgb=tuple(int(value) for value in reference_icon.tint_rgb),
@@ -378,7 +389,13 @@ def render_two_panel_icon_scene(
             if round_max_size < int(min_size):
                 round_max_size = int(min_size)
             for _ in range(int(placement_attempts)):
-                nominal_size = int(rng.randint(int(min_size), int(round_max_size)))
+                nominal_size = int(
+                    spec.nominal_size_px
+                    if spec.nominal_size_px is not None
+                    else rng.randint(int(min_size), int(round_max_size))
+                )
+                if spec.nominal_size_px is not None and nominal_size > int(round_max_size):
+                    continue
                 candidate_sprite = render_icon_rgba(
                     icon_id=str(spec.icon_id),
                     size_px=int(nominal_size),
@@ -413,6 +430,7 @@ def render_two_panel_icon_scene(
                 icon_id=str(spec.icon_id),
                 panel="scene",
                 bbox_xyxy=tuple(int(value) for value in paste_bbox),
+                nominal_size_px=int(nominal_size),
                 rotation_degrees=int(spec.rotation_degrees) % 360,
                 mirror_x=bool(spec.mirror_x),
                 tint_rgb=tuple(int(value) for value in spec.tint_rgb),

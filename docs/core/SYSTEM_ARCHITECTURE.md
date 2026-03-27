@@ -92,10 +92,11 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
 31. `trace/tasks/icons/counting/type.py`
 32. `trace/tasks/icons/counting/orientation.py`
 33. `trace/tasks/icons/counting/color.py`
-34. `trace/tasks/icons/relation/relative_position_type.py`
-35. `trace/tasks/icons/transformation/pair_count.py`
-36. `trace/tasks/icons/shared/icon_pair_grid_scene.py`
-37. `trace/tasks/icons/shared/icon_transform.py`
+34. `trace/tasks/icons/counting/size_relation.py`
+35. `trace/tasks/icons/relation/relative_position_type.py`
+36. `trace/tasks/icons/transformation/pair_count.py`
+37. `trace/tasks/icons/shared/icon_pair_grid_scene.py`
+38. `trace/tasks/icons/shared/icon_transform.py`
 
 ## 5) Architecture invariants
 1. Determinism from config + seeds + versions.

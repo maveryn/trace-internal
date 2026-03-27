@@ -83,6 +83,34 @@ def resolve_icon_counting_render_params(
                 group_default(render_defaults, "reference_icon_size_px", fallback_defaults.reference_icon_size_px),
             )
         ),
+        "reference_icon_size_min_px": int(
+            params.get(
+                "reference_icon_size_min_px",
+                group_default(
+                    render_defaults,
+                    "reference_icon_size_min_px",
+                    getattr(
+                        fallback_defaults,
+                        "reference_icon_size_min_px",
+                        fallback_defaults.reference_icon_size_px,
+                    ),
+                ),
+            )
+        ),
+        "reference_icon_size_max_px": int(
+            params.get(
+                "reference_icon_size_max_px",
+                group_default(
+                    render_defaults,
+                    "reference_icon_size_max_px",
+                    getattr(
+                        fallback_defaults,
+                        "reference_icon_size_max_px",
+                        fallback_defaults.reference_icon_size_px,
+                    ),
+                ),
+            )
+        ),
         "scene_max_overlap_fraction": float(
             params.get(
                 "scene_max_overlap_fraction",
@@ -234,6 +262,11 @@ def icon_counting_style_trace(
         "scene_placement_max_attempts": int(render_params["scene_placement_max_attempts"]),
         "scene_size_shrink_rounds": int(render_params["scene_size_shrink_rounds"]),
         "scene_size_shrink_factor": float(render_params["scene_size_shrink_factor"]),
+        "scene_icon_size_min_px": int(render_params["scene_icon_size_min_px"]),
+        "scene_icon_size_max_px": int(render_params["scene_icon_size_max_px"]),
+        "reference_icon_size_px": int(render_params["reference_icon_size_px"]),
+        "reference_icon_size_min_px": int(render_params["reference_icon_size_min_px"]),
+        "reference_icon_size_max_px": int(render_params["reference_icon_size_max_px"]),
         "icon_noise_edit_types": [str(value) for value in render_params["icon_noise_edit_types"]],
         "icon_noise_edit_count_range": [
             int(render_params["icon_noise_edit_count_range"][0]),

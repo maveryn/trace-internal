@@ -131,7 +131,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
 16. **Icons counting type (`task_icons_counting_type`)**
    - One two-panel image with a `Reference` icon and a `Scene` panel of icons.
    - Query: how many scene icons have the same icon type as the reference.
-   - Count support: `target_count` in `0..10`, `distractor_count` in `1..10`, total scene icons in `1..20`.
+   - Count support: `target_count` in `0..8`, `distractor_count` in `1..8`, total scene icons in `1..16`.
    - Answer type: integer count.
    - Evidence: scene-only `bbox_set` in final image coordinates.
 17. **Icons counting orientation (`task_icons_counting_orientation`)**
@@ -148,7 +148,15 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Count support: `target_count` in `0..10`, `distractor_count` in `1..10`, total scene icons in `1..20`.
    - Answer type: integer count.
    - Evidence: scene-only `bbox_set` in final image coordinates.
-19. **Icons transformation pair count (`task_icons_transformation_pair_count`)**
+19. **Icons counting size relation (`task_icons_counting_size_relation`)**
+   - One two-panel image with a `Reference` icon and a `Scene` panel of icons.
+   - Query variants: count scene icons that are `smaller` or `larger` than the reference icon.
+   - Scene keeps the same icon type as the reference while randomizing tint and rotation; size is the only matching predicate.
+   - Count support: `target_count` in `0..10`, `distractor_count` in `1..10`, total scene icons in `1..20`.
+   - Size distinction rule: reference nominal size is sampled from `64..96` px, scene nominal sizes from `40..120` px, and every scene icon must satisfy `|scene_size-reference_size| >= 12` px so there are no same-size near misses.
+   - Answer type: integer count.
+   - Evidence: scene-only `bbox_set` in final image coordinates.
+20. **Icons transformation pair count (`task_icons_transformation_pair_count`)**
    - One two-panel image with a `Reference` pair and a labeled `Scene` grid of icon pairs.
    - Query: how many Scene cells apply the same transformation as the Reference pair.
    - Transform vocabulary: `rot90`, `rot180`, `rot270`, `flip_h`, `flip_v`, `flip_diag_main`, `flip_diag_anti`.
@@ -156,7 +164,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Answer type: integer count.
    - Evidence: sorted `label_set` of the matching Scene cell labels.
    - Visual distinction rule: candidate icons are accepted only when the sampled transform and at least one distractor transform remain visually distinct from identity and from the reference transform.
-20. **Icons relation relative-position type (`task_icons_relation_relative_position_type`)**
+21. **Icons relation relative-position type (`task_icons_relation_relative_position_type`)**
    - One two-panel image with a `Reference` icon on the left and a `Scene` panel of icons on the right; exactly one Scene icon is visibly marked as the `Anchor`.
    - Query variants: `left_of_anchor`, `right_of_anchor`, `above_anchor`, `below_anchor`.
    - Count support: `target_count` in `0..5`, `distractor_count` in `max(1, target_count + 1)..10`, with the Anchor excluded from the counted candidate set.

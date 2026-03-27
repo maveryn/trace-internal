@@ -101,6 +101,7 @@ Use this checklist during implementation and refactor reviews.
 85. For anchored icon relation tasks, do not place all positives on one side and every distractor on the other; include both same-type wrong-side distractors and different-type queried-side distractors so the task tests the intended conjunction of attribute + spatial reasoning rather than side occupancy.
 86. For anchored icon relation tasks with strict bbox-based directional predicates, reject same-type wrong-side distractors that are only a few pixels from becoming positives; follow Prism-style relaxed spatial margins so those distractors lie mostly outside the queried region.
 87. When an anchored relation task samples target and distractor counts independently, check whether high target counts still make the queried side visually dominant; if so, enforce a target-conditioned distractor floor in the shared counting sampler instead of papering over the issue with extra placement randomness.
+88. When icon size is the semantic predicate, drive explicit per-instance nominal sizes through the shared icon scene renderer and keep a task-level minimum size-gap contract in trace/config; do not fake size relations later with task-local bbox heuristics or post-render rescaling.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

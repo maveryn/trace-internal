@@ -717,6 +717,7 @@ def test_icons_counting_defaults_loaded() -> None:
     assert int(generation_shared["distractor_count_max"]) == 10
     assert bool(generation_shared["balanced_sampling"]) is True
     assert "task_icons_counting_color" in cfg["generation"]["task_overrides"]
+    assert "task_icons_counting_size_relation" in cfg["generation"]["task_overrides"]
     assert "task_icons_counting_type" in cfg["generation"]["task_overrides"]
     assert "task_icons_counting_orientation" in cfg["generation"]["task_overrides"]
 
@@ -757,6 +758,28 @@ def test_icons_counting_defaults_loaded() -> None:
     assert str(color_prompt["answer_hint"]).strip()
     assert str(color_prompt["json_example"]).strip()
     assert str(color_prompt["json_example_answer_only"]).strip()
+
+    size_generation, size_rendering, size_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_icons_counting_size_relation",
+    )
+    assert str(size_generation["pool_manifest"]).strip() == "all_icons.txt"
+    assert list(size_generation["rotation_candidates_degrees"]) == [0, 90, 180, 270]
+    assert list(size_generation["size_relation_candidates"]) == ["smaller", "larger"]
+    assert int(size_generation["size_relation_min_delta_px"]) == 12
+    assert int(size_generation["object_count_max"]) == 16
+    assert int(size_generation["target_count_max"]) == 8
+    assert int(size_generation["distractor_count_max"]) == 8
+    assert int(size_rendering["scene_icon_size_max_px"]) == 120
+    assert int(size_rendering["reference_icon_size_min_px"]) == 64
+    assert int(size_rendering["reference_icon_size_max_px"]) == 96
+    assert str(size_prompt["object_description"]).strip()
+    assert str(size_prompt["question_text_smaller"]).strip()
+    assert str(size_prompt["question_text_larger"]).strip()
+    assert str(size_prompt["evidence_hint"]).strip()
+    assert str(size_prompt["answer_hint"]).strip()
+    assert str(size_prompt["json_example"]).strip()
+    assert str(size_prompt["json_example_answer_only"]).strip()
 
     type_generation, type_rendering, type_prompt = split_generation_rendering_prompt_defaults(
         cfg,

@@ -23,6 +23,7 @@ from .geometry.measurement import perimeter as _task_geometry_measurement_perime
 from .geometry.measurement import slope as _task_geometry_measurement_slope
 from .icons.counting import color as _task_icons_counting_color
 from .icons.counting import orientation as _task_icons_counting_orientation
+from .icons.counting import size_relation as _task_icons_counting_size_relation
 from .icons.counting import type as _task_icons_counting_type
 from .icons.relation import relative_position_type as _task_icons_relation_relative_position_type
 from .icons.transformation import pair_count as _task_icons_transformation_pair_count

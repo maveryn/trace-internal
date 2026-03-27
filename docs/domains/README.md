@@ -9,5 +9,6 @@ Paired repo-local skills:
 - `TASK_FAMILY_VARIANTS.md` — domain/task-family variant map.
 - `CHART_DOMAIN_PLAN.md` — chart-type universe under consideration and the initial planned rollout.
 - `CHART_TASK_SETUP.md` — concrete v1 setup for the first chart-domain task family.
+- `TABLE_TASK_SETUP.md` — concrete v1 setup for the first tables-domain task family.
 - `TILE_TASK_SETUP.md` — tile-domain board, coordinate, and visual policy.
 - `TESSERAE_TASKS.md` — Tesserae task inventory and porting reference.

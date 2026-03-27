@@ -8,9 +8,9 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from ....core.seed import spawn_rng
 from ...shared.color_distance import sample_color_palette_with_distance_constraints
 from ...shared.config_defaults import group_default, resolve_required_int_bounds
+from ...shared.name_assets import load_short_name_manifest
 from ...shared.named_colors import darken_color
 from .chart_scene import MultiSeriesChartMarkSpec
-from .legend_name_assets import load_legend_name_manifest
 from .labeled_chart_common import (
     LabeledChartDefaults,
     balanced_choice_from_values,
@@ -85,7 +85,7 @@ def resolve_series_count_bounds(
 def sample_series_labels(*, count: int, instance_seed: int) -> Tuple[str, ...]:
     """Sample one randomized series-label tuple."""
 
-    pool = load_legend_name_manifest(_SERIES_NAME_MANIFEST)
+    pool = load_short_name_manifest(_SERIES_NAME_MANIFEST)
     if int(count) <= 0:
         raise ValueError("series count must be positive")
     if int(count) > len(pool):

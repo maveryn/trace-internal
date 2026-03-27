@@ -54,6 +54,15 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - `task_charts_distribution_density_label` -> `violin`
 20. Keep the broader chart-type universe in `CHART_DOMAIN_PLAN.md` and the concrete active contract in `CHART_TASK_SETUP.md`; histogram is only valid as an active chart type when it preserves true numeric-bin semantics distinct from `bar`.
 
+## Tables direction (current)
+1. Tables follow the same split as charts: `task_group` encodes reasoning family, while table styling is treated as `scene_variant` inside the task.
+2. The first active table family is `statistics`.
+3. `task_tables_statistics_summary_label` uses semantic `task_variant` values `argmax` and `argmin`.
+4. `task_tables_statistics_summary_label` uses `scene_variant` values `spreadsheet`, `zebra`, `ledger`, and `card_table`.
+5. Table row labels should use short visible human-style names rather than single letters when the answer is a row identity.
+6. Table tasks use one fixed prompt-facing evidence type in v1: `bbox_set`.
+7. Evidence boxes should mark the minimal supporting table region(s), starting with one decisive numeric cell bbox for `task_tables_statistics_summary_label`.
+
 ## Planned geometry measurement variants
 1. **Angle measurement**
    - One angle per image.

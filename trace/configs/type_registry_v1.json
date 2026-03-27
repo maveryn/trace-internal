@@ -3,6 +3,7 @@
   "answer_types": [
     "integer",
     "number",
+    "string",
     "pi_expression",
     "option_letter",
     "index_list",

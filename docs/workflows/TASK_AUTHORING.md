@@ -137,9 +137,11 @@ PYTHONPATH=. pytest -q
 1. `docs/tasks/<task_id>.md`
 2. `docs/tasks/README.md` (task links must match active task set)
 3. `docs/project/STATUS.md` (if behavior changed)
-4. `docs/workflows/SHARED_UTILITIES.md` (if shared helpers moved/added)
-5. `docs/workflows/BUILD_VALIDATION.md` or `docs/workflows/VALIDATION_ERROR_CODES.md` (if validation behavior changed)
-6. `docs/workflows/CODE_REVIEW_GUIDELINES.md` for reusable findings.
+4. `docs/core/PROMPT_SYSTEM.md` (if active prompt bundles or task-to-bundle mappings changed)
+5. `docs/core/SYSTEM_ARCHITECTURE.md` (if active domain/task module inventory or module boundaries changed)
+6. `docs/workflows/SHARED_UTILITIES.md` (if shared helpers moved/added)
+7. `docs/workflows/BUILD_VALIDATION.md` or `docs/workflows/VALIDATION_ERROR_CODES.md` (if validation behavior changed)
+8. `docs/workflows/CODE_REVIEW_GUIDELINES.md` for reusable findings.
 
 ## 8) Reuse anti-patterns
 Use `docs/workflows/CODE_REVIEW_GUIDELINES.md` Section 2 as the canonical anti-pattern list.

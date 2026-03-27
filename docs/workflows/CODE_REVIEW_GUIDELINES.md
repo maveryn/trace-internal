@@ -106,6 +106,7 @@ Use this checklist during implementation and refactor reviews.
 90. When a domain adds a second scene contract with different structural semantics (for example single-series vs multiseries charts), split the shared generation/render helpers by contract instead of overloading the first helper module with branching task-family logic.
 91. When scene-variant support expands in a domain, audit setup/plan docs and task-module docstrings for stale support lists or outdated contract wording (for example single-series-only text after multiseries tasks land) in the same patch as the code change.
 92. When distribution review groups samples by the task's default-sampled `task_variant`, verify that any answer-target selector is decorrelated from the `task_variant` selector itself; small-support numeric variants can fail review even when the overall task distribution looks healthy if both selectors reuse correlated seed transforms.
+93. When a new domain/task bundle becomes active, update the source-of-truth inventory sections in `docs/core/PROMPT_SYSTEM.md` and `docs/core/SYSTEM_ARCHITECTURE.md` in the same patch instead of relying on `STATUS.md` alone.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

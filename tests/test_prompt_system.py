@@ -158,6 +158,7 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
         ("geometry", "measurement", "geometry_measurement_v1"),
         ("icons", "counting", "icons_counting_v1"),
         ("icons", "transformation", "icons_transformation_v1"),
+        ("tables", "statistics", "tables_statistics_v1"),
         ("tile", "count", "tile_count_v1"),
         ("tile", "pattern", "tile_pattern_v1"),
         ("tile", "relation", "tile_relation_v1"),

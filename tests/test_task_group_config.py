@@ -434,6 +434,51 @@ def test_charts_trend_defaults_loaded() -> None:
     assert str(prompt_defaults["bundle_id"]).strip() == "charts_trend_v1"
 
 
+def test_tables_statistics_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("tables", "statistics")
+    for section in ("generation", "rendering", "prompt"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["row_count_min"]) >= 5
+    assert int(generation_shared["row_count_max"]) == 10
+    assert int(generation_shared["numeric_column_count_min"]) >= 3
+    assert int(generation_shared["numeric_column_count_max"]) == 5
+    assert int(generation_shared["value_min"]) >= 0
+    assert int(generation_shared["value_max"]) == 32
+    assert sorted(generation_shared["task_variant_weights"].keys()) == ["argmax", "argmin"]
+    assert sorted(generation_shared["scene_variant_weights"].keys()) == [
+        "card_table",
+        "ledger",
+        "spreadsheet",
+        "zebra",
+    ]
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_width"]) > 0
+    assert int(render_shared["canvas_height"]) > 0
+    assert int(render_shared["table_margin_left_px"]) > 0
+    assert int(render_shared["table_margin_bottom_px"]) > 0
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "tables_statistics_v1"
+    assert str(prompt_shared["task_family_key"]).strip() == "styled_table_statistics"
+    assert str(prompt_shared["task_key"]).strip() == "summary_label_query"
+    assert str(prompt_shared["object_description_spreadsheet"]).strip()
+    assert str(prompt_shared["evidence_hint_argmax"]).strip()
+    assert str(prompt_shared["json_example_argmin"]).strip()
+    assert str(prompt_shared["json_example_answer_only_argmax"]).strip()
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_tables_statistics_summary_label",
+    )
+    assert int(generation_defaults["row_count_min"]) >= 5
+    assert int(generation_defaults["numeric_column_count_max"]) == 5
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip() == "tables_statistics_v1"
+
+
 def test_charts_multiseries_defaults_loaded() -> None:
     cfg = get_task_group_defaults("charts", "multiseries")
     for section in ("generation", "rendering", "prompt"):

@@ -59,41 +59,59 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
 5. `trace/tasks/icons/shared/*` — icon-domain shared asset loading and two-panel reference-scene rendering helpers.
 
 ## 4) Current active tasks
-1. `trace/tasks/tile/count_color_count.py`
-2. `trace/tasks/tile/count_color_components.py`
-3. `trace/tasks/tile/count_largest_component_size.py`
-4. `trace/tasks/tile/path_shortest_path.py`
-5. `trace/tasks/tile/path_reachable_target_count.py`
-6. `trace/tasks/tile/pattern_match3_run_count.py`
-7. `trace/tasks/tile/reachability_region_size.py`
-8. `trace/tasks/tile/relation_min_distance.py`
-9. `trace/tasks/tile/symmetry_violation_count.py`
-10. `trace/tasks/tile/transition_gravity_max_drop.py`
-11. `trace/tasks/geometry/comparison/angle.py`
-12. `trace/tasks/geometry/comparison/area.py`
-13. `trace/tasks/geometry/comparison/length.py`
-14. `trace/tasks/geometry/comparison/perimeter.py`
-15. `trace/tasks/geometry/counting/angle.py`
-16. `trace/tasks/geometry/counting/triangle.py`
-17. `trace/tasks/geometry/counting/quadrilateral.py`
-18. `trace/tasks/geometry/counting/shape_type.py`
-19. `trace/tasks/geometry/counting/convexity.py`
-20. `trace/tasks/geometry/measurement/angle.py`
-21. `trace/tasks/geometry/measurement/area.py`
-22. `trace/tasks/geometry/measurement/perimeter.py`
-23. `trace/tasks/geometry/measurement/length.py`
-24. `trace/tasks/geometry/measurement/slope.py`
-25. `trace/tasks/geometry/analytical_2d/area.py`
-26. `trace/tasks/geometry/analytical_2d/composite_area.py`
-27. `trace/tasks/geometry/analytical_2d/length.py`
-28. `trace/tasks/geometry/analytical_2d/perimeter.py`
-29. `trace/tasks/geometry/analytical_3d/volume.py`
-30. `trace/tasks/geometry/analytical_3d/surface_area.py`
-31. `trace/tasks/icons/counting/type.py`
-32. `trace/tasks/icons/counting/orientation.py`
-33. `trace/tasks/icons/counting/color.py`
-34. `trace/tasks/icons/transformation/pair_count.py`
-35. `trace/tasks/charts/statistics/summary_value.py`
+1. Tile:
+   - `trace/tasks/tile/count_color_count.py`
+   - `trace/tasks/tile/count_color_components.py`
+   - `trace/tasks/tile/count_largest_component_size.py`
+   - `trace/tasks/tile/path_shortest_path.py`
+   - `trace/tasks/tile/path_reachable_target_count.py`
+   - `trace/tasks/tile/pattern_match3_run_count.py`
+   - `trace/tasks/tile/reachability_region_size.py`
+   - `trace/tasks/tile/relation_min_distance.py`
+   - `trace/tasks/tile/symmetry_violation_count.py`
+   - `trace/tasks/tile/transition_gravity_max_drop.py`
+2. Geometry comparison:
+   - `trace/tasks/geometry/comparison/angle.py`
+   - `trace/tasks/geometry/comparison/area.py`
+   - `trace/tasks/geometry/comparison/length.py`
+   - `trace/tasks/geometry/comparison/perimeter.py`
+3. Geometry counting:
+   - `trace/tasks/geometry/counting/angle.py`
+   - `trace/tasks/geometry/counting/triangle.py`
+   - `trace/tasks/geometry/counting/quadrilateral.py`
+   - `trace/tasks/geometry/counting/shape_type.py`
+   - `trace/tasks/geometry/counting/convexity.py`
+4. Geometry measurement:
+   - `trace/tasks/geometry/measurement/angle.py`
+   - `trace/tasks/geometry/measurement/area.py`
+   - `trace/tasks/geometry/measurement/perimeter.py`
+   - `trace/tasks/geometry/measurement/length.py`
+   - `trace/tasks/geometry/measurement/slope.py`
+5. Geometry analytical 2D/3D:
+   - `trace/tasks/geometry/analytical_2d/area.py`
+   - `trace/tasks/geometry/analytical_2d/composite_area.py`
+   - `trace/tasks/geometry/analytical_2d/length.py`
+   - `trace/tasks/geometry/analytical_2d/perimeter.py`
+   - `trace/tasks/geometry/analytical_3d/volume.py`
+   - `trace/tasks/geometry/analytical_3d/surface_area.py`
+6. Icons:
+   - `trace/tasks/icons/counting/type.py`
+   - `trace/tasks/icons/counting/orientation.py`
+   - `trace/tasks/icons/counting/color.py`
+   - `trace/tasks/icons/transformation/pair_count.py`
+7. Charts:
+   - `trace/tasks/charts/statistics/summary_value.py`
+   - `trace/tasks/charts/statistics/summary_label.py`
+   - `trace/tasks/charts/counting/value_count.py`
+   - `trace/tasks/charts/readout/subset_value.py`
+   - `trace/tasks/charts/multiseries/pairwise_comparison_count.py`
+   - `trace/tasks/charts/distribution/histogram_count.py`
+   - `trace/tasks/charts/distribution/boxplot_label.py`
+   - `trace/tasks/charts/distribution/density_label.py`
+   - `trace/tasks/charts/trend/structure_value.py`
+   - `trace/tasks/charts/composition/subset_value.py`
+8. Tables:
+   - `trace/tasks/tables/statistics/summary_label.py`
 
 ## 5) Architecture invariants
 1. Determinism from config + seeds + versions.

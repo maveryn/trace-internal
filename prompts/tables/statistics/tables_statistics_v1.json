@@ -1,0 +1,70 @@
+{
+  "bundle_id": "tables_statistics_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "styled_table_statistics": [
+      "The image shows {object_description}.",
+      "Use the table in the image. It shows {object_description}.",
+      "Work from the styled table shown in the image: {object_description}.",
+      "Look at the table in the image. It shows {object_description}.",
+      "You are given a table: {object_description}."
+    ]
+  },
+  "task_templates": {
+    "summary_label_query": [
+      "Answer this question.",
+      "Determine which row label matches the requested column statistic.",
+      "Use the table values to identify the correct row label.",
+      "Find the row name that satisfies the requested column statistic.",
+      "Read the table and name the matching row."
+    ]
+  },
+  "task_variant_templates": {
+    "argmax": [
+      "Which row has the highest value in the {query_column} column?",
+      "Find the row label of the maximum value in the {query_column} column.",
+      "Determine which row shows the largest value under {query_column}.",
+      "What row name corresponds to the highest value in {query_column}?",
+      "Identify the row with the maximum value in the {query_column} column."
+    ],
+    "argmin": [
+      "Which row has the lowest value in the {query_column} column?",
+      "Find the row label of the minimum value in the {query_column} column.",
+      "Determine which row shows the smallest value under {query_column}.",
+      "What row name corresponds to the lowest value in {query_column}?",
+      "Identify the row with the minimum value in the {query_column} column."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:styled_table_statistics": [
+      "object_description"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

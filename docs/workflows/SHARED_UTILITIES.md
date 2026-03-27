@@ -68,6 +68,9 @@ Promote helpers when a second consumer appears.
 17. `trace/tasks/shared/named_colors.py`
    - Canonical repo-wide named-color palette plus deterministic sampling helpers shared across domains.
    - Use this when a second domain needs the same stable prompt/render color inventory instead of reaching into another domain's helper layer.
+18. `trace/tasks/shared/name_assets.py`
+   - Canonical shared loader for vendored short-name manifests reused across domains (currently charts and tables).
+   - Use this when a second domain needs the same visible short-name pool instead of keeping another domain-local asset loader.
 
 ### Domain-shared (current)
 1. Geometry: `trace/tasks/geometry/shared/graph_paper.py`, `graph_rendering.py`, `single_object_scene.py`, `angle_geometry.py`, `multi_angle_scene.py`, `polygon_geometry.py`, `slope_geometry.py`, `shape_style.py`, `background_defaults.py`, `noise_defaults.py`, `render_variation.py`, `annotation_values.py`, `labeled_point_evidence.py`, `point_labels.py`, `prompt_text.py`, `analytical_2d_scene.py`, `analytical_3d_solids.py`, `analytical_task.py`
@@ -130,15 +133,18 @@ Promote helpers when a second consumer appears.
    - `icons/counting/shared.py` provides the shared render-param resolution, icon-instance noise sampling, and canonical trace-style block for sibling reference-scene icon counting tasks; reuse it once a second icon counting task would otherwise duplicate the same render-default parsing or style-trace assembly.
    - `icon_transform.py` is the canonical home for D4 transform ids and image-space transform application; use it for icon rotation/mirror families instead of encoding transform names task-locally.
    - `icon_pair_grid_scene.py` provides the reusable Reference-pair + labeled Scene-grid renderer for icon transformation-style tasks; use cell labels from this renderer as evidence instead of inventing task-local grid containers.
-7. Charts: `trace/tasks/charts/shared/chart_scene.py`, `labeled_chart_common.py`, `distribution_chart_common.py`, `multiseries_chart_common.py`, `composition_chart_common.py`, `legend_name_assets.py`, `visual_defaults.py`
+7. Charts: `trace/tasks/charts/shared/chart_scene.py`, `labeled_chart_common.py`, `distribution_chart_common.py`, `multiseries_chart_common.py`, `composition_chart_common.py`, `visual_defaults.py`
    - `chart_scene.py` is the canonical chart renderer for the active chart families; it owns the shared axis/grid scaffold plus mark/label trace geometry for single-series `area`, `bar`, `pie`, `donut`, `horizontal_bar`, `line`, `radar`, `scatter`, `dot_plot`, and `lollipop`, the active multiseries `grouped_bar`, `grouped_horizontal_bar`, `multi_line`, and `grouped_lollipop` renderers, the stacked-composition `stacked_bar` / `stacked_horizontal_bar` renderers, and the dedicated `histogram` / `boxplot` / `violin` distribution renderers.
    - `labeled_chart_common.py` is the shared construction layer for labeled single-series chart tasks; it owns mark-count/value bounds, balanced semantic/scene variant sampling, randomized label/color sampling, per-slice pie/donut palette assignment, reusable percentage-composition builders for pie/donut, reusable statistic builders, reusable threshold/interval counting dataset builders, reusable two-label readout dataset builders, reusable ordered-sequence trend dataset builders, and the shared pixel-space mark-evidence projection used by chart review overlays.
    - `distribution_chart_common.py` is the shared construction layer for distribution-style chart tasks; it owns histogram bin construction, cumulative/interval count query setup, categorical boxplot summary construction, violin support/mode construction, and the fixed-scene distribution task defaults.
    - `multiseries_chart_common.py` is the shared construction layer for multiseries chart tasks; it owns series/category count bounds, per-series palette sampling, series/category label sampling, pairwise-comparison dataset construction, and category-grounded pixel-space evidence projection for multiseries review overlays.
-   - `legend_name_assets.py` is the shared chart-domain loader for vendored legend-name manifests under `assets/charts/`; reuse it instead of hardcoding ad hoc series-name pools inside chart task modules.
    - `composition_chart_common.py` is the shared construction layer for composition-style chart tasks; it owns stacked/pie scene compatibility, stacked total/segment builders, combined-share composition builders, stacked mark-spec construction, and whole-stack / whole-chart evidence projection.
    - Chart mark colors should be sampled once per instance and then reused consistently across all marks in that chart; keep the renderer wired to the resolved per-instance fill/outline colors rather than tracing one style and drawing another.
    - `visual_defaults.py` is the canonical chart-domain background/noise loader layer shared across future chart task groups.
+8. Tables: `trace/tasks/tables/shared/table_scene.py`, `table_common.py`, `visual_defaults.py`
+   - `table_scene.py` is the canonical styled-table renderer for active table tasks; it owns table cell geometry, row/column region bboxes, and the active `spreadsheet|zebra|ledger|card_table` scene variants.
+   - `table_common.py` is the shared construction layer for table tasks; it owns row/column count bounds, row-name/header sampling, summary-label dataset construction, render-param resolution, and bbox evidence projection.
+   - `visual_defaults.py` is the canonical table-domain background/noise loader layer shared across future table task groups.
 
 ## 3) Reuse rules
 1. Do not duplicate deterministic utilities.

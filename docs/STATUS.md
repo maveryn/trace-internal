@@ -37,18 +37,18 @@ Date: 2026-03-26
 26. Tile symmetry now includes `task_tile_symmetry_violation_count`, a single-board rectangular named-color task with deterministic `vertical` / `horizontal` variants, exact target-count construction over a uniform `1..10` violation range, and counted-side `grid_point_set` evidence.
 27. Tile pattern now includes `task_tile_pattern_match3_run_count`, a single-board rectangular named-color task with deterministic `rows` / `cols` variants, exact target-count construction over qualifying-line counts, fixed run length `3`, query-color prompts with hex labels, and one canonical witness run per counted line.
 28. Tile transition now includes `task_tile_transition_gravity_max_drop`, a single-board rectangular state-transition task with one colored tile per column, black bottom-contiguous obstacles, uniformly sampled target max-drop distances, a unique winning column by construction, and `grid_point_path` trajectory evidence for the winning drop.
-29. Tile topology now includes `task_tile_topology_hole_count`, a single-board rectangular black/white cavity task with white boundary-connected exterior background, one connected black wall mass, exact target hole-count construction over enclosed white regions, and one canonical witness white cell per hole as `grid_point_set` evidence.
+29. Tile graph now includes `task_tile_graph_degree_count`, a single-board rectangular named-color task that asks for the number of queried-color tiles with an exact same-color orthogonal-neighbor degree, balances exact answer targets by construction, and uses the matching tile coordinates themselves as `grid_point_set` evidence.
 
 ## Active tasks
 1. `task_tile_count_color_count` (`domain=tile`, `task_group=count`)
 2. `task_tile_count_color_components` (`domain=tile`, `task_group=count`)
 3. `task_tile_count_largest_component_size` (`domain=tile`, `task_group=count`)
-4. `task_tile_path_shortest_path` (`domain=tile`, `task_group=path`)
-5. `task_tile_pattern_match3_run_count` (`domain=tile`, `task_group=pattern`)
-6. `task_tile_reachability_reachable_count` (`domain=tile`, `task_group=reachability`)
-7. `task_tile_symmetry_violation_count` (`domain=tile`, `task_group=symmetry`)
-8. `task_tile_transition_gravity_max_drop` (`domain=tile`, `task_group=transition`)
-9. `task_tile_topology_hole_count` (`domain=tile`, `task_group=topology`)
+4. `task_tile_graph_degree_count` (`domain=tile`, `task_group=graph`)
+5. `task_tile_path_shortest_path` (`domain=tile`, `task_group=path`)
+6. `task_tile_pattern_match3_run_count` (`domain=tile`, `task_group=pattern`)
+7. `task_tile_reachability_reachable_count` (`domain=tile`, `task_group=reachability`)
+8. `task_tile_symmetry_violation_count` (`domain=tile`, `task_group=symmetry`)
+9. `task_tile_transition_gravity_max_drop` (`domain=tile`, `task_group=transition`)
 10. `task_geometry_measurement_angle` (`domain=geometry`, `task_group=measurement`)
 11. `task_geometry_measurement_area` (`domain=geometry`, `task_group=measurement`)
 12. `task_geometry_measurement_perimeter` (`domain=geometry`, `task_group=measurement`)

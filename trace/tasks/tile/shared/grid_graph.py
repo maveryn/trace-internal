@@ -69,6 +69,16 @@ def connected_components_for_active_coords(active_coords: Sequence[Coord]) -> Li
     ]
 
 
+def degree_by_active_coord(active_coords: Sequence[Coord]) -> Dict[Coord, int]:
+    """Return 4-neighbor degree for each active coordinate in canonical order."""
+    ordered = sorted({(int(row), int(col)) for row, col in active_coords})
+    adjacency = active_coord_adjacency(ordered)
+    return {
+        (int(row), int(col)): int(len(neighbors))
+        for (row, col), neighbors in sorted(adjacency.items())
+    }
+
+
 def coord_adjacency_to_cell_ids(adjacency: Mapping[Coord, Sequence[Coord]]) -> Dict[str, List[str]]:
     """Convert coordinate adjacency to deterministic symbolic cell-id adjacency."""
     return {
@@ -140,6 +150,7 @@ __all__ = [
     "bfs_dist_count",
     "cell_id",
     "connected_components_for_active_coords",
+    "degree_by_active_coord",
     "coord_adjacency_to_cell_ids",
     "iter_four_neighbors",
     "open_grid_adjacency",

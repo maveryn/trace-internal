@@ -1,4 +1,4 @@
-"""Background-style defaults for the tile/topology task group."""
+"""Background-style defaults for the tile/graph task group."""
 
 from __future__ import annotations
 
@@ -8,8 +8,8 @@ from ..shared.visual_defaults import load_tile_background_defaults
 
 
 def _load_task_group_background_defaults() -> Dict[str, Any]:
-    """Load tile/topology background defaults from merged task-group config."""
-    return load_tile_background_defaults(task_group="topology")
+    """Load tile/graph background defaults from merged task-group config."""
+    return load_tile_background_defaults(task_group="graph")
 
 
 POST_IMAGE_BACKGROUND_DEFAULTS: Dict[str, Any] = _load_task_group_background_defaults()

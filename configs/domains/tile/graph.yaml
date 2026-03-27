@@ -1,0 +1,21 @@
+generation:
+  task_overrides:
+    task_tile_graph_degree_count:
+      palette_size_min: 2
+      palette_size_max: 3
+      target_degree_min: 0
+      target_degree_max: 3
+      target_answer_count_min: 1
+      target_answer_count_max: 10
+
+prompt:
+  shared:
+    bundle_id: tile_graph_v1
+    task_family_key: rectangular_tile_board
+  task_overrides:
+    task_tile_graph_degree_count:
+      task_key: degree_count_query
+      answer_hint: set "answer" to the number of queried tiles with the requested same-color orthogonal-neighbor count as an integer
+      evidence_hint: set "evidence" to the row-major list of [row, col] coordinates for every queried tile whose same-color orthogonal-neighbor count matches the request
+      json_example: '{"evidence":[[0,1],[2,2]],"answer":2}'
+      json_example_answer_only: '{"answer":2}'

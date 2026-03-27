@@ -150,6 +150,7 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
         ("geometry", "measurement", "geometry_angle_measure_v1"),
         ("geometry", "measurement", "geometry_measurement_v1"),
         ("tile", "count", "tile_count_v1"),
+        ("tile", "graph", "tile_graph_v1"),
         ("tile", "reachability", "tile_reachability_v1"),
         ("tile", "path", "tile_path_v1"),
     )
@@ -191,6 +192,12 @@ def test_tile_reachability_bundle_supports_reachable_count_query() -> None:
     bundle = load_prompt_bundle("tile", "reachability", "tile_reachability_v1")
     assert len(bundle.task_templates["reachable_count_query"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["task:reachable_count_query"]) == ["obstacle_color", "start_color"]
+
+
+def test_tile_graph_bundle_supports_degree_count_query() -> None:
+    bundle = load_prompt_bundle("tile", "graph", "tile_graph_v1")
+    assert len(bundle.task_templates["degree_count_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task:degree_count_query"]) == ["query_color", "neighbor_degree"]
 
 
 def test_geometry_task_templates_avoid_awkward_comma_question_prefixes() -> None:

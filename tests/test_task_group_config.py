@@ -583,28 +583,32 @@ def test_tile_reachability_defaults_loaded() -> None:
     assert answer_only_example == {"answer": 4}
 
 
-def test_tile_topology_defaults_loaded() -> None:
-    cfg = get_task_group_defaults("tile", "topology")
+def test_tile_graph_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("tile", "graph")
     for section in ("generation", "rendering", "prompt", "visual"):
         assert isinstance(cfg.get(section), dict)
 
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_tile_topology_hole_count",
+        task_id="task_tile_graph_degree_count",
     )
     assert int(generation["rows_min"]) >= 3
     assert int(generation["rows_max"]) == 7
     assert int(generation["cols_min"]) >= 3
     assert int(generation["cols_max"]) == 7
-    assert int(generation["answer_min"]) == 1
-    assert int(generation["answer_max"]) == 5
+    assert int(generation["palette_size_min"]) == 2
+    assert int(generation["palette_size_max"]) == 3
+    assert int(generation["target_degree_min"]) == 0
+    assert int(generation["target_degree_max"]) == 3
+    assert int(generation["target_answer_count_min"]) == 1
+    assert int(generation["target_answer_count_max"]) == 10
     assert int(rendering["short_side_px_min"]) >= 32
-    assert str(prompt["bundle_id"]).strip() == "tile_topology_v1"
-    assert str(prompt["task_key"]).strip() == "hole_count_query"
+    assert str(prompt["bundle_id"]).strip() == "tile_graph_v1"
+    assert str(prompt["task_key"]).strip() == "degree_count_query"
     assert str(prompt["answer_hint"]).strip()
     assert str(prompt["evidence_hint"]).strip()
     example = json.loads(str(prompt["json_example"]))
-    assert example == {"evidence": [[2, 2], [4, 4]], "answer": 2}
+    assert example == {"evidence": [[0, 1], [2, 2]], "answer": 2}
     answer_only_example = json.loads(str(prompt["json_example_answer_only"]))
     assert answer_only_example == {"answer": 2}
 

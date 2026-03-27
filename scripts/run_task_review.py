@@ -99,8 +99,8 @@ def _parse_cli() -> argparse.Namespace:
     parser.add_argument(
         "--workers",
         type=int,
-        default=max(1, min(16, int(os.cpu_count() or 1))),
-        help="Thread workers for sampling",
+        default=max(1, int(os.cpu_count() or 1)),
+        help="Thread workers for sampling (default: all visible CPUs)",
     )
     parser.add_argument(
         "--allow-fail",

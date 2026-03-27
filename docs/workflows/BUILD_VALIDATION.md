@@ -32,6 +32,7 @@ For new or distribution-changing task logic:
    - full review: `PYTHONPATH=. python scripts/run_task_review.py --tasks <task_id> --mode full`
    - distribution only: `PYTHONPATH=. python scripts/run_task_review.py --tasks <task_id> --mode distribution`
    - inspection only (skip distribution analysis): `PYTHONPATH=. python scripts/run_task_review.py --tasks <task_id> --mode inspection`
+   - by default review scripts use all visible CPUs via `--workers`; override it explicitly when you need a smaller review footprint
 2. Required review scope:
    - random sample review: 100 samples per task (`random_review_100.json`)
    - per-variant distribution review: 100 samples per task variant when variants exist (`distribution_review.json`)

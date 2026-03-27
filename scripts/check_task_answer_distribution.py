@@ -62,8 +62,8 @@ def _parse_cli() -> argparse.Namespace:
     parser.add_argument(
         "--workers",
         type=int,
-        default=max(1, min(16, int(os.cpu_count() or 1))),
-        help="Thread workers for sample generation (default: min(16, cpu_count))",
+        default=max(1, int(os.cpu_count() or 1)),
+        help="Thread workers for sample generation (default: all visible CPUs)",
     )
     parser.add_argument(
         "--out",

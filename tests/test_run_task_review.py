@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 from PIL import Image
 
+from scripts import check_task_answer_distribution as distribution_review
 from scripts import run_task_review as review
 from trace.core.types import TaskComplexity, TypedValue
 from trace.tasks.base import TaskOutput
@@ -74,3 +76,17 @@ def test_build_inspection_rows_passes_requested_task_variant(
     beta_payload = json.loads((task_dir / "data" / "variant_beta" / "0000.json").read_text(encoding="utf-8"))
     assert alpha_payload["task_variant"] == "variant_alpha"
     assert beta_payload["task_variant"] == "variant_beta"
+
+
+def test_review_cli_defaults_to_all_visible_cpus(monkeypatch) -> None:
+    monkeypatch.setattr(review.os, "cpu_count", lambda: 12)
+    monkeypatch.setattr(sys, "argv", ["run_task_review.py"])
+    args = review._parse_cli()
+    assert int(args.workers) == 12
+
+
+def test_distribution_cli_defaults_to_all_visible_cpus(monkeypatch) -> None:
+    monkeypatch.setattr(distribution_review.os, "cpu_count", lambda: 12)
+    monkeypatch.setattr(sys, "argv", ["check_task_answer_distribution.py"])
+    args = distribution_review._parse_cli()
+    assert int(args.workers) == 12

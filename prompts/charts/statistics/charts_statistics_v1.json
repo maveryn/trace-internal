@@ -1,0 +1,133 @@
+{
+  "bundle_id": "charts_statistics_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "labeled_chart_statistics": [
+      "The image shows {object_description}.",
+      "Use the chart in the image. It shows {object_description}.",
+      "Work from the labeled chart shown in the image: {object_description}.",
+      "Look at the chart in the image. It shows {object_description}.",
+      "You are given a labeled chart: {object_description}."
+    ]
+  },
+  "task_templates": {
+    "summary_value_query": [
+      "Answer this question.",
+      "Determine the requested summary value.",
+      "Use the chart values to answer the question.",
+      "Compute the requested statistic from the chart values.",
+      "Read the chart values and answer the question."
+    ],
+    "summary_label_query": [
+      "Answer this question.",
+      "Determine which label matches the requested statistic.",
+      "Use the chart values to identify the correct label.",
+      "Find the label of the mark that satisfies the requested statistic.",
+      "Read the chart values and name the matching label."
+    ]
+  },
+  "task_variant_templates": {
+    "max": [
+      "What is the highest displayed value?",
+      "Find the maximum value shown in the chart.",
+      "Determine the largest value among the labeled marks.",
+      "What is the maximum value in the chart?",
+      "Identify the highest value shown by any labeled mark."
+    ],
+    "min": [
+      "What is the lowest displayed value?",
+      "Find the minimum value shown in the chart.",
+      "Determine the smallest value among the labeled marks.",
+      "What is the minimum value in the chart?",
+      "Identify the lowest value shown by any labeled mark."
+    ],
+    "range": [
+      "What is the difference between the highest and lowest displayed values?",
+      "Find the range of the chart values.",
+      "Determine the difference between the maximum and minimum values.",
+      "What is max minus min for the displayed values?",
+      "Compute the range of the labeled chart values."
+    ],
+    "mean": [
+      "What is the mean (average) of the displayed values?",
+      "Find the average value of the labeled marks.",
+      "Determine the mean of the chart values.",
+      "What is the arithmetic mean of the displayed values?",
+      "Compute the average of the labeled chart values."
+    ],
+    "median": [
+      "What is the median of the displayed values?",
+      "Find the median value of the labeled marks.",
+      "Determine the middle value of the chart values.",
+      "What is the median value shown in the chart?",
+      "Compute the median of the labeled chart values."
+    ],
+    "sum": [
+      "What is the sum of the displayed values?",
+      "Find the total of the labeled chart values.",
+      "Determine the sum of all displayed values.",
+      "What is the total value across all labeled marks?",
+      "Compute the sum of the chart values."
+    ],
+    "mode": [
+      "What is the mode of the displayed values?",
+      "Find the modal value shown in the chart.",
+      "Determine the unique mode of the labeled marks.",
+      "What value appears most often in the chart?",
+      "Compute the mode of the displayed values."
+    ],
+    "argmax": [
+      "Which label has the highest displayed value?",
+      "Find the label of the maximum-value mark.",
+      "Determine which labeled mark shows the largest value.",
+      "What label corresponds to the maximum value in the chart?",
+      "Identify the label of the highest-value mark."
+    ],
+    "argmin": [
+      "Which label has the lowest displayed value?",
+      "Find the label of the minimum-value mark.",
+      "Determine which labeled mark shows the smallest value.",
+      "What label corresponds to the minimum value in the chart?",
+      "Identify the label of the lowest-value mark."
+    ],
+    "median_label": [
+      "Which label is the median mark?",
+      "Find the label of the mark with the median value.",
+      "Determine which labeled mark is the median.",
+      "What label corresponds to the median value in the chart?",
+      "Identify the label of the median-value mark."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:labeled_chart_statistics": [
+      "object_description"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

@@ -6,6 +6,7 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from ...core.sampling import normalize_positive_weights, weighted_choice
 from .config_defaults import group_default
+from .deterministic_sampling import resolve_selection_index
 
 
 def is_uniform_probability_map(probabilities: Mapping[str, float], *, tol: float = 1e-9) -> bool:
@@ -70,6 +71,7 @@ def apply_balanced_variant_sampling(
     balance_flag_key: str = "balanced_variant_sampling",
     explicit_key: str = "shape_variant",
     weights_key: str = "variant_weights",
+    sampling_namespace: str | None = None,
 ) -> str:
     """Apply deterministic cycling over variants when configuration is uniform."""
 
@@ -82,7 +84,14 @@ def apply_balanced_variant_sampling(
     values = [str(item) for item in supported_variants]
     if not values:
         return str(selected_variant)
-    sampling_index = params.get("_sampling_index", instance_seed)
+    if sampling_namespace is not None:
+        sampling_index = resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=str(sampling_namespace),
+        )
+    else:
+        sampling_index = params.get("_sampling_index", instance_seed)
     return str(values[abs(int(sampling_index)) % len(values)])
 
 

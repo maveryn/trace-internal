@@ -1,0 +1,98 @@
+{
+  "bundle_id": "tables_statistics_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "styled_table_statistics": [
+      "The image shows {object_description}.",
+      "Use the table in the image. It shows {object_description}.",
+      "Work from the styled table shown in the image: {object_description}.",
+      "Look at the table in the image. It shows {object_description}.",
+      "You are given a table: {object_description}."
+    ]
+  },
+  "task_templates": {
+    "summary_label_query": [
+      "Answer this question.",
+      "Determine which row label matches the requested column statistic.",
+      "Use the table values to identify the correct row label.",
+      "Find the row name that satisfies the requested column statistic.",
+      "Read the table and name the matching row."
+    ],
+    "summary_value_query": [
+      "Answer this question.",
+      "Determine the requested summary value for the queried numeric column.",
+      "Use the table values to compute the requested column summary.",
+      "Find the numeric summary for the named column.",
+      "Read the table and report the requested column summary value."
+    ]
+  },
+  "task_variant_templates": {
+    "argmax": [
+      "Which row has the highest value in the {query_column} column?",
+      "Find the row label of the maximum value in the {query_column} column.",
+      "Determine which row shows the largest value under {query_column}.",
+      "What row name corresponds to the highest value in {query_column}?",
+      "Identify the row with the maximum value in the {query_column} column."
+    ],
+    "argmin": [
+      "Which row has the lowest value in the {query_column} column?",
+      "Find the row label of the minimum value in the {query_column} column.",
+      "Determine which row shows the smallest value under {query_column}.",
+      "What row name corresponds to the lowest value in {query_column}?",
+      "Identify the row with the minimum value in the {query_column} column."
+    ],
+    "column_sum": [
+      "What is the sum of the values in the {query_column} column?",
+      "Find the total of all values in the {query_column} column.",
+      "Determine the column sum for {query_column}.",
+      "What total do you get when you add the values in {query_column}?",
+      "Compute the sum of the {query_column} column."
+    ],
+    "column_mean": [
+      "What is the mean of the values in the {query_column} column?",
+      "Find the average of all values in the {query_column} column.",
+      "Determine the column mean for {query_column}.",
+      "What average value does the {query_column} column have?",
+      "Compute the mean of the {query_column} column."
+    ],
+    "column_median": [
+      "What is the median of the values in the {query_column} column?",
+      "Find the median value in the {query_column} column.",
+      "Determine the column median for {query_column}.",
+      "What median value does the {query_column} column have?",
+      "Compute the median of the {query_column} column."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:styled_table_statistics": [
+      "object_description"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

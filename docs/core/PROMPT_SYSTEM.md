@@ -55,68 +55,76 @@ Train records should store:
 3. Keep output-mode variants concise and structurally consistent so format requirements stay easy to parse.
 
 ## 5) Active bundles/tasks
-Bundles:
-1. `prompts/geometry/comparison/geometry_comparison_v1.json`
-2. `prompts/geometry/counting/geometry_counting_v1.json`
-3. `prompts/geometry/measurement/geometry_angle_measure_v1.json`
-4. `prompts/geometry/measurement/geometry_measurement_v1.json`
-5. `prompts/geometry/analytical_2d/geometry_analytical_area_v1.json`
-6. `prompts/geometry/analytical_2d/geometry_analytical_composite_area_v1.json`
-7. `prompts/geometry/analytical_2d/geometry_analytical_length_v1.json`
-8. `prompts/geometry/analytical_2d/geometry_analytical_perimeter_v1.json`
-9. `prompts/geometry/analytical_3d/geometry_analytical_volume_v1.json`
-10. `prompts/geometry/analytical_3d/geometry_analytical_surface_area_v1.json`
-11. `prompts/icons/counting/icons_counting_v1.json`
-12. `prompts/icons/relation/icons_relation_v1.json`
-13. `prompts/icons/sequence/icons_sequence_v1.json`
-14. `prompts/icons/transformation/icons_transformation_v1.json`
-15. `prompts/tile/count/tile_count_v1.json`
-16. `prompts/tile/path/tile_path_v1.json`
-17. `prompts/tile/pattern/tile_pattern_v1.json`
-18. `prompts/tile/reachability/tile_reachability_v1.json`
-19. `prompts/tile/relation/tile_relation_v1.json`
-20. `prompts/tile/symmetry/tile_symmetry_v1.json`
-21. `prompts/tile/transition/tile_transition_v1.json`
+Active bundles:
+1. Geometry:
+   - `prompts/geometry/comparison/geometry_comparison_v1.json`
+   - `prompts/geometry/counting/geometry_counting_v1.json`
+   - `prompts/geometry/measurement/geometry_angle_measure_v1.json`
+   - `prompts/geometry/measurement/geometry_measurement_v1.json`
+   - `prompts/geometry/analytical_2d/geometry_analytical_area_v1.json`
+   - `prompts/geometry/analytical_2d/geometry_analytical_composite_area_v1.json`
+   - `prompts/geometry/analytical_2d/geometry_analytical_length_v1.json`
+   - `prompts/geometry/analytical_2d/geometry_analytical_perimeter_v1.json`
+   - `prompts/geometry/analytical_3d/geometry_analytical_volume_v1.json`
+   - `prompts/geometry/analytical_3d/geometry_analytical_surface_area_v1.json`
+2. Icons:
+   - `prompts/icons/counting/icons_counting_v1.json`
+   - `prompts/icons/relation/icons_relation_v1.json`
+   - `prompts/icons/sequence/icons_sequence_v1.json`
+   - `prompts/icons/transformation/icons_transformation_v1.json`
+3. Tile:
+   - `prompts/tile/count/tile_count_v1.json`
+   - `prompts/tile/path/tile_path_v1.json`
+   - `prompts/tile/pattern/tile_pattern_v1.json`
+   - `prompts/tile/reachability/tile_reachability_v1.json`
+   - `prompts/tile/relation/tile_relation_v1.json`
+   - `prompts/tile/symmetry/tile_symmetry_v1.json`
+   - `prompts/tile/transition/tile_transition_v1.json`
+4. Charts:
+   - `prompts/charts/statistics/charts_statistics_v1.json`
+   - `prompts/charts/counting/charts_counting_v1.json`
+   - `prompts/charts/readout/charts_readout_v1.json`
+   - `prompts/charts/multiseries/charts_multiseries_v1.json`
+   - `prompts/charts/distribution/charts_distribution_v1.json`
+   - `prompts/charts/trend/charts_trend_v1.json`
+   - `prompts/charts/composition/charts_composition_v1.json`
+5. Tables:
+   - `prompts/tables/statistics/tables_statistics_v1.json`
 
-Tasks:
-1. `task_geometry_comparison_angle` (bundle: `geometry_comparison_v1`)
-2. `task_geometry_comparison_area` (bundle: `geometry_comparison_v1`)
-3. `task_geometry_comparison_length` (bundle: `geometry_comparison_v1`)
-4. `task_geometry_comparison_perimeter` (bundle: `geometry_comparison_v1`)
-5. `task_geometry_counting_angle` (bundle: `geometry_counting_v1`)
-6. `task_geometry_counting_triangle` (bundle: `geometry_counting_v1`)
-7. `task_geometry_counting_quadrilateral` (bundle: `geometry_counting_v1`)
-8. `task_geometry_counting_shape_type` (bundle: `geometry_counting_v1`)
-9. `task_geometry_counting_convexity` (bundle: `geometry_counting_v1`)
-10. `task_geometry_measurement_angle` (bundle override: `geometry_angle_measure_v1`)
-11. `task_geometry_measurement_area` (bundle: `geometry_measurement_v1`)
-12. `task_geometry_measurement_perimeter` (bundle: `geometry_measurement_v1`)
-13. `task_geometry_measurement_length` (bundle: `geometry_measurement_v1`)
-14. `task_geometry_measurement_slope` (bundle: `geometry_measurement_v1`)
-15. `task_geometry_analytical_2d_area` (bundle: `geometry_analytical_area_v1`)
-16. `task_geometry_analytical_2d_composite_area` (bundle: `geometry_analytical_composite_area_v1`)
-17. `task_geometry_analytical_2d_length` (bundle: `geometry_analytical_length_v1`)
-18. `task_geometry_analytical_2d_perimeter` (bundle: `geometry_analytical_perimeter_v1`)
-19. `task_geometry_analytical_3d_volume` (bundle: `geometry_analytical_volume_v1`)
-20. `task_geometry_analytical_3d_surface_area` (bundle: `geometry_analytical_surface_area_v1`)
-21. `task_icons_counting_type` (bundle: `icons_counting_v1`)
-22. `task_icons_counting_orientation` (bundle: `icons_counting_v1`)
-23. `task_icons_counting_color` (bundle: `icons_counting_v1`)
-24. `task_icons_counting_attribute_binding` (bundle: `icons_counting_v1`)
-25. `task_icons_counting_size_relation` (bundle: `icons_counting_v1`)
-26. `task_icons_relation_relative_position_type` (bundle: `icons_relation_v1`)
-27. `task_icons_relation_between_two_anchors_count` (bundle: `icons_relation_v1`)
-28. `task_icons_relation_mirror_symmetry` (bundle: `icons_relation_v1`)
-29. `task_icons_relation_occlusion_order` (bundle: `icons_relation_v1`)
-30. `task_icons_sequence_missing_count` (bundle: `icons_sequence_v1`)
-31. `task_icons_transformation_pair_count` (bundle: `icons_transformation_v1`)
-32. `task_tile_count_color_count` (bundle: `tile_count_v1`)
-33. `task_tile_count_color_components` (bundle: `tile_count_v1`)
-34. `task_tile_count_largest_component_size` (bundle: `tile_count_v1`)
-35. `task_tile_path_shortest_path` (bundle: `tile_path_v1`)
-36. `task_tile_path_reachable_target_count` (bundle: `tile_path_v1`)
-37. `task_tile_pattern_match3_run_count` (bundle: `tile_pattern_v1`)
-38. `task_tile_reachability_region_size` (bundle: `tile_reachability_v1`)
-39. `task_tile_relation_min_distance` (bundle: `tile_relation_v1`)
-40. `task_tile_symmetry_violation_count` (bundle: `tile_symmetry_v1`)
-41. `task_tile_transition_gravity_max_drop` (bundle: `tile_transition_v1`)
+Active task-to-bundle mapping:
+1. Geometry comparison tasks (`task_geometry_comparison_angle|area|length|perimeter`) -> `geometry_comparison_v1`
+2. Geometry counting tasks (`task_geometry_counting_angle|triangle|quadrilateral|shape_type|convexity`) -> `geometry_counting_v1`
+3. Geometry measurement tasks:
+   - `task_geometry_measurement_angle` -> `geometry_angle_measure_v1`
+   - `task_geometry_measurement_area|perimeter|length|slope` -> `geometry_measurement_v1`
+4. Geometry analytical 2D tasks:
+   - `task_geometry_analytical_2d_area` -> `geometry_analytical_area_v1`
+   - `task_geometry_analytical_2d_composite_area` -> `geometry_analytical_composite_area_v1`
+   - `task_geometry_analytical_2d_length` -> `geometry_analytical_length_v1`
+   - `task_geometry_analytical_2d_perimeter` -> `geometry_analytical_perimeter_v1`
+5. Geometry analytical 3D tasks:
+   - `task_geometry_analytical_3d_volume` -> `geometry_analytical_volume_v1`
+   - `task_geometry_analytical_3d_surface_area` -> `geometry_analytical_surface_area_v1`
+6. Icons:
+   - `task_icons_counting_type|orientation|color|attribute_binding|size_relation` -> `icons_counting_v1`
+   - `task_icons_relation_relative_position_type|between_two_anchors_count|mirror_symmetry|occlusion_order` -> `icons_relation_v1`
+   - `task_icons_sequence_missing_count` -> `icons_sequence_v1`
+   - `task_icons_transformation_pair_count` -> `icons_transformation_v1`
+7. Tile:
+   - `task_tile_count_color_count|color_components|largest_component_size` -> `tile_count_v1`
+   - `task_tile_path_shortest_path|reachable_target_count` -> `tile_path_v1`
+   - `task_tile_pattern_match3_run_count` -> `tile_pattern_v1`
+   - `task_tile_reachability_region_size` -> `tile_reachability_v1`
+   - `task_tile_relation_min_distance` -> `tile_relation_v1`
+   - `task_tile_symmetry_violation_count` -> `tile_symmetry_v1`
+   - `task_tile_transition_gravity_max_drop` -> `tile_transition_v1`
+8. Charts:
+   - `task_charts_statistics_summary_value|summary_label` -> `charts_statistics_v1`
+   - `task_charts_counting_value_count` -> `charts_counting_v1`
+   - `task_charts_readout_subset_value` -> `charts_readout_v1`
+   - `task_charts_multiseries_pairwise_comparison_count` -> `charts_multiseries_v1`
+   - `task_charts_distribution_histogram_count|boxplot_label|density_label` -> `charts_distribution_v1`
+   - `task_charts_trend_structure_value` -> `charts_trend_v1`
+   - `task_charts_composition_subset_value` -> `charts_composition_v1`
+9. Tables:
+   - `task_tables_statistics_summary_label|summary_value` -> `tables_statistics_v1`

@@ -143,6 +143,9 @@ def test_geometry_measurement_bundles_answer_templates_use_contract_and_avoid_on
 
 def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
     bundle_coords = (
+        ("charts", "composition", "charts_composition_v1"),
+        ("charts", "counting", "charts_counting_v1"),
+        ("charts", "statistics", "charts_statistics_v1"),
         ("geometry", "comparison", "geometry_comparison_v1"),
         ("geometry", "counting", "geometry_counting_v1"),
         ("geometry", "analytical_3d", "geometry_analytical_surface_area_v1"),
@@ -157,6 +160,7 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
         ("icons", "relation", "icons_relation_v1"),
         ("icons", "sequence", "icons_sequence_v1"),
         ("icons", "transformation", "icons_transformation_v1"),
+        ("tables", "statistics", "tables_statistics_v1"),
         ("tile", "count", "tile_count_v1"),
         ("tile", "pattern", "tile_pattern_v1"),
         ("tile", "relation", "tile_relation_v1"),
@@ -252,6 +256,55 @@ def test_tile_relation_bundle_supports_min_distance_query() -> None:
         "background_color",
         "color_a",
         "color_b",
+    ]
+
+
+def test_charts_statistics_bundle_supports_summary_variants() -> None:
+    bundle = load_prompt_bundle("charts", "statistics", "charts_statistics_v1")
+    assert len(bundle.task_templates["summary_value_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_templates["summary_label_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["max"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["sum"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["mode"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["argmax"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["argmin"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["median_label"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_family:labeled_chart_statistics"]) == ["object_description"]
+
+
+def test_charts_counting_bundle_supports_value_count_variants() -> None:
+    bundle = load_prompt_bundle("charts", "counting", "charts_counting_v1")
+    assert len(bundle.task_templates["value_count_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["above_threshold"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["below_threshold"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["in_interval"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_family:labeled_chart_counting"]) == ["object_description"]
+
+
+def test_charts_readout_bundle_supports_subset_value_variants() -> None:
+    bundle = load_prompt_bundle("charts", "readout", "charts_readout_v1")
+    assert len(bundle.task_templates["subset_value_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["sum_two"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["difference_two_abs"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["max_two"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["min_two"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["mean_two"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_family:labeled_chart_readout"]) == ["object_description"]
+    assert list(bundle.required_slots_by_key["task:subset_value_query"]) == ["query_label_a", "query_label_b"]
+
+
+def test_charts_composition_bundle_supports_subset_value_variants() -> None:
+    bundle = load_prompt_bundle("charts", "composition", "charts_composition_v1")
+    assert len(bundle.task_templates["subset_value_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["stack_total_at_label"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["stack_segment_value"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["combined_share_subset"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_family:composition_chart_value"]) == ["object_description"]
+    assert list(bundle.required_slots_by_key["task:subset_value_query"]) == [
+        "query_category_label",
+        "query_series_label",
+        "query_label_a",
+        "query_label_b",
     ]
 
 

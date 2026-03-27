@@ -3,12 +3,14 @@
   "answer_types": [
     "integer",
     "number",
+    "string",
     "pi_expression",
     "option_letter",
     "index_list",
     "matrix"
   ],
   "evidence_types": [
+    "integer",
     "id_set",
     "id_path",
     "point_set",
@@ -19,6 +21,7 @@
     "grid_point_set",
     "grid_point_path",
     "grid_point_map",
+    "integer_list",
     "measurement_ref_map",
     "label_set"
   ]

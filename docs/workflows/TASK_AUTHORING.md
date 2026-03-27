@@ -40,10 +40,11 @@ Use this as the implementation checklist for new or modified tasks.
    - `execution_trace`,
    - `witness_symbolic`,
    - `projected_evidence`.
-7. Ensure answer/evidence/witness come from the same execution trace.
-8. Enforce unique final answer by construction.
-9. Use bounded resampling; never auto-relax semantic constraints.
-10. Emit complexity (`complexity_score`, `complexity_components`).
+7. If the prompt-facing evidence is symbolic rather than geometric (for example `label_set`, `integer`, or `integer_list`), still emit pixel-space witness projections in `projected_evidence` when inspection overlays need to highlight the supporting objects.
+8. Ensure answer/evidence/witness come from the same execution trace.
+9. Enforce unique final answer by construction.
+10. Use bounded resampling; never auto-relax semantic constraints.
+11. Emit complexity (`complexity_score`, `complexity_components`).
 
 ## 3) Prompt rules
 1. Bundle path: `prompts/<domain>/<task_group>/<bundle>.json`.
@@ -78,15 +79,16 @@ Use this as the implementation checklist for new or modified tasks.
 24. For reference-scene icon color-matching tasks, construct the positive/negative sets from explicit tint assignments rather than hoping random palette draws realize the requested count, and keep any stricter color-separation threshold as a task-level config override.
 25. For reference-scene icon counting tasks that mimic Prism, sample `target_count` and `distractor_count` from their explicit supports, derive `object_count` from the pair, and place the scene icons with an explicit overlap cap; keep any subtle icon noise per-instance before compositing and record those edits in trace metadata rather than applying an untracked final-image corruption pass.
 26. For icon transformation tasks that compare pairwise rules, show the transformation explicitly in a Reference pair and use labeled Scene cells plus `label_set` evidence so the model grounds the matching rule on visible cells rather than hidden transform ids or bboxes.
-27. For anchored icon relation tasks, keep the Anchor visibly marked in the Scene panel, exclude it from the counted candidate set, evaluate the directional predicate strictly from rendered bboxes, mix distractors across same-type wrong-side plus different-type queried-side cases so the task cannot be solved by icon identity or side occupancy alone, and enforce a Prism-style relaxed margin rule for same-type wrong-side distractors so they lie mostly outside the queried region instead of becoming near-miss positives.
-28. If one-sided relation scenes still look visually biased when positives are numerous, make the distractor support depend on the sampled target count (for example `distractor_count >= target_count + 1`) through the shared counting sampler rather than relying on ad hoc resampling inside one task.
-29. For icon attribute-binding tasks, build most distractors from explicit partial matches (for example `2-of-3` or `1-of-3` queried attributes) instead of mostly all-wrong negatives, so the task really tests attribute binding rather than independent marginal filters.
-30. For icon occlusion-order tasks, keep the Reference and Scene cells on one shared icon pair, vary only pair-level styling such as tint/overlap/noise, and use `label_set` evidence over matching Scene cells because the task asks about pair-level front/back order rather than about boxing one icon.
-31. For icon tasks where size itself is the queried predicate, sample and record explicit nominal sizes per icon through the shared scene renderer, and enforce one minimum size-gap threshold for both targets and distractors so the prompt never relies on “about the same size” judgments.
-32. For icon sequence tasks with one missing box, keep the missing box visibly marked (for example `?`), sample the hidden count from the supported answer range before choosing the arithmetic rule, and use a one-box `bbox_set` for the missing cell when that cell itself is the grounding target.
-33. For icon two-anchor strip tasks, use a single Scene panel with two visibly marked anchors, keep the anchors exactly aligned on the non-varying axis, exclude anchor icon types from the candidate pool, and evaluate strip membership from icon centers with one explicit boundary margin instead of drawing the strip itself.
-34. For icon mirror-symmetry tasks, define one explicit rendered-image symmetry signature per variant (for example vertical-only, horizontal-only, main-diagonal-only, anti-diagonal-only, or vertical+horizontal only), keep the Reference and Scene cell boxes square so diagonal checks are well-defined, use even icon counts across both matching and non-matching cells, and reject any accidental extra-axis symmetries instead of treating them as acceptable matches.
-35. For icon tasks whose queried predicate depends on orientation, mirror symmetry, or transform identity, use `assets/icons/non_symmetry.txt` via the shared manifest loader instead of the full curated pool; tasks where symmetry is irrelevant (for example type/color/size/spatial-only tasks) may continue using `all_icons.txt`.
+27. For tasks whose evidence is an ordered sequence (for example chart readout values), define the evidence order from one explicit source such as prompt query order and record that ordering key in trace metadata; do not alphabetize or otherwise normalize sequence evidence whose positions have meaning.
+28. For anchored icon relation tasks, keep the Anchor visibly marked in the Scene panel, exclude it from the counted candidate set, evaluate the directional predicate strictly from rendered bboxes, mix distractors across same-type wrong-side plus different-type queried-side cases so the task cannot be solved by icon identity or side occupancy alone, and enforce a Prism-style relaxed margin rule for same-type wrong-side distractors so they lie mostly outside the queried region instead of becoming near-miss positives.
+29. If one-sided relation scenes still look visually biased when positives are numerous, make the distractor support depend on the sampled target count (for example `distractor_count >= target_count + 1`) through the shared counting sampler rather than relying on ad hoc resampling inside one task.
+30. For icon attribute-binding tasks, build most distractors from explicit partial matches (for example `2-of-3` or `1-of-3` queried attributes) instead of mostly all-wrong negatives, so the task really tests attribute binding rather than independent marginal filters.
+31. For icon occlusion-order tasks, keep the Reference and Scene cells on one shared icon pair, vary only pair-level styling such as tint/overlap/noise, and use `label_set` evidence over matching Scene cells because the task asks about pair-level front/back order rather than about boxing one icon.
+32. For icon tasks where size itself is the queried predicate, sample and record explicit nominal sizes per icon through the shared scene renderer, and enforce one minimum size-gap threshold for both targets and distractors so the prompt never relies on “about the same size” judgments.
+33. For icon sequence tasks with one missing box, keep the missing box visibly marked (for example `?`), sample the hidden count from the supported answer range before choosing the arithmetic rule, and use a one-box `bbox_set` for the missing cell when that cell itself is the grounding target.
+34. For icon two-anchor strip tasks, use a single Scene panel with two visibly marked anchors, keep the anchors exactly aligned on the non-varying axis, exclude anchor icon types from the candidate pool, and evaluate strip membership from icon centers with one explicit boundary margin instead of drawing the strip itself.
+35. For icon mirror-symmetry tasks, define one explicit rendered-image symmetry signature per variant (for example vertical-only, horizontal-only, main-diagonal-only, anti-diagonal-only, or vertical+horizontal only), keep the Reference and Scene cell boxes square so diagonal checks are well-defined, use even icon counts across both matching and non-matching cells, and reject any accidental extra-axis symmetries instead of treating them as acceptable matches.
+36. For icon tasks whose queried predicate depends on orientation, mirror symmetry, or transform identity, use `assets/icons/non_symmetry.txt` via the shared manifest loader instead of the full curated pool; tasks where symmetry is irrelevant (for example type/color/size/spatial-only tasks) may continue using `all_icons.txt`.
 
 ## 4) Config/defaults rules
 1. Precedence: `domain -> task_group -> task/params`.
@@ -109,20 +111,23 @@ Use this as the implementation checklist for new or modified tasks.
 18. For counting tasks where the answer is the matched-object count itself, prefer global target-count support sampling (for example `resolve_counting_cardinality_pair(...)`) over choosing object count first when the latter would skew answers toward smaller counts.
 19. For polygon class-counting tasks with bulkier objects, use the roomier counting slot layout helper and a strict shared convexity classifier so object labels stay readable and class membership does not depend on ambiguous borderline outlines.
 20. For curated-asset icon tasks, resolve manifest ids through one shared asset loader instead of assuming manifest ids and SVG filenames match exactly; record the chosen manifest in query trace metadata.
+21. When adding a new chart `scene_variant`, update every active chart task group that shares the labeled-chart scene contract in the same patch: renderer support, `scene_variant_weights`, `object_description_<scene_variant>` prompt defaults, behavior tests, and regenerated task reviews should all land together.
+22. When sibling tasks inside one task group use disjoint `task_variant` vocabularies, keep `task_variant_weights` under `task_overrides.<task_id>` instead of `generation.shared` so merged defaults do not leak inactive variants across tasks.
 
 ## 5) Sampling rules
 1. Global sampling unit is `task`.
 2. Task-variant sampling occurs inside each task.
 3. Default `P(task_variant|task)` is uniform unless overridden.
-4. Keep answer sampling as broad as constraints allow and validate with the standard answer-distribution checks.
-5. For geometry placement with lattice offsets, compute anchor bounds from the selected candidate (not global worst-case margins).
-6. Avoid tiny fixed structure banks; randomize both structural and visual factors whenever constraints allow.
-7. For tasks with both source categories and answer targets, sample both distributions explicitly and verify realized distributions.
-8. For deterministic balance over generated prefixes, use builder `_sampling_index` (not hashed `instance_seed`) when cycling categories/answers; if `_sampling_index` is absent, fall back to a namespaced deterministic index so target-answer choice does not couple to unrelated seed-driven decisions such as task-variant selection.
-9. For fixed-cardinality tasks with a very small answer support (for example six cells with answers `0..4`), make the answer-balancing path explicit in task code and verify it under task-review sampling too; review runs do not inject builder `_sampling_index`, so tiny supports can skew if they rely only on generic hash-based balancing.
-10. If a target answer is chosen from a feasibility probe before layout, also propagate the probe's minimum required scene capacity (for example graph-cell count/span) into layout sampling; otherwise a globally feasible answer can still fail after the scene size is sampled.
-11. When changing answer/evidence/variant contracts, remove deprecated helper paths and stale trace fields in the same patch.
-12. For derived analytical geometry tasks, do not force integer targets if that collapses scene variety; prefer integer givens plus a numeric answer rounded to one decimal place when the natural formula yields irrational lengths.
+4. If one task has both a semantic variant axis and a visual-representation axis, keep `task_variant` for the semantic/query axis and record the visual axis separately as `scene_variant` in trace/query metadata instead of exploding the task into a cross-product of near-duplicate tasks.
+5. Keep answer sampling as broad as constraints allow and validate with the standard answer-distribution checks.
+6. For geometry placement with lattice offsets, compute anchor bounds from the selected candidate (not global worst-case margins).
+7. Avoid tiny fixed structure banks; randomize both structural and visual factors whenever constraints allow.
+8. For tasks with both source categories and answer targets, sample both distributions explicitly and verify realized distributions.
+9. For deterministic balance over generated prefixes, use builder `_sampling_index` (not hashed `instance_seed`) when cycling categories/answers; if `_sampling_index` is absent, fall back to a namespaced deterministic index so target-answer choice does not couple to unrelated seed-driven decisions such as task-variant selection.
+10. For fixed-cardinality tasks with a very small answer support (for example six cells with answers `0..4`), make the answer-balancing path explicit in task code and verify it under task-review sampling too; review runs do not inject builder `_sampling_index`, so tiny supports can skew if they rely only on generic hash-based balancing.
+11. If a target answer is chosen from a feasibility probe before layout, also propagate the probe's minimum required scene capacity (for example graph-cell count/span) into layout sampling; otherwise a globally feasible answer can still fail after the scene size is sampled.
+12. When changing answer/evidence/variant contracts, remove deprecated helper paths and stale trace fields in the same patch.
+13. For derived analytical geometry tasks, do not force integer targets if that collapses scene variety; prefer integer givens plus a numeric answer rounded to one decimal place when the natural formula yields irrational lengths.
 
 ## 6) Minimal test checklist
 1. Determinism for fixed seed.
@@ -143,9 +148,11 @@ PYTHONPATH=. pytest -q
 1. `docs/tasks/<task_id>.md`
 2. `docs/tasks/README.md` (task links must match active task set)
 3. `docs/project/STATUS.md` (if behavior changed)
-4. `docs/workflows/SHARED_UTILITIES.md` (if shared helpers moved/added)
-5. `docs/workflows/BUILD_VALIDATION.md` or `docs/workflows/VALIDATION_ERROR_CODES.md` (if validation behavior changed)
-6. `docs/workflows/CODE_REVIEW_GUIDELINES.md` for reusable findings.
+4. `docs/core/PROMPT_SYSTEM.md` (if active prompt bundles or task-to-bundle mappings changed)
+5. `docs/core/SYSTEM_ARCHITECTURE.md` (if active domain/task module inventory or module boundaries changed)
+6. `docs/workflows/SHARED_UTILITIES.md` (if shared helpers moved/added)
+7. `docs/workflows/BUILD_VALIDATION.md` or `docs/workflows/VALIDATION_ERROR_CODES.md` (if validation behavior changed)
+8. `docs/workflows/CODE_REVIEW_GUIDELINES.md` for reusable findings.
 
 ## 8) Reuse anti-patterns
 Use `docs/workflows/CODE_REVIEW_GUIDELINES.md` Section 2 as the canonical anti-pattern list.

@@ -27,6 +27,48 @@ def test_resolve_overlay_evidence_uses_pixel_projection_for_graph_point() -> Non
     assert evidence_value == [120.0, 240.0]
 
 
+def test_resolve_overlay_evidence_uses_bbox_projection_for_label_set() -> None:
+    evidence_type, evidence_value = resolve_overlay_evidence(
+        evidence_type="label_set",
+        evidence_value=["Q", "M"],
+        trace_payload={
+            "projected_evidence": {
+                "bbox_set": [[10.0, 20.0, 30.0, 40.0], [50.0, 60.0, 70.0, 80.0]],
+            }
+        },
+    )
+    assert evidence_type == "bbox_set"
+    assert evidence_value == [[10.0, 20.0, 30.0, 40.0], [50.0, 60.0, 70.0, 80.0]]
+
+
+def test_resolve_overlay_evidence_uses_bbox_projection_for_integer_list() -> None:
+    evidence_type, evidence_value = resolve_overlay_evidence(
+        evidence_type="integer_list",
+        evidence_value=[7, 11],
+        trace_payload={
+            "projected_evidence": {
+                "bbox_set": [[10.0, 20.0, 30.0, 40.0], [50.0, 60.0, 70.0, 80.0]],
+            }
+        },
+    )
+    assert evidence_type == "bbox_set"
+    assert evidence_value == [[10.0, 20.0, 30.0, 40.0], [50.0, 60.0, 70.0, 80.0]]
+
+
+def test_resolve_overlay_evidence_uses_bbox_projection_for_integer() -> None:
+    evidence_type, evidence_value = resolve_overlay_evidence(
+        evidence_type="integer",
+        evidence_value=12,
+        trace_payload={
+            "projected_evidence": {
+                "bbox_set": [[10.0, 20.0, 30.0, 40.0]],
+            }
+        },
+    )
+    assert evidence_type == "bbox_set"
+    assert evidence_value == [[10.0, 20.0, 30.0, 40.0]]
+
+
 def test_render_evidence_overlay_draws_visible_marker_with_expanded_radius() -> None:
     source = PILImage.new("RGB", (100, 100), color=(255, 255, 255))
     overlay = render_evidence_overlay(source, evidence_type="point", evidence_value=[50, 50])

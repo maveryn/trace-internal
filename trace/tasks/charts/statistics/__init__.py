@@ -1,0 +1,2 @@
+"""Chart statistics task group."""
+

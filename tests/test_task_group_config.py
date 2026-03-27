@@ -181,6 +181,465 @@ def test_geometry_measurement_defaults_loaded() -> None:
     assert str(slope_prompt["json_example_answer_only"]).strip()
 
 
+def test_charts_statistics_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("charts", "statistics")
+    for section in ("generation", "rendering", "prompt"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["mark_count_min"]) >= 5
+    assert int(generation_shared["mark_count_max"]) == 10
+    assert int(generation_shared["value_min"]) >= 0
+    assert int(generation_shared["value_max"]) == 20
+    assert sorted(generation_shared["task_variant_weights"].keys()) == [
+        "max",
+        "mean",
+        "median",
+        "min",
+        "mode",
+        "range",
+        "sum",
+    ]
+    assert sorted(generation_shared["scene_variant_weights"].keys()) == [
+        "area",
+        "bar",
+        "donut",
+        "dot_plot",
+        "horizontal_bar",
+        "line",
+        "lollipop",
+        "pie",
+        "radar",
+        "scatter",
+    ]
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_width"]) > 0
+    assert int(render_shared["canvas_height"]) > 0
+    assert int(render_shared["plot_margin_left_px"]) > 0
+    assert int(render_shared["plot_margin_bottom_px"]) > 0
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "charts_statistics_v1"
+    assert str(prompt_shared["task_family_key"]).strip() == "labeled_chart_statistics"
+    assert str(prompt_shared["task_key"]).strip() == "summary_value_query"
+    assert str(prompt_shared["object_description_bar"]).strip()
+    assert str(prompt_shared["evidence_hint_mode"]).strip()
+    assert str(prompt_shared["json_example_mean"]).strip()
+    assert str(prompt_shared["json_example_answer_only_sum"]).strip()
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_charts_statistics_summary_value",
+    )
+    assert int(generation_defaults["mark_count_min"]) >= 5
+    assert int(generation_defaults["mark_count_max"]) == 10
+    assert int(generation_defaults["value_max"]) == 20
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip() == "charts_statistics_v1"
+
+    label_generation, _, label_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_charts_statistics_summary_label",
+    )
+    assert {
+        "argmax",
+        "argmin",
+        "median_label",
+    }.issubset(set(label_generation["task_variant_weights"].keys()))
+    assert str(label_prompt["task_key"]).strip() == "summary_label_query"
+    assert str(label_prompt["answer_hint"]).strip()
+    assert str(label_prompt["evidence_hint_argmax"]).strip()
+    assert str(label_prompt["json_example_median_label"]).strip()
+
+
+def test_charts_distribution_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("charts", "distribution")
+    for section in ("generation", "rendering", "prompt"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["bin_count_min"]) >= 4
+    assert int(generation_shared["bin_count_max"]) >= int(generation_shared["bin_count_min"])
+    assert int(generation_shared["bin_width_min"]) >= 1
+    assert int(generation_shared["bin_width_max"]) >= int(generation_shared["bin_width_min"])
+    assert int(generation_shared["bin_frequency_min"]) >= 1
+    assert int(generation_shared["bin_frequency_max"]) >= int(generation_shared["bin_frequency_min"])
+    assert int(generation_shared["category_count_min"]) >= 4
+    assert int(generation_shared["category_count_max"]) >= int(generation_shared["category_count_min"])
+    assert sorted(cfg["generation"]["task_overrides"]["task_charts_distribution_histogram_count"]["task_variant_weights"].keys()) == [
+        "cumulative_count_to_bin",
+        "interval_mass",
+        "modal_bin_count",
+    ]
+    assert sorted(cfg["generation"]["task_overrides"]["task_charts_distribution_boxplot_label"]["task_variant_weights"].keys()) == [
+        "highest_median",
+        "largest_iqr",
+        "smallest_iqr",
+    ]
+    assert sorted(cfg["generation"]["task_overrides"]["task_charts_distribution_density_label"]["task_variant_weights"].keys()) == [
+        "bimodal_label",
+        "highest_mode",
+        "lowest_mode",
+    ]
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_width"]) > 0
+    assert int(render_shared["canvas_height"]) > 0
+    assert int(render_shared["plot_margin_bottom_px"]) > 0
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "charts_distribution_v1"
+    assert str(prompt_shared["task_family_key"]).strip() == "distribution_chart"
+    assert str(prompt_shared["task_key"]).strip() == "histogram_count_query"
+    assert str(prompt_shared["object_description_histogram"]).strip()
+    assert str(prompt_shared["object_description_violin"]).strip()
+    assert str(prompt_shared["json_example_interval_mass"]).strip()
+
+    histogram_generation, histogram_rendering, histogram_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_charts_distribution_histogram_count",
+    )
+    assert {
+        "modal_bin_count",
+        "interval_mass",
+        "cumulative_count_to_bin",
+    }.issubset(set(histogram_generation["task_variant_weights"].keys()))
+    assert int(histogram_rendering["canvas_width"]) > 0
+    assert str(histogram_prompt["bundle_id"]).strip() == "charts_distribution_v1"
+    assert str(histogram_prompt["object_description_histogram"]).strip()
+
+    boxplot_generation, _, boxplot_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_charts_distribution_boxplot_label",
+    )
+    assert {
+        "highest_median",
+        "largest_iqr",
+        "smallest_iqr",
+    }.issubset(set(boxplot_generation["task_variant_weights"].keys()))
+    assert str(boxplot_prompt["task_key"]).strip() == "boxplot_label_query"
+    assert str(boxplot_prompt["answer_hint"]).strip()
+    assert str(boxplot_prompt["evidence_hint_largest_iqr"]).strip()
+
+    density_generation, _, density_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_charts_distribution_density_label",
+    )
+    assert {
+        "highest_mode",
+        "lowest_mode",
+        "bimodal_label",
+    }.issubset(set(density_generation["task_variant_weights"].keys()))
+    assert str(density_prompt["task_key"]).strip() == "density_label_query"
+    assert str(density_prompt["evidence_hint_bimodal_label"]).strip()
+
+
+def test_charts_composition_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("charts", "composition")
+    for section in ("generation", "rendering", "prompt"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["category_count_min"]) == 4
+    assert int(generation_shared["category_count_max"]) == 7
+    assert int(generation_shared["series_count_min"]) == 3
+    assert int(generation_shared["series_count_max"]) == 5
+    assert int(generation_shared["value_min"]) == 4
+    assert int(generation_shared["value_max"]) == 18
+    assert sorted(generation_shared["task_variant_weights"].keys()) == [
+        "combined_share_subset",
+        "stack_segment_value",
+        "stack_total_at_label",
+    ]
+    assert sorted(generation_shared["scene_variant_weights"].keys()) == [
+        "donut",
+        "pie",
+        "stacked_bar",
+        "stacked_horizontal_bar",
+    ]
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_width"]) > 0
+    assert int(render_shared["canvas_height"]) > 0
+    assert int(render_shared["plot_margin_left_px"]) > 0
+    assert int(render_shared["plot_margin_bottom_px"]) > 0
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "charts_composition_v1"
+    assert str(prompt_shared["task_family_key"]).strip() == "composition_chart_value"
+    assert str(prompt_shared["task_key"]).strip() == "subset_value_query"
+    assert str(prompt_shared["object_description_stacked_bar"]).strip()
+    assert str(prompt_shared["object_description_pie"]).strip()
+    assert str(prompt_shared["evidence_hint_stack_segment_value"]).strip()
+    assert str(prompt_shared["json_example_combined_share_subset"]).strip()
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_charts_composition_subset_value",
+    )
+    assert int(generation_defaults["category_count_min"]) == 4
+    assert int(generation_defaults["series_count_max"]) == 5
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip() == "charts_composition_v1"
+
+
+def test_charts_trend_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("charts", "trend")
+    for section in ("generation", "rendering", "prompt"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["mark_count_min"]) == 6
+    assert int(generation_shared["mark_count_max"]) == 10
+    assert int(generation_shared["value_min"]) >= 1
+    assert int(generation_shared["value_max"]) == 20
+    assert sorted(generation_shared["task_variant_weights"].keys()) == [
+        "longest_decreasing_streak",
+        "longest_increasing_streak",
+        "peak_count",
+        "trough_count",
+    ]
+    assert sorted(generation_shared["scene_variant_weights"].keys()) == [
+        "area",
+        "bar",
+        "dot_plot",
+        "horizontal_bar",
+        "line",
+        "lollipop",
+    ]
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_width"]) > 0
+    assert int(render_shared["canvas_height"]) > 0
+    assert int(render_shared["plot_margin_left_px"]) > 0
+    assert int(render_shared["plot_margin_bottom_px"]) > 0
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "charts_trend_v1"
+    assert str(prompt_shared["task_family_key"]).strip() == "ordered_chart_trend"
+    assert str(prompt_shared["task_key"]).strip() == "structure_value_query"
+    assert str(prompt_shared["object_description_horizontal_bar"]).strip()
+    assert str(prompt_shared["evidence_hint_peak_count"]).strip()
+    assert str(prompt_shared["json_example_longest_increasing_streak"]).strip()
+    assert str(prompt_shared["json_example_answer_only_trough_count"]).strip()
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_charts_trend_structure_value",
+    )
+    assert int(generation_defaults["mark_count_min"]) == 6
+    assert int(generation_defaults["mark_count_max"]) == 10
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip() == "charts_trend_v1"
+
+
+def test_tables_statistics_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("tables", "statistics")
+    for section in ("generation", "rendering", "prompt"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["row_count_min"]) >= 5
+    assert int(generation_shared["row_count_max"]) == 10
+    assert int(generation_shared["numeric_column_count_min"]) >= 3
+    assert int(generation_shared["numeric_column_count_max"]) == 5
+    assert int(generation_shared["value_min"]) >= 0
+    assert int(generation_shared["value_max"]) == 32
+    assert sorted(generation_shared["scene_variant_weights"].keys()) == [
+        "card_table",
+        "ledger",
+        "spreadsheet",
+        "zebra",
+    ]
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_width"]) > 0
+    assert int(render_shared["canvas_height"]) > 0
+    assert int(render_shared["table_margin_left_px"]) > 0
+    assert int(render_shared["table_margin_bottom_px"]) > 0
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "tables_statistics_v1"
+    assert str(prompt_shared["task_family_key"]).strip() == "styled_table_statistics"
+    assert str(prompt_shared["task_key"]).strip() == "summary_label_query"
+    assert str(prompt_shared["object_description_spreadsheet"]).strip()
+    assert str(prompt_shared["evidence_hint_argmax"]).strip()
+    assert str(prompt_shared["json_example_argmin"]).strip()
+    assert str(prompt_shared["json_example_answer_only_argmax"]).strip()
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_tables_statistics_summary_label",
+    )
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == ["argmax", "argmin"]
+    assert int(generation_defaults["row_count_min"]) >= 5
+    assert int(generation_defaults["numeric_column_count_max"]) == 5
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip() == "tables_statistics_v1"
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_tables_statistics_summary_value",
+    )
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "column_mean",
+        "column_median",
+        "column_sum",
+    ]
+    assert int(generation_defaults["row_count_min"]) >= 5
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip() == "tables_statistics_v1"
+    assert str(prompt_defaults["task_key"]).strip() == "summary_value_query"
+    assert str(prompt_defaults["evidence_hint_column_sum"]).strip()
+    assert str(prompt_defaults["json_example_column_median"]).strip()
+
+
+def test_charts_multiseries_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("charts", "multiseries")
+    for section in ("generation", "rendering", "prompt"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["category_count_min"]) == 5
+    assert int(generation_shared["category_count_max"]) == 10
+    assert int(generation_shared["series_count_min"]) == 2
+    assert int(generation_shared["series_count_max"]) == 3
+    assert int(generation_shared["target_answer_min"]) == 0
+    assert int(generation_shared["target_answer_max"]) == 8
+    assert sorted(generation_shared["task_variant_weights"].keys()) == [
+        "series_a_gt_b_count",
+        "series_a_lt_b_count",
+    ]
+    assert sorted(generation_shared["scene_variant_weights"].keys()) == [
+        "grouped_bar",
+        "grouped_horizontal_bar",
+        "grouped_lollipop",
+        "multi_line",
+    ]
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_width"]) > 0
+    assert int(render_shared["canvas_height"]) > 0
+    assert int(render_shared["plot_margin_left_px"]) > 0
+    assert int(render_shared["plot_margin_bottom_px"]) > 0
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "charts_multiseries_v1"
+    assert str(prompt_shared["task_family_key"]).strip() == "multiseries_chart_comparison"
+    assert str(prompt_shared["task_key"]).strip() == "pairwise_comparison_count_query"
+    assert str(prompt_shared["object_description_grouped_bar"]).strip()
+    assert str(prompt_shared["object_description_grouped_horizontal_bar"]).strip()
+    assert str(prompt_shared["object_description_multi_line"]).strip()
+    assert str(prompt_shared["object_description_grouped_lollipop"]).strip()
+    assert str(prompt_shared["json_example_series_a_gt_b_count"]).strip()
+    assert str(prompt_shared["json_example_series_a_lt_b_count"]).strip()
+
+
+def test_charts_counting_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("charts", "counting")
+    for section in ("generation", "rendering", "prompt"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["mark_count_min"]) >= 5
+    assert int(generation_shared["mark_count_max"]) == 10
+    assert int(generation_shared["value_max"]) == 20
+    assert int(generation_shared["target_answer_min"]) == 0
+    assert int(generation_shared["target_answer_max"]) == 10
+    assert sorted(generation_shared["task_variant_weights"].keys()) == [
+        "above_threshold",
+        "below_threshold",
+        "in_interval",
+    ]
+    assert sorted(generation_shared["scene_variant_weights"].keys()) == [
+        "area",
+        "bar",
+        "donut",
+        "dot_plot",
+        "horizontal_bar",
+        "line",
+        "lollipop",
+        "pie",
+        "radar",
+        "scatter",
+    ]
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_width"]) > 0
+    assert int(render_shared["canvas_height"]) > 0
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "charts_counting_v1"
+    assert str(prompt_shared["task_family_key"]).strip() == "labeled_chart_counting"
+    assert str(prompt_shared["task_key"]).strip() == "value_count_query"
+    assert str(prompt_shared["object_description_bar"]).strip()
+    assert str(prompt_shared["evidence_hint_in_interval"]).strip()
+    assert str(prompt_shared["json_example_below_threshold"]).strip()
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_charts_counting_value_count",
+    )
+    assert int(generation_defaults["mark_count_min"]) >= 5
+    assert int(generation_defaults["mark_count_max"]) == 10
+    assert int(generation_defaults["target_answer_max"]) == 10
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip() == "charts_counting_v1"
+
+
+def test_charts_readout_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("charts", "readout")
+    for section in ("generation", "rendering", "prompt"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["mark_count_min"]) >= 5
+    assert int(generation_shared["mark_count_max"]) == 10
+    assert int(generation_shared["value_max"]) == 20
+    assert sorted(generation_shared["task_variant_weights"].keys()) == [
+        "difference_two_abs",
+        "max_two",
+        "mean_two",
+        "min_two",
+        "sum_two",
+    ]
+    assert sorted(generation_shared["scene_variant_weights"].keys()) == [
+        "area",
+        "bar",
+        "donut",
+        "dot_plot",
+        "horizontal_bar",
+        "line",
+        "lollipop",
+        "pie",
+        "radar",
+        "scatter",
+    ]
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_width"]) > 0
+    assert int(render_shared["canvas_height"]) > 0
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "charts_readout_v1"
+    assert str(prompt_shared["task_family_key"]).strip() == "labeled_chart_readout"
+    assert str(prompt_shared["task_key"]).strip() == "subset_value_query"
+    assert str(prompt_shared["evidence_hint"]).strip()
+    assert str(prompt_shared["json_example_sum_two"]).strip()
+    assert str(prompt_shared["json_example_answer_only_mean_two"]).strip()
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_charts_readout_subset_value",
+    )
+    assert int(generation_defaults["mark_count_min"]) >= 5
+    assert int(generation_defaults["mark_count_max"]) == 10
+    assert int(generation_defaults["value_max"]) == 20
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip() == "charts_readout_v1"
+
+
 def test_geometry_analytical_defaults_loaded() -> None:
     cfg = get_task_group_defaults("geometry", "analytical_2d")
     for section in ("generation", "rendering", "prompt"):

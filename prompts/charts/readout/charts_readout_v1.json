@@ -1,0 +1,95 @@
+{
+  "bundle_id": "charts_readout_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "labeled_chart_readout": [
+      "The image shows {object_description}.",
+      "Use the labeled chart in the image. It shows {object_description}.",
+      "Work from the labeled chart shown in the image: {object_description}.",
+      "Look at the chart in the image. It shows {object_description}.",
+      "You are given a labeled chart: {object_description}."
+    ]
+  },
+  "task_templates": {
+    "subset_value_query": [
+      "Read the requested values directly from the chart and answer the question.",
+      "Use the chart values for the specified labels and answer the question.",
+      "Read the values of the requested labels from the chart and compute the answer.",
+      "Use the labeled chart values for the named labels to answer the question.",
+      "Determine the requested value from the two specified chart labels."
+    ]
+  },
+  "task_variant_templates": {
+    "sum_two": [
+      "For labels {query_label_a} and {query_label_b}, what is the sum of their values?",
+      "Add the values of labels {query_label_a} and {query_label_b}. What total do you get?",
+      "What is the total of the values shown for labels {query_label_a} and {query_label_b}?",
+      "Find the sum of the chart values for labels {query_label_a} and {query_label_b}.",
+      "Using labels {query_label_a} and {query_label_b}, what value do you get when you add them?"
+    ],
+    "difference_two_abs": [
+      "For labels {query_label_a} and {query_label_b}, what is the absolute difference between their values?",
+      "What is the positive difference between the values of labels {query_label_a} and {query_label_b}?",
+      "Find the absolute value of the difference between labels {query_label_a} and {query_label_b}.",
+      "Using labels {query_label_a} and {query_label_b}, what is the absolute difference of their chart values?",
+      "What absolute difference do you get from the values of labels {query_label_a} and {query_label_b}?"
+    ],
+    "max_two": [
+      "For labels {query_label_a} and {query_label_b}, what is the larger of their two values?",
+      "What is the maximum of the values for labels {query_label_a} and {query_label_b}?",
+      "Between labels {query_label_a} and {query_label_b}, what is the greater value?",
+      "Find the higher of the two chart values for labels {query_label_a} and {query_label_b}.",
+      "Using labels {query_label_a} and {query_label_b}, what is the larger value?"
+    ],
+    "min_two": [
+      "For labels {query_label_a} and {query_label_b}, what is the smaller of their two values?",
+      "What is the minimum of the values for labels {query_label_a} and {query_label_b}?",
+      "Between labels {query_label_a} and {query_label_b}, what is the lesser value?",
+      "Find the lower of the two chart values for labels {query_label_a} and {query_label_b}.",
+      "Using labels {query_label_a} and {query_label_b}, what is the smaller value?"
+    ],
+    "mean_two": [
+      "For labels {query_label_a} and {query_label_b}, what is the mean of their values?",
+      "What is the average value of labels {query_label_a} and {query_label_b}?",
+      "Find the arithmetic mean of the chart values for labels {query_label_a} and {query_label_b}.",
+      "Using labels {query_label_a} and {query_label_b}, what average do their values have?",
+      "What mean value do you get from labels {query_label_a} and {query_label_b}?"
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:labeled_chart_readout": [
+      "object_description"
+    ],
+    "task:subset_value_query": [
+      "query_label_a",
+      "query_label_b"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

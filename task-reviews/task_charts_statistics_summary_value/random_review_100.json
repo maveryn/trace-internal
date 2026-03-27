@@ -1,0 +1,245 @@
+{
+  "answer_distribution": {
+    "answer_type_counts": {
+      "integer": 100
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.16,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": 0.86,
+        "pass": null,
+        "status": "reported_not_gated_numeric_answers"
+      },
+      "min_unique_answers": {
+        "observed": 26,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": {
+      "bin_count": 5,
+      "bins": [
+        {
+          "bin_id": 0,
+          "count": 86,
+          "label": "[1, 38.2)"
+        },
+        {
+          "bin_id": 1,
+          "count": 4,
+          "label": "[38.2, 75.4)"
+        },
+        {
+          "bin_id": 2,
+          "count": 3,
+          "label": "[75.4, 112.6)"
+        },
+        {
+          "bin_id": 3,
+          "count": 5,
+          "label": "[112.6, 149.8)"
+        },
+        {
+          "bin_id": 4,
+          "count": 2,
+          "label": "[149.8, 187]"
+        }
+      ],
+      "max_bin_count": 86,
+      "max_bin_frequency": 0.86,
+      "range_max": 187.0,
+      "range_min": 1.0
+    },
+    "max_answer_count": 16,
+    "max_answer_frequency": 0.16,
+    "pass": true,
+    "sample_count": 100,
+    "top_answers": [
+      {
+        "answer_label": "6",
+        "count": 16
+      },
+      {
+        "answer_label": "4",
+        "count": 12
+      },
+      {
+        "answer_label": "5",
+        "count": 12
+      },
+      {
+        "answer_label": "8",
+        "count": 10
+      },
+      {
+        "answer_label": "9",
+        "count": 10
+      },
+      {
+        "answer_label": "7",
+        "count": 9
+      },
+      {
+        "answer_label": "3",
+        "count": 6
+      },
+      {
+        "answer_label": "1",
+        "count": 3
+      },
+      {
+        "answer_label": "10",
+        "count": 3
+      },
+      {
+        "answer_label": "12",
+        "count": 2
+      },
+      {
+        "answer_label": "149",
+        "count": 2
+      },
+      {
+        "answer_label": "105",
+        "count": 1
+      },
+      {
+        "answer_label": "11",
+        "count": 1
+      },
+      {
+        "answer_label": "119",
+        "count": 1
+      },
+      {
+        "answer_label": "132",
+        "count": 1
+      },
+      {
+        "answer_label": "140",
+        "count": 1
+      },
+      {
+        "answer_label": "177",
+        "count": 1
+      },
+      {
+        "answer_label": "187",
+        "count": 1
+      },
+      {
+        "answer_label": "2",
+        "count": 1
+      },
+      {
+        "answer_label": "23",
+        "count": 1
+      },
+      {
+        "answer_label": "40",
+        "count": 1
+      },
+      {
+        "answer_label": "42",
+        "count": 1
+      },
+      {
+        "answer_label": "46",
+        "count": 1
+      },
+      {
+        "answer_label": "68",
+        "count": 1
+      },
+      {
+        "answer_label": "80",
+        "count": 1
+      },
+      {
+        "answer_label": "83",
+        "count": 1
+      }
+    ],
+    "unique_answers": 26
+  },
+  "sample_count": 100,
+  "sampling_axes": {
+    "scene_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "area": 0.14285714285714285,
+        "bar": 0.14285714285714285,
+        "dot_plot": 0.14285714285714285,
+        "horizontal_bar": 0.14285714285714285,
+        "line": 0.14285714285714285,
+        "lollipop": 0.14285714285714285,
+        "scatter": 0.14285714285714285
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.2,
+      "observed_counts": {
+        "area": 7,
+        "bar": 16,
+        "dot_plot": 20,
+        "horizontal_bar": 12,
+        "line": 17,
+        "lollipop": 14,
+        "scatter": 14
+      },
+      "sample_count": 100
+    },
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "max": 0.14285714285714285,
+        "mean": 0.14285714285714285,
+        "median": 0.14285714285714285,
+        "min": 0.14285714285714285,
+        "mode": 0.14285714285714285,
+        "range": 0.14285714285714285,
+        "sum": 0.14285714285714285
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.2,
+      "observed_counts": {
+        "max": 9,
+        "mean": 12,
+        "median": 14,
+        "min": 11,
+        "mode": 18,
+        "range": 20,
+        "sum": 16
+      },
+      "sample_count": 100
+    }
+  },
+  "task_id": "task_charts_statistics_summary_value",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {
+      "max": 0.14285714285714285,
+      "mean": 0.14285714285714285,
+      "median": 0.14285714285714285,
+      "min": 0.14285714285714285,
+      "mode": 0.14285714285714285,
+      "range": 0.14285714285714285,
+      "sum": 0.14285714285714285
+    },
+    "expected_source": "execution_trace",
+    "has_variants": true,
+    "observed_counts": {
+      "max": 9,
+      "mean": 12,
+      "median": 14,
+      "min": 11,
+      "mode": 18,
+      "range": 20,
+      "sum": 16
+    },
+    "status": "reported"
+  }
+}

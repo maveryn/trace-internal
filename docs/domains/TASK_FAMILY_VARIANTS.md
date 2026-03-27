@@ -30,6 +30,41 @@ Define how we split tasks into reusable families so each dataset slice stays com
 5. See `TILE_TASK_SETUP.md` for the concrete board-geometry, metadata, and evidence contract.
 6. Reachability-style tile tasks should treat black obstacle tiles and marked start tiles as semantic board roles, not as generic query colors.
 
+## Charts direction (current)
+1. Charts follow the same split as geometry: `task_group` encodes reasoning family, while chart type is treated as `scene_variant` inside the task.
+2. Active chart families are `statistics`, `counting`, `readout`, `multiseries`, `distribution`, `composition`, and `trend`.
+3. `task_charts_statistics_summary_value` uses semantic `task_variant` values `max`, `min`, `range`, `mean`, `median`, `sum`, and `mode`.
+4. `task_charts_statistics_summary_label` uses semantic `task_variant` values `argmax`, `argmin`, and `median_label`.
+5. `task_charts_counting_value_count` uses semantic `task_variant` values `above_threshold`, `below_threshold`, and `in_interval`.
+6. `task_charts_readout_subset_value` uses semantic `task_variant` values `sum_two`, `difference_two_abs`, `max_two`, `min_two`, and `mean_two`.
+7. `task_charts_multiseries_pairwise_comparison_count` uses semantic `task_variant` values `series_a_gt_b_count` and `series_a_lt_b_count`.
+8. `task_charts_distribution_histogram_count` uses semantic `task_variant` values `modal_bin_count`, `interval_mass`, and `cumulative_count_to_bin`.
+9. `task_charts_distribution_boxplot_label` uses semantic `task_variant` values `highest_median`, `largest_iqr`, and `smallest_iqr`.
+10. `task_charts_distribution_density_label` uses semantic `task_variant` values `highest_mode`, `lowest_mode`, and `bimodal_label`.
+11. `task_charts_composition_subset_value` uses semantic `task_variant` values `stack_total_at_label`, `stack_segment_value`, and `combined_share_subset`.
+12. `task_charts_trend_structure_value` uses semantic `task_variant` values `peak_count`, `trough_count`, `longest_increasing_streak`, and `longest_decreasing_streak`.
+13. Single-series chart tasks use `scene_variant` values `area`, `bar`, `horizontal_bar`, `line`, `scatter`, `dot_plot`, and `lollipop`.
+14. `task_charts_statistics_summary_label`, `task_charts_counting_value_count`, and `task_charts_readout_subset_value` additionally support `pie` and `donut` as composition-style scene variants with percentage slices and a right-side legend.
+15. Those same three chart tasks also support `radar` as a spoke-and-polygon scene variant with printed point values near the radar markers.
+16. `task_charts_composition_subset_value` supports `stacked_bar`, `stacked_horizontal_bar`, `pie`, and `donut`, with compatibility constrained by variant (`stack_total_at_label|stack_segment_value` on stacked scenes, `combined_share_subset` on pie/donut scenes).
+17. `task_charts_trend_structure_value` currently supports the ordered single-series scene variants `area`, `bar`, `horizontal_bar`, `line`, `dot_plot`, and `lollipop`.
+18. `task_charts_multiseries_pairwise_comparison_count` supports `grouped_bar`, `grouped_horizontal_bar`, `multi_line`, and `grouped_lollipop`.
+19. Distribution chart tasks currently use fixed scene contracts:
+   - `task_charts_distribution_histogram_count` -> `histogram`
+   - `task_charts_distribution_boxplot_label` -> `boxplot`
+   - `task_charts_distribution_density_label` -> `violin`
+20. Keep the broader chart-type universe in `CHART_DOMAIN_PLAN.md` and the concrete active contract in `CHART_TASK_SETUP.md`; histogram is only valid as an active chart type when it preserves true numeric-bin semantics distinct from `bar`.
+
+## Tables direction (current)
+1. Tables follow the same split as charts: `task_group` encodes reasoning family, while table styling is treated as `scene_variant` inside the task.
+2. The first active table family is `statistics`.
+3. `task_tables_statistics_summary_label` uses semantic `task_variant` values `argmax` and `argmin`.
+4. `task_tables_statistics_summary_value` uses semantic `task_variant` values `column_sum`, `column_mean`, and `column_median`.
+5. Both active table statistics tasks use `scene_variant` values `spreadsheet`, `zebra`, `ledger`, and `card_table`.
+6. Table row labels should use short visible human-style names rather than single letters when the answer is a row identity.
+7. Table tasks use one fixed prompt-facing evidence type in v1: `bbox_set`.
+8. Evidence boxes should mark the minimal supporting table region(s): one decisive numeric cell bbox for `task_tables_statistics_summary_label`, and one queried-column region bbox for `task_tables_statistics_summary_value`.
+
 ## Planned geometry measurement variants
 1. **Angle measurement**
    - One angle per image.

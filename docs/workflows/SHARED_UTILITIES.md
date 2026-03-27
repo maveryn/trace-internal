@@ -56,16 +56,23 @@ Promote helpers when a second consumer appears.
 14. `trace/tasks/shared/deterministic_sampling.py`
    - Canonical deterministic index selection for target-support cycling.
    - Use `_sampling_index` when a caller explicitly requests balanced cycling; otherwise use a namespaced hash so target-answer selection does not accidentally correlate with other seed-driven decisions.
-14. `trace/tasks/shared/comparison_sampling.py`
+15. `trace/tasks/shared/comparison_sampling.py`
    - Canonical winner/runner-up gap metrics for comparison-style tasks.
    - Use `compute_comparison_gap_metrics(...)` and `comparison_gap_is_valid(...)` when a task needs one shared ambiguity rule over ranked scalar values.
-15. `trace/tasks/shared/counting_sampling.py`
+16. `trace/tasks/shared/counting_sampling.py`
    - Canonical object-count / target-count balancing for counting-style tasks across domains.
    - Use `resolve_counting_cardinality_pair(...)` when the count answer itself should be sampled from the global feasible support before object-count/layout choice.
    - `resolve_counting_target_and_distractor_triplet(...)` also supports target-conditioned distractor floors via `distractor_margin_over_target` when one family needs more negatives than positives for readable scenes.
-16. `trace/tasks/shared/variant_sampling.py`
+17. `trace/tasks/shared/variant_sampling.py`
    - Canonical deterministic task-variant override/weight/balancing helpers across domains.
    - Use `resolve_variant(...)` plus `apply_balanced_variant_sampling(...)` instead of keeping parallel per-domain variant samplers.
+   - Use `sampling_namespace=...` when one task needs more than one independently balanced variant axis (for example semantic variant plus scene variant).
+18. `trace/tasks/shared/named_colors.py`
+   - Canonical repo-wide named-color palette plus deterministic sampling helpers shared across domains.
+   - Use this when a second domain needs the same stable prompt/render color inventory instead of reaching into another domain's helper layer.
+19. `trace/tasks/shared/name_assets.py`
+   - Canonical shared loader for vendored short-name manifests reused across domains (currently charts and tables).
+   - Use this when a second domain needs the same visible short-name pool instead of keeping another domain-local asset loader.
 
 ### Domain-shared (current)
 1. Geometry: `trace/tasks/geometry/shared/graph_paper.py`, `graph_rendering.py`, `single_object_scene.py`, `angle_geometry.py`, `multi_angle_scene.py`, `polygon_geometry.py`, `slope_geometry.py`, `shape_style.py`, `background_defaults.py`, `noise_defaults.py`, `render_variation.py`, `annotation_values.py`, `labeled_point_evidence.py`, `point_labels.py`, `prompt_text.py`, `analytical_2d_scene.py`, `analytical_3d_solids.py`, `analytical_task.py`
@@ -103,7 +110,7 @@ Promote helpers when a second consumer appears.
    - `comparison/rectangle_scene.py` provides reusable target-conditioned rectangle sampling, layout, and rendering for sibling rectangle-based comparison tasks (currently area and perimeter); keep object-family samplers/renderers there instead of duplicating near-identical task-local scene builders.
 4. Geometry counting task-group: `trace/tasks/geometry/counting/shared.py`, `trace/tasks/geometry/counting/defaults.py`
    - `trace/tasks/shared/counting_sampling.py` now owns the cross-domain count-balancing helpers (`resolve_counting_object_count(...)`, `resolve_counting_target_count(...)`, `resolve_counting_cardinality_pair(...)`, `resolve_counting_target_first_cardinality_triplet(...)`, `resolve_counting_target_and_distractor_triplet(...)`, `counting_complexity_score(...)`).
-   - `trace/tasks/shared/labeling.py` owns the cross-domain shuffled scene-label helper (`assign_shuffled_labels(...)`) and the shared `A..L` label pool used by multi-object families.
+   - `trace/tasks/shared/labeling.py` owns the cross-domain scene-label helpers, including prefix-based shuffled labels (`assign_shuffled_labels(...)`) and random uppercase-subset labels (`assign_random_shuffled_labels(...)`) for families that should not bias toward `A, B, C, ...`.
    - `counting/shared.py` keeps the geometry-specific roomy layout helpers plus a thin `assign_counting_labels(...)` wrapper over the shared label helper used by sibling geometry counting tasks.
    - `counting/defaults.py` centralizes task-group fallback defaults reused across geometry/counting tasks.
    - For class-counting tasks with overlapping school definitions (for example isosceles vs equilateral), keep the exclusive wording in prompt/config slots instead of relying on unstated conventions.
@@ -115,7 +122,7 @@ Promote helpers when a second consumer appears.
    - `tile_scene.py` is the canonical dense-board `tile_cell` entity builder for non-maze tile tasks.
    - `tile_evidence.py` is the canonical coordinate-grounded tile evidence helper layer (`grid_point_set` / `grid_point_path` plus pixel projections).
    - `rectangular_board.py` is the canonical dynamic rectangular-board layout/rendering helper for single-board tile tasks.
-   - `tile_colors.py` centralizes the named color palette used by color-driven tile tasks.
+   - `tile_colors.py` is the tile-domain wrapper over `trace/tasks/shared/named_colors.py`; keep tile-specific naming/query helpers there, but keep the canonical palette itself in the shared layer.
    - `named_color_board.py` is the canonical named-color board sampling/rendering layer shared across tile task groups, and it now owns the shared query-annotated scene-entity builder for named-color boards.
    - `reachability_board.py` is the canonical blocked-board reachability sampler for tile tasks that need one start tile plus reachable/unreachable open-cell partitions before task-specific target/path selection.
    - Concrete tile tasks live flat under `trace/tasks/tile/<task_group>_<task_name>.py`; keep reusable helpers under `trace/tasks/tile/shared/` instead of creating task-group wrapper packages for tile.
@@ -136,6 +143,18 @@ Promote helpers when a second consumer appears.
    - `icon_overlap_grid_scene.py` provides the reusable Reference-overlap + labeled Scene-grid renderer for pairwise occlusion-order tasks; use cell labels from this renderer when the semantic target is the whole overlapping pair rather than one icon bbox.
    - `icon_labeled_grid_scene.py` provides reusable two-panel `Reference` + labeled `Scene` grid chrome for icon tasks that render whole cell images task-locally; use it when the task-specific logic is inside each cell rather than in one generic pair/overlap widget, and use its square-cell options when diagonal cell symmetries need square reference/scene boxes without task-local geometry hacks.
    - `anchor_marking.py` provides the reusable highlighted-anchor outline + label renderer for icon relation tasks with visible anchors; once a second icon relation task marks anchors, keep that chrome shared instead of duplicating task-local rounded-box label placement.
+7. Charts: `trace/tasks/charts/shared/chart_scene.py`, `labeled_chart_common.py`, `distribution_chart_common.py`, `multiseries_chart_common.py`, `composition_chart_common.py`, `visual_defaults.py`
+   - `chart_scene.py` is the canonical chart renderer for the active chart families; it owns the shared axis/grid scaffold plus mark/label trace geometry for single-series `area`, `bar`, `pie`, `donut`, `horizontal_bar`, `line`, `radar`, `scatter`, `dot_plot`, and `lollipop`, the active multiseries `grouped_bar`, `grouped_horizontal_bar`, `multi_line`, and `grouped_lollipop` renderers, the stacked-composition `stacked_bar` / `stacked_horizontal_bar` renderers, and the dedicated `histogram` / `boxplot` / `violin` distribution renderers.
+   - `labeled_chart_common.py` is the shared construction layer for labeled single-series chart tasks; it owns mark-count/value bounds, balanced semantic/scene variant sampling, randomized label/color sampling, per-slice pie/donut palette assignment, reusable percentage-composition builders for pie/donut, reusable statistic builders, reusable threshold/interval counting dataset builders, reusable two-label readout dataset builders, reusable ordered-sequence trend dataset builders, and the shared pixel-space mark-evidence projection used by chart review overlays.
+   - `distribution_chart_common.py` is the shared construction layer for distribution-style chart tasks; it owns histogram bin construction, cumulative/interval count query setup, categorical boxplot summary construction, violin support/mode construction, and the fixed-scene distribution task defaults.
+   - `multiseries_chart_common.py` is the shared construction layer for multiseries chart tasks; it owns series/category count bounds, per-series palette sampling, series/category label sampling, pairwise-comparison dataset construction, and category-grounded pixel-space evidence projection for multiseries review overlays.
+   - `composition_chart_common.py` is the shared construction layer for composition-style chart tasks; it owns stacked/pie scene compatibility, stacked total/segment builders, combined-share composition builders, stacked mark-spec construction, and whole-stack / whole-chart evidence projection.
+   - Chart mark colors should be sampled once per instance and then reused consistently across all marks in that chart; keep the renderer wired to the resolved per-instance fill/outline colors rather than tracing one style and drawing another.
+   - `visual_defaults.py` is the canonical chart-domain background/noise loader layer shared across future chart task groups.
+8. Tables: `trace/tasks/tables/shared/table_scene.py`, `table_common.py`, `visual_defaults.py`
+   - `table_scene.py` is the canonical styled-table renderer for active table tasks; it owns table cell geometry, row/column region bboxes, and the active `spreadsheet|zebra|ledger|card_table` scene variants.
+   - `table_common.py` is the shared construction layer for table tasks; it owns row/column count bounds, row-name/header sampling, summary-label/value dataset construction, render-param resolution, and both cell- and region-level bbox evidence projection.
+   - `visual_defaults.py` is the canonical table-domain background/noise loader layer shared across future table task groups.
 
 ## 3) Reuse rules
 1. Do not duplicate deterministic utilities.

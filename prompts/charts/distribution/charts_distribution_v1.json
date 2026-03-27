@@ -1,0 +1,133 @@
+{
+  "bundle_id": "charts_distribution_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "distribution_chart": [
+      "The image shows {object_description}.",
+      "Use the distribution chart in the image. It shows {object_description}.",
+      "Work from the chart shown in the image: {object_description}.",
+      "Look at the chart in the image. It shows {object_description}.",
+      "You are given a chart: {object_description}."
+    ]
+  },
+  "task_templates": {
+    "histogram_count_query": [
+      "Answer this question.",
+      "Determine the requested count from the histogram.",
+      "Use the histogram counts to answer the question.",
+      "Read the histogram and compute the requested count.",
+      "Work from the bin counts shown in the histogram."
+    ],
+    "boxplot_label_query": [
+      "Answer this question.",
+      "Determine which labeled boxplot matches the requested property.",
+      "Use the boxplots to identify the correct label.",
+      "Read the boxplot summaries and name the matching label.",
+      "Find the label of the boxplot that satisfies the requested condition."
+    ],
+    "density_label_query": [
+      "Answer this question.",
+      "Determine which labeled violin plot matches the requested property.",
+      "Use the violin plots to identify the correct label.",
+      "Read the violin shapes and name the matching label.",
+      "Find the label of the violin plot that satisfies the requested condition."
+    ]
+  },
+  "task_variant_templates": {
+    "modal_bin_count": [
+      "What is the count of the highest bin?",
+      "Find the count of the tallest histogram bin.",
+      "Determine the largest bin count shown in the histogram.",
+      "What count does the highest histogram bin have?",
+      "Identify the count of the unique maximum-count bin."
+    ],
+    "interval_mass": [
+      "How many items fall in the interval {query_interval_label}?",
+      "Find the total count in the interval {query_interval_label}.",
+      "Determine how many items lie in the interval {query_interval_label}.",
+      "What is the count across the interval {query_interval_label}?",
+      "Compute the total histogram count inside {query_interval_label}."
+    ],
+    "cumulative_count_to_bin": [
+      "What is the cumulative count up to and including bin {query_bin_label}?",
+      "Find the cumulative histogram count through bin {query_bin_label}.",
+      "Determine how many items are counted up to and including {query_bin_label}.",
+      "What is the total count from the first bin through {query_bin_label}?",
+      "Compute the cumulative count through bin {query_bin_label}."
+    ],
+    "highest_median": [
+      "Which label has the highest median?",
+      "Find the label of the boxplot with the highest median.",
+      "Determine which labeled boxplot has the largest median line value.",
+      "What label corresponds to the highest median?",
+      "Identify the boxplot label with the greatest median."
+    ],
+    "largest_iqr": [
+      "Which label has the largest interquartile range?",
+      "Find the label of the boxplot with the widest interquartile range.",
+      "Determine which labeled boxplot has the largest IQR.",
+      "What label corresponds to the largest interquartile range?",
+      "Identify the boxplot label with the widest box."
+    ],
+    "smallest_iqr": [
+      "Which label has the smallest interquartile range?",
+      "Find the label of the boxplot with the narrowest interquartile range.",
+      "Determine which labeled boxplot has the smallest IQR.",
+      "What label corresponds to the smallest interquartile range?",
+      "Identify the boxplot label with the narrowest box."
+    ],
+    "highest_mode": [
+      "Which label has the highest mode?",
+      "Find the label of the violin plot whose density peak is highest on the value axis.",
+      "Determine which labeled violin has the highest modal value.",
+      "What label corresponds to the highest density peak?",
+      "Identify the violin plot label with the highest mode."
+    ],
+    "lowest_mode": [
+      "Which label has the lowest mode?",
+      "Find the label of the violin plot whose density peak is lowest on the value axis.",
+      "Determine which labeled violin has the lowest modal value.",
+      "What label corresponds to the lowest density peak?",
+      "Identify the violin plot label with the lowest mode."
+    ],
+    "bimodal_label": [
+      "Which label is bimodal?",
+      "Find the label of the violin plot with two distinct density peaks.",
+      "Determine which labeled violin has two modes.",
+      "What label corresponds to the bimodal violin plot?",
+      "Identify the violin plot label with two clear peaks."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:distribution_chart": [
+      "object_description"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

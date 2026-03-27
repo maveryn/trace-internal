@@ -1,0 +1,1 @@
+"""Chart counting task group."""

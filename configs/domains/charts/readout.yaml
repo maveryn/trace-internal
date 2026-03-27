@@ -52,6 +52,13 @@ rendering:
     text_stroke_rgb: [255, 255, 255]
     plot_fill_rgb: [255, 255, 255]
 
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.25
+      reasoning_load: 0.50
+      scene_variant_load: 0.25
+
 prompt:
   shared:
     bundle_id: charts_readout_v1

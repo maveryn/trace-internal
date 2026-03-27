@@ -52,8 +52,8 @@ class _TaskDefaults:
     outer_margin_px: int = ICON_COUNTING_SHARED_DEFAULTS.outer_margin_px
     panel_padding_px: int = ICON_COUNTING_SHARED_DEFAULTS.panel_padding_px
     panel_corner_radius_px: int = ICON_COUNTING_SHARED_DEFAULTS.panel_corner_radius_px
-    scene_icon_size_min_px: int = 36
-    scene_icon_size_max_px: int = 72
+    scene_icon_size_min_px: int = 40
+    scene_icon_size_max_px: int = 96
     reference_icon_size_px: int = 110
     panel_title_font_size_px: int = ICON_COUNTING_SHARED_DEFAULTS.panel_title_font_size_px
     background_color_rgb: Tuple[int, int, int] = ICON_COUNTING_SHARED_DEFAULTS.background_color_rgb

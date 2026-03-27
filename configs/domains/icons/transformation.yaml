@@ -22,8 +22,8 @@ rendering:
     outer_margin_px: 24
     panel_padding_px: 20
     panel_corner_radius_px: 18
-    scene_icon_size_min_px: 36
-    scene_icon_size_max_px: 72
+    scene_icon_size_min_px: 40
+    scene_icon_size_max_px: 96
     reference_icon_size_px: 110
     panel_title_font_size_px: 24
     background_color_rgb: [247, 248, 251]

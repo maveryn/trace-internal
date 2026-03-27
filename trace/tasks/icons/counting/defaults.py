@@ -18,7 +18,7 @@ class IconCountingSharedDefaults:
     outer_margin_px: int = 24
     panel_padding_px: int = 20
     panel_corner_radius_px: int = 18
-    scene_icon_size_min_px: int = 32
+    scene_icon_size_min_px: int = 40
     scene_icon_size_max_px: int = 96
     reference_icon_size_px: int = 136
     object_count_min: int = 1

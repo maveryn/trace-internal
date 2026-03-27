@@ -80,7 +80,7 @@ class _TaskDefaults:
     panel_padding_px: int = ICON_COUNTING_SHARED_DEFAULTS.panel_padding_px
     panel_corner_radius_px: int = ICON_COUNTING_SHARED_DEFAULTS.panel_corner_radius_px
     scene_icon_size_min_px: int = ICON_COUNTING_SHARED_DEFAULTS.scene_icon_size_min_px
-    scene_icon_size_max_px: int = 88
+    scene_icon_size_max_px: int = ICON_COUNTING_SHARED_DEFAULTS.scene_icon_size_max_px
     reference_icon_size_px: int = ICON_COUNTING_SHARED_DEFAULTS.reference_icon_size_px
     scene_max_overlap_fraction: float = 0.05
     scene_placement_max_attempts: int = ICON_COUNTING_SHARED_DEFAULTS.scene_placement_max_attempts

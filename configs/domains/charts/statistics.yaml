@@ -1,0 +1,81 @@
+generation:
+  shared:
+    mark_count_min: 5
+    mark_count_max: 10
+    value_min: 1
+    value_max: 20
+    task_variant_weights:
+      max: 1.0
+      min: 1.0
+      range: 1.0
+      mean: 1.0
+      median: 1.0
+      sum: 1.0
+      mode: 1.0
+    scene_variant_weights:
+      bar: 1.0
+      line: 1.0
+      scatter: 1.0
+    balanced_task_variant_sampling: true
+    balanced_scene_variant_sampling: true
+
+rendering:
+  shared:
+    canvas_width: 800
+    canvas_height: 600
+    plot_margin_left_px: 92
+    plot_margin_right_px: 46
+    plot_margin_top_px: 44
+    plot_margin_bottom_px: 92
+    axis_line_width_px: 2
+    grid_line_width_px: 1
+    tick_length_px: 8
+    label_font_size_px: 22
+    tick_font_size_px: 18
+    label_stroke_width_px: 2
+    mark_outline_width_px: 2
+    line_width_px: 4
+    point_radius_px: 8
+    bar_width_fraction: 0.58
+    mark_color_channel_min: 0
+    mark_color_channel_max: 220
+    mark_color_min_distance: 40.0
+    mark_color_distance_space: lab
+    axis_color_rgb: [74, 78, 86]
+    grid_color_rgb: [224, 227, 232]
+    text_color_rgb: [38, 41, 48]
+    text_stroke_rgb: [255, 255, 255]
+    plot_fill_rgb: [255, 255, 255]
+
+prompt:
+  shared:
+    bundle_id: charts_statistics_v1
+    task_family_key: labeled_chart_statistics
+    task_key: summary_value_query
+    json_output_contract: Return a valid JSON object with keys "evidence" and "answer" in that order.
+    json_output_contract_answer_only: Return a valid JSON object with key "answer".
+    answer_hint: set "answer" to the requested statistic as an integer
+    object_description_bar: a labeled bar chart. Each bar's numeric height can be read from the vertical axis
+    object_description_line: a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis
+    object_description_scatter: a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis
+    evidence_hint_max: set "evidence" to an array containing the label of the unique maximum-value mark
+    evidence_hint_min: set "evidence" to an array containing the label of the unique minimum-value mark
+    evidence_hint_range: set "evidence" to an array containing the labels of the unique minimum-value and maximum-value marks
+    evidence_hint_mean: set "evidence" to an array containing all chart labels used in the mean calculation
+    evidence_hint_median: set "evidence" to an array containing the label of the median mark
+    evidence_hint_sum: set "evidence" to an array containing all chart labels used in the sum calculation
+    evidence_hint_mode: set "evidence" to an array containing all labels whose value equals the unique mode
+    json_example_max: '{"evidence":["D"],"answer":8}'
+    json_example_min: '{"evidence":["B"],"answer":2}'
+    json_example_range: '{"evidence":["B","T"],"answer":6}'
+    json_example_mean: '{"evidence":["A","C","F","M","Q"],"answer":7}'
+    json_example_median: '{"evidence":["M"],"answer":6}'
+    json_example_sum: '{"evidence":["A","C","F","M","Q"],"answer":35}'
+    json_example_mode: '{"evidence":["B","E","K"],"answer":6}'
+    json_example_answer_only_max: '{"answer":8}'
+    json_example_answer_only_min: '{"answer":2}'
+    json_example_answer_only_range: '{"answer":6}'
+    json_example_answer_only_mean: '{"answer":7}'
+    json_example_answer_only_median: '{"answer":6}'
+    json_example_answer_only_sum: '{"answer":35}'
+    json_example_answer_only_mode: '{"answer":6}'

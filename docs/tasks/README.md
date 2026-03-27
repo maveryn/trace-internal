@@ -42,3 +42,4 @@ Current task docs:
 32. [task_tile_relation_min_distance.md](task_tile_relation_min_distance.md)
 33. [task_tile_symmetry_violation_count.md](task_tile_symmetry_violation_count.md)
 34. [task_tile_transition_gravity_max_drop.md](task_tile_transition_gravity_max_drop.md)
+35. [task_charts_statistics_summary_value.md](task_charts_statistics_summary_value.md)

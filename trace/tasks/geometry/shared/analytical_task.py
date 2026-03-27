@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from ...shared.config_defaults import required_group_default, resolve_optional_int_bounds
-from .variant_sampling import apply_balanced_variant_sampling, resolve_variant
+from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 
 
 def required_prompt_text(

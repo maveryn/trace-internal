@@ -62,9 +62,15 @@ Promote helpers when a second consumer appears.
 15. `trace/tasks/shared/counting_sampling.py`
    - Canonical object-count / target-count balancing for counting-style tasks across domains.
    - Use `resolve_counting_cardinality_pair(...)` when the count answer itself should be sampled from the global feasible support before object-count/layout choice.
+16. `trace/tasks/shared/variant_sampling.py`
+   - Canonical deterministic variant-selection helpers used when multiple domains need the same explicit-override + weighted-sampling + balanced-cycling behavior.
+   - Use `sampling_namespace=...` when one task needs more than one independently balanced variant axis (for example semantic variant plus scene variant).
+17. `trace/tasks/shared/named_colors.py`
+   - Canonical repo-wide named-color palette plus deterministic sampling helpers shared across domains.
+   - Use this when a second domain needs the same stable prompt/render color inventory instead of reaching into another domain's helper layer.
 
 ### Domain-shared (current)
-1. Geometry: `trace/tasks/geometry/shared/graph_paper.py`, `graph_rendering.py`, `single_object_scene.py`, `angle_geometry.py`, `multi_angle_scene.py`, `polygon_geometry.py`, `slope_geometry.py`, `shape_style.py`, `background_defaults.py`, `noise_defaults.py`, `variant_sampling.py`, `render_variation.py`, `annotation_values.py`, `labeled_point_evidence.py`, `point_labels.py`, `prompt_text.py`, `analytical_2d_scene.py`, `analytical_3d_solids.py`, `analytical_task.py`
+1. Geometry: `trace/tasks/geometry/shared/graph_paper.py`, `graph_rendering.py`, `single_object_scene.py`, `angle_geometry.py`, `multi_angle_scene.py`, `polygon_geometry.py`, `slope_geometry.py`, `shape_style.py`, `background_defaults.py`, `noise_defaults.py`, `render_variation.py`, `annotation_values.py`, `labeled_point_evidence.py`, `point_labels.py`, `prompt_text.py`, `analytical_2d_scene.py`, `analytical_3d_solids.py`, `analytical_task.py`
    - `graph_paper.offset_point_by_grid_vector` is the canonical pixel-space translation helper for lattice vector offsets.
    - `background_defaults.load_geometry_background_defaults(...)` is the canonical geometry-domain loader for background defaults (domain baseline with optional task-group override).
    - `noise_defaults.load_geometry_noise_defaults(...)` is the canonical geometry-domain loader for post-image noise defaults (domain baseline with optional task-group override).
@@ -86,7 +92,6 @@ Promote helpers when a second consumer appears.
 2. Geometry measurement task-group: `trace/tasks/geometry/measurement/defaults.py`, `shape_measure_base.py`, `trace/tasks/geometry/shared/conic_geometry.py`, `trace/tasks/geometry/shared/length_geometry.py`
    - `defaults.py` centralizes task-group fallback defaults reused by measurement tasks.
    - `shape_measure_base.py` provides the shared generation/output pipeline for shape variants (polygon + conic) used by area/perimeter tasks.
-   - `variant_sampling.py` in `trace/tasks/geometry/shared/` provides shared balanced variant-selection helpers reused across geometry task groups.
    - `conic_geometry.py` provides reusable circle/ellipse sampling, rendering, and scene-entity payload helpers.
    - `length_geometry.py` provides reusable integer-length segment vectors, sampling, and labeled-segment rendering helpers.
    - `polygon_geometry.py` provides reusable procedural polygon sampling plus feasible-target support probes for polygon-side measurement tasks, constructive triangle/quadrilateral area helpers and triangle-perimeter helpers for graph-paper measurement tasks, conservative interior-span calculations for padded graph-paper placement, and strict polygon convexity classification (`convex` / `concave` / `degenerate`) for non-grid polygon-class tasks.
@@ -100,7 +105,7 @@ Promote helpers when a second consumer appears.
    - `comparison/rectangle_scene.py` provides reusable target-conditioned rectangle sampling, layout, and rendering for sibling rectangle-based comparison tasks (currently area and perimeter); keep object-family samplers/renderers there instead of duplicating near-identical task-local scene builders.
 4. Geometry counting task-group: `trace/tasks/geometry/counting/shared.py`, `trace/tasks/geometry/counting/defaults.py`
    - `trace/tasks/shared/counting_sampling.py` now owns the cross-domain count-balancing helpers (`resolve_counting_object_count(...)`, `resolve_counting_target_count(...)`, `resolve_counting_cardinality_pair(...)`, `resolve_counting_target_first_cardinality_triplet(...)`, `resolve_counting_target_and_distractor_triplet(...)`, `counting_complexity_score(...)`).
-   - `trace/tasks/shared/labeling.py` owns the cross-domain shuffled scene-label helper (`assign_shuffled_labels(...)`) and the shared `A..L` label pool used by multi-object families.
+   - `trace/tasks/shared/labeling.py` owns the cross-domain scene-label helpers, including prefix-based shuffled labels (`assign_shuffled_labels(...)`) and random uppercase-subset labels (`assign_random_shuffled_labels(...)`) for families that should not bias toward `A, B, C, ...`.
    - `counting/shared.py` keeps the geometry-specific roomy layout helpers plus a thin `assign_counting_labels(...)` wrapper over the shared label helper used by sibling geometry counting tasks.
    - `counting/defaults.py` centralizes task-group fallback defaults reused across geometry/counting tasks.
    - For class-counting tasks with overlapping school definitions (for example isosceles vs equilateral), keep the exclusive wording in prompt/config slots instead of relying on unstated conventions.
@@ -112,7 +117,7 @@ Promote helpers when a second consumer appears.
    - `tile_scene.py` is the canonical dense-board `tile_cell` entity builder for non-maze tile tasks.
    - `tile_evidence.py` is the canonical coordinate-grounded tile evidence helper layer (`grid_point_set` / `grid_point_path` plus pixel projections).
    - `rectangular_board.py` is the canonical dynamic rectangular-board layout/rendering helper for single-board tile tasks.
-   - `tile_colors.py` centralizes the named color palette used by color-driven tile tasks.
+   - `tile_colors.py` is the tile-domain wrapper over `trace/tasks/shared/named_colors.py`; keep tile-specific naming/query helpers there, but keep the canonical palette itself in the shared layer.
    - `named_color_board.py` is the canonical named-color board sampling/rendering layer shared across tile task groups, and it now owns the shared query-annotated scene-entity builder for named-color boards.
    - `reachability_board.py` is the canonical blocked-board reachability sampler for tile tasks that need one start tile plus reachable/unreachable open-cell partitions before task-specific target/path selection.
    - Concrete tile tasks live flat under `trace/tasks/tile/<task_group>_<task_name>.py`; keep reusable helpers under `trace/tasks/tile/shared/` instead of creating task-group wrapper packages for tile.
@@ -125,6 +130,10 @@ Promote helpers when a second consumer appears.
    - `icons/counting/shared.py` provides the shared render-param resolution, icon-instance noise sampling, and canonical trace-style block for sibling reference-scene icon counting tasks; reuse it once a second icon counting task would otherwise duplicate the same render-default parsing or style-trace assembly.
    - `icon_transform.py` is the canonical home for D4 transform ids and image-space transform application; use it for icon rotation/mirror families instead of encoding transform names task-locally.
    - `icon_pair_grid_scene.py` provides the reusable Reference-pair + labeled Scene-grid renderer for icon transformation-style tasks; use cell labels from this renderer as evidence instead of inventing task-local grid containers.
+7. Charts: `trace/tasks/charts/shared/chart_scene.py`, `visual_defaults.py`
+   - `chart_scene.py` is the canonical labeled-chart renderer for the chart domain's first statistics family; it owns the shared axis/grid scaffold plus mark/label trace geometry for `bar`, `line`, and `scatter`.
+   - Chart mark colors should be sampled once per instance and then reused consistently across all marks in that chart; keep the renderer wired to the resolved per-instance fill/outline colors rather than tracing one style and drawing another.
+   - `visual_defaults.py` is the canonical chart-domain background/noise loader layer shared across future chart task groups.
 
 ## 3) Reuse rules
 1. Do not duplicate deterministic utilities.

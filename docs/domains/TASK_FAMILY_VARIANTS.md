@@ -29,6 +29,15 @@ Define how we split tasks into reusable families so each dataset slice stays com
 5. See `TILE_TASK_SETUP.md` for the concrete board-geometry, metadata, and evidence contract.
 6. Reachability-style tile tasks should treat black obstacle tiles and marked start tiles as semantic board roles, not as generic query colors.
 
+## Charts direction (current)
+1. Charts follow the same split as geometry: `task_group` encodes reasoning family, while chart type is treated as `scene_variant` inside the task.
+2. The first active chart family is `statistics`.
+3. Its first active task is `task_charts_statistics_summary_value`.
+4. Its semantic `task_variant` values are `max`, `min`, `range`, `mean`, `median`, `sum`, and `mode`.
+5. Its active `scene_variant` values are `bar`, `line`, and `scatter`.
+6. `histogram`, `pie`, and `heatmap` remain under consideration for later statistics support after the first rollout stabilizes.
+7. Keep the broader chart-type universe in `CHART_DOMAIN_PLAN.md` and the concrete v1 contract in `CHART_TASK_SETUP.md`.
+
 ## Planned geometry measurement variants
 1. **Angle measurement**
    - One angle per image.

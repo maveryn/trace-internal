@@ -48,6 +48,8 @@ Date: 2026-03-27
 37. Geometry counting now includes `task_geometry_counting_angle`, `task_geometry_counting_triangle`, `task_geometry_counting_quadrilateral`, `task_geometry_counting_shape_type`, and `task_geometry_counting_convexity`, all non-graph-paper multi-object scenes with integer answers and sorted `label_set` evidence; angle scenes count acute/right/obtuse classes, triangle scenes count equilateral / isosceles-but-not-equilateral / scalene / right / acute / obtuse classes, quadrilateral scenes count square / rectangle-but-not-square / rhombus-but-not-square / parallelogram-only classes, mixed-shape scenes count triangle / quadrilateral / pentagon / hexagon / circle / ellipse instances, and convexity scenes count convex vs concave polygons using strict shared polygon classification.
 38. Icons counting now includes `task_icons_counting_type`, `task_icons_counting_orientation`, and `task_icons_counting_color`, all using a two-panel `Reference` + `Scene` image, integer answers, and scene-only `bbox_set` evidence in final image coordinates; type counting matches icon identity against the curated 3000-icon Prism pool, orientation counting uses the curated asymmetric subset and same-icon scenes with rotation-based orientation queries, and color counting uses same-icon scenes so the only varying predicate is tint, with a stricter Lab-distance threshold (`60`). These tasks sample `target_count` independently in `0..10` and `distractor_count` independently in `1..10`, place icons randomly in the scene panel with at most `10%` pairwise overlap (normalized by the smaller box area), and apply per-icon subtle noise before compositing; the sampled palette, overlap/noise config, final tints, and per-instance noise edits are recorded in trace metadata.
 39. Icons transformation now includes `task_icons_transformation_pair_count`, a two-panel `Reference` + labeled `Scene` grid task with integer answers and sorted `label_set` evidence; the Reference pair shows one canonical D4 transform, Scene cells each show `icon -> transformed icon`, and the task counts how many cells apply the same rule. The task uses the curated asymmetric icon pool, rejects icon/transform pairs that collapse visually under rendered-silhouette checks, and records the sampled transform ids plus per-icon subtle noise in trace metadata.
+40. Charts now includes `task_charts_statistics_summary_value`, the first `statistics` family task under `domain=charts`, with semantic `task_variant` values `max|min|range|mean|median|sum|mode`, visual `scene_variant` values `bar|line|scatter`, integer answers, `label_set` evidence over the supporting labeled marks, randomized uppercase mark labels, and one per-instance chart color sampled randomly with a Lab-distance floor from the white/light chart background.
+41. Shared deterministic variant-selection helpers now live in `trace/tasks/shared/variant_sampling.py`; geometry imports were updated to use the cross-domain helper, and charts reuse its namespaced balanced-cycling path for separate semantic and scene axes.
 
 ## Active tasks
 1. `task_tile_count_color_count` (`domain=tile`, `task_group=count`)
@@ -84,12 +86,13 @@ Date: 2026-03-27
 32. `task_icons_counting_orientation` (`domain=icons`, `task_group=counting`)
 33. `task_icons_counting_color` (`domain=icons`, `task_group=counting`)
 34. `task_icons_transformation_pair_count` (`domain=icons`, `task_group=transformation`)
+35. `task_charts_statistics_summary_value` (`domain=charts`, `task_group=statistics`)
 
 ## Current quality baseline
 1. Tests are required to pass before finalize.
 2. Distribution QA uses `scripts/check_task_answer_distribution.py` with per-variant answer-only checks (`unique_answers >= 5`, `max_answer_frequency < 25%`) and multithreaded sample generation (`--workers`); numeric 5-bin summaries remain reported for review but are not hard pass/fail gates.
 3. Task-review tooling writes per-task artifacts under `task-reviews/<task_id>/`, including one inspection workbook named `<task_id>.xlsx` with one sheet per task variant.
-4. The current active reviewed task set (10 tile tasks + 20 geometry tasks + 4 icons tasks) passes distribution review under the active gates.
+4. The current active reviewed task set (10 tile tasks + 20 geometry tasks + 4 icons tasks + 1 charts task) passes distribution review under the active gates.
 
 ## Next priorities
 1. Extend icons beyond counting/transformation using the new curated Prism asset pipeline (relation/comparison are the next natural families).

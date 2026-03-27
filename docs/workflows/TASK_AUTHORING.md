@@ -105,14 +105,15 @@ Use this as the implementation checklist for new or modified tasks.
 1. Global sampling unit is `task`.
 2. Task-variant sampling occurs inside each task.
 3. Default `P(task_variant|task)` is uniform unless overridden.
-4. Keep answer sampling as broad as constraints allow and validate with the standard answer-distribution checks.
-5. For geometry placement with lattice offsets, compute anchor bounds from the selected candidate (not global worst-case margins).
-6. Avoid tiny fixed structure banks; randomize both structural and visual factors whenever constraints allow.
-7. For tasks with both source categories and answer targets, sample both distributions explicitly and verify realized distributions.
-8. For deterministic balance over generated prefixes, use builder `_sampling_index` (not hashed `instance_seed`) when cycling categories/answers; if `_sampling_index` is absent, fall back to a namespaced deterministic index so target-answer choice does not couple to unrelated seed-driven decisions such as task-variant selection.
-9. If a target answer is chosen from a feasibility probe before layout, also propagate the probe's minimum required scene capacity (for example graph-cell count/span) into layout sampling; otherwise a globally feasible answer can still fail after the scene size is sampled.
-10. When changing answer/evidence/variant contracts, remove deprecated helper paths and stale trace fields in the same patch.
-11. For derived analytical geometry tasks, do not force integer targets if that collapses scene variety; prefer integer givens plus a numeric answer rounded to one decimal place when the natural formula yields irrational lengths.
+4. If one task has both a semantic variant axis and a visual-representation axis, keep `task_variant` for the semantic/query axis and record the visual axis separately as `scene_variant` in trace/query metadata instead of exploding the task into a cross-product of near-duplicate tasks.
+5. Keep answer sampling as broad as constraints allow and validate with the standard answer-distribution checks.
+6. For geometry placement with lattice offsets, compute anchor bounds from the selected candidate (not global worst-case margins).
+7. Avoid tiny fixed structure banks; randomize both structural and visual factors whenever constraints allow.
+8. For tasks with both source categories and answer targets, sample both distributions explicitly and verify realized distributions.
+9. For deterministic balance over generated prefixes, use builder `_sampling_index` (not hashed `instance_seed`) when cycling categories/answers; if `_sampling_index` is absent, fall back to a namespaced deterministic index so target-answer choice does not couple to unrelated seed-driven decisions such as task-variant selection.
+10. If a target answer is chosen from a feasibility probe before layout, also propagate the probe's minimum required scene capacity (for example graph-cell count/span) into layout sampling; otherwise a globally feasible answer can still fail after the scene size is sampled.
+11. When changing answer/evidence/variant contracts, remove deprecated helper paths and stale trace fields in the same patch.
+12. For derived analytical geometry tasks, do not force integer targets if that collapses scene variety; prefer integer givens plus a numeric answer rounded to one decimal place when the natural formula yields irrational lengths.
 
 ## 6) Minimal test checklist
 1. Determinism for fixed seed.

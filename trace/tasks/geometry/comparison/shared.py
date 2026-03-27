@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from ....core.sampling import normalize_positive_weights, weighted_choice
 from ...shared.deterministic_sampling import resolve_selection_index
 from ..shared.graph_rendering import graph_units_to_pixel
-from ..shared.variant_sampling import has_non_null_param, is_uniform_probability_map
+from ...shared.variant_sampling import has_non_null_param, is_uniform_probability_map
 
 COMPARISON_QUERY_TYPES: Tuple[str, str] = ("largest", "smallest")
 COMPARISON_ANSWER_LABEL_POOL: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")

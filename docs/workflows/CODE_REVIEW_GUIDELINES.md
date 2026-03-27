@@ -97,6 +97,7 @@ Use this checklist during implementation and refactor reviews.
 81. For icon transformation tasks, validate candidate transforms against the rendered icon silhouette itself; even curated asymmetric pools can contain icons where some canonical D4 transforms collapse visually, so reject ambiguous icon/transform pairs instead of assuming transform names stay distinguishable.
 82. Keep repo-local skills thin and docs canonical: workflow/domain skills should point at source-of-truth docs instead of copying policy into parallel skill-specific prose.
 83. When docs move or the repo doc layout changes, update all repo-entry surfaces in the same patch (`docs/README.md`, `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, and any skills that point at those docs) so navigation never fragments.
+84. When a second domain needs a representation-agnostic helper that currently lives under one domain's `shared/`, promote it to `trace/tasks/shared/` in the same patch instead of adding a cross-domain import back into the original domain namespace.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

@@ -1,15 +1,17 @@
-"""Shared deterministic variant-sampling helpers for geometry task groups."""
+"""Cross-domain deterministic variant-sampling helpers."""
 
 from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
-from ....core.sampling import normalize_positive_weights, weighted_choice
-from ...shared.config_defaults import group_default
+from ...core.sampling import normalize_positive_weights, weighted_choice
+from .config_defaults import group_default
+from .deterministic_sampling import resolve_selection_index
 
 
 def is_uniform_probability_map(probabilities: Mapping[str, float], *, tol: float = 1e-9) -> bool:
     """Return true when all positive probabilities are approximately equal."""
+
     positives = [float(value) for value in probabilities.values() if float(value) > 0.0]
     if not positives:
         return False
@@ -18,6 +20,7 @@ def is_uniform_probability_map(probabilities: Mapping[str, float], *, tol: float
 
 def has_non_null_param(params: Mapping[str, Any], key: str) -> bool:
     """Return true when a non-null override key is present."""
+
     return key in params and params.get(key) is not None
 
 
@@ -31,6 +34,7 @@ def resolve_variant(
     weights_key: str = "variant_weights",
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve one variant with optional explicit override + weighted sampling."""
+
     supported = [str(item) for item in supported_variants]
     supported_set = set(supported)
     explicit_variant = params.get(str(explicit_key))
@@ -67,8 +71,10 @@ def apply_balanced_variant_sampling(
     balance_flag_key: str = "balanced_variant_sampling",
     explicit_key: str = "shape_variant",
     weights_key: str = "variant_weights",
+    sampling_namespace: str | None = None,
 ) -> str:
     """Apply deterministic cycling over variants when configuration is uniform."""
+
     enabled = bool(params.get(str(balance_flag_key), group_default(gen_defaults, str(balance_flag_key), True)))
     if not bool(enabled):
         return str(selected_variant)
@@ -78,5 +84,20 @@ def apply_balanced_variant_sampling(
     values = [str(item) for item in supported_variants]
     if not values:
         return str(selected_variant)
-    sampling_index = params.get("_sampling_index", instance_seed)
+    if sampling_namespace is not None:
+        sampling_index = resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=str(sampling_namespace),
+        )
+    else:
+        sampling_index = params.get("_sampling_index", instance_seed)
     return str(values[abs(int(sampling_index)) % len(values)])
+
+
+__all__ = [
+    "apply_balanced_variant_sampling",
+    "has_non_null_param",
+    "is_uniform_probability_map",
+    "resolve_variant",
+]

@@ -9,7 +9,7 @@ from PIL import Image
 
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import (
@@ -18,7 +18,7 @@ from ...shared.config_defaults import (
     required_group_defaults,
     split_generation_rendering_prompt_defaults,
 )
-from ...shared.counting_sampling import counting_complexity_score, resolve_counting_target_and_distractor_triplet
+from ...shared.counting_sampling import resolve_counting_target_and_distractor_triplet
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -28,6 +28,7 @@ from ...shared.prompt_variants import (
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ..shared.anchor_marking import draw_anchor_marker, expand_bbox
 from ..shared.icon_assets import render_icon_rgba, resolve_icon_pool
+from ..shared.complexity import build_icons_relation_relative_position_type_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.icon_noise import serialize_icon_noise_edits
 from ..shared.icon_scene import (
@@ -923,6 +924,55 @@ class IconsRelationRelativePositionTypeTask:
                 "bbox_set": list(evidence_value),
             },
         }
+        scene_content_bbox = scene_payload.panel_geometry["scene_content_xyxy"]
+        anchor_bbox = scene_payload.anchor_instance["bbox_xyxy"]
+        relation_region_bbox = _direction_region_bbox(
+            scene_content_bbox,
+            anchor_bbox,
+            relation_id=str(task_variant),
+            gap_px=int(render_params["anchor_gap_px_directional"]),
+        )
+        scene_area = _bbox_area(scene_content_bbox)
+        target_region_area_ratio = (
+            float(_bbox_area(relation_region_bbox)) / float(scene_area)
+            if relation_region_bbox is not None and scene_area > 0.0
+            else 0.0
+        )
+        max_allowed_target_fraction = max(
+            1e-6,
+            1.0 - float(render_params["same_type_distractor_opposite_fraction_min"]),
+        )
+        boundary_proximity_samples = []
+        for entity in scene_payload.scene_instances:
+            if str(entity["icon_id"]) != str(scene_payload.reference_icon_id) or bool(entity["spatial_match"]):
+                continue
+            target_fraction = _bbox_fraction_in_relation_region(
+                entity["bbox_xyxy"],
+                anchor_bbox,
+                relation_id=str(task_variant),
+                gap_px=int(render_params["anchor_gap_px_directional"]),
+            )
+            boundary_proximity_samples.append(min(1.0, float(target_fraction) / float(max_allowed_target_fraction)))
+        same_type_boundary_proximity = (
+            float(sum(boundary_proximity_samples)) / float(len(boundary_proximity_samples))
+            if boundary_proximity_samples
+            else 0.0
+        )
+        complexity = build_icons_relation_relative_position_type_complexity(
+            task_group_defaults=_TASK_GROUP_DEFAULTS,
+            task_id=self.task_id,
+            object_count=int(scene_payload.object_count),
+            target_count=int(scene_payload.target_count),
+            distractor_count=int(scene_payload.distractor_count),
+            object_count_min=int(group_default(_GEN_DEFAULTS, "object_count_min", _DEFAULTS.object_count_min)),
+            object_count_max=int(group_default(_GEN_DEFAULTS, "object_count_max", _DEFAULTS.object_count_max)),
+            same_type_nonspatial_distractor_count=int(scene_payload.same_type_nonspatial_distractor_count),
+            different_type_spatial_distractor_count=int(scene_payload.different_type_spatial_distractor_count),
+            target_region_area_ratio=float(target_region_area_ratio),
+            same_type_boundary_proximity=float(same_type_boundary_proximity),
+            scene_instances=scene_payload.scene_instances,
+            render_params=render_params,
+        )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
@@ -931,17 +981,7 @@ class IconsRelationRelativePositionTypeTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=TaskComplexity(
-                complexity_score=counting_complexity_score(
-                    object_count=int(scene_payload.object_count),
-                    target_count=int(scene_payload.target_count),
-                ),
-                complexity_components={
-                    "object_count": int(scene_payload.object_count),
-                    "target_count": int(scene_payload.target_count),
-                    "task_variant": str(task_variant),
-                },
-            ),
+            complexity=complexity,
             task_versions=default_task_versions(),
             task_variant=str(task_variant),
         )

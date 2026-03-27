@@ -51,6 +51,7 @@ Use this as the implementation checklist for new or modified tasks.
 15. Domain-level complexity criteria must be applicable to every task in the domain; task-group criteria must be applicable to every task in the family where they are declared.
 16. Task-level complexity criteria or weight overrides are allowed but should be rare; use them only when a task materially breaks the family pattern.
 17. Use `skills/task-complexity/SKILL.md` whenever a patch introduces or revises a complexity policy.
+18. When a domain already has a shared complexity helper/policy layer, keep active criteria and weights in domain/task-group config and emit normalized criterion values through that shared helper instead of embedding new task-local weight constants.
 
 ## 3) Prompt rules
 1. Bundle path: `prompts/<domain>/<task_group>/<bundle>.json`.

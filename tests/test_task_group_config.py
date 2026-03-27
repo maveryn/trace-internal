@@ -1164,7 +1164,7 @@ def test_geometry_analytical_3d_defaults_loaded() -> None:
 
 def test_icons_counting_defaults_loaded() -> None:
     cfg = get_task_group_defaults("icons", "counting")
-    for section in ("generation", "rendering", "prompt", "visual"):
+    for section in ("generation", "rendering", "prompt", "visual", "complexity"):
         assert isinstance(cfg.get(section), dict)
 
     generation_shared = cfg["generation"]["shared"]
@@ -1203,6 +1203,14 @@ def test_icons_counting_defaults_loaded() -> None:
     assert str(prompt_shared["task_key"]).strip()
     assert str(prompt_shared["json_output_contract"]).strip()
     assert str(prompt_shared["json_output_contract_answer_only"]).strip()
+
+    complexity_shared = cfg["complexity"]["shared"]
+    assert dict(complexity_shared["criteria_weights"]) == {
+        "visual_scan": 0.30,
+        "ambiguity": 0.20,
+        "clutter": 0.15,
+        "semantic_match": 0.35,
+    }
 
     color_generation, color_rendering, color_prompt = split_generation_rendering_prompt_defaults(
         cfg,
@@ -1288,7 +1296,7 @@ def test_icons_counting_defaults_loaded() -> None:
 
 def test_icons_transformation_defaults_loaded() -> None:
     cfg = get_task_group_defaults("icons", "transformation")
-    for section in ("generation", "rendering", "prompt", "visual"):
+    for section in ("generation", "rendering", "prompt", "visual", "complexity"):
         assert isinstance(cfg.get(section), dict)
 
     generation_shared = cfg["generation"]["shared"]
@@ -1318,6 +1326,14 @@ def test_icons_transformation_defaults_loaded() -> None:
     assert str(prompt_shared["json_output_contract"]).strip()
     assert str(prompt_shared["json_output_contract_answer_only"]).strip()
 
+    complexity_shared = cfg["complexity"]["shared"]
+    assert dict(complexity_shared["criteria_weights"]) == {
+        "visual_scan": 0.20,
+        "ambiguity": 0.20,
+        "clutter": 0.15,
+        "rule_inference": 0.45,
+    }
+
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
         task_id="task_icons_transformation_pair_count",
@@ -1345,7 +1361,7 @@ def test_icons_transformation_defaults_loaded() -> None:
 
 def test_icons_relation_defaults_loaded() -> None:
     cfg = get_task_group_defaults("icons", "relation")
-    for section in ("generation", "rendering", "prompt", "visual"):
+    for section in ("generation", "rendering", "prompt", "visual", "complexity"):
         assert isinstance(cfg.get(section), dict)
 
     generation_shared = cfg["generation"]["shared"]
@@ -1381,6 +1397,14 @@ def test_icons_relation_defaults_loaded() -> None:
     assert str(prompt_shared["task_key"]).strip()
     assert str(prompt_shared["json_output_contract"]).strip()
     assert str(prompt_shared["json_output_contract_answer_only"]).strip()
+
+    complexity_shared = cfg["complexity"]["shared"]
+    assert dict(complexity_shared["criteria_weights"]) == {
+        "visual_scan": 0.20,
+        "ambiguity": 0.25,
+        "clutter": 0.15,
+        "spatial_reasoning": 0.40,
+    }
 
     mirror_generation, mirror_rendering, mirror_prompt = split_generation_rendering_prompt_defaults(
         cfg,
@@ -1500,8 +1524,16 @@ def test_icons_relation_defaults_loaded() -> None:
 
 def test_icons_sequence_defaults_loaded() -> None:
     cfg = get_task_group_defaults("icons", "sequence")
-    for section in ("generation", "rendering", "prompt", "visual"):
+    for section in ("generation", "rendering", "prompt", "visual", "complexity"):
         assert isinstance(cfg.get(section), dict)
+
+    complexity_shared = cfg["complexity"]["shared"]
+    assert dict(complexity_shared["criteria_weights"]) == {
+        "visual_scan": 0.25,
+        "ambiguity": 0.20,
+        "clutter": 0.10,
+        "rule_inference": 0.45,
+    }
 
     generation_shared = cfg["generation"]["shared"]
     assert int(generation_shared["sequence_length_min"]) == 4

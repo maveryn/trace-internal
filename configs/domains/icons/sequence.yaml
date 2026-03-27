@@ -69,3 +69,11 @@ prompt:
       answer_hint: set "answer" to the missing count as an integer
       json_example: '{"evidence":[[540,126,654,458]],"answer":5}'
       json_example_answer_only: '{"answer":5}'
+
+complexity:
+  shared:
+    criteria_weights:
+      rule_inference: 0.45
+      visual_scan: 0.25
+      ambiguity: 0.20
+      clutter: 0.10

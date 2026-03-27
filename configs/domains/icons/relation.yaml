@@ -168,3 +168,11 @@ prompt:
       answer_hint: set "answer" to the count as an integer
       json_example: '{"evidence":[[438,162,498,222],[602,302,670,370]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
+
+complexity:
+  shared:
+    criteria_weights:
+      spatial_reasoning: 0.40
+      visual_scan: 0.20
+      ambiguity: 0.25
+      clutter: 0.15

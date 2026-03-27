@@ -73,6 +73,15 @@ def test_icons_counting_attribute_binding_contract_matches_scene() -> None:
     assert float(trace["render_spec"]["style"]["min_color_distance"]) == 40.0
     assert list(trace["render_spec"]["style"]["icon_noise_edit_count_range"]) == [0, 2]
     assert float(trace["render_spec"]["style"]["scene_max_overlap_fraction"]) == 0.10
+    assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
+    assert set(out.complexity.complexity_components.keys()) == {
+        "visual_scan",
+        "semantic_match",
+        "ambiguity",
+        "clutter",
+    }
+    assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
+    assert float(out.complexity.complexity_components["semantic_match"]) == 1.0
 
     reference_icon_id = str(execution["reference_icon_id"])
     reference_tint = tuple(int(channel) for channel in execution["reference_tint_rgb"])

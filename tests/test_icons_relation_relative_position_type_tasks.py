@@ -93,6 +93,14 @@ def test_icons_relation_relative_position_type_contract_matches_scene() -> None:
     assert int(execution["same_type_nonspatial_distractor_count"]) >= 1
     assert int(execution["different_type_spatial_distractor_count"]) >= 1
     assert float(trace["render_spec"]["style"]["same_type_distractor_opposite_fraction_min"]) == 0.75
+    assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
+    assert set(out.complexity.complexity_components.keys()) == {
+        "visual_scan",
+        "spatial_reasoning",
+        "ambiguity",
+        "clutter",
+    }
+    assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
     assert len(candidate_entities) == 5
     assert len(anchor_entities) == 1
     assert float(trace["render_spec"]["style"]["scene_max_overlap_fraction"]) == 0.05

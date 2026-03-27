@@ -122,3 +122,11 @@ prompt:
       answer_hint: set "answer" to the count as an integer
       json_example: '{"evidence":[[334,150,410,226],[588,318,664,394],[756,318,832,394]],"answer":3}'
       json_example_answer_only: '{"answer":3}'
+
+complexity:
+  shared:
+    criteria_weights:
+      semantic_match: 0.35
+      visual_scan: 0.30
+      ambiguity: 0.20
+      clutter: 0.15

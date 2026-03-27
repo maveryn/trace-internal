@@ -59,6 +59,14 @@ def test_icons_counting_type_contract_matches_scene() -> None:
     assert 8 <= len(sampled_palette) <= 12
     assert list(trace["render_spec"]["style"]["icon_noise_edit_count_range"]) == [0, 2]
     assert float(trace["render_spec"]["style"]["scene_max_overlap_fraction"]) == 0.10
+    assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
+    assert set(out.complexity.complexity_components.keys()) == {
+        "visual_scan",
+        "semantic_match",
+        "ambiguity",
+        "clutter",
+    }
+    assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
 
     reference_icon_id = str(execution["reference_icon_id"])
     matching_indices = {int(value) for value in execution["matching_scene_indices"]}
@@ -101,6 +109,24 @@ def test_icons_counting_type_prompt_example_matches_contract() -> None:
     assert isinstance(answer_and_evidence["evidence"], list)
     assert len(answer_and_evidence["evidence"]) == 2
     assert answer_and_evidence["answer"] == 2
+
+
+def test_icons_counting_attribute_binding_is_harder_than_type_for_same_counts() -> None:
+    from trace.tasks.icons.counting.attribute_binding import IconsCountingAttributeBindingTask
+
+    type_task = IconsCountingTypeTask()
+    binding_task = IconsCountingAttributeBindingTask()
+    type_out = type_task.generate(
+        14016,
+        params={"object_count": 9, "target_count": 3, "pool_manifest": "all_icons.txt"},
+        max_attempts=200,
+    )
+    binding_out = binding_task.generate(
+        14016,
+        params={"object_count": 9, "target_count": 3, "pool_manifest": "non_symmetry.txt"},
+        max_attempts=200,
+    )
+    assert float(binding_out.complexity.complexity_score) > float(type_out.complexity.complexity_score)
 
 
 def test_icons_counting_type_balanced_sampling_defaults() -> None:

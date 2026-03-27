@@ -15,6 +15,14 @@ generation:
       above_anchor: 1.0
       below_anchor: 1.0
   task_overrides:
+    task_icons_relation_between_two_anchors_count:
+      target_count_max: 5
+      distractor_count_max: 10
+      distractor_margin_over_target: 0
+      pool_manifest: all_icons.txt
+      variant_weights:
+        inside_vertical_strip: 1.0
+        inside_horizontal_strip: 1.0
     task_icons_relation_occlusion_order:
       object_count_min: 2
       object_count_max: 12
@@ -80,6 +88,13 @@ rendering:
     cell_label_color_rgb: [52, 60, 77]
     cell_label_font_size_px: 22
   task_overrides:
+    task_icons_relation_between_two_anchors_count:
+      scene_max_overlap_fraction: 0.08
+      strip_boundary_margin_px: 14
+      strip_span_ratio_min: 0.32
+      strip_span_ratio_max: 0.60
+      strip_outside_ratio_min: 0.12
+      anchor_edge_padding_px: 10
     task_icons_relation_occlusion_order:
       canvas_width: 1104
       canvas_height: 640
@@ -94,6 +109,15 @@ prompt:
     task_family_key: reference_scene_anchor_relation
     task_key: relation_query
   task_overrides:
+    task_icons_relation_between_two_anchors_count:
+      task_family_key: scene_two_anchor_relation
+      object_description: a Scene panel of icons where two icons are marked as Anchor A and Anchor B
+      question_text_inside_vertical_strip: How many icons have centers in the vertical strip between Anchor A and Anchor B?
+      question_text_inside_horizontal_strip: How many icons have centers in the horizontal strip between Anchor A and Anchor B?
+      evidence_hint: set "evidence" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right
+      answer_hint: set "answer" to the count as an integer
+      json_example: '{"evidence":[[312,180,372,240],[540,286,612,358]],"answer":2}'
+      json_example_answer_only: '{"answer":2}'
     task_icons_relation_occlusion_order:
       task_family_key: reference_grid_occlusion_relation
       object_description: a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right

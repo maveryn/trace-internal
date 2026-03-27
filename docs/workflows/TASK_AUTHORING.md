@@ -84,6 +84,7 @@ Use this as the implementation checklist for new or modified tasks.
 30. For icon occlusion-order tasks, keep the Reference and Scene cells on one shared icon pair, vary only pair-level styling such as tint/overlap/noise, and use `label_set` evidence over matching Scene cells because the task asks about pair-level front/back order rather than about boxing one icon.
 31. For icon tasks where size itself is the queried predicate, sample and record explicit nominal sizes per icon through the shared scene renderer, and enforce one minimum size-gap threshold for both targets and distractors so the prompt never relies on “about the same size” judgments.
 32. For icon sequence tasks with one missing box, keep the missing box visibly marked (for example `?`), sample the hidden count from the supported answer range before choosing the arithmetic rule, and use a one-box `bbox_set` for the missing cell when that cell itself is the grounding target.
+33. For icon two-anchor strip tasks, use a single Scene panel with two visibly marked anchors, keep the anchors exactly aligned on the non-varying axis, exclude anchor icon types from the candidate pool, and evaluate strip membership from icon centers with one explicit boundary margin instead of drawing the strip itself.
 
 ## 4) Config/defaults rules
 1. Precedence: `domain -> task_group -> task/params`.

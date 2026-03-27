@@ -899,6 +899,7 @@ def test_icons_relation_defaults_loaded() -> None:
     assert int(generation_shared["distractor_margin_over_target"]) == 1
     assert bool(generation_shared["balanced_sampling"]) is True
     assert bool(generation_shared["balanced_variant_sampling"]) is True
+    assert "task_icons_relation_between_two_anchors_count" in cfg["generation"]["task_overrides"]
     assert "task_icons_relation_occlusion_order" in cfg["generation"]["task_overrides"]
     assert "task_icons_relation_relative_position_type" in cfg["generation"]["task_overrides"]
 
@@ -920,6 +921,35 @@ def test_icons_relation_defaults_loaded() -> None:
     assert str(prompt_shared["task_key"]).strip()
     assert str(prompt_shared["json_output_contract"]).strip()
     assert str(prompt_shared["json_output_contract_answer_only"]).strip()
+
+    strip_generation, strip_rendering, strip_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_icons_relation_between_two_anchors_count",
+    )
+    assert str(strip_generation["pool_manifest"]).strip() == "all_icons.txt"
+    assert int(strip_generation["target_count_max"]) == 5
+    assert int(strip_generation["distractor_count_max"]) == 10
+    strip_variant_weights = {
+        str(key): float(value)
+        for key, value in dict(strip_generation["variant_weights"]).items()
+        if str(key) in {"inside_vertical_strip", "inside_horizontal_strip"}
+    }
+    assert strip_variant_weights == {
+        "inside_vertical_strip": 1.0,
+        "inside_horizontal_strip": 1.0,
+    }
+    assert float(strip_rendering["scene_max_overlap_fraction"]) == 0.08
+    assert int(strip_rendering["strip_boundary_margin_px"]) == 14
+    assert float(strip_rendering["strip_span_ratio_min"]) == 0.32
+    assert float(strip_rendering["strip_span_ratio_max"]) == 0.60
+    assert str(strip_prompt["task_family_key"]).strip() == "scene_two_anchor_relation"
+    assert str(strip_prompt["object_description"]).strip()
+    assert str(strip_prompt["question_text_inside_vertical_strip"]).strip()
+    assert str(strip_prompt["question_text_inside_horizontal_strip"]).strip()
+    assert str(strip_prompt["evidence_hint"]).strip()
+    assert str(strip_prompt["answer_hint"]).strip()
+    assert str(strip_prompt["json_example"]).strip()
+    assert str(strip_prompt["json_example_answer_only"]).strip()
 
     occlusion_generation, occlusion_rendering, occlusion_prompt = split_generation_rendering_prompt_defaults(
         cfg,

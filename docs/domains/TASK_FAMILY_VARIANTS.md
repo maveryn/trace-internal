@@ -178,13 +178,20 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Answer type: integer count.
    - Evidence: scene-only `bbox_set` in final image coordinates.
    - Spatial distinction rule: evaluate left/right/above/below strictly from rendered bboxes, mix distractors across same-type wrong-side and different-type queried-side cases so the scene cannot be solved from one-sided occupancy alone, and require same-type wrong-side distractors to sit mostly outside the queried region (Prism-style relaxed margin rule).
-23. **Icons relation occlusion order (`task_icons_relation_occlusion_order`)**
+23. **Icons relation between two anchors count (`task_icons_relation_between_two_anchors_count`)**
+   - One single-panel image with free-placed Scene icons and two visibly marked anchors `A` and `B`.
+   - Query variants: `inside_vertical_strip`, `inside_horizontal_strip`.
+   - Count support: `target_count` in `0..5`, `distractor_count` in `1..10`, with the anchors excluded from the counted candidate set.
+   - Answer type: integer count.
+   - Evidence: scene-only `bbox_set` in final image coordinates.
+   - Spatial distinction rule: anchors share the same icon type/tint/rotation and are exactly aligned on the non-varying axis, all candidates use a different icon type from the anchors, and strip membership is evaluated from icon centers with a fixed `14` px boundary margin so no candidate center sits near the strip edge.
+24. **Icons relation occlusion order (`task_icons_relation_occlusion_order`)**
    - One two-panel image with a `Reference` cell on the left and a labeled `Scene` grid of overlapping icon pairs on the right.
    - Query: how many labeled Scene cells show the same front-to-back order as the Reference cell.
    - Count support: `target_count` in `0..6`, `distractor_count` in `1..6`, total Scene cells in `2..12`.
    - Answer type: integer count.
    - Evidence: sorted `label_set` of the matching Scene cell labels.
-24. **Icons sequence missing count (`task_icons_sequence_missing_count`)**
+25. **Icons sequence missing count (`task_icons_sequence_missing_count`)**
    - One single-panel image with a horizontal row of `4..6` Scene boxes.
    - Query: how many icons should appear in the missing Scene box to continue the sequence.
    - Sequence rule: visible box counts follow one arithmetic progression with hidden answer support `0..10` and integer step `±1..±3`.

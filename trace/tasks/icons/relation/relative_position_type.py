@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
-from PIL import Image, ImageDraw
+from PIL import Image
 
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
@@ -25,8 +25,8 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ...shared.text_rendering import draw_text_centered, load_font
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
+from ..shared.anchor_marking import draw_anchor_marker, expand_bbox
 from ..shared.icon_assets import render_icon_rgba, resolve_icon_pool
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.icon_noise import serialize_icon_noise_edits
@@ -141,18 +141,6 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id="task_icons_relation_relative_position_type",
 )
-
-
-def _expand_bbox(box: Sequence[int | float], pad_px: int) -> Tuple[int, int, int, int]:
-    """Expand one `xyxy` box by a symmetric pixel padding."""
-
-    return (
-        int(round(float(box[0]) - float(pad_px))),
-        int(round(float(box[1]) - float(pad_px))),
-        int(round(float(box[2]) + float(pad_px))),
-        int(round(float(box[3]) + float(pad_px))),
-    )
-
 
 def _bbox_area(box: Sequence[int | float]) -> float:
     """Return one `xyxy` box area."""
@@ -518,28 +506,17 @@ def _sample_scene(
     )
     image.alpha_composite(anchor_rgba, (int(anchor_bbox[0]), int(anchor_bbox[1])))
 
-    anchor_highlight_box = _expand_bbox(anchor_bbox, int(render_params["anchor_highlight_padding_px"]))
-    draw = ImageDraw.Draw(image)
-    draw.rounded_rectangle(
-        anchor_highlight_box,
-        radius=max(0, int(render_params["anchor_highlight_radius_px"])),
-        outline=tuple(int(v) for v in render_params["anchor_outline_rgb"]),
-        width=3,
-    )
-    anchor_font = load_font(int(render_params["anchor_label_font_size_px"]), bold=True)
-    label_x = 0.5 * float(anchor_bbox[0] + anchor_bbox[2])
-    label_y = float(anchor_bbox[1]) - max(14.0, float(render_params["anchor_label_font_size_px"]) * 0.75)
-    min_y = float(scene_content_bbox[1]) + (0.75 * float(render_params["anchor_label_font_size_px"]))
-    if label_y < min_y:
-        label_y = float(anchor_bbox[3]) + max(14.0, float(render_params["anchor_label_font_size_px"]) * 0.75)
-    draw_text_centered(
-        draw,
-        text="Anchor",
-        center=(float(label_x), float(label_y)),
-        font=anchor_font,
-        fill=tuple(int(v) for v in render_params["anchor_label_color_rgb"]),
-        stroke_fill=tuple(int(v) for v in render_params["panel_fill_rgb"]),
-        stroke_width=2,
+    anchor_highlight_box = draw_anchor_marker(
+        image=image,
+        anchor_bbox=anchor_bbox,
+        content_bbox=scene_content_bbox,
+        highlight_padding_px=int(render_params["anchor_highlight_padding_px"]),
+        highlight_radius_px=int(render_params["anchor_highlight_radius_px"]),
+        outline_rgb=tuple(int(v) for v in render_params["anchor_outline_rgb"]),
+        label_color_rgb=tuple(int(v) for v in render_params["anchor_label_color_rgb"]),
+        panel_fill_rgb=tuple(int(v) for v in render_params["panel_fill_rgb"]),
+        label_font_size_px=int(render_params["anchor_label_font_size_px"]),
+        label_text="Anchor",
     )
 
     target_region = _direction_region_bbox(

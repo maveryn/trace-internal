@@ -15,6 +15,13 @@
       "Look at the image with {object_description}.",
       "Use the image containing {object_description}.",
       "Work from the image with {object_description}."
+    ],
+    "scene_two_anchor_relation": [
+      "You are given an image with {object_description}.",
+      "The image shows {object_description}.",
+      "Look at the image with {object_description}.",
+      "Use the image containing {object_description}.",
+      "Work from the image with {object_description}."
     ]
   },
   "task_templates": {
@@ -31,6 +38,9 @@
       "object_description"
     ],
     "task_family:reference_scene_anchor_relation": [
+      "object_description"
+    ],
+    "task_family:scene_two_anchor_relation": [
       "object_description"
     ],
     "task:relation_query": [

@@ -107,7 +107,7 @@ Use this checklist during implementation and refactor reviews.
 91. For cell-based icon sequence tasks where the missing slot itself is the grounding target, prefer one-box `bbox_set` evidence for the missing cell over synthetic labels; keep cell labels out of the scene unless the task semantics truly depend on them.
 92. If an icon task's reference panel does not change the semantic predicate the model must evaluate, remove it and use a single-panel layout instead of carrying decorative reference chrome that only wastes scene space.
 93. For row/cell icon tasks, sample cell geometry first and derive the canvas from that row instead of stretching boxes to fill one fixed task-wide canvas; this keeps per-cell readability stable across variable sequence lengths.
-94. For icon exact-match tasks, do not fill the scene mostly with all-wrong negatives; require structured partial-match distractors (for example `2-of-3` and `1-of-3` queried-attribute overlaps) so review images actually test binding rather than independent attribute filters.
+94. For icon attribute-binding tasks, do not fill the scene mostly with all-wrong negatives; require structured partial-match distractors (for example `2-of-3` and `1-of-3` queried-attribute overlaps) so review images actually test binding rather than independent attribute filters.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

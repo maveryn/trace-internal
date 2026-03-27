@@ -1,4 +1,4 @@
-"""Behavior tests for icon exact-match counting task."""
+"""Behavior tests for the icon attribute-binding counting task."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import json
 from collections import Counter
 
 from trace.core.seed import hash64
-from trace.tasks.icons.counting.exact_match import IconsCountingExactMatchTask
+from trace.tasks.icons.counting.attribute_binding import IconsCountingAttributeBindingTask
 
 
 _HARD_DISTRACTOR_CATEGORIES = {
@@ -42,8 +42,8 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     return json.loads(payload)
 
 
-def test_icons_counting_exact_match_contract_matches_scene() -> None:
-    task = IconsCountingExactMatchTask()
+def test_icons_counting_attribute_binding_contract_matches_scene() -> None:
+    task = IconsCountingAttributeBindingTask()
     out = task.generate(
         14110,
         params={"object_count": 9, "target_count": 3, "pool_manifest": "non_symmetry.txt"},
@@ -62,15 +62,15 @@ def test_icons_counting_exact_match_contract_matches_scene() -> None:
     assert out.evidence_gt.value == sorted(out.evidence_gt.value, key=lambda box: (box[1], box[0], box[3], box[2]))
     assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
     assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
-    assert trace["scene_ir"]["scene_kind"] == "icons_reference_counting_exact_match"
-    assert execution["question_format"] == "count_exact_reference_match_by_attributes"
+    assert trace["scene_ir"]["scene_kind"] == "icons_reference_counting_attribute_binding"
+    assert execution["question_format"] == "count_reference_attribute_binding_matches"
     assert int(execution["object_count"]) == 9
     assert int(execution["target_count"]) == 3
     assert int(execution["distractor_count"]) == 6
     assert len(scene_entities) == 9
     sampled_palette = [tuple(int(channel) for channel in color) for color in trace["render_spec"]["style"]["sampled_palette_rgb"]]
-    assert 4 <= len(sampled_palette) <= 6
-    assert float(trace["render_spec"]["style"]["min_color_distance"]) == 60.0
+    assert 3 <= len(sampled_palette) <= 4
+    assert float(trace["render_spec"]["style"]["min_color_distance"]) == 40.0
     assert list(trace["render_spec"]["style"]["icon_noise_edit_count_range"]) == [0, 2]
     assert float(trace["render_spec"]["style"]["scene_max_overlap_fraction"]) == 0.10
 
@@ -93,7 +93,7 @@ def test_icons_counting_exact_match_contract_matches_scene() -> None:
         assert tuple(int(channel) for channel in entity["tint_rgb"]) == reference_tint if same_color else tuple(int(channel) for channel in entity["tint_rgb"]) != reference_tint
         assert int(entity["rotation_degrees"]) == reference_rotation if same_orientation else int(entity["rotation_degrees"]) != reference_rotation
         if is_match:
-            assert category == "exact_match"
+            assert category == "attribute_binding"
             assert same_type and same_color and same_orientation
         else:
             assert category in _ALL_DISTRACTOR_CATEGORIES
@@ -106,8 +106,8 @@ def test_icons_counting_exact_match_contract_matches_scene() -> None:
             assert _overlap_fraction_smaller(left["bbox_xyxy"], right["bbox_xyxy"]) <= 0.10 + 1e-6
 
 
-def test_icons_counting_exact_match_supports_zero_matches() -> None:
-    task = IconsCountingExactMatchTask()
+def test_icons_counting_attribute_binding_supports_zero_matches() -> None:
+    task = IconsCountingAttributeBindingTask()
     out = task.generate(
         14113,
         params={"object_count": 7, "target_count": 0, "pool_manifest": "non_symmetry.txt"},
@@ -117,8 +117,8 @@ def test_icons_counting_exact_match_supports_zero_matches() -> None:
     assert out.evidence_gt.value == []
 
 
-def test_icons_counting_exact_match_prompt_example_matches_contract() -> None:
-    task = IconsCountingExactMatchTask()
+def test_icons_counting_attribute_binding_prompt_example_matches_contract() -> None:
+    task = IconsCountingAttributeBindingTask()
     out = task.generate(14111, params={"object_count": 8, "target_count": 3}, max_attempts=200)
     answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
     answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
@@ -129,14 +129,14 @@ def test_icons_counting_exact_match_prompt_example_matches_contract() -> None:
     assert answer_and_evidence["answer"] == 2
 
 
-def test_icons_counting_exact_match_balanced_sampling_defaults() -> None:
-    task = IconsCountingExactMatchTask()
+def test_icons_counting_attribute_binding_balanced_sampling_defaults() -> None:
+    task = IconsCountingAttributeBindingTask()
     object_counts: Counter[int] = Counter()
     target_counts: Counter[int] = Counter()
     distractor_counts: Counter[int] = Counter()
     for index in range(60):
         out = task.generate(
-            hash64(14112, "icons_counting_exact_match", index),
+            hash64(14112, "icons_counting_attribute_binding", index),
             params={"_sampling_index": index},
             max_attempts=200,
         )

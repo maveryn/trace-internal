@@ -1,4 +1,4 @@
-"""Contract tests for icon exact-match counting task."""
+"""Contract tests for the icon attribute-binding counting task."""
 
 from __future__ import annotations
 
@@ -7,12 +7,12 @@ from pathlib import Path
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.icons.counting.exact_match import IconsCountingExactMatchTask
+from trace.tasks.icons.counting.attribute_binding import IconsCountingAttributeBindingTask
 from tests.helpers import read_jsonl
 
 
-def test_icons_counting_exact_match_deterministic() -> None:
-    task = IconsCountingExactMatchTask()
+def test_icons_counting_attribute_binding_deterministic() -> None:
+    task = IconsCountingAttributeBindingTask()
     out_a = task.generate(14120, params={}, max_attempts=200)
     out_b = task.generate(14120, params={}, max_attempts=200)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
@@ -25,16 +25,16 @@ def test_icons_counting_exact_match_deterministic() -> None:
     assert out_a.evidence_gt.type == "bbox_set"
 
 
-def test_icons_counting_exact_match_build_smoke(tmp_path: Path) -> None:
-    output_root = tmp_path / "task_icons_counting_exact_match"
+def test_icons_counting_attribute_binding_build_smoke(tmp_path: Path) -> None:
+    output_root = tmp_path / "task_icons_counting_attribute_binding"
     config = BuildConfig(
         output_root=str(output_root),
-        dataset_name="build_smoke_task_icons_counting_exact_match",
+        dataset_name="build_smoke_task_icons_counting_attribute_binding",
         instance_version="v1",
         image_format="png",
         tasks=[
             BuildTaskConfig(
-                task_id="task_icons_counting_exact_match",
+                task_id="task_icons_counting_attribute_binding",
                 count=4,
                 params={},
             )
@@ -43,7 +43,7 @@ def test_icons_counting_exact_match_build_smoke(tmp_path: Path) -> None:
         max_attempts_per_instance=200,
         sampling_seed=31,
     )
-    final_path = build_dataset(config, code_hash="icons-counting-exact-match-smoke")
+    final_path = build_dataset(config, code_hash="icons-counting-attribute-binding-smoke")
     assert final_path.exists()
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
@@ -51,7 +51,7 @@ def test_icons_counting_exact_match_build_smoke(tmp_path: Path) -> None:
     assert all(record["task_group"] == "counting" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
-    assert int(build_report["accepted_counts_by_task"]["task_icons_counting_exact_match"]) == 4
+    assert int(build_report["accepted_counts_by_task"]["task_icons_counting_attribute_binding"]) == 4
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

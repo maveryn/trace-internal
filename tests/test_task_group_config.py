@@ -717,7 +717,7 @@ def test_icons_counting_defaults_loaded() -> None:
     assert int(generation_shared["distractor_count_max"]) == 10
     assert bool(generation_shared["balanced_sampling"]) is True
     assert "task_icons_counting_color" in cfg["generation"]["task_overrides"]
-    assert "task_icons_counting_exact_match" in cfg["generation"]["task_overrides"]
+    assert "task_icons_counting_attribute_binding" in cfg["generation"]["task_overrides"]
     assert "task_icons_counting_size_relation" in cfg["generation"]["task_overrides"]
     assert "task_icons_counting_type" in cfg["generation"]["task_overrides"]
     assert "task_icons_counting_orientation" in cfg["generation"]["task_overrides"]
@@ -760,21 +760,21 @@ def test_icons_counting_defaults_loaded() -> None:
     assert str(color_prompt["json_example"]).strip()
     assert str(color_prompt["json_example_answer_only"]).strip()
 
-    exact_generation, exact_rendering, exact_prompt = split_generation_rendering_prompt_defaults(
+    attribute_binding_generation, attribute_binding_rendering, attribute_binding_prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_icons_counting_exact_match",
+        task_id="task_icons_counting_attribute_binding",
     )
-    assert str(exact_generation["pool_manifest"]).strip() == "non_symmetry.txt"
-    assert list(exact_generation["rotation_candidates_degrees"]) == [0, 90, 180, 270]
-    assert float(exact_rendering["min_color_distance"]) == 60.0
-    assert int(exact_rendering["palette_size_min"]) == 4
-    assert int(exact_rendering["palette_size_max"]) == 6
-    assert str(exact_prompt["object_description"]).strip()
-    assert str(exact_prompt["question_text"]).strip()
-    assert str(exact_prompt["evidence_hint"]).strip()
-    assert str(exact_prompt["answer_hint"]).strip()
-    assert str(exact_prompt["json_example"]).strip()
-    assert str(exact_prompt["json_example_answer_only"]).strip()
+    assert str(attribute_binding_generation["pool_manifest"]).strip() == "non_symmetry.txt"
+    assert list(attribute_binding_generation["rotation_candidates_degrees"]) == [0, 90, 180, 270]
+    assert float(attribute_binding_rendering["min_color_distance"]) == 40.0
+    assert int(attribute_binding_rendering["palette_size_min"]) == 3
+    assert int(attribute_binding_rendering["palette_size_max"]) == 4
+    assert str(attribute_binding_prompt["object_description"]).strip()
+    assert str(attribute_binding_prompt["question_text"]).strip()
+    assert str(attribute_binding_prompt["evidence_hint"]).strip()
+    assert str(attribute_binding_prompt["answer_hint"]).strip()
+    assert str(attribute_binding_prompt["json_example"]).strip()
+    assert str(attribute_binding_prompt["json_example_answer_only"]).strip()
 
     size_generation, size_rendering, size_prompt = split_generation_rendering_prompt_defaults(
         cfg,

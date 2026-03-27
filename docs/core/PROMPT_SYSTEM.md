@@ -102,7 +102,7 @@ Tasks:
 21. `task_icons_counting_type` (bundle: `icons_counting_v1`)
 22. `task_icons_counting_orientation` (bundle: `icons_counting_v1`)
 23. `task_icons_counting_color` (bundle: `icons_counting_v1`)
-24. `task_icons_counting_exact_match` (bundle: `icons_counting_v1`)
+24. `task_icons_counting_attribute_binding` (bundle: `icons_counting_v1`)
 25. `task_icons_counting_size_relation` (bundle: `icons_counting_v1`)
 26. `task_icons_relation_relative_position_type` (bundle: `icons_relation_v1`)
 27. `task_icons_relation_occlusion_order` (bundle: `icons_relation_v1`)

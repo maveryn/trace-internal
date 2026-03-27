@@ -1,4 +1,4 @@
-"""Count scene icons that exactly match a reference icon on bound attributes."""
+"""Count scene icons that match a reference icon on a bound attribute set."""
 
 from __future__ import annotations
 
@@ -38,7 +38,7 @@ from ..shared.icon_task_rendering import (
 )
 
 
-_EXACT_MATCH_CATEGORY = "exact_match"
+_ATTRIBUTE_BINDING_CATEGORY = "attribute_binding"
 _HARD_DISTRACTOR_CATEGORIES = (
     "same_type_color",
     "same_type_orientation",
@@ -54,7 +54,7 @@ _EASY_DISTRACTOR_CATEGORY = "no_queried_attributes"
 
 @dataclass(frozen=True)
 class _TaskDefaults:
-    """Stable fallback defaults for exact-match icon counting."""
+    """Stable fallback defaults for attribute-binding icon counting."""
 
     object_count_min: int = ICON_SHARED_DEFAULTS.object_count_min
     object_count_max: int = ICON_SHARED_DEFAULTS.object_count_max
@@ -77,11 +77,11 @@ class _TaskDefaults:
     panel_title_font_size_px: int = ICON_SHARED_DEFAULTS.panel_title_font_size_px
     pool_manifest: str = "non_symmetry.txt"
     rotation_candidates_degrees: Tuple[int, ...] = (0, 90, 180, 270)
-    palette_size_min: int = 4
-    palette_size_max: int = 6
+    palette_size_min: int = 3
+    palette_size_max: int = 4
     color_channel_min: int = 24
     color_channel_max: int = 220
-    min_color_distance: float = 60.0
+    min_color_distance: float = 40.0
     color_distance_space: str = "lab"
     background_color_rgb: Tuple[int, int, int] = ICON_SHARED_DEFAULTS.background_color_rgb
     panel_fill_rgb: Tuple[int, int, int] = ICON_SHARED_DEFAULTS.panel_fill_rgb
@@ -91,7 +91,7 @@ class _TaskDefaults:
 
 @dataclass(frozen=True)
 class _ScenePayload:
-    """Trace-ready payload for one exact-match icon counting instance."""
+    """Trace-ready payload for one attribute-binding icon counting instance."""
 
     object_count: int
     target_count: int
@@ -115,7 +115,7 @@ _DEFAULTS = _TaskDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("icons", "counting")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
-    task_id="task_icons_counting_exact_match",
+    task_id="task_icons_counting_attribute_binding",
 )
 
 
@@ -173,10 +173,10 @@ def _resolve_scene_attributes_for_category(
     """Resolve one scene icon's attributes for the requested partial-match class."""
 
     category_key = str(category)
-    same_type = category_key in {_EXACT_MATCH_CATEGORY, "same_type_color", "same_type_orientation", "same_type_only"}
-    same_color = category_key in {_EXACT_MATCH_CATEGORY, "same_type_color", "same_color_orientation", "same_color_only"}
+    same_type = category_key in {_ATTRIBUTE_BINDING_CATEGORY, "same_type_color", "same_type_orientation", "same_type_only"}
+    same_color = category_key in {_ATTRIBUTE_BINDING_CATEGORY, "same_type_color", "same_color_orientation", "same_color_only"}
     same_orientation = category_key in {
-        _EXACT_MATCH_CATEGORY,
+        _ATTRIBUTE_BINDING_CATEGORY,
         "same_type_orientation",
         "same_color_orientation",
         "same_orientation_only",
@@ -216,21 +216,21 @@ def _sample_scene(
     rotation_candidates: Tuple[int, ...],
     render_params: Mapping[str, Any],
 ) -> Tuple[_ScenePayload, Any]:
-    """Sample and render one reference+scene exact-match counting scene."""
+    """Sample and render one reference+scene attribute-binding counting scene."""
 
     pool = tuple(str(icon_id) for icon_id in resolve_icon_pool(str(pool_manifest)))
     if len(pool) < 2:
-        raise ValueError("exact-match pool resolved too few icons")
+        raise ValueError("attribute-binding pool resolved too few icons")
 
     reference_icon_id = str(rng.choice(pool))
     distractor_icon_pool = tuple(str(icon_id) for icon_id in pool if str(icon_id) != str(reference_icon_id))
     if not distractor_icon_pool:
-        raise ValueError("exact-match pool resolved no distractor icons")
+        raise ValueError("attribute-binding pool resolved no distractor icons")
 
     reference_rotation = int(rng.choice(rotation_candidates))
     distractor_rotations = tuple(int(value) for value in rotation_candidates if int(value) != int(reference_rotation))
     if not distractor_rotations:
-        raise ValueError("exact-match task resolved no distractor rotations")
+        raise ValueError("attribute-binding task resolved no distractor rotations")
 
     palette_size = int(rng.randint(int(render_params["palette_size_min"]), int(render_params["palette_size_max"])))
     palette = sample_icon_palette(
@@ -266,7 +266,7 @@ def _sample_scene(
         if tuple(int(channel) for channel in color) != tuple(int(channel) for channel in reference_tint)
     )
     if not non_reference_palette:
-        raise ValueError("exact-match scene resolved no distractor colors")
+        raise ValueError("attribute-binding scene resolved no distractor colors")
 
     match_indices = set(rng.sample(list(range(int(object_count))), int(target_count)))
     distractor_categories = list(_sample_distractor_categories(rng, distractor_count=int(object_count) - int(target_count)))
@@ -282,7 +282,7 @@ def _sample_scene(
             icon_id = str(reference_icon_id)
             tint_rgb = tuple(int(channel) for channel in reference_tint)
             rotation_degrees = int(reference_rotation)
-            category = _EXACT_MATCH_CATEGORY
+            category = _ATTRIBUTE_BINDING_CATEGORY
             same_type = True
             same_color = True
             same_orientation = True
@@ -311,18 +311,18 @@ def _sample_scene(
                 tint_rgb=tuple(int(channel) for channel in tint_rgb),
             )
         )
-        if bool(same_type and same_color and same_orientation) != (str(category) == _EXACT_MATCH_CATEGORY):
-            raise AssertionError("exact-match category resolution became inconsistent")
+        if bool(same_type and same_color and same_orientation) != (str(category) == _ATTRIBUTE_BINDING_CATEGORY):
+            raise AssertionError("attribute-binding category resolution became inconsistent")
 
     reference_noise_edits, reference_noise_seed = sample_icon_instance_noise(
         instance_seed=int(instance_seed),
-        namespace=f"{IconsCountingExactMatchTask.task_id}:reference_icon",
+        namespace=f"{IconsCountingAttributeBindingTask.task_id}:reference_icon",
         render_params=render_params,
     )
     for index, spec in enumerate(list(scene_specs)):
         scene_noise_edits, scene_noise_seed = sample_icon_instance_noise(
             instance_seed=int(instance_seed),
-            namespace=f"{IconsCountingExactMatchTask.task_id}:scene_icon_{int(index)}",
+            namespace=f"{IconsCountingAttributeBindingTask.task_id}:scene_icon_{int(index)}",
             render_params=render_params,
         )
         scene_specs[index] = IconInstanceSpec(
@@ -380,7 +380,7 @@ def _sample_scene(
             "tint_rgb": list(instance.tint_rgb),
             "noise_edits": [dict(edit) for edit in instance.noise_edits],
             "noise_seed": None if instance.noise_seed is None else int(instance.noise_seed),
-            "is_match": bool(category_by_index[int(index)] == _EXACT_MATCH_CATEGORY),
+            "is_match": bool(category_by_index[int(index)] == _ATTRIBUTE_BINDING_CATEGORY),
             "attribute_match_category": str(category_by_index[int(index)]),
             "same_type_as_reference": bool(scene_icon_ids[index] == reference_icon_id),
             "same_color_as_reference": bool(scene_tints_rgb[index] == reference_tint),
@@ -422,15 +422,15 @@ def _sample_scene(
 
 
 @register_task
-class IconsCountingExactMatchTask:
+class IconsCountingAttributeBindingTask:
     """Count scene icons matching the reference on type, color, and orientation."""
 
-    task_id = "task_icons_counting_exact_match"
+    task_id = "task_icons_counting_attribute_binding"
     domain = "icons"
     task_group = "counting"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        """Generate one deterministic exact-match icon counting instance."""
+        """Generate one deterministic attribute-binding icon counting instance."""
 
         scene_rng = spawn_rng(int(instance_seed), "scene")
         (
@@ -479,7 +479,7 @@ class IconsCountingExactMatchTask:
                 last_error = exc
                 continue
         if scene_payload is None or image is None:
-            raise RuntimeError("failed to generate task_icons_counting_exact_match instance") from last_error
+            raise RuntimeError("failed to generate task_icons_counting_attribute_binding instance") from last_error
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -524,14 +524,14 @@ class IconsCountingExactMatchTask:
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
         trace_payload = {
             "scene_ir": {
-                "scene_kind": "icons_reference_counting_exact_match",
+                "scene_kind": "icons_reference_counting_attribute_binding",
                 "entities": [dict(scene_payload.reference_instance), *[dict(item) for item in scene_payload.scene_instances]],
                 "relations": {
                     "counting_target": "exact_reference_match",
                     "reference_icon_id": str(scene_payload.reference_icon_id),
                     "reference_tint_rgb": list(scene_payload.reference_tint_rgb),
                     "reference_rotation_degrees": int(scene_payload.reference_rotation_degrees),
-                    "exact_match_attributes": ["icon_id", "tint_rgb", "rotation_degrees"],
+                    "binding_attributes": ["icon_id", "tint_rgb", "rotation_degrees"],
                     "matching_scene_indices": list(scene_payload.match_indices),
                 },
                 "frames": {
@@ -540,7 +540,7 @@ class IconsCountingExactMatchTask:
                 },
             },
             "query_spec": {
-                "task_variant": "exact_match_type_color_orientation",
+                "task_variant": "attribute_binding_type_color_orientation",
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
@@ -574,7 +574,7 @@ class IconsCountingExactMatchTask:
             },
             "execution_trace": {
                 "scene_variant": "reference_scene",
-                "task_variant": "exact_match_type_color_orientation",
+                "task_variant": "attribute_binding_type_color_orientation",
                 "object_count": int(object_count),
                 "object_count_probabilities": dict(object_count_probabilities),
                 "target_count": int(target_count),
@@ -589,13 +589,13 @@ class IconsCountingExactMatchTask:
                 "scene_rotations_degrees": list(scene_payload.scene_rotations_degrees),
                 "scene_attribute_match_categories": list(scene_payload.scene_attribute_match_categories),
                 "matching_scene_indices": list(scene_payload.match_indices),
-                "question_format": "count_exact_reference_match_by_attributes",
+                "question_format": "count_reference_attribute_binding_matches",
             },
             "witness_symbolic": {
                 "reference_icon_id": str(scene_payload.reference_icon_id),
                 "reference_tint_rgb": list(scene_payload.reference_tint_rgb),
                 "reference_rotation_degrees": int(scene_payload.reference_rotation_degrees),
-                "exact_match_attributes": ["icon_id", "tint_rgb", "rotation_degrees"],
+                "binding_attributes": ["icon_id", "tint_rgb", "rotation_degrees"],
                 "matching_scene_indices": list(scene_payload.match_indices),
             },
             "projected_evidence": {
@@ -610,7 +610,7 @@ class IconsCountingExactMatchTask:
             complexity_components={
                 "object_count": int(scene_payload.object_count),
                 "target_count": int(scene_payload.target_count),
-                "task_variant": "exact_match_type_color_orientation",
+                "task_variant": "attribute_binding_type_color_orientation",
             },
         )
         return TaskOutput(
@@ -622,9 +622,9 @@ class IconsCountingExactMatchTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            task_variant="exact_match_type_color_orientation",
+            task_variant="attribute_binding_type_color_orientation",
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
 
-__all__ = ["IconsCountingExactMatchTask"]
+__all__ = ["IconsCountingAttributeBindingTask"]

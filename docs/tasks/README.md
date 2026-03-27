@@ -31,7 +31,7 @@ Current task docs:
 21. [task_icons_counting_type.md](task_icons_counting_type.md)
 22. [task_icons_counting_orientation.md](task_icons_counting_orientation.md)
 23. [task_icons_counting_color.md](task_icons_counting_color.md)
-24. [task_icons_counting_exact_match.md](task_icons_counting_exact_match.md)
+24. [task_icons_counting_attribute_binding.md](task_icons_counting_attribute_binding.md)
 25. [task_icons_counting_size_relation.md](task_icons_counting_size_relation.md)
 26. [task_icons_relation_relative_position_type.md](task_icons_relation_relative_position_type.md)
 27. [task_icons_relation_occlusion_order.md](task_icons_relation_occlusion_order.md)

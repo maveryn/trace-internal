@@ -148,7 +148,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Count support: `target_count` in `0..10`, `distractor_count` in `1..10`, total scene icons in `1..20`.
    - Answer type: integer count.
    - Evidence: scene-only `bbox_set` in final image coordinates.
-19. **Icons counting exact match (`task_icons_counting_exact_match`)**
+19. **Icons counting attribute binding (`task_icons_counting_attribute_binding`)**
    - One two-panel image with a `Reference` icon and a `Scene` panel of icons.
    - Query: how many scene icons match the reference exactly in icon type, color, and orientation.
    - Scene uses the asymmetric curated icon pool so orientation stays meaningful, and distractors are built mostly from structured `2-of-3` and `1-of-3` partial matches instead of easy all-wrong negatives.

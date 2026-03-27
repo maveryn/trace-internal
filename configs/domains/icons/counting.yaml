@@ -10,7 +10,7 @@ generation:
   task_overrides:
     task_icons_counting_color:
       pool_manifest: all_icons.txt
-    task_icons_counting_exact_match:
+    task_icons_counting_attribute_binding:
       pool_manifest: non_symmetry.txt
       rotation_candidates_degrees: [0, 90, 180, 270]
     task_icons_counting_size_relation:
@@ -70,10 +70,10 @@ rendering:
       min_color_distance: 60.0
       palette_size_min: 3
       palette_size_max: 4
-    task_icons_counting_exact_match:
-      min_color_distance: 60.0
-      palette_size_min: 4
-      palette_size_max: 6
+    task_icons_counting_attribute_binding:
+      min_color_distance: 40.0
+      palette_size_min: 3
+      palette_size_max: 4
     task_icons_counting_size_relation:
       scene_icon_size_max_px: 120
       reference_icon_size_px: 80
@@ -93,10 +93,10 @@ prompt:
       answer_hint: set "answer" to the count as an integer
       json_example: '{"evidence":[[322,152,377,207],[756,318,820,382]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
-    task_icons_counting_exact_match:
+    task_icons_counting_attribute_binding:
       object_description: a Reference icon on the left and a Scene panel of icons on the right
-      question_text: How many icons in the Scene panel match the Reference icon exactly in icon type, color, and orientation? Orientation refers to the icon's rotation.
-      evidence_hint: set "evidence" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all exactly matching icons in the Scene panel, sorted from top to bottom and then left to right
+      question_text: How many icons in the Scene panel match the Reference icon in icon type, color, and orientation all at once? Orientation refers to the icon's rotation.
+      evidence_hint: set "evidence" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all icons in the Scene panel that match the Reference icon in icon type, color, and orientation, sorted from top to bottom and then left to right
       answer_hint: set "answer" to the count as an integer
       json_example: '{"evidence":[[322,150,392,220],[584,320,654,390]],"answer":2}'
       json_example_answer_only: '{"answer":2}'

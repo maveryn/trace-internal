@@ -114,7 +114,7 @@ A task/build is acceptable only if:
 
 ## 11) Document ownership
 When contracts change, update this file with:
-1. `docs/SYSTEM_ARCHITECTURE.md` (implementation mapping),
-2. `docs/TASK_AUTHORING.md` (author workflow),
-3. `docs/BUILD_VALIDATION.md` (operational policy),
+1. `docs/core/SYSTEM_ARCHITECTURE.md` (implementation mapping),
+2. `docs/workflows/TASK_AUTHORING.md` (author workflow),
+3. `docs/workflows/BUILD_VALIDATION.md` (operational policy),
 4. task docs under `docs/tasks/` (task-specific behavior).

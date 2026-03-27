@@ -1,0 +1,49 @@
+---
+name: task-design
+description: Use when designing or reshaping a TRACE task contract, choosing answer and evidence types, deciding family or variant placement, or planning sampling and balancing before implementation.
+---
+
+# Task Design
+
+Use this before writing code for a new task or before changing a task's contract.
+
+## Read first
+1. `docs/core/BLUEPRINT.md`
+2. `docs/workflows/TASK_AUTHORING.md`
+3. `docs/domains/TASK_FAMILY_VARIANTS.md`
+4. `docs/project/STATUS.md`
+
+If the task is domain-specific, also open:
+- `skills/domain-tile/SKILL.md`
+- `skills/domain-geometry/SKILL.md`
+
+## Design workflow
+1. Confirm `domain`, `task_group`, `task_id`, and whether the task should be a new task vs a `task_variant` of an existing task.
+2. Check `docs/project/STATUS.md` and `docs/tasks/README.md` so you do not create a near-duplicate task family.
+3. Freeze the public contract before coding:
+   - scene and query structure,
+   - answer type,
+   - evidence type,
+   - uniqueness/rejection constraints,
+   - trace payload additions.
+4. Decide whether answer support depends on layout or board size.
+   - If yes, prefer target-first sampling from feasible support instead of naive board-first sampling.
+5. Decide what prompt bundle layers are needed:
+   - family,
+   - task,
+   - optional variant,
+   - output mode.
+6. Decide which docs must change in the same patch:
+   - task doc,
+   - `docs/project/STATUS.md`,
+   - `docs/project/TODO.md`,
+   - domain/workflow docs if the new task changes reusable policy.
+
+## Design checks
+- Answer and evidence must come from the same execution path.
+- Evidence should be as direct as possible; do not invent a weaker proxy if a canonical witness exists.
+- Prefer reusing an existing task group unless the reasoning style is materially different.
+- Keep prompt-facing contracts minimal; richer partitions and diagnostics can live in trace.
+
+## Handoff
+After the contract is stable, move to `skills/task-implementation/SKILL.md`.

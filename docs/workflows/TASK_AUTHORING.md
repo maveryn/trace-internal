@@ -6,7 +6,7 @@ Use this as the implementation checklist for new or modified tasks.
 1. Confirm taxonomy: `domain`, `task_group`, `task_id`.
 2. Task-id format is required: `task_<domain>_<task_group>_<task_name>` (lowercase snake_case).
 3. Task module filename is required: `<task_name>.py` in the documented domain layout. Default layout is `trace/tasks/<domain>/<task_group>/`; tile is the current exception and keeps concrete tasks flat under `trace/tasks/tile/<task_group>_<task_name>.py`.
-4. Confirm family/variant fit using `docs/TASK_FAMILY_VARIANTS.md` before introducing a new task group.
+4. Confirm family/variant fit using `docs/domains/TASK_FAMILY_VARIANTS.md` before introducing a new task group.
 5. Define task contracts:
    - scene,
    - task variants,
@@ -132,13 +132,13 @@ PYTHONPATH=. pytest -q
 ## 7) Required docs updates (same change)
 1. `docs/tasks/<task_id>.md`
 2. `docs/tasks/README.md` (task links must match active task set)
-3. `docs/STATUS.md` (if behavior changed)
-4. `docs/SHARED_UTILITIES.md` (if shared helpers moved/added)
-5. `docs/BUILD_VALIDATION.md` or `docs/VALIDATION_ERROR_CODES.md` (if validation behavior changed)
-6. `docs/CODE_REVIEW_GUIDELINES.md` for reusable findings.
+3. `docs/project/STATUS.md` (if behavior changed)
+4. `docs/workflows/SHARED_UTILITIES.md` (if shared helpers moved/added)
+5. `docs/workflows/BUILD_VALIDATION.md` or `docs/workflows/VALIDATION_ERROR_CODES.md` (if validation behavior changed)
+6. `docs/workflows/CODE_REVIEW_GUIDELINES.md` for reusable findings.
 
 ## 8) Reuse anti-patterns
-Use `docs/CODE_REVIEW_GUIDELINES.md` Section 2 as the canonical anti-pattern list.
+Use `docs/workflows/CODE_REVIEW_GUIDELINES.md` Section 2 as the canonical anti-pattern list.
 
 ## 9) Task review workflow
 For new tasks or distribution-changing changes, run the standardized review workflow:

@@ -5,7 +5,7 @@
 
 ## Next (P1)
 1. Extend the new icons domain beyond counting/transformation using the curated Prism asset pipeline.
-2. Expand the v1 `rectangular_tiling` tile task suite beyond the current active set and keep future ports aligned to `TILE_TASK_SETUP.md`.
+2. Expand the v1 `rectangular_tiling` tile task suite beyond the current active set and keep future ports aligned to `docs/domains/TILE_TASK_SETUP.md`.
 3. Add cross-domain `scene_variant` + role-binding spec in architecture/ABI docs.
 4. Improve dataset QA diagnostics/report summaries.
 5. Extend geometry comparison beyond angle/length/area/perimeter using the same label-answer + winner-gap contract.

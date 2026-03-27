@@ -95,8 +95,10 @@ Use this checklist during implementation and refactor reviews.
 79. For Prism-style icon counting tasks, keep subtle noise per icon instance before compositing and record the sampled edits per instance; do not replace that with an untracked post-composite image corruption step that would leave bbox evidence grounded on a different render path.
 80. For reference-scene icon scenes that may exceed a simple slot grid, use random scene-panel placement with an explicit overlap threshold instead of implicitly relying on fixed slots; validate the rendered bbox overlap directly so independent target/distractor counts do not silently reintroduce clutter.
 81. For icon transformation tasks, validate candidate transforms against the rendered icon silhouette itself; even curated asymmetric pools can contain icons where some canonical D4 transforms collapse visually, so reject ambiguous icon/transform pairs instead of assuming transform names stay distinguishable.
+82. Keep repo-local skills thin and docs canonical: workflow/domain skills should point at source-of-truth docs instead of copying policy into parallel skill-specific prose.
+83. When docs move or the repo doc layout changes, update all repo-entry surfaces in the same patch (`docs/README.md`, `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, and any skills that point at those docs) so navigation never fragments.
 
 ## 3) Process rule
 When a new reusable issue is discovered:
 1. Add one distilled rule here.
-2. Update `docs/TASK_AUTHORING.md` if authoring behavior should change.
+2. Update `docs/workflows/TASK_AUTHORING.md` if authoring behavior should change.

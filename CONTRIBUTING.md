@@ -4,38 +4,32 @@
 This file is the short developer workflow and pre-commit checklist for day-to-day contributions.
 
 ## Development workflow
-1. Start from repo root:
-
-```bash
-cd trace
-```
-
-2. Install dependencies:
+1. Start from repo root and install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Implement focused changes in the correct locations:
-- task code: `trace/tasks/<domain>/<task_group>/`
+2. Implement focused changes in the correct locations:
+- task code: default `trace/tasks/<domain>/<task_group>/<task_name>.py`; tile exception `trace/tasks/tile/<task_group>_<task_name>.py`
 - prompt bundles: `prompts/<domain>/<task_group>/`
-- task-group config: `configs/task_groups/<domain>/<task_group>.yaml`
+- task-group config: `configs/domains/<domain>/<task_group>.yaml`
 - task docs: `docs/tasks/<task_id>.md`
 
-4. Reuse shared helpers before adding task-local utilities:
+3. Reuse shared helpers before adding task-local utilities:
 - `trace/core/`
 - `trace/tasks/<domain>/shared/`
-- `docs/SHARED_UTILITIES.md`
+- `docs/workflows/SHARED_UTILITIES.md`
 
-5. Follow code documentation standards while implementing:
-- `docs/CODE_DOCUMENTATION.md`
+4. Follow code documentation standards while implementing:
+- `docs/workflows/CODE_DOCUMENTATION.md`
 
-6. Keep prompts externalized (no hardcoded prompt strings in task modules).
+5. Keep prompts externalized (no hardcoded prompt strings in task modules).
 
-7. Update docs when behavior/contracts change:
-- `docs/STATUS.md`
-- `docs/TODO.md`
-- `docs/TASK_AUTHORING.md`
+6. Update docs when behavior/contracts change:
+- `docs/project/STATUS.md`
+- `docs/project/TODO.md`
+- `docs/workflows/TASK_AUTHORING.md`
 - task doc under `docs/tasks/`
 
 ## Testing checklist (before commit)

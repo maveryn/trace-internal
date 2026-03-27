@@ -13,9 +13,9 @@
 4. Failure/rejection behavior for non-obvious paths.
 
 ## Update triggers (same change)
-1. ABI/contract changes -> `docs/BLUEPRINT.md`
-2. Architecture/module flow changes -> `docs/SYSTEM_ARCHITECTURE.md`
-3. Prompt-system changes -> `docs/PROMPT_SYSTEM.md`
-4. Shared-helper placement/API changes -> `docs/SHARED_UTILITIES.md`
-5. Validation/build behavior changes -> `docs/BUILD_VALIDATION.md`, `docs/VALIDATION_ERROR_CODES.md`
-6. Task behavior changes -> `docs/tasks/<task_id>.md`, `docs/TASK_AUTHORING.md`, `docs/STATUS.md`
+1. ABI/contract changes -> `docs/core/BLUEPRINT.md`
+2. Architecture/module flow changes -> `docs/core/SYSTEM_ARCHITECTURE.md`
+3. Prompt-system changes -> `docs/core/PROMPT_SYSTEM.md`
+4. Shared-helper placement/API changes -> `docs/workflows/SHARED_UTILITIES.md`
+5. Validation/build behavior changes -> `docs/workflows/BUILD_VALIDATION.md`, `docs/workflows/VALIDATION_ERROR_CODES.md`
+6. Task behavior changes -> `docs/tasks/<task_id>.md`, `docs/workflows/TASK_AUTHORING.md`, `docs/project/STATUS.md`

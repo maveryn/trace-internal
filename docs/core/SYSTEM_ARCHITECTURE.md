@@ -1,6 +1,6 @@
 # TRACE System Architecture
 
-Implementation map for the contracts in `docs/BLUEPRINT.md`.
+Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
 
 ## 1) Layered structure
 1. `trace/core/` — deterministic infrastructure (types, hashing, seeds, validation, build).

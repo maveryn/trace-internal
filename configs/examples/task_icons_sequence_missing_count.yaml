@@ -1,0 +1,11 @@
+dataset_name: example_task_icons_sequence_missing_count
+output_root: outputs/example_task_icons_sequence_missing_count
+instance_version: v1
+image_format: png
+max_attempts_per_instance: 200
+strict_repro: false
+sampling_seed: 31
+tasks:
+  - task_id: task_icons_sequence_missing_count
+    count: 8
+    params: {}

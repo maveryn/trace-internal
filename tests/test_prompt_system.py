@@ -155,6 +155,7 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
         ("geometry", "measurement", "geometry_measurement_v1"),
         ("icons", "counting", "icons_counting_v1"),
         ("icons", "relation", "icons_relation_v1"),
+        ("icons", "sequence", "icons_sequence_v1"),
         ("icons", "transformation", "icons_transformation_v1"),
         ("tile", "count", "tile_count_v1"),
         ("tile", "pattern", "tile_pattern_v1"),
@@ -202,6 +203,12 @@ def test_icons_relation_bundle_supports_anchor_relation_query() -> None:
     bundle = load_prompt_bundle("icons", "relation", "icons_relation_v1")
     assert len(bundle.task_templates["relation_query"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["task:relation_query"]) == ["question_text"]
+
+
+def test_icons_sequence_bundle_supports_missing_count_query() -> None:
+    bundle = load_prompt_bundle("icons", "sequence", "icons_sequence_v1")
+    assert len(bundle.task_templates["missing_count_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task:missing_count_query"]) == ["question_text"]
 
 
 def test_tile_reachability_bundle_supports_region_size_query() -> None:

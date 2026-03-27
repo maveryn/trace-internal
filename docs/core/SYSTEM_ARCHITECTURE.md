@@ -56,7 +56,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
 2. `trace/tasks/base.py` — task protocol and `TaskOutput`.
 3. `trace/tasks/shared/*` — reusable query/layout/evidence/config/prompt helpers.
 4. `trace/tasks/<domain>/<task_group>/*.py` — concrete tasks plus reusable task-group bases by default (for example `trace/tasks/geometry/measurement/shape_measure_base.py`); tile is the current exception and keeps concrete task modules flat under `trace/tasks/tile/<task_group>_<task_name>.py` with shared helpers in `trace/tasks/tile/shared/`.
-5. `trace/tasks/icons/shared/*` — icon-domain shared asset loading, two-panel reference-scene rendering helpers, and icon transform utilities.
+5. `trace/tasks/icons/shared/*` — icon-domain shared asset loading, shared two-panel render/default/noise helpers, cell-grid/row scene renderers, and icon transform utilities.
 
 ## 4) Current active tasks
 1. `trace/tasks/tile/count_color_count.py`
@@ -94,9 +94,13 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
 33. `trace/tasks/icons/counting/color.py`
 34. `trace/tasks/icons/counting/size_relation.py`
 35. `trace/tasks/icons/relation/relative_position_type.py`
-36. `trace/tasks/icons/transformation/pair_count.py`
-37. `trace/tasks/icons/shared/icon_pair_grid_scene.py`
-38. `trace/tasks/icons/shared/icon_transform.py`
+36. `trace/tasks/icons/relation/occlusion_order.py`
+37. `trace/tasks/icons/sequence/missing_count.py`
+38. `trace/tasks/icons/transformation/pair_count.py`
+39. `trace/tasks/icons/shared/icon_task_rendering.py`
+40. `trace/tasks/icons/shared/icon_sequence_scene.py`
+41. `trace/tasks/icons/shared/icon_pair_grid_scene.py`
+42. `trace/tasks/icons/shared/icon_transform.py`
 
 ## 5) Architecture invariants
 1. Determinism from config + seeds + versions.

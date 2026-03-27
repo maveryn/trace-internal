@@ -23,11 +23,11 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ..counting.defaults import ICON_COUNTING_SHARED_DEFAULTS
-from ..counting.shared import resolve_icon_counting_render_params, sample_icon_instance_noise
 from ..shared.icon_assets import resolve_icon_pool
+from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.icon_overlap_grid_scene import IconOverlapPairSpec, render_two_panel_icon_overlap_grid_scene
 from ..shared.icon_scene import IconInstanceSpec, panel_geometry_to_trace
+from ..shared.icon_task_rendering import resolve_icon_render_params, sample_icon_instance_noise
 from ...shared.color_distance import color_distance
 from ..shared.icon_style import icon_palette_meets_distance_constraints, sample_icon_palette
 from ..shared.icon_noise import default_icon_noise_value_ranges
@@ -49,14 +49,14 @@ class _TaskDefaults:
     canvas_width: int = 1104
     canvas_height: int = 640
     reference_panel_width_px: int = 296
-    panel_gap_px: int = ICON_COUNTING_SHARED_DEFAULTS.panel_gap_px
-    outer_margin_px: int = ICON_COUNTING_SHARED_DEFAULTS.outer_margin_px
-    panel_padding_px: int = ICON_COUNTING_SHARED_DEFAULTS.panel_padding_px
-    panel_corner_radius_px: int = ICON_COUNTING_SHARED_DEFAULTS.panel_corner_radius_px
-    scene_icon_size_min_px: int = ICON_COUNTING_SHARED_DEFAULTS.scene_icon_size_min_px
-    scene_icon_size_max_px: int = ICON_COUNTING_SHARED_DEFAULTS.scene_icon_size_max_px
+    panel_gap_px: int = ICON_SHARED_DEFAULTS.panel_gap_px
+    outer_margin_px: int = ICON_SHARED_DEFAULTS.outer_margin_px
+    panel_padding_px: int = ICON_SHARED_DEFAULTS.panel_padding_px
+    panel_corner_radius_px: int = ICON_SHARED_DEFAULTS.panel_corner_radius_px
+    scene_icon_size_min_px: int = ICON_SHARED_DEFAULTS.scene_icon_size_min_px
+    scene_icon_size_max_px: int = ICON_SHARED_DEFAULTS.scene_icon_size_max_px
     reference_icon_size_px: int = 110
-    panel_title_font_size_px: int = ICON_COUNTING_SHARED_DEFAULTS.panel_title_font_size_px
+    panel_title_font_size_px: int = ICON_SHARED_DEFAULTS.panel_title_font_size_px
     cell_padding_px: int = 10
     cell_border_rgb: Tuple[int, int, int] = (218, 223, 233)
     cell_label_color_rgb: Tuple[int, int, int] = (52, 60, 77)
@@ -69,13 +69,13 @@ class _TaskDefaults:
     min_color_distance: float = 40.0
     pair_min_color_distance: float = 80.0
     color_distance_space: str = "lab"
-    background_color_rgb: Tuple[int, int, int] = ICON_COUNTING_SHARED_DEFAULTS.background_color_rgb
-    panel_fill_rgb: Tuple[int, int, int] = ICON_COUNTING_SHARED_DEFAULTS.panel_fill_rgb
-    panel_border_rgb: Tuple[int, int, int] = ICON_COUNTING_SHARED_DEFAULTS.panel_border_rgb
-    header_text_rgb: Tuple[int, int, int] = ICON_COUNTING_SHARED_DEFAULTS.header_text_rgb
+    background_color_rgb: Tuple[int, int, int] = ICON_SHARED_DEFAULTS.background_color_rgb
+    panel_fill_rgb: Tuple[int, int, int] = ICON_SHARED_DEFAULTS.panel_fill_rgb
+    panel_border_rgb: Tuple[int, int, int] = ICON_SHARED_DEFAULTS.panel_border_rgb
+    header_text_rgb: Tuple[int, int, int] = ICON_SHARED_DEFAULTS.header_text_rgb
     overlap_ratio_range: Tuple[float, float] = (0.40, 0.60)
-    icon_noise_edit_types: Tuple[str, ...] = ICON_COUNTING_SHARED_DEFAULTS.icon_noise_edit_types
-    icon_noise_edit_count_range: Tuple[int, int] = ICON_COUNTING_SHARED_DEFAULTS.icon_noise_edit_count_range
+    icon_noise_edit_types: Tuple[str, ...] = ICON_SHARED_DEFAULTS.icon_noise_edit_types
+    icon_noise_edit_count_range: Tuple[int, int] = ICON_SHARED_DEFAULTS.icon_noise_edit_count_range
     icon_noise_value_ranges: Dict[str, Dict[str, Tuple[float, float]]] = field(
         default_factory=default_icon_noise_value_ranges
     )
@@ -111,7 +111,7 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 def _resolve_render_params(params: Mapping[str, Any]) -> Dict[str, Any]:
     """Resolve render params for the occlusion-order grid task."""
 
-    render_params = resolve_icon_counting_render_params(
+    render_params = resolve_icon_render_params(
         params=params,
         render_defaults=_RENDER_DEFAULTS,
         fallback_defaults=_DEFAULTS,

@@ -1,4 +1,4 @@
-"""Shared helpers for reference-scene icon counting tasks."""
+"""Shared render-param and noise helpers for icon task groups."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from typing import Any, Dict, Mapping, Tuple
 from ....core.seed import hash64, spawn_rng
 from ....core.visual.noise import TRACE_DEFAULT_NOISE_VALUE_RANGES
 from ...shared.config_defaults import group_default
-from ..shared.icon_noise import NoiseEdit, sample_icon_noise_edits
+from .icon_noise import NoiseEdit, sample_icon_noise_edits
 
 
 def _normalize_noise_value_ranges(raw: Any, fallback: Mapping[str, Mapping[str, Tuple[float, float]]]) -> Dict[str, Dict[str, Tuple[float, float]]]:
@@ -33,13 +33,13 @@ def _normalize_noise_value_ranges(raw: Any, fallback: Mapping[str, Mapping[str, 
     return normalized
 
 
-def resolve_icon_counting_render_params(
+def resolve_icon_render_params(
     *,
     params: Mapping[str, Any],
     render_defaults: Mapping[str, Any],
     fallback_defaults: Any,
 ) -> Dict[str, Any]:
-    """Resolve common rendering params for reference-scene icon counting tasks."""
+    """Resolve common rendering params for icon task groups."""
 
     return {
         "canvas_width": int(params.get("canvas_width", group_default(render_defaults, "canvas_width", fallback_defaults.canvas_width))),
@@ -89,11 +89,7 @@ def resolve_icon_counting_render_params(
                 group_default(
                     render_defaults,
                     "reference_icon_size_min_px",
-                    getattr(
-                        fallback_defaults,
-                        "reference_icon_size_min_px",
-                        fallback_defaults.reference_icon_size_px,
-                    ),
+                    getattr(fallback_defaults, "reference_icon_size_min_px", fallback_defaults.reference_icon_size_px),
                 ),
             )
         ),
@@ -103,11 +99,7 @@ def resolve_icon_counting_render_params(
                 group_default(
                     render_defaults,
                     "reference_icon_size_max_px",
-                    getattr(
-                        fallback_defaults,
-                        "reference_icon_size_max_px",
-                        fallback_defaults.reference_icon_size_px,
-                    ),
+                    getattr(fallback_defaults, "reference_icon_size_max_px", fallback_defaults.reference_icon_size_px),
                 ),
             )
         ),
@@ -239,12 +231,12 @@ def resolve_icon_counting_render_params(
     }
 
 
-def icon_counting_style_trace(
+def icon_render_style_trace(
     *,
     render_params: Mapping[str, Any],
     sampled_palette_rgb: Tuple[Tuple[int, int, int], ...],
 ) -> Dict[str, Any]:
-    """Return the canonical trace style block for icon counting renders."""
+    """Return the canonical render-style trace block for icon tasks."""
 
     return {
         "background_color_rgb": list(render_params["background_color_rgb"]),
@@ -302,7 +294,7 @@ def sample_icon_instance_noise(
 
 
 __all__ = [
-    "icon_counting_style_trace",
-    "resolve_icon_counting_render_params",
+    "icon_render_style_trace",
+    "resolve_icon_render_params",
     "sample_icon_instance_noise",
 ]

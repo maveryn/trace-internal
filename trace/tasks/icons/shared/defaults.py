@@ -1,15 +1,15 @@
-"""Fallback defaults shared by icons/counting tasks."""
+"""Fallback defaults shared across icon task groups."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from ..shared.icon_noise import default_icon_noise_value_ranges
+from .icon_noise import default_icon_noise_value_ranges
 
 
 @dataclass(frozen=True)
-class IconCountingSharedDefaults:
-    """Stable fallback values for two-panel icon counting scenes."""
+class IconSharedDefaults:
+    """Stable fallback values for two-panel icon scenes."""
 
     canvas_width: int = 960
     canvas_height: int = 544
@@ -43,7 +43,7 @@ class IconCountingSharedDefaults:
     )
 
 
-ICON_COUNTING_SHARED_DEFAULTS = IconCountingSharedDefaults()
+ICON_SHARED_DEFAULTS = IconSharedDefaults()
 
 
-__all__ = ["ICON_COUNTING_SHARED_DEFAULTS", "IconCountingSharedDefaults"]
+__all__ = ["ICON_SHARED_DEFAULTS", "IconSharedDefaults"]

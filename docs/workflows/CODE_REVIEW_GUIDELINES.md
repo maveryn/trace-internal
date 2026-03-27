@@ -103,6 +103,8 @@ Use this checklist during implementation and refactor reviews.
 87. When an anchored relation task samples target and distractor counts independently, check whether high target counts still make the queried side visually dominant; if so, enforce a target-conditioned distractor floor in the shared counting sampler instead of papering over the issue with extra placement randomness.
 88. When icon size is the semantic predicate, drive explicit per-instance nominal sizes through the shared icon scene renderer and keep a task-level minimum size-gap contract in trace/config; do not fake size relations later with task-local bbox heuristics or post-render rescaling.
 89. For icon occlusion-order tasks, keep the Reference and Scene cells on one shared icon pair and vary only pair-level non-semantic styling (for example tint, overlap amount, subtle noise); expose cell labels as evidence because the semantic unit is the whole overlapping pair, not one icon bbox.
+90. When shared icon panel/render/noise helpers are reused outside `icons/counting`, promote them into `trace/tasks/icons/shared/` immediately instead of keeping relation/sequence/transformation tasks importing from a `counting`-named module.
+91. For cell-based icon sequence tasks where the missing slot itself is the grounding target, prefer one-box `bbox_set` evidence for the missing cell over synthetic labels; keep cell labels out of the scene unless the task semantics truly depend on them.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

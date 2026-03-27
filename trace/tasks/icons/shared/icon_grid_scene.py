@@ -1,4 +1,4 @@
-"""Shared compact grid-layout helpers for labeled icon cell scenes."""
+"""Shared cell-layout helpers for icon grid and row scenes."""
 
 from __future__ import annotations
 
@@ -44,4 +44,22 @@ def resolve_grid_cell_slots(content_bbox: BBox, *, cell_count: int, cell_padding
     return slots
 
 
-__all__ = ["resolve_compact_grid_shape", "resolve_grid_cell_slots"]
+def resolve_horizontal_row_slots(content_bbox: BBox, *, cell_count: int, cell_padding_px: int) -> List[BBox]:
+    """Return one horizontal row of evenly sized cell slots."""
+
+    count = max(1, int(cell_count))
+    x0, y0, x1, y1 = content_bbox
+    width = max(1, int(x1 - x0))
+    cell_w = width / float(count)
+    pad = max(0, int(cell_padding_px))
+    slots: List[BBox] = []
+    for index in range(count):
+        slot_x0 = int(round(float(x0) + (float(index) * cell_w))) + pad
+        slot_y0 = int(y0) + pad
+        slot_x1 = int(round(float(x0) + (float(index + 1) * cell_w))) - pad
+        slot_y1 = int(y1) - pad
+        slots.append((slot_x0, slot_y0, slot_x1, slot_y1))
+    return slots
+
+
+__all__ = ["resolve_compact_grid_shape", "resolve_grid_cell_slots", "resolve_horizontal_row_slots"]

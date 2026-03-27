@@ -27,13 +27,8 @@ from ...shared.prompt_variants import (
 )
 from ...shared.text_rendering import draw_text_centered, load_font
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
-from ..counting.defaults import ICON_COUNTING_SHARED_DEFAULTS
-from ..counting.shared import (
-    icon_counting_style_trace,
-    resolve_icon_counting_render_params,
-    sample_icon_instance_noise,
-)
 from ..shared.icon_assets import render_icon_rgba, resolve_icon_pool
+from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.icon_noise import serialize_icon_noise_edits
 from ..shared.icon_scene import (
     draw_two_panel_panels,
@@ -45,6 +40,11 @@ from ..shared.icon_scene import (
     sort_bboxes_reading_order,
 )
 from ..shared.icon_style import icon_palette_meets_distance_constraints, sample_icon_palette, sample_icon_tints
+from ..shared.icon_task_rendering import (
+    icon_render_style_trace,
+    resolve_icon_render_params,
+    sample_icon_instance_noise,
+)
 
 
 _RELATION_VARIANTS: Tuple[str, ...] = (
@@ -72,21 +72,21 @@ class _TaskDefaults:
     distractor_count_min: int = 1
     distractor_count_max: int = 10
     distractor_margin_over_target: int = 1
-    canvas_width: int = ICON_COUNTING_SHARED_DEFAULTS.canvas_width
-    canvas_height: int = ICON_COUNTING_SHARED_DEFAULTS.canvas_height
-    reference_panel_width_px: int = ICON_COUNTING_SHARED_DEFAULTS.reference_panel_width_px
-    panel_gap_px: int = ICON_COUNTING_SHARED_DEFAULTS.panel_gap_px
-    outer_margin_px: int = ICON_COUNTING_SHARED_DEFAULTS.outer_margin_px
-    panel_padding_px: int = ICON_COUNTING_SHARED_DEFAULTS.panel_padding_px
-    panel_corner_radius_px: int = ICON_COUNTING_SHARED_DEFAULTS.panel_corner_radius_px
-    scene_icon_size_min_px: int = ICON_COUNTING_SHARED_DEFAULTS.scene_icon_size_min_px
-    scene_icon_size_max_px: int = ICON_COUNTING_SHARED_DEFAULTS.scene_icon_size_max_px
-    reference_icon_size_px: int = ICON_COUNTING_SHARED_DEFAULTS.reference_icon_size_px
+    canvas_width: int = ICON_SHARED_DEFAULTS.canvas_width
+    canvas_height: int = ICON_SHARED_DEFAULTS.canvas_height
+    reference_panel_width_px: int = ICON_SHARED_DEFAULTS.reference_panel_width_px
+    panel_gap_px: int = ICON_SHARED_DEFAULTS.panel_gap_px
+    outer_margin_px: int = ICON_SHARED_DEFAULTS.outer_margin_px
+    panel_padding_px: int = ICON_SHARED_DEFAULTS.panel_padding_px
+    panel_corner_radius_px: int = ICON_SHARED_DEFAULTS.panel_corner_radius_px
+    scene_icon_size_min_px: int = ICON_SHARED_DEFAULTS.scene_icon_size_min_px
+    scene_icon_size_max_px: int = ICON_SHARED_DEFAULTS.scene_icon_size_max_px
+    reference_icon_size_px: int = ICON_SHARED_DEFAULTS.reference_icon_size_px
     scene_max_overlap_fraction: float = 0.05
-    scene_placement_max_attempts: int = ICON_COUNTING_SHARED_DEFAULTS.scene_placement_max_attempts
-    scene_size_shrink_rounds: int = ICON_COUNTING_SHARED_DEFAULTS.scene_size_shrink_rounds
-    scene_size_shrink_factor: float = ICON_COUNTING_SHARED_DEFAULTS.scene_size_shrink_factor
-    panel_title_font_size_px: int = ICON_COUNTING_SHARED_DEFAULTS.panel_title_font_size_px
+    scene_placement_max_attempts: int = ICON_SHARED_DEFAULTS.scene_placement_max_attempts
+    scene_size_shrink_rounds: int = ICON_SHARED_DEFAULTS.scene_size_shrink_rounds
+    scene_size_shrink_factor: float = ICON_SHARED_DEFAULTS.scene_size_shrink_factor
+    panel_title_font_size_px: int = ICON_SHARED_DEFAULTS.panel_title_font_size_px
     pool_manifest: str = "all_icons.txt"
     palette_size_min: int = 8
     palette_size_max: int = 12
@@ -94,10 +94,10 @@ class _TaskDefaults:
     color_channel_max: int = 220
     min_color_distance: float = 40.0
     color_distance_space: str = "lab"
-    background_color_rgb: Tuple[int, int, int] = ICON_COUNTING_SHARED_DEFAULTS.background_color_rgb
-    panel_fill_rgb: Tuple[int, int, int] = ICON_COUNTING_SHARED_DEFAULTS.panel_fill_rgb
-    panel_border_rgb: Tuple[int, int, int] = ICON_COUNTING_SHARED_DEFAULTS.panel_border_rgb
-    header_text_rgb: Tuple[int, int, int] = ICON_COUNTING_SHARED_DEFAULTS.header_text_rgb
+    background_color_rgb: Tuple[int, int, int] = ICON_SHARED_DEFAULTS.background_color_rgb
+    panel_fill_rgb: Tuple[int, int, int] = ICON_SHARED_DEFAULTS.panel_fill_rgb
+    panel_border_rgb: Tuple[int, int, int] = ICON_SHARED_DEFAULTS.panel_border_rgb
+    header_text_rgb: Tuple[int, int, int] = ICON_SHARED_DEFAULTS.header_text_rgb
     anchor_gap_px_directional: int = 8
     anchor_target_area_ratio_min: float = 0.35
     anchor_target_area_ratio_max: float = 0.65
@@ -735,7 +735,7 @@ class IconsRelationRelativePositionTypeTask:
             fallback_distractor_min=_DEFAULTS.distractor_count_min,
             fallback_distractor_max=_DEFAULTS.distractor_count_max,
         )
-        render_params = resolve_icon_counting_render_params(
+        render_params = resolve_icon_render_params(
             params=params,
             render_defaults=_RENDER_DEFAULTS,
             fallback_defaults=_DEFAULTS,
@@ -882,7 +882,7 @@ class IconsRelationRelativePositionTypeTask:
                 "coord_space": "pixel",
                 "panel_geometry": dict(scene_payload.panel_geometry),
                 "style": {
-                    **icon_counting_style_trace(
+                    **icon_render_style_trace(
                         render_params=render_params,
                         sampled_palette_rgb=scene_payload.sampled_palette_rgb,
                     ),

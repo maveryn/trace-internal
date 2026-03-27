@@ -27,6 +27,7 @@ from .icons.counting import size_relation as _task_icons_counting_size_relation
 from .icons.counting import type as _task_icons_counting_type
 from .icons.relation import occlusion_order as _task_icons_relation_occlusion_order
 from .icons.relation import relative_position_type as _task_icons_relation_relative_position_type
+from .icons.sequence import missing_count as _task_icons_sequence_missing_count
 from .icons.transformation import pair_count as _task_icons_transformation_pair_count
 from .tile import count_color_components as _task_tile_count_color_components
 from .tile import count_color_count as _task_tile_count_color_count

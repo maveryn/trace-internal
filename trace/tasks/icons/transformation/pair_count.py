@@ -24,14 +24,11 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ..counting.defaults import ICON_COUNTING_SHARED_DEFAULTS
-from ..counting.shared import (
-    resolve_icon_counting_render_params,
-    sample_icon_instance_noise,
-)
 from ..shared.icon_assets import icon_transform_signature, resolve_icon_pool
+from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.icon_pair_grid_scene import IconPairSpec, panel_geometry_to_trace, render_two_panel_icon_pair_grid_scene
-from ..shared.icon_style import icon_palette_meets_distance_constraints, sample_icon_palette
+from ..shared.icon_style import sample_single_icon_tint
+from ..shared.icon_task_rendering import resolve_icon_render_params, sample_icon_instance_noise
 from ..shared.icon_transform import IDENTITY_TRANSFORM_ID, NON_IDENTITY_TRANSFORM_IDS
 
 
@@ -48,18 +45,18 @@ class _TaskDefaults:
     canvas_width: int = 1104
     canvas_height: int = 640
     reference_panel_width_px: int = 296
-    panel_gap_px: int = ICON_COUNTING_SHARED_DEFAULTS.panel_gap_px
-    outer_margin_px: int = ICON_COUNTING_SHARED_DEFAULTS.outer_margin_px
-    panel_padding_px: int = ICON_COUNTING_SHARED_DEFAULTS.panel_padding_px
-    panel_corner_radius_px: int = ICON_COUNTING_SHARED_DEFAULTS.panel_corner_radius_px
+    panel_gap_px: int = ICON_SHARED_DEFAULTS.panel_gap_px
+    outer_margin_px: int = ICON_SHARED_DEFAULTS.outer_margin_px
+    panel_padding_px: int = ICON_SHARED_DEFAULTS.panel_padding_px
+    panel_corner_radius_px: int = ICON_SHARED_DEFAULTS.panel_corner_radius_px
     scene_icon_size_min_px: int = 40
     scene_icon_size_max_px: int = 96
     reference_icon_size_px: int = 110
-    panel_title_font_size_px: int = ICON_COUNTING_SHARED_DEFAULTS.panel_title_font_size_px
-    background_color_rgb: Tuple[int, int, int] = ICON_COUNTING_SHARED_DEFAULTS.background_color_rgb
-    panel_fill_rgb: Tuple[int, int, int] = ICON_COUNTING_SHARED_DEFAULTS.panel_fill_rgb
-    panel_border_rgb: Tuple[int, int, int] = ICON_COUNTING_SHARED_DEFAULTS.panel_border_rgb
-    header_text_rgb: Tuple[int, int, int] = ICON_COUNTING_SHARED_DEFAULTS.header_text_rgb
+    panel_title_font_size_px: int = ICON_SHARED_DEFAULTS.panel_title_font_size_px
+    background_color_rgb: Tuple[int, int, int] = ICON_SHARED_DEFAULTS.background_color_rgb
+    panel_fill_rgb: Tuple[int, int, int] = ICON_SHARED_DEFAULTS.panel_fill_rgb
+    panel_border_rgb: Tuple[int, int, int] = ICON_SHARED_DEFAULTS.panel_border_rgb
+    header_text_rgb: Tuple[int, int, int] = ICON_SHARED_DEFAULTS.header_text_rgb
     cell_border_rgb: Tuple[int, int, int] = (218, 223, 233)
     cell_label_color_rgb: Tuple[int, int, int] = (52, 60, 77)
     arrow_color_rgb: Tuple[int, int, int] = (84, 96, 118)
@@ -75,10 +72,10 @@ class _TaskDefaults:
     color_channel_max: int = 220
     min_color_distance: float = 40.0
     color_distance_space: str = "lab"
-    icon_noise_edit_types: Tuple[str, ...] = ICON_COUNTING_SHARED_DEFAULTS.icon_noise_edit_types
-    icon_noise_edit_count_range: Tuple[int, int] = ICON_COUNTING_SHARED_DEFAULTS.icon_noise_edit_count_range
+    icon_noise_edit_types: Tuple[str, ...] = ICON_SHARED_DEFAULTS.icon_noise_edit_types
+    icon_noise_edit_count_range: Tuple[int, int] = ICON_SHARED_DEFAULTS.icon_noise_edit_count_range
     icon_noise_value_ranges: Dict[str, Dict[str, Tuple[float, float]]] = field(
-        default_factory=lambda: deepcopy(ICON_COUNTING_SHARED_DEFAULTS.icon_noise_value_ranges)
+        default_factory=lambda: deepcopy(ICON_SHARED_DEFAULTS.icon_noise_value_ranges)
     )
 
 
@@ -112,7 +109,7 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 def _resolve_render_params(params: Mapping[str, Any]) -> Dict[str, Any]:
     """Resolve render params, including transformation-grid-specific extras."""
 
-    render_params = resolve_icon_counting_render_params(
+    render_params = resolve_icon_render_params(
         params=params,
         render_defaults=_RENDER_DEFAULTS,
         fallback_defaults=_DEFAULTS,
@@ -177,39 +174,6 @@ def _distinct_distractor_transforms(icon_id: str, *, reference_transform_id: str
         and icon_transform_signature(str(icon_id), int(check_size_px), str(transform_id)) != reference_signature
     ]
     return tuple(str(value) for value in distractors)
-
-
-def _sample_single_tint(rng, *, render_params: Mapping[str, Any]) -> Tuple[Tuple[int, int, int], Tuple[Tuple[int, int, int], ...]]:
-    """Sample one icon tint and return the palette trace payload used to obtain it."""
-
-    palette = sample_icon_palette(
-        rng,
-        palette_size=1,
-        channel_min=int(render_params["color_channel_min"]),
-        channel_max=int(render_params["color_channel_max"]),
-        anchor_colors=(
-            tuple(int(v) for v in render_params["background_color_rgb"]),
-            tuple(int(v) for v in render_params["panel_fill_rgb"]),
-            tuple(int(v) for v in render_params["panel_border_rgb"]),
-            tuple(int(v) for v in render_params["header_text_rgb"]),
-        ),
-        min_color_distance=float(render_params["min_color_distance"]),
-        distance_space=str(render_params["color_distance_space"]),
-    )
-    if not icon_palette_meets_distance_constraints(
-        palette=palette,
-        anchor_colors=(
-            tuple(int(v) for v in render_params["background_color_rgb"]),
-            tuple(int(v) for v in render_params["panel_fill_rgb"]),
-            tuple(int(v) for v in render_params["panel_border_rgb"]),
-            tuple(int(v) for v in render_params["header_text_rgb"]),
-        ),
-        min_color_distance=float(render_params["min_color_distance"]),
-        distance_space=str(render_params["color_distance_space"]),
-    ):
-        raise ValueError("sampled transformation tint did not satisfy strict distance constraints")
-    tint = tuple(int(channel) for channel in palette[0])
-    return tint, tuple(tuple(int(channel) for channel in color) for color in palette)
 
 
 def _transformation_style_trace(
@@ -289,7 +253,19 @@ def _sample_scene(
     scene_records = list(candidate_records[1 : 1 + int(object_count)])
     labels = assign_shuffled_labels(rng, object_count=int(object_count), label_pool=LABEL_POOL_A_L)
     match_indices = set(rng.sample(list(range(int(object_count))), int(target_count)))
-    tint_rgb, sampled_palette_rgb = _sample_single_tint(rng, render_params=render_params)
+    tint_rgb, sampled_palette_rgb = sample_single_icon_tint(
+        rng,
+        channel_min=int(render_params["color_channel_min"]),
+        channel_max=int(render_params["color_channel_max"]),
+        anchor_colors=(
+            tuple(int(v) for v in render_params["background_color_rgb"]),
+            tuple(int(v) for v in render_params["panel_fill_rgb"]),
+            tuple(int(v) for v in render_params["panel_border_rgb"]),
+            tuple(int(v) for v in render_params["header_text_rgb"]),
+        ),
+        min_color_distance=float(render_params["min_color_distance"]),
+        distance_space=str(render_params["color_distance_space"]),
+    )
 
     reference_left_noise_edits, reference_left_noise_seed = sample_icon_instance_noise(
         instance_seed=int(instance_seed),

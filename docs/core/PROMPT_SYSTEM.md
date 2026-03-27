@@ -68,14 +68,15 @@ Bundles:
 10. `prompts/geometry/analytical_3d/geometry_analytical_surface_area_v1.json`
 11. `prompts/icons/counting/icons_counting_v1.json`
 12. `prompts/icons/relation/icons_relation_v1.json`
-13. `prompts/icons/transformation/icons_transformation_v1.json`
-14. `prompts/tile/count/tile_count_v1.json`
-15. `prompts/tile/path/tile_path_v1.json`
-16. `prompts/tile/pattern/tile_pattern_v1.json`
-17. `prompts/tile/reachability/tile_reachability_v1.json`
-18. `prompts/tile/relation/tile_relation_v1.json`
-19. `prompts/tile/symmetry/tile_symmetry_v1.json`
-20. `prompts/tile/transition/tile_transition_v1.json`
+13. `prompts/icons/sequence/icons_sequence_v1.json`
+14. `prompts/icons/transformation/icons_transformation_v1.json`
+15. `prompts/tile/count/tile_count_v1.json`
+16. `prompts/tile/path/tile_path_v1.json`
+17. `prompts/tile/pattern/tile_pattern_v1.json`
+18. `prompts/tile/reachability/tile_reachability_v1.json`
+19. `prompts/tile/relation/tile_relation_v1.json`
+20. `prompts/tile/symmetry/tile_symmetry_v1.json`
+21. `prompts/tile/transition/tile_transition_v1.json`
 
 Tasks:
 1. `task_geometry_comparison_angle` (bundle: `geometry_comparison_v1`)
@@ -103,14 +104,16 @@ Tasks:
 23. `task_icons_counting_color` (bundle: `icons_counting_v1`)
 24. `task_icons_counting_size_relation` (bundle: `icons_counting_v1`)
 25. `task_icons_relation_relative_position_type` (bundle: `icons_relation_v1`)
-26. `task_icons_transformation_pair_count` (bundle: `icons_transformation_v1`)
-27. `task_tile_count_color_count` (bundle: `tile_count_v1`)
-28. `task_tile_count_color_components` (bundle: `tile_count_v1`)
-29. `task_tile_count_largest_component_size` (bundle: `tile_count_v1`)
-30. `task_tile_path_shortest_path` (bundle: `tile_path_v1`)
-31. `task_tile_path_reachable_target_count` (bundle: `tile_path_v1`)
-32. `task_tile_pattern_match3_run_count` (bundle: `tile_pattern_v1`)
-33. `task_tile_reachability_region_size` (bundle: `tile_reachability_v1`)
-34. `task_tile_relation_min_distance` (bundle: `tile_relation_v1`)
-35. `task_tile_symmetry_violation_count` (bundle: `tile_symmetry_v1`)
-36. `task_tile_transition_gravity_max_drop` (bundle: `tile_transition_v1`)
+26. `task_icons_relation_occlusion_order` (bundle: `icons_relation_v1`)
+27. `task_icons_sequence_missing_count` (bundle: `icons_sequence_v1`)
+28. `task_icons_transformation_pair_count` (bundle: `icons_transformation_v1`)
+29. `task_tile_count_color_count` (bundle: `tile_count_v1`)
+30. `task_tile_count_color_components` (bundle: `tile_count_v1`)
+31. `task_tile_count_largest_component_size` (bundle: `tile_count_v1`)
+32. `task_tile_path_shortest_path` (bundle: `tile_path_v1`)
+33. `task_tile_path_reachable_target_count` (bundle: `tile_path_v1`)
+34. `task_tile_pattern_match3_run_count` (bundle: `tile_pattern_v1`)
+35. `task_tile_reachability_region_size` (bundle: `tile_reachability_v1`)
+36. `task_tile_relation_min_distance` (bundle: `tile_relation_v1`)
+37. `task_tile_symmetry_violation_count` (bundle: `tile_symmetry_v1`)
+38. `task_tile_transition_gravity_max_drop` (bundle: `tile_transition_v1`)

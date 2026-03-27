@@ -55,6 +55,37 @@ def sample_icon_tints(
     return tuple(tuple(int(channel) for channel in rng.choice(colors)) for _ in range(max(0, int(count))))
 
 
+def sample_single_icon_tint(
+    rng,
+    *,
+    channel_min: int,
+    channel_max: int,
+    anchor_colors: Iterable[Color],
+    min_color_distance: float = DEFAULT_MIN_COLOR_DISTANCE,
+    distance_space: str = DEFAULT_COLOR_DISTANCE_SPACE,
+) -> Tuple[Color, Tuple[Color, ...]]:
+    """Sample one single-tint palette and return both the tint and palette payload."""
+
+    palette = sample_icon_palette(
+        rng,
+        palette_size=1,
+        channel_min=int(channel_min),
+        channel_max=int(channel_max),
+        anchor_colors=tuple(anchor_colors),
+        min_color_distance=float(min_color_distance),
+        distance_space=str(distance_space),
+    )
+    if not icon_palette_meets_distance_constraints(
+        palette=palette,
+        anchor_colors=tuple(anchor_colors),
+        min_color_distance=float(min_color_distance),
+        distance_space=str(distance_space),
+    ):
+        raise ValueError("sampled single-tint icon palette did not satisfy strict distance constraints")
+    tint = tuple(int(channel) for channel in palette[0])
+    return tint, tuple(tuple(int(channel) for channel in color) for color in palette)
+
+
 def icon_palette_meets_distance_constraints(
     *,
     palette: Sequence[Color],
@@ -78,4 +109,9 @@ def icon_palette_meets_distance_constraints(
     return True
 
 
-__all__ = ["icon_palette_meets_distance_constraints", "sample_icon_palette", "sample_icon_tints"]
+__all__ = [
+    "icon_palette_meets_distance_constraints",
+    "sample_icon_palette",
+    "sample_icon_tints",
+    "sample_single_icon_tint",
+]

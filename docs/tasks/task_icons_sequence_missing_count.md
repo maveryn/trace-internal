@@ -1,0 +1,48 @@
+# `task_icons_sequence_missing_count`
+
+## 1) Identity
+1. Domain: `icons`
+2. Task group: `sequence`
+3. Task id: `task_icons_sequence_missing_count`
+4. Objective: infer how many icons should appear in one missing Scene box so the visible count sequence continues.
+
+## 2) Scene + task contract
+1. Entities/relations: one two-panel image with a `Reference` icon on the left and a horizontal row of `4..6` Scene boxes on the right; one Scene box is missing and marked with `?`.
+2. Supported `task_variant` values: `arithmetic_progression`.
+3. Answer type: `answer_gt.type = integer`.
+4. Evidence type: `evidence_gt.type = bbox_set` (exactly one box: the missing Scene box in final image pixel coordinates).
+5. Sequence policy: the hidden counts follow one arithmetic progression with integer step `±1..±3`; the missing answer is sampled from `0..10`, and every visible count stays in `0..10`.
+6. Missing-position policy: the missing box may appear at any sequence position, including either end.
+7. Asset policy: the reference icon is drawn from the curated Prism `assets/icons/all_icons.txt` pool copied into TRACE, and every visible Scene icon keeps that same icon type.
+8. Visual variation: all visible Scene icons also keep the same tint as the Reference icon, while icon rotation may vary independently across instances.
+9. Size policy: visible Scene icons are rendered at nominal sizes in `24..40` px; the Reference icon stays larger as an exemplar in the left panel.
+10. Placement policy: icons are placed randomly within their own Scene cell, and any pairwise overlap inside one cell is capped at `20%` of the smaller icon box area.
+11. Noise policy: each rendered icon instance (Reference + visible Scene icons) may receive `0..2` subtle Prism-style edits (`blur`, `downsample`, `jpeg`, `noise`) before compositing; edits are recorded per instance in trace metadata.
+
+## 3) Prompt contract
+1. `prompt_bundle_id`: `icons_sequence_v1`
+2. `task_family_key`: `reference_sequence_missing_count`
+3. `task_key`: `missing_count_query`
+4. Answer+evidence JSON shape: `{"evidence":[[540,126,654,458]],"answer":5}`
+5. Answer-only JSON shape: `{"answer":5}`
+6. Required slots:
+   - shared: `object_description`, `question_text`
+   - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
+   - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
+7. Variant counts (task-family/task/mode): exactly 5 templates per required key.
+8. Prompt style: the family stem establishes the `Reference` + sequence-row layout; task wording asks only for the missing count that continues the sequence.
+
+## 4) Determinism + constraints
+1. Seed namespaces used: scene-level RNG via `spawn_rng(instance_seed, "scene")`.
+2. Unique-answer policy: the hidden count is sampled first from the configured support, then one feasible `(missing_index, step_delta)` combination is chosen so the full arithmetic progression is uniquely determined.
+3. Reject/resample conditions: unsupported count/length/step config, missing curated assets, or per-cell placement failures under the overlap cap.
+4. No-auto-relaxation guarantee: generation fails on unmet sequence/placement constraints instead of weakening the arithmetic rule or overlap threshold.
+5. Evidence scope: the user-facing `bbox_set` contains only the missing Scene box; the full sequence counts and visible per-cell icon placements stay in trace metadata.
+6. Trace style metadata records the sampled single-tint palette, icon-noise config, sequence-cell styling, and final per-instance nominal sizes/rotations/noise edits.
+7. Balanced defaults: `_sampling_index` cycles evenly over the missing answer support `0..10` and the row length support `4..6` before selecting a feasible arithmetic combination.
+
+## 5) Complexity + tests
+1. Complexity definition/components: sequence length + missing answer + absolute step size.
+2. Determinism/build tests: `tests/test_icons_sequence_missing_count_contracts.py`
+3. Behavior/trace/prompt tests: `tests/test_icons_sequence_missing_count_tasks.py`
+4. Prompt bundle/config tests: `tests/test_prompt_system.py`, `tests/test_task_group_config.py`

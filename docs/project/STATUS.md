@@ -50,6 +50,7 @@ Date: 2026-03-27
 39. Icons transformation now includes `task_icons_transformation_pair_count`, a two-panel `Reference` + labeled `Scene` grid task with integer answers and sorted `label_set` evidence; the Reference pair shows one canonical D4 transform, Scene cells each show `icon -> transformed icon`, and the task counts how many cells apply the same rule. The task uses the curated asymmetric icon pool, rejects icon/transform pairs that collapse visually under rendered-silhouette checks, and records the sampled transform ids plus per-icon subtle noise in trace metadata.
 40. Icons relation now includes `task_icons_relation_relative_position_type`, a two-panel `Reference` + `Scene` task with one marked Anchor icon, integer answers, and scene-only `bbox_set` evidence; query variants ask for matches left/right/above/below the Anchor, target counts are capped at `5`, distractors are capped at `10` with a target-conditioned floor of `target_count + 1`, spatial membership is evaluated strictly from rendered candidate/Anchor bboxes, and distractors are mixed across same-type wrong-side and different-type queried-side cases so the task requires both icon-type matching and directional reasoning instead of letting side occupancy become a cue. Same-type wrong-side distractors now follow Prism-style relaxed spatial margins, requiring at least `75%` of the distractor bbox area to lie outside the queried region so near-miss positives are rejected.
 41. Icons relation also now includes `task_icons_relation_occlusion_order`, a two-panel `Reference` + labeled `Scene` grid task with integer answers and sorted `label_set` evidence; the Reference cell and every Scene cell contain the same icon pair with varying colors, overlap amounts, and subtle per-icon noise, while only the front-to-back order (`a_over_b` vs `b_over_a`) determines whether a Scene cell matches. The task uses the curated 3000-icon Prism pool, keeps each overlapping icon pair Lab-separated by at least `80`, samples overlap ratios in `0.40..0.60`, and balances counts over `target_count in 0..6`, `distractor_count in 1..6`.
+42. Icons sequence now includes `task_icons_sequence_missing_count`, a two-panel `Reference` + horizontal sequence-row task with integer answers and one-box `bbox_set` evidence for the missing Scene cell. Every visible Scene cell contains randomly placed icons of the same type and tint as the Reference icon, orientation may vary per instance, and the number of icons in each cell follows one arithmetic progression with a hidden count sampled from `0..10`. The missing cell may appear anywhere in the row, including either end, visible icons stay in the smaller `24..40` px band, and any pairwise overlap inside one cell is capped at `20%` of the smaller icon box area.
 
 ## Active tasks
 1. `task_tile_count_color_count` (`domain=tile`, `task_group=count`)
@@ -88,15 +89,16 @@ Date: 2026-03-27
 34. `task_icons_counting_size_relation` (`domain=icons`, `task_group=counting`)
 35. `task_icons_relation_relative_position_type` (`domain=icons`, `task_group=relation`)
 36. `task_icons_relation_occlusion_order` (`domain=icons`, `task_group=relation`)
-37. `task_icons_transformation_pair_count` (`domain=icons`, `task_group=transformation`)
+37. `task_icons_sequence_missing_count` (`domain=icons`, `task_group=sequence`)
+38. `task_icons_transformation_pair_count` (`domain=icons`, `task_group=transformation`)
 
 ## Current quality baseline
 1. Tests are required to pass before finalize.
 2. Distribution QA uses `scripts/check_task_answer_distribution.py` with per-variant answer-only checks (`unique_answers >= 5`, `max_answer_frequency < 25%`) and multithreaded sample generation (`--workers`); numeric 5-bin summaries remain reported for review but are not hard pass/fail gates.
 3. Task-review tooling writes per-task artifacts under `task-reviews/<task_id>/`, including one inspection workbook named `<task_id>.xlsx` with one sheet per task variant.
-4. The current active reviewed task set (10 tile tasks + 20 geometry tasks + 7 reviewed icons tasks) passes distribution review under the active gates.
+4. The current active reviewed task set (10 tile tasks + 20 geometry tasks + 8 reviewed icons tasks) passes distribution review under the active gates.
 
 ## Next priorities
-1. Extend icons beyond the current counting/transformation/relation set using the curated Prism asset pipeline (`comparison` and richer relation/transformation variants are the next natural families).
+1. Extend icons beyond the current counting/transformation/relation/sequence set using the curated Prism asset pipeline (`comparison` and richer relation/transformation variants are the next natural families).
 2. Introduce cross-domain `scene_variant` and role-binding schema in architecture docs/contracts.
 3. Add future polygon variants as deferred tasks (diameter, min-side, max-side) after current scope stabilizes.

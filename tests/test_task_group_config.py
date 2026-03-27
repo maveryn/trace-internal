@@ -946,6 +946,56 @@ def test_icons_relation_defaults_loaded() -> None:
     assert str(prompt["json_example_answer_only"]).strip()
 
 
+def test_icons_sequence_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("icons", "sequence")
+    for section in ("generation", "rendering", "prompt", "visual"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["sequence_length_min"]) == 4
+    assert int(generation_shared["sequence_length_max"]) == 6
+    assert int(generation_shared["target_count_min"]) == 0
+    assert int(generation_shared["target_count_max"]) == 10
+    assert int(generation_shared["step_abs_min"]) == 1
+    assert int(generation_shared["step_abs_max"]) == 3
+    assert bool(generation_shared["balanced_sampling"]) is True
+    assert "task_icons_sequence_missing_count" in cfg["generation"]["task_overrides"]
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_width"]) > 0
+    assert int(render_shared["canvas_height"]) > 0
+    assert int(render_shared["reference_panel_width_px"]) > 0
+    assert int(render_shared["scene_icon_size_min_px"]) == 24
+    assert int(render_shared["scene_icon_size_max_px"]) == 40
+    assert float(render_shared["scene_max_overlap_fraction"]) == pytest.approx(0.20, rel=1e-9)
+    assert int(render_shared["cell_padding_px"]) > 0
+    assert int(render_shared["cell_icon_padding_px"]) >= 0
+    assert int(render_shared["missing_mark_font_size_px"]) > 0
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip()
+    assert str(prompt_shared["task_family_key"]).strip()
+    assert str(prompt_shared["task_key"]).strip()
+    assert str(prompt_shared["json_output_contract"]).strip()
+    assert str(prompt_shared["json_output_contract_answer_only"]).strip()
+
+    generation, rendering, prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_icons_sequence_missing_count",
+    )
+    assert str(generation["pool_manifest"]).strip() == "all_icons.txt"
+    assert list(generation["rotation_candidates_degrees"]) == [0, 90, 180, 270]
+    assert int(rendering["canvas_width"]) == 1104
+    assert int(rendering["scene_icon_size_min_px"]) == 24
+    assert int(rendering["scene_icon_size_max_px"]) == 40
+    assert str(prompt["object_description"]).strip()
+    assert str(prompt["question_text"]).strip()
+    assert str(prompt["evidence_hint"]).strip()
+    assert str(prompt["answer_hint"]).strip()
+    assert str(prompt["json_example"]).strip()
+    assert str(prompt["json_example_answer_only"]).strip()
+
+
 def test_tile_path_defaults_loaded() -> None:
     cfg = get_task_group_defaults("tile", "path")
     for section in ("generation", "rendering", "prompt", "visual"):

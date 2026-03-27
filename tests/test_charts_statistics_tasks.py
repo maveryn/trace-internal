@@ -309,6 +309,10 @@ def test_chart_statistics_pie_and_donut_use_distinct_slice_colors_and_legend() -
             float(entity["attrs"]["legend_swatch_bbox_px"][2]) - float(entity["attrs"]["legend_swatch_bbox_px"][0]) >= 28.0
             for entity in entities
         )
+        assert all(
+            float(entity["attrs"]["label_bbox_px"][0]) > float(entity["attrs"]["legend_swatch_bbox_px"][2])
+            for entity in entities
+        )
 
 
 def test_chart_statistics_summary_label_radar_caps_default_mark_count() -> None:

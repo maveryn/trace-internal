@@ -20,17 +20,17 @@ generation:
 
 rendering:
   shared:
-    canvas_width: 980
-    canvas_height: 620
-    plot_margin_left_px: 108
-    plot_margin_right_px: 56
+    canvas_width: 1120
+    canvas_height: 720
+    plot_margin_left_px: 120
+    plot_margin_right_px: 72
     plot_margin_top_px: 44
-    plot_margin_bottom_px: 100
+    plot_margin_bottom_px: 112
+    label_font_size_px: 24
+    tick_font_size_px: 20
     axis_line_width_px: 2
     grid_line_width_px: 1
     tick_length_px: 8
-    label_font_size_px: 22
-    tick_font_size_px: 18
     label_stroke_width_px: 2
     mark_outline_width_px: 2
     line_width_px: 4

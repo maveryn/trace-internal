@@ -53,6 +53,9 @@ def test_chart_multiseries_pairwise_comparison_count_matches_contract() -> None:
         assert 2 <= int(execution["series_count"]) <= 3
         assert len(category_labels) == int(execution["category_count"])
         assert len(series_labels) == int(execution["series_count"])
+        assert all(str(label).istitle() for label in series_labels)
+        assert all(str(label).isalpha() for label in series_labels)
+        assert all(2 <= len(str(label)) <= 4 for label in series_labels)
         assert len(query_pair) == 2
         assert set(query_pair).issubset(set(series_labels))
         assert evidence_labels == sorted(evidence_labels)

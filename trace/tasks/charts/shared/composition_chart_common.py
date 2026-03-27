@@ -61,12 +61,12 @@ class CompositionChartDefaults(LabeledChartDefaults):
     series_count_max: int = 5
     value_min: int = 4
     value_max: int = 18
-    canvas_width: int = 980
-    canvas_height: int = 620
-    plot_margin_left_px: int = 108
-    plot_margin_right_px: int = 56
+    canvas_width: int = 1120
+    canvas_height: int = 720
+    plot_margin_left_px: int = 120
+    plot_margin_right_px: int = 72
     plot_margin_top_px: int = 44
-    plot_margin_bottom_px: int = 100
+    plot_margin_bottom_px: int = 112
 
 
 def supported_scene_variants_for_task_variant(task_variant: str) -> Tuple[str, ...]:

@@ -181,6 +181,22 @@ def _text_bbox(
     )
 
 
+def _text_size(
+    draw: ImageDraw.ImageDraw,
+    *,
+    text: str,
+    font,
+) -> Tuple[float, float]:
+    """Return one text width/height pair in pixels."""
+
+    try:
+        raw = draw.textbbox((0, 0), str(text), font=font)
+        return (float(raw[2] - raw[0]), float(raw[3] - raw[1]))
+    except Exception:
+        width, height = draw.textsize(str(text), font=font)
+        return (float(width), float(height))
+
+
 def _resolve_plot_bbox(params: ChartRenderParams) -> Tuple[int, int, int, int]:
     """Resolve one axis-aligned plot bbox within the chart canvas."""
 
@@ -547,8 +563,10 @@ def render_labeled_chart_scene(
                 outline=outline_rgb,
                 width=max(2, int(render_params.mark_outline_width_px)),
             )
+            label_width, _ = _text_size(draw, text=str(mark.label), font=label_font)
+            label_left = float(legend_frame_bbox[2]) + float(legend_text_gap)
             label_center = (
-                float(legend_frame_bbox[2]) + float(legend_text_gap),
+                float(label_left + (0.5 * label_width)),
                 float(0.5 * (legend_swatch_bbox[1] + legend_swatch_bbox[3])),
             )
             draw_text_centered(
@@ -604,8 +622,10 @@ def render_labeled_chart_scene(
                         "mark_center_px": list(mark_trace["mark_center_px"]),
                         "mark_bbox_px": list(mark_trace["mark_bbox_px"]),
                         "label_center_px": list(mark_trace["label_center_px"]),
+                        "label_bbox_px": list(mark_trace["label_bbox_px"]),
                         "legend_swatch_bbox_px": list(mark_trace["legend_swatch_bbox_px"]),
                         "percentage_center_px": list(mark_trace["percentage_center_px"]),
+                        "percentage_bbox_px": list(mark_trace["percentage_bbox_px"]),
                         "mark_fill_rgb": list(mark_trace["mark_fill_rgb"]),
                         "mark_outline_rgb": list(mark_trace["mark_outline_rgb"]),
                         "start_angle_deg": float(mark_trace["start_angle_deg"]),
@@ -1545,8 +1565,12 @@ def render_multiseries_chart_scene(
 
     legend_left = float(chart_right) + float(legend_gap)
     legend_top = float(plot_top) + 16.0
-    legend_row_height = float(max(render_params.label_font_size_px + 12, 36))
-    legend_swatch_side = float(max(18, int(round(render_params.label_font_size_px * 0.75))))
+    legend_row_height = float(max(render_params.label_font_size_px + 16, 42))
+    legend_swatch_side = float(max(28, int(round(render_params.label_font_size_px * 1.05))))
+    legend_frame_pad = float(max(3, int(round(render_params.mark_outline_width_px * 1.5))))
+    legend_text_gap = float(max(16, int(render_params.label_font_size_px * 0.8)))
+    legend_frame_fill = tuple(int(value) for value in render_params.plot_fill_rgb)
+    legend_meta_by_series: Dict[str, Dict[str, List[float]]] = {}
     for index, (_, series_label) in enumerate(series_list):
         sample_record = next(record for record in mark_records if str(record["series_label"]) == str(series_label))
         fill_rgb = tuple(int(channel) for channel in sample_record["fill_rgb"])
@@ -1754,15 +1778,6 @@ def render_stacked_chart_scene(
                 fill=axis_color,
                 width=int(render_params.axis_line_width_px),
             )
-            draw_text_centered(
-                draw,
-                text=str(tick_value),
-                center=(float(x_px), float(plot_bottom) + float(render_params.tick_length_px) + 18.0),
-                font=tick_font,
-                fill=render_params.text_color_rgb,
-                stroke_fill=render_params.text_stroke_rgb,
-                stroke_width=max(1, int(round(0.06 * float(render_params.tick_font_size_px)))),
-            )
     else:
         for tick_value in y_ticks:
             y_px = _tick_y(
@@ -1783,15 +1798,6 @@ def render_stacked_chart_scene(
                 ],
                 fill=axis_color,
                 width=int(render_params.axis_line_width_px),
-            )
-            draw_text_centered(
-                draw,
-                text=str(tick_value),
-                center=(float(plot_left) - float(render_params.tick_length_px) - 18.0, float(y_px)),
-                font=tick_font,
-                fill=render_params.text_color_rgb,
-                stroke_fill=render_params.text_stroke_rgb,
-                stroke_width=max(1, int(round(0.06 * float(render_params.tick_font_size_px)))),
             )
 
     draw.line(
@@ -1962,8 +1968,12 @@ def render_stacked_chart_scene(
 
     legend_left = float(chart_right) + float(legend_gap)
     legend_top = float(plot_top) + 16.0
-    legend_row_height = float(max(render_params.label_font_size_px + 12, 36))
-    legend_swatch_side = float(max(18, int(round(render_params.label_font_size_px * 0.75))))
+    legend_row_height = float(max(render_params.label_font_size_px + 16, 42))
+    legend_swatch_side = float(max(28, int(round(render_params.label_font_size_px * 1.05))))
+    legend_frame_pad = float(max(3, int(round(render_params.mark_outline_width_px * 1.5))))
+    legend_text_gap = float(max(16, int(render_params.label_font_size_px * 0.8)))
+    legend_frame_fill = tuple(int(value) for value in render_params.plot_fill_rgb)
+    legend_meta_by_series: Dict[str, Dict[str, List[float]]] = {}
     for index, (_, series_label) in enumerate(series_list):
         sample_record = next(record for record in mark_records if str(record["series_label"]) == str(series_label))
         fill_rgb = tuple(int(channel) for channel in sample_record["fill_rgb"])
@@ -1975,14 +1985,28 @@ def render_stacked_chart_scene(
             float(legend_left + legend_swatch_side),
             float(row_y + legend_swatch_side),
         )
+        legend_frame_bbox = (
+            float(swatch_bbox[0] - legend_frame_pad),
+            float(swatch_bbox[1] - legend_frame_pad),
+            float(swatch_bbox[2] + legend_frame_pad),
+            float(swatch_bbox[3] + legend_frame_pad),
+        )
+        draw.rectangle(
+            legend_frame_bbox,
+            fill=legend_frame_fill,
+            outline=axis_color,
+            width=max(1, int(render_params.mark_outline_width_px)),
+        )
         draw.rectangle(
             swatch_bbox,
             fill=fill_rgb,
             outline=outline_rgb,
-            width=max(1, int(render_params.mark_outline_width_px)),
+            width=max(2, int(render_params.mark_outline_width_px)),
         )
+        label_width, _ = _text_size(draw, text=str(series_label), font=label_font)
+        label_left = float(legend_frame_bbox[2]) + float(legend_text_gap)
         label_center = (
-            float(swatch_bbox[2]) + float(max(14, int(render_params.label_font_size_px) * 0.7)),
+            float(label_left + (0.5 * label_width)),
             float(0.5 * (swatch_bbox[1] + swatch_bbox[3])),
         )
         draw_text_centered(
@@ -1994,6 +2018,11 @@ def render_stacked_chart_scene(
             stroke_fill=render_params.text_stroke_rgb,
             stroke_width=int(render_params.label_stroke_width_px),
         )
+        label_bbox = _text_bbox(draw, text=str(series_label), center=label_center, font=label_font)
+        legend_meta_by_series[str(series_label)] = {
+            "swatch_bbox": [round(float(value), 3) for value in swatch_bbox],
+            "label_bbox": [round(float(value), 3) for value in label_bbox],
+        }
 
     category_group_bboxes = {}
     for _, category_label in categories:
@@ -2013,6 +2042,7 @@ def render_stacked_chart_scene(
         category_center = list(category_label_meta[category_label]["center"])
         category_bbox = list(category_label_meta[category_label]["bbox"])
         category_group_bbox = list(category_group_bboxes[category_label])
+        legend_meta = legend_meta_by_series.get(str(record["series_label"]), {})
         mark_trace = {
             "entity_id": f"segment_{category_label}_{str(record['series_label'])}",
             "category_label": str(category_label),
@@ -2027,6 +2057,8 @@ def render_stacked_chart_scene(
             "category_label_center_px": list(category_center),
             "category_label_bbox_px": list(category_bbox),
             "category_group_bbox_px": list(category_group_bbox),
+            "legend_swatch_bbox_px": list(legend_meta.get("swatch_bbox", [])),
+            "legend_label_bbox_px": list(legend_meta.get("label_bbox", [])),
             "mark_fill_rgb": list(record["fill_rgb"]),
             "mark_outline_rgb": list(record["outline_rgb"]),
         }
@@ -2046,6 +2078,8 @@ def render_stacked_chart_scene(
                     "mark_bbox_px": list(mark_trace["mark_bbox_px"]),
                     "value_center_px": list(mark_trace["value_center_px"]),
                     "category_group_bbox_px": list(mark_trace["category_group_bbox_px"]),
+                    "legend_swatch_bbox_px": list(mark_trace["legend_swatch_bbox_px"]),
+                    "legend_label_bbox_px": list(mark_trace["legend_label_bbox_px"]),
                     "mark_fill_rgb": list(mark_trace["mark_fill_rgb"]),
                     "mark_outline_rgb": list(mark_trace["mark_outline_rgb"]),
                 },

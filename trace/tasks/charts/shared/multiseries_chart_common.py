@@ -10,6 +10,7 @@ from ...shared.color_distance import sample_color_palette_with_distance_constrai
 from ...shared.config_defaults import group_default, resolve_required_int_bounds
 from ...shared.named_colors import darken_color
 from .chart_scene import MultiSeriesChartMarkSpec
+from .legend_name_assets import load_legend_name_manifest
 from .labeled_chart_common import (
     LabeledChartDefaults,
     balanced_choice_from_values,
@@ -26,13 +27,7 @@ SUPPORTED_MULTISERIES_CHART_SCENE_VARIANTS: Tuple[str, ...] = (
     "grouped_lollipop",
 )
 
-_SERIES_NAME_POOL: Tuple[str, ...] = (
-    "Alpha",
-    "Beta",
-    "Gamma",
-    "Delta",
-    "Epsilon",
-)
+_SERIES_NAME_MANIFEST = "series_legend_names_random_name_2to4.txt"
 
 
 @dataclass(frozen=True)
@@ -90,12 +85,13 @@ def resolve_series_count_bounds(
 def sample_series_labels(*, count: int, instance_seed: int) -> Tuple[str, ...]:
     """Sample one randomized series-label tuple."""
 
+    pool = load_legend_name_manifest(_SERIES_NAME_MANIFEST)
     if int(count) <= 0:
         raise ValueError("series count must be positive")
-    if int(count) > len(_SERIES_NAME_POOL):
+    if int(count) > len(pool):
         raise ValueError("series count exceeds the supported label pool")
     rng = spawn_rng(int(instance_seed), "charts.multiseries.series_labels")
-    candidates = list(_SERIES_NAME_POOL)
+    candidates = list(pool)
     rng.shuffle(candidates)
     return tuple(str(value) for value in candidates[: int(count)])
 

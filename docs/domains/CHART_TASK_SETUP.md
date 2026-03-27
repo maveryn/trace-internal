@@ -149,7 +149,7 @@ Note:
 10. In v1, that mark color should be at least Lab distance `40` from white/light chart backgrounds.
 11. Pie-like scenes (`pie`, `donut`) are the exception: they use a distinct sampled color per slice, a higher-contrast slice palette than the generic single-series charts, and a right-side legend with framed color swatches that maps slice colors to labels.
 12. Composition scenes use their own semantics:
-   - stacked charts render one stack per category and print integer segment values inside the segments,
+   - stacked charts render one stack per category, print integer segment values inside the segments, and keep grid lines/axes without numeric tick labels,
    - pie/donut scenes render positive integer percentages that sum to `100`.
 13. Distribution scenes use their own semantics:
    - histograms render contiguous numeric interval bins and treat bar height as count/frequency,
@@ -218,7 +218,7 @@ Note:
 7. `pie` and `donut` should use a tighter default effective mark-count cap such as `5..8` so the legend and printed percentages remain readable.
 8. `radar` should use a tighter default effective mark-count cap such as `5..7` so the perimeter labels and printed point values remain readable.
 9. Multiseries charts should keep randomized uppercase category labels separate from series legend labels so category evidence and series references never share one identity namespace.
-10. Multiseries series labels should come from a short legend-name pool rather than the uppercase category-label pool.
+10. Multiseries series labels should come from one vendored short human-name manifest rather than the uppercase category-label pool.
 
 ## Value range
 1. Axis-based chart marks should use integer values in the range `1..20`.

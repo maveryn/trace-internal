@@ -53,6 +53,12 @@ def test_chart_composition_variants_match_contract() -> None:
             else:
                 assert int(out.answer_gt.value) == int(stack_values[str(execution["query_series_label"])])
             assert all("value_center_px" in entity["attrs"] for entity in trace["scene_ir"]["entities"])
+            assert all("legend_swatch_bbox_px" in entity["attrs"] for entity in trace["scene_ir"]["entities"])
+            assert all("legend_label_bbox_px" in entity["attrs"] for entity in trace["scene_ir"]["entities"])
+            assert all(
+                float(entity["attrs"]["legend_label_bbox_px"][0]) > float(entity["attrs"]["legend_swatch_bbox_px"][2])
+                for entity in trace["scene_ir"]["entities"]
+            )
         else:
             assert sum(evidence_values) == 100
             assert str(execution["value_semantics"]) == "percentage"

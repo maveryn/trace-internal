@@ -24,7 +24,7 @@
 5. `evidence_gt.type`: `integer_list`
 6. Scene contract:
    - stacked scenes render one stack per category with one legend label per segment color,
-   - stacked scenes print the integer segment values inside the segments,
+   - stacked scenes print the integer segment values inside the segments and omit numeric axis tick labels,
    - pie/donut scenes use positive integer percentages that sum to `100`,
    - pie/donut scenes use distinct slice colors and a right-side legend,
    - pie/donut scenes print the slice percentages on the slices.

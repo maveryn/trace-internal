@@ -12,6 +12,7 @@ from .geometry.comparison import area as _task_geometry_comparison_area
 from .geometry.comparison import length as _task_geometry_comparison_length
 from .geometry.comparison import perimeter as _task_geometry_comparison_perimeter
 from .geometry.counting import angle as _task_geometry_counting_angle
+from .geometry.counting import convexity as _task_geometry_counting_convexity
 from .geometry.counting import quadrilateral as _task_geometry_counting_quadrilateral
 from .geometry.counting import shape_type as _task_geometry_counting_shape_type
 from .geometry.counting import triangle as _task_geometry_counting_triangle
@@ -20,6 +21,10 @@ from .geometry.measurement import area as _task_geometry_measurement_area
 from .geometry.measurement import length as _task_geometry_measurement_length
 from .geometry.measurement import perimeter as _task_geometry_measurement_perimeter
 from .geometry.measurement import slope as _task_geometry_measurement_slope
+from .icons.counting import color as _task_icons_counting_color
+from .icons.counting import orientation as _task_icons_counting_orientation
+from .icons.counting import type as _task_icons_counting_type
+from .icons.transformation import pair_count as _task_icons_transformation_pair_count
 from .tile.path import shortest_path as _task_tile_path_shortest_path
 
 __all__ = [

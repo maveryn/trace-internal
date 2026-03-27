@@ -72,6 +72,14 @@ Use this checklist during implementation and refactor reviews.
 56. For counting/classification tasks with overlapping textbook definitions (for example isosceles vs equilateral), make the exclusivity explicit in prompt/config wording instead of leaving the task to unstated conventions.
 57. For counting tasks whose final answer is the matched-object count itself, check whether picking `object_count` first skews answers toward smaller counts; if it does, sample the target count from the global feasible support first and then choose a compatible object count.
 58. For mixed-shape classification/counting tasks, keep visually adjacent classes separated by explicit sampler margins (for example a minimum ellipse aspect ratio so circles and ellipses remain distinguishable from the rendered image alone).
+59. For polygon class-counting tasks, centralize convexity classification in a shared geometry helper and reject `degenerate` near-flat or self-intersecting outlines so convex/concave labels never depend on task-local visual guesswork.
+60. For reference-scene icon tasks, keep user-facing `bbox_set` evidence scoped to matching scene icons only and record the reference panel box separately in trace metadata; do not ask users to box the reference icon when the question is about scene matches.
+61. When curated asset manifests and on-disk filenames use different ids/prefixes, resolve them through one shared manifest-aware asset loader instead of reconstructing filenames ad hoc in each task.
+62. When a task family switches from fixed icon ink to sampled palettes, remove stale fixed-tint config keys in the same patch and record the sampled palette or final assigned tints in trace metadata so color randomness stays explicit and reviewable.
+63. For reference-scene icon color queries, derive match membership from explicit color assignments and keep stricter palette-distance thresholds in task overrides, rather than relying on random palette reuse to accidentally realize the target count.
+64. For Prism-style icon counting tasks, keep subtle noise per icon instance before compositing and record the sampled edits per instance; do not replace that with an untracked post-composite image corruption step that would leave bbox evidence grounded on a different render path.
+65. For reference-scene icon scenes that may exceed a simple slot grid, use random scene-panel placement with an explicit overlap threshold instead of implicitly relying on fixed slots; validate the rendered bbox overlap directly so independent target/distractor counts do not silently reintroduce clutter.
+66. For icon transformation tasks, validate candidate transforms against the rendered icon silhouette itself; even curated asymmetric pools can contain icons where some canonical D4 transforms collapse visually, so reject ambiguous icon/transform pairs instead of assuming transform names stay distinguishable.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

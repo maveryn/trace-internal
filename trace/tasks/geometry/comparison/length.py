@@ -184,12 +184,12 @@ def _segment_points_from_slot(
         graph_units_to_pixel(
             endpoint_a_units,
             graph_origin=(float(graph_origin[0]), float(graph_origin[1])),
-            graph_spacing=int(graph_spacing),
+            spacing=int(graph_spacing),
         ),
         graph_units_to_pixel(
             endpoint_b_units,
             graph_origin=(float(graph_origin[0]), float(graph_origin[1])),
-            graph_spacing=int(graph_spacing),
+            spacing=int(graph_spacing),
         ),
     )
 

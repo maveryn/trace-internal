@@ -17,6 +17,7 @@ Prompt text is externalized and deterministic.
    - `answer_and_evidence` uses `{"evidence": ..., "answer": ...}`
 7. Prefer slot-based composition for reusable format rules (for example shared `json_output_contract*` in domain/task-group config, with task-level `evidence_hint`/`answer_hint`/example overrides).
 8. For mixed-shape tasks, keep one bundle and switch shape-specific wording via slots (`object_description_*`, `question_text_*`, evidence/answer hint families).
+9. For reference-panel tasks, keep the task-family layer responsible for establishing the panel layout so task-layer wording can focus on the matching rule itself.
 
 ## 2) Bundle schema (v1)
 Required fields:
@@ -64,7 +65,9 @@ Bundles:
 8. `prompts/geometry/analytical_2d/geometry_analytical_perimeter_v1.json`
 9. `prompts/geometry/analytical_3d/geometry_analytical_volume_v1.json`
 10. `prompts/geometry/analytical_3d/geometry_analytical_surface_area_v1.json`
-11. `prompts/tile/path/tile_path_v1.json`
+11. `prompts/icons/counting/icons_counting_v1.json`
+12. `prompts/icons/transformation/icons_transformation_v1.json`
+13. `prompts/tile/path/tile_path_v1.json`
 
 Tasks:
 1. `task_geometry_comparison_angle` (bundle: `geometry_comparison_v1`)
@@ -75,15 +78,20 @@ Tasks:
 6. `task_geometry_counting_triangle` (bundle: `geometry_counting_v1`)
 7. `task_geometry_counting_quadrilateral` (bundle: `geometry_counting_v1`)
 8. `task_geometry_counting_shape_type` (bundle: `geometry_counting_v1`)
-9. `task_geometry_measurement_angle` (bundle override: `geometry_angle_measure_v1`)
-10. `task_geometry_measurement_area` (bundle: `geometry_measurement_v1`)
-11. `task_geometry_measurement_perimeter` (bundle: `geometry_measurement_v1`)
-12. `task_geometry_measurement_length` (bundle: `geometry_measurement_v1`)
-13. `task_geometry_measurement_slope` (bundle: `geometry_measurement_v1`)
-14. `task_geometry_analytical_2d_area` (bundle: `geometry_analytical_area_v1`)
-15. `task_geometry_analytical_2d_composite_area` (bundle: `geometry_analytical_composite_area_v1`)
-16. `task_geometry_analytical_2d_length` (bundle: `geometry_analytical_length_v1`)
-17. `task_geometry_analytical_2d_perimeter` (bundle: `geometry_analytical_perimeter_v1`)
-18. `task_geometry_analytical_3d_volume` (bundle: `geometry_analytical_volume_v1`)
-19. `task_geometry_analytical_3d_surface_area` (bundle: `geometry_analytical_surface_area_v1`)
-20. `task_tile_path_shortest_path`
+9. `task_geometry_counting_convexity` (bundle: `geometry_counting_v1`)
+10. `task_geometry_measurement_angle` (bundle override: `geometry_angle_measure_v1`)
+11. `task_geometry_measurement_area` (bundle: `geometry_measurement_v1`)
+12. `task_geometry_measurement_perimeter` (bundle: `geometry_measurement_v1`)
+13. `task_geometry_measurement_length` (bundle: `geometry_measurement_v1`)
+14. `task_geometry_measurement_slope` (bundle: `geometry_measurement_v1`)
+15. `task_geometry_analytical_2d_area` (bundle: `geometry_analytical_area_v1`)
+16. `task_geometry_analytical_2d_composite_area` (bundle: `geometry_analytical_composite_area_v1`)
+17. `task_geometry_analytical_2d_length` (bundle: `geometry_analytical_length_v1`)
+18. `task_geometry_analytical_2d_perimeter` (bundle: `geometry_analytical_perimeter_v1`)
+19. `task_geometry_analytical_3d_volume` (bundle: `geometry_analytical_volume_v1`)
+20. `task_geometry_analytical_3d_surface_area` (bundle: `geometry_analytical_surface_area_v1`)
+21. `task_icons_counting_type` (bundle: `icons_counting_v1`)
+22. `task_icons_counting_orientation` (bundle: `icons_counting_v1`)
+23. `task_icons_counting_color` (bundle: `icons_counting_v1`)
+24. `task_icons_transformation_pair_count` (bundle: `icons_transformation_v1`)
+25. `task_tile_path_shortest_path`

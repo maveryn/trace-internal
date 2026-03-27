@@ -12,6 +12,7 @@ Update this table after each review run.
 | task_geometry_counting_triangle | task_geometry_counting_triangle | alright_for_now | distribution pass |
 | task_geometry_counting_quadrilateral | task_geometry_counting_quadrilateral | alright_for_now | distribution pass |
 | task_geometry_counting_shape_type | task_geometry_counting_shape_type | alright_for_now | distribution pass |
+| task_geometry_counting_convexity | task_geometry_counting_convexity | alright_for_now | distribution pass |
 | task_geometry_measurement_angle | task_geometry_measurement_angle | alright_for_now | distribution pass |
 | task_geometry_measurement_area | task_geometry_measurement_area | alright_for_now | distribution pass |
 | task_geometry_measurement_perimeter | task_geometry_measurement_perimeter | alright_for_now | distribution pass |
@@ -23,4 +24,8 @@ Update this table after each review run.
 | task_geometry_analytical_2d_perimeter | task_geometry_analytical_2d_perimeter | alright_for_now | distribution pass |
 | task_geometry_analytical_3d_volume | task_geometry_analytical_3d_volume | alright_for_now | distribution pass |
 | task_geometry_analytical_3d_surface_area | task_geometry_analytical_3d_surface_area | alright_for_now | distribution pass |
+| task_icons_counting_type | task_icons_counting_type | alright_for_now | distribution pass |
+| task_icons_counting_orientation | task_icons_counting_orientation | alright_for_now | distribution pass |
+| task_icons_counting_color | task_icons_counting_color | alright_for_now | distribution pass |
+| task_icons_transformation_pair_count | task_icons_transformation_pair_count | alright_for_now | distribution pass |
 | task_tile_path_shortest_path |  |  |  |

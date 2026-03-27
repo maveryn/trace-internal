@@ -83,6 +83,22 @@ generation:
         "7": 1.0
         "8": 1.0
         "9": 1.0
+    task_geometry_counting_convexity:
+      object_count_min: 6
+      object_count_max: 9
+      side_count_weights:
+        "4": 1.0
+        "5": 1.0
+        "6": 1.0
+      variant_weights:
+        concave_polygon: 1.0
+        convex_polygon: 1.0
+      balanced_variant_sampling: true
+      object_count_weights:
+        "6": 1.0
+        "7": 1.0
+        "8": 1.0
+        "9": 1.0
 
 rendering:
   shared:
@@ -107,6 +123,10 @@ rendering:
       graph_cells_max: 34
       object_label_offset_px: 18
     task_geometry_counting_shape_type:
+      graph_cells_min: 28
+      graph_cells_max: 36
+      object_label_offset_px: 18
+    task_geometry_counting_convexity:
       graph_cells_min: 28
       graph_cells_max: 36
       object_label_offset_px: 18
@@ -178,4 +198,12 @@ prompt:
       evidence_hint: set "evidence" to a sorted JSON array of the labels of all shapes that match the requested type
       answer_hint: set "answer" to the count as an integer
       json_example: '{"evidence":["A","D","F"],"answer":3}'
+      json_example_answer_only: '{"answer":3}'
+    task_geometry_counting_convexity:
+      object_description: several labeled polygons
+      question_text_convex_polygon: How many labeled polygons are convex polygons?
+      question_text_concave_polygon: How many labeled polygons are concave polygons?
+      evidence_hint: set "evidence" to a sorted JSON array of the labels of all polygons that match the requested type
+      answer_hint: set "answer" to the count as an integer
+      json_example: '{"evidence":["B","D","G"],"answer":3}'
       json_example_answer_only: '{"answer":3}'

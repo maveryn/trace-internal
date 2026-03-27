@@ -71,6 +71,12 @@ Use this as the implementation checklist for new or modified tasks.
 17. Keep `question_text` semantic-only when task templates already carry formatting or rounding instructions; avoid repeating the same instruction across prompt layers.
 18. For multi-object counting tasks, label whole objects and use sorted `label_set` evidence unless geometry coordinates are truly necessary for verification.
 19. For mixed-shape classification/counting tasks, enforce visible separation between visually adjacent classes (for example circles vs ellipses) in the sampler itself instead of leaving borderline cases to human interpretation.
+20. For polygon classification/counting tasks, keep the convex/concave predicate in one shared geometry helper and reject `degenerate` near-flat or self-intersecting polygons instead of encoding one-off visual heuristics inside each task.
+21. For reference-panel icon tasks, keep prompt wording anchored on the reference-vs-scene relationship and use scene-only `bbox_set` evidence in final image coordinates; store the reference box in trace metadata instead of the user-facing evidence payload.
+22. For curated-icon tasks with Prism-style color variation, sample per-instance palettes through the shared icon-style helper, keep palette colors separated from panel/background anchor colors, and record the sampled palette or final tint assignments in trace metadata instead of leaving color randomness implicit.
+23. For reference-scene icon color-matching tasks, construct the positive/negative sets from explicit tint assignments rather than hoping random palette draws realize the requested count, and keep any stricter color-separation threshold as a task-level config override.
+24. For reference-scene icon counting tasks that mimic Prism, sample `target_count` and `distractor_count` from their explicit supports, derive `object_count` from the pair, and place the scene icons with an explicit overlap cap; keep any subtle icon noise per-instance before compositing and record those edits in trace metadata rather than applying an untracked final-image corruption pass.
+25. For icon transformation tasks that compare pairwise rules, show the transformation explicitly in a Reference pair and use labeled Scene cells plus `label_set` evidence so the model grounds the matching rule on visible cells rather than hidden transform ids or bboxes.
 
 ## 4) Config/defaults rules
 1. Precedence: `domain -> task_group -> task/params`.
@@ -89,6 +95,8 @@ Use this as the implementation checklist for new or modified tasks.
 14. If a non-measurement geometry task-group needs its own background policy (for example counting on solid backgrounds), load geometry background/noise defaults for that task group explicitly instead of importing measurement-scoped constants.
 15. For counting/classification tasks with overlapping textbook definitions (for example isosceles vs equilateral), encode the intended exclusivity directly in the prompt/config wording instead of assuming one convention.
 16. For counting tasks where the answer is the matched-object count itself, prefer global target-count support sampling (for example `resolve_counting_cardinality_pair(...)`) over choosing object count first when the latter would skew answers toward smaller counts.
+17. For polygon class-counting tasks with bulkier objects, use the roomier counting slot layout helper and a strict shared convexity classifier so object labels stay readable and class membership does not depend on ambiguous borderline outlines.
+18. For curated-asset icon tasks, resolve manifest ids through one shared asset loader instead of assuming manifest ids and SVG filenames match exactly; record the chosen manifest in query trace metadata.
 
 ## 5) Sampling rules
 1. Global sampling unit is `task`.
@@ -108,6 +116,7 @@ Use this as the implementation checklist for new or modified tasks.
 15. For comparison tasks with bulkier shapes, choose a slot layout sized for the rendered footprint instead of reusing the tighter line/angle layout by default.
 16. When a second geometry task-group needs the same hidden graph-unit projection or object-family scene construction (for example comparison + counting angle scenes), promote that logic into geometry domain-shared helpers rather than importing private task-group utilities.
 16. When two comparison tasks operate on the same object family (for example rectangles for area and perimeter), extract one shared scene sampler/renderer for that object family instead of duplicating nearly identical task-local geometry generation.
+17. For polygon counting tasks where the class is purely geometric (for example convex vs concave), sample positives/negatives from exact classified prototypes first and only then randomize transforms/layout, so object labels and rendered positions do not accidentally correlate with class membership.
 
 ## 6) Minimal test checklist
 1. Determinism for fixed seed.

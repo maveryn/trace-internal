@@ -40,6 +40,7 @@ from ..shared.variant_sampling import apply_balanced_variant_sampling, resolve_v
 from .defaults import COUNTING_SHARED_DEFAULTS
 from .shared import (
     assign_counting_labels,
+    bulky_counting_slot_centers_graph_units,
     counting_complexity_score,
     resolve_counting_cardinality_pair,
 )
@@ -116,28 +117,6 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 )
 _BACKGROUND_DEFAULTS = load_geometry_background_defaults(task_group="counting")
 _NOISE_DEFAULTS = load_geometry_noise_defaults(task_group="counting")
-
-
-def _shape_slots_graph_units(*, object_count: int, graph_cells: int, rng) -> List[Tuple[int, int]]:
-    """Return a roomy slot bank for 6-9 mixed-shape objects."""
-
-    half_span = max(14, int(graph_cells // 2))
-    outer_x = max(7, min(int(round(float(half_span) * 0.72)), int(half_span - 3)))
-    mid_x = max(3, min(int(round(float(half_span) * 0.30)), max(3, int(outer_x - 3))))
-    row_y = max(5, min(int(round(float(half_span) * 0.42)), int(half_span - 3)))
-    base_slots = [
-        (-int(outer_x), int(row_y)),
-        (-int(mid_x), int(row_y)),
-        (int(mid_x), int(row_y)),
-        (int(outer_x), int(row_y)),
-        (-int(outer_x), 0),
-        (0, 0),
-        (int(outer_x), 0),
-        (-int(mid_x), -int(row_y)),
-        (int(mid_x), -int(row_y)),
-    ]
-    rng.shuffle(base_slots)
-    return list(base_slots[: int(object_count)])
 
 
 def _regular_polygon_vertices(side_count: int, *, radius_units: float, rotation_radians: float) -> Tuple[Tuple[float, float], ...]:
@@ -423,7 +402,11 @@ def _sample_scene(
     last_error: Exception | None = None
     for _ in range(700):
         labels = list(assign_counting_labels(rng, object_count=int(object_count)))
-        slots = _shape_slots_graph_units(object_count=int(object_count), graph_cells=int(context.graph_cells), rng=rng)
+        slots = bulky_counting_slot_centers_graph_units(
+            object_count=int(object_count),
+            graph_cells=int(context.graph_cells),
+            rng=rng,
+        )
         positives = set(rng.sample(labels, int(target_count)))
         matching_labels: List[str] = []
         objects: List[_MixedShapeObject] = []

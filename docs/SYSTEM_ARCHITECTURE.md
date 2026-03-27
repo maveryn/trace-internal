@@ -56,6 +56,7 @@ Implementation map for the contracts in `docs/BLUEPRINT.md`.
 2. `trace/tasks/base.py` — task protocol and `TaskOutput`.
 3. `trace/tasks/shared/*` — reusable query/layout/evidence/config/prompt helpers.
 4. `trace/tasks/<domain>/<task_group>/*.py` — concrete tasks plus reusable task-group bases (for example `trace/tasks/geometry/measurement/shape_measure_base.py`).
+5. `trace/tasks/icons/shared/*` — icon-domain shared asset loading and two-panel reference-scene rendering helpers.
 
 ## 4) Current active tasks
 1. `trace/tasks/tile/path/shortest_path.py`
@@ -67,17 +68,24 @@ Implementation map for the contracts in `docs/BLUEPRINT.md`.
 7. `trace/tasks/geometry/counting/triangle.py`
 8. `trace/tasks/geometry/counting/quadrilateral.py`
 9. `trace/tasks/geometry/counting/shape_type.py`
-10. `trace/tasks/geometry/measurement/angle.py`
-11. `trace/tasks/geometry/measurement/area.py`
-12. `trace/tasks/geometry/measurement/perimeter.py`
-13. `trace/tasks/geometry/measurement/length.py`
-14. `trace/tasks/geometry/measurement/slope.py`
-15. `trace/tasks/geometry/analytical_2d/area.py`
-16. `trace/tasks/geometry/analytical_2d/composite_area.py`
-17. `trace/tasks/geometry/analytical_2d/length.py`
-18. `trace/tasks/geometry/analytical_2d/perimeter.py`
-19. `trace/tasks/geometry/analytical_3d/volume.py`
-20. `trace/tasks/geometry/analytical_3d/surface_area.py`
+10. `trace/tasks/geometry/counting/convexity.py`
+11. `trace/tasks/geometry/measurement/angle.py`
+12. `trace/tasks/geometry/measurement/area.py`
+13. `trace/tasks/geometry/measurement/perimeter.py`
+14. `trace/tasks/geometry/measurement/length.py`
+15. `trace/tasks/geometry/measurement/slope.py`
+16. `trace/tasks/geometry/analytical_2d/area.py`
+17. `trace/tasks/geometry/analytical_2d/composite_area.py`
+18. `trace/tasks/geometry/analytical_2d/length.py`
+19. `trace/tasks/geometry/analytical_2d/perimeter.py`
+20. `trace/tasks/geometry/analytical_3d/volume.py`
+21. `trace/tasks/geometry/analytical_3d/surface_area.py`
+22. `trace/tasks/icons/counting/type.py`
+23. `trace/tasks/icons/counting/orientation.py`
+24. `trace/tasks/icons/counting/color.py`
+25. `trace/tasks/icons/transformation/pair_count.py`
+26. `trace/tasks/icons/shared/icon_pair_grid_scene.py`
+27. `trace/tasks/icons/shared/icon_transform.py`
 
 ## 5) Architecture invariants
 1. Determinism from config + seeds + versions.

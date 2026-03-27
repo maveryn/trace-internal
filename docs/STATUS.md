@@ -1,6 +1,6 @@
 # TRACE Status
 
-Date: 2026-03-21
+Date: 2026-03-27
 
 ## Implemented
 1. Deterministic build pipeline with sidecar trace shards and atomic finalize.
@@ -34,7 +34,9 @@ Date: 2026-03-21
 23. Geometry analytical_2d composite-area task supports five shaded/composite polygon variants (inner-rectangle cutout, triangle cutout, rectangle+triangle union, L-shape cutout, step-rectangle union) with integer answers and structured `measurement_ref_map` evidence.
 24. Shared analytical 2D scene rendering now supports reusable polygon fill semantics (`shaded`, `background`) so composite/shaded objectives can reuse one collision-aware render stack instead of task-local draw overlays.
 25. Geometry comparison now includes `task_geometry_comparison_angle`, `task_geometry_comparison_length`, `task_geometry_comparison_area`, and `task_geometry_comparison_perimeter`, each with 4–6 labeled graph-paper objects, `largest`/`smallest` winner queries, `option_letter` answers, and winner-evidence graph-point sets.
-26. Geometry counting now includes `task_geometry_counting_angle`, `task_geometry_counting_triangle`, `task_geometry_counting_quadrilateral`, and `task_geometry_counting_shape_type`, all non-graph-paper multi-object scenes with integer answers and sorted `label_set` evidence; angle scenes count acute/right/obtuse classes, triangle scenes count equilateral / isosceles-but-not-equilateral / scalene / right / acute / obtuse classes, quadrilateral scenes count square / rectangle-but-not-square / rhombus-but-not-square / parallelogram-only classes, and mixed-shape scenes count triangle / quadrilateral / pentagon / hexagon / circle / ellipse instances.
+26. Geometry counting now includes `task_geometry_counting_angle`, `task_geometry_counting_triangle`, `task_geometry_counting_quadrilateral`, `task_geometry_counting_shape_type`, and `task_geometry_counting_convexity`, all non-graph-paper multi-object scenes with integer answers and sorted `label_set` evidence; angle scenes count acute/right/obtuse classes, triangle scenes count equilateral / isosceles-but-not-equilateral / scalene / right / acute / obtuse classes, quadrilateral scenes count square / rectangle-but-not-square / rhombus-but-not-square / parallelogram-only classes, mixed-shape scenes count triangle / quadrilateral / pentagon / hexagon / circle / ellipse instances, and convexity scenes count convex vs concave polygons using strict shared polygon classification.
+27. Icons counting now includes `task_icons_counting_type`, `task_icons_counting_orientation`, and `task_icons_counting_color`, all using a two-panel `Reference` + `Scene` image, integer answers, and scene-only `bbox_set` evidence in final image coordinates; type counting matches icon identity against the curated 3000-icon Prism pool, orientation counting uses the curated asymmetric subset and same-icon scenes with rotation-based orientation queries, and color counting uses same-icon scenes so the only varying predicate is tint, with a stricter Lab-distance threshold (`60`). These tasks sample `target_count` independently in `0..10` and `distractor_count` independently in `1..10`, place icons randomly in the scene panel with at most `10%` pairwise overlap (normalized by the smaller box area), and apply per-icon subtle noise before compositing; the sampled palette, overlap/noise config, final tints, and per-instance noise edits are recorded in trace metadata.
+28. Icons transformation now includes `task_icons_transformation_pair_count`, a two-panel `Reference` + labeled `Scene` grid task with integer answers and sorted `label_set` evidence; the Reference pair shows one canonical D4 transform, Scene cells each show `icon -> transformed icon`, and the task counts how many cells apply the same rule. The task uses the curated asymmetric icon pool, rejects icon/transform pairs that collapse visually under rendered-silhouette checks, and records the sampled transform ids plus per-icon subtle noise in trace metadata.
 
 ## Active tasks
 1. `task_tile_path_shortest_path` (`domain=tile`, `task_group=path`)
@@ -46,25 +48,30 @@ Date: 2026-03-21
 7. `task_geometry_counting_triangle` (`domain=geometry`, `task_group=counting`)
 8. `task_geometry_counting_quadrilateral` (`domain=geometry`, `task_group=counting`)
 9. `task_geometry_counting_shape_type` (`domain=geometry`, `task_group=counting`)
-10. `task_geometry_measurement_angle` (`domain=geometry`, `task_group=measurement`)
-11. `task_geometry_measurement_area` (`domain=geometry`, `task_group=measurement`)
-12. `task_geometry_measurement_perimeter` (`domain=geometry`, `task_group=measurement`)
-13. `task_geometry_measurement_length` (`domain=geometry`, `task_group=measurement`)
-14. `task_geometry_measurement_slope` (`domain=geometry`, `task_group=measurement`)
-15. `task_geometry_analytical_2d_area` (`domain=geometry`, `task_group=analytical_2d`)
-16. `task_geometry_analytical_2d_length` (`domain=geometry`, `task_group=analytical_2d`)
-17. `task_geometry_analytical_2d_perimeter` (`domain=geometry`, `task_group=analytical_2d`)
-18. `task_geometry_analytical_2d_composite_area` (`domain=geometry`, `task_group=analytical_2d`)
-19. `task_geometry_analytical_3d_volume` (`domain=geometry`, `task_group=analytical_3d`)
-20. `task_geometry_analytical_3d_surface_area` (`domain=geometry`, `task_group=analytical_3d`)
+10. `task_geometry_counting_convexity` (`domain=geometry`, `task_group=counting`)
+11. `task_geometry_measurement_angle` (`domain=geometry`, `task_group=measurement`)
+12. `task_geometry_measurement_area` (`domain=geometry`, `task_group=measurement`)
+13. `task_geometry_measurement_perimeter` (`domain=geometry`, `task_group=measurement`)
+14. `task_geometry_measurement_length` (`domain=geometry`, `task_group=measurement`)
+15. `task_geometry_measurement_slope` (`domain=geometry`, `task_group=measurement`)
+16. `task_geometry_analytical_2d_area` (`domain=geometry`, `task_group=analytical_2d`)
+17. `task_geometry_analytical_2d_length` (`domain=geometry`, `task_group=analytical_2d`)
+18. `task_geometry_analytical_2d_perimeter` (`domain=geometry`, `task_group=analytical_2d`)
+19. `task_geometry_analytical_2d_composite_area` (`domain=geometry`, `task_group=analytical_2d`)
+20. `task_geometry_analytical_3d_volume` (`domain=geometry`, `task_group=analytical_3d`)
+21. `task_geometry_analytical_3d_surface_area` (`domain=geometry`, `task_group=analytical_3d`)
+22. `task_icons_counting_type` (`domain=icons`, `task_group=counting`)
+23. `task_icons_counting_orientation` (`domain=icons`, `task_group=counting`)
+24. `task_icons_counting_color` (`domain=icons`, `task_group=counting`)
+25. `task_icons_transformation_pair_count` (`domain=icons`, `task_group=transformation`)
 
 ## Current quality baseline
 1. Tests are required to pass before finalize.
 2. Distribution QA uses `scripts/check_task_answer_distribution.py` with per-variant answer-only checks (`unique_answers >= 5`, `max_answer_frequency < 25%`) and multithreaded sample generation (`--workers`); numeric 5-bin summaries remain reported for review but are not hard pass/fail gates.
 3. Task-review tooling writes per-task artifacts under `task-reviews/<task_id>/`, including one inspection workbook named `<task_id>.xlsx` with one sheet per task variant.
-4. The current active geometry review set (4 comparison + 4 counting + 5 measurement + 4 analytical_2d + 2 analytical_3d tasks) passes distribution review under the active gates.
+4. The current active reviewed task set (20 geometry tasks + 4 icons tasks) passes distribution review under the active gates; tile review artifacts remain tracked separately.
 
 ## Next priorities
-1. Continue objective-first refactor for additional domains (tile/icons/charts/graphs/documents).
+1. Extend icons beyond counting/transformation using the new curated Prism asset pipeline (relation/comparison are the next natural families).
 2. Introduce cross-domain `scene_variant` and role-binding schema in architecture docs/contracts.
 3. Add future polygon variants as deferred tasks (diameter, min-side, max-side) after current scope stabilizes.

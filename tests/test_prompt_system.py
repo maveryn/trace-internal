@@ -153,6 +153,8 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
         ("geometry", "analytical_2d", "geometry_analytical_perimeter_v1"),
         ("geometry", "measurement", "geometry_angle_measure_v1"),
         ("geometry", "measurement", "geometry_measurement_v1"),
+        ("icons", "counting", "icons_counting_v1"),
+        ("icons", "transformation", "icons_transformation_v1"),
         ("tile", "path", "tile_path_v1"),
     )
     for domain, task_group, bundle_id in bundle_coords:
@@ -192,6 +194,8 @@ def test_geometry_task_templates_avoid_awkward_comma_question_prefixes() -> None
         ("geometry", "analytical_2d", "geometry_analytical_perimeter_v1", "analytical_perimeter_query"),
         ("geometry", "analytical_3d", "geometry_analytical_surface_area_v1", "analytical_surface_area_query"),
         ("geometry", "analytical_3d", "geometry_analytical_volume_v1", "analytical_volume_query"),
+        ("icons", "counting", "icons_counting_v1", "counting_query"),
+        ("icons", "transformation", "icons_transformation_v1", "transformation_query"),
     )
     for domain, task_group, bundle_id, task_key in bundle_coords:
         bundle = load_prompt_bundle(domain, task_group, bundle_id)
@@ -225,6 +229,29 @@ def test_geometry_counting_bundle_uses_integer_answer_and_label_evidence() -> No
     assert len(bundle.answer_or_evidence_templates["answer_and_evidence"]) == REQUIRED_PROMPT_VARIANTS
     assert all("{question_text}" in str(template) for template in bundle.task_templates["counting_query"])
     assert all("graph-paper" not in str(template).lower() for template in bundle.task_family_templates["counting_scene"])
+
+
+def test_icons_counting_bundle_uses_reference_scene_and_bbox_evidence() -> None:
+    bundle = load_prompt_bundle("icons", "counting", "icons_counting_v1")
+    assert len(bundle.task_family_templates["reference_scene_counting"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_templates["counting_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.answer_or_evidence_templates["answer_only"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.answer_or_evidence_templates["answer_and_evidence"]) == REQUIRED_PROMPT_VARIANTS
+    assert all("{question_text}" in str(template) for template in bundle.task_templates["counting_query"])
+    assert all("reference icon" in str(template).lower() or "{object_description}" in str(template) for template in bundle.task_family_templates["reference_scene_counting"])
+
+
+def test_icons_transformation_bundle_uses_reference_pair_grid_and_label_evidence() -> None:
+    bundle = load_prompt_bundle("icons", "transformation", "icons_transformation_v1")
+    assert len(bundle.task_family_templates["reference_pair_grid_transformation"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_templates["transformation_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.answer_or_evidence_templates["answer_only"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.answer_or_evidence_templates["answer_and_evidence"]) == REQUIRED_PROMPT_VARIANTS
+    assert all("{question_text}" in str(template) for template in bundle.task_templates["transformation_query"])
+    assert all(
+        "scene grid" in str(template).lower() or "{object_description}" in str(template)
+        for template in bundle.task_family_templates["reference_pair_grid_transformation"]
+    )
 
 
 def test_geometry_analytical_task_templates_do_not_repeat_image_reference() -> None:

@@ -125,7 +125,7 @@ def rectangle_vertices_from_slot(
         graph_units_to_pixel(
             unit_point,
             graph_origin=(float(graph_origin[0]), float(graph_origin[1])),
-            graph_spacing=int(graph_spacing),
+            spacing=int(graph_spacing),
         )
         for unit_point in unit_vertices
     )

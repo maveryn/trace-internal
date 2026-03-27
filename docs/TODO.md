@@ -4,7 +4,7 @@
 1. No immediate P0 cleanup blockers; keep follow-up review findings flowing into docs/tests as new task families land.
 
 ## Next (P1)
-1. Extend objective-first measurement pattern to additional domains.
+1. Extend the new icons domain beyond counting/transformation using the curated Prism asset pipeline.
 2. Add cross-domain `scene_variant` + role-binding spec in architecture/ABI docs.
 3. Improve dataset QA diagnostics/report summaries.
 4. Extend geometry comparison beyond angle/length/area/perimeter using the same label-answer + winner-gap contract.
@@ -43,11 +43,16 @@
 - `task_geometry_counting_angle`
 - `task_geometry_counting_triangle`
 - `task_geometry_counting_quadrilateral`
+- `task_geometry_counting_shape_type`
+- `task_geometry_counting_convexity`
 - `task_geometry_analytical_2d_area`
 - `task_geometry_analytical_2d_composite_area`
 - `task_geometry_analytical_2d_length`
 - `task_geometry_analytical_2d_perimeter`
 - `task_geometry_analytical_3d_volume`
 - `task_geometry_analytical_3d_surface_area`
+- `task_icons_counting_type`
+- `task_icons_counting_orientation`
+- `task_icons_counting_color`
 6. Task-review/sample-generation tooling with per-task artifacts and inspection workbooks.
 7. Pre-finalize prompt validation checks (metadata/bundle/key/placeholder/cardinality).

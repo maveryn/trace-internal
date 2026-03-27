@@ -471,6 +471,7 @@ def test_geometry_counting_defaults_loaded() -> None:
     assert "task_geometry_counting_triangle" in generation_overrides
     assert "task_geometry_counting_quadrilateral" in generation_overrides
     assert "task_geometry_counting_shape_type" in generation_overrides
+    assert "task_geometry_counting_convexity" in generation_overrides
 
     render_shared = cfg["rendering"]["shared"]
     assert int(render_shared["canvas_size_min"]) > 0
@@ -597,6 +598,24 @@ def test_geometry_counting_defaults_loaded() -> None:
     assert str(shape_type_prompt["json_example"]).strip()
     assert str(shape_type_prompt["json_example_answer_only"]).strip()
 
+    convexity_generation, convexity_rendering, convexity_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_counting_convexity",
+    )
+    assert sorted(convexity_generation["variant_weights"].keys()) == ["concave_polygon", "convex_polygon"]
+    assert sorted(convexity_generation["object_count_weights"].keys()) == ["6", "7", "8", "9"]
+    assert sorted(convexity_generation["side_count_weights"].keys()) == ["4", "5", "6"]
+    assert bool(convexity_generation["balanced_variant_sampling"]) is True
+    assert int(convexity_rendering["graph_cells_min"]) < int(convexity_rendering["graph_cells_max"])
+    assert int(convexity_rendering["object_label_offset_px"]) > 0
+    assert str(convexity_prompt["object_description"]).strip()
+    assert str(convexity_prompt["question_text_convex_polygon"]).strip()
+    assert str(convexity_prompt["question_text_concave_polygon"]).strip()
+    assert str(convexity_prompt["evidence_hint"]).strip()
+    assert str(convexity_prompt["answer_hint"]).strip()
+    assert str(convexity_prompt["json_example"]).strip()
+    assert str(convexity_prompt["json_example_answer_only"]).strip()
+
 
 def test_geometry_analytical_3d_defaults_loaded() -> None:
     cfg = get_task_group_defaults("geometry", "analytical_3d")
@@ -682,6 +701,147 @@ def test_geometry_analytical_3d_defaults_loaded() -> None:
         "sphere_given_r",
     ):
         assert str(surface_prompt[f"question_text_{key}"]).strip()
+
+
+def test_icons_counting_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("icons", "counting")
+    for section in ("generation", "rendering", "prompt", "visual"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["object_count_min"]) >= 1
+    assert int(generation_shared["object_count_max"]) >= int(generation_shared["object_count_min"])
+    assert int(generation_shared["target_count_min"]) == 0
+    assert int(generation_shared["target_count_max"]) == 10
+    assert int(generation_shared["distractor_count_min"]) == 1
+    assert int(generation_shared["distractor_count_max"]) == 10
+    assert bool(generation_shared["balanced_sampling"]) is True
+    assert "task_icons_counting_color" in cfg["generation"]["task_overrides"]
+    assert "task_icons_counting_type" in cfg["generation"]["task_overrides"]
+    assert "task_icons_counting_orientation" in cfg["generation"]["task_overrides"]
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_width"]) > 0
+    assert int(render_shared["canvas_height"]) > 0
+    assert int(render_shared["reference_panel_width_px"]) > 0
+    assert int(render_shared["scene_icon_size_min_px"]) > 0
+    assert int(render_shared["scene_icon_size_max_px"]) >= int(render_shared["scene_icon_size_min_px"])
+    assert 0.0 <= float(render_shared["scene_max_overlap_fraction"]) <= 1.0
+    assert int(render_shared["scene_placement_max_attempts"]) > 0
+    assert 1 <= int(render_shared["palette_size_min"]) <= int(render_shared["palette_size_max"])
+    assert float(render_shared["min_color_distance"]) > 0.0
+    assert str(render_shared["color_distance_space"]).strip() in {"lab", "rgb"}
+    assert "icon_tint_rgb" not in render_shared
+    assert list(render_shared["icon_noise_edit_types"]) == ["blur", "downsample", "jpeg", "noise"]
+    assert list(render_shared["icon_noise_edit_count_range"]) == [0, 2]
+    assert "noise" in render_shared["icon_noise_value_ranges"]
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip()
+    assert str(prompt_shared["task_family_key"]).strip()
+    assert str(prompt_shared["task_key"]).strip()
+    assert str(prompt_shared["json_output_contract"]).strip()
+    assert str(prompt_shared["json_output_contract_answer_only"]).strip()
+
+    color_generation, color_rendering, color_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_icons_counting_color",
+    )
+    assert str(color_generation["pool_manifest"]).strip() == "all_icons.txt"
+    assert float(color_rendering["min_color_distance"]) == 60.0
+    assert int(color_rendering["palette_size_min"]) == 3
+    assert int(color_rendering["palette_size_max"]) == 4
+    assert str(color_prompt["object_description"]).strip()
+    assert str(color_prompt["question_text"]).strip()
+    assert str(color_prompt["evidence_hint"]).strip()
+    assert str(color_prompt["answer_hint"]).strip()
+    assert str(color_prompt["json_example"]).strip()
+    assert str(color_prompt["json_example_answer_only"]).strip()
+
+    type_generation, type_rendering, type_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_icons_counting_type",
+    )
+    assert str(type_generation["pool_manifest"]).strip() == "all_icons.txt"
+    assert int(type_rendering["canvas_width"]) > 0
+    assert int(type_rendering["reference_panel_width_px"]) > 0
+    assert str(type_prompt["object_description"]).strip()
+    assert str(type_prompt["question_text"]).strip()
+    assert str(type_prompt["evidence_hint"]).strip()
+    assert str(type_prompt["answer_hint"]).strip()
+    assert str(type_prompt["json_example"]).strip()
+    assert str(type_prompt["json_example_answer_only"]).strip()
+
+    orientation_generation, orientation_rendering, orientation_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_icons_counting_orientation",
+    )
+    assert str(orientation_generation["pool_manifest"]).strip() == "non_symmetry.txt"
+    assert list(orientation_generation["rotation_candidates_degrees"]) == [0, 90, 180, 270]
+    assert int(orientation_rendering["canvas_width"]) > 0
+    assert str(orientation_prompt["object_description"]).strip()
+    assert str(orientation_prompt["question_text"]).strip()
+    assert str(orientation_prompt["evidence_hint"]).strip()
+    assert str(orientation_prompt["answer_hint"]).strip()
+    assert str(orientation_prompt["json_example"]).strip()
+    assert str(orientation_prompt["json_example_answer_only"]).strip()
+
+
+def test_icons_transformation_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("icons", "transformation")
+    for section in ("generation", "rendering", "prompt", "visual"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["object_count_min"]) >= 2
+    assert int(generation_shared["object_count_max"]) >= int(generation_shared["object_count_min"])
+    assert int(generation_shared["target_count_min"]) == 0
+    assert int(generation_shared["target_count_max"]) == 6
+    assert int(generation_shared["distractor_count_min"]) == 1
+    assert int(generation_shared["distractor_count_max"]) == 6
+    assert bool(generation_shared["balanced_sampling"]) is True
+    assert "task_icons_transformation_pair_count" in cfg["generation"]["task_overrides"]
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_width"]) > 0
+    assert int(render_shared["canvas_height"]) > 0
+    assert int(render_shared["reference_panel_width_px"]) > 0
+    assert int(render_shared["scene_icon_size_min_px"]) > 0
+    assert int(render_shared["scene_icon_size_max_px"]) >= int(render_shared["scene_icon_size_min_px"])
+    assert int(render_shared["cell_padding_px"]) > 0
+    assert int(render_shared["cell_label_font_size_px"]) > 0
+    assert int(render_shared["pair_arrow_stroke_px"]) > 0
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip()
+    assert str(prompt_shared["task_family_key"]).strip()
+    assert str(prompt_shared["task_key"]).strip()
+    assert str(prompt_shared["json_output_contract"]).strip()
+    assert str(prompt_shared["json_output_contract_answer_only"]).strip()
+
+    generation, rendering, prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_icons_transformation_pair_count",
+    )
+    assert str(generation["pool_manifest"]).strip() == "non_symmetry.txt"
+    assert list(generation["transform_ids"]) == [
+        "rot90",
+        "rot180",
+        "rot270",
+        "flip_h",
+        "flip_v",
+        "flip_diag_main",
+        "flip_diag_anti",
+    ]
+    assert int(generation["transform_check_size_px"]) > 0
+    assert int(rendering["canvas_width"]) > 0
+    assert int(rendering["reference_panel_width_px"]) > 0
+    assert str(prompt["object_description"]).strip()
+    assert str(prompt["question_text"]).strip()
+    assert str(prompt["evidence_hint"]).strip()
+    assert str(prompt["answer_hint"]).strip()
+    assert str(prompt["json_example"]).strip()
+    assert str(prompt["json_example_answer_only"]).strip()
 
 
 def test_tile_path_defaults_loaded() -> None:

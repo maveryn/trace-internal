@@ -253,6 +253,47 @@ def test_charts_statistics_defaults_loaded() -> None:
     assert str(label_prompt["json_example_median_label"]).strip()
 
 
+def test_charts_multiseries_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("charts", "multiseries")
+    for section in ("generation", "rendering", "prompt"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["category_count_min"]) == 5
+    assert int(generation_shared["category_count_max"]) == 10
+    assert int(generation_shared["series_count_min"]) == 2
+    assert int(generation_shared["series_count_max"]) == 3
+    assert int(generation_shared["target_answer_min"]) == 0
+    assert int(generation_shared["target_answer_max"]) == 8
+    assert sorted(generation_shared["task_variant_weights"].keys()) == [
+        "series_a_gt_b_count",
+        "series_a_lt_b_count",
+    ]
+    assert sorted(generation_shared["scene_variant_weights"].keys()) == [
+        "grouped_bar",
+        "grouped_dot_plot",
+        "grouped_lollipop",
+        "multi_line",
+    ]
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_width"]) > 0
+    assert int(render_shared["canvas_height"]) > 0
+    assert int(render_shared["plot_margin_left_px"]) > 0
+    assert int(render_shared["plot_margin_bottom_px"]) > 0
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "charts_multiseries_v1"
+    assert str(prompt_shared["task_family_key"]).strip() == "multiseries_chart_comparison"
+    assert str(prompt_shared["task_key"]).strip() == "pairwise_comparison_count_query"
+    assert str(prompt_shared["object_description_grouped_bar"]).strip()
+    assert str(prompt_shared["object_description_multi_line"]).strip()
+    assert str(prompt_shared["object_description_grouped_dot_plot"]).strip()
+    assert str(prompt_shared["object_description_grouped_lollipop"]).strip()
+    assert str(prompt_shared["json_example_series_a_gt_b_count"]).strip()
+    assert str(prompt_shared["json_example_series_a_lt_b_count"]).strip()
+
+
 def test_charts_counting_defaults_loaded() -> None:
     cfg = get_task_group_defaults("charts", "counting")
     for section in ("generation", "rendering", "prompt"):

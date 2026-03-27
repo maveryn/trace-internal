@@ -4,7 +4,7 @@
 1. No immediate P0 cleanup blockers; keep follow-up review findings flowing into docs/tests as new task families land.
 
 ## Next (P1)
-1. Expand the charts domain beyond the current `statistics` + `counting` + `readout` tasks and formalize the next chart reasoning families after `task_charts_statistics_summary_value`, `task_charts_statistics_summary_label`, `task_charts_counting_value_count`, and `task_charts_readout_subset_value`.
+1. Expand the charts domain beyond the current `statistics` + `counting` + `readout` + `multiseries` tasks and formalize the next chart reasoning families after `task_charts_statistics_summary_value`, `task_charts_statistics_summary_label`, `task_charts_counting_value_count`, `task_charts_readout_subset_value`, and `task_charts_multiseries_pairwise_comparison_count`.
 2. Extend the new icons domain beyond counting/transformation using the curated Prism asset pipeline.
 3. Expand the v1 `rectangular_tiling` tile task suite beyond the current active set and keep future ports aligned to `docs/domains/TILE_TASK_SETUP.md`.
 4. Add cross-domain `scene_variant` + role-binding spec in architecture/ABI docs.
@@ -48,4 +48,4 @@
 - `task_geometry_analytical_3d_surface_area`
 6. Task-review/sample-generation tooling with per-task artifacts and inspection workbooks.
 7. Pre-finalize prompt validation checks (metadata/bundle/key/placeholder/cardinality).
-8. First charts-domain tasks: `task_charts_statistics_summary_value`, `task_charts_statistics_summary_label`, `task_charts_counting_value_count`, `task_charts_readout_subset_value`.
+8. First charts-domain tasks: `task_charts_statistics_summary_value`, `task_charts_statistics_summary_label`, `task_charts_counting_value_count`, `task_charts_readout_subset_value`, `task_charts_multiseries_pairwise_comparison_count`.

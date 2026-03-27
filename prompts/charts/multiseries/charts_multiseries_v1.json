@@ -1,0 +1,70 @@
+{
+  "bundle_id": "charts_multiseries_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "multiseries_chart_comparison": [
+      "The image shows {object_description}.",
+      "Use the chart in the image. It shows {object_description}.",
+      "Work from the multiseries chart shown in the image: {object_description}.",
+      "Look at the multiseries chart in the image. It shows {object_description}.",
+      "You are given a multiseries chart: {object_description}."
+    ]
+  },
+  "task_templates": {
+    "pairwise_comparison_count_query": [
+      "Compare the two queried series category by category.",
+      "Use the chart to compare the queried pair of series across the category labels.",
+      "Determine how many category labels satisfy the requested pairwise series comparison.",
+      "Read the chart values and count the categories where the stated series relation holds.",
+      "Work category by category and count the labels where the requested series comparison is true."
+    ]
+  },
+  "task_variant_templates": {
+    "series_a_gt_b_count": [
+      "Across the labeled categories, in how many categories is {left_series} higher than {right_series}?",
+      "Count the category labels where {left_series} exceeds {right_series}.",
+      "How many labeled categories have {left_series} above {right_series}?",
+      "Determine the number of categories where {left_series} is greater than {right_series}.",
+      "Find how many category labels show {left_series} higher than {right_series}."
+    ],
+    "series_a_lt_b_count": [
+      "Across the labeled categories, in how many categories is {left_series} lower than {right_series}?",
+      "Count the category labels where {left_series} is below {right_series}.",
+      "How many labeled categories have {left_series} under {right_series}?",
+      "Determine the number of categories where {left_series} is less than {right_series}.",
+      "Find how many category labels show {left_series} lower than {right_series}."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:multiseries_chart_comparison": [
+      "object_description"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

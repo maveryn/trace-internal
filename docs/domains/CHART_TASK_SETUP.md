@@ -11,6 +11,7 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
    - `statistics`
    - `counting`
    - `readout`
+   - `multiseries`
 3. First concrete statistics tasks:
    - `task_charts_statistics_summary_value`
    - `task_charts_statistics_summary_label`
@@ -18,7 +19,9 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
    - `task_charts_counting_value_count`
 5. First concrete readout task:
    - `task_charts_readout_subset_value`
-6. First supported chart-type renderings:
+6. First concrete multiseries task:
+   - `task_charts_multiseries_pairwise_comparison_count`
+7. First supported chart-type renderings:
    - `area`
    - `bar`
    - `pie`
@@ -42,8 +45,11 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
 4. For the first readout family:
    - `task_group = readout`
    - active task: `subset_value`
-5. The semantic query type is the public `task_variant`.
-6. The chart type is the visual `scene_variant`.
+5. For the first multiseries family:
+   - `task_group = multiseries`
+   - active task: `pairwise_comparison_count`
+6. The semantic query type is the public `task_variant`.
+7. The chart type is the visual `scene_variant`.
 
 ### V1 variant axes
 1. `task_variant`:
@@ -65,11 +71,17 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
    - `scatter`
    - `dot_plot`
    - `lollipop`
+3. Multiseries scenes currently use:
+   - `grouped_bar`
+   - `multi_line`
+   - `grouped_dot_plot`
+   - `grouped_lollipop`
 
 Note:
 1. Charts are the first planned domain where one task naturally has both a semantic axis and a chart-type axis.
 2. Until the cross-domain `scene_variant` ABI note is fully written in core docs, treat this file as the domain-local contract for that split.
 3. `task_charts_statistics_summary_value` currently stays on the axis-based scene variants `area|bar|horizontal_bar|line|scatter|dot_plot|lollipop`; `pie`, `donut`, and `radar` remain enabled only on the tasks where their semantics still fit cleanly.
+4. `task_charts_multiseries_pairwise_comparison_count` is the first active multiseries chart task; it uses `2..3` named series, `5..10` labeled categories, category-label `label_set` evidence, and the multiseries scene variants `grouped_bar|multi_line|grouped_dot_plot|grouped_lollipop`.
 
 ## Scene contract
 1. One chart per image.

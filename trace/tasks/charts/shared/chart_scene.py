@@ -27,12 +27,32 @@ SUPPORTED_CHART_SCENE_VARIANTS: Tuple[str, ...] = (
     "lollipop",
 )
 
+SUPPORTED_MULTISERIES_CHART_SCENE_VARIANTS: Tuple[str, ...] = (
+    "grouped_bar",
+    "multi_line",
+    "grouped_dot_plot",
+    "grouped_lollipop",
+)
+
 
 @dataclass(frozen=True)
 class ChartMarkSpec:
     """One symbolic chart mark."""
 
     label: str
+    value: int
+    fill_rgb: ChartColor | None = None
+    outline_rgb: ChartColor | None = None
+
+
+@dataclass(frozen=True)
+class MultiSeriesChartMarkSpec:
+    """One symbolic chart mark in a multiseries scene."""
+
+    category_label: str
+    series_label: str
+    category_rank: int
+    series_rank: int
     value: int
     fill_rgb: ChartColor | None = None
     outline_rgb: ChartColor | None = None
@@ -244,6 +264,25 @@ def _bbox_from_points(points: Sequence[Tuple[float, float]]) -> Tuple[float, flo
     xs = [float(point[0]) for point in points]
     ys = [float(point[1]) for point in points]
     return (float(min(xs)), float(min(ys)), float(max(xs)), float(max(ys)))
+
+
+def _union_bboxes(
+    bboxes: Sequence[Tuple[float, float, float, float]],
+) -> Tuple[float, float, float, float]:
+    """Return one enclosing bbox for a non-empty bbox list."""
+
+    if not bboxes:
+        raise ValueError("union requires at least one bbox")
+    return _bbox_from_points(
+        [
+            (float(x0), float(y0))
+            for x0, y0, _, _ in bboxes
+        ]
+        + [
+            (float(x1), float(y1))
+            for _, _, x1, y1 in bboxes
+        ]
+    )
 
 
 def _radar_polygon_points(
@@ -1100,11 +1139,384 @@ def render_labeled_chart_scene(
     )
 
 
+def render_multiseries_chart_scene(
+    background: Image.Image,
+    *,
+    scene_variant: str,
+    marks: Sequence[MultiSeriesChartMarkSpec],
+    render_params: ChartRenderParams,
+    instance_seed: int,
+) -> RenderedChartScene:
+    """Render one multiseries chart scene onto `background`."""
+
+    del instance_seed
+    selected_variant = str(scene_variant)
+    if selected_variant not in set(SUPPORTED_MULTISERIES_CHART_SCENE_VARIANTS):
+        raise ValueError(f"unsupported multiseries chart scene_variant: {selected_variant}")
+    if len(marks) < 4:
+        raise ValueError("multiseries charts require at least four marks")
+
+    category_specs: Dict[int, str] = {}
+    series_specs: Dict[int, str] = {}
+    marks_by_key: Dict[Tuple[int, int], MultiSeriesChartMarkSpec] = {}
+    for mark in marks:
+        category_specs[int(mark.category_rank)] = str(mark.category_label)
+        series_specs[int(mark.series_rank)] = str(mark.series_label)
+        key = (int(mark.category_rank), int(mark.series_rank))
+        if key in marks_by_key:
+            raise ValueError("duplicate multiseries mark for category/series pair")
+        marks_by_key[key] = mark
+    category_ranks = sorted(category_specs.keys())
+    series_ranks = sorted(series_specs.keys())
+    if not category_ranks or not series_ranks:
+        raise ValueError("multiseries charts require at least one category and one series")
+    expected_keys = {
+        (int(category_rank), int(series_rank))
+        for category_rank in category_ranks
+        for series_rank in series_ranks
+    }
+    if set(marks_by_key.keys()) != expected_keys:
+        raise ValueError("multiseries charts require one mark per category/series pair")
+
+    categories = [(int(rank), str(category_specs[int(rank)])) for rank in category_ranks]
+    series_list = [(int(rank), str(series_specs[int(rank)])) for rank in series_ranks]
+
+    image = background.convert("RGB")
+    draw = ImageDraw.Draw(image)
+    plot_left, plot_top, plot_right, plot_bottom = _resolve_plot_bbox(render_params)
+    draw.rectangle((int(plot_left), int(plot_top), int(plot_right), int(plot_bottom)), fill=render_params.plot_fill_rgb)
+
+    plot_width = float(max(1, int(plot_right) - int(plot_left)))
+    legend_width = float(min(max(150.0, plot_width * 0.24), plot_width * 0.32))
+    legend_gap = float(max(18.0, float(render_params.label_font_size_px)))
+    chart_right = int(max(int(plot_left) + 180, int(round(float(plot_right) - float(legend_width) - float(legend_gap)))))
+    chart_bbox = (int(plot_left), int(plot_top), int(chart_right), int(plot_bottom))
+
+    max_value = max(int(mark.value) for mark in marks)
+    y_axis_max = max(4, int(max_value) + 1)
+    y_ticks = tuple(range(0, int(y_axis_max) + 1))
+
+    tick_font = load_font(int(render_params.tick_font_size_px), bold=False)
+    label_font = load_font(int(render_params.label_font_size_px), bold=True)
+    axis_color = tuple(int(value) for value in render_params.axis_color_rgb)
+    grid_color = tuple(int(value) for value in render_params.grid_color_rgb)
+
+    for tick_value in y_ticks:
+        y_px = _tick_y(
+            int(tick_value),
+            y_axis_max=int(y_axis_max),
+            plot_top=int(plot_top),
+            plot_bottom=int(plot_bottom),
+        )
+        draw.line(
+            [(float(plot_left), float(y_px)), (float(chart_right), float(y_px))],
+            fill=grid_color,
+            width=int(render_params.grid_line_width_px),
+        )
+        draw.line(
+            [
+                (float(plot_left) - float(render_params.tick_length_px), float(y_px)),
+                (float(plot_left), float(y_px)),
+            ],
+            fill=axis_color,
+            width=int(render_params.axis_line_width_px),
+        )
+        tick_center = (
+            float(plot_left) - float(render_params.tick_length_px) - 18.0,
+            float(y_px),
+        )
+        draw_text_centered(
+            draw,
+            text=str(tick_value),
+            center=tick_center,
+            font=tick_font,
+            fill=render_params.text_color_rgb,
+            stroke_fill=render_params.text_stroke_rgb,
+            stroke_width=max(1, int(round(0.06 * float(render_params.tick_font_size_px)))),
+        )
+
+    draw.line(
+        [(float(plot_left), float(plot_top)), (float(plot_left), float(plot_bottom))],
+        fill=axis_color,
+        width=int(render_params.axis_line_width_px),
+    )
+    draw.line(
+        [(float(plot_left), float(plot_bottom)), (float(chart_right), float(plot_bottom))],
+        fill=axis_color,
+        width=int(render_params.axis_line_width_px),
+    )
+
+    category_centers = _slot_centers(
+        count=len(categories),
+        plot_left=int(plot_left),
+        plot_right=int(chart_right),
+    )
+    slot_width = float(max(1.0, (float(chart_right) - float(plot_left)) / max(1, len(categories))))
+    group_inner_width = float(slot_width * 0.82)
+    subgroup_width = float(group_inner_width / max(1, len(series_list)))
+    bar_width = float(max(8.0, float(render_params.bar_width_fraction) * float(subgroup_width)))
+
+    category_label_meta: Dict[str, Dict[str, List[float]]] = {}
+    for category_rank, category_label in categories:
+        category_center_x = float(category_centers[int(category_rank)])
+        label_center = (
+            float(category_center_x),
+            float(plot_bottom) + float(render_params.tick_length_px) + 18.0,
+        )
+        draw_text_centered(
+            draw,
+            text=str(category_label),
+            center=label_center,
+            font=label_font,
+            fill=render_params.text_color_rgb,
+            stroke_fill=render_params.text_stroke_rgb,
+            stroke_width=int(render_params.label_stroke_width_px),
+        )
+        label_bbox = _text_bbox(draw, text=str(category_label), center=label_center, font=label_font)
+        category_label_meta[str(category_label)] = {
+            "center": [round(float(label_center[0]), 3), round(float(label_center[1]), 3)],
+            "bbox": [round(float(value), 3) for value in label_bbox],
+        }
+
+    mark_records: List[Dict[str, Any]] = []
+    series_points: Dict[str, List[Tuple[int, Tuple[float, float]]]] = {
+        str(series_label): []
+        for _, series_label in series_list
+    }
+    mark_bboxes_by_category: Dict[str, List[Tuple[float, float, float, float]]] = {
+        str(category_label): []
+        for _, category_label in categories
+    }
+
+    for category_rank, category_label in categories:
+        category_center_x = float(category_centers[int(category_rank)])
+        group_left = float(category_center_x) - 0.5 * float(group_inner_width)
+        for series_rank, series_label in series_list:
+            mark = marks_by_key[(int(category_rank), int(series_rank))]
+            fill_rgb = (
+                tuple(int(channel) for channel in mark.fill_rgb)
+                if isinstance(mark.fill_rgb, tuple)
+                else tuple(int(value) for value in render_params.mark_fill_rgb)
+            )
+            outline_rgb = (
+                tuple(int(channel) for channel in mark.outline_rgb)
+                if isinstance(mark.outline_rgb, tuple)
+                else tuple(int(value) for value in render_params.mark_outline_rgb)
+            )
+            if selected_variant == "multi_line":
+                x_center = float(category_center_x)
+            else:
+                x_center = float(group_left) + (float(series_rank) + 0.5) * float(subgroup_width)
+            y_center = _tick_y(
+                int(mark.value),
+                y_axis_max=int(y_axis_max),
+                plot_top=int(plot_top),
+                plot_bottom=int(plot_bottom),
+            )
+
+            if selected_variant == "grouped_bar":
+                mark_bbox = (
+                    float(x_center - 0.5 * float(bar_width)),
+                    float(y_center),
+                    float(x_center + 0.5 * float(bar_width)),
+                    float(plot_bottom),
+                )
+            else:
+                point_radius = float(render_params.point_radius_px)
+                mark_bbox = (
+                    float(x_center - point_radius),
+                    float(y_center - point_radius),
+                    float(x_center + point_radius),
+                    float(y_center + point_radius),
+                )
+            mark_bboxes_by_category[str(category_label)].append(tuple(float(value) for value in mark_bbox))
+            series_points[str(series_label)].append((int(category_rank), (float(x_center), float(y_center))))
+            mark_records.append(
+                {
+                    "category_label": str(category_label),
+                    "series_label": str(series_label),
+                    "category_rank": int(category_rank),
+                    "series_rank": int(series_rank),
+                    "value": int(mark.value),
+                    "fill_rgb": [int(channel) for channel in fill_rgb],
+                    "outline_rgb": [int(channel) for channel in outline_rgb],
+                    "mark_center_px": [round(float(x_center), 3), round(float(y_center), 3)],
+                    "mark_bbox_px": [round(float(value), 3) for value in mark_bbox],
+                }
+            )
+
+    if selected_variant == "multi_line":
+        for _, series_label in series_list:
+            records = sorted(series_points[str(series_label)], key=lambda item: int(item[0]))
+            points = [tuple(float(value) for value in point) for _, point in records]
+            sample_record = next(record for record in mark_records if str(record["series_label"]) == str(series_label))
+            draw.line(
+                points,
+                fill=tuple(int(channel) for channel in sample_record["outline_rgb"]),
+                width=int(render_params.line_width_px),
+                joint="curve",
+            )
+
+    for record in mark_records:
+        fill_rgb = tuple(int(channel) for channel in record["fill_rgb"])
+        outline_rgb = tuple(int(channel) for channel in record["outline_rgb"])
+        x_center, y_center = record["mark_center_px"]
+        if selected_variant == "grouped_bar":
+            draw.rectangle(
+                record["mark_bbox_px"],
+                fill=fill_rgb,
+                outline=outline_rgb,
+                width=int(render_params.mark_outline_width_px),
+            )
+        elif selected_variant == "grouped_lollipop":
+            draw.line(
+                [(float(x_center), float(plot_bottom)), (float(x_center), float(y_center))],
+                fill=outline_rgb,
+                width=max(1, int(render_params.line_width_px) - 1),
+            )
+            draw.ellipse(
+                record["mark_bbox_px"],
+                fill=fill_rgb,
+                outline=outline_rgb,
+                width=int(render_params.mark_outline_width_px),
+            )
+        else:
+            draw.ellipse(
+                record["mark_bbox_px"],
+                fill=fill_rgb,
+                outline=outline_rgb,
+                width=int(render_params.mark_outline_width_px),
+            )
+
+    legend_left = float(chart_right) + float(legend_gap)
+    legend_top = float(plot_top) + 16.0
+    legend_row_height = float(max(render_params.label_font_size_px + 12, 36))
+    legend_swatch_side = float(max(18, int(round(render_params.label_font_size_px * 0.75))))
+    for index, (_, series_label) in enumerate(series_list):
+        sample_record = next(record for record in mark_records if str(record["series_label"]) == str(series_label))
+        fill_rgb = tuple(int(channel) for channel in sample_record["fill_rgb"])
+        outline_rgb = tuple(int(channel) for channel in sample_record["outline_rgb"])
+        row_y = float(legend_top) + float(index) * float(legend_row_height)
+        swatch_bbox = (
+            float(legend_left),
+            float(row_y),
+            float(legend_left + legend_swatch_side),
+            float(row_y + legend_swatch_side),
+        )
+        if selected_variant == "multi_line":
+            center_y = 0.5 * float(swatch_bbox[1] + swatch_bbox[3])
+            draw.line(
+                [(float(swatch_bbox[0]), float(center_y)), (float(swatch_bbox[2]), float(center_y))],
+                fill=outline_rgb,
+                width=max(1, int(render_params.line_width_px) - 1),
+            )
+            point_radius = float(max(4, int(round(0.6 * float(render_params.point_radius_px)))))
+            draw.ellipse(
+                [
+                    float(0.5 * (swatch_bbox[0] + swatch_bbox[2]) - point_radius),
+                    float(center_y - point_radius),
+                    float(0.5 * (swatch_bbox[0] + swatch_bbox[2]) + point_radius),
+                    float(center_y + point_radius),
+                ],
+                fill=fill_rgb,
+                outline=outline_rgb,
+                width=max(1, int(render_params.mark_outline_width_px)),
+            )
+        else:
+            draw.rectangle(
+                swatch_bbox,
+                fill=fill_rgb,
+                outline=outline_rgb,
+                width=max(1, int(render_params.mark_outline_width_px)),
+            )
+        label_center = (
+            float(swatch_bbox[2]) + float(max(14, int(render_params.label_font_size_px) * 0.7)),
+            float(0.5 * (swatch_bbox[1] + swatch_bbox[3])),
+        )
+        draw_text_centered(
+            draw,
+            text=str(series_label),
+            center=label_center,
+            font=label_font,
+            fill=render_params.text_color_rgb,
+            stroke_fill=render_params.text_stroke_rgb,
+            stroke_width=int(render_params.label_stroke_width_px),
+        )
+
+    category_group_bboxes = {}
+    for _, category_label in categories:
+        label_bbox = tuple(float(value) for value in category_label_meta[str(category_label)]["bbox"])
+        union_inputs = [label_bbox] + [
+            tuple(float(value) for value in bbox)
+            for bbox in mark_bboxes_by_category[str(category_label)]
+        ]
+        category_group_bboxes[str(category_label)] = [
+            round(float(value), 3) for value in _union_bboxes(union_inputs)
+        ]
+
+    mark_traces: List[Dict[str, Any]] = []
+    entities: List[Dict[str, Any]] = []
+    for record in mark_records:
+        category_label = str(record["category_label"])
+        category_center = list(category_label_meta[category_label]["center"])
+        category_bbox = list(category_label_meta[category_label]["bbox"])
+        category_group_bbox = list(category_group_bboxes[category_label])
+        mark_trace = {
+            "entity_id": f"mark_{category_label}_{str(record['series_label'])}",
+            "category_label": str(category_label),
+            "series_label": str(record["series_label"]),
+            "category_rank": int(record["category_rank"]),
+            "series_rank": int(record["series_rank"]),
+            "value": int(record["value"]),
+            "mark_center_px": list(record["mark_center_px"]),
+            "mark_bbox_px": list(record["mark_bbox_px"]),
+            "category_label_center_px": list(category_center),
+            "category_label_bbox_px": list(category_bbox),
+            "category_group_bbox_px": list(category_group_bbox),
+            "mark_fill_rgb": list(record["fill_rgb"]),
+            "mark_outline_rgb": list(record["outline_rgb"]),
+        }
+        mark_traces.append(mark_trace)
+        entities.append(
+            {
+                "entity_id": str(mark_trace["entity_id"]),
+                "entity_type": "bar" if selected_variant == "grouped_bar" else "point",
+                "attrs": {
+                    "category_label": str(category_label),
+                    "series_label": str(record["series_label"]),
+                    "category_rank": int(record["category_rank"]),
+                    "series_rank": int(record["series_rank"]),
+                    "value": int(record["value"]),
+                    "scene_variant": str(selected_variant),
+                    "mark_center_px": list(mark_trace["mark_center_px"]),
+                    "mark_bbox_px": list(mark_trace["mark_bbox_px"]),
+                    "category_label_center_px": list(mark_trace["category_label_center_px"]),
+                    "category_group_bbox_px": list(mark_trace["category_group_bbox_px"]),
+                    "mark_fill_rgb": list(mark_trace["mark_fill_rgb"]),
+                    "mark_outline_rgb": list(mark_trace["mark_outline_rgb"]),
+                },
+            }
+        )
+
+    return RenderedChartScene(
+        image=image,
+        mark_traces=tuple(dict(item) for item in mark_traces),
+        entities=tuple(dict(item) for item in entities),
+        plot_bbox_px=tuple(int(value) for value in chart_bbox),
+        y_axis_max=int(y_axis_max),
+        y_ticks=tuple(int(value) for value in y_ticks),
+        scene_variant=str(selected_variant),
+    )
+
+
 __all__ = [
     "ChartMarkSpec",
     "ChartRenderParams",
+    "MultiSeriesChartMarkSpec",
     "RenderedChartScene",
     "SUPPORTED_CHART_SCENE_VARIANTS",
+    "SUPPORTED_MULTISERIES_CHART_SCENE_VARIANTS",
     "render_labeled_chart_scene",
+    "render_multiseries_chart_scene",
     "resolve_chart_render_params",
 ]

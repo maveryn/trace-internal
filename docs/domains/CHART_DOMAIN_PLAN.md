@@ -50,7 +50,7 @@ These are valid future targets, but they are not part of the initial implementat
 
 ## Initial implementation target
 
-The first implementation step is now active: `task_charts_statistics_summary_value`, `task_charts_statistics_summary_label`, `task_charts_counting_value_count`, and `task_charts_readout_subset_value` under `domain=charts`.
+The first implementation step is now active: `task_charts_statistics_summary_value`, `task_charts_statistics_summary_label`, `task_charts_counting_value_count`, `task_charts_readout_subset_value`, and `task_charts_multiseries_pairwise_comparison_count` under `domain=charts`.
 
 The concrete v1 contract for the first rollout now lives in `CHART_TASK_SETUP.md`.
 
@@ -112,6 +112,7 @@ These may still become later chart-family variants, but they are not part of the
    - `statistics`
    - `counting`
    - `readout`
+   - `multiseries`
 2. Planned next:
    - `comparison`
    - `trend`

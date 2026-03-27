@@ -26,6 +26,7 @@ from .icons.counting import orientation as _task_icons_counting_orientation
 from .icons.counting import type as _task_icons_counting_type
 from .icons.transformation import pair_count as _task_icons_transformation_pair_count
 from .charts.counting import value_count as _task_charts_counting_value_count
+from .charts.multiseries import pairwise_comparison_count as _task_charts_multiseries_pairwise_comparison_count
 from .charts.readout import subset_value as _task_charts_readout_subset_value
 from .charts.statistics import summary_label as _task_charts_statistics_summary_label
 from .charts.statistics import summary_value as _task_charts_statistics_summary_value

@@ -10,7 +10,7 @@
         "threshold": 0.25
       },
       "max_five_bin_frequency": {
-        "observed": 0.25,
+        "observed": 0.23,
         "pass": null,
         "status": "reported_not_gated_numeric_answers"
       },
@@ -25,17 +25,17 @@
       "bins": [
         {
           "bin_id": 0,
-          "count": 20,
+          "count": 23,
           "label": "[0, 2)"
         },
         {
           "bin_id": 1,
-          "count": 16,
+          "count": 18,
           "label": "[2, 4)"
         },
         {
           "bin_id": 2,
-          "count": 22,
+          "count": 21,
           "label": "[4, 6)"
         },
         {
@@ -45,12 +45,12 @@
         },
         {
           "bin_id": 4,
-          "count": 25,
+          "count": 21,
           "label": "[8, 10]"
         }
       ],
-      "max_bin_count": 25,
-      "max_bin_frequency": 0.25,
+      "max_bin_count": 23,
+      "max_bin_frequency": 0.23,
       "range_max": 10.0,
       "range_min": 0.0
     },
@@ -60,24 +60,16 @@
     "sample_count": 100,
     "top_answers": [
       {
-        "answer_label": "9",
+        "answer_label": "0",
         "count": 14
       },
       {
-        "answer_label": "5",
-        "count": 12
-      },
-      {
-        "answer_label": "0",
-        "count": 11
-      },
-      {
-        "answer_label": "6",
-        "count": 11
-      },
-      {
         "answer_label": "2",
-        "count": 10
+        "count": 11
+      },
+      {
+        "answer_label": "5",
+        "count": 11
       },
       {
         "answer_label": "4",
@@ -88,16 +80,24 @@
         "count": 9
       },
       {
-        "answer_label": "8",
-        "count": 7
+        "answer_label": "6",
+        "count": 9
       },
       {
-        "answer_label": "3",
-        "count": 6
+        "answer_label": "8",
+        "count": 9
       },
       {
         "answer_label": "7",
-        "count": 6
+        "count": 8
+      },
+      {
+        "answer_label": "9",
+        "count": 8
+      },
+      {
+        "answer_label": "3",
+        "count": 7
       },
       {
         "answer_label": "10",
@@ -111,16 +111,26 @@
     "scene_variant": {
       "expected_conflict": false,
       "expected_probabilities": {
-        "bar": 0.3333333333333333,
-        "line": 0.3333333333333333,
-        "scatter": 0.3333333333333333
+        "bar": 0.125,
+        "donut": 0.125,
+        "dot_plot": 0.125,
+        "horizontal_bar": 0.125,
+        "line": 0.125,
+        "lollipop": 0.125,
+        "pie": 0.125,
+        "scatter": 0.125
       },
       "expected_source": "execution_trace",
-      "max_observed_frequency": 0.39,
+      "max_observed_frequency": 0.16,
       "observed_counts": {
-        "bar": 27,
-        "line": 34,
-        "scatter": 39
+        "bar": 12,
+        "donut": 16,
+        "dot_plot": 9,
+        "horizontal_bar": 12,
+        "line": 13,
+        "lollipop": 12,
+        "pie": 11,
+        "scatter": 15
       },
       "sample_count": 100
     },

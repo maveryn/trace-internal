@@ -14,6 +14,7 @@ from ...shared.named_colors import darken_color
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from .chart_scene import (
     ChartRenderParams,
+    RenderedChartScene,
     SUPPORTED_CHART_SCENE_VARIANTS,
     resolve_chart_render_params,
 )
@@ -62,6 +63,42 @@ def sorted_labels(labels: Sequence[str]) -> List[str]:
     return [str(label) for label in sorted(str(label) for label in labels)]
 
 
+def projected_mark_evidence(
+    rendered_scene: RenderedChartScene,
+    labels: Sequence[str],
+) -> Dict[str, Any]:
+    """Project one ordered label list into reusable pixel-space chart evidence.
+
+    Review overlays need pixel-space geometry even when the primary prompt-facing
+    evidence stays symbolic (for example `label_set` or `integer_list`). This helper
+    returns compact per-mark projections for the selected labels in the same order
+    they were requested.
+    """
+
+    requested = [str(label) for label in labels]
+    by_label = {
+        str(mark_trace["label"]): mark_trace
+        for mark_trace in rendered_scene.mark_traces
+    }
+    pixel_point_map: Dict[str, List[float]] = {}
+    pixel_point_set: List[List[float]] = []
+    bbox_set: List[List[float]] = []
+    for label in requested:
+        mark_trace = by_label.get(str(label))
+        if mark_trace is None:
+            continue
+        center = [float(value) for value in mark_trace["mark_center_px"]]
+        bbox = [float(value) for value in mark_trace["mark_bbox_px"]]
+        pixel_point_map[str(label)] = list(center)
+        pixel_point_set.append(list(center))
+        bbox_set.append(list(bbox))
+    return {
+        "pixel_point_map": pixel_point_map,
+        "pixel_point_set": pixel_point_set,
+        "bbox_set": bbox_set,
+    }
+
+
 def resolve_value_bounds(
     params: Mapping[str, Any],
     *,
@@ -100,6 +137,23 @@ def resolve_mark_count_bounds(
         fallback_max=int(defaults.mark_count_max),
         context=f"generation defaults for {task_id}",
     )
+
+
+def apply_scene_variant_mark_count_cap(
+    *,
+    scene_variant: str,
+    mark_count_min: int,
+    mark_count_max: int,
+) -> Tuple[int, int]:
+    """Apply scene-specific mark-count caps for chart readability."""
+
+    resolved_min = int(mark_count_min)
+    resolved_max = int(mark_count_max)
+    if str(scene_variant) in {"pie", "donut"}:
+        resolved_max = min(int(resolved_max), 8)
+    if int(resolved_min) > int(resolved_max):
+        raise ValueError(f"no feasible mark-count support for scene_variant={scene_variant}")
+    return int(resolved_min), int(resolved_max)
 
 
 def resolve_target_answer_range(
@@ -531,6 +585,7 @@ def _sample_values_from_pool(
 def build_summary_statistics_dataset_for_variant(
     *,
     statistic_kind: StatisticKind,
+    scene_variant: SceneVariant,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -546,6 +601,11 @@ def build_summary_statistics_dataset_for_variant(
         gen_defaults=gen_defaults,
         defaults=defaults,
         task_id=task_id,
+    )
+    mark_count_min, mark_count_max = apply_scene_variant_mark_count_cap(
+        scene_variant=str(scene_variant),
+        mark_count_min=int(mark_count_min),
+        mark_count_max=int(mark_count_max),
     )
     supported_answer_min, supported_answer_max = resolve_target_answer_range(
         params,
@@ -735,6 +795,7 @@ def build_summary_statistics_dataset_for_variant(
 def build_value_count_dataset_for_variant(
     *,
     count_variant: str,
+    scene_variant: SceneVariant,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -749,6 +810,11 @@ def build_value_count_dataset_for_variant(
         gen_defaults=gen_defaults,
         defaults=defaults,
         task_id=task_id,
+    )
+    mark_count_min, mark_count_max = apply_scene_variant_mark_count_cap(
+        scene_variant=str(scene_variant),
+        mark_count_min=int(mark_count_min),
+        mark_count_max=int(mark_count_max),
     )
     default_answer_max = min(int(mark_count_max), 10)
     supported_answer_min = int(params.get("target_answer_min", group_default(gen_defaults, "target_answer_min", 0)))
@@ -1030,6 +1096,7 @@ def _build_query_pair_for_readout(
 def build_value_readout_dataset_for_variant(
     *,
     readout_variant: str,
+    scene_variant: SceneVariant,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
@@ -1044,6 +1111,11 @@ def build_value_readout_dataset_for_variant(
         gen_defaults=gen_defaults,
         defaults=defaults,
         task_id=task_id,
+    )
+    mark_count_min, mark_count_max = apply_scene_variant_mark_count_cap(
+        scene_variant=str(scene_variant),
+        mark_count_min=int(mark_count_min),
+        mark_count_max=int(mark_count_max),
     )
     default_answer_min, default_answer_max = _default_readout_answer_range(
         str(readout_variant),

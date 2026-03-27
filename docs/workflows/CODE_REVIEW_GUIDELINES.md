@@ -101,6 +101,8 @@ Use this checklist during implementation and refactor reviews.
 85. When trace metadata stores sampled render/style overrides (for example randomized colors), verify the renderer consumes those exact resolved values; do not treat trace-only style sampling as sufficient if the image path still falls back to a stale hardcoded default.
 86. When a second chart task group reuses a helper module named after the first chart family (for example `statistics_common.py`), rename that helper to the chart-wide concept immediately (for example `labeled_chart_common.py`) instead of importing counting/comparison code from a misleading family-specific module.
 87. For chart readout tasks whose evidence is an ordered numeric sequence, define that order explicitly from the prompt query order and record the corresponding query labels in trace metadata; do not sort or canonicalize sequence evidence when position carries semantics.
+88. When chart scene variants expand, update all active chart task groups' `scene_variant` support, `object_description_<scene_variant>` config keys, and review coverage together so scene variety does not drift across sibling chart families.
+89. When a task's prompt-facing evidence is symbolic rather than geometric (for example `label_set`, `integer`, or `integer_list` on charts), emit matching pixel-space witness projections in `projected_evidence` so shared review overlays can still highlight the supporting objects in inspection workbooks.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

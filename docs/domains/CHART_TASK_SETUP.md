@@ -20,8 +20,13 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
    - `task_charts_readout_subset_value`
 6. First supported chart-type renderings:
    - `bar`
+   - `pie`
+   - `donut`
+   - `horizontal_bar`
    - `line`
    - `scatter`
+   - `dot_plot`
+   - `lollipop`
 
 ## Taxonomy
 1. Keep the normal TRACE split:
@@ -49,8 +54,13 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
    - `mode`
 2. `scene_variant`:
    - `bar`
+   - `pie`
+   - `donut`
+   - `horizontal_bar`
    - `line`
    - `scatter`
+   - `dot_plot`
+   - `lollipop`
 
 Note:
 1. Charts are the first planned domain where one task naturally has both a semantic axis and a chart-type axis.
@@ -73,6 +83,18 @@ Note:
    - visible point markers should be present so each labeled mark corresponds to one sampled data point.
 3. `scatter`
    - the statistic is computed over point `y` values, not over `x`.
+4. `horizontal_bar`
+   - the statistic is computed over bar lengths on the horizontal axis.
+5. `pie`
+   - the statistic is computed over the printed integer values shown with the slice labels.
+   - slice angles are normalized for rendering only; the numeric task contract uses the printed slice values.
+6. `donut`
+   - the statistic is computed over the printed integer values shown with the slice labels.
+   - donut hole size is a rendering choice only; the numeric task contract uses the printed slice values.
+7. `dot_plot`
+   - the statistic is computed over plotted point `y` values, not over `x`.
+8. `lollipop`
+   - the statistic is computed over plotted point `y` values, not over `x`.
 
 ## Mark labels
 1. Every mark uses one unique randomized uppercase label.
@@ -84,7 +106,8 @@ Note:
    - top-to-bottom order.
 4. V1 should sample chart labels from a random uppercase subset rather than always starting with `A, B, C, ...`.
 5. V1 should keep chart size modest enough that one-letter labels are usually sufficient.
-6. Recommended initial mark count: `5..10`.
+6. Recommended initial mark count: `5..10` for axis-based scenes.
+7. `pie` and `donut` should use a tighter default effective mark-count cap such as `5..8` so the slice labels remain readable.
 
 ## Value range
 1. V1 chart marks should use integer values in the range `1..20`.
@@ -163,9 +186,11 @@ Note:
    - that marks are labeled,
    - that the answer must be derived from the chart values.
 2. The task layer should ask only for the statistic itself.
-3. When `scene_variant` is `line` or `scatter`, the prompt should make it explicit that the statistic is over the plotted values (`y` values), not over the horizontal positions.
-4. Do not phrase chart statistics in category-name terms for this family; the requested output is always the numeric summary value.
-5. `answer_and_evidence` prompts should ask for the supporting labeled marks, not pixel boxes or coordinates.
+3. When `scene_variant` is `line`, `scatter`, `dot_plot`, or `lollipop`, the prompt should make it explicit that the statistic is over the plotted values (`y` values), not over the horizontal positions.
+4. When `scene_variant` is `horizontal_bar`, the prompt should make it explicit that values are read from the horizontal axis.
+5. When `scene_variant` is `pie` or `donut`, the prompt should make it explicit that the relevant values are the printed slice values shown next to the slice labels.
+6. Do not phrase chart statistics in category-name terms for this family; the requested output is always the numeric summary value.
+7. `answer_and_evidence` prompts should ask for the supporting labeled marks, not pixel boxes or coordinates.
 
 ### Recommended task-layer wording
 1. `max`
@@ -213,7 +238,7 @@ Note:
 
 ## Companion label-answer task
 1. The first follow-up companion task is `task_charts_statistics_summary_label`.
-2. It reuses the same chart scenes and `scene_variant` values (`bar|line|scatter`) but narrows the semantic `task_variant` set to:
+2. It reuses the same chart scenes and `scene_variant` values (`bar|pie|donut|horizontal_bar|line|scatter|dot_plot|lollipop`) but narrows the semantic `task_variant` set to:
    - `argmax`
    - `argmin`
    - `median_label`
@@ -225,7 +250,7 @@ Note:
 
 ## Counting follow-up task
 1. The first counting-family task is `task_charts_counting_value_count`.
-2. It reuses the same chart scenes and `scene_variant` values (`bar|line|scatter`) but changes the semantic `task_variant` set to:
+2. It reuses the same chart scenes and `scene_variant` values (`bar|pie|donut|horizontal_bar|line|scatter|dot_plot|lollipop`) but changes the semantic `task_variant` set to:
    - `above_threshold`
    - `below_threshold`
    - `in_interval`
@@ -238,7 +263,7 @@ Note:
 
 ## Readout follow-up task
 1. The first readout-family task is `task_charts_readout_subset_value`.
-2. It reuses the same chart scenes and `scene_variant` values (`bar|line|scatter`) and introduces semantic `task_variant` values:
+2. It reuses the same chart scenes and `scene_variant` values (`bar|pie|donut|horizontal_bar|line|scatter|dot_plot|lollipop`) and introduces semantic `task_variant` values:
    - `sum_two`
    - `difference_two_abs`
    - `max_two`

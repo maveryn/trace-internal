@@ -17,8 +17,13 @@
    - `mode`
 2. Supported `scene_variant` values:
    - `bar`
+   - `pie`
+   - `donut`
+   - `horizontal_bar`
    - `line`
    - `scatter`
+   - `dot_plot`
+   - `lollipop`
 3. `answer_gt.type`: `integer`
 4. `evidence_gt.type`: `label_set`
 5. Scene contract:
@@ -27,9 +32,13 @@
    - one visible unique label per mark,
    - one random chart color sampled per instance and reused across all rendered marks,
    - chart values are integers in the default range `1..20`,
-   - bar charts summarize bar heights, while line/scatter charts summarize plotted point `y` values.
+   - vertical bar charts summarize bar heights,
+   - pie/donut charts summarize the printed integer values shown next to the slice labels,
+   - horizontal bar charts summarize bar lengths on the horizontal axis,
+   - line/scatter/dot-plot/lollipop charts summarize plotted point `y` values.
 6. Generation guarantees:
    - charts use `5..10` labeled marks by default,
+   - pie/donut charts tighten the effective mark-count support to `5..8` for readability,
    - all statistic answers are integers by construction,
     - `max` / `min` use unique extremum marks,
     - `range` uses unique minimum and maximum marks,
@@ -63,6 +72,9 @@
    - `mode`: all labels whose value equals the unique modal value
 3. `projected_evidence` includes:
    - `label_set`
+   - `pixel_point_map`
+   - `pixel_point_set`
+   - `bbox_set`
 4. `scene_ir.entities` stores one entity per mark with:
    - visible `label`
    - integer `value`
@@ -79,8 +91,8 @@
 ## 5) Visual policy
 1. Background and post-image noise use the merged charts-domain visual defaults from `configs/domains/charts/base.yaml`.
 2. V1 charts use clean light solid backgrounds only.
-3. Charts render one explicit vertical axis with integer tick marks and horizontal guide lines.
-4. Labels are drawn on bars or near points, depending on `scene_variant`.
+3. Axis-based chart variants render an explicit integer-valued axis scaffold; `pie` and `donut` render slice geometry with printed per-slice values instead of axes.
+4. Labels are drawn on bars, near points, or beside pie/donut slices, depending on `scene_variant`.
 5. The chart frame is rectangular and uses a fixed canvas in v1 rather than dynamic canvas sizing.
 6. Mark fill/outline colors are sampled once per instance, constrained to stay visually separated from the white/light chart background, and recorded in trace/render metadata.
 

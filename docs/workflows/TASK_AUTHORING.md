@@ -40,10 +40,11 @@ Use this as the implementation checklist for new or modified tasks.
    - `execution_trace`,
    - `witness_symbolic`,
    - `projected_evidence`.
-7. Ensure answer/evidence/witness come from the same execution trace.
-8. Enforce unique final answer by construction.
-9. Use bounded resampling; never auto-relax semantic constraints.
-10. Emit complexity (`complexity_score`, `complexity_components`).
+7. If the prompt-facing evidence is symbolic rather than geometric (for example `label_set`, `integer`, or `integer_list`), still emit pixel-space witness projections in `projected_evidence` when inspection overlays need to highlight the supporting objects.
+8. Ensure answer/evidence/witness come from the same execution trace.
+9. Enforce unique final answer by construction.
+10. Use bounded resampling; never auto-relax semantic constraints.
+11. Emit complexity (`complexity_score`, `complexity_components`).
 
 ## 3) Prompt rules
 1. Bundle path: `prompts/<domain>/<task_group>/<bundle>.json`.
@@ -101,6 +102,7 @@ Use this as the implementation checklist for new or modified tasks.
 18. For counting tasks where the answer is the matched-object count itself, prefer global target-count support sampling (for example `resolve_counting_cardinality_pair(...)`) over choosing object count first when the latter would skew answers toward smaller counts.
 19. For polygon class-counting tasks with bulkier objects, use the roomier counting slot layout helper and a strict shared convexity classifier so object labels stay readable and class membership does not depend on ambiguous borderline outlines.
 20. For curated-asset icon tasks, resolve manifest ids through one shared asset loader instead of assuming manifest ids and SVG filenames match exactly; record the chosen manifest in query trace metadata.
+21. When adding a new chart `scene_variant`, update every active chart task group that shares the labeled-chart scene contract in the same patch: renderer support, `scene_variant_weights`, `object_description_<scene_variant>` prompt defaults, behavior tests, and regenerated task reviews should all land together.
 
 ## 5) Sampling rules
 1. Global sampling unit is `task`.

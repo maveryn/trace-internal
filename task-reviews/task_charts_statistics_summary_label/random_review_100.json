@@ -27,27 +27,35 @@
     "sample_count": 100,
     "top_answers": [
       {
-        "answer_label": "R",
+        "answer_label": "B",
         "count": 7
       },
       {
-        "answer_label": "B",
-        "count": 6
+        "answer_label": "Z",
+        "count": 7
       },
       {
         "answer_label": "F",
         "count": 6
       },
       {
-        "answer_label": "Z",
+        "answer_label": "S",
         "count": 6
       },
       {
-        "answer_label": "C",
+        "answer_label": "U",
+        "count": 6
+      },
+      {
+        "answer_label": "Y",
+        "count": 6
+      },
+      {
+        "answer_label": "D",
         "count": 5
       },
       {
-        "answer_label": "G",
+        "answer_label": "J",
         "count": 5
       },
       {
@@ -59,27 +67,11 @@
         "count": 5
       },
       {
-        "answer_label": "S",
+        "answer_label": "R",
         "count": 5
       },
       {
-        "answer_label": "U",
-        "count": 5
-      },
-      {
-        "answer_label": "V",
-        "count": 5
-      },
-      {
-        "answer_label": "Y",
-        "count": 5
-      },
-      {
-        "answer_label": "D",
-        "count": 4
-      },
-      {
-        "answer_label": "J",
+        "answer_label": "G",
         "count": 4
       },
       {
@@ -87,24 +79,28 @@
         "count": 4
       },
       {
-        "answer_label": "W",
-        "count": 4
-      },
-      {
-        "answer_label": "X",
-        "count": 4
-      },
-      {
         "answer_label": "Q",
-        "count": 3
+        "count": 4
       },
       {
         "answer_label": "T",
+        "count": 4
+      },
+      {
+        "answer_label": "V",
+        "count": 4
+      },
+      {
+        "answer_label": "C",
         "count": 3
       },
       {
-        "answer_label": "A",
-        "count": 2
+        "answer_label": "W",
+        "count": 3
+      },
+      {
+        "answer_label": "X",
+        "count": 3
       },
       {
         "answer_label": "E",
@@ -119,6 +115,10 @@
         "count": 2
       },
       {
+        "answer_label": "A",
+        "count": 1
+      },
+      {
         "answer_label": "P",
         "count": 1
       }
@@ -130,16 +130,26 @@
     "scene_variant": {
       "expected_conflict": false,
       "expected_probabilities": {
-        "bar": 0.3333333333333333,
-        "line": 0.3333333333333333,
-        "scatter": 0.3333333333333333
+        "bar": 0.125,
+        "donut": 0.125,
+        "dot_plot": 0.125,
+        "horizontal_bar": 0.125,
+        "line": 0.125,
+        "lollipop": 0.125,
+        "pie": 0.125,
+        "scatter": 0.125
       },
       "expected_source": "execution_trace",
-      "max_observed_frequency": 0.36,
+      "max_observed_frequency": 0.17,
       "observed_counts": {
-        "bar": 36,
-        "line": 30,
-        "scatter": 34
+        "bar": 10,
+        "donut": 10,
+        "dot_plot": 16,
+        "horizontal_bar": 12,
+        "line": 6,
+        "lollipop": 14,
+        "pie": 15,
+        "scatter": 17
       },
       "sample_count": 100
     },

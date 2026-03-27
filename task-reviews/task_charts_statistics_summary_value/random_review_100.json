@@ -40,12 +40,12 @@
         },
         {
           "bin_id": 3,
-          "count": 5,
+          "count": 4,
           "label": "[112.6, 149.8)"
         },
         {
           "bin_id": 4,
-          "count": 2,
+          "count": 3,
           "label": "[149.8, 187]"
         }
       ],
@@ -116,11 +116,11 @@
         "count": 1
       },
       {
-        "answer_label": "132",
+        "answer_label": "140",
         "count": 1
       },
       {
-        "answer_label": "140",
+        "answer_label": "160",
         "count": 1
       },
       {
@@ -140,10 +140,6 @@
         "count": 1
       },
       {
-        "answer_label": "40",
-        "count": 1
-      },
-      {
         "answer_label": "42",
         "count": 1
       },
@@ -152,15 +148,19 @@
         "count": 1
       },
       {
+        "answer_label": "64",
+        "count": 1
+      },
+      {
         "answer_label": "68",
         "count": 1
       },
       {
-        "answer_label": "80",
+        "answer_label": "83",
         "count": 1
       },
       {
-        "answer_label": "83",
+        "answer_label": "92",
         "count": 1
       }
     ],
@@ -171,16 +171,26 @@
     "scene_variant": {
       "expected_conflict": false,
       "expected_probabilities": {
-        "bar": 0.3333333333333333,
-        "line": 0.3333333333333333,
-        "scatter": 0.3333333333333333
+        "bar": 0.125,
+        "donut": 0.125,
+        "dot_plot": 0.125,
+        "horizontal_bar": 0.125,
+        "line": 0.125,
+        "lollipop": 0.125,
+        "pie": 0.125,
+        "scatter": 0.125
       },
       "expected_source": "execution_trace",
-      "max_observed_frequency": 0.38,
+      "max_observed_frequency": 0.16,
       "observed_counts": {
-        "bar": 30,
-        "line": 32,
-        "scatter": 38
+        "bar": 16,
+        "donut": 14,
+        "dot_plot": 15,
+        "horizontal_bar": 10,
+        "line": 11,
+        "lollipop": 14,
+        "pie": 8,
+        "scatter": 12
       },
       "sample_count": 100
     },

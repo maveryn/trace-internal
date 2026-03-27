@@ -36,8 +36,8 @@ Define how we split tasks into reusable families so each dataset slice stays com
 4. `task_charts_statistics_summary_label` uses semantic `task_variant` values `argmax`, `argmin`, and `median_label`.
 5. `task_charts_counting_value_count` uses semantic `task_variant` values `above_threshold`, `below_threshold`, and `in_interval`.
 6. `task_charts_readout_subset_value` uses semantic `task_variant` values `sum_two`, `difference_two_abs`, `max_two`, `min_two`, and `mean_two`.
-7. All active chart tasks use `scene_variant` values `bar`, `line`, and `scatter`.
-8. `histogram`, `pie`, and `heatmap` remain under consideration for later chart-family support after the first rollout stabilizes.
+7. All active chart tasks use `scene_variant` values `bar`, `pie`, `donut`, `horizontal_bar`, `line`, `scatter`, `dot_plot`, and `lollipop`.
+8. `histogram` and `heatmap` remain under consideration for later chart-family support after the first rollout stabilizes.
 9. Keep the broader chart-type universe in `CHART_DOMAIN_PLAN.md` and the concrete v1 contract in `CHART_TASK_SETUP.md`.
 
 ## Planned geometry measurement variants

@@ -22,6 +22,7 @@ from ..shared.labeled_chart_common import (
     LabeledChartDefaults,
     SUPPORTED_LABELED_CHART_SCENE_VARIANTS,
     build_value_readout_dataset_for_variant,
+    projected_mark_evidence,
     resolve_chart_axis_variant,
     resolve_chart_mark_colors,
     resolve_chart_render_params_for_task,
@@ -97,6 +98,7 @@ class ChartsReadoutSubsetValueTask:
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
         values, answer_value, evidence_values, trace_extras = build_value_readout_dataset_for_variant(
             readout_variant=str(task_variant),
+            scene_variant=str(scene_variant),
             params=params,
             instance_seed=int(instance_seed),
             gen_defaults=_GEN_DEFAULTS,
@@ -151,8 +153,13 @@ class ChartsReadoutSubsetValueTask:
                 "evidence_hint",
                 "answer_hint",
                 "object_description_bar",
+                "object_description_pie",
+                "object_description_donut",
+                "object_description_horizontal_bar",
                 "object_description_line",
                 "object_description_scatter",
+                "object_description_dot_plot",
+                "object_description_lollipop",
                 "json_example_sum_two",
                 "json_example_difference_two_abs",
                 "json_example_max_two",
@@ -203,6 +210,7 @@ class ChartsReadoutSubsetValueTask:
             str(mark["label"]): int(mark["value"])
             for mark in rendered_scene.mark_traces
         }
+        evidence_projection = projected_mark_evidence(rendered_scene, query_labels)
 
         trace_payload = {
             "scene_ir": {
@@ -316,6 +324,7 @@ class ChartsReadoutSubsetValueTask:
             },
             "projected_evidence": {
                 "integer_list": [int(value) for value in evidence_values],
+                **dict(evidence_projection),
             },
         }
 

@@ -92,6 +92,7 @@ def test_chart_statistics_summary_value_variants_match_contract() -> None:
         assert len(labels) == int(execution["mark_count"])
         assert evidence_labels == sorted(evidence_labels)
         assert trace["projected_evidence"]["label_set"] == evidence_labels
+        assert len(trace["projected_evidence"]["bbox_set"]) == len(evidence_labels)
         assert int(out.answer_gt.value) == _expected_answer(str(task_variant), values)
         assert int(out.answer_gt.value) == int(execution["answer_value"])
         assert str(trace["query_spec"]["task_variant"]) == str(task_variant)
@@ -122,6 +123,22 @@ def test_chart_statistics_line_and_scatter_prompts_mention_y_values() -> None:
 
     assert "y-values" in str(line.prompt)
     assert "y-values" in str(scatter.prompt)
+
+
+def test_chart_statistics_supports_additional_scene_variants() -> None:
+    task = ChartsStatisticsSummaryValueTask()
+    prompts = {}
+    for seed, scene_variant in enumerate(("horizontal_bar", "dot_plot", "lollipop", "pie", "donut"), start=9205):
+        out = task.generate(seed, params={"task_variant": "max", "scene_variant": scene_variant}, max_attempts=10)
+        prompts[str(scene_variant)] = str(out.prompt)
+        assert str(out.trace_payload["execution_trace"]["scene_variant"]) == str(scene_variant)
+        assert str(out.trace_payload["render_spec"]["scene_variant"]) == str(scene_variant)
+        assert len(out.trace_payload["render_spec"]["y_ticks"]) == int(out.trace_payload["render_spec"]["y_axis_max"]) + 1
+    assert "horizontal axis" in prompts["horizontal_bar"]
+    assert "y-values" in prompts["dot_plot"]
+    assert "y-values" in prompts["lollipop"]
+    assert "printed slice values" in prompts["pie"]
+    assert "printed slice values" in prompts["donut"]
 
 
 def test_chart_statistics_prompt_examples_match_selected_variant() -> None:
@@ -186,6 +203,7 @@ def test_chart_statistics_summary_label_variants_match_contract() -> None:
         assert str(out.answer_gt.value) == _expected_label(str(task_variant), labels, values)
         assert int(out.evidence_gt.value) == int(execution["evidence_value"])
         assert trace["projected_evidence"]["integer"] == int(out.evidence_gt.value)
+        assert len(trace["projected_evidence"]["bbox_set"]) == 1
         assert str(trace["query_spec"]["task_variant"]) == str(task_variant)
         assert str(trace["query_spec"]["params"]["scene_variant"]) == str(scene_variant)
         assert len(trace["scene_ir"]["entities"]) == int(execution["mark_count"])
@@ -229,6 +247,34 @@ def test_chart_statistics_summary_label_task_is_deterministic() -> None:
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
+
+
+def test_chart_statistics_summary_label_supports_additional_scene_variants() -> None:
+    task = ChartsStatisticsSummaryLabelTask()
+    prompts = {}
+    for seed, scene_variant in enumerate(("horizontal_bar", "dot_plot", "lollipop", "pie", "donut"), start=9660):
+        out = task.generate(
+            seed,
+            params={"task_variant": "argmax", "scene_variant": scene_variant},
+            max_attempts=10,
+        )
+        prompts[str(scene_variant)] = str(out.prompt)
+        assert str(out.trace_payload["execution_trace"]["scene_variant"]) == str(scene_variant)
+        assert str(out.trace_payload["render_spec"]["scene_variant"]) == str(scene_variant)
+    assert "printed slice values" in prompts["pie"]
+    assert "printed slice values" in prompts["donut"]
+
+
+def test_chart_statistics_pie_caps_default_mark_count() -> None:
+    task = ChartsStatisticsSummaryValueTask()
+    out = task.generate(9675, params={"task_variant": "sum", "scene_variant": "pie"}, max_attempts=10)
+    assert 5 <= int(out.trace_payload["execution_trace"]["mark_count"]) <= 8
+
+
+def test_chart_statistics_donut_caps_default_mark_count() -> None:
+    task = ChartsStatisticsSummaryValueTask()
+    out = task.generate(9676, params={"task_variant": "sum", "scene_variant": "donut"}, max_attempts=10)
+    assert 5 <= int(out.trace_payload["execution_trace"]["mark_count"]) <= 8
 
 
 def test_integer_evidence_type_is_registered_for_chart_label_tasks() -> None:

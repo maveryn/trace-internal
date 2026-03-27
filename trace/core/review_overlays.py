@@ -133,6 +133,16 @@ def resolve_overlay_evidence(
         return "pixel_point_map", projected.get("pixel_point_map")
     if str(evidence_type) == "measurement_ref_map" and "pixel_annotation_centers" in projected:
         return "pixel_annotation_centers", projected.get("pixel_annotation_centers")
+    if str(evidence_type) == "label_set":
+        if "bbox_set" in projected:
+            return "bbox_set", projected.get("bbox_set")
+        if "pixel_point_map" in projected:
+            return "pixel_point_map", projected.get("pixel_point_map")
+    if str(evidence_type) in {"integer", "integer_list"}:
+        if "bbox_set" in projected:
+            return "bbox_set", projected.get("bbox_set")
+        if "pixel_point_map" in projected:
+            return "pixel_point_map", projected.get("pixel_point_map")
     return str(evidence_type), evidence_value
 
 

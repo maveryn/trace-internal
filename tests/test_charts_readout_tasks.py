@@ -66,6 +66,7 @@ def test_chart_readout_variants_match_contract() -> None:
         assert set(str(entity["attrs"]["label"]) for entity in trace["scene_ir"]["entities"]) == set(labels)
         assert set(trace["render_map"]["label_centers_px"].keys()) == set(labels)
         assert trace["projected_evidence"]["integer_list"] == evidence_values
+        assert len(trace["projected_evidence"]["bbox_set"]) == len(query_labels)
         assert evidence_values == [int(values_by_label[label]) for label in query_labels]
         assert int(out.answer_gt.value) == int(execution["answer_value"])
         assert int(out.answer_gt.value) == _expected_answer(str(task_variant), evidence_values)
@@ -80,6 +81,25 @@ def test_chart_readout_line_and_scatter_prompts_mention_y_values() -> None:
 
     assert "y-values" in str(line.prompt)
     assert "y-values" in str(scatter.prompt)
+
+
+def test_chart_readout_supports_additional_scene_variants() -> None:
+    task = ChartsReadoutSubsetValueTask()
+    prompts = {}
+    for seed, scene_variant in enumerate(("horizontal_bar", "dot_plot", "lollipop", "pie", "donut"), start=10034):
+        out = task.generate(
+            seed,
+            params={"task_variant": "sum_two", "scene_variant": scene_variant},
+            max_attempts=10,
+        )
+        prompts[str(scene_variant)] = str(out.prompt)
+        assert str(out.trace_payload["execution_trace"]["scene_variant"]) == str(scene_variant)
+        assert str(out.trace_payload["render_spec"]["scene_variant"]) == str(scene_variant)
+    assert "horizontal axis" in prompts["horizontal_bar"]
+    assert "y-values" in prompts["dot_plot"]
+    assert "y-values" in prompts["lollipop"]
+    assert "printed slice values" in prompts["pie"]
+    assert "printed slice values" in prompts["donut"]
 
 
 def test_chart_readout_prompt_examples_match_selected_variant() -> None:
@@ -122,6 +142,18 @@ def test_chart_readout_supports_explicit_mark_count_10() -> None:
             max_attempts=10,
         )
         assert int(out.trace_payload["execution_trace"]["mark_count"]) == 10
+
+
+def test_chart_readout_pie_caps_default_mark_count() -> None:
+    task = ChartsReadoutSubsetValueTask()
+    out = task.generate(10090, params={"task_variant": "sum_two", "scene_variant": "pie"}, max_attempts=10)
+    assert 5 <= int(out.trace_payload["execution_trace"]["mark_count"]) <= 8
+
+
+def test_chart_readout_donut_caps_default_mark_count() -> None:
+    task = ChartsReadoutSubsetValueTask()
+    out = task.generate(10091, params={"task_variant": "sum_two", "scene_variant": "donut"}, max_attempts=10)
+    assert 5 <= int(out.trace_payload["execution_trace"]["mark_count"]) <= 8
 
 
 def test_chart_readout_registers_integer_list_evidence() -> None:

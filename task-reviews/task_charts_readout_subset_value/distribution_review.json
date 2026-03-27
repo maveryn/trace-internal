@@ -1036,16 +1036,26 @@
     "scene_variant": {
       "expected_conflict": false,
       "expected_probabilities": {
-        "bar": 0.3333333333333333,
-        "line": 0.3333333333333333,
-        "scatter": 0.3333333333333333
+        "bar": 0.125,
+        "donut": 0.125,
+        "dot_plot": 0.125,
+        "horizontal_bar": 0.125,
+        "line": 0.125,
+        "lollipop": 0.125,
+        "pie": 0.125,
+        "scatter": 0.125
       },
       "expected_source": "execution_trace",
-      "max_observed_frequency": 0.37,
+      "max_observed_frequency": 0.17,
       "observed_counts": {
-        "bar": 37,
-        "line": 32,
-        "scatter": 31
+        "bar": 16,
+        "donut": 17,
+        "dot_plot": 11,
+        "horizontal_bar": 12,
+        "line": 13,
+        "lollipop": 10,
+        "pie": 8,
+        "scatter": 13
       },
       "sample_count": 100
     },

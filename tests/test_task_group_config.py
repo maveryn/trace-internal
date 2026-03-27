@@ -200,7 +200,16 @@ def test_charts_statistics_defaults_loaded() -> None:
         "range",
         "sum",
     ]
-    assert sorted(generation_shared["scene_variant_weights"].keys()) == ["bar", "line", "scatter"]
+    assert sorted(generation_shared["scene_variant_weights"].keys()) == [
+        "bar",
+        "donut",
+        "dot_plot",
+        "horizontal_bar",
+        "line",
+        "lollipop",
+        "pie",
+        "scatter",
+    ]
 
     render_shared = cfg["rendering"]["shared"]
     assert int(render_shared["canvas_width"]) > 0
@@ -258,7 +267,16 @@ def test_charts_counting_defaults_loaded() -> None:
         "below_threshold",
         "in_interval",
     ]
-    assert sorted(generation_shared["scene_variant_weights"].keys()) == ["bar", "line", "scatter"]
+    assert sorted(generation_shared["scene_variant_weights"].keys()) == [
+        "bar",
+        "donut",
+        "dot_plot",
+        "horizontal_bar",
+        "line",
+        "lollipop",
+        "pie",
+        "scatter",
+    ]
 
     render_shared = cfg["rendering"]["shared"]
     assert int(render_shared["canvas_width"]) > 0
@@ -299,7 +317,16 @@ def test_charts_readout_defaults_loaded() -> None:
         "min_two",
         "sum_two",
     ]
-    assert sorted(generation_shared["scene_variant_weights"].keys()) == ["bar", "line", "scatter"]
+    assert sorted(generation_shared["scene_variant_weights"].keys()) == [
+        "bar",
+        "donut",
+        "dot_plot",
+        "horizontal_bar",
+        "line",
+        "lollipop",
+        "pie",
+        "scatter",
+    ]
 
     render_shared = cfg["rendering"]["shared"]
     assert int(render_shared["canvas_width"]) > 0

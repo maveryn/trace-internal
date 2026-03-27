@@ -22,6 +22,7 @@ from ..shared.labeled_chart_common import (
     LabeledChartDefaults,
     SUPPORTED_LABELED_CHART_SCENE_VARIANTS,
     build_summary_statistics_dataset_for_variant,
+    projected_mark_evidence,
     resolve_chart_axis_variant,
     resolve_chart_mark_colors,
     resolve_chart_render_params_for_task,
@@ -106,6 +107,7 @@ class ChartsStatisticsSummaryLabelTask:
         statistic_kind = str(_TASK_VARIANT_TO_STATISTIC[str(task_variant)])
         values, evidence_value, evidence_labels, trace_extras = build_summary_statistics_dataset_for_variant(
             statistic_kind=str(statistic_kind),
+            scene_variant=str(scene_variant),
             params=params,
             instance_seed=int(instance_seed),
             gen_defaults=_GEN_DEFAULTS,
@@ -160,8 +162,13 @@ class ChartsStatisticsSummaryLabelTask:
                 "json_output_contract_answer_only",
                 "answer_hint",
                 "object_description_bar",
+                "object_description_pie",
+                "object_description_donut",
+                "object_description_horizontal_bar",
                 "object_description_line",
                 "object_description_scatter",
+                "object_description_dot_plot",
+                "object_description_lollipop",
                 "evidence_hint_argmax",
                 "evidence_hint_argmin",
                 "evidence_hint_median_label",
@@ -210,6 +217,7 @@ class ChartsStatisticsSummaryLabelTask:
             str(mark["label"]): int(mark["value"])
             for mark in rendered_scene.mark_traces
         }
+        evidence_projection = projected_mark_evidence(rendered_scene, [answer_label])
 
         trace_payload = {
             "scene_ir": {
@@ -312,6 +320,7 @@ class ChartsStatisticsSummaryLabelTask:
             },
             "projected_evidence": {
                 "integer": int(evidence_value),
+                **dict(evidence_projection),
             },
         }
 

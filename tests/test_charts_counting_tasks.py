@@ -59,6 +59,7 @@ def test_chart_counting_variants_match_contract() -> None:
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
         assert evidence_labels == sorted(evidence_labels)
         assert trace["projected_evidence"]["label_set"] == evidence_labels
+        assert len(trace["projected_evidence"]["bbox_set"]) == len(evidence_labels)
         assert int(out.answer_gt.value) == int(execution["answer_value"])
         assert int(out.answer_gt.value) == _expected_count(str(task_variant), values, execution)
         assert len(evidence_labels) == int(out.answer_gt.value)
@@ -92,6 +93,25 @@ def test_chart_counting_line_and_scatter_prompts_mention_y_values() -> None:
 
     assert "y-values" in str(line.prompt)
     assert "y-values" in str(scatter.prompt)
+
+
+def test_chart_counting_supports_additional_scene_variants() -> None:
+    task = ChartsCountingValueCountTask()
+    prompts = {}
+    for seed, scene_variant in enumerate(("horizontal_bar", "dot_plot", "lollipop", "pie", "donut"), start=9924):
+        out = task.generate(
+            seed,
+            params={"task_variant": "above_threshold", "scene_variant": scene_variant},
+            max_attempts=10,
+        )
+        prompts[str(scene_variant)] = str(out.prompt)
+        assert str(out.trace_payload["execution_trace"]["scene_variant"]) == str(scene_variant)
+        assert str(out.trace_payload["render_spec"]["scene_variant"]) == str(scene_variant)
+    assert "horizontal axis" in prompts["horizontal_bar"]
+    assert "y-values" in prompts["dot_plot"]
+    assert "y-values" in prompts["lollipop"]
+    assert "printed slice values" in prompts["pie"]
+    assert "printed slice values" in prompts["donut"]
 
 
 def test_chart_counting_prompt_examples_match_selected_variant() -> None:
@@ -148,3 +168,15 @@ def test_chart_counting_supports_explicit_mark_count_10() -> None:
             max_attempts=10,
         )
         assert int(out.trace_payload["execution_trace"]["mark_count"]) == 10
+
+
+def test_chart_counting_pie_caps_default_mark_count() -> None:
+    task = ChartsCountingValueCountTask()
+    out = task.generate(9975, params={"task_variant": "above_threshold", "scene_variant": "pie"}, max_attempts=10)
+    assert 5 <= int(out.trace_payload["execution_trace"]["mark_count"]) <= 8
+
+
+def test_chart_counting_donut_caps_default_mark_count() -> None:
+    task = ChartsCountingValueCountTask()
+    out = task.generate(9976, params={"task_variant": "above_threshold", "scene_variant": "donut"}, max_attempts=10)
+    assert 5 <= int(out.trace_payload["execution_trace"]["mark_count"]) <= 8

@@ -23,29 +23,29 @@ These are the chart types we expect to support most naturally across multiple ch
 5. `line`
 6. `multi_line`
 7. `scatter`
-8. `bubble`
-9. `pie`
-10. `donut`
-11. `histogram`
-12. `heatmap`
+8. `dot_plot`
+9. `lollipop`
+10. `bubble`
+11. `pie`
+12. `donut`
+13. `histogram`
+14. `heatmap`
 
 ### Additional chart types we want to keep on the long-term consideration list
 These are valid future targets, but they are not part of the initial implementation scope yet.
 
 1. `area`
 2. `stacked_area`
-3. `dot_plot`
-4. `lollipop`
-5. `box_plot`
-6. `violin_plot`
-7. `hexbin`
-8. `density_contour`
-9. `radar`
-10. `treemap`
-11. `waterfall`
-12. `funnel`
-13. `candlestick`
-14. `gantt`
+3. `box_plot`
+4. `violin_plot`
+5. `hexbin`
+6. `density_contour`
+7. `radar`
+8. `treemap`
+9. `waterfall`
+10. `funnel`
+11. `candlestick`
+12. `gantt`
 
 ## Initial implementation target
 
@@ -76,13 +76,17 @@ The concrete v1 contract for the first rollout now lives in `CHART_TASK_SETUP.md
 These are the first chart variants we currently plan to support in the `statistics` family.
 
 1. `bar`
-2. `line`
-3. `scatter`
+2. `pie`
+3. `donut`
+4. `horizontal_bar`
+5. `line`
+6. `scatter`
+7. `dot_plot`
+8. `lollipop`
 
 ### Chart variants we may add after the first statistics rollout stabilizes
 1. `histogram`
-2. `pie`
-3. `heatmap`
+2. `heatmap`
 
 ### Chart variants we are explicitly not planning for the first statistics rollout
 These may still become later chart-family variants, but they are not part of the initial `statistics` implementation target.
@@ -91,11 +95,10 @@ These may still become later chart-family variants, but they are not part of the
 2. `stacked_bar`
 3. `multi_line`
 4. `bubble`
-5. `donut`
-6. `box_plot`
-7. `violin_plot`
-8. `candlestick`
-9. `treemap`
+5. `box_plot`
+6. `violin_plot`
+7. `candlestick`
+8. `treemap`
 
 ## Active and planned chart families
 1. Active:

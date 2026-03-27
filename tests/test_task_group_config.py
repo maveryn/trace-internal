@@ -900,6 +900,7 @@ def test_icons_relation_defaults_loaded() -> None:
     assert bool(generation_shared["balanced_sampling"]) is True
     assert bool(generation_shared["balanced_variant_sampling"]) is True
     assert "task_icons_relation_between_two_anchors_count" in cfg["generation"]["task_overrides"]
+    assert "task_icons_relation_mirror_symmetry" in cfg["generation"]["task_overrides"]
     assert "task_icons_relation_occlusion_order" in cfg["generation"]["task_overrides"]
     assert "task_icons_relation_relative_position_type" in cfg["generation"]["task_overrides"]
 
@@ -921,6 +922,51 @@ def test_icons_relation_defaults_loaded() -> None:
     assert str(prompt_shared["task_key"]).strip()
     assert str(prompt_shared["json_output_contract"]).strip()
     assert str(prompt_shared["json_output_contract_answer_only"]).strip()
+
+    mirror_generation, mirror_rendering, mirror_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_icons_relation_mirror_symmetry",
+    )
+    assert str(mirror_generation["pool_manifest"]).strip() == "non_symmetry.txt"
+    assert int(mirror_generation["object_count_min"]) == 6
+    assert int(mirror_generation["object_count_max"]) == 6
+    assert int(mirror_generation["target_count_max"]) == 4
+    assert int(mirror_generation["distractor_count_min"]) == 2
+    assert int(mirror_generation["distractor_count_max"]) == 6
+    mirror_variant_weights = {
+        str(key): float(value)
+        for key, value in dict(mirror_generation["variant_weights"]).items()
+        if str(key)
+        in {
+            "mirror_vertical",
+            "mirror_horizontal",
+            "mirror_diagonal_main",
+            "mirror_diagonal_anti",
+            "mirror_both_axes",
+        }
+    }
+    assert mirror_variant_weights == {
+        "mirror_vertical": 1.0,
+        "mirror_horizontal": 1.0,
+        "mirror_diagonal_main": 1.0,
+        "mirror_diagonal_anti": 1.0,
+        "mirror_both_axes": 1.0,
+    }
+    assert int(mirror_rendering["canvas_width"]) == 1104
+    assert int(mirror_rendering["canvas_height"]) == 640
+    assert int(mirror_rendering["reference_panel_width_px"]) == 296
+    assert list(mirror_rendering["symmetric_icon_count_choices"]) == [2, 4, 6]
+    assert list(mirror_rendering["both_axes_icon_count_choices"]) == [4]
+    assert list(mirror_rendering["nonsymmetric_icon_count_choices"]) == [2, 4, 6]
+    assert int(mirror_rendering["patch_inner_margin_px"]) == 8
+    assert int(mirror_rendering["patch_min_gap_px"]) == 6
+    assert str(mirror_prompt["task_family_key"]).strip() == "reference_grid_mirror_symmetry_relation"
+    assert str(mirror_prompt["object_description"]).strip()
+    assert str(mirror_prompt["question_text"]).strip()
+    assert str(mirror_prompt["evidence_hint"]).strip()
+    assert str(mirror_prompt["answer_hint"]).strip()
+    assert str(mirror_prompt["json_example"]).strip()
+    assert str(mirror_prompt["json_example_answer_only"]).strip()
 
     strip_generation, strip_rendering, strip_prompt = split_generation_rendering_prompt_defaults(
         cfg,

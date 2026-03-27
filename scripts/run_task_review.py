@@ -614,7 +614,14 @@ def _build_inspection_rows(
         seed_rows = list(seed_rows_by_variant.get(str(task_variant), []))
         for index, seed_row in enumerate(seed_rows):
             instance_seed = int(seed_row.get("instance_seed", 0))
-            output = task.generate(instance_seed, params={}, max_attempts=int(max_attempts_per_instance))
+            generation_params: Dict[str, Any] = {}
+            if str(task_variant).strip():
+                generation_params["task_variant"] = str(task_variant)
+            output = task.generate(
+                instance_seed,
+                params=generation_params,
+                max_attempts=int(max_attempts_per_instance),
+            )
 
             image_path = image_dir / f"{index:04d}.png"
             output.image.save(image_path, format="PNG")

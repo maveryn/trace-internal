@@ -15,6 +15,20 @@ generation:
       above_anchor: 1.0
       below_anchor: 1.0
   task_overrides:
+    task_icons_relation_mirror_symmetry:
+      object_count_min: 6
+      object_count_max: 6
+      target_count_max: 4
+      distractor_count_min: 2
+      distractor_count_max: 6
+      distractor_margin_over_target: 0
+      pool_manifest: non_symmetry.txt
+      variant_weights:
+        mirror_vertical: 1.0
+        mirror_horizontal: 1.0
+        mirror_diagonal_main: 1.0
+        mirror_diagonal_anti: 1.0
+        mirror_both_axes: 1.0
     task_icons_relation_between_two_anchors_count:
       target_count_max: 5
       distractor_count_max: 10
@@ -88,6 +102,16 @@ rendering:
     cell_label_color_rgb: [52, 60, 77]
     cell_label_font_size_px: 22
   task_overrides:
+    task_icons_relation_mirror_symmetry:
+      canvas_width: 1104
+      canvas_height: 640
+      reference_panel_width_px: 296
+      symmetric_icon_count_choices: [2, 4, 6]
+      both_axes_icon_count_choices: [4]
+      nonsymmetric_icon_count_choices: [2, 4, 6]
+      patch_inner_margin_px: 8
+      patch_min_gap_px: 6
+      patch_sampling_attempts: 160
     task_icons_relation_between_two_anchors_count:
       scene_max_overlap_fraction: 0.08
       strip_boundary_margin_px: 14
@@ -109,6 +133,14 @@ prompt:
     task_family_key: reference_scene_anchor_relation
     task_key: relation_query
   task_overrides:
+    task_icons_relation_mirror_symmetry:
+      task_family_key: reference_grid_mirror_symmetry_relation
+      object_description: a Reference cell on the left and a labeled Scene grid of icon arrangements on the right
+      question_text: How many labeled Scene cells have the same mirror symmetry as the Reference cell? Mirror symmetry may be vertical, horizontal, diagonal, or across both the vertical and horizontal axes.
+      evidence_hint: set "evidence" to a sorted JSON array of the matching Scene cell labels
+      answer_hint: set "answer" to the count as an integer
+      json_example: '{"evidence":["B","E"],"answer":2}'
+      json_example_answer_only: '{"answer":2}'
     task_icons_relation_between_two_anchors_count:
       task_family_key: scene_two_anchor_relation
       object_description: a Scene panel of icons where two icons are marked as Anchor A and Anchor B

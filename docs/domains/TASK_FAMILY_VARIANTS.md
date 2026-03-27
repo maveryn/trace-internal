@@ -185,13 +185,20 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Answer type: integer count.
    - Evidence: scene-only `bbox_set` in final image coordinates.
    - Spatial distinction rule: anchors share the same icon type/tint/rotation and are exactly aligned on the non-varying axis, all candidates use a different icon type from the anchors, and strip membership is evaluated from icon centers with a fixed `14` px boundary margin so no candidate center sits near the strip edge.
-24. **Icons relation occlusion order (`task_icons_relation_occlusion_order`)**
+24. **Icons relation mirror symmetry (`task_icons_relation_mirror_symmetry`)**
+   - One two-panel image with a `Reference` cell on the left and a labeled `Scene` grid of icon-arrangement cells on the right.
+   - Query variants: `mirror_vertical`, `mirror_horizontal`, `mirror_diagonal_main`, `mirror_diagonal_anti`, `mirror_both_axes`.
+   - Count support: fixed `6` Scene cells, `target_count` in `0..4`, `distractor_count = 6 - target_count`.
+   - Answer type: integer count.
+   - Evidence: sorted `label_set` of the matching Scene cell labels.
+   - Exactness rule: matching cells must satisfy exactly the same supported symmetry signature as the Reference cell (vertical, horizontal, main-diagonal, anti-diagonal, or vertical+horizontal only); distractors are a mix of exact-other-signature cells and cells with none of the supported symmetries, and the task uses the curated asymmetric icon subset so icon-level symmetry does not blur those signatures.
+25. **Icons relation occlusion order (`task_icons_relation_occlusion_order`)**
    - One two-panel image with a `Reference` cell on the left and a labeled `Scene` grid of overlapping icon pairs on the right.
    - Query: how many labeled Scene cells show the same front-to-back order as the Reference cell.
    - Count support: `target_count` in `0..6`, `distractor_count` in `1..6`, total Scene cells in `2..12`.
    - Answer type: integer count.
    - Evidence: sorted `label_set` of the matching Scene cell labels.
-25. **Icons sequence missing count (`task_icons_sequence_missing_count`)**
+26. **Icons sequence missing count (`task_icons_sequence_missing_count`)**
    - One single-panel image with a horizontal row of `4..6` Scene boxes.
    - Query: how many icons should appear in the missing Scene box to continue the sequence.
    - Sequence rule: visible box counts follow one arithmetic progression with hidden answer support `0..10` and integer step `±1..±3`.

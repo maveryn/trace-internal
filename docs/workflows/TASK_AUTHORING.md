@@ -85,6 +85,8 @@ Use this as the implementation checklist for new or modified tasks.
 31. For icon tasks where size itself is the queried predicate, sample and record explicit nominal sizes per icon through the shared scene renderer, and enforce one minimum size-gap threshold for both targets and distractors so the prompt never relies on “about the same size” judgments.
 32. For icon sequence tasks with one missing box, keep the missing box visibly marked (for example `?`), sample the hidden count from the supported answer range before choosing the arithmetic rule, and use a one-box `bbox_set` for the missing cell when that cell itself is the grounding target.
 33. For icon two-anchor strip tasks, use a single Scene panel with two visibly marked anchors, keep the anchors exactly aligned on the non-varying axis, exclude anchor icon types from the candidate pool, and evaluate strip membership from icon centers with one explicit boundary margin instead of drawing the strip itself.
+34. For icon mirror-symmetry tasks, define one explicit rendered-image symmetry signature per variant (for example vertical-only, horizontal-only, main-diagonal-only, anti-diagonal-only, or vertical+horizontal only), keep the Reference and Scene cell boxes square so diagonal checks are well-defined, use even icon counts across both matching and non-matching cells, and reject any accidental extra-axis symmetries instead of treating them as acceptable matches.
+35. For icon tasks whose queried predicate depends on orientation, mirror symmetry, or transform identity, use `assets/icons/non_symmetry.txt` via the shared manifest loader instead of the full curated pool; tasks where symmetry is irrelevant (for example type/color/size/spatial-only tasks) may continue using `all_icons.txt`.
 
 ## 4) Config/defaults rules
 1. Precedence: `domain -> task_group -> task/params`.
@@ -117,9 +119,10 @@ Use this as the implementation checklist for new or modified tasks.
 6. Avoid tiny fixed structure banks; randomize both structural and visual factors whenever constraints allow.
 7. For tasks with both source categories and answer targets, sample both distributions explicitly and verify realized distributions.
 8. For deterministic balance over generated prefixes, use builder `_sampling_index` (not hashed `instance_seed`) when cycling categories/answers; if `_sampling_index` is absent, fall back to a namespaced deterministic index so target-answer choice does not couple to unrelated seed-driven decisions such as task-variant selection.
-9. If a target answer is chosen from a feasibility probe before layout, also propagate the probe's minimum required scene capacity (for example graph-cell count/span) into layout sampling; otherwise a globally feasible answer can still fail after the scene size is sampled.
-10. When changing answer/evidence/variant contracts, remove deprecated helper paths and stale trace fields in the same patch.
-11. For derived analytical geometry tasks, do not force integer targets if that collapses scene variety; prefer integer givens plus a numeric answer rounded to one decimal place when the natural formula yields irrational lengths.
+9. For fixed-cardinality tasks with a very small answer support (for example six cells with answers `0..4`), make the answer-balancing path explicit in task code and verify it under task-review sampling too; review runs do not inject builder `_sampling_index`, so tiny supports can skew if they rely only on generic hash-based balancing.
+10. If a target answer is chosen from a feasibility probe before layout, also propagate the probe's minimum required scene capacity (for example graph-cell count/span) into layout sampling; otherwise a globally feasible answer can still fail after the scene size is sampled.
+11. When changing answer/evidence/variant contracts, remove deprecated helper paths and stale trace fields in the same patch.
+12. For derived analytical geometry tasks, do not force integer targets if that collapses scene variety; prefer integer givens plus a numeric answer rounded to one decimal place when the natural formula yields irrational lengths.
 
 ## 6) Minimal test checklist
 1. Determinism for fixed seed.

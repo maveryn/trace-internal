@@ -204,6 +204,7 @@ def test_icons_relation_bundle_supports_anchor_relation_query() -> None:
     assert len(bundle.task_templates["relation_query"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["task:relation_query"]) == ["question_text"]
     assert "scene_two_anchor_relation" in bundle.task_family_templates
+    assert "reference_grid_mirror_symmetry_relation" in bundle.task_family_templates
 
 
 def test_icons_sequence_bundle_supports_missing_count_query() -> None:

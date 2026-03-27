@@ -27,5 +27,6 @@ Update this table after each review run.
 | task_icons_counting_type | task_icons_counting_type | alright_for_now | distribution pass |
 | task_icons_counting_orientation | task_icons_counting_orientation | alright_for_now | distribution pass |
 | task_icons_counting_color | task_icons_counting_color | alright_for_now | distribution pass |
+| task_icons_relation_relative_position_type | task_icons_relation_relative_position_type | alright_for_now | distribution pass |
 | task_icons_transformation_pair_count | task_icons_transformation_pair_count | alright_for_now | distribution pass |
 | task_tile_path_shortest_path |  |  |  |

@@ -54,7 +54,7 @@ from ..shared.single_object_scene import (
     make_graph_scene_canvas,
     resolve_graph_scene_context,
 )
-from ..shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
+from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from .defaults import MEASUREMENT_SHARED_DEFAULTS
 from ..shared.background_defaults import POST_IMAGE_BACKGROUND_DEFAULTS
 from ..shared.noise_defaults import POST_IMAGE_NOISE_DEFAULTS

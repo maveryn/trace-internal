@@ -20,6 +20,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
 2. Reference-scene icon counting tasks should answer with an integer count and use scene-only `bbox_set` evidence in final image coordinates.
 3. Orientation-sensitive icon tasks should use the curated asymmetric Prism subset (`non_symmetry.txt`) so rotated matches remain visually meaningful.
 4. Prism-style icon counting should sample `target_count` and `distractor_count` from explicit supports, derive `object_count` from the pair, place icons randomly under an explicit overlap cap, and keep per-icon noise on the individual icon instances rather than as a full-image post-process.
+5. Icons relation tasks should keep one visibly marked `Anchor` icon in the Scene panel, use a smaller spatial count range than global counting, and ground matches with scene-only `bbox_set` evidence.
 
 ## Planned tile direction
 1. Tile tasks should use one board per image and keep prompts grounded in board coordinates rather than raw pixel positions.
@@ -155,6 +156,13 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Answer type: integer count.
    - Evidence: sorted `label_set` of the matching Scene cell labels.
    - Visual distinction rule: candidate icons are accepted only when the sampled transform and at least one distractor transform remain visually distinct from identity and from the reference transform.
+20. **Icons relation relative-position type (`task_icons_relation_relative_position_type`)**
+   - One two-panel image with a `Reference` icon on the left and a `Scene` panel of icons on the right; exactly one Scene icon is visibly marked as the `Anchor`.
+   - Query variants: `left_of_anchor`, `right_of_anchor`, `above_anchor`, `below_anchor`.
+   - Count support: `target_count` in `0..5`, `distractor_count` in `max(1, target_count + 1)..10`, with the Anchor excluded from the counted candidate set.
+   - Answer type: integer count.
+   - Evidence: scene-only `bbox_set` in final image coordinates.
+   - Spatial distinction rule: evaluate left/right/above/below strictly from rendered bboxes, mix distractors across same-type wrong-side and different-type queried-side cases so the scene cannot be solved from one-sided occupancy alone, and require same-type wrong-side distractors to sit mostly outside the queried region (Prism-style relaxed margin rule).
 
 ## Future polygon variants (deferred)
 1. Polygon diameter measurement.

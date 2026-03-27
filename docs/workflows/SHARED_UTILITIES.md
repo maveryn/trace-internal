@@ -62,9 +62,13 @@ Promote helpers when a second consumer appears.
 15. `trace/tasks/shared/counting_sampling.py`
    - Canonical object-count / target-count balancing for counting-style tasks across domains.
    - Use `resolve_counting_cardinality_pair(...)` when the count answer itself should be sampled from the global feasible support before object-count/layout choice.
+   - `resolve_counting_target_and_distractor_triplet(...)` also supports target-conditioned distractor floors via `distractor_margin_over_target` when one family needs more negatives than positives for readable scenes.
+16. `trace/tasks/shared/variant_sampling.py`
+   - Canonical deterministic task-variant override/weight/balancing helpers across domains.
+   - Use `resolve_variant(...)` plus `apply_balanced_variant_sampling(...)` instead of keeping parallel per-domain variant samplers.
 
 ### Domain-shared (current)
-1. Geometry: `trace/tasks/geometry/shared/graph_paper.py`, `graph_rendering.py`, `single_object_scene.py`, `angle_geometry.py`, `multi_angle_scene.py`, `polygon_geometry.py`, `slope_geometry.py`, `shape_style.py`, `background_defaults.py`, `noise_defaults.py`, `variant_sampling.py`, `render_variation.py`, `annotation_values.py`, `labeled_point_evidence.py`, `point_labels.py`, `prompt_text.py`, `analytical_2d_scene.py`, `analytical_3d_solids.py`, `analytical_task.py`
+1. Geometry: `trace/tasks/geometry/shared/graph_paper.py`, `graph_rendering.py`, `single_object_scene.py`, `angle_geometry.py`, `multi_angle_scene.py`, `polygon_geometry.py`, `slope_geometry.py`, `shape_style.py`, `background_defaults.py`, `noise_defaults.py`, `render_variation.py`, `annotation_values.py`, `labeled_point_evidence.py`, `point_labels.py`, `prompt_text.py`, `analytical_2d_scene.py`, `analytical_3d_solids.py`, `analytical_task.py`
    - `graph_paper.offset_point_by_grid_vector` is the canonical pixel-space translation helper for lattice vector offsets.
    - `background_defaults.load_geometry_background_defaults(...)` is the canonical geometry-domain loader for background defaults (domain baseline with optional task-group override).
    - `noise_defaults.load_geometry_noise_defaults(...)` is the canonical geometry-domain loader for post-image noise defaults (domain baseline with optional task-group override).
@@ -82,11 +86,10 @@ Promote helpers when a second consumer appears.
    - `analytical_2d_scene.py` provides reusable analytical 2D scene fitting, collision-aware annotation/label placement, and shared polygon/circle/helper rendering for annotated analytical objectives.
    - Use `fill_kind="shaded"` / `fill_kind="background"` on analytical polygon entities when a shaded-region objective needs persistent filled target regions or visible cutouts; keep that fill behavior in the shared analytical scene helper rather than bespoke task-local drawing.
    - `analytical_3d_solids.py` provides reusable 3D-solid rendering/sampling helpers shared by analytical 3D objectives (currently `volume` and `surface_area`).
-   - `analytical_task.py` provides shared prompt-slot, answer-bound, and variant-resolution helpers reused by analytical geometry task modules.
+   - `analytical_task.py` provides shared prompt-slot and answer-bound helpers reused by analytical geometry task modules.
 2. Geometry measurement task-group: `trace/tasks/geometry/measurement/defaults.py`, `shape_measure_base.py`, `trace/tasks/geometry/shared/conic_geometry.py`, `trace/tasks/geometry/shared/length_geometry.py`
    - `defaults.py` centralizes task-group fallback defaults reused by measurement tasks.
    - `shape_measure_base.py` provides the shared generation/output pipeline for shape variants (polygon + conic) used by area/perimeter tasks.
-   - `variant_sampling.py` in `trace/tasks/geometry/shared/` provides shared balanced variant-selection helpers reused across geometry task groups.
    - `conic_geometry.py` provides reusable circle/ellipse sampling, rendering, and scene-entity payload helpers.
    - `length_geometry.py` provides reusable integer-length segment vectors, sampling, and labeled-segment rendering helpers.
    - `polygon_geometry.py` provides reusable procedural polygon sampling plus feasible-target support probes for polygon-side measurement tasks, constructive triangle/quadrilateral area helpers and triangle-perimeter helpers for graph-paper measurement tasks, conservative interior-span calculations for padded graph-paper placement, and strict polygon convexity classification (`convex` / `concave` / `degenerate`) for non-grid polygon-class tasks.
@@ -121,6 +124,7 @@ Promote helpers when a second consumer appears.
    - `icon_assets.py` is the canonical loader for the curated Prism icon bundle copied into `assets/icons/`; resolve pool membership through manifests rather than reconstructing SVG paths from task-local filename guesses.
    - `icon_noise.py` centralizes Prism-style per-icon subtle-noise sampling/application while preserving the icon alpha mask; use it for icon-instance perturbations instead of repurposing post-composite image noise helpers.
    - `icon_scene.py` provides the reusable two-panel `Reference` + `Scene` layout, panel geometry trace payloads, panel chrome rendering, random overlap-capped icon placement, and reading-order bbox canonicalization for sibling icon tasks.
+   - Reuse `random_paste_bbox(...)`, `overlap_fraction_smaller(...)`, and `max_overlap_with_existing(...)` from `icon_scene.py` when a second icon task needs custom constrained placement rather than cloning overlap math task-locally.
    - `icon_style.py` provides curated-icon palette helpers that sample per-instance tints with Lab-distance separation from the panel/background chrome; keep Prism-style icon color policy there instead of re-implementing task-local palette samplers.
    - `icons/counting/shared.py` provides the shared render-param resolution, icon-instance noise sampling, and canonical trace-style block for sibling reference-scene icon counting tasks; reuse it once a second icon counting task would otherwise duplicate the same render-default parsing or style-trace assembly.
    - `icon_transform.py` is the canonical home for D4 transform ids and image-space transform application; use it for icon rotation/mirror families instead of encoding transform names task-locally.

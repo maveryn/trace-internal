@@ -1,0 +1,85 @@
+generation:
+  shared:
+    object_count_min: 1
+    object_count_max: 15
+    target_count_min: 0
+    target_count_max: 5
+    distractor_count_min: 1
+    distractor_count_max: 10
+    distractor_margin_over_target: 1
+    balanced_sampling: true
+    balanced_variant_sampling: true
+    variant_weights:
+      left_of_anchor: 1.0
+      right_of_anchor: 1.0
+      above_anchor: 1.0
+      below_anchor: 1.0
+  task_overrides:
+    task_icons_relation_relative_position_type:
+      pool_manifest: all_icons.txt
+
+rendering:
+  shared:
+    canvas_width: 960
+    canvas_height: 544
+    reference_panel_width_px: 248
+    panel_gap_px: 24
+    outer_margin_px: 24
+    panel_padding_px: 20
+    panel_corner_radius_px: 18
+    scene_icon_size_min_px: 32
+    scene_icon_size_max_px: 88
+    reference_icon_size_px: 136
+    scene_max_overlap_fraction: 0.05
+    scene_placement_max_attempts: 120
+    scene_size_shrink_rounds: 6
+    scene_size_shrink_factor: 0.90
+    palette_size_min: 8
+    palette_size_max: 12
+    color_channel_min: 24
+    color_channel_max: 220
+    min_color_distance: 40.0
+    color_distance_space: lab
+    panel_title_font_size_px: 24
+    background_color_rgb: [247, 248, 251]
+    panel_fill_rgb: [255, 255, 255]
+    panel_border_rgb: [205, 212, 224]
+    header_text_rgb: [70, 78, 96]
+    icon_noise_edit_types: [blur, downsample, jpeg, noise]
+    icon_noise_edit_count_range: [0, 2]
+    icon_noise_value_ranges:
+      blur:
+        radius: [0.2, 0.6]
+      downsample:
+        scale: [0.85, 0.95]
+      jpeg:
+        quality: [70, 90]
+      noise:
+        alpha: [0.03, 0.08]
+    anchor_gap_px_directional: 8
+    anchor_target_area_ratio_min: 0.35
+    anchor_target_area_ratio_max: 0.65
+    anchor_opposite_area_ratio_min: 0.25
+    same_type_distractor_opposite_fraction_min: 0.75
+    anchor_highlight_padding_px: 10
+    anchor_highlight_radius_px: 14
+    anchor_outline_rgb: [74, 113, 188]
+    anchor_label_color_rgb: [57, 87, 145]
+    anchor_label_font_size_px: 20
+
+prompt:
+  shared:
+    bundle_id: icons_relation_v1
+    task_family_key: reference_scene_anchor_relation
+    task_key: relation_query
+  task_overrides:
+    task_icons_relation_relative_position_type:
+      object_description: a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor
+      question_text_left_of_anchor: How many icons in the Scene panel have the same icon type as the Reference icon and are to the left of the Anchor icon?
+      question_text_right_of_anchor: How many icons in the Scene panel have the same icon type as the Reference icon and are to the right of the Anchor icon?
+      question_text_above_anchor: How many icons in the Scene panel have the same icon type as the Reference icon and are above the Anchor icon?
+      question_text_below_anchor: How many icons in the Scene panel have the same icon type as the Reference icon and are below the Anchor icon?
+      evidence_hint: set "evidence" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right
+      answer_hint: set "answer" to the count as an integer
+      json_example: '{"evidence":[[438,162,498,222],[602,302,670,370]],"answer":2}'
+      json_example_answer_only: '{"answer":2}'

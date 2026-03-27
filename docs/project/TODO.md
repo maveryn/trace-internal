@@ -4,7 +4,7 @@
 1. No immediate P0 cleanup blockers; keep follow-up review findings flowing into docs/tests as new task families land.
 
 ## Next (P1)
-1. Extend the new icons domain beyond counting/transformation using the curated Prism asset pipeline.
+1. Extend the new icons domain beyond counting/transformation/relation using the curated Prism asset pipeline (`comparison` is the next natural family).
 2. Expand the v1 `rectangular_tiling` tile task suite beyond the current active set and keep future ports aligned to `docs/domains/TILE_TASK_SETUP.md`.
 3. Add cross-domain `scene_variant` + role-binding spec in architecture/ABI docs.
 4. Improve dataset QA diagnostics/report summaries.

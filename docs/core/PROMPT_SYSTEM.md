@@ -67,14 +67,15 @@ Bundles:
 9. `prompts/geometry/analytical_3d/geometry_analytical_volume_v1.json`
 10. `prompts/geometry/analytical_3d/geometry_analytical_surface_area_v1.json`
 11. `prompts/icons/counting/icons_counting_v1.json`
-12. `prompts/icons/transformation/icons_transformation_v1.json`
-13. `prompts/tile/count/tile_count_v1.json`
-14. `prompts/tile/path/tile_path_v1.json`
-15. `prompts/tile/pattern/tile_pattern_v1.json`
-16. `prompts/tile/reachability/tile_reachability_v1.json`
-17. `prompts/tile/relation/tile_relation_v1.json`
-18. `prompts/tile/symmetry/tile_symmetry_v1.json`
-19. `prompts/tile/transition/tile_transition_v1.json`
+12. `prompts/icons/relation/icons_relation_v1.json`
+13. `prompts/icons/transformation/icons_transformation_v1.json`
+14. `prompts/tile/count/tile_count_v1.json`
+15. `prompts/tile/path/tile_path_v1.json`
+16. `prompts/tile/pattern/tile_pattern_v1.json`
+17. `prompts/tile/reachability/tile_reachability_v1.json`
+18. `prompts/tile/relation/tile_relation_v1.json`
+19. `prompts/tile/symmetry/tile_symmetry_v1.json`
+20. `prompts/tile/transition/tile_transition_v1.json`
 
 Tasks:
 1. `task_geometry_comparison_angle` (bundle: `geometry_comparison_v1`)
@@ -100,8 +101,9 @@ Tasks:
 21. `task_icons_counting_type` (bundle: `icons_counting_v1`)
 22. `task_icons_counting_orientation` (bundle: `icons_counting_v1`)
 23. `task_icons_counting_color` (bundle: `icons_counting_v1`)
-24. `task_icons_transformation_pair_count` (bundle: `icons_transformation_v1`)
-25. `task_tile_count_color_count` (bundle: `tile_count_v1`)
+24. `task_icons_relation_relative_position_type` (bundle: `icons_relation_v1`)
+25. `task_icons_transformation_pair_count` (bundle: `icons_transformation_v1`)
+26. `task_tile_count_color_count` (bundle: `tile_count_v1`)
 26. `task_tile_count_color_components` (bundle: `tile_count_v1`)
 27. `task_tile_count_largest_component_size` (bundle: `tile_count_v1`)
 28. `task_tile_path_shortest_path` (bundle: `tile_path_v1`)

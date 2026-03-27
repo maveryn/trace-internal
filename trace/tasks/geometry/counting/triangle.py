@@ -41,7 +41,7 @@ from .shared import (
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
 from ....core.types import TaskComplexity, TypedValue
-from ..shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
+from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 
 _SUPPORTED_VARIANTS: Tuple[str, ...] = (
     "equilateral_triangle",

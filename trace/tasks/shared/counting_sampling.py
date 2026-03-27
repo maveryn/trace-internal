@@ -565,15 +565,24 @@ def resolve_counting_target_and_distractor_triplet(
     if not supported_distractors:
         raise ValueError("counting task resolved no supported distractor counts")
 
+    distractor_margin_over_target = int(
+        params.get(
+            "distractor_margin_over_target",
+            gen_defaults.get("distractor_margin_over_target", 0),
+        )
+    )
+    distractor_margin_over_target = max(0, int(distractor_margin_over_target))
+
     explicit_total = params.get("object_count")
     explicit_target = params.get("target_count")
     explicit_distractor = params.get("distractor_count")
 
     def _feasible_distractors_for_target(target_count: int) -> list[int]:
+        min_distractor_for_target = max(int(distractor_min), int(target_count) + int(distractor_margin_over_target))
         return [
             int(value)
             for value in supported_distractors
-            if total_min <= int(target_count) + int(value) <= total_max
+            if int(value) >= int(min_distractor_for_target) and total_min <= int(target_count) + int(value) <= total_max
         ]
 
     def _feasible_targets_for_distractor(distractor_count: int) -> list[int]:
@@ -593,6 +602,8 @@ def resolve_counting_target_and_distractor_triplet(
             raise ValueError("target_count is outside configured supported range")
         if int(distractor_count) not in set(supported_distractors):
             raise ValueError("derived distractor_count is outside configured supported range")
+        if int(distractor_count) < int(target_count) + int(distractor_margin_over_target):
+            raise ValueError("derived distractor_count violates configured distractor margin over target")
         if explicit_distractor is not None and int(explicit_distractor) != int(distractor_count):
             raise ValueError("distractor_count must equal object_count - target_count")
         return (
@@ -614,6 +625,8 @@ def resolve_counting_target_and_distractor_triplet(
             raise ValueError("distractor_count is outside configured supported range")
         if int(target_count) not in set(supported_targets):
             raise ValueError("derived target_count is outside configured supported range")
+        if int(distractor_count) < int(target_count) + int(distractor_margin_over_target):
+            raise ValueError("distractor_count violates configured distractor margin over target")
         return (
             int(object_count),
             {str(int(object_count)): 1.0},
@@ -631,6 +644,8 @@ def resolve_counting_target_and_distractor_triplet(
             raise ValueError("target_count is outside configured supported range")
         if int(distractor_count) not in set(supported_distractors):
             raise ValueError("distractor_count is outside configured supported range")
+        if int(distractor_count) < int(target_count) + int(distractor_margin_over_target):
+            raise ValueError("distractor_count violates configured distractor margin over target")
         if not (total_min <= int(object_count) <= total_max):
             raise ValueError("target_count + distractor_count is outside configured supported range")
         return (

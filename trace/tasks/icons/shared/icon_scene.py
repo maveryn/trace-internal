@@ -231,7 +231,7 @@ def _intersection_area(left: BBox, right: BBox) -> float:
     return max(0.0, float(ix1 - ix0)) * max(0.0, float(iy1 - iy0))
 
 
-def _overlap_fraction_smaller(left: BBox, right: BBox) -> float:
+def overlap_fraction_smaller(left: BBox, right: BBox) -> float:
     """Return overlap normalized by the smaller box area."""
 
     inter = _intersection_area(left, right)
@@ -240,15 +240,15 @@ def _overlap_fraction_smaller(left: BBox, right: BBox) -> float:
     return float(inter) / max(1e-9, min(_box_area(left), _box_area(right)))
 
 
-def _max_overlap_with_existing(box: BBox, existing: Sequence[BBox]) -> float:
+def max_overlap_with_existing(box: BBox, existing: Sequence[BBox]) -> float:
     """Return the maximum smaller-area overlap ratio against placed icons."""
 
     if not existing:
         return 0.0
-    return max(float(_overlap_fraction_smaller(box, other)) for other in existing)
+    return max(float(overlap_fraction_smaller(box, other)) for other in existing)
 
 
-def _random_paste_bbox(
+def random_paste_bbox(
     *,
     sprite_size: Tuple[int, int],
     content_bbox: BBox,
@@ -389,14 +389,14 @@ def render_two_panel_icon_scene(
                     noise_seed=spec.noise_seed,
                 )
                 try:
-                    candidate_bbox = _random_paste_bbox(
+                    candidate_bbox = random_paste_bbox(
                         sprite_size=candidate_sprite.size,
                         content_bbox=scene_content_bbox,
                         rng=rng,
                     )
                 except ValueError:
                     continue
-                if float(_max_overlap_with_existing(candidate_bbox, placed_bboxes)) > float(max_overlap_fraction):
+                if float(max_overlap_with_existing(candidate_bbox, placed_bboxes)) > float(max_overlap_fraction):
                     continue
                 sprite = candidate_sprite
                 paste_bbox = candidate_bbox
@@ -447,7 +447,10 @@ __all__ = [
     "RenderedIconInstance",
     "RenderedIconScene",
     "draw_two_panel_panels",
+    "max_overlap_with_existing",
+    "overlap_fraction_smaller",
     "panel_geometry_to_trace",
+    "random_paste_bbox",
     "render_two_panel_icon_scene",
     "resolve_two_panel_layout",
     "sort_bboxes_reading_order",

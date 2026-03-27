@@ -844,6 +844,61 @@ def test_icons_transformation_defaults_loaded() -> None:
     assert str(prompt["json_example_answer_only"]).strip()
 
 
+def test_icons_relation_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("icons", "relation")
+    for section in ("generation", "rendering", "prompt", "visual"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["object_count_min"]) >= 1
+    assert int(generation_shared["object_count_max"]) >= int(generation_shared["object_count_min"])
+    assert int(generation_shared["target_count_min"]) == 0
+    assert int(generation_shared["target_count_max"]) == 5
+    assert int(generation_shared["distractor_count_min"]) == 1
+    assert int(generation_shared["distractor_count_max"]) == 10
+    assert int(generation_shared["distractor_margin_over_target"]) == 1
+    assert bool(generation_shared["balanced_sampling"]) is True
+    assert bool(generation_shared["balanced_variant_sampling"]) is True
+    assert "task_icons_relation_relative_position_type" in cfg["generation"]["task_overrides"]
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_width"]) > 0
+    assert int(render_shared["canvas_height"]) > 0
+    assert int(render_shared["reference_panel_width_px"]) > 0
+    assert int(render_shared["scene_icon_size_min_px"]) > 0
+    assert int(render_shared["scene_icon_size_max_px"]) >= int(render_shared["scene_icon_size_min_px"])
+    assert 0.0 <= float(render_shared["scene_max_overlap_fraction"]) <= 1.0
+    assert int(render_shared["anchor_gap_px_directional"]) > 0
+    assert float(render_shared["anchor_target_area_ratio_min"]) > 0.0
+    assert float(render_shared["anchor_target_area_ratio_max"]) >= float(render_shared["anchor_target_area_ratio_min"])
+    assert float(render_shared["anchor_opposite_area_ratio_min"]) > 0.0
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip()
+    assert str(prompt_shared["task_family_key"]).strip()
+    assert str(prompt_shared["task_key"]).strip()
+    assert str(prompt_shared["json_output_contract"]).strip()
+    assert str(prompt_shared["json_output_contract_answer_only"]).strip()
+
+    generation, rendering, prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_icons_relation_relative_position_type",
+    )
+    assert str(generation["pool_manifest"]).strip() == "all_icons.txt"
+    assert int(rendering["canvas_width"]) > 0
+    assert float(rendering["scene_max_overlap_fraction"]) == 0.05
+    assert int(rendering["anchor_gap_px_directional"]) == 8
+    assert str(prompt["object_description"]).strip()
+    assert str(prompt["question_text_left_of_anchor"]).strip()
+    assert str(prompt["question_text_right_of_anchor"]).strip()
+    assert str(prompt["question_text_above_anchor"]).strip()
+    assert str(prompt["question_text_below_anchor"]).strip()
+    assert str(prompt["evidence_hint"]).strip()
+    assert str(prompt["answer_hint"]).strip()
+    assert str(prompt["json_example"]).strip()
+    assert str(prompt["json_example_answer_only"]).strip()
+
+
 def test_tile_path_defaults_loaded() -> None:
     cfg = get_task_group_defaults("tile", "path")
     for section in ("generation", "rendering", "prompt", "visual"):

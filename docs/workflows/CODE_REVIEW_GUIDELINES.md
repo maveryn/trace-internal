@@ -97,6 +97,10 @@ Use this checklist during implementation and refactor reviews.
 81. For icon transformation tasks, validate candidate transforms against the rendered icon silhouette itself; even curated asymmetric pools can contain icons where some canonical D4 transforms collapse visually, so reject ambiguous icon/transform pairs instead of assuming transform names stay distinguishable.
 82. Keep repo-local skills thin and docs canonical: workflow/domain skills should point at source-of-truth docs instead of copying policy into parallel skill-specific prose.
 83. When docs move or the repo doc layout changes, update all repo-entry surfaces in the same patch (`docs/README.md`, `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, and any skills that point at those docs) so navigation never fragments.
+84. When a variant-selection helper gains a second domain consumer, promote it to `trace/tasks/shared/variant_sampling.py` instead of leaving nearly identical samplers in domain-shared modules.
+85. For anchored icon relation tasks, do not place all positives on one side and every distractor on the other; include both same-type wrong-side distractors and different-type queried-side distractors so the task tests the intended conjunction of attribute + spatial reasoning rather than side occupancy.
+86. For anchored icon relation tasks with strict bbox-based directional predicates, reject same-type wrong-side distractors that are only a few pixels from becoming positives; follow Prism-style relaxed spatial margins so those distractors lie mostly outside the queried region.
+87. When an anchored relation task samples target and distractor counts independently, check whether high target counts still make the queried side visually dominant; if so, enforce a target-conditioned distractor floor in the shared counting sampler instead of papering over the issue with extra placement randomness.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

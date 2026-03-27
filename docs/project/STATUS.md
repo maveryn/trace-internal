@@ -55,6 +55,7 @@ Date: 2026-03-27
 44. Charts now also includes `task_charts_readout_subset_value`, the first `readout` family task under `domain=charts`, with semantic `task_variant` values `sum_two|difference_two_abs|max_two|min_two|mean_two`, visual `scene_variant` values `area|bar|pie|donut|horizontal_bar|line|radar|scatter|dot_plot|lollipop`, integer answers, and ordered `integer_list` evidence carrying the two queried values in the same label order used in the prompt; pie/donut scenes again use positive integer percentages that sum to `100`, distinct slice colors, and a right-side legend, while radar scenes use one spoke per label and printed point values near the markers.
 45. Charts now also includes `task_charts_multiseries_pairwise_comparison_count`, the first `multiseries` family task under `domain=charts`, with semantic `task_variant` values `series_a_gt_b_count|series_a_lt_b_count`, visual `scene_variant` values `grouped_bar|grouped_horizontal_bar|multi_line|grouped_lollipop`, integer answers, sorted category-label `label_set` evidence, `2..3` series per chart, `5..10` labeled categories per chart, and target-balanced count sampling over the default answer support `0..8`; the queried pair of series is named in the prompt while an optional third series acts as a distractor, and right-side legends map series colors to series names.
 46. Charts now also includes the first `distribution` family tasks: `task_charts_distribution_histogram_count` and `task_charts_distribution_boxplot_label`. `task_charts_distribution_histogram_count` uses the fixed `histogram` scene contract with contiguous numeric bins and semantic `task_variant` values `modal_bin_count|interval_mass|cumulative_count_to_bin`, integer answers, and interval/bin-grounded `label_set` evidence. `task_charts_distribution_boxplot_label` uses the fixed `boxplot` scene contract with labeled quartile/whisker summaries and semantic `task_variant` values `highest_median|largest_iqr|smallest_iqr`, `option_letter` answers, and integer evidence carrying the winning median or IQR value.
+47. Charts now also includes `task_charts_distribution_density_label`, a broader density-shape label task currently backed by the fixed `violin` scene contract. It uses semantic `task_variant` values `highest_mode|lowest_mode|bimodal_label`, `option_letter` answers, and `integer_list` evidence carrying the winning mode value or the two sorted mode values for the bimodal violin.
 
 ## Active tasks
 1. `task_tile_count_color_count` (`domain=tile`, `task_group=count`)
@@ -98,12 +99,13 @@ Date: 2026-03-27
 39. `task_charts_multiseries_pairwise_comparison_count` (`domain=charts`, `task_group=multiseries`)
 40. `task_charts_distribution_histogram_count` (`domain=charts`, `task_group=distribution`)
 41. `task_charts_distribution_boxplot_label` (`domain=charts`, `task_group=distribution`)
+42. `task_charts_distribution_density_label` (`domain=charts`, `task_group=distribution`)
 
 ## Current quality baseline
 1. Tests are required to pass before finalize.
 2. Distribution QA uses `scripts/check_task_answer_distribution.py` with per-variant answer-only checks (`unique_answers >= 5`, `max_answer_frequency < 25%`) and multithreaded sample generation (`--workers`); numeric 5-bin summaries remain reported for review but are not hard pass/fail gates.
 3. Task-review tooling writes per-task artifacts under `task-reviews/<task_id>/`, including one inspection workbook named `<task_id>.xlsx` with one sheet per task variant.
-4. The current active reviewed task set (10 tile tasks + 20 geometry tasks + 4 icons tasks + 7 charts tasks) passes distribution review under the active gates.
+4. The current active reviewed task set (10 tile tasks + 20 geometry tasks + 4 icons tasks + 8 charts tasks) passes distribution review under the active gates.
 
 ## Next priorities
 1. Extend icons beyond counting/transformation using the new curated Prism asset pipeline (relation/comparison are the next natural families).

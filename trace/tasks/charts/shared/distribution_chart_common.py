@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
 from ...shared.config_defaults import resolve_required_int_bounds
-from .chart_scene import BoxPlotSpec, HistogramBinSpec
+from .chart_scene import BoxPlotSpec, HistogramBinSpec, ViolinPlotSpec
 from .labeled_chart_common import (
     LabeledChartDefaults,
     balanced_choice_from_values,
@@ -23,6 +23,7 @@ from .labeled_chart_common import (
 
 HistogramTaskVariant = str
 BoxPlotTaskVariant = str
+DensityTaskVariant = str
 
 
 @dataclass(frozen=True)
@@ -43,6 +44,8 @@ class DistributionChartDefaults:
     category_count_max: int = 7
     value_min: int = 1
     value_max: int = 20
+    violin_category_count_min: int = 4
+    violin_category_count_max: int = 7
 
 
 def _resolve_histogram_bin_count_bounds(
@@ -77,6 +80,24 @@ def _resolve_boxplot_category_count_bounds(
         max_key="category_count_max",
         fallback_min=int(defaults.category_count_min),
         fallback_max=int(defaults.category_count_max),
+        context=f"generation defaults for {task_id}",
+    )
+
+
+def _resolve_violin_category_count_bounds(
+    params: Mapping[str, Any],
+    *,
+    gen_defaults: Mapping[str, Any],
+    defaults: DistributionChartDefaults,
+    task_id: str,
+) -> Tuple[int, int]:
+    return resolve_required_int_bounds(
+        params,
+        gen_defaults,
+        min_key="violin_category_count_min",
+        max_key="violin_category_count_max",
+        fallback_min=int(defaults.violin_category_count_min),
+        fallback_max=int(defaults.violin_category_count_max),
         context=f"generation defaults for {task_id}",
     )
 
@@ -151,6 +172,128 @@ def _resolve_boxplot_value_bounds(
         fallback_max=int(defaults.value_max),
         context=f"generation defaults for {task_id}",
     )
+
+
+def build_density_dataset_for_variant(
+    *,
+    task_variant: DensityTaskVariant,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    gen_defaults: Mapping[str, Any],
+    defaults: DistributionChartDefaults,
+    task_id: str,
+    mark_style: Mapping[str, Any],
+) -> Tuple[List[ViolinPlotSpec], str, List[int], Dict[str, Any]]:
+    """Build one violin-backed density task dataset."""
+
+    category_count_min, category_count_max = _resolve_violin_category_count_bounds(
+        params,
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        task_id=task_id,
+    )
+    value_min, value_max = _resolve_boxplot_value_bounds(
+        params,
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        task_id=task_id,
+    )
+    category_count = choose_mark_count(
+        list(range(int(category_count_min), int(category_count_max) + 1)),
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}:category_count:{str(task_variant)}",
+    )
+    labels = list(sample_chart_labels(count=int(category_count), instance_seed=int(instance_seed)))
+    rng = spawn_rng(int(instance_seed), f"{task_id}.density.{str(task_variant)}")
+    fill_rgb = tuple(int(channel) for channel in mark_style["mark_fill_rgb"])
+    outline_rgb = tuple(int(channel) for channel in mark_style["mark_outline_rgb"])
+
+    specs: List[ViolinPlotSpec] = []
+    if str(task_variant) in {"highest_mode", "lowest_mode"}:
+        candidate_modes = list(range(int(value_min) + 3, int(value_max) - 2))
+        if len(candidate_modes) < int(category_count):
+            raise ValueError("density mode support is too small for requested category count")
+        rng.shuffle(candidate_modes)
+        chosen_modes = candidate_modes[: int(category_count)]
+        rng.shuffle(chosen_modes)
+        for label, mode in zip(labels, chosen_modes):
+            support_padding_low = int(rng.randint(2, min(5, int(mode) - int(value_min))))
+            support_padding_high = int(rng.randint(2, min(5, int(value_max) - int(mode))))
+            specs.append(
+                ViolinPlotSpec(
+                    label=str(label),
+                    support_min=int(mode) - int(support_padding_low),
+                    support_max=int(mode) + int(support_padding_high),
+                    mode_values=(int(mode),),
+                    fill_rgb=fill_rgb,
+                    outline_rgb=outline_rgb,
+                )
+            )
+        if str(task_variant) == "highest_mode":
+            winning_spec = max(specs, key=lambda spec: int(spec.mode_values[0]))
+        else:
+            winning_spec = min(specs, key=lambda spec: int(spec.mode_values[0]))
+        answer_label = str(winning_spec.label)
+        evidence_values = [int(winning_spec.mode_values[0])]
+    elif str(task_variant) == "bimodal_label":
+        candidate_modes = list(range(int(value_min) + 3, int(value_max) - 2))
+        rng.shuffle(candidate_modes)
+        unimodal_modes = candidate_modes[: int(category_count)]
+        for index, (label, mode) in enumerate(zip(labels, unimodal_modes)):
+            if int(index) == 0:
+                lower = int(rng.randint(int(value_min) + 2, int(value_max) - 7))
+                upper = int(rng.randint(int(lower) + 3, int(min(value_max - 2, lower + 6))))
+                support_min = max(int(value_min), int(lower) - int(rng.randint(1, 3)))
+                support_max = min(int(value_max), int(upper) + int(rng.randint(1, 3)))
+                specs.append(
+                    ViolinPlotSpec(
+                        label=str(label),
+                        support_min=int(support_min),
+                        support_max=int(support_max),
+                        mode_values=(int(lower), int(upper)),
+                        fill_rgb=fill_rgb,
+                        outline_rgb=outline_rgb,
+                    )
+                )
+            else:
+                support_padding_low = int(rng.randint(2, min(5, int(mode) - int(value_min))))
+                support_padding_high = int(rng.randint(2, min(5, int(value_max) - int(mode))))
+                specs.append(
+                    ViolinPlotSpec(
+                        label=str(label),
+                        support_min=int(mode) - int(support_padding_low),
+                        support_max=int(mode) + int(support_padding_high),
+                        mode_values=(int(mode),),
+                        fill_rgb=fill_rgb,
+                        outline_rgb=outline_rgb,
+                    )
+                )
+        rng.shuffle(specs)
+        winning_spec = next(spec for spec in specs if len(spec.mode_values) == 2)
+        answer_label = str(winning_spec.label)
+        evidence_values = sorted(int(value) for value in winning_spec.mode_values)
+    else:
+        raise ValueError(f"unsupported density task_variant: {task_variant}")
+
+    trace_extras = {
+        "scene_variant": "violin",
+        "category_count": int(category_count),
+        "category_count_range": [int(category_count_min), int(category_count_max)],
+        "value_range": [int(value_min), int(value_max)],
+        "answer_label": str(answer_label),
+        "evidence_values": [int(value) for value in evidence_values],
+        "support_by_label": {
+            str(spec.label): {
+                "support_min": int(spec.support_min),
+                "support_max": int(spec.support_max),
+                "mode_values": [int(value) for value in spec.mode_values],
+                "bimodal": bool(len(spec.mode_values) == 2),
+            }
+            for spec in specs
+        },
+    }
+    return specs, str(answer_label), [int(value) for value in evidence_values], trace_extras
 
 
 def _build_histogram_labels(*, start_value: int, bin_width: int, bin_count: int) -> List[str]:
@@ -535,8 +678,10 @@ def build_boxplot_dataset_for_variant(
 
 
 __all__ = [
+    "DensityTaskVariant",
     "DistributionChartDefaults",
     "build_boxplot_dataset_for_variant",
+    "build_density_dataset_for_variant",
     "build_histogram_dataset_for_variant",
     "projected_mark_evidence",
     "resolve_chart_axis_variant",

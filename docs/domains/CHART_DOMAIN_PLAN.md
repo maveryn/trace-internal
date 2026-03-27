@@ -32,6 +32,7 @@ These are the chart types we expect to support most naturally across multiple ch
 14. `donut`
 15. `histogram`
 16. `boxplot`
+17. `violin`
 17. `heatmap`
 
 ### Additional chart types we want to keep on the long-term consideration list
@@ -39,7 +40,7 @@ These are valid future targets, but they are not part of the initial implementat
 
 1. `stacked_area`
 2. `boxplot`
-3. `violin_plot`
+3. `ecdf`
 4. `hexbin`
 5. `density_contour`
 6. `treemap`
@@ -104,13 +105,14 @@ These are the active distribution-style chart variants we currently support in t
 
 1. `histogram`
 2. `boxplot`
+3. `violin`
 
 ### Deferred chart variants
 These remain under consideration, but they are not part of the current active chart contract.
 
 1. `stacked_bar`
 2. `bubble`
-3. `violin_plot`
+3. `ecdf`
 5. `candlestick`
 6. `treemap`
 7. `heatmap`

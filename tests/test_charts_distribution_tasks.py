@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 
 from trace.tasks.charts.distribution.boxplot_label import ChartsDistributionBoxplotLabelTask
+from trace.tasks.charts.distribution.density_label import ChartsDistributionDensityLabelTask
 from trace.tasks.charts.distribution.histogram_count import ChartsDistributionHistogramCountTask
 
 
@@ -154,6 +155,76 @@ def test_chart_distribution_boxplot_task_is_deterministic() -> None:
     params = {"task_variant": "largest_iqr"}
     out_a = task.generate(11160, params=params, max_attempts=10)
     out_b = task.generate(11160, params=params, max_attempts=10)
+
+    assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
+    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
+    assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
+    assert out_a.prompt == out_b.prompt
+    assert out_a.image.tobytes() == out_b.image.tobytes()
+
+
+def test_chart_distribution_density_variants_match_contract() -> None:
+    task = ChartsDistributionDensityLabelTask()
+    for seed, task_variant in enumerate(("highest_mode", "lowest_mode", "bimodal_label"), start=11210):
+        out = task.generate(seed, params={"task_variant": task_variant}, max_attempts=10)
+        trace = out.trace_payload
+        execution = trace["execution_trace"]
+        render = trace["render_spec"]
+        support_by_label = {str(label): dict(values) for label, values in execution["support_by_label"].items()}
+
+        assert str(out.task_variant) == str(task_variant)
+        assert out.answer_gt.type == "option_letter"
+        assert out.evidence_gt.type == "integer_list"
+        assert str(execution["scene_variant"]) == "violin"
+        assert str(render["scene_variant"]) == "violin"
+        assert trace["projected_evidence"]["integer_list"] == list(out.evidence_gt.value)
+        assert len(trace["projected_evidence"]["bbox_set"]) == 1
+        assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
+
+        for stats in support_by_label.values():
+            assert int(stats["support_min"]) < int(stats["support_max"])
+            assert len(stats["mode_values"]) in {1, 2}
+            assert all(int(stats["support_min"]) < int(value) < int(stats["support_max"]) for value in stats["mode_values"])
+
+        if str(task_variant) == "highest_mode":
+            target_label = max(support_by_label, key=lambda label: int(support_by_label[label]["mode_values"][0]))
+            assert str(out.answer_gt.value) == str(target_label)
+            assert list(out.evidence_gt.value) == [int(support_by_label[target_label]["mode_values"][0])]
+            assert sum(1 for values in support_by_label.values() if len(values["mode_values"]) == 2) == 0
+        elif str(task_variant) == "lowest_mode":
+            target_label = min(support_by_label, key=lambda label: int(support_by_label[label]["mode_values"][0]))
+            assert str(out.answer_gt.value) == str(target_label)
+            assert list(out.evidence_gt.value) == [int(support_by_label[target_label]["mode_values"][0])]
+            assert sum(1 for values in support_by_label.values() if len(values["mode_values"]) == 2) == 0
+        else:
+            bimodal_labels = [label for label, values in support_by_label.items() if len(values["mode_values"]) == 2]
+            assert len(bimodal_labels) == 1
+            target_label = str(bimodal_labels[0])
+            assert str(out.answer_gt.value) == str(target_label)
+            assert list(out.evidence_gt.value) == sorted(int(value) for value in support_by_label[target_label]["mode_values"])
+
+
+def test_chart_distribution_density_prompt_examples_match_selected_variant() -> None:
+    task = ChartsDistributionDensityLabelTask()
+    expected = {
+        "highest_mode": {"evidence": [14], "answer": "Q"},
+        "lowest_mode": {"evidence": [5], "answer": "B"},
+        "bimodal_label": {"evidence": [6, 12], "answer": "M"},
+    }
+    for index, task_variant in enumerate(expected, start=11240):
+        out = task.generate(index, params={"task_variant": task_variant}, max_attempts=10)
+        answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
+        assert answer_and_evidence == expected[task_variant]
+        assert answer_only == {"answer": expected[task_variant]["answer"]}
+
+
+def test_chart_distribution_density_task_is_deterministic() -> None:
+    task = ChartsDistributionDensityLabelTask()
+    params = {"task_variant": "bimodal_label"}
+    out_a = task.generate(11260, params=params, max_attempts=10)
+    out_b = task.generate(11260, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
     assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()

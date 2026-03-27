@@ -10,6 +10,8 @@ generation:
     bin_frequency_max: 12
     category_count_min: 4
     category_count_max: 7
+    violin_category_count_min: 4
+    violin_category_count_max: 7
     value_min: 1
     value_max: 20
     balanced_task_variant_sampling: true
@@ -24,6 +26,11 @@ generation:
         highest_median: 1.0
         largest_iqr: 1.0
         smallest_iqr: 1.0
+    task_charts_distribution_density_label:
+      task_variant_weights:
+        bimodal_label: 1.0
+        highest_mode: 1.0
+        lowest_mode: 1.0
 
 rendering:
   shared:
@@ -63,6 +70,7 @@ prompt:
     answer_hint: set "answer" to the requested count as an integer
     object_description_histogram: a histogram with contiguous numeric interval bins on the horizontal axis. Each bar height gives the count for that interval
     object_description_boxplot: a set of labeled boxplots. Each box spans the interquartile range, the line inside the box marks the median, and the whiskers show the minimum and maximum shown
+    object_description_violin: a set of labeled violin plots. Each violin shows the shape of one value distribution along the vertical axis, and the most prominent peaks indicate the modal values
     evidence_hint_modal_bin_count: set "evidence" to an array containing the label of the unique highest-count bin
     evidence_hint_interval_mass: set "evidence" to an array containing the labels of all bins included in the queried interval
     evidence_hint_cumulative_count_to_bin: set "evidence" to an array containing the labels of all bins from the first bin through the queried bin
@@ -85,3 +93,15 @@ prompt:
       json_example_answer_only_highest_median: '{"answer":"M"}'
       json_example_answer_only_largest_iqr: '{"answer":"Q"}'
       json_example_answer_only_smallest_iqr: '{"answer":"B"}'
+    task_charts_distribution_density_label:
+      task_key: density_label_query
+      answer_hint: set "answer" to the single uppercase label of the requested violin plot
+      evidence_hint_highest_mode: set "evidence" to an array containing the winning modal value as one integer
+      evidence_hint_lowest_mode: set "evidence" to an array containing the winning modal value as one integer
+      evidence_hint_bimodal_label: set "evidence" to an array containing the two modal values of the bimodal violin in ascending order
+      json_example_highest_mode: '{"evidence":[14],"answer":"Q"}'
+      json_example_lowest_mode: '{"evidence":[5],"answer":"B"}'
+      json_example_bimodal_label: '{"evidence":[6,12],"answer":"M"}'
+      json_example_answer_only_highest_mode: '{"answer":"Q"}'
+      json_example_answer_only_lowest_mode: '{"answer":"B"}'
+      json_example_answer_only_bimodal_label: '{"answer":"M"}'

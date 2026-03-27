@@ -25,6 +25,7 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
 7. First concrete distribution tasks:
    - `task_charts_distribution_histogram_count`
    - `task_charts_distribution_boxplot_label`
+   - `task_charts_distribution_density_label`
 8. First supported single-series chart-type renderings:
    - `area`
    - `bar`
@@ -44,6 +45,7 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
 10. First supported distribution chart-type renderings:
    - `histogram`
    - `boxplot`
+   - `violin`
 
 ## Taxonomy
 1. Keep the normal TRACE split:
@@ -62,7 +64,7 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
    - active task: `pairwise_comparison_count`
 6. For the first distribution family:
    - `task_group = distribution`
-   - active tasks: `histogram_count`, `boxplot_label`
+   - active tasks: `histogram_count`, `boxplot_label`, `density_label`
 7. The semantic query type is the public `task_variant`.
 8. The chart type is the visual `scene_variant`.
 
@@ -94,13 +96,14 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
 4. Active distribution chart tasks currently use fixed `scene_variant` values:
    - `histogram`
    - `boxplot`
+   - `violin`
 
 Note:
 1. Charts are the first planned domain where one task naturally has both a semantic axis and a chart-type axis.
 2. Until the cross-domain `scene_variant` ABI note is fully written in core docs, treat this file as the domain-local contract for that split.
 3. `task_charts_statistics_summary_value` currently stays on the axis-based scene variants `area|bar|horizontal_bar|line|scatter|dot_plot|lollipop`; `pie`, `donut`, and `radar` remain enabled only on the tasks where their semantics still fit cleanly.
 4. `task_charts_multiseries_pairwise_comparison_count` is the first active multiseries chart task; it uses `2..3` named series, `5..10` labeled categories, category-label `label_set` evidence, and the multiseries scene variants `grouped_bar|grouped_horizontal_bar|multi_line|grouped_lollipop`.
-5. `task_charts_distribution_histogram_count` and `task_charts_distribution_boxplot_label` are the first active distribution tasks; they use fixed `scene_variant` values `histogram` and `boxplot` instead of sampling across the broader chart-variant pool.
+5. The active distribution tasks use fixed `scene_variant` values `histogram`, `boxplot`, and `violin` instead of sampling across the broader chart-variant pool.
 
 ## Scene contract
 1. One chart per image.
@@ -159,6 +162,10 @@ Note:
 16. `boxplot`
    - each label denotes one categorical boxplot.
    - the median is the line inside the box, the box spans `Q1..Q3`, and the whiskers show the minimum and maximum shown.
+17. `violin`
+   - each label denotes one categorical violin.
+   - the widest parts of the violin indicate the modal values of the distribution.
+   - `bimodal` queries rely on a clearly two-peaked violin shape rather than hidden statistics.
 
 ## Mark labels
 1. Every single-series mark uses one unique randomized uppercase label.

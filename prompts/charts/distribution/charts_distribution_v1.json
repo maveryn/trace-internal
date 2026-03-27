@@ -24,6 +24,13 @@
       "Use the boxplots to identify the correct label.",
       "Read the boxplot summaries and name the matching label.",
       "Find the label of the boxplot that satisfies the requested condition."
+    ],
+    "density_label_query": [
+      "Answer this question.",
+      "Determine which labeled violin plot matches the requested property.",
+      "Use the violin plots to identify the correct label.",
+      "Read the violin shapes and name the matching label.",
+      "Find the label of the violin plot that satisfies the requested condition."
     ]
   },
   "task_variant_templates": {
@@ -68,6 +75,27 @@
       "Determine which labeled boxplot has the smallest IQR.",
       "What label corresponds to the smallest interquartile range?",
       "Identify the boxplot label with the narrowest box."
+    ],
+    "highest_mode": [
+      "Which label has the highest mode?",
+      "Find the label of the violin plot whose density peak is highest on the value axis.",
+      "Determine which labeled violin has the highest modal value.",
+      "What label corresponds to the highest density peak?",
+      "Identify the violin plot label with the highest mode."
+    ],
+    "lowest_mode": [
+      "Which label has the lowest mode?",
+      "Find the label of the violin plot whose density peak is lowest on the value axis.",
+      "Determine which labeled violin has the lowest modal value.",
+      "What label corresponds to the lowest density peak?",
+      "Identify the violin plot label with the lowest mode."
+    ],
+    "bimodal_label": [
+      "Which label is bimodal?",
+      "Find the label of the violin plot with two distinct density peaks.",
+      "Determine which labeled violin has two modes.",
+      "What label corresponds to the bimodal violin plot?",
+      "Identify the violin plot label with two clear peaks."
     ]
   },
   "required_slots_by_key": {

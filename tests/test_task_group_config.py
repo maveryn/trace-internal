@@ -277,6 +277,11 @@ def test_charts_distribution_defaults_loaded() -> None:
         "largest_iqr",
         "smallest_iqr",
     ]
+    assert sorted(cfg["generation"]["task_overrides"]["task_charts_distribution_density_label"]["task_variant_weights"].keys()) == [
+        "bimodal_label",
+        "highest_mode",
+        "lowest_mode",
+    ]
 
     render_shared = cfg["rendering"]["shared"]
     assert int(render_shared["canvas_width"]) > 0
@@ -288,6 +293,7 @@ def test_charts_distribution_defaults_loaded() -> None:
     assert str(prompt_shared["task_family_key"]).strip() == "distribution_chart"
     assert str(prompt_shared["task_key"]).strip() == "histogram_count_query"
     assert str(prompt_shared["object_description_histogram"]).strip()
+    assert str(prompt_shared["object_description_violin"]).strip()
     assert str(prompt_shared["json_example_interval_mass"]).strip()
 
     histogram_generation, histogram_rendering, histogram_prompt = split_generation_rendering_prompt_defaults(
@@ -315,6 +321,18 @@ def test_charts_distribution_defaults_loaded() -> None:
     assert str(boxplot_prompt["task_key"]).strip() == "boxplot_label_query"
     assert str(boxplot_prompt["answer_hint"]).strip()
     assert str(boxplot_prompt["evidence_hint_largest_iqr"]).strip()
+
+    density_generation, _, density_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_charts_distribution_density_label",
+    )
+    assert {
+        "highest_mode",
+        "lowest_mode",
+        "bimodal_label",
+    }.issubset(set(density_generation["task_variant_weights"].keys()))
+    assert str(density_prompt["task_key"]).strip() == "density_label_query"
+    assert str(density_prompt["evidence_hint_bimodal_label"]).strip()
 
 
 def test_charts_multiseries_defaults_loaded() -> None:

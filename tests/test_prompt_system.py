@@ -143,12 +143,18 @@ def test_geometry_measurement_bundles_answer_templates_use_contract_and_avoid_on
 
 def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
     bundle_coords = (
+        ("geometry", "comparison", "geometry_comparison_v1"),
+        ("geometry", "counting", "geometry_counting_v1"),
         ("geometry", "analytical_3d", "geometry_analytical_surface_area_v1"),
         ("geometry", "analytical_3d", "geometry_analytical_volume_v1"),
         ("geometry", "analytical_2d", "geometry_analytical_area_v1"),
+        ("geometry", "analytical_2d", "geometry_analytical_composite_area_v1"),
         ("geometry", "analytical_2d", "geometry_analytical_length_v1"),
+        ("geometry", "analytical_2d", "geometry_analytical_perimeter_v1"),
         ("geometry", "measurement", "geometry_angle_measure_v1"),
         ("geometry", "measurement", "geometry_measurement_v1"),
+        ("icons", "counting", "icons_counting_v1"),
+        ("icons", "transformation", "icons_transformation_v1"),
         ("tile", "count", "tile_count_v1"),
         ("tile", "pattern", "tile_pattern_v1"),
         ("tile", "relation", "tile_relation_v1"),

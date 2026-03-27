@@ -15,7 +15,7 @@ Use: `domain -> task_group -> task`.
 
 Rules:
 1. `task_group` is broad reasoning style; intra-task variants stay inside task via `task_variant`.
-2. For geometry graph-paper readout tasks, use `task_group=measurement`; for formula/relationship-based geometry with numeric annotations, use `task_group=analytical_2d` (2D) and `task_group=analytical_3d` (3D solids).
+2. For geometry graph-paper readout tasks, use `task_group=measurement`; for multi-object geometry ranking/value-choice scenes, use `task_group=comparison`; for formula/relationship-based geometry with numeric annotations, use `task_group=analytical_2d` (2D) and `task_group=analytical_3d` (3D solids).
 3. Config precedence: `domain defaults -> task_group defaults -> task/params`.
 4. In task-group config sections (`generation`, `rendering`, `prompt`, `sampling`), keep shared keys under `shared` and task-specific keys under `task_overrides.<task_id>` (legacy flat section keys are unsupported).
 5. Build-task weights control cross-task sampling; task-variant weights are resolved inside the task from config/params.

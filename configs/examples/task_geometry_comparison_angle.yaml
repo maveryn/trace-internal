@@ -1,0 +1,4 @@
+tasks:
+  - task_id: task_geometry_comparison_angle
+    count: 8
+    params: {}

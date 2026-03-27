@@ -4,11 +4,12 @@
 1. No immediate P0 cleanup blockers; keep follow-up review findings flowing into docs/tests as new task families land.
 
 ## Next (P1)
-1. Extend objective-first measurement pattern to additional domains.
-2. Expand the v1 `rectangular_tiling` tile task suite beyond `task_tile_count_color_count` and keep future ports aligned to `TILE_TASK_SETUP.md`.
+1. Extend the new icons domain beyond counting/transformation using the curated Prism asset pipeline.
+2. Expand the v1 `rectangular_tiling` tile task suite beyond the current active set and keep future ports aligned to `TILE_TASK_SETUP.md`.
 3. Add cross-domain `scene_variant` + role-binding spec in architecture/ABI docs.
 4. Improve dataset QA diagnostics/report summaries.
-5. Extend analytical geometry to additional objectives beyond `task_geometry_analytical_2d_area` / `task_geometry_analytical_3d_surface_area` (`perimeter`, composite/shaded-region area, additional 3D objectives).
+5. Extend geometry comparison beyond angle/length/area/perimeter using the same label-answer + winner-gap contract.
+6. Extend analytical geometry to additional objectives beyond the current analytical set (additional 3D objectives, richer conic/composite-region reasoning).
 
 ## Later (P2)
 1. Add split-artifact generation with deterministic split policy metadata.

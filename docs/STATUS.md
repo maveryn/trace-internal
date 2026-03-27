@@ -22,7 +22,7 @@ Date: 2026-03-27
 11. Geometry graph-paper colors now vary within configured ranges per instance; axis lines are sampled darker than minor/major grid lines by construction.
 12. Geometry shape ink style is now sampled from shared domain-config color ranges with Lab-distance constraints from background anchor colors; area/perimeter tasks reuse one shared task-group shape pipeline.
 13. Geometry area/perimeter conic answers use `pi_expression` answer type (`kπ`) with coordinate-only graph-point evidence (`graph_point`).
-14. Active prompt bundles now use explicit JSON output contracts in both modes (`answer_only` + `answer_and_evidence`) across geometry and tile tasks, with exactly 5 high-quality variants per required composition layer.
+14. Active prompt bundles now use explicit JSON output contracts in both modes (`answer_only` + `answer_and_evidence`) across geometry, icons, and tile tasks, with exactly 5 high-quality variants per required composition layer.
 15. Geometry analytical_2d area task supports one explicit + one derived variant per shape family (rectangle, triangle, parallelogram, trapezoid, rhombus, circle, ellipse), uses vertex/endpoint labels plus numeric measurement text on the figure, and emits structured `measurement_ref_map` evidence (`annotation -> value`) on non-graph-paper solid backgrounds.
 16. Geometry analytical_3d volume task supports six annotated-solid variants (rectangular prism, triangular prism, square pyramid, cylinder, cone, sphere) with deterministic balanced variant sampling and typed integer/`kπ` answers.
 17. Geometry analytical_3d surface-area task supports the same six annotated solids with total-surface-area questions, integer/`kπ` answer types, and structured `measurement_ref_map` evidence.
@@ -40,6 +40,13 @@ Date: 2026-03-27
 29. Tile transition now includes `task_tile_transition_gravity_max_drop`, a single-board rectangular state-transition task with one colored tile per column, black bottom-contiguous obstacles, uniformly sampled target max-drop distances, a unique winning column by construction, and `grid_point_path` trajectory evidence for the winning drop.
 30. Tile path now also includes `task_tile_path_reachable_target_count`, a square-cell blocked-grid task with one green start tile, multiple red marked targets, exact target-answer sampling over reachable-target counts `0..6`, and `grid_point_set` evidence for only the reachable targets.
 31. Tile relation now also includes `task_tile_relation_min_distance`, a white-background rectangular-board task with exactly two connected colored regions, uniform target-answer sampling over minimum orthogonal distances `2..6`, and a unique straight `grid_point_path` witness between the unique closest pair.
+32. Geometry analytical_2d perimeter task supports five derived annotated-scene variants (right triangle, rectangle, rhombus, isosceles trapezoid, inscribed square) with decimal answers rounded to one decimal place and structured `measurement_ref_map` evidence.
+33. Geometry analytical_2d composite-area task supports five shaded/composite polygon variants (inner-rectangle cutout, triangle cutout, rectangle+triangle union, L-shape cutout, step-rectangle union) with integer answers and structured `measurement_ref_map` evidence.
+34. Shared analytical 2D scene rendering now supports reusable polygon fill semantics (`shaded`, `background`) so composite/shaded objectives can reuse one collision-aware render stack instead of task-local draw overlays.
+35. Geometry comparison now includes `task_geometry_comparison_angle`, `task_geometry_comparison_length`, `task_geometry_comparison_area`, and `task_geometry_comparison_perimeter`, each with 4–6 labeled graph-paper objects, `largest`/`smallest` winner queries, `option_letter` answers, and winner-evidence graph-point sets.
+36. Geometry counting now includes `task_geometry_counting_angle`, `task_geometry_counting_triangle`, `task_geometry_counting_quadrilateral`, `task_geometry_counting_shape_type`, and `task_geometry_counting_convexity`, all non-graph-paper multi-object scenes with integer answers and sorted `label_set` evidence; angle scenes count acute/right/obtuse classes, triangle scenes count equilateral / isosceles-but-not-equilateral / scalene / right / acute / obtuse classes, quadrilateral scenes count square / rectangle-but-not-square / rhombus-but-not-square / parallelogram-only classes, mixed-shape scenes count triangle / quadrilateral / pentagon / hexagon / circle / ellipse instances, and convexity scenes count convex vs concave polygons using strict shared polygon classification.
+37. Icons counting now includes `task_icons_counting_type`, `task_icons_counting_orientation`, and `task_icons_counting_color`, all using a two-panel `Reference` + `Scene` image, integer answers, and scene-only `bbox_set` evidence in final image coordinates; type counting matches icon identity against the curated 3000-icon Prism pool, orientation counting uses the curated asymmetric subset and same-icon scenes with rotation-based orientation queries, and color counting uses same-icon scenes so the only varying predicate is tint, with a stricter Lab-distance threshold (`60`). These tasks sample `target_count` independently in `0..10` and `distractor_count` independently in `1..10`, place icons randomly in the scene panel with at most `10%` pairwise overlap (normalized by the smaller box area), and apply per-icon subtle noise before compositing; the sampled palette, overlap/noise config, final tints, and per-instance noise edits are recorded in trace metadata.
+38. Icons transformation now includes `task_icons_transformation_pair_count`, a two-panel `Reference` + labeled `Scene` grid task with integer answers and sorted `label_set` evidence; the Reference pair shows one canonical D4 transform, Scene cells each show `icon -> transformed icon`, and the task counts how many cells apply the same rule. The task uses the curated asymmetric icon pool, rejects icon/transform pairs that collapse visually under rendered-silhouette checks, and records the sampled transform ids plus per-icon subtle noise in trace metadata.
 
 ## Active tasks
 1. `task_tile_count_color_count` (`domain=tile`, `task_group=count`)
@@ -52,23 +59,38 @@ Date: 2026-03-27
 8. `task_tile_relation_min_distance` (`domain=tile`, `task_group=relation`)
 9. `task_tile_symmetry_violation_count` (`domain=tile`, `task_group=symmetry`)
 10. `task_tile_transition_gravity_max_drop` (`domain=tile`, `task_group=transition`)
-11. `task_geometry_measurement_angle` (`domain=geometry`, `task_group=measurement`)
-12. `task_geometry_measurement_area` (`domain=geometry`, `task_group=measurement`)
-13. `task_geometry_measurement_perimeter` (`domain=geometry`, `task_group=measurement`)
-14. `task_geometry_measurement_length` (`domain=geometry`, `task_group=measurement`)
-15. `task_geometry_measurement_slope` (`domain=geometry`, `task_group=measurement`)
-16. `task_geometry_analytical_2d_area` (`domain=geometry`, `task_group=analytical_2d`)
-17. `task_geometry_analytical_2d_length` (`domain=geometry`, `task_group=analytical_2d`)
-18. `task_geometry_analytical_3d_volume` (`domain=geometry`, `task_group=analytical_3d`)
-19. `task_geometry_analytical_3d_surface_area` (`domain=geometry`, `task_group=analytical_3d`)
+11. `task_geometry_comparison_angle` (`domain=geometry`, `task_group=comparison`)
+12. `task_geometry_comparison_area` (`domain=geometry`, `task_group=comparison`)
+13. `task_geometry_comparison_length` (`domain=geometry`, `task_group=comparison`)
+14. `task_geometry_comparison_perimeter` (`domain=geometry`, `task_group=comparison`)
+15. `task_geometry_counting_angle` (`domain=geometry`, `task_group=counting`)
+16. `task_geometry_counting_triangle` (`domain=geometry`, `task_group=counting`)
+17. `task_geometry_counting_quadrilateral` (`domain=geometry`, `task_group=counting`)
+18. `task_geometry_counting_shape_type` (`domain=geometry`, `task_group=counting`)
+19. `task_geometry_counting_convexity` (`domain=geometry`, `task_group=counting`)
+20. `task_geometry_measurement_angle` (`domain=geometry`, `task_group=measurement`)
+21. `task_geometry_measurement_area` (`domain=geometry`, `task_group=measurement`)
+22. `task_geometry_measurement_perimeter` (`domain=geometry`, `task_group=measurement`)
+23. `task_geometry_measurement_length` (`domain=geometry`, `task_group=measurement`)
+24. `task_geometry_measurement_slope` (`domain=geometry`, `task_group=measurement`)
+25. `task_geometry_analytical_2d_area` (`domain=geometry`, `task_group=analytical_2d`)
+26. `task_geometry_analytical_2d_length` (`domain=geometry`, `task_group=analytical_2d`)
+27. `task_geometry_analytical_2d_perimeter` (`domain=geometry`, `task_group=analytical_2d`)
+28. `task_geometry_analytical_2d_composite_area` (`domain=geometry`, `task_group=analytical_2d`)
+29. `task_geometry_analytical_3d_volume` (`domain=geometry`, `task_group=analytical_3d`)
+30. `task_geometry_analytical_3d_surface_area` (`domain=geometry`, `task_group=analytical_3d`)
+31. `task_icons_counting_type` (`domain=icons`, `task_group=counting`)
+32. `task_icons_counting_orientation` (`domain=icons`, `task_group=counting`)
+33. `task_icons_counting_color` (`domain=icons`, `task_group=counting`)
+34. `task_icons_transformation_pair_count` (`domain=icons`, `task_group=transformation`)
 
 ## Current quality baseline
 1. Tests are required to pass before finalize.
 2. Distribution QA uses `scripts/check_task_answer_distribution.py` with per-variant answer-only checks (`unique_answers >= 5`, `max_answer_frequency < 25%`) and multithreaded sample generation (`--workers`); numeric 5-bin summaries remain reported for review but are not hard pass/fail gates.
 3. Task-review tooling writes per-task artifacts under `task-reviews/<task_id>/`, including one inspection workbook named `<task_id>.xlsx` with one sheet per task variant.
-4. The current active geometry review set (5 measurement + 2 analytical_2d + 2 analytical_3d tasks) passes distribution review under the active gates.
+4. The current active reviewed task set (10 tile tasks + 20 geometry tasks + 4 icons tasks) passes distribution review under the active gates.
 
 ## Next priorities
-1. Continue objective-first refactor for additional domains (tile/icons/charts/graphs/documents).
+1. Extend icons beyond counting/transformation using the new curated Prism asset pipeline (relation/comparison are the next natural families).
 2. Introduce cross-domain `scene_variant` and role-binding schema in architecture docs/contracts.
 3. Add future polygon variants as deferred tasks (diameter, min-side, max-side) after current scope stabilizes.

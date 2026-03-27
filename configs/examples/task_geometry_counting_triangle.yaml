@@ -1,0 +1,4 @@
+tasks:
+  - task_id: task_geometry_counting_triangle
+    count: 12
+    params: {}

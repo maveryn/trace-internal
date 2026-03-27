@@ -1,0 +1,6 @@
+task_id: task_icons_counting_orientation
+params:
+  object_count: 8
+  target_count: 3
+  pool_manifest: non_symmetry.txt
+  rotation_candidates_degrees: [0, 90, 180, 270]

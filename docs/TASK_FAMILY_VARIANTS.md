@@ -11,7 +11,15 @@ Define how we split tasks into reusable families so each dataset slice stays com
 ## Geometry direction (current)
 1. `measurement` should use **one primary object per image**.
 2. Multi-object value-query geometry tasks belong under `comparison` (separate from single-object `measurement`).
-3. `analytical_2d` should use one primary annotated scene where area/length/perimeter must be inferred from symbolic/numeric relationships (not direct readout); auxiliary constructions or coupled shapes are acceptable when they are part of the derivation.
+3. Multi-object geometry class-membership tasks belong under `counting`; scenes should label whole objects and count how many match one requested class.
+4. `analytical_2d` should use one primary annotated scene where area/length/perimeter must be inferred from symbolic/numeric relationships (not direct readout); auxiliary constructions or coupled shapes are acceptable when they are part of the derivation.
+5. `comparison` should enforce exactly one winner by construction and use one reusable winner-gap policy (`gap_norm >= 0.20` plus optional task-level absolute floors) so scenes stay readable without hand-tuned per-instance ambiguity checks.
+
+## Icons direction (current)
+1. `counting` should use a reference panel plus a scene panel rather than raw icon-name prompts.
+2. Reference-scene icon counting tasks should answer with an integer count and use scene-only `bbox_set` evidence in final image coordinates.
+3. Orientation-sensitive icon tasks should use the curated asymmetric Prism subset (`non_symmetry.txt`) so rotated matches remain visually meaningful.
+4. Prism-style icon counting should sample `target_count` and `distractor_count` from explicit supports, derive `object_count` from the pair, place icons randomly under an explicit overlap cap, and keep per-icon noise on the individual icon instances rather than as a full-image post-process.
 
 ## Planned tile direction
 1. Tile tasks should use one board per image and keep prompts grounded in board coordinates rather than raw pixel positions.
@@ -41,24 +49,112 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Evidence: one x-axis crossing lattice point.
 
 ## Implemented analytical variant
-1. **Analytical area (`task_geometry_analytical_2d_area`)**
+1. **Comparison angle (`task_geometry_comparison_angle`)**
+   - One graph-paper image with 4–6 labeled angles.
+   - Query type: `largest` or `smallest`.
+   - Answer type: winner label (`option_letter`) with no textual option list in the prompt.
+   - Evidence: `graph_point_set` for the winning angle's vertex + two ray endpoints.
+2. **Comparison area (`task_geometry_comparison_area`)**
+   - One graph-paper image with 4–6 labeled rectangles.
+   - Query type: `largest` or `smallest`.
+   - Answer type: winner label (`option_letter`) with no textual option list in the prompt.
+   - Evidence: `graph_point_set` for the winning rectangle vertices.
+3. **Comparison length (`task_geometry_comparison_length`)**
+   - One graph-paper image with 4–6 labeled line segments.
+   - Query type: `largest` or `smallest`.
+   - Answer type: winner label (`option_letter`) with no textual option list in the prompt.
+   - Evidence: `graph_point_set` for the winning segment endpoints.
+4. **Comparison perimeter (`task_geometry_comparison_perimeter`)**
+   - One graph-paper image with 4–6 labeled rectangles.
+   - Query type: `largest` or `smallest`.
+   - Answer type: winner label (`option_letter`) with no textual option list in the prompt.
+   - Evidence: `graph_point_set` for the winning rectangle vertices.
+5. **Counting angle (`task_geometry_counting_angle`)**
+   - One non-graph-paper image with 6–10 labeled angles.
+   - Query variants: `acute_angle`, `right_angle`, `obtuse_angle`.
+   - Answer type: integer count.
+   - Evidence: sorted `label_set` of the matching angle labels.
+6. **Counting triangle (`task_geometry_counting_triangle`)**
+   - One non-graph-paper image with 5–8 labeled triangles.
+   - Query variants: `equilateral_triangle`, `isosceles_triangle`, `scalene_triangle`, `right_triangle`, `acute_triangle`, `obtuse_triangle`.
+   - Answer type: integer count.
+   - Evidence: sorted `label_set` of the matching triangle labels.
+   - Overlap wording: the isosceles query is phrased as `isosceles triangles but not equilateral triangles` so the task does not rely on competing textbook conventions.
+7. **Counting quadrilateral (`task_geometry_counting_quadrilateral`)**
+   - One non-graph-paper image with 5–7 labeled quadrilaterals.
+   - Query variants: `square`, `rectangle_non_square`, `rhombus_non_square`, `parallelogram_only`.
+   - Answer type: integer count.
+   - Evidence: sorted `label_set` of the matching quadrilateral labels.
+   - Overlap wording: rectangle/rhombus/parallelogram prompts use exclusive wording so squares are not double-counted by convention.
+8. **Counting shape type (`task_geometry_counting_shape_type`)**
+   - One non-graph-paper image with 6–9 labeled mixed shapes.
+   - Query variants: `triangle`, `quadrilateral`, `pentagon`, `hexagon`, `circle`, `ellipse`.
+   - Answer type: integer count.
+   - Evidence: sorted `label_set` of the matching shape labels.
+   - Visual distinction rule: ellipses must stay visibly non-circular so `circle` and `ellipse` do not collapse into one ambiguous class.
+9. **Counting convexity (`task_geometry_counting_convexity`)**
+   - One non-graph-paper image with 6–9 labeled polygons.
+   - Query variants: `convex_polygon`, `concave_polygon`.
+   - Polygon families: quadrilateral, pentagon, and hexagon.
+   - Answer type: integer count.
+   - Evidence: sorted `label_set` of the matching polygon labels.
+   - Visual distinction rule: concave polygons must keep a clear reflex indentation; degenerate or borderline near-flat shapes are rejected instead of left to interpretation.
+10. **Analytical area (`task_geometry_analytical_2d_area`)**
    - One annotated shape per image: rectangle, triangle, parallelogram, trapezoid, rhombus, circle, ellipse.
    - One explicit + one derived variant per shape.
    - Ask for area (`integer` for polygonal shapes, `kπ` for circle/ellipse).
    - Evidence: structured `measurement_ref_map` (`annotation -> value`) for all quantities used in the area computation.
-2. **Analytical length (`task_geometry_analytical_2d_length`)**
+11. **Analytical length (`task_geometry_analytical_2d_length`)**
    - One annotated analytical scene per image, including auxiliary constructions or coupled shapes.
    - Derived-only variants: triangle altitude side, rectangle diagonal side, rhombus diagonal side, isosceles trapezoid leg, inscribed square side, circle chord length.
    - Ask for a target segment length rounded to one decimal place.
    - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the givens used in the derivation.
-3. **Analytical 3D volume (`task_geometry_analytical_3d_volume`)**
+12. **Analytical perimeter (`task_geometry_analytical_2d_perimeter`)**
+   - One annotated analytical scene per image, including auxiliary constructions or coupled shapes.
+   - Derived-only variants: right triangle from leg+hypotenuse, rectangle from side+diagonal, rhombus from diagonals, isosceles trapezoid from bases+height, inscribed square from circle diameter.
+   - Ask for the perimeter rounded to one decimal place.
+   - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the givens used in the derivation.
+13. **Analytical composite area (`task_geometry_analytical_2d_composite_area`)**
+   - One annotated analytical scene per image with one shaded target region; auxiliary cuts/unions and coupled polygons are allowed.
+   - Derived-only variants: inner-rectangle cutout, triangle cutout, rectangle+triangle union, L-shape cutout, step-rectangle union.
+   - Ask for the shaded/composite area as an integer number of square units.
+   - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the givens used in the derivation.
+14. **Analytical 3D volume (`task_geometry_analytical_3d_volume`)**
    - One annotated 3D solid per image: rectangular prism, triangular prism, square pyramid, cylinder, cone, sphere.
    - Ask for volume (`integer` for polyhedra, `kπ` for cylinder/cone/sphere).
    - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the required measurement labels.
-4. **Analytical 3D surface area (`task_geometry_analytical_3d_surface_area`)**
+15. **Analytical 3D surface area (`task_geometry_analytical_3d_surface_area`)**
    - One annotated 3D solid per image: rectangular prism, triangular prism, square pyramid, cylinder, cone, sphere.
    - Ask for total surface area (`integer` for polyhedra, `kπ` for cylinder/cone/sphere).
    - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the required measurement labels.
+16. **Icons counting type (`task_icons_counting_type`)**
+   - One two-panel image with a `Reference` icon and a `Scene` panel of icons.
+   - Query: how many scene icons have the same icon type as the reference.
+   - Count support: `target_count` in `0..10`, `distractor_count` in `1..10`, total scene icons in `1..20`.
+   - Answer type: integer count.
+   - Evidence: scene-only `bbox_set` in final image coordinates.
+17. **Icons counting orientation (`task_icons_counting_orientation`)**
+   - One two-panel image with a `Reference` icon and a `Scene` panel of icons.
+   - Query: how many scene icons have the same orientation as the reference icon.
+   - Scene uses one shared icon type from the asymmetric curated pool; orientation is conveyed by rotation.
+   - Count support: `target_count` in `0..10`, `distractor_count` in `1..10`, total scene icons in `1..20`.
+   - Answer type: integer count.
+   - Evidence: scene-only `bbox_set` in final image coordinates.
+18. **Icons counting color (`task_icons_counting_color`)**
+   - One two-panel image with a `Reference` icon and a `Scene` panel of icons.
+   - Query: how many scene icons have the same color as the reference icon.
+   - Scene keeps the same icon type as the reference throughout; color is the only matching predicate.
+   - Count support: `target_count` in `0..10`, `distractor_count` in `1..10`, total scene icons in `1..20`.
+   - Answer type: integer count.
+   - Evidence: scene-only `bbox_set` in final image coordinates.
+19. **Icons transformation pair count (`task_icons_transformation_pair_count`)**
+   - One two-panel image with a `Reference` pair and a labeled `Scene` grid of icon pairs.
+   - Query: how many Scene cells apply the same transformation as the Reference pair.
+   - Transform vocabulary: `rot90`, `rot180`, `rot270`, `flip_h`, `flip_v`, `flip_diag_main`, `flip_diag_anti`.
+   - Count support: `target_count` in `0..6`, `distractor_count` in `1..6`, total Scene cells in `2..12`.
+   - Answer type: integer count.
+   - Evidence: sorted `label_set` of the matching Scene cell labels.
+   - Visual distinction rule: candidate icons are accepted only when the sampled transform and at least one distractor transform remain visually distinct from identity and from the reference transform.
 
 ## Future polygon variants (deferred)
 1. Polygon diameter measurement.
@@ -69,3 +165,5 @@ Define how we split tasks into reusable families so each dataset slice stays com
 1. Evidence coordinate frame is task/domain declared (`graph_unit`, `pixel`, `cell`, etc.), not globally fixed.
 2. If exact integer projection is impossible for a shape family, keep values as close as possible and document canonicalization in task docs.
 3. Evidence schema must be declared in each task contract and remain stable for verifier compatibility.
+4. For counting families with object labels, prefer `label_set` evidence over geometric coordinates so multi-object grounding stays compact and readable.
+5. For reference+scene icon tasks, prefer `bbox_set` evidence over labels so grounding stays tied to visible scene instances rather than hidden asset ids.

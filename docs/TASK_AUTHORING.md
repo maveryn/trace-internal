@@ -70,6 +70,14 @@ Use this as the implementation checklist for new or modified tasks.
 16. Favor natural, image-led wording in template stems; do not pad bundles with low-quality paraphrases just to increase variant count.
 17. Keep `question_text` semantic-only when task templates already carry formatting or rounding instructions; avoid repeating the same instruction across prompt layers.
 18. When a task prompt refers to a specific color, pass the color to templates as a combined label `<color_name> [#RRGGBB]` so color-name ambiguity is reduced consistently across the repo.
+19. For multi-object counting tasks, label whole objects and use sorted `label_set` evidence unless geometry coordinates are truly necessary for verification.
+20. For mixed-shape classification/counting tasks, enforce visible separation between visually adjacent classes (for example circles vs ellipses) in the sampler itself instead of leaving borderline cases to human interpretation.
+21. For polygon classification/counting tasks, keep the convex/concave predicate in one shared geometry helper and reject `degenerate` near-flat or self-intersecting polygons instead of encoding one-off visual heuristics inside each task.
+22. For reference-panel icon tasks, keep prompt wording anchored on the reference-vs-scene relationship and use scene-only `bbox_set` evidence in final image coordinates; store the reference box in trace metadata instead of the user-facing evidence payload.
+23. For curated-icon tasks with Prism-style color variation, sample per-instance palettes through the shared icon-style helper, keep palette colors separated from panel/background anchor colors, and record the sampled palette or final tint assignments in trace metadata instead of leaving color randomness implicit.
+24. For reference-scene icon color-matching tasks, construct the positive/negative sets from explicit tint assignments rather than hoping random palette draws realize the requested count, and keep any stricter color-separation threshold as a task-level config override.
+25. For reference-scene icon counting tasks that mimic Prism, sample `target_count` and `distractor_count` from their explicit supports, derive `object_count` from the pair, and place the scene icons with an explicit overlap cap; keep any subtle icon noise per-instance before compositing and record those edits in trace metadata rather than applying an untracked final-image corruption pass.
+26. For icon transformation tasks that compare pairwise rules, show the transformation explicitly in a Reference pair and use labeled Scene cells plus `label_set` evidence so the model grounds the matching rule on visible cells rather than hidden transform ids or bboxes.
 
 ## 4) Config/defaults rules
 1. Precedence: `domain -> task_group -> task/params`.
@@ -85,7 +93,13 @@ Use this as the implementation checklist for new or modified tasks.
 11. If the same fallback constants are used by multiple sibling tasks, move them to a task-group shared defaults module.
 12. For cross-domain shared utilities, keep global fallback constants in the shared utility module and treat domain/task-group config keys as optional overrides.
 13. For analytical scenes with free-form numeric annotations, reserve explicit border margin and use collision-aware local placement so labels/value text do not sit directly on geometry or hug the canvas edge.
-14. If a board/scene family needs non-square image sizes, extend the shared visual/background path to accept rectangular canvases instead of creating task-local background renderers.
+14. For analytical composite/shaded objectives, keep region-fill semantics in the shared analytical scene helper so sibling tasks can reuse shaded-target and cutout rendering without task-local draw-order hacks.
+15. If a board/scene family needs non-square image sizes, extend the shared visual/background path to accept rectangular canvases instead of creating task-local background renderers.
+16. If a non-measurement geometry task-group needs its own background policy (for example counting on solid backgrounds), load geometry background/noise defaults for that task group explicitly instead of importing measurement-scoped constants.
+17. For counting/classification tasks with overlapping textbook definitions (for example isosceles vs equilateral), encode the intended exclusivity directly in the prompt/config wording instead of assuming one convention.
+18. For counting tasks where the answer is the matched-object count itself, prefer global target-count support sampling (for example `resolve_counting_cardinality_pair(...)`) over choosing object count first when the latter would skew answers toward smaller counts.
+19. For polygon class-counting tasks with bulkier objects, use the roomier counting slot layout helper and a strict shared convexity classifier so object labels stay readable and class membership does not depend on ambiguous borderline outlines.
+20. For curated-asset icon tasks, resolve manifest ids through one shared asset loader instead of assuming manifest ids and SVG filenames match exactly; record the chosen manifest in query trace metadata.
 
 ## 5) Sampling rules
 1. Global sampling unit is `task`.

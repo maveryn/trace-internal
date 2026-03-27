@@ -864,6 +864,42 @@ def polygon_area_square_units(vertices: Sequence[UnitPoint]) -> int:
     return int(abs(double_area) // 2)
 
 
+def classify_polygon_convexity(vertices: Sequence[UnitPoint]) -> str:
+    """Return `convex`, `concave`, or `degenerate` for one simple polygon.
+
+    The classification is strict: any adjacent collinear triple or
+    self-intersection is treated as `degenerate` so task modules can reject
+    borderline cases instead of relying on visual interpretation.
+    """
+
+    ordered_vertices = tuple((int(point[0]), int(point[1])) for point in vertices)
+    if len(ordered_vertices) < 3:
+        raise ValueError("polygon convexity classification requires at least 3 vertices")
+    if _has_adjacent_collinear_vertices(ordered_vertices):
+        return "degenerate"
+    if not _is_simple_polygon(ordered_vertices):
+        return "degenerate"
+
+    turn_sign: int | None = None
+    for index in range(len(ordered_vertices)):
+        orientation = int(
+            _segment_orientation(
+                ordered_vertices[index - 1],
+                ordered_vertices[index],
+                ordered_vertices[(index + 1) % len(ordered_vertices)],
+            )
+        )
+        if int(orientation) == 0:
+            return "degenerate"
+        current_sign = 1 if int(orientation) > 0 else -1
+        if turn_sign is None:
+            turn_sign = int(current_sign)
+            continue
+        if int(current_sign) != int(turn_sign):
+            return "concave"
+    return "convex"
+
+
 def polygon_perimeter_units(vertices: Sequence[UnitPoint], *, tol: float = 1e-6) -> int:
     """Return integer Euclidean perimeter in graph units."""
     if len(vertices) < 3:

@@ -2,14 +2,29 @@
 
 from .registry import TASK_REGISTRY, create_task
 from .geometry.analytical_2d import area as _task_geometry_analytical_2d_area
+from .geometry.analytical_2d import composite_area as _task_geometry_analytical_2d_composite_area
 from .geometry.analytical_2d import length as _task_geometry_analytical_2d_length
+from .geometry.analytical_2d import perimeter as _task_geometry_analytical_2d_perimeter
 from .geometry.analytical_3d import surface_area as _task_geometry_analytical_3d_surface_area
 from .geometry.analytical_3d import volume as _task_geometry_analytical_3d_volume
+from .geometry.comparison import angle as _task_geometry_comparison_angle
+from .geometry.comparison import area as _task_geometry_comparison_area
+from .geometry.comparison import length as _task_geometry_comparison_length
+from .geometry.comparison import perimeter as _task_geometry_comparison_perimeter
+from .geometry.counting import angle as _task_geometry_counting_angle
+from .geometry.counting import convexity as _task_geometry_counting_convexity
+from .geometry.counting import quadrilateral as _task_geometry_counting_quadrilateral
+from .geometry.counting import shape_type as _task_geometry_counting_shape_type
+from .geometry.counting import triangle as _task_geometry_counting_triangle
 from .geometry.measurement import angle as _task_geometry_measurement_angle
 from .geometry.measurement import area as _task_geometry_measurement_area
 from .geometry.measurement import length as _task_geometry_measurement_length
 from .geometry.measurement import perimeter as _task_geometry_measurement_perimeter
 from .geometry.measurement import slope as _task_geometry_measurement_slope
+from .icons.counting import color as _task_icons_counting_color
+from .icons.counting import orientation as _task_icons_counting_orientation
+from .icons.counting import type as _task_icons_counting_type
+from .icons.transformation import pair_count as _task_icons_transformation_pair_count
 from .tile import count_color_components as _task_tile_count_color_components
 from .tile import count_color_count as _task_tile_count_color_count
 from .tile import count_largest_component_size as _task_tile_count_largest_component_size

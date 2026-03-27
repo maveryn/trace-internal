@@ -1,0 +1,477 @@
+{
+  "answer_distribution": {
+    "answer_type_counts": {
+      "integer": 100
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.03,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": 0.55,
+        "pass": null,
+        "status": "reported_not_gated_numeric_answers"
+      },
+      "min_unique_answers": {
+        "observed": 91,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": {
+      "bin_count": 5,
+      "bins": [
+        {
+          "bin_id": 0,
+          "count": 55,
+          "label": "[32, 394.2)"
+        },
+        {
+          "bin_id": 1,
+          "count": 26,
+          "label": "[394.2, 756.4)"
+        },
+        {
+          "bin_id": 2,
+          "count": 14,
+          "label": "[756.4, 1118.6)"
+        },
+        {
+          "bin_id": 3,
+          "count": 3,
+          "label": "[1118.6, 1480.8)"
+        },
+        {
+          "bin_id": 4,
+          "count": 2,
+          "label": "[1480.8, 1843]"
+        }
+      ],
+      "max_bin_count": 55,
+      "max_bin_frequency": 0.55,
+      "range_max": 1843.0,
+      "range_min": 32.0
+    },
+    "max_answer_count": 3,
+    "max_answer_frequency": 0.03,
+    "pass": true,
+    "sample_count": 100,
+    "top_answers": [
+      {
+        "answer_label": "201",
+        "count": 3
+      },
+      {
+        "answer_label": "112",
+        "count": 2
+      },
+      {
+        "answer_label": "154",
+        "count": 2
+      },
+      {
+        "answer_label": "225",
+        "count": 2
+      },
+      {
+        "answer_label": "244",
+        "count": 2
+      },
+      {
+        "answer_label": "398",
+        "count": 2
+      },
+      {
+        "answer_label": "462",
+        "count": 2
+      },
+      {
+        "answer_label": "747",
+        "count": 2
+      },
+      {
+        "answer_label": "100",
+        "count": 1
+      },
+      {
+        "answer_label": "1033",
+        "count": 1
+      },
+      {
+        "answer_label": "104",
+        "count": 1
+      },
+      {
+        "answer_label": "1040",
+        "count": 1
+      },
+      {
+        "answer_label": "1055",
+        "count": 1
+      },
+      {
+        "answer_label": "1067",
+        "count": 1
+      },
+      {
+        "answer_label": "1076",
+        "count": 1
+      },
+      {
+        "answer_label": "114",
+        "count": 1
+      },
+      {
+        "answer_label": "1190",
+        "count": 1
+      },
+      {
+        "answer_label": "1202",
+        "count": 1
+      },
+      {
+        "answer_label": "1222",
+        "count": 1
+      },
+      {
+        "answer_label": "128",
+        "count": 1
+      },
+      {
+        "answer_label": "131",
+        "count": 1
+      },
+      {
+        "answer_label": "132",
+        "count": 1
+      },
+      {
+        "answer_label": "135",
+        "count": 1
+      },
+      {
+        "answer_label": "137",
+        "count": 1
+      },
+      {
+        "answer_label": "138",
+        "count": 1
+      },
+      {
+        "answer_label": "149",
+        "count": 1
+      },
+      {
+        "answer_label": "150",
+        "count": 1
+      },
+      {
+        "answer_label": "153",
+        "count": 1
+      },
+      {
+        "answer_label": "156",
+        "count": 1
+      },
+      {
+        "answer_label": "1643",
+        "count": 1
+      },
+      {
+        "answer_label": "171",
+        "count": 1
+      },
+      {
+        "answer_label": "176",
+        "count": 1
+      },
+      {
+        "answer_label": "180",
+        "count": 1
+      },
+      {
+        "answer_label": "181",
+        "count": 1
+      },
+      {
+        "answer_label": "1843",
+        "count": 1
+      },
+      {
+        "answer_label": "195",
+        "count": 1
+      },
+      {
+        "answer_label": "198",
+        "count": 1
+      },
+      {
+        "answer_label": "199",
+        "count": 1
+      },
+      {
+        "answer_label": "208",
+        "count": 1
+      },
+      {
+        "answer_label": "218",
+        "count": 1
+      },
+      {
+        "answer_label": "231",
+        "count": 1
+      },
+      {
+        "answer_label": "235",
+        "count": 1
+      },
+      {
+        "answer_label": "236",
+        "count": 1
+      },
+      {
+        "answer_label": "241",
+        "count": 1
+      },
+      {
+        "answer_label": "261",
+        "count": 1
+      },
+      {
+        "answer_label": "268",
+        "count": 1
+      },
+      {
+        "answer_label": "298",
+        "count": 1
+      },
+      {
+        "answer_label": "312",
+        "count": 1
+      },
+      {
+        "answer_label": "32",
+        "count": 1
+      },
+      {
+        "answer_label": "337",
+        "count": 1
+      },
+      {
+        "answer_label": "342",
+        "count": 1
+      },
+      {
+        "answer_label": "360",
+        "count": 1
+      },
+      {
+        "answer_label": "370",
+        "count": 1
+      },
+      {
+        "answer_label": "372",
+        "count": 1
+      },
+      {
+        "answer_label": "378",
+        "count": 1
+      },
+      {
+        "answer_label": "392",
+        "count": 1
+      },
+      {
+        "answer_label": "411",
+        "count": 1
+      },
+      {
+        "answer_label": "414",
+        "count": 1
+      },
+      {
+        "answer_label": "427",
+        "count": 1
+      },
+      {
+        "answer_label": "437",
+        "count": 1
+      },
+      {
+        "answer_label": "452",
+        "count": 1
+      },
+      {
+        "answer_label": "463",
+        "count": 1
+      },
+      {
+        "answer_label": "464",
+        "count": 1
+      },
+      {
+        "answer_label": "468",
+        "count": 1
+      },
+      {
+        "answer_label": "469",
+        "count": 1
+      },
+      {
+        "answer_label": "47",
+        "count": 1
+      },
+      {
+        "answer_label": "572",
+        "count": 1
+      },
+      {
+        "answer_label": "577",
+        "count": 1
+      },
+      {
+        "answer_label": "606",
+        "count": 1
+      },
+      {
+        "answer_label": "610",
+        "count": 1
+      },
+      {
+        "answer_label": "615",
+        "count": 1
+      },
+      {
+        "answer_label": "627",
+        "count": 1
+      },
+      {
+        "answer_label": "634",
+        "count": 1
+      },
+      {
+        "answer_label": "641",
+        "count": 1
+      },
+      {
+        "answer_label": "678",
+        "count": 1
+      },
+      {
+        "answer_label": "696",
+        "count": 1
+      },
+      {
+        "answer_label": "72",
+        "count": 1
+      },
+      {
+        "answer_label": "735",
+        "count": 1
+      },
+      {
+        "answer_label": "761",
+        "count": 1
+      },
+      {
+        "answer_label": "772",
+        "count": 1
+      },
+      {
+        "answer_label": "794",
+        "count": 1
+      },
+      {
+        "answer_label": "81",
+        "count": 1
+      },
+      {
+        "answer_label": "814",
+        "count": 1
+      },
+      {
+        "answer_label": "84",
+        "count": 1
+      },
+      {
+        "answer_label": "879",
+        "count": 1
+      },
+      {
+        "answer_label": "894",
+        "count": 1
+      },
+      {
+        "answer_label": "91",
+        "count": 1
+      },
+      {
+        "answer_label": "910",
+        "count": 1
+      },
+      {
+        "answer_label": "949",
+        "count": 1
+      },
+      {
+        "answer_label": "99",
+        "count": 1
+      },
+      {
+        "answer_label": "997",
+        "count": 1
+      }
+    ],
+    "unique_answers": 91
+  },
+  "sample_count": 100,
+  "sampling_axes": {
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {},
+      "expected_source": "",
+      "max_observed_frequency": 0.27,
+      "observed_counts": {
+        "l_shape_cutout": 19,
+        "rectangle_inner_cutout": 27,
+        "rectangle_triangle_cutout": 19,
+        "rectangle_triangle_union": 12,
+        "step_rectangles_union": 23
+      },
+      "sample_count": 100
+    },
+    "variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "l_shape_cutout": 0.2,
+        "rectangle_inner_cutout": 0.2,
+        "rectangle_triangle_cutout": 0.2,
+        "rectangle_triangle_union": 0.2,
+        "step_rectangles_union": 0.2
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 1.0,
+      "observed_counts": {
+        "": 100
+      },
+      "sample_count": 100
+    }
+  },
+  "task_id": "task_geometry_analytical_2d_composite_area",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {},
+    "expected_source": "",
+    "has_variants": true,
+    "observed_counts": {
+      "l_shape_cutout": 19,
+      "rectangle_inner_cutout": 27,
+      "rectangle_triangle_cutout": 19,
+      "rectangle_triangle_union": 12,
+      "step_rectangles_union": 23
+    },
+    "status": "reported"
+  }
+}

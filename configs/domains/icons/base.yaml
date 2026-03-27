@@ -1,0 +1,22 @@
+prompt:
+  shared:
+    json_output_contract: Return a valid JSON object with keys "evidence" and "answer" in that order.
+    json_output_contract_answer_only: Return a valid JSON object with key "answer".
+
+visual:
+  background:
+    enabled: true
+    styles:
+      solid_offwhite:
+        kind: solid
+        color: [247, 248, 251]
+      solid_cool:
+        kind: solid
+        color: [243, 246, 252]
+      solid_warm:
+        kind: solid
+        color: [250, 247, 242]
+    weights:
+      solid_offwhite: 0.5
+      solid_cool: 0.25
+      solid_warm: 0.25

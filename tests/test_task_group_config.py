@@ -295,6 +295,327 @@ def test_geometry_analytical_defaults_loaded() -> None:
     ):
         assert str(length_prompt[f"question_text_{key}"]).strip()
 
+    composite_generation, composite_rendering, composite_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_analytical_2d_composite_area",
+    )
+    assert sorted(composite_generation["variant_weights"].keys()) == [
+        "l_shape_cutout",
+        "rectangle_inner_cutout",
+        "rectangle_triangle_cutout",
+        "rectangle_triangle_union",
+        "step_rectangles_union",
+    ]
+    assert bool(composite_generation["balanced_variant_sampling"]) is True
+    assert int(composite_generation["dimension_min"]) >= 1
+    assert int(composite_generation["dimension_max"]) >= int(composite_generation["dimension_min"])
+    assert int(composite_rendering["line_width"]) > 0
+    assert float(composite_rendering["analytical_scene_fill_ratio"]) < float(render_shared["analytical_scene_fill_ratio"])
+    assert str(composite_prompt["bundle_id"]).strip() == "geometry_analytical_composite_area_v1"
+    assert str(composite_prompt["task_key"]).strip() == "analytical_composite_area_query"
+    assert str(composite_prompt["task_family_key"]).strip() == "analytical_composite_area_scene"
+    assert str(composite_prompt["object_description"]).strip()
+    assert str(composite_prompt["evidence_hint_measurement_map"]).strip()
+    assert str(composite_prompt["answer_hint_integer"]).strip()
+    for key in (
+        "rectangle_inner_cutout",
+        "rectangle_triangle_cutout",
+        "rectangle_triangle_union",
+        "l_shape_cutout",
+        "step_rectangles_union",
+    ):
+        assert str(composite_prompt[f"question_text_{key}"]).strip()
+
+    perimeter_generation, perimeter_rendering, perimeter_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_analytical_2d_perimeter",
+    )
+    assert sorted(perimeter_generation["variant_weights"].keys()) == [
+        "inscribed_square_diameter",
+        "isosceles_trapezoid_bases_height",
+        "rectangle_side_diagonal",
+        "rhombus_diagonals",
+        "right_triangle_leg_hypotenuse",
+    ]
+    assert bool(perimeter_generation["balanced_variant_sampling"]) is True
+    assert int(perimeter_generation["dimension_min"]) >= 1
+    assert int(perimeter_generation["dimension_max"]) >= int(perimeter_generation["dimension_min"])
+    assert int(perimeter_generation["circle_radius_min"]) >= 1
+    assert int(perimeter_generation["circle_radius_max"]) >= int(perimeter_generation["circle_radius_min"])
+    assert int(perimeter_rendering["line_width"]) > 0
+    assert str(perimeter_prompt["bundle_id"]).strip() == "geometry_analytical_perimeter_v1"
+    assert str(perimeter_prompt["task_key"]).strip() == "analytical_perimeter_query"
+    assert str(perimeter_prompt["task_family_key"]).strip() == "analytical_perimeter_scene"
+    assert str(perimeter_prompt["object_description"]).strip()
+    assert str(perimeter_prompt["evidence_hint_measurement_map"]).strip()
+    assert str(perimeter_prompt["answer_hint_number"]).strip()
+    for key in (
+        "right_triangle_leg_hypotenuse",
+        "rectangle_side_diagonal",
+        "rhombus_diagonals",
+        "isosceles_trapezoid_bases_height",
+        "inscribed_square_diameter",
+    ):
+        assert str(perimeter_prompt[f"question_text_{key}"]).strip()
+
+
+def test_geometry_comparison_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("geometry", "comparison")
+    for section in ("generation", "rendering", "prompt"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["object_count_min"]) >= 2
+    assert int(generation_shared["object_count_max"]) >= int(generation_shared["object_count_min"])
+    assert bool(generation_shared["balanced_sampling"]) is True
+    assert float(generation_shared["min_normalized_gap"]) > 0.0
+
+    generation_overrides = cfg["generation"]["task_overrides"]
+    assert "task_geometry_comparison_angle" in generation_overrides
+    assert "task_geometry_comparison_area" in generation_overrides
+    assert "task_geometry_comparison_length" in generation_overrides
+    assert "task_geometry_comparison_perimeter" in generation_overrides
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_size_min"]) > 0
+    assert int(render_shared["canvas_size_max"]) >= int(render_shared["canvas_size_min"])
+    assert int(render_shared["graph_cells_min"]) > 0
+    assert int(render_shared["graph_cells_max"]) >= int(render_shared["graph_cells_min"])
+    assert int(render_shared["line_width_min"]) >= 1
+    assert int(render_shared["line_width_max"]) >= int(render_shared["line_width_min"])
+    assert int(render_shared["label_stroke_width_min"]) >= 1
+    assert int(render_shared["label_stroke_width_max"]) >= int(render_shared["label_stroke_width_min"])
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip()
+    assert str(prompt_shared["task_family_key"]).strip()
+    assert str(prompt_shared["task_key"]).strip()
+
+    angle_generation, angle_rendering, angle_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_comparison_angle",
+    )
+    assert int(angle_generation["min_angle"]) < int(angle_generation["max_angle"])
+    assert int(angle_generation["angle_step"]) > 0
+    assert sorted(angle_generation["query_type_weights"].keys()) == ["largest", "smallest"]
+    assert sorted(angle_generation["object_count_weights"].keys()) == ["4", "5", "6"]
+    assert float(angle_generation["min_absolute_gap_degrees"]) > 0.0
+    assert int(angle_rendering["line_width"]) > 0
+    assert str(angle_prompt["object_description"]).strip()
+    assert str(angle_prompt["question_text_largest"]).strip()
+    assert str(angle_prompt["question_text_smallest"]).strip()
+    assert str(angle_prompt["evidence_hint"]).strip()
+    assert str(angle_prompt["answer_hint"]).strip()
+
+    area_generation, area_rendering, area_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_comparison_area",
+    )
+    assert int(area_generation["min_rectangle_width"]) < int(area_generation["max_rectangle_width"])
+    assert int(area_generation["min_rectangle_height"]) < int(area_generation["max_rectangle_height"])
+    assert sorted(area_generation["query_type_weights"].keys()) == ["largest", "smallest"]
+    assert sorted(area_generation["object_count_weights"].keys()) == ["4", "5", "6"]
+    assert float(area_generation["min_absolute_gap_square_units"]) > 0.0
+    assert int(area_rendering["line_width"]) > 0
+    assert str(area_prompt["object_description"]).strip()
+    assert str(area_prompt["question_text_largest"]).strip()
+    assert str(area_prompt["question_text_smallest"]).strip()
+    assert str(area_prompt["evidence_hint"]).strip()
+    assert str(area_prompt["answer_hint"]).strip()
+
+    perimeter_generation, perimeter_rendering, perimeter_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_comparison_perimeter",
+    )
+    assert int(perimeter_generation["min_rectangle_width"]) < int(perimeter_generation["max_rectangle_width"])
+    assert int(perimeter_generation["min_rectangle_height"]) < int(perimeter_generation["max_rectangle_height"])
+    assert sorted(perimeter_generation["query_type_weights"].keys()) == ["largest", "smallest"]
+    assert sorted(perimeter_generation["object_count_weights"].keys()) == ["4", "5", "6"]
+    assert float(perimeter_generation["min_absolute_gap_units"]) > 0.0
+    assert int(perimeter_rendering["line_width"]) > 0
+    assert str(perimeter_prompt["object_description"]).strip()
+    assert str(perimeter_prompt["question_text_largest"]).strip()
+    assert str(perimeter_prompt["question_text_smallest"]).strip()
+    assert str(perimeter_prompt["evidence_hint"]).strip()
+    assert str(perimeter_prompt["answer_hint"]).strip()
+
+    length_generation, length_rendering, length_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_comparison_length",
+    )
+    assert int(length_generation["min_segment_length"]) < int(length_generation["max_segment_length"])
+    assert int(length_generation["max_abs_vector_component"]) > 0
+    assert sorted(length_generation["query_type_weights"].keys()) == ["largest", "smallest"]
+    assert sorted(length_generation["object_count_weights"].keys()) == ["4", "5", "6"]
+    assert float(length_generation["min_absolute_gap_units"]) > 0.0
+    assert int(length_rendering["line_width"]) > 0
+    assert str(length_prompt["object_description"]).strip()
+    assert str(length_prompt["question_text_largest"]).strip()
+    assert str(length_prompt["question_text_smallest"]).strip()
+    assert str(length_prompt["evidence_hint"]).strip()
+    assert str(length_prompt["answer_hint"]).strip()
+
+
+def test_geometry_counting_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("geometry", "counting")
+    for section in ("generation", "rendering", "prompt"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["object_count_min"]) >= 2
+    assert int(generation_shared["object_count_max"]) >= int(generation_shared["object_count_min"])
+    assert bool(generation_shared["balanced_sampling"]) is True
+
+    generation_overrides = cfg["generation"]["task_overrides"]
+    assert "task_geometry_counting_angle" in generation_overrides
+    assert "task_geometry_counting_triangle" in generation_overrides
+    assert "task_geometry_counting_quadrilateral" in generation_overrides
+    assert "task_geometry_counting_shape_type" in generation_overrides
+    assert "task_geometry_counting_convexity" in generation_overrides
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_size_min"]) > 0
+    assert int(render_shared["canvas_size_max"]) >= int(render_shared["canvas_size_min"])
+    assert int(render_shared["graph_cells_min"]) > 0
+    assert int(render_shared["graph_cells_max"]) >= int(render_shared["graph_cells_min"])
+    assert int(render_shared["line_width_min"]) >= 1
+    assert int(render_shared["line_width_max"]) >= int(render_shared["line_width_min"])
+    assert int(render_shared["label_stroke_width_min"]) >= 1
+    assert int(render_shared["label_stroke_width_max"]) >= int(render_shared["label_stroke_width_min"])
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip()
+    assert str(prompt_shared["task_family_key"]).strip()
+    assert str(prompt_shared["task_key"]).strip()
+
+    angle_generation, angle_rendering, angle_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_counting_angle",
+    )
+    assert int(angle_generation["min_angle"]) < int(angle_generation["max_angle"])
+    assert int(angle_generation["angle_step"]) > 0
+    assert sorted(angle_generation["variant_weights"].keys()) == ["acute_angle", "obtuse_angle", "right_angle"]
+    assert bool(angle_generation["balanced_variant_sampling"]) is True
+    assert sorted(angle_generation["object_count_weights"].keys()) == ["10", "6", "7", "8", "9"]
+    assert float(angle_generation["boundary_margin_degrees"]) >= 0.0
+    assert int(angle_rendering["line_width"]) > 0
+    assert str(angle_prompt["object_description"]).strip()
+    assert str(angle_prompt["question_text_acute_angle"]).strip()
+    assert str(angle_prompt["question_text_right_angle"]).strip()
+    assert str(angle_prompt["question_text_obtuse_angle"]).strip()
+    assert str(angle_prompt["evidence_hint"]).strip()
+    assert str(angle_prompt["answer_hint"]).strip()
+    assert str(angle_prompt["json_example"]).strip()
+    assert str(angle_prompt["json_example_answer_only"]).strip()
+
+    triangle_generation, triangle_rendering, triangle_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_counting_triangle",
+    )
+    assert float(triangle_generation["min_side_units"]) < float(triangle_generation["max_side_units"])
+    assert float(triangle_generation["right_angle_margin_degrees"]) > 0.0
+    assert float(triangle_generation["min_side_gap_units"]) > 0.0
+    assert sorted(triangle_generation["variant_weights"].keys()) == [
+        "acute_triangle",
+        "equilateral_triangle",
+        "isosceles_triangle",
+        "obtuse_triangle",
+        "right_triangle",
+        "scalene_triangle",
+    ]
+    assert bool(triangle_generation["balanced_variant_sampling"]) is True
+    assert sorted(triangle_generation["object_count_weights"].keys()) == ["5", "6", "7", "8"]
+    assert int(triangle_rendering["graph_cells_min"]) < int(triangle_rendering["graph_cells_max"])
+    assert int(triangle_rendering["object_label_offset_px"]) > 0
+    assert str(triangle_prompt["object_description"]).strip()
+    assert str(triangle_prompt["question_text_equilateral_triangle"]).strip()
+    assert str(triangle_prompt["question_text_isosceles_triangle"]).strip()
+    assert str(triangle_prompt["question_text_scalene_triangle"]).strip()
+    assert str(triangle_prompt["question_text_right_triangle"]).strip()
+    assert str(triangle_prompt["question_text_acute_triangle"]).strip()
+    assert str(triangle_prompt["question_text_obtuse_triangle"]).strip()
+    assert str(triangle_prompt["evidence_hint"]).strip()
+    assert str(triangle_prompt["answer_hint"]).strip()
+    assert str(triangle_prompt["json_example"]).strip()
+    assert str(triangle_prompt["json_example_answer_only"]).strip()
+
+    quadrilateral_generation, quadrilateral_rendering, quadrilateral_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_counting_quadrilateral",
+    )
+    assert float(quadrilateral_generation["min_extent_units"]) < float(quadrilateral_generation["max_extent_units"])
+    assert float(quadrilateral_generation["min_side_gap_units"]) > 0.0
+    assert float(quadrilateral_generation["min_slant_units"]) > 0.0
+    assert sorted(quadrilateral_generation["variant_weights"].keys()) == [
+        "parallelogram_only",
+        "rectangle_non_square",
+        "rhombus_non_square",
+        "square",
+    ]
+    assert bool(quadrilateral_generation["balanced_variant_sampling"]) is True
+    assert sorted(quadrilateral_generation["object_count_weights"].keys()) == ["5", "6", "7"]
+    assert int(quadrilateral_rendering["graph_cells_min"]) < int(quadrilateral_rendering["graph_cells_max"])
+    assert int(quadrilateral_rendering["object_label_offset_px"]) > 0
+    assert str(quadrilateral_prompt["object_description"]).strip()
+    assert str(quadrilateral_prompt["question_text_square"]).strip()
+    assert str(quadrilateral_prompt["question_text_rectangle_non_square"]).strip()
+    assert str(quadrilateral_prompt["question_text_rhombus_non_square"]).strip()
+    assert str(quadrilateral_prompt["question_text_parallelogram_only"]).strip()
+    assert str(quadrilateral_prompt["evidence_hint"]).strip()
+    assert str(quadrilateral_prompt["answer_hint"]).strip()
+    assert str(quadrilateral_prompt["json_example"]).strip()
+    assert str(quadrilateral_prompt["json_example_answer_only"]).strip()
+
+    shape_type_generation, shape_type_rendering, shape_type_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_counting_shape_type",
+    )
+    assert float(shape_type_generation["min_extent_units"]) < float(shape_type_generation["max_extent_units"])
+    assert float(shape_type_generation["ellipse_axis_ratio_min"]) > 1.0
+    assert float(shape_type_generation["min_side_gap_units"]) > 0.0
+    assert float(shape_type_generation["min_slant_units"]) > 0.0
+    assert sorted(shape_type_generation["variant_weights"].keys()) == [
+        "circle",
+        "ellipse",
+        "hexagon",
+        "pentagon",
+        "quadrilateral",
+        "triangle",
+    ]
+    assert bool(shape_type_generation["balanced_variant_sampling"]) is True
+    assert sorted(shape_type_generation["object_count_weights"].keys()) == ["6", "7", "8", "9"]
+    assert int(shape_type_rendering["graph_cells_min"]) < int(shape_type_rendering["graph_cells_max"])
+    assert int(shape_type_rendering["object_label_offset_px"]) > 0
+    assert str(shape_type_prompt["object_description"]).strip()
+    assert str(shape_type_prompt["question_text_triangle"]).strip()
+    assert str(shape_type_prompt["question_text_quadrilateral"]).strip()
+    assert str(shape_type_prompt["question_text_pentagon"]).strip()
+    assert str(shape_type_prompt["question_text_hexagon"]).strip()
+    assert str(shape_type_prompt["question_text_circle"]).strip()
+    assert str(shape_type_prompt["question_text_ellipse"]).strip()
+    assert str(shape_type_prompt["evidence_hint"]).strip()
+    assert str(shape_type_prompt["answer_hint"]).strip()
+    assert str(shape_type_prompt["json_example"]).strip()
+    assert str(shape_type_prompt["json_example_answer_only"]).strip()
+
+    convexity_generation, convexity_rendering, convexity_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_counting_convexity",
+    )
+    assert sorted(convexity_generation["variant_weights"].keys()) == ["concave_polygon", "convex_polygon"]
+    assert sorted(convexity_generation["object_count_weights"].keys()) == ["6", "7", "8", "9"]
+    assert sorted(convexity_generation["side_count_weights"].keys()) == ["4", "5", "6"]
+    assert bool(convexity_generation["balanced_variant_sampling"]) is True
+    assert int(convexity_rendering["graph_cells_min"]) < int(convexity_rendering["graph_cells_max"])
+    assert int(convexity_rendering["object_label_offset_px"]) > 0
+    assert str(convexity_prompt["object_description"]).strip()
+    assert str(convexity_prompt["question_text_convex_polygon"]).strip()
+    assert str(convexity_prompt["question_text_concave_polygon"]).strip()
+    assert str(convexity_prompt["evidence_hint"]).strip()
+    assert str(convexity_prompt["answer_hint"]).strip()
+    assert str(convexity_prompt["json_example"]).strip()
+    assert str(convexity_prompt["json_example_answer_only"]).strip()
+
 
 def test_geometry_analytical_3d_defaults_loaded() -> None:
     cfg = get_task_group_defaults("geometry", "analytical_3d")
@@ -380,6 +701,147 @@ def test_geometry_analytical_3d_defaults_loaded() -> None:
         "sphere_given_r",
     ):
         assert str(surface_prompt[f"question_text_{key}"]).strip()
+
+
+def test_icons_counting_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("icons", "counting")
+    for section in ("generation", "rendering", "prompt", "visual"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["object_count_min"]) >= 1
+    assert int(generation_shared["object_count_max"]) >= int(generation_shared["object_count_min"])
+    assert int(generation_shared["target_count_min"]) == 0
+    assert int(generation_shared["target_count_max"]) == 10
+    assert int(generation_shared["distractor_count_min"]) == 1
+    assert int(generation_shared["distractor_count_max"]) == 10
+    assert bool(generation_shared["balanced_sampling"]) is True
+    assert "task_icons_counting_color" in cfg["generation"]["task_overrides"]
+    assert "task_icons_counting_type" in cfg["generation"]["task_overrides"]
+    assert "task_icons_counting_orientation" in cfg["generation"]["task_overrides"]
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_width"]) > 0
+    assert int(render_shared["canvas_height"]) > 0
+    assert int(render_shared["reference_panel_width_px"]) > 0
+    assert int(render_shared["scene_icon_size_min_px"]) > 0
+    assert int(render_shared["scene_icon_size_max_px"]) >= int(render_shared["scene_icon_size_min_px"])
+    assert 0.0 <= float(render_shared["scene_max_overlap_fraction"]) <= 1.0
+    assert int(render_shared["scene_placement_max_attempts"]) > 0
+    assert 1 <= int(render_shared["palette_size_min"]) <= int(render_shared["palette_size_max"])
+    assert float(render_shared["min_color_distance"]) > 0.0
+    assert str(render_shared["color_distance_space"]).strip() in {"lab", "rgb"}
+    assert "icon_tint_rgb" not in render_shared
+    assert list(render_shared["icon_noise_edit_types"]) == ["blur", "downsample", "jpeg", "noise"]
+    assert list(render_shared["icon_noise_edit_count_range"]) == [0, 2]
+    assert "noise" in render_shared["icon_noise_value_ranges"]
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip()
+    assert str(prompt_shared["task_family_key"]).strip()
+    assert str(prompt_shared["task_key"]).strip()
+    assert str(prompt_shared["json_output_contract"]).strip()
+    assert str(prompt_shared["json_output_contract_answer_only"]).strip()
+
+    color_generation, color_rendering, color_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_icons_counting_color",
+    )
+    assert str(color_generation["pool_manifest"]).strip() == "all_icons.txt"
+    assert float(color_rendering["min_color_distance"]) == 60.0
+    assert int(color_rendering["palette_size_min"]) == 3
+    assert int(color_rendering["palette_size_max"]) == 4
+    assert str(color_prompt["object_description"]).strip()
+    assert str(color_prompt["question_text"]).strip()
+    assert str(color_prompt["evidence_hint"]).strip()
+    assert str(color_prompt["answer_hint"]).strip()
+    assert str(color_prompt["json_example"]).strip()
+    assert str(color_prompt["json_example_answer_only"]).strip()
+
+    type_generation, type_rendering, type_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_icons_counting_type",
+    )
+    assert str(type_generation["pool_manifest"]).strip() == "all_icons.txt"
+    assert int(type_rendering["canvas_width"]) > 0
+    assert int(type_rendering["reference_panel_width_px"]) > 0
+    assert str(type_prompt["object_description"]).strip()
+    assert str(type_prompt["question_text"]).strip()
+    assert str(type_prompt["evidence_hint"]).strip()
+    assert str(type_prompt["answer_hint"]).strip()
+    assert str(type_prompt["json_example"]).strip()
+    assert str(type_prompt["json_example_answer_only"]).strip()
+
+    orientation_generation, orientation_rendering, orientation_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_icons_counting_orientation",
+    )
+    assert str(orientation_generation["pool_manifest"]).strip() == "non_symmetry.txt"
+    assert list(orientation_generation["rotation_candidates_degrees"]) == [0, 90, 180, 270]
+    assert int(orientation_rendering["canvas_width"]) > 0
+    assert str(orientation_prompt["object_description"]).strip()
+    assert str(orientation_prompt["question_text"]).strip()
+    assert str(orientation_prompt["evidence_hint"]).strip()
+    assert str(orientation_prompt["answer_hint"]).strip()
+    assert str(orientation_prompt["json_example"]).strip()
+    assert str(orientation_prompt["json_example_answer_only"]).strip()
+
+
+def test_icons_transformation_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("icons", "transformation")
+    for section in ("generation", "rendering", "prompt", "visual"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["object_count_min"]) >= 2
+    assert int(generation_shared["object_count_max"]) >= int(generation_shared["object_count_min"])
+    assert int(generation_shared["target_count_min"]) == 0
+    assert int(generation_shared["target_count_max"]) == 6
+    assert int(generation_shared["distractor_count_min"]) == 1
+    assert int(generation_shared["distractor_count_max"]) == 6
+    assert bool(generation_shared["balanced_sampling"]) is True
+    assert "task_icons_transformation_pair_count" in cfg["generation"]["task_overrides"]
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_width"]) > 0
+    assert int(render_shared["canvas_height"]) > 0
+    assert int(render_shared["reference_panel_width_px"]) > 0
+    assert int(render_shared["scene_icon_size_min_px"]) > 0
+    assert int(render_shared["scene_icon_size_max_px"]) >= int(render_shared["scene_icon_size_min_px"])
+    assert int(render_shared["cell_padding_px"]) > 0
+    assert int(render_shared["cell_label_font_size_px"]) > 0
+    assert int(render_shared["pair_arrow_stroke_px"]) > 0
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip()
+    assert str(prompt_shared["task_family_key"]).strip()
+    assert str(prompt_shared["task_key"]).strip()
+    assert str(prompt_shared["json_output_contract"]).strip()
+    assert str(prompt_shared["json_output_contract_answer_only"]).strip()
+
+    generation, rendering, prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_icons_transformation_pair_count",
+    )
+    assert str(generation["pool_manifest"]).strip() == "non_symmetry.txt"
+    assert list(generation["transform_ids"]) == [
+        "rot90",
+        "rot180",
+        "rot270",
+        "flip_h",
+        "flip_v",
+        "flip_diag_main",
+        "flip_diag_anti",
+    ]
+    assert int(generation["transform_check_size_px"]) > 0
+    assert int(rendering["canvas_width"]) > 0
+    assert int(rendering["reference_panel_width_px"]) > 0
+    assert str(prompt["object_description"]).strip()
+    assert str(prompt["question_text"]).strip()
+    assert str(prompt["evidence_hint"]).strip()
+    assert str(prompt["answer_hint"]).strip()
+    assert str(prompt["json_example"]).strip()
+    assert str(prompt["json_example_answer_only"]).strip()
 
 
 def test_tile_path_defaults_loaded() -> None:
@@ -805,6 +1267,19 @@ def test_analytical_prompt_examples_are_task_valid() -> None:
         "circle_chord_length",
     ):
         assert str(length_prompt[f"question_text_{key}"]).strip()
+
+    _perimeter_generation, _perimeter_rendering, perimeter_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_geometry_analytical_2d_perimeter",
+    )
+    for key in (
+        "right_triangle_leg_hypotenuse",
+        "rectangle_side_diagonal",
+        "rhombus_diagonals",
+        "isosceles_trapezoid_bases_height",
+        "inscribed_square_diameter",
+    ):
+        assert str(perimeter_prompt[f"question_text_{key}"]).strip()
 
 
 def test_section_defaults_require_shared_and_task_overrides_schema() -> None:

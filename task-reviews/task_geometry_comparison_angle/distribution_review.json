@@ -1,0 +1,194 @@
+{
+  "domain": "geometry",
+  "failed_variants": [],
+  "has_task_variants": false,
+  "incomplete_variants": [],
+  "mode": "single_sample",
+  "overall": {
+    "answer_type_counts": {
+      "option_letter": 100
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.23,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": null,
+        "pass": null,
+        "status": "not_applicable_non_numeric_answers"
+      },
+      "min_unique_answers": {
+        "observed": 6,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": null,
+    "max_answer_count": 23,
+    "max_answer_frequency": 0.23,
+    "pass": true,
+    "sample_count": 100,
+    "top_answers": [
+      {
+        "answer_label": "A",
+        "count": 23
+      },
+      {
+        "answer_label": "C",
+        "count": 18
+      },
+      {
+        "answer_label": "E",
+        "count": 17
+      },
+      {
+        "answer_label": "B",
+        "count": 16
+      },
+      {
+        "answer_label": "D",
+        "count": 15
+      },
+      {
+        "answer_label": "F",
+        "count": 11
+      }
+    ],
+    "unique_answers": 6
+  },
+  "pass": true,
+  "per_task_variant": {
+    "": {
+      "answer_type_counts": {
+        "option_letter": 100
+      },
+      "checks": {
+        "max_answer_frequency": {
+          "observed": 0.23,
+          "pass": true,
+          "threshold": 0.25
+        },
+        "max_five_bin_frequency": {
+          "observed": null,
+          "pass": null,
+          "status": "not_applicable_non_numeric_answers"
+        },
+        "min_unique_answers": {
+          "observed": 6,
+          "pass": true,
+          "threshold": 5
+        }
+      },
+      "five_bin_numeric": null,
+      "max_answer_count": 23,
+      "max_answer_frequency": 0.23,
+      "pass": true,
+      "sample_count": 100,
+      "top_answers": [
+        {
+          "answer_label": "A",
+          "count": 23
+        },
+        {
+          "answer_label": "C",
+          "count": 18
+        },
+        {
+          "answer_label": "E",
+          "count": 17
+        },
+        {
+          "answer_label": "B",
+          "count": 16
+        },
+        {
+          "answer_label": "D",
+          "count": 15
+        },
+        {
+          "answer_label": "F",
+          "count": 11
+        }
+      ],
+      "unique_answers": 6
+    }
+  },
+  "sampling_axes": {
+    "object_count": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "4": 0.3333333333333333,
+        "5": 0.3333333333333333,
+        "6": 0.3333333333333333
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.44,
+      "observed_counts": {
+        "4": 44,
+        "5": 30,
+        "6": 26
+      },
+      "sample_count": 100
+    },
+    "query_type": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "largest": 0.5,
+        "smallest": 0.5
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.51,
+      "observed_counts": {
+        "largest": 49,
+        "smallest": 51
+      },
+      "sample_count": 100
+    },
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {},
+      "expected_source": "",
+      "max_observed_frequency": 1.0,
+      "observed_counts": {
+        "primitive_angle_set": 100
+      },
+      "sample_count": 100
+    },
+    "winner_label": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "A": 0.16666666666666666,
+        "B": 0.16666666666666666,
+        "C": 0.16666666666666666,
+        "D": 0.16666666666666666,
+        "E": 0.16666666666666666,
+        "F": 0.16666666666666666
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.23,
+      "observed_counts": {
+        "A": 23,
+        "B": 16,
+        "C": 18,
+        "D": 15,
+        "E": 17,
+        "F": 11
+      },
+      "sample_count": 100
+    }
+  },
+  "task_group": "comparison",
+  "task_id": "task_geometry_comparison_angle",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {},
+    "expected_source": "",
+    "has_variants": false,
+    "observed_counts": {
+      "primitive_angle_set": 100
+    },
+    "status": "skipped_no_variants"
+  }
+}

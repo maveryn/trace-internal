@@ -124,6 +124,7 @@ Use this checklist during implementation and refactor reviews.
 108. For fixed-cardinality tasks with a very small answer support, review the answer distribution under task-review sampling specifically; those runs do not provide builder `_sampling_index`, so if generic hash-based balancing skews a tiny support, add an explicit task-level cycling path instead of assuming the builder-only balance will save it.
 109. For icon tasks whose answer would become ambiguous under symmetric silhouettes, require the asymmetric Prism manifest (`non_symmetry.txt`) in task config and review that override explicitly; do not rely on the broader curated pool when orientation, mirror symmetry, transform identity, or orientation-bearing attribute binding is part of the predicate.
 110. For task complexity, keep the weighting policy outside task-local formulas: tasks should emit normalized criterion values in `[0,1]`, while domain/task-group policy owns the active criteria and weights; do not encode raw-value transforms in config or weight semantics in ad hoc task-local constants.
+111. Domain-level complexity criteria must be scorable for every task in the domain, and task-group criteria must be scorable for every task in that family; if a criterion does not meet that bar, move it down a scope instead of forcing irrelevant zeroes or fake values.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

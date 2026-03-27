@@ -18,16 +18,20 @@ Use this whenever a change touches `complexity_score`, `complexity_components`, 
 - Make tasks emit normalized criterion values in `[0,1]`; do not compare raw scores across tasks or domains.
 - Keep raw-to-normalized transforms in task/domain code, not in config.
 - Let config own **weights and active criteria**, with precedence `domain -> task_group -> task`.
-- Use domain defaults for the base criteria vocabulary, task-group overrides for emphasis, and task overrides only when a task materially breaks the family pattern.
+- Keep **domain-level criteria** broad enough that every task in the domain can score them meaningfully.
+- Keep **task-group criteria** broad enough that every task in that family can score them meaningfully.
+- Use task-level criteria or weight overrides only when a task materially breaks the family pattern; this should be rare.
 - Treat existing one-off scalar formulas as legacy. Do not copy them forward when touching a task.
 
 ## Workflow
-1. Open the domain reference from `references/` and choose the criteria vocabulary for that domain.
-2. Decide the default domain weights and any task-group override weights.
-3. In the task code, measure each active criterion and normalize it into `[0,1]`.
-4. Keep any raw diagnostics in trace/debug payloads, not in `complexity_components`.
-5. Compute the final score from the resolved weights over the normalized criterion values.
-6. Check monotonicity against the task's obvious difficulty knobs before finalizing.
+1. Open the domain reference from `references/` and choose the base criteria vocabulary for that domain.
+2. Verify each domain-level criterion is genuinely applicable to every task in the domain.
+3. Add task-group criteria only when they apply to every task in that family.
+4. Decide the default domain weights and any task-group override weights.
+5. In the task code, measure each active criterion and normalize it into `[0,1]`.
+6. Keep any raw diagnostics in trace/debug payloads, not in `complexity_components`.
+7. Compute the final score from the resolved weights over the normalized criterion values.
+8. Check monotonicity against the task's obvious difficulty knobs before finalizing.
 
 ## Read as needed
 - General policy and config shape: `references/policy.md`
@@ -40,6 +44,7 @@ Use this whenever a change touches `complexity_score`, `complexity_components`, 
 ## Update discipline
 - When adding a new domain or task family, add or update the corresponding domain reference in this skill in the same change.
 - When introducing a new criterion name, update the domain reference before using it in task code.
+- When moving a criterion upward (task -> task_group or task_group -> domain), verify the broader scope can score it for every task before promoting it.
 - When migrating a legacy task, preserve the task's relative easy/medium/hard ordering as closely as possible while moving to named normalized criteria.
 
 ## Pair with

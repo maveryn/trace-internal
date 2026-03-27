@@ -3,46 +3,32 @@
 ## Domain policy
 Use icon-specific criteria. Do not reuse generic counting formulas once a task has richer structure than "more objects = harder".
 
-## Recommended criteria vocabulary
+## Domain-level base criteria
+These should be applicable to **all** icon tasks:
 - `visual_scan`
-  - how many icons or cells must be checked
-- `predicate_complexity`
-  - how many independent attributes or conditions define a match
-- `spatial_reasoning`
-  - anchors, sides, strips, or center-based spatial membership
-- `transform_reasoning`
-  - rotation, reflection, or transform-rule application
-- `sequence_reasoning`
-  - missing-step or progression inference
+  - how much of the scene/cell inventory must be inspected
 - `ambiguity`
-  - near-miss distractors, hard partial matches, or boundary-adjacent cases
+  - how hard it is to separate positives from distractors or reject near-misses
 - `clutter`
-  - overlap, icon size, noise, and cell density
+  - overlap, icon size, noise, and density effects that reduce readability
 
 ## Domain fallback weights
-Use these when a new icon task group appears and no family override exists yet:
+Use these as the broad baseline. Task groups can add specialized criteria on top:
 
 ```yaml
-visual_scan: 0.20
-predicate_complexity: 0.20
-spatial_reasoning: 0.15
-transform_reasoning: 0.15
-sequence_reasoning: 0.10
-ambiguity: 0.10
-clutter: 0.10
+visual_scan: 0.40
+ambiguity: 0.35
+clutter: 0.25
 ```
 
 ## Task-group overrides
 
 ### `counting`
 ```yaml
+semantic_match: 0.35
 visual_scan: 0.30
-predicate_complexity: 0.30
-ambiguity: 0.25
+ambiguity: 0.20
 clutter: 0.15
-spatial_reasoning: 0.00
-transform_reasoning: 0.00
-sequence_reasoning: 0.00
 ```
 
 Use for:
@@ -59,19 +45,16 @@ What to measure:
 - number of queried attributes.
 
 Specific notes:
-- `type` / `color` / `orientation` should keep `predicate_complexity` low.
-- `attribute_binding` should push `predicate_complexity` and `ambiguity` high based on `2-of-3` / `1-of-3` distractor mix.
+- `type` / `color` / `orientation` should keep `semantic_match` low-to-medium.
+- `attribute_binding` should push `semantic_match` and `ambiguity` high based on `2-of-3` / `1-of-3` distractor mix.
 - `size_relation` should raise `ambiguity` when the minimum size gap is small and clutter rises.
 
 ### `relation`
 ```yaml
+spatial_reasoning: 0.40
 visual_scan: 0.20
-predicate_complexity: 0.10
-spatial_reasoning: 0.35
 ambiguity: 0.25
-clutter: 0.10
-transform_reasoning: 0.00
-sequence_reasoning: 0.00
+clutter: 0.15
 ```
 
 Use for:
@@ -89,21 +72,18 @@ Task-specific notes:
 - `between_two_anchors_count`
   - measure strip width, boundary margin, and candidate crowding inside/outside the strip.
 - `occlusion_order`
-  - treat pair-level front/back distinction as high `predicate_complexity` or fold it into `ambiguity`.
+  - treat pair-level front/back distinction as high ambiguity or as a rare task override if needed.
 - `mirror_symmetry`
-  - shift weight from `spatial_reasoning` into `transform_reasoning` if needed;
+  - may need a rare task-level shift from `spatial_reasoning` toward transform-style reasoning;
   - diagonal and both-axis variants should score harder than plain vertical/horizontal;
   - exact-other-signature distractors should raise `ambiguity`.
 
 ### `transformation`
 ```yaml
+rule_inference: 0.45
 visual_scan: 0.20
-transform_reasoning: 0.45
 ambiguity: 0.20
 clutter: 0.15
-predicate_complexity: 0.00
-spatial_reasoning: 0.00
-sequence_reasoning: 0.00
 ```
 
 Use for:
@@ -117,13 +97,10 @@ What to measure:
 
 ### `sequence`
 ```yaml
+rule_inference: 0.45
 visual_scan: 0.25
-sequence_reasoning: 0.45
 ambiguity: 0.20
 clutter: 0.10
-predicate_complexity: 0.00
-spatial_reasoning: 0.00
-transform_reasoning: 0.00
 ```
 
 Use for:
@@ -139,8 +116,12 @@ What to measure:
 ## Practical normalization hints
 - `visual_scan`
   - normalize from visible icon count or cell count under the task's configured support.
-- `predicate_complexity`
+- `semantic_match`
   - normalize from number of independent queried attributes or conjunction depth.
+- `spatial_reasoning`
+  - normalize from anchor complexity, region inference, and boundary sensitivity.
+- `rule_inference`
+  - normalize from transform-rule or sequence-rule depth.
 - `ambiguity`
   - normalize from the proportion of hard distractors / boundary-near distractors.
 - `clutter`

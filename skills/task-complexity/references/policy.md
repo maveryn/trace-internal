@@ -6,6 +6,12 @@
 - Config should own **weights**, never raw-value transforms or threshold formulas.
 - Missing an active criterion is a design bug; zero-weight criteria may be omitted.
 
+## Scope rule for criteria
+- **Domain-level criteria** must be meaningful for every task in the domain.
+- **Task-group criteria** must be meaningful for every task in that family.
+- **Task-level criteria** are allowed when needed, but they should be rare.
+- If a criterion is not meaningfully scorable across the full scope where it lives, move it down a level.
+
 ## Ownership split
 - **Task code** owns:
   - raw measurements,
@@ -17,7 +23,8 @@
 - **Task-group config** owns:
   - weight overrides for a reasoning family.
 - **Task override** owns:
-  - rare exceptions when a task truly breaks the family pattern.
+  - rare exceptions when a task truly breaks the family pattern,
+  - rare task-specific criteria that do not belong at the broader scopes.
 
 ## Preferred scoring rule
 Use a weighted mean over the active criteria:
@@ -46,9 +53,14 @@ Apply it at:
 
 Do not put min/max raw transforms in config. Those belong in task/domain code.
 
+Interpretation:
+- domain config should define the broad baseline criteria,
+- task-group config may add family-wide specialized criteria,
+- task overrides should mostly adjust weights, not invent new policy.
+
 ## Component design rules
 - Keep criterion names stable and snake_case.
-- Prefer `4..7` criteria per domain; do not create a huge vocabulary.
+- Prefer small vocabularies at each scope; do not create a huge domain-level list just because a few task groups need niche criteria.
 - Make every criterion monotonic with respect to a real difficulty knob.
 - Keep criteria interpretable; a reviewer should understand why a value increased.
 - Put raw measurements in trace/debug payloads if they are worth keeping.
@@ -65,3 +77,6 @@ Many current tasks still use ad hoc scalar formulas. When touching one:
 - If I simplify the scene/query, does the score decrease?
 - Are weights coming from config rather than hidden task-local constants?
 - Are `complexity_components` normalized and interpretable?
+- Do the domain-level criteria really apply to every task in the domain?
+- Do the task-group criteria really apply to every task in the family?
+- Is this task override truly necessary, or should the criterion/weight live at a broader level?

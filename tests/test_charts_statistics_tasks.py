@@ -59,6 +59,19 @@ def _expected_label(task_variant: str, labels: list[str], values: list[int]) -> 
     return str(winners[0])
 
 
+def _assert_normalized_complexity(out: object) -> None:
+    complexity = out.complexity.to_dict()
+    assert 0.0 <= float(complexity["complexity_score"]) <= 1.0
+    assert set(complexity["complexity_components"].keys()) == {
+        "reasoning_load",
+        "scene_variant_load",
+        "visual_scan",
+    }
+    assert all(
+        0.0 <= float(value) <= 1.0 for value in complexity["complexity_components"].values()
+    )
+
+
 def test_chart_statistics_summary_value_variants_match_contract() -> None:
     task = ChartsStatisticsSummaryValueTask()
     cases = (
@@ -181,6 +194,38 @@ def test_chart_statistics_task_is_deterministic() -> None:
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
+
+
+def test_chart_statistics_complexity_is_normalized_and_monotonic() -> None:
+    value_task = ChartsStatisticsSummaryValueTask()
+    easy_value = value_task.generate(
+        9440,
+        params={"task_variant": "max", "scene_variant": "bar"},
+        max_attempts=10,
+    )
+    hard_value = value_task.generate(
+        9440,
+        params={"task_variant": "mode", "scene_variant": "scatter"},
+        max_attempts=10,
+    )
+    _assert_normalized_complexity(easy_value)
+    _assert_normalized_complexity(hard_value)
+    assert float(hard_value.complexity.complexity_score) > float(easy_value.complexity.complexity_score)
+
+    label_task = ChartsStatisticsSummaryLabelTask()
+    easy_label = label_task.generate(
+        9441,
+        params={"task_variant": "argmax", "scene_variant": "bar"},
+        max_attempts=10,
+    )
+    hard_label = label_task.generate(
+        9441,
+        params={"task_variant": "median_label", "scene_variant": "radar"},
+        max_attempts=10,
+    )
+    _assert_normalized_complexity(easy_label)
+    _assert_normalized_complexity(hard_label)
+    assert float(hard_label.complexity.complexity_score) > float(easy_label.complexity.complexity_score)
 
 
 def test_chart_statistics_summary_label_variants_match_contract() -> None:

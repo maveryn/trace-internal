@@ -28,6 +28,19 @@ def _expected_count(task_variant: str, values: list[int], trace: dict) -> int:
     raise AssertionError(f"unsupported variant: {task_variant}")
 
 
+def _assert_normalized_complexity(out: object) -> None:
+    complexity = out.complexity.to_dict()
+    assert 0.0 <= float(complexity["complexity_score"]) <= 1.0
+    assert set(complexity["complexity_components"].keys()) == {
+        "reasoning_load",
+        "scene_variant_load",
+        "visual_scan",
+    }
+    assert all(
+        0.0 <= float(value) <= 1.0 for value in complexity["complexity_components"].values()
+    )
+
+
 def test_chart_counting_variants_match_contract() -> None:
     task = ChartsCountingValueCountTask()
     cases = (
@@ -148,6 +161,23 @@ def test_chart_counting_task_is_deterministic() -> None:
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
+
+
+def test_chart_counting_complexity_is_normalized_and_monotonic() -> None:
+    task = ChartsCountingValueCountTask()
+    easy = task.generate(
+        9942,
+        params={"task_variant": "above_threshold", "scene_variant": "bar"},
+        max_attempts=10,
+    )
+    hard = task.generate(
+        9942,
+        params={"task_variant": "in_interval", "scene_variant": "radar"},
+        max_attempts=10,
+    )
+    _assert_normalized_complexity(easy)
+    _assert_normalized_complexity(hard)
+    assert float(hard.complexity.complexity_score) > float(easy.complexity.complexity_score)
 
 
 def test_chart_counting_supports_zero_answer_with_empty_evidence() -> None:

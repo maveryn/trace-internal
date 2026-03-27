@@ -60,6 +60,19 @@ rendering:
     text_stroke_rgb: [255, 255, 255]
     plot_fill_rgb: [255, 255, 255]
 
+complexity:
+  task_overrides:
+    task_charts_statistics_summary_value:
+      criteria_weights:
+        visual_scan: 0.30
+        reasoning_load: 0.50
+        scene_variant_load: 0.20
+    task_charts_statistics_summary_label:
+      criteria_weights:
+        visual_scan: 0.35
+        reasoning_load: 0.35
+        scene_variant_load: 0.30
+
 prompt:
   shared:
     bundle_id: charts_statistics_v1

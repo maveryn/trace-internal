@@ -37,6 +37,7 @@ Use this whenever the task lives under `domain=charts`.
 - If a chart type changes the structural semantics, split the shared helper path instead of overloading the first helper module with branching logic.
 - Use target-first or compatibility-aware internal sampling when chart/task combinations have uneven answer support.
 - Favor explicit visible labels and printed values over requiring pixel-only estimation from geometry.
+- For chart complexity, keep the criterion vocabulary broad (`visual_scan`, `reasoning_load`, `scene_variant_load` works well), but keep `scene_variant_load` task-local rather than reusing one global chart-type difficulty table.
 
 ## Chart-type lessons learned
 - `pie` and `donut` are composition-style scenes, not generic drop-ins for every chart task.

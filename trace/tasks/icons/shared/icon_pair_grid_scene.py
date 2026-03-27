@@ -9,6 +9,7 @@ from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import load_font
 from .icon_assets import render_icon_transformed_rgba
+from .icon_grid_scene import resolve_grid_cell_slots
 from .icon_noise import NoiseEdit, serialize_icon_noise_edits
 from .icon_scene import IconPanelLayout, draw_two_panel_panels, panel_geometry_to_trace, resolve_two_panel_layout
 
@@ -88,42 +89,6 @@ def _draw_arrow(draw: ImageDraw.ImageDraw, *, left_x: float, right_x: float, cen
         ],
         fill=tuple(int(v) for v in color_rgb),
     )
-
-
-def _grid_shape(cell_count: int) -> Tuple[int, int]:
-    """Return a compact `(rows, cols)` layout for the requested cell count."""
-
-    n = int(cell_count)
-    if n <= 4:
-        return 2, 2
-    if n <= 6:
-        return 2, 3
-    if n <= 8:
-        return 2, 4
-    return 3, 4
-
-
-def _grid_slots(content_bbox: BBox, *, cell_count: int, cell_padding_px: int) -> List[BBox]:
-    """Return the active row-major cell slots for one labeled scene grid."""
-
-    rows, cols = _grid_shape(int(cell_count))
-    x0, y0, x1, y1 = content_bbox
-    width = max(1, int(x1 - x0))
-    height = max(1, int(y1 - y0))
-    cell_w = width / float(cols)
-    cell_h = height / float(rows)
-    pad = max(0, int(cell_padding_px))
-    slots: List[BBox] = []
-    for row in range(rows):
-        for col in range(cols):
-            if len(slots) >= int(cell_count):
-                return slots
-            slot_x0 = int(round(float(x0) + (float(col) * cell_w))) + pad
-            slot_y0 = int(round(float(y0) + (float(row) * cell_h))) + pad
-            slot_x1 = int(round(float(x0) + (float(col + 1) * cell_w))) - pad
-            slot_y1 = int(round(float(y0) + (float(row + 1) * cell_h))) - pad
-            slots.append((slot_x0, slot_y0, slot_x1, slot_y1))
-    return slots
 
 
 def _draw_pair_in_box(
@@ -249,7 +214,7 @@ def render_two_panel_icon_pair_grid_scene(
         arrow_stroke_px=int(pair_arrow_stroke_px),
     )
 
-    slots = _grid_slots(
+    slots = resolve_grid_cell_slots(
         tuple(int(value) for value in layout.scene_content_xyxy),
         cell_count=len(scene_pairs),
         cell_padding_px=int(cell_padding_px),

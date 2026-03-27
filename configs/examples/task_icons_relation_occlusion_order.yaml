@@ -1,0 +1,4 @@
+task_id: task_icons_relation_occlusion_order
+params:
+  object_count: 8
+  target_count: 3

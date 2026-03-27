@@ -15,6 +15,15 @@ generation:
       above_anchor: 1.0
       below_anchor: 1.0
   task_overrides:
+    task_icons_relation_occlusion_order:
+      object_count_min: 2
+      object_count_max: 12
+      target_count_min: 0
+      target_count_max: 6
+      distractor_count_min: 1
+      distractor_count_max: 6
+      distractor_margin_over_target: 0
+      pool_manifest: all_icons.txt
     task_icons_relation_relative_position_type:
       pool_manifest: all_icons.txt
 
@@ -66,6 +75,18 @@ rendering:
     anchor_outline_rgb: [74, 113, 188]
     anchor_label_color_rgb: [57, 87, 145]
     anchor_label_font_size_px: 20
+    cell_padding_px: 10
+    cell_border_rgb: [218, 223, 233]
+    cell_label_color_rgb: [52, 60, 77]
+    cell_label_font_size_px: 22
+  task_overrides:
+    task_icons_relation_occlusion_order:
+      canvas_width: 1104
+      canvas_height: 640
+      reference_panel_width_px: 296
+      reference_icon_size_px: 110
+      pair_min_color_distance: 80.0
+      overlap_ratio_range: [0.40, 0.60]
 
 prompt:
   shared:
@@ -73,6 +94,14 @@ prompt:
     task_family_key: reference_scene_anchor_relation
     task_key: relation_query
   task_overrides:
+    task_icons_relation_occlusion_order:
+      task_family_key: reference_grid_occlusion_relation
+      object_description: a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right
+      question_text: How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top.
+      evidence_hint: set "evidence" to a sorted JSON array of the matching Scene cell labels
+      answer_hint: set "answer" to the count as an integer
+      json_example: '{"evidence":["B","E","G"],"answer":3}'
+      json_example_answer_only: '{"answer":3}'
     task_icons_relation_relative_position_type:
       object_description: a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor
       question_text_left_of_anchor: How many icons in the Scene panel have the same icon type as the Reference icon and are to the left of the Anchor icon?

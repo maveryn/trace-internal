@@ -882,6 +882,7 @@ def test_icons_relation_defaults_loaded() -> None:
     assert int(generation_shared["distractor_margin_over_target"]) == 1
     assert bool(generation_shared["balanced_sampling"]) is True
     assert bool(generation_shared["balanced_variant_sampling"]) is True
+    assert "task_icons_relation_occlusion_order" in cfg["generation"]["task_overrides"]
     assert "task_icons_relation_relative_position_type" in cfg["generation"]["task_overrides"]
 
     render_shared = cfg["rendering"]["shared"]
@@ -902,6 +903,29 @@ def test_icons_relation_defaults_loaded() -> None:
     assert str(prompt_shared["task_key"]).strip()
     assert str(prompt_shared["json_output_contract"]).strip()
     assert str(prompt_shared["json_output_contract_answer_only"]).strip()
+
+    occlusion_generation, occlusion_rendering, occlusion_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_icons_relation_occlusion_order",
+    )
+    assert str(occlusion_generation["pool_manifest"]).strip() == "all_icons.txt"
+    assert int(occlusion_generation["object_count_min"]) == 2
+    assert int(occlusion_generation["object_count_max"]) == 12
+    assert int(occlusion_generation["target_count_max"]) == 6
+    assert int(occlusion_generation["distractor_count_max"]) == 6
+    assert int(occlusion_generation["distractor_margin_over_target"]) == 0
+    assert int(occlusion_rendering["canvas_width"]) == 1104
+    assert int(occlusion_rendering["reference_panel_width_px"]) == 296
+    assert float(occlusion_rendering["min_color_distance"]) == 40.0
+    assert float(occlusion_rendering["pair_min_color_distance"]) == 80.0
+    assert list(occlusion_rendering["overlap_ratio_range"]) == [0.40, 0.60]
+    assert str(occlusion_prompt["task_family_key"]).strip() == "reference_grid_occlusion_relation"
+    assert str(occlusion_prompt["object_description"]).strip()
+    assert str(occlusion_prompt["question_text"]).strip()
+    assert str(occlusion_prompt["evidence_hint"]).strip()
+    assert str(occlusion_prompt["answer_hint"]).strip()
+    assert str(occlusion_prompt["json_example"]).strip()
+    assert str(occlusion_prompt["json_example_answer_only"]).strip()
 
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,

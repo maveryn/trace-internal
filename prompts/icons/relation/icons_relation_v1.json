@@ -2,6 +2,13 @@
   "bundle_id": "icons_relation_v1",
   "schema_version": "v1",
   "task_family_templates": {
+    "reference_grid_occlusion_relation": [
+      "You are given an image with {object_description}.",
+      "The image shows {object_description}.",
+      "Look at the image with {object_description}.",
+      "Use the image containing {object_description}.",
+      "Work from the image with {object_description}."
+    ],
     "reference_scene_anchor_relation": [
       "You are given an image with {object_description}.",
       "The image shows {object_description}.",
@@ -20,6 +27,9 @@
     ]
   },
   "required_slots_by_key": {
+    "task_family:reference_grid_occlusion_relation": [
+      "object_description"
+    ],
     "task_family:reference_scene_anchor_relation": [
       "object_description"
     ],

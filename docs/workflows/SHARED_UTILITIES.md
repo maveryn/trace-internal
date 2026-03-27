@@ -120,7 +120,7 @@ Promote helpers when a second consumer appears.
    - `reachability_board.py` is the canonical blocked-board reachability sampler for tile tasks that need one start tile plus reachable/unreachable open-cell partitions before task-specific target/path selection.
    - Concrete tile tasks live flat under `trace/tasks/tile/<task_group>_<task_name>.py`; keep reusable helpers under `trace/tasks/tile/shared/` instead of creating task-group wrapper packages for tile.
    - `color_board_common.py` now provides count-task adapters plus reusable per-color component analysis for flat tile tasks.
-6. Icons: `trace/tasks/icons/shared/icon_assets.py`, `icon_noise.py`, `icon_scene.py`, `icon_style.py`, `icon_transform.py`, `icon_pair_grid_scene.py`, `trace/tasks/icons/counting/shared.py`
+6. Icons: `trace/tasks/icons/shared/icon_assets.py`, `icon_noise.py`, `icon_scene.py`, `icon_style.py`, `icon_transform.py`, `icon_grid_scene.py`, `icon_pair_grid_scene.py`, `icon_overlap_grid_scene.py`, `trace/tasks/icons/counting/shared.py`
    - `icon_assets.py` is the canonical loader for the curated Prism icon bundle copied into `assets/icons/`; resolve pool membership through manifests rather than reconstructing SVG paths from task-local filename guesses.
    - `icon_noise.py` centralizes Prism-style per-icon subtle-noise sampling/application while preserving the icon alpha mask; use it for icon-instance perturbations instead of repurposing post-composite image noise helpers.
    - `icon_scene.py` provides the reusable two-panel `Reference` + `Scene` layout, panel geometry trace payloads, panel chrome rendering, random overlap-capped icon placement, explicit nominal-size support for tasks that reason about icon scale, and reading-order bbox canonicalization for sibling icon tasks.
@@ -128,7 +128,9 @@ Promote helpers when a second consumer appears.
    - `icon_style.py` provides curated-icon palette helpers that sample per-instance tints with Lab-distance separation from the panel/background chrome; keep Prism-style icon color policy there instead of re-implementing task-local palette samplers.
    - `icons/counting/shared.py` provides the shared render-param resolution, icon-instance noise sampling, and canonical trace-style block for sibling reference-scene icon counting tasks; reuse it once a second icon counting task would otherwise duplicate the same render-default parsing or style-trace assembly, including task-local reference/scene size-band overrides.
    - `icon_transform.py` is the canonical home for D4 transform ids and image-space transform application; use it for icon rotation/mirror families instead of encoding transform names task-locally.
+   - `icon_grid_scene.py` provides reusable compact labeled-grid slot layouts for icon tasks whose semantic unit is the cell rather than one free-placed icon.
    - `icon_pair_grid_scene.py` provides the reusable Reference-pair + labeled Scene-grid renderer for icon transformation-style tasks; use cell labels from this renderer as evidence instead of inventing task-local grid containers.
+   - `icon_overlap_grid_scene.py` provides the reusable Reference-overlap + labeled Scene-grid renderer for pairwise occlusion-order tasks; use cell labels from this renderer when the semantic target is the whole overlapping pair rather than one icon bbox.
 
 ## 3) Reuse rules
 1. Do not duplicate deterministic utilities.

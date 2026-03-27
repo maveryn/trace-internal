@@ -20,8 +20,9 @@ def test_chart_multiseries_pairwise_comparison_count_matches_contract() -> None:
     task = ChartsMultiseriesPairwiseComparisonCountTask()
     cases = (
         ("series_a_gt_b_count", "grouped_bar"),
-        ("series_a_lt_b_count", "multi_line"),
-        ("series_a_gt_b_count", "grouped_lollipop"),
+        ("series_a_lt_b_count", "grouped_horizontal_bar"),
+        ("series_a_gt_b_count", "multi_line"),
+        ("series_a_lt_b_count", "grouped_lollipop"),
     )
     for seed, (task_variant, scene_variant) in enumerate(cases, start=11010):
         out = task.generate(seed, params={"task_variant": task_variant, "scene_variant": scene_variant}, max_attempts=10)
@@ -77,13 +78,16 @@ def test_chart_multiseries_prompts_match_scene_variant_wording() -> None:
     task = ChartsMultiseriesPairwiseComparisonCountTask()
     prompts = {}
     for seed, scene_variant in enumerate(
-        ("grouped_bar", "multi_line", "grouped_lollipop"),
+        ("grouped_bar", "grouped_horizontal_bar", "multi_line", "grouped_lollipop"),
         start=11030,
     ):
         out = task.generate(seed, params={"scene_variant": scene_variant}, max_attempts=10)
         prompts[str(scene_variant)] = str(out.prompt)
     assert "legend on the right" in prompts["grouped_bar"]
     assert "bar height" in prompts["grouped_bar"]
+    assert "legend on the right" in prompts["grouped_horizontal_bar"]
+    assert "bar length" in prompts["grouped_horizontal_bar"]
+    assert "vertical axis" in prompts["grouped_horizontal_bar"]
     assert "legend on the right" in prompts["multi_line"]
     assert "y-values" in prompts["multi_line"]
     assert "legend on the right" in prompts["grouped_lollipop"]

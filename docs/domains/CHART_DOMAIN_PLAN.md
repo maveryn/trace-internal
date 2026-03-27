@@ -93,8 +93,9 @@ Note:
 These are the active multiseries chart variants we currently support in the `multiseries` family.
 
 1. `grouped_bar`
-2. `multi_line`
-3. `grouped_lollipop`
+2. `grouped_horizontal_bar`
+3. `multi_line`
+4. `grouped_lollipop`
 
 ### Deferred chart variants
 These remain under consideration, but they are not part of the current active chart contract.

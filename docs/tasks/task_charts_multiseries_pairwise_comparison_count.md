@@ -12,6 +12,7 @@
    - `series_a_lt_b_count`
 2. Supported `scene_variant` values:
    - `grouped_bar`
+   - `grouped_horizontal_bar`
    - `multi_line`
    - `grouped_lollipop`
 3. `answer_gt.type`: `integer`
@@ -70,9 +71,10 @@
 
 ## 5) Visual policy
 1. `grouped_bar` uses grouped vertical bars per category.
-2. `multi_line` uses one colored line per series with visible point markers at each category.
-3. `grouped_lollipop` uses grouped colored lollipop stems/points per category.
-4. Every multiseries chart reserves a right-side legend for the series labels/colors.
+2. `grouped_horizontal_bar` uses grouped horizontal bars per category.
+3. `multi_line` uses one colored line per series with visible point markers at each category.
+4. `grouped_lollipop` uses grouped colored lollipop stems/points per category.
+5. Every multiseries chart reserves a right-side legend for the series labels/colors.
 
 ## 6) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.

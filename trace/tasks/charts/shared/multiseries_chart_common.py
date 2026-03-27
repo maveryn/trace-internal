@@ -21,6 +21,7 @@ from .labeled_chart_common import (
 
 SUPPORTED_MULTISERIES_CHART_SCENE_VARIANTS: Tuple[str, ...] = (
     "grouped_bar",
+    "grouped_horizontal_bar",
     "multi_line",
     "grouped_lollipop",
 )

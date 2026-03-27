@@ -40,7 +40,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
 8. Single-series chart tasks use `scene_variant` values `area`, `bar`, `horizontal_bar`, `line`, `scatter`, `dot_plot`, and `lollipop`.
 9. `task_charts_statistics_summary_label`, `task_charts_counting_value_count`, and `task_charts_readout_subset_value` additionally support `pie` and `donut` as composition-style scene variants with percentage slices and a right-side legend.
 10. Those same three chart tasks also support `radar` as a spoke-and-polygon scene variant with printed point values near the radar markers.
-11. `task_charts_multiseries_pairwise_comparison_count` supports `grouped_bar`, `multi_line`, and `grouped_lollipop`.
+11. `task_charts_multiseries_pairwise_comparison_count` supports `grouped_bar`, `grouped_horizontal_bar`, `multi_line`, and `grouped_lollipop`.
 12. Keep the broader chart-type universe in `CHART_DOMAIN_PLAN.md` and the concrete active contract in `CHART_TASK_SETUP.md`; do not reintroduce `histogram` unless it returns with true numeric-bin semantics distinct from `bar`.
 
 ## Planned geometry measurement variants

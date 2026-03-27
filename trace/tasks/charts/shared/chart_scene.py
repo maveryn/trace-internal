@@ -29,6 +29,7 @@ SUPPORTED_CHART_SCENE_VARIANTS: Tuple[str, ...] = (
 
 SUPPORTED_MULTISERIES_CHART_SCENE_VARIANTS: Tuple[str, ...] = (
     "grouped_bar",
+    "grouped_horizontal_bar",
     "multi_line",
     "grouped_lollipop",
 )
@@ -1210,39 +1211,74 @@ def render_multiseries_chart_scene(
     axis_color = tuple(int(value) for value in render_params.axis_color_rgb)
     grid_color = tuple(int(value) for value in render_params.grid_color_rgb)
 
-    for tick_value in y_ticks:
-        y_px = _tick_y(
-            int(tick_value),
-            y_axis_max=int(y_axis_max),
-            plot_top=int(plot_top),
-            plot_bottom=int(plot_bottom),
-        )
-        draw.line(
-            [(float(plot_left), float(y_px)), (float(chart_right), float(y_px))],
-            fill=grid_color,
-            width=int(render_params.grid_line_width_px),
-        )
-        draw.line(
-            [
-                (float(plot_left) - float(render_params.tick_length_px), float(y_px)),
-                (float(plot_left), float(y_px)),
-            ],
-            fill=axis_color,
-            width=int(render_params.axis_line_width_px),
-        )
-        tick_center = (
-            float(plot_left) - float(render_params.tick_length_px) - 18.0,
-            float(y_px),
-        )
-        draw_text_centered(
-            draw,
-            text=str(tick_value),
-            center=tick_center,
-            font=tick_font,
-            fill=render_params.text_color_rgb,
-            stroke_fill=render_params.text_stroke_rgb,
-            stroke_width=max(1, int(round(0.06 * float(render_params.tick_font_size_px)))),
-        )
+    if selected_variant == "grouped_horizontal_bar":
+        for tick_value in y_ticks:
+            x_px = _tick_x(
+                int(tick_value),
+                x_axis_max=int(y_axis_max),
+                plot_left=int(plot_left),
+                plot_right=int(chart_right),
+            )
+            draw.line(
+                [(float(x_px), float(plot_top)), (float(x_px), float(plot_bottom))],
+                fill=grid_color,
+                width=int(render_params.grid_line_width_px),
+            )
+            draw.line(
+                [
+                    (float(x_px), float(plot_bottom)),
+                    (float(x_px), float(plot_bottom) + float(render_params.tick_length_px)),
+                ],
+                fill=axis_color,
+                width=int(render_params.axis_line_width_px),
+            )
+            tick_center = (
+                float(x_px),
+                float(plot_bottom) + float(render_params.tick_length_px) + 18.0,
+            )
+            draw_text_centered(
+                draw,
+                text=str(tick_value),
+                center=tick_center,
+                font=tick_font,
+                fill=render_params.text_color_rgb,
+                stroke_fill=render_params.text_stroke_rgb,
+                stroke_width=max(1, int(round(0.06 * float(render_params.tick_font_size_px)))),
+            )
+    else:
+        for tick_value in y_ticks:
+            y_px = _tick_y(
+                int(tick_value),
+                y_axis_max=int(y_axis_max),
+                plot_top=int(plot_top),
+                plot_bottom=int(plot_bottom),
+            )
+            draw.line(
+                [(float(plot_left), float(y_px)), (float(chart_right), float(y_px))],
+                fill=grid_color,
+                width=int(render_params.grid_line_width_px),
+            )
+            draw.line(
+                [
+                    (float(plot_left) - float(render_params.tick_length_px), float(y_px)),
+                    (float(plot_left), float(y_px)),
+                ],
+                fill=axis_color,
+                width=int(render_params.axis_line_width_px),
+            )
+            tick_center = (
+                float(plot_left) - float(render_params.tick_length_px) - 18.0,
+                float(y_px),
+            )
+            draw_text_centered(
+                draw,
+                text=str(tick_value),
+                center=tick_center,
+                font=tick_font,
+                fill=render_params.text_color_rgb,
+                stroke_fill=render_params.text_stroke_rgb,
+                stroke_width=max(1, int(round(0.06 * float(render_params.tick_font_size_px)))),
+            )
 
     draw.line(
         [(float(plot_left), float(plot_top)), (float(plot_left), float(plot_bottom))],
@@ -1255,25 +1291,43 @@ def render_multiseries_chart_scene(
         width=int(render_params.axis_line_width_px),
     )
 
-    category_centers = _slot_centers(
-        count=len(categories),
-        plot_left=int(plot_left),
-        plot_right=int(chart_right),
-    )
-    slot_width = float(max(1.0, (float(chart_right) - float(plot_left)) / max(1, len(categories))))
-    # Leave more whitespace between adjacent category groups so dense
-    # multiseries charts remain readable at the upper category-count range.
-    group_inner_width = float(slot_width * _MULTISERIES_GROUP_WIDTH_FRACTION)
-    subgroup_width = float(group_inner_width / max(1, len(series_list)))
-    bar_width = float(max(8.0, float(render_params.bar_width_fraction) * float(subgroup_width)))
+    if selected_variant == "grouped_horizontal_bar":
+        category_centers = _axis_slot_centers(
+            count=len(categories),
+            start_px=int(plot_top),
+            end_px=int(plot_bottom),
+        )
+        slot_height = float(max(1.0, (float(plot_bottom) - float(plot_top)) / max(1, len(categories))))
+        group_inner_height = float(slot_height * _MULTISERIES_GROUP_WIDTH_FRACTION)
+        subgroup_height = float(group_inner_height / max(1, len(series_list)))
+        bar_height = float(max(8.0, float(render_params.bar_width_fraction) * float(subgroup_height)))
+    else:
+        category_centers = _slot_centers(
+            count=len(categories),
+            plot_left=int(plot_left),
+            plot_right=int(chart_right),
+        )
+        slot_width = float(max(1.0, (float(chart_right) - float(plot_left)) / max(1, len(categories))))
+        # Leave more whitespace between adjacent category groups so dense
+        # multiseries charts remain readable at the upper category-count range.
+        group_inner_width = float(slot_width * _MULTISERIES_GROUP_WIDTH_FRACTION)
+        subgroup_width = float(group_inner_width / max(1, len(series_list)))
+        bar_width = float(max(8.0, float(render_params.bar_width_fraction) * float(subgroup_width)))
 
     category_label_meta: Dict[str, Dict[str, List[float]]] = {}
     for category_rank, category_label in categories:
-        category_center_x = float(category_centers[int(category_rank)])
-        label_center = (
-            float(category_center_x),
-            float(plot_bottom) + float(render_params.tick_length_px) + 18.0,
-        )
+        if selected_variant == "grouped_horizontal_bar":
+            category_center_y = float(category_centers[int(category_rank)])
+            label_center = (
+                float(plot_left) - float(max(20, int(render_params.label_font_size_px) + 8)),
+                float(category_center_y),
+            )
+        else:
+            category_center_x = float(category_centers[int(category_rank)])
+            label_center = (
+                float(category_center_x),
+                float(plot_bottom) + float(render_params.tick_length_px) + 18.0,
+            )
         draw_text_centered(
             draw,
             text=str(category_label),
@@ -1300,8 +1354,12 @@ def render_multiseries_chart_scene(
     }
 
     for category_rank, category_label in categories:
-        category_center_x = float(category_centers[int(category_rank)])
-        group_left = float(category_center_x) - 0.5 * float(group_inner_width)
+        if selected_variant == "grouped_horizontal_bar":
+            category_center_y = float(category_centers[int(category_rank)])
+            group_top = float(category_center_y) - 0.5 * float(group_inner_height)
+        else:
+            category_center_x = float(category_centers[int(category_rank)])
+            group_left = float(category_center_x) - 0.5 * float(group_inner_width)
         for series_rank, series_label in series_list:
             mark = marks_by_key[(int(category_rank), int(series_rank))]
             fill_rgb = (
@@ -1316,14 +1374,29 @@ def render_multiseries_chart_scene(
             )
             if selected_variant == "multi_line":
                 x_center = float(category_center_x)
+                y_center = _tick_y(
+                    int(mark.value),
+                    y_axis_max=int(y_axis_max),
+                    plot_top=int(plot_top),
+                    plot_bottom=int(plot_bottom),
+                )
+            elif selected_variant == "grouped_horizontal_bar":
+                y_center = float(group_top) + (float(series_rank) + 0.5) * float(subgroup_height)
+                x_extent = _tick_x(
+                    int(mark.value),
+                    x_axis_max=int(y_axis_max),
+                    plot_left=int(plot_left),
+                    plot_right=int(chart_right),
+                )
+                x_center = float(plot_left) + 0.5 * float(x_extent - float(plot_left))
             else:
                 x_center = float(group_left) + (float(series_rank) + 0.5) * float(subgroup_width)
-            y_center = _tick_y(
-                int(mark.value),
-                y_axis_max=int(y_axis_max),
-                plot_top=int(plot_top),
-                plot_bottom=int(plot_bottom),
-            )
+                y_center = _tick_y(
+                    int(mark.value),
+                    y_axis_max=int(y_axis_max),
+                    plot_top=int(plot_top),
+                    plot_bottom=int(plot_bottom),
+                )
 
             if selected_variant == "grouped_bar":
                 mark_bbox = (
@@ -1331,6 +1404,13 @@ def render_multiseries_chart_scene(
                     float(y_center),
                     float(x_center + 0.5 * float(bar_width)),
                     float(plot_bottom),
+                )
+            elif selected_variant == "grouped_horizontal_bar":
+                mark_bbox = (
+                    float(plot_left),
+                    float(y_center - 0.5 * float(bar_height)),
+                    float(x_extent),
+                    float(y_center + 0.5 * float(bar_height)),
                 )
             else:
                 point_radius = float(render_params.point_radius_px)
@@ -1372,7 +1452,7 @@ def render_multiseries_chart_scene(
         fill_rgb = tuple(int(channel) for channel in record["fill_rgb"])
         outline_rgb = tuple(int(channel) for channel in record["outline_rgb"])
         x_center, y_center = record["mark_center_px"]
-        if selected_variant == "grouped_bar":
+        if selected_variant in {"grouped_bar", "grouped_horizontal_bar"}:
             draw.rectangle(
                 record["mark_bbox_px"],
                 fill=fill_rgb,
@@ -1491,7 +1571,7 @@ def render_multiseries_chart_scene(
         entities.append(
             {
                 "entity_id": str(mark_trace["entity_id"]),
-                "entity_type": "bar" if selected_variant == "grouped_bar" else "point",
+                "entity_type": "bar" if selected_variant in {"grouped_bar", "grouped_horizontal_bar"} else "point",
                 "attrs": {
                     "category_label": str(category_label),
                     "series_label": str(record["series_label"]),

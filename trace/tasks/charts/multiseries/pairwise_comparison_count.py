@@ -159,6 +159,7 @@ class ChartsMultiseriesPairwiseComparisonCountTask:
                 "json_output_contract_answer_only",
                 "answer_hint",
                 "object_description_grouped_bar",
+                "object_description_grouped_horizontal_bar",
                 "object_description_multi_line",
                 "object_description_grouped_lollipop",
                 "evidence_hint_series_a_gt_b_count",

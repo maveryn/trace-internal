@@ -26,10 +26,11 @@ These are the chart types we expect to support most naturally across multiple ch
 8. `scatter`
 9. `dot_plot`
 10. `lollipop`
-11. `bubble`
-12. `pie`
-13. `donut`
-14. `heatmap`
+11. `radar`
+12. `bubble`
+13. `pie`
+14. `donut`
+15. `heatmap`
 
 ### Additional chart types we want to keep on the long-term consideration list
 These are valid future targets, but they are not part of the initial implementation scope yet.
@@ -81,9 +82,10 @@ These are the first chart variants we currently plan to support across the activ
 4. `donut`
 5. `horizontal_bar`
 6. `line`
-7. `scatter`
-8. `dot_plot`
-9. `lollipop`
+7. `radar`
+8. `scatter`
+9. `dot_plot`
+10. `lollipop`
 
 Note:
 1. `pie` and `donut` are composition-style chart variants: slices use distinct colors, the legend on the right maps colors to labels, and the numeric contract uses printed percentages rather than raw integer values.

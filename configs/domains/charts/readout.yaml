@@ -15,6 +15,7 @@ generation:
       bar: 1.0
       line: 1.0
       scatter: 1.0
+      radar: 1.0
       pie: 1.0
       donut: 1.0
       horizontal_bar: 1.0
@@ -67,6 +68,7 @@ prompt:
     object_description_horizontal_bar: a labeled horizontal bar chart. Each bar's numeric length can be read from the horizontal axis
     object_description_line: a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis
     object_description_scatter: a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis
+    object_description_radar: a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points
     object_description_dot_plot: a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis
     object_description_lollipop: a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis
     json_example_sum_two: '{"evidence":[7,11],"answer":18}'

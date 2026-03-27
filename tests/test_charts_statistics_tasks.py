@@ -146,6 +146,8 @@ def test_chart_statistics_supports_additional_scene_variants() -> None:
         task.generate(9215, params={"task_variant": "max", "scene_variant": "pie"}, max_attempts=10)
     with pytest.raises(ValueError):
         task.generate(9216, params={"task_variant": "max", "scene_variant": "donut"}, max_attempts=10)
+    with pytest.raises(ValueError):
+        task.generate(9217, params={"task_variant": "max", "scene_variant": "radar"}, max_attempts=10)
 
 
 def test_chart_statistics_prompt_examples_match_selected_variant() -> None:
@@ -259,7 +261,7 @@ def test_chart_statistics_summary_label_task_is_deterministic() -> None:
 def test_chart_statistics_summary_label_supports_additional_scene_variants() -> None:
     task = ChartsStatisticsSummaryLabelTask()
     prompts = {}
-    for seed, scene_variant in enumerate(("area", "horizontal_bar", "dot_plot", "lollipop", "pie", "donut"), start=9660):
+    for seed, scene_variant in enumerate(("area", "horizontal_bar", "dot_plot", "lollipop", "pie", "donut", "radar"), start=9660):
         out = task.generate(
             seed,
             params={"task_variant": "argmax", "scene_variant": scene_variant},
@@ -273,6 +275,8 @@ def test_chart_statistics_summary_label_supports_additional_scene_variants() -> 
     assert "legend on the right" in prompts["pie"]
     assert "percentages" in prompts["donut"]
     assert "legend on the right" in prompts["donut"]
+    assert "spoke per label" in prompts["radar"]
+    assert "printed values near those points" in prompts["radar"]
 
 
 def test_chart_statistics_summary_label_pie_caps_default_mark_count() -> None:
@@ -298,6 +302,13 @@ def test_chart_statistics_pie_and_donut_use_distinct_slice_colors_and_legend() -
         assert len(fill_colors) >= 3
         assert all("legend_swatch_bbox_px" in entity["attrs"] for entity in entities)
         assert all("percentage_center_px" in entity["attrs"] for entity in entities)
+
+
+def test_chart_statistics_summary_label_radar_caps_default_mark_count() -> None:
+    task = ChartsStatisticsSummaryLabelTask()
+    out = task.generate(9688, params={"task_variant": "argmax", "scene_variant": "radar"}, max_attempts=10)
+    assert 5 <= int(out.trace_payload["execution_trace"]["mark_count"]) <= 7
+    assert all("value_center_px" in entity["attrs"] for entity in out.trace_payload["scene_ir"]["entities"])
 
 
 def test_integer_evidence_type_is_registered_for_chart_label_tasks() -> None:

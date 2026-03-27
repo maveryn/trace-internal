@@ -18,6 +18,7 @@
    - `donut`
    - `horizontal_bar`
    - `line`
+   - `radar`
    - `scatter`
    - `dot_plot`
    - `lollipop`
@@ -35,10 +36,12 @@
    - vertical bar charts count bar heights,
    - pie/donut charts count the percentages printed on the slices,
    - horizontal bar charts count bar lengths on the horizontal axis,
+   - radar charts count the printed point values near the radar polygon markers,
    - line/scatter/dot-plot/lollipop charts count plotted point `y` values.
 6. Generation guarantees:
    - charts use `5..10` labeled marks by default,
    - pie/donut charts tighten the effective mark-count support to `5..8` for readability,
+   - radar charts tighten the effective mark-count support to `5..7` for readability,
    - answer counts are target-balanced over the default support `0..10`,
    - `above_threshold` uses strict `>` comparisons,
    - `below_threshold` uses strict `<` comparisons,
@@ -88,9 +91,10 @@
 1. Background and post-image noise use the merged charts-domain visual defaults from `configs/domains/charts/base.yaml`.
 2. V1 charts use clean light solid backgrounds only.
 3. Axis-based chart variants render an explicit integer-valued axis scaffold; `pie` and `donut` render multicolor slice geometry with a legend on the right and printed percentages on the slices instead of axes.
-4. Labels are drawn on bars, near points, or in the pie/donut legend, depending on `scene_variant`.
-5. The chart frame is rectangular and uses a fixed canvas in v1 rather than dynamic canvas sizing.
-6. Mark fill/outline colors are sampled once per instance, constrained to stay visually separated from the white/light chart background, and recorded in trace/render metadata.
+4. `radar` renders one spoke per label, concentric guide rings, a connected polygon, and printed per-point values near the markers.
+5. Labels are drawn on bars, near points, in the pie/donut legend, or around the radar perimeter depending on `scene_variant`.
+6. The chart frame is rectangular and uses a fixed canvas in v1 rather than dynamic canvas sizing.
+7. Axis-based and radar scenes sample one mark fill/outline color per instance; pie/donut scenes sample one distinct color per slice. All sampled colors stay visually separated from the white/light chart background and are recorded in trace/render metadata.
 
 ## 6) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.

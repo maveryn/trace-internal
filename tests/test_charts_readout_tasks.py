@@ -88,7 +88,7 @@ def test_chart_readout_line_and_scatter_prompts_mention_y_values() -> None:
 def test_chart_readout_supports_additional_scene_variants() -> None:
     task = ChartsReadoutSubsetValueTask()
     prompts = {}
-    for seed, scene_variant in enumerate(("area", "horizontal_bar", "dot_plot", "lollipop", "pie", "donut"), start=10034):
+    for seed, scene_variant in enumerate(("area", "horizontal_bar", "dot_plot", "lollipop", "pie", "donut", "radar"), start=10034):
         out = task.generate(
             seed,
             params={"task_variant": "sum_two", "scene_variant": scene_variant},
@@ -105,6 +105,8 @@ def test_chart_readout_supports_additional_scene_variants() -> None:
     assert "legend on the right" in prompts["pie"]
     assert "percentages" in prompts["donut"]
     assert "legend on the right" in prompts["donut"]
+    assert "spoke per label" in prompts["radar"]
+    assert "printed values near those points" in prompts["radar"]
 
 
 def test_chart_readout_prompt_examples_match_selected_variant() -> None:
@@ -174,6 +176,13 @@ def test_chart_readout_pie_and_donut_use_distinct_slice_colors() -> None:
             for entity in out.trace_payload["scene_ir"]["entities"]
         }
         assert len(fill_colors) >= 3
+
+
+def test_chart_readout_radar_caps_default_mark_count() -> None:
+    task = ChartsReadoutSubsetValueTask()
+    out = task.generate(10094, params={"task_variant": "sum_two", "scene_variant": "radar"}, max_attempts=10)
+    assert 5 <= int(out.trace_payload["execution_trace"]["mark_count"]) <= 7
+    assert all("value_center_px" in entity["attrs"] for entity in out.trace_payload["scene_ir"]["entities"])
 
 
 def test_chart_readout_registers_integer_list_evidence() -> None:

@@ -56,7 +56,7 @@ _TARGET_ANSWER_RANGES: Dict[str, Tuple[int, int]] = {
 _SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = tuple(
     str(scene_variant)
     for scene_variant in SUPPORTED_LABELED_CHART_SCENE_VARIANTS
-    if not is_pie_like_scene_variant(str(scene_variant))
+    if not is_pie_like_scene_variant(str(scene_variant)) and str(scene_variant) != "radar"
 )
 
 _DEFAULTS = LabeledChartDefaults()
@@ -182,6 +182,7 @@ class ChartsStatisticsSummaryValueTask:
                 "object_description_horizontal_bar",
                 "object_description_line",
                 "object_description_scatter",
+                "object_description_radar",
                 "object_description_dot_plot",
                 "object_description_lollipop",
                 "evidence_hint_max",

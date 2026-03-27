@@ -176,6 +176,7 @@ class ChartsStatisticsSummaryLabelTask:
                 "object_description_horizontal_bar",
                 "object_description_line",
                 "object_description_scatter",
+                "object_description_radar",
                 "object_description_dot_plot",
                 "object_description_lollipop",
                 "evidence_hint_argmax",

@@ -5,7 +5,7 @@
     },
     "checks": {
       "max_answer_frequency": {
-        "observed": 0.08,
+        "observed": 0.07,
         "pass": true,
         "threshold": 0.25
       },
@@ -21,22 +21,26 @@
       }
     },
     "five_bin_numeric": null,
-    "max_answer_count": 8,
-    "max_answer_frequency": 0.08,
+    "max_answer_count": 7,
+    "max_answer_frequency": 0.07,
     "pass": true,
     "sample_count": 100,
     "top_answers": [
       {
-        "answer_label": "F",
-        "count": 8
-      },
-      {
-        "answer_label": "N",
-        "count": 8
-      },
-      {
-        "answer_label": "L",
+        "answer_label": "R",
         "count": 7
+      },
+      {
+        "answer_label": "B",
+        "count": 6
+      },
+      {
+        "answer_label": "C",
+        "count": 6
+      },
+      {
+        "answer_label": "U",
+        "count": 6
       },
       {
         "answer_label": "Y",
@@ -47,11 +51,15 @@
         "count": 5
       },
       {
-        "answer_label": "R",
+        "answer_label": "J",
         "count": 5
       },
       {
-        "answer_label": "U",
+        "answer_label": "N",
+        "count": 5
+      },
+      {
+        "answer_label": "S",
         "count": 5
       },
       {
@@ -59,27 +67,15 @@
         "count": 5
       },
       {
-        "answer_label": "Z",
+        "answer_label": "W",
         "count": 5
       },
       {
-        "answer_label": "B",
+        "answer_label": "F",
         "count": 4
       },
       {
-        "answer_label": "C",
-        "count": 4
-      },
-      {
-        "answer_label": "D",
-        "count": 4
-      },
-      {
-        "answer_label": "J",
-        "count": 4
-      },
-      {
-        "answer_label": "S",
+        "answer_label": "L",
         "count": 4
       },
       {
@@ -87,8 +83,16 @@
         "count": 4
       },
       {
-        "answer_label": "W",
+        "answer_label": "X",
         "count": 4
+      },
+      {
+        "answer_label": "E",
+        "count": 3
+      },
+      {
+        "answer_label": "H",
+        "count": 3
       },
       {
         "answer_label": "K",
@@ -103,11 +107,11 @@
         "count": 3
       },
       {
-        "answer_label": "X",
-        "count": 3
+        "answer_label": "A",
+        "count": 2
       },
       {
-        "answer_label": "A",
+        "answer_label": "D",
         "count": 2
       },
       {
@@ -115,12 +119,8 @@
         "count": 2
       },
       {
-        "answer_label": "E",
-        "count": 1
-      },
-      {
-        "answer_label": "H",
-        "count": 1
+        "answer_label": "Z",
+        "count": 2
       }
     ],
     "unique_answers": 24
@@ -130,28 +130,30 @@
     "scene_variant": {
       "expected_conflict": false,
       "expected_probabilities": {
-        "area": 0.1111111111111111,
-        "bar": 0.1111111111111111,
-        "donut": 0.1111111111111111,
-        "dot_plot": 0.1111111111111111,
-        "horizontal_bar": 0.1111111111111111,
-        "line": 0.1111111111111111,
-        "lollipop": 0.1111111111111111,
-        "pie": 0.1111111111111111,
-        "scatter": 0.1111111111111111
+        "area": 0.1,
+        "bar": 0.1,
+        "donut": 0.1,
+        "dot_plot": 0.1,
+        "horizontal_bar": 0.1,
+        "line": 0.1,
+        "lollipop": 0.1,
+        "pie": 0.1,
+        "radar": 0.1,
+        "scatter": 0.1
       },
       "expected_source": "execution_trace",
-      "max_observed_frequency": 0.15,
+      "max_observed_frequency": 0.18,
       "observed_counts": {
-        "area": 15,
-        "bar": 10,
-        "donut": 12,
-        "dot_plot": 13,
-        "horizontal_bar": 10,
-        "line": 11,
-        "lollipop": 11,
-        "pie": 7,
-        "scatter": 11
+        "area": 12,
+        "bar": 14,
+        "donut": 7,
+        "dot_plot": 18,
+        "horizontal_bar": 8,
+        "line": 6,
+        "lollipop": 12,
+        "pie": 5,
+        "radar": 10,
+        "scatter": 8
       },
       "sample_count": 100
     },

@@ -209,6 +209,7 @@ def test_charts_statistics_defaults_loaded() -> None:
         "line",
         "lollipop",
         "pie",
+        "radar",
         "scatter",
     ]
 
@@ -277,6 +278,7 @@ def test_charts_counting_defaults_loaded() -> None:
         "line",
         "lollipop",
         "pie",
+        "radar",
         "scatter",
     ]
 
@@ -328,6 +330,7 @@ def test_charts_readout_defaults_loaded() -> None:
         "line",
         "lollipop",
         "pie",
+        "radar",
         "scatter",
     ]
 

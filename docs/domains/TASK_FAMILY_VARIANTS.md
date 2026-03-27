@@ -38,8 +38,9 @@ Define how we split tasks into reusable families so each dataset slice stays com
 6. `task_charts_readout_subset_value` uses semantic `task_variant` values `sum_two`, `difference_two_abs`, `max_two`, `min_two`, and `mean_two`.
 7. Active chart tasks all use `scene_variant` values `area`, `bar`, `horizontal_bar`, `line`, `scatter`, `dot_plot`, and `lollipop`.
 8. `task_charts_statistics_summary_label`, `task_charts_counting_value_count`, and `task_charts_readout_subset_value` additionally support `pie` and `donut` as composition-style scene variants with percentage slices and a right-side legend.
-9. `histogram` and `heatmap` remain under consideration for later chart-family support after the first rollout stabilizes.
-10. Keep the broader chart-type universe in `CHART_DOMAIN_PLAN.md` and the concrete v1 contract in `CHART_TASK_SETUP.md`.
+9. Those same three chart tasks also support `radar` as a spoke-and-polygon scene variant with printed point values near the radar markers.
+10. `histogram` and `heatmap` remain under consideration for later chart-family support after the first rollout stabilizes.
+11. Keep the broader chart-type universe in `CHART_DOMAIN_PLAN.md` and the concrete v1 contract in `CHART_TASK_SETUP.md`.
 
 ## Planned geometry measurement variants
 1. **Angle measurement**

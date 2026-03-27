@@ -19,6 +19,7 @@ SUPPORTED_CHART_SCENE_VARIANTS: Tuple[str, ...] = (
     "bar",
     "line",
     "scatter",
+    "radar",
     "pie",
     "donut",
     "horizontal_bar",
@@ -243,6 +244,24 @@ def _bbox_from_points(points: Sequence[Tuple[float, float]]) -> Tuple[float, flo
     xs = [float(point[0]) for point in points]
     ys = [float(point[1]) for point in points]
     return (float(min(xs)), float(min(ys)), float(max(xs)), float(max(ys)))
+
+
+def _radar_polygon_points(
+    *,
+    center_x: float,
+    center_y: float,
+    radius: float,
+    angles_rad: Sequence[float],
+) -> List[Tuple[float, float]]:
+    """Return polygon vertices for one radar ring or data polygon."""
+
+    return [
+        (
+            float(center_x + (float(radius) * math.cos(float(angle)))),
+            float(center_y + (float(radius) * math.sin(float(angle)))),
+        )
+        for angle in angles_rad
+    ]
 
 
 def _normalize_color(value: Sequence[int], fallback: ChartColor) -> ChartColor:
@@ -500,6 +519,206 @@ def render_labeled_chart_scene(
                 fill=render_params.plot_fill_rgb,
                 outline=render_params.mark_outline_rgb,
                 width=max(1, int(render_params.mark_outline_width_px)),
+            )
+
+        return RenderedChartScene(
+            image=image,
+            mark_traces=tuple(dict(item) for item in mark_traces),
+            entities=tuple(dict(item) for item in entities),
+            plot_bbox_px=tuple(int(value) for value in plot_bbox),
+            y_axis_max=int(y_axis_max),
+            y_ticks=tuple(int(value) for value in y_ticks),
+            scene_variant=str(selected_variant),
+        )
+
+    if selected_variant == "radar":
+        plot_width = float(max(1, int(plot_right) - int(plot_left)))
+        plot_height = float(max(1, int(plot_bottom) - int(plot_top)))
+        center_x = 0.5 * float(plot_left + plot_right)
+        center_y = 0.5 * float(plot_top + plot_bottom)
+        outer_padding = float(max(72.0, float(render_params.label_font_size_px) * 2.2))
+        radius = 0.5 * float(min(plot_width, plot_height)) - float(outer_padding)
+        radius = float(max(120.0, radius))
+        count = len(marks)
+        angles_rad = tuple(
+            float((-math.pi / 2.0) + (2.0 * math.pi * float(index) / float(count)))
+            for index in range(int(count))
+        )
+
+        radar_ring_ticks = sorted(
+            {
+                int(max(1, int(round(float(y_axis_max) * ratio))))
+                for ratio in (1.0 / 3.0, 2.0 / 3.0, 1.0)
+            }
+        )
+
+        for ring_value in radar_ring_ticks:
+            ring_radius = float(radius) * (float(ring_value) / float(max(1, int(y_axis_max))))
+            ring_points = _radar_polygon_points(
+                center_x=float(center_x),
+                center_y=float(center_y),
+                radius=float(ring_radius),
+                angles_rad=angles_rad,
+            )
+            draw.polygon(
+                ring_points,
+                outline=grid_color,
+                width=max(1, int(render_params.grid_line_width_px)),
+            )
+            tick_center = (
+                float(center_x),
+                float(center_y - float(ring_radius)),
+            )
+            tick_center = _clamp_text_center_to_canvas(
+                draw,
+                text=str(ring_value),
+                center=(float(tick_center[0]), float(tick_center[1]) - 12.0),
+                font=tick_font,
+                canvas_width=int(render_params.canvas_width),
+                canvas_height=int(render_params.canvas_height),
+            )
+            draw_text_centered(
+                draw,
+                text=str(ring_value),
+                center=tick_center,
+                font=tick_font,
+                fill=render_params.text_color_rgb,
+                stroke_fill=render_params.text_stroke_rgb,
+                stroke_width=max(1, int(round(0.06 * float(render_params.tick_font_size_px)))),
+            )
+
+        for angle in angles_rad:
+            spoke_end = (
+                float(center_x + (float(radius) * math.cos(float(angle)))),
+                float(center_y + (float(radius) * math.sin(float(angle)))),
+            )
+            draw.line(
+                [(float(center_x), float(center_y)), (float(spoke_end[0]), float(spoke_end[1]))],
+                fill=grid_color,
+                width=max(1, int(render_params.grid_line_width_px)),
+            )
+
+        polygon_points: List[Tuple[float, float]] = []
+        mark_traces: List[Dict[str, Any]] = []
+        entities: List[Dict[str, Any]] = []
+        for index, (mark, angle) in enumerate(zip(marks, angles_rad)):
+            fill_rgb = (
+                tuple(int(channel) for channel in mark.fill_rgb)
+                if isinstance(mark.fill_rgb, tuple)
+                else tuple(int(value) for value in render_params.mark_fill_rgb)
+            )
+            outline_rgb = (
+                tuple(int(channel) for channel in mark.outline_rgb)
+                if isinstance(mark.outline_rgb, tuple)
+                else tuple(int(value) for value in render_params.mark_outline_rgb)
+            )
+            radial_fraction = float(int(mark.value)) / float(max(1, int(y_axis_max)))
+            point_radius = float(radius) * float(radial_fraction)
+            x_center = float(center_x + (float(point_radius) * math.cos(float(angle))))
+            y_center = float(center_y + (float(point_radius) * math.sin(float(angle))))
+            polygon_points.append((float(x_center), float(y_center)))
+
+            point_marker_radius = float(render_params.point_radius_px)
+            ellipse_box = (
+                float(x_center - point_marker_radius),
+                float(y_center - point_marker_radius),
+                float(x_center + point_marker_radius),
+                float(y_center + point_marker_radius),
+            )
+            draw.ellipse(
+                ellipse_box,
+                fill=fill_rgb,
+                outline=outline_rgb,
+                width=int(render_params.mark_outline_width_px),
+            )
+
+            value_center = (
+                float(center_x + (max(18.0, float(point_radius) - 18.0) * math.cos(float(angle)))),
+                float(center_y + (max(18.0, float(point_radius) - 18.0) * math.sin(float(angle)))),
+            )
+            value_center = _clamp_text_center_to_canvas(
+                draw,
+                text=str(mark.value),
+                center=value_center,
+                font=tick_font,
+                canvas_width=int(render_params.canvas_width),
+                canvas_height=int(render_params.canvas_height),
+            )
+            draw_text_centered(
+                draw,
+                text=str(mark.value),
+                center=value_center,
+                font=tick_font,
+                fill=render_params.text_color_rgb,
+                stroke_fill=render_params.text_stroke_rgb,
+                stroke_width=max(1, int(round(0.06 * float(render_params.tick_font_size_px)))),
+            )
+            value_bbox = _text_bbox(draw, text=str(mark.value), center=value_center, font=tick_font)
+
+            label_radius = float(radius) + float(max(28, int(render_params.label_font_size_px) + 8))
+            label_center = (
+                float(center_x + (float(label_radius) * math.cos(float(angle)))),
+                float(center_y + (float(label_radius) * math.sin(float(angle)))),
+            )
+            label_center = _clamp_text_center_to_canvas(
+                draw,
+                text=str(mark.label),
+                center=label_center,
+                font=label_font,
+                canvas_width=int(render_params.canvas_width),
+                canvas_height=int(render_params.canvas_height),
+            )
+            draw_text_centered(
+                draw,
+                text=str(mark.label),
+                center=label_center,
+                font=label_font,
+                fill=render_params.text_color_rgb,
+                stroke_fill=render_params.text_stroke_rgb,
+                stroke_width=int(render_params.label_stroke_width_px),
+            )
+            label_bbox = _text_bbox(draw, text=str(mark.label), center=label_center, font=label_font)
+
+            mark_bbox = [float(value) for value in ellipse_box]
+            mark_trace = {
+                "entity_id": f"mark_{str(mark.label)}",
+                "label": str(mark.label),
+                "value": int(mark.value),
+                "x_rank": int(index),
+                "mark_center_px": [round(float(x_center), 3), round(float(y_center), 3)],
+                "mark_bbox_px": [round(float(value), 3) for value in mark_bbox],
+                "label_center_px": [round(float(label_center[0]), 3), round(float(label_center[1]), 3)],
+                "label_bbox_px": [round(float(value), 3) for value in label_bbox],
+                "value_center_px": [round(float(value_center[0]), 3), round(float(value_center[1]), 3)],
+                "value_bbox_px": [round(float(value), 3) for value in value_bbox],
+                "mark_fill_rgb": [int(channel) for channel in fill_rgb],
+                "mark_outline_rgb": [int(channel) for channel in outline_rgb],
+            }
+            mark_traces.append(mark_trace)
+            entities.append(
+                {
+                    "entity_id": str(mark_trace["entity_id"]),
+                    "entity_type": "point",
+                    "attrs": {
+                        "label": str(mark.label),
+                        "value": int(mark.value),
+                        "x_rank": int(index),
+                        "scene_variant": str(selected_variant),
+                        "mark_center_px": list(mark_trace["mark_center_px"]),
+                        "mark_bbox_px": list(mark_trace["mark_bbox_px"]),
+                        "label_center_px": list(mark_trace["label_center_px"]),
+                        "value_center_px": list(mark_trace["value_center_px"]),
+                        "mark_fill_rgb": list(mark_trace["mark_fill_rgb"]),
+                        "mark_outline_rgb": list(mark_trace["mark_outline_rgb"]),
+                    },
+                }
+            )
+
+        if len(polygon_points) >= 2:
+            draw.line(
+                [*polygon_points, polygon_points[0]],
+                fill=tuple(int(value) for value in render_params.mark_outline_rgb),
+                width=max(1, int(render_params.line_width_px) - 1),
             )
 
         return RenderedChartScene(

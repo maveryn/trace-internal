@@ -162,6 +162,8 @@ def apply_scene_variant_mark_count_cap(
     resolved_max = int(mark_count_max)
     if str(scene_variant) in {"pie", "donut"}:
         resolved_max = min(int(resolved_max), 8)
+    if str(scene_variant) == "radar":
+        resolved_max = min(int(resolved_max), 7)
     if int(resolved_min) > int(resolved_max):
         raise ValueError(f"no feasible mark-count support for scene_variant={scene_variant}")
     return int(resolved_min), int(resolved_max)

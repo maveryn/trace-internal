@@ -335,6 +335,55 @@ def test_charts_distribution_defaults_loaded() -> None:
     assert str(density_prompt["evidence_hint_bimodal_label"]).strip()
 
 
+def test_charts_composition_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("charts", "composition")
+    for section in ("generation", "rendering", "prompt"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["category_count_min"]) == 4
+    assert int(generation_shared["category_count_max"]) == 7
+    assert int(generation_shared["series_count_min"]) == 3
+    assert int(generation_shared["series_count_max"]) == 5
+    assert int(generation_shared["value_min"]) == 4
+    assert int(generation_shared["value_max"]) == 18
+    assert sorted(generation_shared["task_variant_weights"].keys()) == [
+        "combined_share_subset",
+        "stack_segment_value",
+        "stack_total_at_label",
+    ]
+    assert sorted(generation_shared["scene_variant_weights"].keys()) == [
+        "donut",
+        "pie",
+        "stacked_bar",
+        "stacked_horizontal_bar",
+    ]
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_width"]) > 0
+    assert int(render_shared["canvas_height"]) > 0
+    assert int(render_shared["plot_margin_left_px"]) > 0
+    assert int(render_shared["plot_margin_bottom_px"]) > 0
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "charts_composition_v1"
+    assert str(prompt_shared["task_family_key"]).strip() == "composition_chart_value"
+    assert str(prompt_shared["task_key"]).strip() == "subset_value_query"
+    assert str(prompt_shared["object_description_stacked_bar"]).strip()
+    assert str(prompt_shared["object_description_pie"]).strip()
+    assert str(prompt_shared["evidence_hint_stack_segment_value"]).strip()
+    assert str(prompt_shared["json_example_combined_share_subset"]).strip()
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_charts_composition_subset_value",
+    )
+    assert int(generation_defaults["category_count_min"]) == 4
+    assert int(generation_defaults["series_count_max"]) == 5
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip() == "charts_composition_v1"
+
+
 def test_charts_trend_defaults_loaded() -> None:
     cfg = get_task_group_defaults("charts", "trend")
     for section in ("generation", "rendering", "prompt"):

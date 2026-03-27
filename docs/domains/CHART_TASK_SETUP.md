@@ -13,6 +13,8 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
    - `readout`
    - `multiseries`
    - `distribution`
+   - `composition`
+   - `trend`
 3. First concrete statistics tasks:
    - `task_charts_statistics_summary_value`
    - `task_charts_statistics_summary_label`
@@ -26,9 +28,11 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
    - `task_charts_distribution_histogram_count`
    - `task_charts_distribution_boxplot_label`
    - `task_charts_distribution_density_label`
-8. First concrete trend task:
+8. First concrete composition task:
+   - `task_charts_composition_subset_value`
+9. First concrete trend task:
    - `task_charts_trend_structure_value`
-9. First supported single-series chart-type renderings:
+10. First supported single-series chart-type renderings:
    - `area`
    - `bar`
    - `pie`
@@ -39,15 +43,20 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
    - `scatter`
    - `dot_plot`
    - `lollipop`
-10. First supported multiseries chart-type renderings:
+11. First supported multiseries chart-type renderings:
    - `grouped_bar`
    - `grouped_horizontal_bar`
    - `multi_line`
    - `grouped_lollipop`
-11. First supported distribution chart-type renderings:
+12. First supported distribution chart-type renderings:
    - `histogram`
    - `boxplot`
    - `violin`
+13. First supported composition chart-type renderings:
+   - `stacked_bar`
+   - `stacked_horizontal_bar`
+   - `pie`
+   - `donut`
 
 ## Taxonomy
 1. Keep the normal TRACE split:
@@ -67,11 +76,14 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
 6. For the first distribution family:
    - `task_group = distribution`
    - active tasks: `histogram_count`, `boxplot_label`, `density_label`
-7. For the first trend family:
+7. For the first composition family:
+   - `task_group = composition`
+   - active task: `subset_value`
+8. For the first trend family:
    - `task_group = trend`
    - active task: `structure_value`
-8. The semantic query type is the public `task_variant`.
-9. The chart type is the visual `scene_variant`.
+9. The semantic query type is the public `task_variant`.
+10. The chart type is the visual `scene_variant`.
 
 ### V1 variant axes
 1. `task_variant`:
@@ -102,7 +114,12 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
    - `histogram`
    - `boxplot`
    - `violin`
-5. Active trend chart tasks currently use these `scene_variant` values:
+5. Active composition chart tasks currently use these `scene_variant` values:
+   - `stacked_bar`
+   - `stacked_horizontal_bar`
+   - `pie`
+   - `donut`
+6. Active trend chart tasks currently use these `scene_variant` values:
    - `area`
    - `bar`
    - `horizontal_bar`
@@ -116,20 +133,25 @@ Note:
 3. `task_charts_statistics_summary_value` currently stays on the axis-based scene variants `area|bar|horizontal_bar|line|scatter|dot_plot|lollipop`; `pie`, `donut`, and `radar` remain enabled only on the tasks where their semantics still fit cleanly.
 4. `task_charts_multiseries_pairwise_comparison_count` is the first active multiseries chart task; it uses `2..3` named series, `5..10` labeled categories, category-label `label_set` evidence, and the multiseries scene variants `grouped_bar|grouped_horizontal_bar|multi_line|grouped_lollipop`.
 5. The active distribution tasks use fixed `scene_variant` values `histogram`, `boxplot`, and `violin` instead of sampling across the broader chart-variant pool.
-6. `task_charts_trend_structure_value` is the first active trend chart task; it uses ordered single-series charts only and currently supports `area|bar|horizontal_bar|line|dot_plot|lollipop`.
+6. `task_charts_composition_subset_value` is the first active composition chart task; it uses stacked scenes for `stack_total_at_label|stack_segment_value` and pie/donut scenes for `combined_share_subset`, with ordered `integer_list` evidence over the relevant segment or slice values.
+7. `task_charts_trend_structure_value` is the first active trend chart task; it uses ordered single-series charts only and currently supports `area|bar|horizontal_bar|line|dot_plot|lollipop`.
 
 ## Scene contract
 1. One chart per image.
 2. Active single-series chart tasks use one data series per chart in v1.
 3. Active multiseries chart tasks use `2..3` named series and `5..10` labeled categories in v1.
-4. Use a clean light background with one chart frame/axis scaffold.
-5. Every single-series chart mark must have one visible unique label.
-6. In multiseries charts, every category must have one visible unique uppercase label and every series must have one visible legend label.
-7. Labels remain the canonical prompt-facing identities for both mark-level and category-level evidence.
-8. Sample one random mark color per instance and use it consistently across all bars/points in that single-series chart.
-9. In v1, that mark color should be at least Lab distance `40` from white/light chart backgrounds.
-10. Pie-like scenes (`pie`, `donut`) are the exception: they use a distinct sampled color per slice and a legend on the right that maps slice colors to labels.
-11. Distribution scenes use their own semantics:
+4. Active composition chart tasks use one legend label per segment color and, for stacked scenes, one stack per category.
+5. Use a clean light background with one chart frame/axis scaffold.
+6. Every single-series chart mark must have one visible unique label.
+7. In multiseries charts, every category must have one visible unique uppercase label and every series must have one visible legend label.
+8. Labels remain the canonical prompt-facing identities for both mark-level and category-level evidence.
+9. Sample one random mark color per instance and use it consistently across all bars/points in that single-series chart.
+10. In v1, that mark color should be at least Lab distance `40` from white/light chart backgrounds.
+11. Pie-like scenes (`pie`, `donut`) are the exception: they use a distinct sampled color per slice and a legend on the right that maps slice colors to labels.
+12. Composition scenes use their own semantics:
+   - stacked charts render one stack per category and print integer segment values inside the segments,
+   - pie/donut scenes render positive integer percentages that sum to `100`.
+13. Distribution scenes use their own semantics:
    - histograms render contiguous numeric interval bins and treat bar height as count/frequency,
    - boxplots render quartile/whisker summaries per labeled category.
 

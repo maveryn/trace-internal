@@ -1,0 +1,333 @@
+{
+  "answer_distribution": {
+    "answer_type_counts": {
+      "integer": 100
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.05,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": 0.42,
+        "pass": null,
+        "status": "reported_not_gated_numeric_answers"
+      },
+      "min_unique_answers": {
+        "observed": 54,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": {
+      "bin_count": 5,
+      "bins": [
+        {
+          "bin_id": 0,
+          "count": 42,
+          "label": "[4, 21)"
+        },
+        {
+          "bin_id": 1,
+          "count": 13,
+          "label": "[21, 38)"
+        },
+        {
+          "bin_id": 2,
+          "count": 10,
+          "label": "[38, 55)"
+        },
+        {
+          "bin_id": 3,
+          "count": 17,
+          "label": "[55, 72)"
+        },
+        {
+          "bin_id": 4,
+          "count": 18,
+          "label": "[72, 89]"
+        }
+      ],
+      "max_bin_count": 42,
+      "max_bin_frequency": 0.42,
+      "range_max": 89.0,
+      "range_min": 4.0
+    },
+    "max_answer_count": 5,
+    "max_answer_frequency": 0.05,
+    "pass": true,
+    "sample_count": 100,
+    "top_answers": [
+      {
+        "answer_label": "12",
+        "count": 5
+      },
+      {
+        "answer_label": "10",
+        "count": 4
+      },
+      {
+        "answer_label": "17",
+        "count": 4
+      },
+      {
+        "answer_label": "18",
+        "count": 4
+      },
+      {
+        "answer_label": "6",
+        "count": 4
+      },
+      {
+        "answer_label": "15",
+        "count": 3
+      },
+      {
+        "answer_label": "16",
+        "count": 3
+      },
+      {
+        "answer_label": "49",
+        "count": 3
+      },
+      {
+        "answer_label": "60",
+        "count": 3
+      },
+      {
+        "answer_label": "8",
+        "count": 3
+      },
+      {
+        "answer_label": "9",
+        "count": 3
+      },
+      {
+        "answer_label": "13",
+        "count": 2
+      },
+      {
+        "answer_label": "22",
+        "count": 2
+      },
+      {
+        "answer_label": "25",
+        "count": 2
+      },
+      {
+        "answer_label": "30",
+        "count": 2
+      },
+      {
+        "answer_label": "31",
+        "count": 2
+      },
+      {
+        "answer_label": "43",
+        "count": 2
+      },
+      {
+        "answer_label": "5",
+        "count": 2
+      },
+      {
+        "answer_label": "55",
+        "count": 2
+      },
+      {
+        "answer_label": "57",
+        "count": 2
+      },
+      {
+        "answer_label": "59",
+        "count": 2
+      },
+      {
+        "answer_label": "62",
+        "count": 2
+      },
+      {
+        "answer_label": "7",
+        "count": 2
+      },
+      {
+        "answer_label": "73",
+        "count": 2
+      },
+      {
+        "answer_label": "76",
+        "count": 2
+      },
+      {
+        "answer_label": "79",
+        "count": 2
+      },
+      {
+        "answer_label": "81",
+        "count": 2
+      },
+      {
+        "answer_label": "82",
+        "count": 2
+      },
+      {
+        "answer_label": "89",
+        "count": 2
+      },
+      {
+        "answer_label": "14",
+        "count": 1
+      },
+      {
+        "answer_label": "20",
+        "count": 1
+      },
+      {
+        "answer_label": "23",
+        "count": 1
+      },
+      {
+        "answer_label": "27",
+        "count": 1
+      },
+      {
+        "answer_label": "28",
+        "count": 1
+      },
+      {
+        "answer_label": "35",
+        "count": 1
+      },
+      {
+        "answer_label": "36",
+        "count": 1
+      },
+      {
+        "answer_label": "4",
+        "count": 1
+      },
+      {
+        "answer_label": "42",
+        "count": 1
+      },
+      {
+        "answer_label": "48",
+        "count": 1
+      },
+      {
+        "answer_label": "51",
+        "count": 1
+      },
+      {
+        "answer_label": "52",
+        "count": 1
+      },
+      {
+        "answer_label": "54",
+        "count": 1
+      },
+      {
+        "answer_label": "56",
+        "count": 1
+      },
+      {
+        "answer_label": "58",
+        "count": 1
+      },
+      {
+        "answer_label": "61",
+        "count": 1
+      },
+      {
+        "answer_label": "67",
+        "count": 1
+      },
+      {
+        "answer_label": "70",
+        "count": 1
+      },
+      {
+        "answer_label": "71",
+        "count": 1
+      },
+      {
+        "answer_label": "74",
+        "count": 1
+      },
+      {
+        "answer_label": "75",
+        "count": 1
+      },
+      {
+        "answer_label": "77",
+        "count": 1
+      },
+      {
+        "answer_label": "83",
+        "count": 1
+      },
+      {
+        "answer_label": "84",
+        "count": 1
+      },
+      {
+        "answer_label": "88",
+        "count": 1
+      }
+    ],
+    "unique_answers": 54
+  },
+  "sample_count": 100,
+  "sampling_axes": {
+    "scene_variant": {
+      "expected_conflict": true,
+      "expected_probabilities": {
+        "stacked_bar": 0.5,
+        "stacked_horizontal_bar": 0.5
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.34,
+      "observed_counts": {
+        "donut": 11,
+        "pie": 23,
+        "stacked_bar": 32,
+        "stacked_horizontal_bar": 34
+      },
+      "sample_count": 100
+    },
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "combined_share_subset": 0.3333333333333333,
+        "stack_segment_value": 0.3333333333333333,
+        "stack_total_at_label": 0.3333333333333333
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.37,
+      "observed_counts": {
+        "combined_share_subset": 34,
+        "stack_segment_value": 29,
+        "stack_total_at_label": 37
+      },
+      "sample_count": 100
+    }
+  },
+  "task_id": "task_charts_composition_subset_value",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {
+      "combined_share_subset": 0.3333333333333333,
+      "stack_segment_value": 0.3333333333333333,
+      "stack_total_at_label": 0.3333333333333333
+    },
+    "expected_source": "execution_trace",
+    "has_variants": true,
+    "observed_counts": {
+      "combined_share_subset": 34,
+      "stack_segment_value": 29,
+      "stack_total_at_label": 37
+    },
+    "status": "reported"
+  }
+}

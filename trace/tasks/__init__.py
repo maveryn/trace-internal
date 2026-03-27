@@ -25,6 +25,7 @@ from .icons.counting import color as _task_icons_counting_color
 from .icons.counting import orientation as _task_icons_counting_orientation
 from .icons.counting import type as _task_icons_counting_type
 from .icons.transformation import pair_count as _task_icons_transformation_pair_count
+from .charts.composition import subset_value as _task_charts_composition_subset_value
 from .charts.counting import value_count as _task_charts_counting_value_count
 from .charts.distribution import boxplot_label as _task_charts_distribution_boxplot_label
 from .charts.distribution import density_label as _task_charts_distribution_density_label

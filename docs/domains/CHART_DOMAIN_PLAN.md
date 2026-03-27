@@ -20,20 +20,21 @@ These are the chart types we expect to support most naturally across multiple ch
 2. `horizontal_bar`
 3. `grouped_bar`
 4. `stacked_bar`
-5. `line`
-6. `area`
-7. `multi_line`
-8. `scatter`
-9. `dot_plot`
-10. `lollipop`
-11. `radar`
-12. `bubble`
-13. `pie`
-14. `donut`
-15. `histogram`
-16. `boxplot`
-17. `violin`
-17. `heatmap`
+5. `stacked_horizontal_bar`
+6. `line`
+7. `area`
+8. `multi_line`
+9. `scatter`
+10. `dot_plot`
+11. `lollipop`
+12. `radar`
+13. `bubble`
+14. `pie`
+15. `donut`
+16. `histogram`
+17. `boxplot`
+18. `violin`
+19. `heatmap`
 
 ### Additional chart types we want to keep on the long-term consideration list
 These are valid future targets, but they are not part of the initial implementation scope yet.
@@ -51,7 +52,7 @@ These are valid future targets, but they are not part of the initial implementat
 
 ## Initial implementation target
 
-The first implementation step is now active: `task_charts_statistics_summary_value`, `task_charts_statistics_summary_label`, `task_charts_counting_value_count`, `task_charts_readout_subset_value`, `task_charts_multiseries_pairwise_comparison_count`, `task_charts_distribution_histogram_count`, `task_charts_distribution_boxplot_label`, `task_charts_distribution_density_label`, and `task_charts_trend_structure_value` under `domain=charts`.
+The first implementation step is now active: `task_charts_statistics_summary_value`, `task_charts_statistics_summary_label`, `task_charts_counting_value_count`, `task_charts_readout_subset_value`, `task_charts_multiseries_pairwise_comparison_count`, `task_charts_distribution_histogram_count`, `task_charts_distribution_boxplot_label`, `task_charts_distribution_density_label`, `task_charts_trend_structure_value`, and `task_charts_composition_subset_value` under `domain=charts`.
 
 The concrete v1 contract for the first rollout now lives in `CHART_TASK_SETUP.md`.
 
@@ -100,6 +101,14 @@ These are the active multiseries chart variants we currently support in the `mul
 3. `multi_line`
 4. `grouped_lollipop`
 
+### First active composition chart variants
+These are the active composition-style chart variants we currently support in the `composition` family.
+
+1. `stacked_bar`
+2. `stacked_horizontal_bar`
+3. `pie`
+4. `donut`
+
 ### First active distribution chart variants
 These are the active distribution-style chart variants we currently support in the `distribution` family.
 
@@ -120,12 +129,12 @@ These are the active ordered single-series chart variants we currently support i
 ### Deferred chart variants
 These remain under consideration, but they are not part of the current active chart contract.
 
-1. `stacked_bar`
+1. `stacked_area`
 2. `bubble`
 3. `ecdf`
-5. `candlestick`
-6. `treemap`
-7. `heatmap`
+4. `candlestick`
+5. `treemap`
+6. `heatmap`
 
 Notes:
 1. `histogram` is now active only because it uses true ordered numeric-bin semantics rather than acting as a visual alias of `bar`.

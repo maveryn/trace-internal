@@ -14,17 +14,16 @@ generation:
     scene_variant_weights:
       grouped_bar: 1.0
       multi_line: 1.0
-      grouped_dot_plot: 1.0
       grouped_lollipop: 1.0
     balanced_task_variant_sampling: true
     balanced_scene_variant_sampling: true
 
 rendering:
   shared:
-    canvas_width: 860
+    canvas_width: 1100
     canvas_height: 620
     plot_margin_left_px: 92
-    plot_margin_right_px: 40
+    plot_margin_right_px: 52
     plot_margin_top_px: 44
     plot_margin_bottom_px: 92
     axis_line_width_px: 2
@@ -57,7 +56,6 @@ prompt:
     answer_hint: set "answer" to the number of category labels satisfying the requested series comparison as an integer
     object_description_grouped_bar: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category
     object_description_multi_line: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis
-    object_description_grouped_dot_plot: a grouped dot plot with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis
     object_description_grouped_lollipop: a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis
     evidence_hint_series_a_gt_b_count: set "evidence" to an array containing the category labels where the first queried series is higher than the second queried series
     evidence_hint_series_a_lt_b_count: set "evidence" to an array containing the category labels where the first queried series is lower than the second queried series

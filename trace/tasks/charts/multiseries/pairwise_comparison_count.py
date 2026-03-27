@@ -160,7 +160,6 @@ class ChartsMultiseriesPairwiseComparisonCountTask:
                 "answer_hint",
                 "object_description_grouped_bar",
                 "object_description_multi_line",
-                "object_description_grouped_dot_plot",
                 "object_description_grouped_lollipop",
                 "evidence_hint_series_a_gt_b_count",
                 "evidence_hint_series_a_lt_b_count",

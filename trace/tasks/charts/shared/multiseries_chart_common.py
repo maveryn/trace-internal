@@ -22,7 +22,6 @@ from .labeled_chart_common import (
 SUPPORTED_MULTISERIES_CHART_SCENE_VARIANTS: Tuple[str, ...] = (
     "grouped_bar",
     "multi_line",
-    "grouped_dot_plot",
     "grouped_lollipop",
 )
 

@@ -94,8 +94,7 @@ These are the active multiseries chart variants we currently support in the `mul
 
 1. `grouped_bar`
 2. `multi_line`
-3. `grouped_dot_plot`
-4. `grouped_lollipop`
+3. `grouped_lollipop`
 
 ### Deferred chart variants
 These remain under consideration, but they are not part of the current active chart contract.

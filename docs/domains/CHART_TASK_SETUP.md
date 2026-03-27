@@ -35,7 +35,6 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
 8. First supported multiseries chart-type renderings:
    - `grouped_bar`
    - `multi_line`
-   - `grouped_dot_plot`
    - `grouped_lollipop`
 
 ## Taxonomy
@@ -79,14 +78,13 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
 3. Active multiseries chart tasks currently use these `scene_variant` values:
    - `grouped_bar`
    - `multi_line`
-   - `grouped_dot_plot`
    - `grouped_lollipop`
 
 Note:
 1. Charts are the first planned domain where one task naturally has both a semantic axis and a chart-type axis.
 2. Until the cross-domain `scene_variant` ABI note is fully written in core docs, treat this file as the domain-local contract for that split.
 3. `task_charts_statistics_summary_value` currently stays on the axis-based scene variants `area|bar|horizontal_bar|line|scatter|dot_plot|lollipop`; `pie`, `donut`, and `radar` remain enabled only on the tasks where their semantics still fit cleanly.
-4. `task_charts_multiseries_pairwise_comparison_count` is the first active multiseries chart task; it uses `2..3` named series, `5..10` labeled categories, category-label `label_set` evidence, and the multiseries scene variants `grouped_bar|multi_line|grouped_dot_plot|grouped_lollipop`.
+4. `task_charts_multiseries_pairwise_comparison_count` is the first active multiseries chart task; it uses `2..3` named series, `5..10` labeled categories, category-label `label_set` evidence, and the multiseries scene variants `grouped_bar|multi_line|grouped_lollipop`.
 
 ## Scene contract
 1. One chart per image.
@@ -132,9 +130,7 @@ Note:
    - each category contains one bar per series, and each bar height encodes that series value for the category.
 12. `multi_line`
    - each category contains one point per series, and each series point sequence is connected by a colored line.
-13. `grouped_dot_plot`
-   - each category contains one colored point per series without connecting lines.
-14. `grouped_lollipop`
+13. `grouped_lollipop`
    - each category contains one colored lollipop stem/point per series without cumulative stacking.
 
 ## Mark labels

@@ -271,7 +271,6 @@ def test_charts_multiseries_defaults_loaded() -> None:
     ]
     assert sorted(generation_shared["scene_variant_weights"].keys()) == [
         "grouped_bar",
-        "grouped_dot_plot",
         "grouped_lollipop",
         "multi_line",
     ]
@@ -288,7 +287,6 @@ def test_charts_multiseries_defaults_loaded() -> None:
     assert str(prompt_shared["task_key"]).strip() == "pairwise_comparison_count_query"
     assert str(prompt_shared["object_description_grouped_bar"]).strip()
     assert str(prompt_shared["object_description_multi_line"]).strip()
-    assert str(prompt_shared["object_description_grouped_dot_plot"]).strip()
     assert str(prompt_shared["object_description_grouped_lollipop"]).strip()
     assert str(prompt_shared["json_example_series_a_gt_b_count"]).strip()
     assert str(prompt_shared["json_example_series_a_lt_b_count"]).strip()

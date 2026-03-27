@@ -30,9 +30,13 @@ SUPPORTED_CHART_SCENE_VARIANTS: Tuple[str, ...] = (
 SUPPORTED_MULTISERIES_CHART_SCENE_VARIANTS: Tuple[str, ...] = (
     "grouped_bar",
     "multi_line",
-    "grouped_dot_plot",
     "grouped_lollipop",
 )
+
+_MULTISERIES_GROUP_WIDTH_FRACTION = 0.60
+_MULTISERIES_LEGEND_WIDTH_FRACTION = 0.18
+_MULTISERIES_LEGEND_WIDTH_MAX_FRACTION = 0.24
+_MULTISERIES_LEGEND_MIN_WIDTH_PX = 140.0
 
 
 @dataclass(frozen=True)
@@ -1187,7 +1191,12 @@ def render_multiseries_chart_scene(
     draw.rectangle((int(plot_left), int(plot_top), int(plot_right), int(plot_bottom)), fill=render_params.plot_fill_rgb)
 
     plot_width = float(max(1, int(plot_right) - int(plot_left)))
-    legend_width = float(min(max(150.0, plot_width * 0.24), plot_width * 0.32))
+    legend_width = float(
+        min(
+            max(_MULTISERIES_LEGEND_MIN_WIDTH_PX, plot_width * _MULTISERIES_LEGEND_WIDTH_FRACTION),
+            plot_width * _MULTISERIES_LEGEND_WIDTH_MAX_FRACTION,
+        )
+    )
     legend_gap = float(max(18.0, float(render_params.label_font_size_px)))
     chart_right = int(max(int(plot_left) + 180, int(round(float(plot_right) - float(legend_width) - float(legend_gap)))))
     chart_bbox = (int(plot_left), int(plot_top), int(chart_right), int(plot_bottom))
@@ -1252,7 +1261,9 @@ def render_multiseries_chart_scene(
         plot_right=int(chart_right),
     )
     slot_width = float(max(1.0, (float(chart_right) - float(plot_left)) / max(1, len(categories))))
-    group_inner_width = float(slot_width * 0.82)
+    # Leave more whitespace between adjacent category groups so dense
+    # multiseries charts remain readable at the upper category-count range.
+    group_inner_width = float(slot_width * _MULTISERIES_GROUP_WIDTH_FRACTION)
     subgroup_width = float(group_inner_width / max(1, len(series_list)))
     bar_width = float(max(8.0, float(render_params.bar_width_fraction) * float(subgroup_width)))
 

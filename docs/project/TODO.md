@@ -9,9 +9,10 @@
 3. Expand the new tables domain beyond `task_tables_statistics_summary_label` and `task_tables_statistics_summary_value` with counting/filter tasks and later row-summary tasks while keeping `bbox_set` as the fixed table evidence contract.
 4. Expand the v1 `rectangular_tiling` tile task suite beyond the current active set and keep future ports aligned to `docs/domains/TILE_TASK_SETUP.md`.
 5. Add cross-domain `scene_variant` + role-binding spec in architecture/ABI docs.
-6. Improve dataset QA diagnostics/report summaries.
-7. Extend geometry comparison beyond angle/length/area/perimeter using the same label-answer + winner-gap contract.
-8. Extend analytical geometry to additional objectives beyond the current analytical set (additional 3D objectives, richer conic/composite-region reasoning).
+6. Roll out domain-owned task complexity policy: migrate legacy ad hoc `complexity_score` formulas toward within-task normalized criterion values with domain/task-group weighting, starting with the active icon families and then geometry/tile/charts/tables.
+7. Improve dataset QA diagnostics/report summaries.
+8. Extend geometry comparison beyond angle/length/area/perimeter using the same label-answer + winner-gap contract.
+9. Extend analytical geometry to additional objectives beyond the current analytical set (additional 3D objectives, richer conic/composite-region reasoning).
 
 ## Later (P2)
 1. Add split-artifact generation with deterministic split policy metadata.

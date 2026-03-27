@@ -68,5 +68,6 @@ For current chart coverage and active task families, use:
 
 ## Pair with
 - `skills/task-design/SKILL.md`
+- `skills/task-complexity/SKILL.md`
 - `skills/task-implementation/SKILL.md`
 - `skills/verification-review/SKILL.md`

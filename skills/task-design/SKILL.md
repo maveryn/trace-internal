@@ -17,6 +17,9 @@ If the task is domain-specific, also open:
 - `skills/domain-tile/SKILL.md`
 - `skills/domain-geometry/SKILL.md`
 
+If the task needs a new or revised difficulty policy, also open:
+- `skills/task-complexity/SKILL.md`
+
 ## Design workflow
 1. Confirm `domain`, `task_group`, `task_id`, and whether the task should be a new task vs a `task_variant` of an existing task.
 2. Check `docs/project/STATUS.md` and `docs/tasks/README.md` so you do not create a near-duplicate task family.

@@ -45,6 +45,10 @@ Use this as the implementation checklist for new or modified tasks.
 9. Enforce unique final answer by construction.
 10. Use bounded resampling; never auto-relax semantic constraints.
 11. Emit complexity (`complexity_score`, `complexity_components`).
+12. Treat `complexity_score` as within-task normalized difficulty only; do not treat it as a cross-task or cross-domain scale.
+13. Emit normalized `complexity_components` in `[0,1]`; if raw diagnostics are useful, keep them in trace/debug payloads rather than in the primary complexity map.
+14. Keep raw-to-normalized transforms in task/domain code; domain/task-group policy should own criteria weighting and activation.
+15. Use `skills/task-complexity/SKILL.md` whenever a patch introduces or revises a complexity policy.
 
 ## 3) Prompt rules
 1. Bundle path: `prompts/<domain>/<task_group>/<bundle>.json`.

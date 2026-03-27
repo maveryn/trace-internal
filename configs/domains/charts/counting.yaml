@@ -11,6 +11,7 @@ generation:
       below_threshold: 1.0
       in_interval: 1.0
     scene_variant_weights:
+      area: 1.0
       bar: 1.0
       line: 1.0
       scatter: 1.0
@@ -58,9 +59,10 @@ prompt:
     json_output_contract: Return a valid JSON object with keys "evidence" and "answer" in that order.
     json_output_contract_answer_only: Return a valid JSON object with key "answer".
     answer_hint: set "answer" to the number of matching marks as an integer
+    object_description_area: a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis
     object_description_bar: a labeled bar chart. Each bar's numeric height can be read from the vertical axis
-    object_description_pie: a labeled pie chart. Each slice shows its label and printed integer value directly on the chart, so the relevant values are the printed slice values
-    object_description_donut: a labeled donut chart. Each slice shows its label and printed integer value directly on the chart, so the relevant values are the printed slice values
+    object_description_pie: a pie chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices
+    object_description_donut: a donut chart with differently colored slices. A legend on the right maps each slice color to its label, and the relevant values are the percentages printed on the slices
     object_description_horizontal_bar: a labeled horizontal bar chart. Each bar's numeric length can be read from the horizontal axis
     object_description_line: a labeled line chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis
     object_description_scatter: a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis

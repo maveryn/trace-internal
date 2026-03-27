@@ -21,14 +21,14 @@ These are the chart types we expect to support most naturally across multiple ch
 3. `grouped_bar`
 4. `stacked_bar`
 5. `line`
-6. `multi_line`
-7. `scatter`
-8. `dot_plot`
-9. `lollipop`
-10. `bubble`
-11. `pie`
-12. `donut`
-13. `histogram`
+6. `area`
+7. `multi_line`
+8. `scatter`
+9. `dot_plot`
+10. `lollipop`
+11. `bubble`
+12. `pie`
+13. `donut`
 14. `heatmap`
 
 ### Additional chart types we want to keep on the long-term consideration list
@@ -73,16 +73,21 @@ The concrete v1 contract for the first rollout now lives in `CHART_TASK_SETUP.md
    - `median_label`
 
 ### First chart variants to implement
-These are the first chart variants we currently plan to support in the `statistics` family.
+These are the first chart variants we currently plan to support across the active chart tasks.
 
 1. `bar`
-2. `pie`
-3. `donut`
-4. `horizontal_bar`
-5. `line`
-6. `scatter`
-7. `dot_plot`
-8. `lollipop`
+2. `area`
+3. `pie`
+4. `donut`
+5. `horizontal_bar`
+6. `line`
+7. `scatter`
+8. `dot_plot`
+9. `lollipop`
+
+Note:
+1. `pie` and `donut` are composition-style chart variants: slices use distinct colors, the legend on the right maps colors to labels, and the numeric contract uses printed percentages rather than raw integer values.
+2. Those pie-like variants should only be enabled on tasks whose semantics still make sense under percentage composition; they are not required for every active chart task.
 
 ### Chart variants we may add after the first statistics rollout stabilizes
 1. `histogram`

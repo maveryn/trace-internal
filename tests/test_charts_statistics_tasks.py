@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
 from trace.core.type_registry import load_type_registry
 from trace.tasks.charts.statistics.summary_label import ChartsStatisticsSummaryLabelTask
 from trace.tasks.charts.statistics.summary_value import ChartsStatisticsSummaryValueTask
@@ -120,25 +122,30 @@ def test_chart_statistics_line_and_scatter_prompts_mention_y_values() -> None:
     task = ChartsStatisticsSummaryValueTask()
     line = task.generate(9201, params={"task_variant": "mean", "scene_variant": "line"}, max_attempts=10)
     scatter = task.generate(9202, params={"task_variant": "mean", "scene_variant": "scatter"}, max_attempts=10)
+    area = task.generate(9203, params={"task_variant": "mean", "scene_variant": "area"}, max_attempts=10)
 
     assert "y-values" in str(line.prompt)
     assert "y-values" in str(scatter.prompt)
+    assert "y-values" in str(area.prompt)
 
 
 def test_chart_statistics_supports_additional_scene_variants() -> None:
     task = ChartsStatisticsSummaryValueTask()
     prompts = {}
-    for seed, scene_variant in enumerate(("horizontal_bar", "dot_plot", "lollipop", "pie", "donut"), start=9205):
+    for seed, scene_variant in enumerate(("area", "horizontal_bar", "dot_plot", "lollipop"), start=9205):
         out = task.generate(seed, params={"task_variant": "max", "scene_variant": scene_variant}, max_attempts=10)
         prompts[str(scene_variant)] = str(out.prompt)
         assert str(out.trace_payload["execution_trace"]["scene_variant"]) == str(scene_variant)
         assert str(out.trace_payload["render_spec"]["scene_variant"]) == str(scene_variant)
         assert len(out.trace_payload["render_spec"]["y_ticks"]) == int(out.trace_payload["render_spec"]["y_axis_max"]) + 1
+    assert "y-values" in prompts["area"]
     assert "horizontal axis" in prompts["horizontal_bar"]
     assert "y-values" in prompts["dot_plot"]
     assert "y-values" in prompts["lollipop"]
-    assert "printed slice values" in prompts["pie"]
-    assert "printed slice values" in prompts["donut"]
+    with pytest.raises(ValueError):
+        task.generate(9215, params={"task_variant": "max", "scene_variant": "pie"}, max_attempts=10)
+    with pytest.raises(ValueError):
+        task.generate(9216, params={"task_variant": "max", "scene_variant": "donut"}, max_attempts=10)
 
 
 def test_chart_statistics_prompt_examples_match_selected_variant() -> None:
@@ -252,7 +259,7 @@ def test_chart_statistics_summary_label_task_is_deterministic() -> None:
 def test_chart_statistics_summary_label_supports_additional_scene_variants() -> None:
     task = ChartsStatisticsSummaryLabelTask()
     prompts = {}
-    for seed, scene_variant in enumerate(("horizontal_bar", "dot_plot", "lollipop", "pie", "donut"), start=9660):
+    for seed, scene_variant in enumerate(("area", "horizontal_bar", "dot_plot", "lollipop", "pie", "donut"), start=9660):
         out = task.generate(
             seed,
             params={"task_variant": "argmax", "scene_variant": scene_variant},
@@ -261,20 +268,36 @@ def test_chart_statistics_summary_label_supports_additional_scene_variants() -> 
         prompts[str(scene_variant)] = str(out.prompt)
         assert str(out.trace_payload["execution_trace"]["scene_variant"]) == str(scene_variant)
         assert str(out.trace_payload["render_spec"]["scene_variant"]) == str(scene_variant)
-    assert "printed slice values" in prompts["pie"]
-    assert "printed slice values" in prompts["donut"]
+    assert "y-values" in prompts["area"]
+    assert "percentages" in prompts["pie"]
+    assert "legend on the right" in prompts["pie"]
+    assert "percentages" in prompts["donut"]
+    assert "legend on the right" in prompts["donut"]
 
 
-def test_chart_statistics_pie_caps_default_mark_count() -> None:
-    task = ChartsStatisticsSummaryValueTask()
-    out = task.generate(9675, params={"task_variant": "sum", "scene_variant": "pie"}, max_attempts=10)
+def test_chart_statistics_summary_label_pie_caps_default_mark_count() -> None:
+    task = ChartsStatisticsSummaryLabelTask()
+    out = task.generate(9675, params={"task_variant": "argmax", "scene_variant": "pie"}, max_attempts=10)
     assert 5 <= int(out.trace_payload["execution_trace"]["mark_count"]) <= 8
+    assert sum(int(value) for value in out.trace_payload["execution_trace"]["values"]) == 100
 
 
-def test_chart_statistics_donut_caps_default_mark_count() -> None:
-    task = ChartsStatisticsSummaryValueTask()
-    out = task.generate(9676, params={"task_variant": "sum", "scene_variant": "donut"}, max_attempts=10)
+def test_chart_statistics_summary_label_donut_caps_default_mark_count() -> None:
+    task = ChartsStatisticsSummaryLabelTask()
+    out = task.generate(9676, params={"task_variant": "argmax", "scene_variant": "donut"}, max_attempts=10)
     assert 5 <= int(out.trace_payload["execution_trace"]["mark_count"]) <= 8
+    assert sum(int(value) for value in out.trace_payload["execution_trace"]["values"]) == 100
+
+
+def test_chart_statistics_pie_and_donut_use_distinct_slice_colors_and_legend() -> None:
+    task = ChartsStatisticsSummaryLabelTask()
+    for seed, scene_variant in enumerate(("pie", "donut"), start=9685):
+        out = task.generate(seed, params={"task_variant": "argmax", "scene_variant": scene_variant}, max_attempts=10)
+        entities = out.trace_payload["scene_ir"]["entities"]
+        fill_colors = {tuple(int(channel) for channel in entity["attrs"]["mark_fill_rgb"]) for entity in entities}
+        assert len(fill_colors) >= 3
+        assert all("legend_swatch_bbox_px" in entity["attrs"] for entity in entities)
+        assert all("percentage_center_px" in entity["attrs"] for entity in entities)
 
 
 def test_integer_evidence_type_is_registered_for_chart_label_tasks() -> None:

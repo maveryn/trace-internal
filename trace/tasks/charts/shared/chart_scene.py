@@ -15,6 +15,7 @@ from ...shared.text_rendering import draw_text_centered, load_font
 ChartColor = Tuple[int, int, int]
 
 SUPPORTED_CHART_SCENE_VARIANTS: Tuple[str, ...] = (
+    "area",
     "bar",
     "line",
     "scatter",
@@ -32,6 +33,8 @@ class ChartMarkSpec:
 
     label: str
     value: int
+    fill_rgb: ChartColor | None = None
+    outline_rgb: ChartColor | None = None
 
 
 @dataclass(frozen=True)
@@ -318,12 +321,16 @@ def render_labeled_chart_scene(
     if selected_variant in {"pie", "donut"}:
         plot_width = float(max(1, int(plot_right) - int(plot_left)))
         plot_height = float(max(1, int(plot_bottom) - int(plot_top)))
-        side = float(min(plot_width, plot_height))
-        pie_margin = float(max(72, int(render_params.label_font_size_px) * 3))
+        legend_width = float(min(max(150.0, plot_width * 0.28), plot_width * 0.38))
+        legend_gap = float(max(18.0, float(render_params.label_font_size_px)))
+        chart_right = float(plot_right) - float(legend_width) - float(legend_gap)
+        chart_width = float(max(140.0, chart_right - float(plot_left)))
+        side = float(min(chart_width, plot_height))
+        pie_margin = float(max(28.0, int(render_params.label_font_size_px) * 1.8))
         diameter = float(max(140.0, float(side) - float(pie_margin)))
         radius = 0.5 * float(diameter)
         hole_radius = float(radius * 0.42) if selected_variant == "donut" else 0.0
-        center_x = 0.5 * float(plot_left + plot_right)
+        center_x = float(plot_left) + (0.5 * float(chart_width))
         center_y = 0.5 * float(plot_top + plot_bottom)
         pie_bbox = (
             float(center_x - radius),
@@ -337,52 +344,96 @@ def render_labeled_chart_scene(
         mark_traces: List[Dict[str, Any]] = []
         entities: List[Dict[str, Any]] = []
         start_angle = -90.0
-        label_radius = float(radius) + float(max(28, int(render_params.label_font_size_px) + 8))
-        center_radius = (
+        percentage_radius = (
             float(0.5 * (float(radius) + float(hole_radius)))
             if hole_radius > 0.0
-            else float(radius) * 0.56
+            else float(radius) * 0.60
         )
+        legend_left = float(chart_right + float(legend_gap))
+        legend_top = float(plot_top) + float(max(12.0, 0.5 * (plot_height - (len(marks) * (render_params.label_font_size_px + 10)))))
+        legend_row_height = float(max(render_params.label_font_size_px + 10, 34))
+        legend_swatch_side = float(max(18, int(round(render_params.label_font_size_px * 0.75))))
         for index, mark in enumerate(marks):
             sweep = 360.0 * (float(int(mark.value)) / float(total_value))
             end_angle = float(start_angle + sweep)
+            fill_rgb = (
+                tuple(int(channel) for channel in mark.fill_rgb)
+                if isinstance(mark.fill_rgb, tuple)
+                else tuple(int(value) for value in render_params.mark_fill_rgb)
+            )
+            outline_rgb = (
+                tuple(int(channel) for channel in mark.outline_rgb)
+                if isinstance(mark.outline_rgb, tuple)
+                else tuple(int(value) for value in render_params.mark_outline_rgb)
+            )
             draw.pieslice(
                 pie_bbox,
                 start=float(start_angle),
                 end=float(end_angle),
-                fill=render_params.mark_fill_rgb,
-                outline=render_params.mark_outline_rgb,
+                fill=fill_rgb,
+                outline=outline_rgb,
                 width=int(render_params.mark_outline_width_px),
             )
             mid_angle = float(start_angle + (0.5 * sweep))
             theta = math.radians(float(mid_angle))
             mark_center = (
-                float(center_x + (center_radius * math.cos(theta))),
-                float(center_y + (center_radius * math.sin(theta))),
+                float(center_x + (percentage_radius * math.cos(theta))),
+                float(center_y + (percentage_radius * math.sin(theta))),
             )
-            label_center = (
-                float(center_x + (label_radius * math.cos(theta))),
-                float(center_y + (label_radius * math.sin(theta))),
+            percent_radius = float(percentage_radius)
+            if float(abs(sweep)) < 18.0:
+                percent_radius = float(radius) + 16.0
+            percent_center = (
+                float(center_x + (percent_radius * math.cos(theta))),
+                float(center_y + (percent_radius * math.sin(theta))),
             )
-            label_text = f"{str(mark.label)} {int(mark.value)}"
-            label_center = _clamp_text_center_to_canvas(
+            percent_text = f"{int(mark.value)}%"
+            percent_center = _clamp_text_center_to_canvas(
                 draw,
-                text=str(label_text),
-                center=label_center,
+                text=str(percent_text),
+                center=percent_center,
                 font=label_font,
                 canvas_width=int(render_params.canvas_width),
                 canvas_height=int(render_params.canvas_height),
             )
             draw_text_centered(
                 draw,
-                text=str(label_text),
+                text=str(percent_text),
+                center=percent_center,
+                font=label_font,
+                fill=render_params.text_color_rgb,
+                stroke_fill=render_params.text_stroke_rgb,
+                stroke_width=int(render_params.label_stroke_width_px),
+            )
+            percent_bbox = _text_bbox(draw, text=str(percent_text), center=percent_center, font=label_font)
+
+            legend_row_y = float(legend_top) + float(index) * float(legend_row_height)
+            legend_swatch_bbox = (
+                float(legend_left),
+                float(legend_row_y),
+                float(legend_left + legend_swatch_side),
+                float(legend_row_y + legend_swatch_side),
+            )
+            draw.rectangle(
+                legend_swatch_bbox,
+                fill=fill_rgb,
+                outline=outline_rgb,
+                width=max(1, int(render_params.mark_outline_width_px)),
+            )
+            label_center = (
+                float(legend_swatch_bbox[2]) + float(max(14, int(render_params.label_font_size_px) * 0.7)),
+                float(0.5 * (legend_swatch_bbox[1] + legend_swatch_bbox[3])),
+            )
+            draw_text_centered(
+                draw,
+                text=str(mark.label),
                 center=label_center,
                 font=label_font,
                 fill=render_params.text_color_rgb,
                 stroke_fill=render_params.text_stroke_rgb,
                 stroke_width=int(render_params.label_stroke_width_px),
             )
-            label_bbox = _text_bbox(draw, text=str(label_text), center=label_center, font=label_font)
+            label_bbox = _text_bbox(draw, text=str(mark.label), center=label_center, font=label_font)
 
             step_count = max(2, int(math.ceil(abs(float(sweep)) / 18.0)))
             sector_points: List[Tuple[float, float]] = [(float(center_x), float(center_y))]
@@ -405,6 +456,11 @@ def render_labeled_chart_scene(
                 "mark_bbox_px": [round(float(value), 3) for value in mark_bbox],
                 "label_center_px": [round(float(label_center[0]), 3), round(float(label_center[1]), 3)],
                 "label_bbox_px": [round(float(value), 3) for value in label_bbox],
+                "percentage_center_px": [round(float(percent_center[0]), 3), round(float(percent_center[1]), 3)],
+                "percentage_bbox_px": [round(float(value), 3) for value in percent_bbox],
+                "legend_swatch_bbox_px": [round(float(value), 3) for value in legend_swatch_bbox],
+                "mark_fill_rgb": [int(channel) for channel in fill_rgb],
+                "mark_outline_rgb": [int(channel) for channel in outline_rgb],
                 "start_angle_deg": round(float(start_angle), 3),
                 "end_angle_deg": round(float(end_angle), 3),
             }
@@ -421,6 +477,10 @@ def render_labeled_chart_scene(
                         "mark_center_px": list(mark_trace["mark_center_px"]),
                         "mark_bbox_px": list(mark_trace["mark_bbox_px"]),
                         "label_center_px": list(mark_trace["label_center_px"]),
+                        "legend_swatch_bbox_px": list(mark_trace["legend_swatch_bbox_px"]),
+                        "percentage_center_px": list(mark_trace["percentage_center_px"]),
+                        "mark_fill_rgb": list(mark_trace["mark_fill_rgb"]),
+                        "mark_outline_rgb": list(mark_trace["mark_outline_rgb"]),
                         "start_angle_deg": float(mark_trace["start_angle_deg"]),
                         "end_angle_deg": float(mark_trace["end_angle_deg"]),
                     },
@@ -446,7 +506,7 @@ def render_labeled_chart_scene(
             image=image,
             mark_traces=tuple(dict(item) for item in mark_traces),
             entities=tuple(dict(item) for item in entities),
-            plot_bbox_px=tuple(int(round(value)) for value in pie_bbox),
+            plot_bbox_px=tuple(int(value) for value in plot_bbox),
             y_axis_max=int(y_axis_max),
             y_ticks=tuple(int(value) for value in y_ticks),
             scene_variant=str(selected_variant),
@@ -567,10 +627,20 @@ def render_labeled_chart_scene(
             top = float(y_center - 0.5 * float(horizontal_bar_height))
             bottom = float(y_center + 0.5 * float(horizontal_bar_height))
             bar_bbox = (float(plot_left), float(top), float(x_extent), float(bottom))
+            fill_rgb = (
+                tuple(int(channel) for channel in mark.fill_rgb)
+                if isinstance(mark.fill_rgb, tuple)
+                else tuple(int(value) for value in render_params.mark_fill_rgb)
+            )
+            outline_rgb = (
+                tuple(int(channel) for channel in mark.outline_rgb)
+                if isinstance(mark.outline_rgb, tuple)
+                else tuple(int(value) for value in render_params.mark_outline_rgb)
+            )
             draw.rectangle(
                 bar_bbox,
-                fill=render_params.mark_fill_rgb,
-                outline=render_params.mark_outline_rgb,
+                fill=fill_rgb,
+                outline=outline_rgb,
                 width=int(render_params.mark_outline_width_px),
             )
         else:
@@ -584,19 +654,42 @@ def render_labeled_chart_scene(
             line_points.append((float(x_center), float(y_center)))
 
         if selected_variant == "bar":
+            resolved_bar_width = float(bar_width)
             left = float(x_center - 0.5 * float(bar_width))
             right = float(x_center + 0.5 * float(bar_width))
+            left = float(x_center - 0.5 * float(resolved_bar_width))
+            right = float(x_center + 0.5 * float(resolved_bar_width))
             bar_bbox = (float(left), float(y_center), float(right), float(plot_bottom))
+            fill_rgb = (
+                tuple(int(channel) for channel in mark.fill_rgb)
+                if isinstance(mark.fill_rgb, tuple)
+                else tuple(int(value) for value in render_params.mark_fill_rgb)
+            )
+            outline_rgb = (
+                tuple(int(channel) for channel in mark.outline_rgb)
+                if isinstance(mark.outline_rgb, tuple)
+                else tuple(int(value) for value in render_params.mark_outline_rgb)
+            )
             draw.rectangle(
                 bar_bbox,
-                fill=render_params.mark_fill_rgb,
-                outline=render_params.mark_outline_rgb,
+                fill=fill_rgb,
+                outline=outline_rgb,
                 width=int(render_params.mark_outline_width_px),
             )
         elif selected_variant == "lollipop":
+            fill_rgb = (
+                tuple(int(channel) for channel in mark.fill_rgb)
+                if isinstance(mark.fill_rgb, tuple)
+                else tuple(int(value) for value in render_params.mark_fill_rgb)
+            )
+            outline_rgb = (
+                tuple(int(channel) for channel in mark.outline_rgb)
+                if isinstance(mark.outline_rgb, tuple)
+                else tuple(int(value) for value in render_params.mark_outline_rgb)
+            )
             draw.line(
                 [(float(x_center), float(plot_bottom)), (float(x_center), float(y_center))],
-                fill=render_params.mark_outline_rgb,
+                fill=outline_rgb,
                 width=max(1, int(render_params.line_width_px) - 1),
             )
             radius = float(render_params.point_radius_px)
@@ -608,11 +701,21 @@ def render_labeled_chart_scene(
             )
             draw.ellipse(
                 ellipse_box,
-                fill=render_params.mark_fill_rgb,
-                outline=render_params.mark_outline_rgb,
+                fill=fill_rgb,
+                outline=outline_rgb,
                 width=int(render_params.mark_outline_width_px),
             )
         elif selected_variant in {"scatter", "dot_plot"}:
+            fill_rgb = (
+                tuple(int(channel) for channel in mark.fill_rgb)
+                if isinstance(mark.fill_rgb, tuple)
+                else tuple(int(value) for value in render_params.mark_fill_rgb)
+            )
+            outline_rgb = (
+                tuple(int(channel) for channel in mark.outline_rgb)
+                if isinstance(mark.outline_rgb, tuple)
+                else tuple(int(value) for value in render_params.mark_outline_rgb)
+            )
             radius = float(render_params.point_radius_px)
             ellipse_box = (
                 float(x_center - radius),
@@ -622,8 +725,8 @@ def render_labeled_chart_scene(
             )
             draw.ellipse(
                 ellipse_box,
-                fill=render_params.mark_fill_rgb,
-                outline=render_params.mark_outline_rgb,
+                fill=fill_rgb,
+                outline=outline_rgb,
                 width=int(render_params.mark_outline_width_px),
             )
 
@@ -664,6 +767,22 @@ def render_labeled_chart_scene(
             "mark_bbox_px": [round(float(value), 3) for value in mark_bbox],
             "label_center_px": [round(float(label_center[0]), 3), round(float(label_center[1]), 3)],
             "label_bbox_px": [round(float(value), 3) for value in label_bbox],
+            "mark_fill_rgb": [
+                int(channel)
+                for channel in (
+                    tuple(int(channel) for channel in mark.fill_rgb)
+                    if isinstance(mark.fill_rgb, tuple)
+                    else tuple(int(value) for value in render_params.mark_fill_rgb)
+                )
+            ],
+            "mark_outline_rgb": [
+                int(channel)
+                for channel in (
+                    tuple(int(channel) for channel in mark.outline_rgb)
+                    if isinstance(mark.outline_rgb, tuple)
+                    else tuple(int(value) for value in render_params.mark_outline_rgb)
+                )
+            ],
         }
         mark_traces.append(mark_trace)
         entities.append(
@@ -678,9 +797,55 @@ def render_labeled_chart_scene(
                     "mark_center_px": list(mark_trace["mark_center_px"]),
                     "mark_bbox_px": list(mark_trace["mark_bbox_px"]),
                     "label_center_px": list(mark_trace["label_center_px"]),
+                    "mark_fill_rgb": list(mark_trace["mark_fill_rgb"]),
+                    "mark_outline_rgb": list(mark_trace["mark_outline_rgb"]),
                 },
             }
         )
+
+    if selected_variant == "area":
+        polygon_points = list(line_points)
+        polygon_points.extend(
+            [
+                (float(line_points[-1][0]), float(plot_bottom)),
+                (float(line_points[0][0]), float(plot_bottom)),
+            ]
+        )
+        draw.polygon(
+            polygon_points,
+            fill=render_params.mark_fill_rgb,
+            outline=None,
+        )
+        draw.line(
+            line_points,
+            fill=render_params.mark_outline_rgb,
+            width=int(render_params.line_width_px),
+            joint="curve",
+        )
+        for trace in mark_traces:
+            center_x, center_y = trace["mark_center_px"]
+            radius = float(render_params.point_radius_px)
+            ellipse_box = (
+                float(center_x - radius),
+                float(center_y - radius),
+                float(center_x + radius),
+                float(center_y + radius),
+            )
+            draw.ellipse(
+                ellipse_box,
+                fill=render_params.mark_fill_rgb,
+                outline=render_params.mark_outline_rgb,
+                width=int(render_params.mark_outline_width_px),
+            )
+            draw_text_centered(
+                draw,
+                text=str(trace["label"]),
+                center=(float(trace["label_center_px"][0]), float(trace["label_center_px"][1])),
+                font=label_font,
+                fill=render_params.text_color_rgb,
+                stroke_fill=render_params.text_stroke_rgb,
+                stroke_width=int(render_params.label_stroke_width_px),
+            )
 
     if selected_variant == "line":
         draw.line(

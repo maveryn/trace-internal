@@ -90,15 +90,17 @@ def test_chart_counting_line_and_scatter_prompts_mention_y_values() -> None:
     task = ChartsCountingValueCountTask()
     line = task.generate(9921, params={"task_variant": "above_threshold", "scene_variant": "line"}, max_attempts=10)
     scatter = task.generate(9922, params={"task_variant": "below_threshold", "scene_variant": "scatter"}, max_attempts=10)
+    area = task.generate(9923, params={"task_variant": "above_threshold", "scene_variant": "area"}, max_attempts=10)
 
     assert "y-values" in str(line.prompt)
     assert "y-values" in str(scatter.prompt)
+    assert "y-values" in str(area.prompt)
 
 
 def test_chart_counting_supports_additional_scene_variants() -> None:
     task = ChartsCountingValueCountTask()
     prompts = {}
-    for seed, scene_variant in enumerate(("horizontal_bar", "dot_plot", "lollipop", "pie", "donut"), start=9924):
+    for seed, scene_variant in enumerate(("area", "horizontal_bar", "dot_plot", "lollipop", "pie", "donut"), start=9924):
         out = task.generate(
             seed,
             params={"task_variant": "above_threshold", "scene_variant": scene_variant},
@@ -107,11 +109,14 @@ def test_chart_counting_supports_additional_scene_variants() -> None:
         prompts[str(scene_variant)] = str(out.prompt)
         assert str(out.trace_payload["execution_trace"]["scene_variant"]) == str(scene_variant)
         assert str(out.trace_payload["render_spec"]["scene_variant"]) == str(scene_variant)
+    assert "y-values" in prompts["area"]
     assert "horizontal axis" in prompts["horizontal_bar"]
     assert "y-values" in prompts["dot_plot"]
     assert "y-values" in prompts["lollipop"]
-    assert "printed slice values" in prompts["pie"]
-    assert "printed slice values" in prompts["donut"]
+    assert "percentages" in prompts["pie"]
+    assert "legend on the right" in prompts["pie"]
+    assert "percentages" in prompts["donut"]
+    assert "legend on the right" in prompts["donut"]
 
 
 def test_chart_counting_prompt_examples_match_selected_variant() -> None:
@@ -174,9 +179,24 @@ def test_chart_counting_pie_caps_default_mark_count() -> None:
     task = ChartsCountingValueCountTask()
     out = task.generate(9975, params={"task_variant": "above_threshold", "scene_variant": "pie"}, max_attempts=10)
     assert 5 <= int(out.trace_payload["execution_trace"]["mark_count"]) <= 8
+    assert sum(int(value) for value in out.trace_payload["execution_trace"]["values"]) == 100
+    assert str(out.trace_payload["execution_trace"]["value_semantics"]) == "percentage"
 
 
 def test_chart_counting_donut_caps_default_mark_count() -> None:
     task = ChartsCountingValueCountTask()
     out = task.generate(9976, params={"task_variant": "above_threshold", "scene_variant": "donut"}, max_attempts=10)
     assert 5 <= int(out.trace_payload["execution_trace"]["mark_count"]) <= 8
+    assert sum(int(value) for value in out.trace_payload["execution_trace"]["values"]) == 100
+    assert str(out.trace_payload["execution_trace"]["value_semantics"]) == "percentage"
+
+
+def test_chart_counting_pie_and_donut_use_distinct_slice_colors() -> None:
+    task = ChartsCountingValueCountTask()
+    for seed, scene_variant in enumerate(("pie", "donut"), start=9977):
+        out = task.generate(seed, params={"task_variant": "above_threshold", "scene_variant": scene_variant}, max_attempts=10)
+        fill_colors = {
+            tuple(int(channel) for channel in entity["attrs"]["mark_fill_rgb"])
+            for entity in out.trace_payload["scene_ir"]["entities"]
+        }
+        assert len(fill_colors) >= 3

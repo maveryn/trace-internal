@@ -17,10 +17,11 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ..shared.chart_scene import ChartMarkSpec, render_labeled_chart_scene
+from ..shared.chart_scene import render_labeled_chart_scene
 from ..shared.labeled_chart_common import (
     LabeledChartDefaults,
     SUPPORTED_LABELED_CHART_SCENE_VARIANTS,
+    build_chart_mark_specs,
     build_value_count_dataset_for_variant,
     projected_mark_evidence,
     resolve_chart_axis_variant,
@@ -105,12 +106,19 @@ class ChartsCountingValueCountTask:
         )
 
         labels = [str(label) for label in trace_extras["labels"]]
-        marks = [ChartMarkSpec(label=str(label), value=int(value)) for label, value in zip(labels, values)]
         mark_style = resolve_chart_mark_colors(
             params,
             render_defaults=_RENDER_DEFAULTS,
             defaults=_DEFAULTS,
             instance_seed=int(instance_seed),
+            scene_variant=str(scene_variant),
+            mark_count=len(labels),
+        )
+        marks = build_chart_mark_specs(
+            labels=labels,
+            values=values,
+            scene_variant=str(scene_variant),
+            mark_style=mark_style,
         )
         render_params = resolve_chart_render_params_for_task(
             {**dict(params), **mark_style},
@@ -148,6 +156,7 @@ class ChartsCountingValueCountTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint",
+                "object_description_area",
                 "object_description_bar",
                 "object_description_pie",
                 "object_description_donut",

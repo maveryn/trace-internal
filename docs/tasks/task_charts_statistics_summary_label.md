@@ -12,6 +12,7 @@
    - `argmin`
    - `median_label`
 2. Supported `scene_variant` values:
+   - `area`
    - `bar`
    - `pie`
    - `donut`
@@ -26,10 +27,13 @@
    - one chart per image,
    - one series only in v1,
    - one visible unique uppercase label per mark,
-   - one random chart color sampled per instance and reused across all rendered marks,
-   - chart values are integers in the default range `1..20`,
+   - axis-based scenes use one random chart color sampled per instance and reused across all rendered marks,
+   - pie/donut scenes use one distinct sampled color per slice plus a legend on the right that maps slice colors to labels,
+   - axis-based chart values are integers in the default range `1..20`,
+   - pie/donut chart values are positive integer percentages that sum to `100`,
+   - area charts summarize plotted point `y` values,
    - vertical bar charts summarize bar heights,
-   - pie/donut charts summarize the printed integer values shown next to the slice labels,
+   - pie/donut charts summarize the percentages printed on the slices,
    - horizontal bar charts summarize bar lengths on the horizontal axis,
    - line/scatter/dot-plot/lollipop charts summarize plotted point `y` values.
 6. Generation guarantees:
@@ -84,8 +88,8 @@
 ## 5) Visual policy
 1. Background and post-image noise use the merged charts-domain visual defaults from `configs/domains/charts/base.yaml`.
 2. V1 charts use clean light solid backgrounds only.
-3. Axis-based chart variants render an explicit integer-valued axis scaffold; `pie` and `donut` render slice geometry with printed per-slice values instead of axes.
-4. Labels are drawn on bars, near points, or beside pie/donut slices, depending on `scene_variant`.
+3. Axis-based chart variants render an explicit integer-valued axis scaffold; `pie` and `donut` render multicolor slice geometry with a legend on the right and printed percentages on the slices instead of axes.
+4. Labels are drawn on bars, near points, or in the pie/donut legend, depending on `scene_variant`.
 5. The chart frame is rectangular and uses a fixed canvas in v1 rather than dynamic canvas sizing.
 6. Mark fill/outline colors are sampled once per instance, constrained to stay visually separated from the white/light chart background, and recorded in trace/render metadata.
 

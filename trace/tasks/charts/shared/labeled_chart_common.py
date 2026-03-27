@@ -6,13 +6,17 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
-from ...shared.color_distance import sample_color_with_distance_constraints
+from ...shared.color_distance import (
+    sample_color_palette_with_distance_constraints,
+    sample_color_with_distance_constraints,
+)
 from ...shared.config_defaults import group_default, resolve_required_int_bounds
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.labeling import assign_random_shuffled_labels
 from ...shared.named_colors import darken_color
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from .chart_scene import (
+    ChartMarkSpec,
     ChartRenderParams,
     RenderedChartScene,
     SUPPORTED_CHART_SCENE_VARIANTS,
@@ -23,6 +27,7 @@ from .chart_scene import (
 StatisticKind = str
 SceneVariant = str
 SUPPORTED_LABELED_CHART_SCENE_VARIANTS: Tuple[str, ...] = tuple(SUPPORTED_CHART_SCENE_VARIANTS)
+PIE_LIKE_SCENE_VARIANTS = frozenset({"pie", "donut"})
 
 
 @dataclass(frozen=True)
@@ -55,6 +60,12 @@ class LabeledChartDefaults:
     mark_color_distance_space: str = "lab"
     balanced_task_variant_sampling: bool = True
     balanced_scene_variant_sampling: bool = True
+
+
+def is_pie_like_scene_variant(scene_variant: str) -> bool:
+    """Return whether the chart variant uses composition-style pie slices."""
+
+    return str(scene_variant) in PIE_LIKE_SCENE_VARIANTS
 
 
 def sorted_labels(labels: Sequence[str]) -> List[str]:
@@ -232,19 +243,63 @@ def normalize_rgb(value: Sequence[int]) -> Tuple[int, int, int]:
     )
 
 
+def build_chart_mark_specs(
+    *,
+    labels: Sequence[str],
+    values: Sequence[int],
+    scene_variant: str,
+    mark_style: Mapping[str, Any],
+) -> List[ChartMarkSpec]:
+    """Build chart-mark specs with per-mark colors resolved for the scene variant."""
+
+    resolved_labels = [str(label) for label in labels]
+    resolved_values = [int(value) for value in values]
+    if len(resolved_labels) != len(resolved_values):
+        raise ValueError("labels and values must have the same length")
+
+    if is_pie_like_scene_variant(str(scene_variant)):
+        fill_palette = [normalize_rgb(value) for value in mark_style.get("slice_fill_palette_rgb", [])]
+        outline_palette = [normalize_rgb(value) for value in mark_style.get("slice_outline_palette_rgb", [])]
+        if len(fill_palette) != len(resolved_labels) or len(outline_palette) != len(resolved_labels):
+            raise ValueError("pie-style chart marks require one fill/outline color per slice")
+        return [
+            ChartMarkSpec(
+                label=str(label),
+                value=int(value),
+                fill_rgb=tuple(int(channel) for channel in fill_palette[index]),
+                outline_rgb=tuple(int(channel) for channel in outline_palette[index]),
+            )
+            for index, (label, value) in enumerate(zip(resolved_labels, resolved_values))
+        ]
+
+    fill_rgb = normalize_rgb(mark_style.get("mark_fill_rgb", (86, 138, 214)))
+    outline_rgb = normalize_rgb(mark_style.get("mark_outline_rgb", darken_color(fill_rgb, factor=0.55)))
+    return [
+        ChartMarkSpec(
+            label=str(label),
+            value=int(value),
+            fill_rgb=tuple(int(channel) for channel in fill_rgb),
+            outline_rgb=tuple(int(channel) for channel in outline_rgb),
+        )
+        for label, value in zip(resolved_labels, resolved_values)
+    ]
+
+
 def resolve_chart_mark_colors(
     params: Mapping[str, Any],
     *,
     render_defaults: Mapping[str, Any],
     defaults: LabeledChartDefaults,
     instance_seed: int,
+    scene_variant: str,
+    mark_count: int,
 ) -> Dict[str, Any]:
-    """Resolve one per-instance chart mark color shared across all marks."""
+    """Resolve one per-instance chart mark color style block."""
 
     explicit_fill = params.get("mark_fill_rgb")
     explicit_outline = params.get("mark_outline_rgb")
 
-    if explicit_fill is not None or explicit_outline is not None:
+    if not is_pie_like_scene_variant(str(scene_variant)) and (explicit_fill is not None or explicit_outline is not None):
         fill_rgb = normalize_rgb(explicit_fill if explicit_fill is not None else (86, 138, 214))
         outline_rgb = normalize_rgb(
             explicit_outline if explicit_outline is not None else darken_color(fill_rgb, factor=0.55)
@@ -280,6 +335,26 @@ def resolve_chart_mark_colors(
             group_default(render_defaults, "mark_color_distance_space", defaults.mark_color_distance_space),
         )
     ).strip().lower()
+    if is_pie_like_scene_variant(str(scene_variant)):
+        fill_palette = sample_color_palette_with_distance_constraints(
+            color_rng,
+            palette_size=int(mark_count),
+            channel_min=int(channel_min),
+            channel_max=int(channel_max),
+            anchor_colors=((255, 255, 255), (248, 248, 248)),
+            min_distance=float(min_distance),
+            distance_space=str(distance_space),
+        )
+        outline_palette = [darken_color(fill_rgb, factor=0.55) for fill_rgb in fill_palette]
+        return {
+            "sampling_policy": "random_rgb_palette",
+            "mark_fill_rgb": [int(channel) for channel in fill_palette[0]],
+            "mark_outline_rgb": [int(channel) for channel in outline_palette[0]],
+            "slice_fill_palette_rgb": [[int(channel) for channel in fill_rgb] for fill_rgb in fill_palette],
+            "slice_outline_palette_rgb": [[int(channel) for channel in outline_rgb] for outline_rgb in outline_palette],
+            "mark_color_min_distance": float(min_distance),
+            "mark_color_distance_space": str(distance_space),
+        }
     fill_rgb = sample_color_with_distance_constraints(
         color_rng,
         channel_min=int(channel_min),
@@ -379,6 +454,57 @@ def compose_with_sum(
         remaining -= int(add_value)
     if int(sum(values)) != int(target_sum):
         raise RuntimeError("sum composition drifted from requested target")
+    return [int(value) for value in values]
+
+
+def sample_composition_with_sum(
+    rng,
+    *,
+    target_sum: int,
+    count: int,
+    value_min: int,
+    value_max: int,
+) -> List[int]:
+    """Sample one bounded integer composition with sum preserved exactly."""
+
+    if int(count) <= 0:
+        raise ValueError("composition count must be positive")
+    if int(target_sum) < int(count) * int(value_min) or int(target_sum) > int(count) * int(value_max):
+        raise ValueError("target_sum outside feasible support for bounded composition")
+
+    values = [int(value_min)] * int(count)
+    remaining = int(target_sum) - (int(count) * int(value_min))
+    max_increment = int(value_max) - int(value_min)
+    for index in range(int(count)):
+        remaining_slots = int(count) - int(index) - 1
+        max_possible_for_rest = int(remaining_slots) * int(max_increment)
+        add_min = max(0, int(remaining) - int(max_possible_for_rest))
+        add_max = min(int(max_increment), int(remaining))
+        add_value = int(remaining) if int(index) == int(count) - 1 else int(rng.randint(int(add_min), int(add_max)))
+        values[int(index)] += int(add_value)
+        remaining -= int(add_value)
+    if int(sum(values)) != int(target_sum):
+        raise RuntimeError("bounded composition drifted from requested sum")
+    return [int(value) for value in values]
+
+
+def sample_percentage_composition(
+    *,
+    count: int,
+    instance_seed: int,
+    namespace: str,
+) -> List[int]:
+    """Sample one positive-integer percentage composition that sums to 100."""
+
+    composition_rng = spawn_rng(int(instance_seed), str(namespace))
+    values = sample_composition_with_sum(
+        composition_rng,
+        target_sum=100,
+        count=int(count),
+        value_min=1,
+        value_max=100,
+    )
+    composition_rng.shuffle(values)
     return [int(value) for value in values]
 
 
@@ -582,6 +708,122 @@ def _sample_values_from_pool(
     return [int(values[rng.randint(0, len(values) - 1)]) for _ in range(int(count))]
 
 
+def summarize_statistic_from_values(
+    *,
+    statistic_kind: StatisticKind,
+    labels: Sequence[str],
+    values: Sequence[int],
+) -> Tuple[int, List[str], Dict[str, Any]]:
+    """Resolve the statistic answer and supporting labels from one labeled value list."""
+
+    resolved_labels = [str(label) for label in labels]
+    resolved_values = [int(value) for value in values]
+    if len(resolved_labels) != len(resolved_values):
+        raise ValueError("labels and values must have the same length")
+
+    marks = {str(label): int(value) for label, value in zip(resolved_labels, resolved_values)}
+    if str(statistic_kind) == "max":
+        target_answer = int(max(resolved_values))
+        winners = [str(label) for label, value in marks.items() if int(value) == int(target_answer)]
+        if len(winners) != 1:
+            raise ValueError("max requires one unique winning label")
+        return int(target_answer), [str(winners[0])], {"winning_label": str(winners[0])}
+    if str(statistic_kind) == "min":
+        target_answer = int(min(resolved_values))
+        winners = [str(label) for label, value in marks.items() if int(value) == int(target_answer)]
+        if len(winners) != 1:
+            raise ValueError("min requires one unique winning label")
+        return int(target_answer), [str(winners[0])], {"winning_label": str(winners[0])}
+    if str(statistic_kind) == "range":
+        min_value = int(min(resolved_values))
+        max_value = int(max(resolved_values))
+        min_labels = [str(label) for label, value in marks.items() if int(value) == int(min_value)]
+        max_labels = [str(label) for label, value in marks.items() if int(value) == int(max_value)]
+        if len(min_labels) != 1 or len(max_labels) != 1:
+            raise ValueError("range requires one unique min label and one unique max label")
+        return (
+            int(max_value - min_value),
+            sorted_labels([str(min_labels[0]), str(max_labels[0])]),
+            {
+                "min_label": str(min_labels[0]),
+                "max_label": str(max_labels[0]),
+                "min_value": int(min_value),
+                "max_value": int(max_value),
+            },
+        )
+    if str(statistic_kind) == "mean":
+        total = int(sum(resolved_values))
+        count = int(len(resolved_values))
+        if count <= 0 or int(total) % int(count) != 0:
+            raise ValueError("mean requires an integral average")
+        return int(total // count), sorted_labels(resolved_labels), {"computed_sum": int(total)}
+    if str(statistic_kind) == "median":
+        if int(len(resolved_values)) % 2 == 0:
+            raise ValueError("median requires an odd number of values")
+        sorted_pairs = sorted(((int(value), str(label)) for label, value in marks.items()), key=lambda item: (item[0], item[1]))
+        median_index = len(sorted_pairs) // 2
+        median_value = int(sorted_pairs[median_index][0])
+        median_labels = [str(label) for label, value in marks.items() if int(value) == int(median_value)]
+        if len(median_labels) != 1:
+            raise ValueError("median requires one unique median label")
+        return (
+            int(median_value),
+            [str(median_labels[0])],
+            {
+                "median_label": str(median_labels[0]),
+                "sorted_values": [int(value) for value, _ in sorted_pairs],
+            },
+        )
+    if str(statistic_kind) == "sum":
+        total = int(sum(resolved_values))
+        return int(total), sorted_labels(resolved_labels), {"computed_sum": int(total)}
+    if str(statistic_kind) == "mode":
+        frequencies = {int(value): int(resolved_values.count(value)) for value in set(resolved_values)}
+        modal_frequency = max(frequencies.values())
+        winning_values = [int(value) for value, frequency in frequencies.items() if int(frequency) == int(modal_frequency)]
+        if len(winning_values) != 1 or int(modal_frequency) <= 1:
+            raise ValueError("mode requires one unique repeated modal value")
+        modal_value = int(winning_values[0])
+        evidence_labels = sorted_labels([str(label) for label, value in marks.items() if int(value) == int(modal_value)])
+        return int(modal_value), evidence_labels, {"mode_frequency": int(modal_frequency)}
+    raise ValueError(f"unsupported statistic_kind: {statistic_kind}")
+
+
+def _sample_pie_summary_values(
+    *,
+    statistic_kind: StatisticKind,
+    mark_count: int,
+    instance_seed: int,
+    task_id: str,
+) -> List[int]:
+    """Sample one percentage composition that satisfies the requested summary property."""
+
+    if str(statistic_kind) not in {"max", "min", "median"}:
+        raise ValueError(f"pie-like summary statistics do not support {statistic_kind}")
+    sample_rng = spawn_rng(int(instance_seed), f"{task_id}.pie_summary:{str(statistic_kind)}")
+    for attempt in range(256):
+        values = sample_composition_with_sum(
+            sample_rng,
+            target_sum=100,
+            count=int(mark_count),
+            value_min=1,
+            value_max=100,
+        )
+        sample_rng.shuffle(values)
+        if str(statistic_kind) == "max" and len([value for value in values if int(value) == int(max(values))]) == 1:
+            return [int(value) for value in values]
+        if str(statistic_kind) == "min" and len([value for value in values if int(value) == int(min(values))]) == 1:
+            return [int(value) for value in values]
+        if str(statistic_kind) == "median":
+            if int(mark_count) % 2 == 0:
+                raise ValueError("pie-like median requires an odd mark count")
+            ordered = sorted(int(value) for value in values)
+            median_value = int(ordered[len(ordered) // 2])
+            if ordered.count(int(median_value)) == 1:
+                return [int(value) for value in values]
+    raise RuntimeError(f"unable to construct pie-like summary values for {statistic_kind}")
+
+
 def build_summary_statistics_dataset_for_variant(
     *,
     statistic_kind: StatisticKind,
@@ -595,6 +837,7 @@ def build_summary_statistics_dataset_for_variant(
 ) -> Tuple[List[int], int, List[str], Dict[str, Any]]:
     """Construct values, answer, evidence labels, and trace extras for one statistic variant."""
 
+    pie_like = bool(is_pie_like_scene_variant(str(scene_variant)))
     value_min, value_max = resolve_value_bounds(params, gen_defaults=gen_defaults, defaults=defaults, task_id=task_id)
     mark_count_min, mark_count_max = resolve_mark_count_bounds(
         params,
@@ -607,6 +850,45 @@ def build_summary_statistics_dataset_for_variant(
         mark_count_min=int(mark_count_min),
         mark_count_max=int(mark_count_max),
     )
+    if pie_like:
+        feasible_counts = [
+            int(count)
+            for count in range(int(mark_count_min), int(mark_count_max) + 1)
+            if str(statistic_kind) != "median" or int(count) % 2 == 1
+        ]
+        mark_count = choose_mark_count(
+            feasible_counts,
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}.mark_count:{str(statistic_kind)}:pie",
+        )
+        labels = list(sample_chart_labels(count=int(mark_count), instance_seed=int(instance_seed)))
+        values = _sample_pie_summary_values(
+            statistic_kind=str(statistic_kind),
+            mark_count=int(mark_count),
+            instance_seed=int(instance_seed),
+            task_id=task_id,
+        )
+        answer_value, evidence_labels, summary_trace = summarize_statistic_from_values(
+            statistic_kind=str(statistic_kind),
+            labels=labels,
+            values=values,
+        )
+        trace_extras: Dict[str, Any] = {
+            "value_min": 1,
+            "value_max": 99,
+            "value_semantics": "percentage",
+            "composition_total": 100,
+            "target_answer_range": [1, 99],
+            "mark_count_range": [int(mark_count_min), int(mark_count_max)],
+            "target_answer": int(answer_value),
+            "mark_count": int(mark_count),
+            "labels": [str(label) for label in labels],
+            "values_by_label": {str(label): int(value) for label, value in zip(labels, values)},
+            **dict(summary_trace),
+        }
+        return [int(value) for value in values], int(answer_value), evidence_labels, trace_extras
+
     supported_answer_min, supported_answer_max = resolve_target_answer_range(
         params,
         task_variant=str(statistic_kind),
@@ -687,7 +969,7 @@ def build_summary_statistics_dataset_for_variant(
             instance_seed=int(instance_seed),
         )
     elif str(statistic_kind) == "range":
-        values, min_value, max_value = build_values_for_range(
+        values, _, _ = build_values_for_range(
             int(target_answer),
             count=int(mark_count),
             value_min=int(value_min),
@@ -731,9 +1013,15 @@ def build_summary_statistics_dataset_for_variant(
     else:
         raise ValueError(f"unsupported statistic_kind: {statistic_kind}")
 
-    marks = {str(label): int(value) for label, value in zip(labels, values)}
-    evidence_labels: List[str]
-    trace_extras: Dict[str, Any] = {
+    answer_value, evidence_labels, summary_trace = summarize_statistic_from_values(
+        statistic_kind=str(statistic_kind),
+        labels=labels,
+        values=values,
+    )
+    if int(answer_value) != int(target_answer):
+        raise RuntimeError("constructed summary values do not match the requested target answer")
+
+    trace_extras = {
         "value_min": int(value_min),
         "value_max": int(value_max),
         "target_answer_range": [int(supported_answer_min), int(supported_answer_max)],
@@ -741,55 +1029,65 @@ def build_summary_statistics_dataset_for_variant(
         "target_answer": int(target_answer),
         "mark_count": int(mark_count),
         "labels": [str(label) for label in labels],
-        "values_by_label": {str(label): int(marks[str(label)]) for label in labels},
+        "values_by_label": {str(label): int(value) for label, value in zip(labels, values)},
+        **dict(summary_trace),
     }
+    return [int(value) for value in values], int(answer_value), evidence_labels, trace_extras
 
-    if str(statistic_kind) == "max":
-        winning_label = next(str(label) for label in labels if int(marks[str(label)]) == int(target_answer))
-        evidence_labels = [str(winning_label)]
-        trace_extras["winning_label"] = str(winning_label)
-    elif str(statistic_kind) == "min":
-        winning_label = next(str(label) for label in labels if int(marks[str(label)]) == int(target_answer))
-        evidence_labels = [str(winning_label)]
-        trace_extras["winning_label"] = str(winning_label)
-    elif str(statistic_kind) == "range":
-        min_label = next(str(label) for label in labels if int(marks[str(label)]) == int(min_value))
-        max_label = next(str(label) for label in labels if int(marks[str(label)]) == int(max_value))
-        evidence_labels = sorted_labels([str(min_label), str(max_label)])
-        trace_extras["min_label"] = str(min_label)
-        trace_extras["max_label"] = str(max_label)
-        trace_extras["min_value"] = int(min_value)
-        trace_extras["max_value"] = int(max_value)
-    elif str(statistic_kind) == "mean":
-        evidence_labels = sorted_labels(labels)
-        trace_extras["computed_sum"] = int(sum(values))
-    elif str(statistic_kind) == "median":
-        sorted_pairs = sorted(((int(value), str(label)) for label, value in marks.items()), key=lambda item: (item[0], item[1]))
-        median_label = str(sorted_pairs[len(sorted_pairs) // 2][1])
-        evidence_labels = [str(median_label)]
-        trace_extras["median_label"] = str(median_label)
-        trace_extras["sorted_values"] = [int(value) for value, _ in sorted_pairs]
-    elif str(statistic_kind) == "sum":
-        evidence_labels = sorted_labels(labels)
-        trace_extras["computed_sum"] = int(sum(values))
-    else:
-        evidence_labels = sorted_labels([str(label) for label, value in marks.items() if int(value) == int(target_answer)])
-        trace_extras["mode_frequency"] = int(len(evidence_labels))
 
-    if str(statistic_kind) == "mean" and int(sum(values)) != int(target_answer) * int(mark_count):
-        raise RuntimeError("constructed mean values do not match requested answer")
-    if str(statistic_kind) == "median":
-        sorted_values = sorted(int(value) for value in values)
-        if int(sorted_values[len(sorted_values) // 2]) != int(target_answer):
-            raise RuntimeError("constructed median values do not match requested answer")
-    if str(statistic_kind) == "mode":
-        frequencies = {int(value): int(values.count(value)) for value in set(values)}
-        modal_frequency = max(frequencies.values())
-        winning_values = [value for value, frequency in frequencies.items() if int(frequency) == int(modal_frequency)]
-        if winning_values != [int(target_answer)]:
-            raise RuntimeError("constructed mode values do not match requested answer")
+def _find_pie_count_query(
+    *,
+    count_variant: str,
+    target_answer: int,
+    mark_count: int,
+    instance_seed: int,
+    task_id: str,
+) -> Tuple[List[int], Dict[str, Any]]:
+    """Sample one percentage composition and compatible count query."""
 
-    return [int(value) for value in values], int(target_answer), evidence_labels, trace_extras
+    query_rng = spawn_rng(int(instance_seed), f"{task_id}.pie_query:{str(count_variant)}")
+    for _ in range(256):
+        values = sample_composition_with_sum(
+            query_rng,
+            target_sum=100,
+            count=int(mark_count),
+            value_min=1,
+            value_max=100,
+        )
+        query_rng.shuffle(values)
+        if str(count_variant) == "above_threshold":
+            candidates = [int(threshold) for threshold in range(0, 100) if sum(1 for value in values if int(value) > int(threshold)) == int(target_answer)]
+            if candidates:
+                threshold = int(candidates[query_rng.randint(0, len(candidates) - 1)])
+                return [int(value) for value in values], {"threshold": int(threshold), "comparison": "greater_than"}
+        elif str(count_variant) == "below_threshold":
+            candidates = [int(threshold) for threshold in range(1, 101) if sum(1 for value in values if int(value) < int(threshold)) == int(target_answer)]
+            if candidates:
+                threshold = int(candidates[query_rng.randint(0, len(candidates) - 1)])
+                return [int(value) for value in values], {"threshold": int(threshold), "comparison": "less_than"}
+        elif str(count_variant) == "in_interval":
+            candidates: List[Tuple[int, int]] = []
+            for interval_min in range(0, 101):
+                for interval_max in range(int(interval_min), 101):
+                    count = sum(
+                        1
+                        for value in values
+                        if int(interval_min) <= int(value) <= int(interval_max)
+                    )
+                    if int(count) == int(target_answer):
+                        candidates.append((int(interval_min), int(interval_max)))
+            if candidates:
+                interval_min, interval_max = candidates[query_rng.randint(0, len(candidates) - 1)]
+                return [
+                    int(value) for value in values
+                ], {
+                    "interval_min": int(interval_min),
+                    "interval_max": int(interval_max),
+                    "interval_inclusive": True,
+                }
+        else:
+            raise ValueError(f"unsupported count_variant: {count_variant}")
+    raise RuntimeError(f"unable to construct pie-like count query for {count_variant}")
 
 
 def build_value_count_dataset_for_variant(
@@ -804,6 +1102,7 @@ def build_value_count_dataset_for_variant(
 ) -> Tuple[List[int], int, List[str], Dict[str, Any]]:
     """Construct one labeled chart dataset for threshold/interval counting tasks."""
 
+    pie_like = bool(is_pie_like_scene_variant(str(scene_variant)))
     value_min, value_max = resolve_value_bounds(params, gen_defaults=gen_defaults, defaults=defaults, task_id=task_id)
     mark_count_min, mark_count_max = resolve_mark_count_bounds(
         params,
@@ -845,6 +1144,46 @@ def build_value_count_dataset_for_variant(
         namespace=f"{task_id}.mark_count:{str(count_variant)}:{int(target_answer)}",
     )
     labels = list(sample_chart_labels(count=int(mark_count), instance_seed=int(instance_seed)))
+    if pie_like:
+        values, query_trace = _find_pie_count_query(
+            count_variant=str(count_variant),
+            target_answer=int(target_answer),
+            mark_count=int(mark_count),
+            instance_seed=int(instance_seed),
+            task_id=task_id,
+        )
+        if str(count_variant) == "above_threshold":
+            threshold = int(query_trace["threshold"])
+            evidence_rule = lambda value: int(value) > int(threshold)
+        elif str(count_variant) == "below_threshold":
+            threshold = int(query_trace["threshold"])
+            evidence_rule = lambda value: int(value) < int(threshold)
+        else:
+            interval_min = int(query_trace["interval_min"])
+            interval_max = int(query_trace["interval_max"])
+            evidence_rule = lambda value: int(interval_min) <= int(value) <= int(interval_max)
+        marks = {str(label): int(value) for label, value in zip(labels, values)}
+        evidence_labels = sorted_labels(
+            [str(label) for label in labels if bool(evidence_rule(int(marks[str(label)])))]
+        )
+        if int(len(evidence_labels)) != int(target_answer):
+            raise RuntimeError("constructed pie-like counting dataset does not match requested answer")
+        trace_extras: Dict[str, Any] = {
+            "value_min": 1,
+            "value_max": 99,
+            "value_semantics": "percentage",
+            "composition_total": 100,
+            "target_answer_range": [int(supported_answer_min), int(supported_answer_max)],
+            "mark_count_range": [int(mark_count_min), int(mark_count_max)],
+            "target_answer": int(target_answer),
+            "mark_count": int(mark_count),
+            "labels": [str(label) for label in labels],
+            "values_by_label": {str(label): int(marks[str(label)]) for label in labels},
+            "evidence_labels": list(evidence_labels),
+            **query_trace,
+        }
+        return [int(value) for value in values], int(target_answer), evidence_labels, trace_extras
+
     query_rng = spawn_rng(int(instance_seed), f"{task_id}.query:{str(count_variant)}")
 
     if str(count_variant) == "above_threshold":
@@ -1040,6 +1379,20 @@ def _default_readout_answer_range(
     raise ValueError(f"unsupported readout_variant: {readout_variant}")
 
 
+def _default_pie_readout_answer_range(readout_variant: str) -> Tuple[int, int]:
+    """Return conservative default answer support for two-slice percentage readout."""
+
+    if str(readout_variant) == "sum_two":
+        return 2, 94
+    if str(readout_variant) == "difference_two_abs":
+        return 0, 90
+    if str(readout_variant) == "max_two":
+        return 1, 91
+    if str(readout_variant) in {"min_two", "mean_two"}:
+        return 1, 47
+    raise ValueError(f"unsupported readout_variant: {readout_variant}")
+
+
 def _build_query_pair_for_readout(
     readout_variant: str,
     *,
@@ -1093,6 +1446,67 @@ def _build_query_pair_for_readout(
     return [int(value) for value in values]
 
 
+def _build_pie_query_pair_for_readout(
+    readout_variant: str,
+    *,
+    target_answer: int,
+    mark_count: int,
+    instance_seed: int,
+    namespace: str,
+) -> List[int]:
+    """Construct the ordered queried percentages for one two-slice readout variant."""
+
+    remaining_slots = int(mark_count) - 2
+    if int(remaining_slots) < 0:
+        raise ValueError("pie readout requires at least two marks")
+    max_pair_sum = 100 - int(remaining_slots)
+    rng = spawn_rng(int(instance_seed), str(namespace))
+
+    if str(readout_variant) == "sum_two":
+        if int(target_answer) < 2 or int(target_answer) > int(max_pair_sum):
+            raise ValueError("sum_two target is outside feasible pie support")
+        first = int(rng.randint(1, int(target_answer) - 1))
+        second = int(target_answer) - int(first)
+        values = [int(first), int(second)]
+    elif str(readout_variant) == "difference_two_abs":
+        if int(target_answer) < 0 or int(target_answer) > int(max_pair_sum) - 2:
+            raise ValueError("difference_two_abs target is outside feasible pie support")
+        if int(target_answer) == 0:
+            repeated_max = int(max_pair_sum // 2)
+            repeated = int(rng.randint(1, int(repeated_max)))
+            values = [int(repeated), int(repeated)]
+        else:
+            low_max = int((int(max_pair_sum) - int(target_answer)) // 2)
+            low = int(rng.randint(1, int(low_max)))
+            values = [int(low), int(low) + int(target_answer)]
+    elif str(readout_variant) == "max_two":
+        if int(target_answer) < 1 or int(target_answer) > int(max_pair_sum) - 1:
+            raise ValueError("max_two target is outside feasible pie support")
+        other_high = int(min(int(target_answer), int(max_pair_sum) - int(target_answer)))
+        other = int(rng.randint(1, int(other_high)))
+        values = [int(target_answer), int(other)]
+    elif str(readout_variant) == "min_two":
+        if int(target_answer) < 1:
+            raise ValueError("min_two target is outside feasible pie support")
+        other_high = int(max_pair_sum) - int(target_answer)
+        if int(other_high) < int(target_answer):
+            raise ValueError("min_two target is outside feasible pie support")
+        other = int(rng.randint(int(target_answer), int(other_high)))
+        values = [int(target_answer), int(other)]
+    elif str(readout_variant) == "mean_two":
+        if int(target_answer) < 1 or (2 * int(target_answer)) > int(max_pair_sum):
+            raise ValueError("mean_two target is outside feasible pie support")
+        max_delta = int(target_answer) - 1
+        delta = int(rng.randint(0, int(max_delta)))
+        values = [int(target_answer) - int(delta), int(target_answer) + int(delta)]
+    else:
+        raise ValueError(f"unsupported readout_variant: {readout_variant}")
+
+    if int(rng.randint(0, 1)) == 1:
+        values = [int(values[1]), int(values[0])]
+    return [int(value) for value in values]
+
+
 def build_value_readout_dataset_for_variant(
     *,
     readout_variant: str,
@@ -1105,6 +1519,7 @@ def build_value_readout_dataset_for_variant(
 ) -> Tuple[List[int], int, List[int], Dict[str, Any]]:
     """Construct one labeled chart dataset for two-label numeric readout tasks."""
 
+    pie_like = bool(is_pie_like_scene_variant(str(scene_variant)))
     value_min, value_max = resolve_value_bounds(params, gen_defaults=gen_defaults, defaults=defaults, task_id=task_id)
     mark_count_min, mark_count_max = resolve_mark_count_bounds(
         params,
@@ -1117,11 +1532,14 @@ def build_value_readout_dataset_for_variant(
         mark_count_min=int(mark_count_min),
         mark_count_max=int(mark_count_max),
     )
-    default_answer_min, default_answer_max = _default_readout_answer_range(
-        str(readout_variant),
-        value_min=int(value_min),
-        value_max=int(value_max),
-    )
+    if pie_like:
+        default_answer_min, default_answer_max = _default_pie_readout_answer_range(str(readout_variant))
+    else:
+        default_answer_min, default_answer_max = _default_readout_answer_range(
+            str(readout_variant),
+            value_min=int(value_min),
+            value_max=int(value_max),
+        )
     explicit_min = params.get("target_answer_min")
     explicit_max = params.get("target_answer_max")
     supported_answer_min = int(default_answer_min if explicit_min is None else explicit_min)
@@ -1162,14 +1580,32 @@ def build_value_readout_dataset_for_variant(
         value_max=int(value_max),
         instance_seed=int(instance_seed),
         namespace=f"{task_id}.query_values:{str(readout_variant)}",
+    ) if not pie_like else _build_pie_query_pair_for_readout(
+        str(readout_variant),
+        target_answer=int(target_answer),
+        mark_count=int(mark_count),
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}.query_values:{str(readout_variant)}:pie",
     )
-    remaining_rng = spawn_rng(int(instance_seed), f"{task_id}.other_values:{str(readout_variant)}")
-    remaining_values = _sample_int_values(
-        remaining_rng,
-        count=int(mark_count) - 2,
-        min_value=int(value_min),
-        max_value=int(value_max),
-    )
+    if pie_like:
+        remaining_rng = spawn_rng(int(instance_seed), f"{task_id}.other_values:{str(readout_variant)}:pie")
+        remaining_sum = 100 - int(sum(query_values))
+        remaining_values = sample_composition_with_sum(
+            remaining_rng,
+            target_sum=int(remaining_sum),
+            count=int(mark_count) - 2,
+            value_min=1,
+            value_max=100,
+        )
+        remaining_rng.shuffle(remaining_values)
+    else:
+        remaining_rng = spawn_rng(int(instance_seed), f"{task_id}.other_values:{str(readout_variant)}")
+        remaining_values = _sample_int_values(
+            remaining_rng,
+            count=int(mark_count) - 2,
+            min_value=int(value_min),
+            max_value=int(value_max),
+        )
     values_by_label: Dict[str, int] = {}
     remaining_iter = iter(int(value) for value in remaining_values)
     for index, label in enumerate(labels):
@@ -1202,8 +1638,9 @@ def build_value_readout_dataset_for_variant(
         raise RuntimeError("constructed readout dataset does not match requested answer")
 
     trace_extras: Dict[str, Any] = {
-        "value_min": int(value_min),
-        "value_max": int(value_max),
+        "value_min": 1 if pie_like else int(value_min),
+        "value_max": 99 if pie_like else int(value_max),
+        **({"value_semantics": "percentage", "composition_total": 100} if pie_like else {}),
         "target_answer_range": [int(supported_answer_min), int(supported_answer_max)],
         "mark_count_range": [int(mark_count_min), int(mark_count_max)],
         "target_answer": int(target_answer),
@@ -1254,13 +1691,16 @@ def resolve_chart_render_params_for_task(
 
 __all__ = [
     "LabeledChartDefaults",
+    "PIE_LIKE_SCENE_VARIANTS",
     "SUPPORTED_LABELED_CHART_SCENE_VARIANTS",
     "StatisticKind",
     "SceneVariant",
     "balanced_choice_from_values",
+    "build_chart_mark_specs",
     "build_value_readout_dataset_for_variant",
     "build_summary_statistics_dataset_for_variant",
     "build_value_count_dataset_for_variant",
+    "is_pie_like_scene_variant",
     "resolve_chart_axis_variant",
     "resolve_chart_mark_colors",
     "resolve_chart_render_params_for_task",

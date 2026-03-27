@@ -201,6 +201,7 @@ def test_charts_statistics_defaults_loaded() -> None:
         "sum",
     ]
     assert sorted(generation_shared["scene_variant_weights"].keys()) == [
+        "area",
         "bar",
         "donut",
         "dot_plot",
@@ -268,6 +269,7 @@ def test_charts_counting_defaults_loaded() -> None:
         "in_interval",
     ]
     assert sorted(generation_shared["scene_variant_weights"].keys()) == [
+        "area",
         "bar",
         "donut",
         "dot_plot",
@@ -318,6 +320,7 @@ def test_charts_readout_defaults_loaded() -> None:
         "sum_two",
     ]
     assert sorted(generation_shared["scene_variant_weights"].keys()) == [
+        "area",
         "bar",
         "donut",
         "dot_plot",

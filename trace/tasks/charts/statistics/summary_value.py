@@ -17,11 +17,13 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ..shared.chart_scene import ChartMarkSpec, render_labeled_chart_scene
+from ..shared.chart_scene import render_labeled_chart_scene
 from ..shared.labeled_chart_common import (
     LabeledChartDefaults,
     SUPPORTED_LABELED_CHART_SCENE_VARIANTS,
+    build_chart_mark_specs,
     build_summary_statistics_dataset_for_variant,
+    is_pie_like_scene_variant,
     projected_mark_evidence,
     resolve_chart_axis_variant,
     resolve_chart_mark_colors,
@@ -51,6 +53,11 @@ _TARGET_ANSWER_RANGES: Dict[str, Tuple[int, int]] = {
     "median": (3, 10),
     "mode": (3, 10),
 }
+_SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = tuple(
+    str(scene_variant)
+    for scene_variant in SUPPORTED_LABELED_CHART_SCENE_VARIANTS
+    if not is_pie_like_scene_variant(str(scene_variant))
+)
 
 _DEFAULTS = LabeledChartDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("charts", "statistics")
@@ -85,7 +92,7 @@ def _resolve_scene_variant(params: Mapping[str, Any], *, instance_seed: int) -> 
         params=params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_LABELED_CHART_SCENE_VARIANTS,
+        supported_variants=_SUPPORTED_SCENE_VARIANTS,
         task_id=TASK_ID,
         explicit_key="scene_variant",
         weights_key="scene_variant_weights",
@@ -118,12 +125,19 @@ class ChartsStatisticsSummaryValueTask:
         )
 
         labels = [str(label) for label in trace_extras["labels"]]
-        marks = [ChartMarkSpec(label=str(label), value=int(value)) for label, value in zip(labels, values)]
         mark_style = resolve_chart_mark_colors(
             params,
             render_defaults=_RENDER_DEFAULTS,
             defaults=_DEFAULTS,
             instance_seed=int(instance_seed),
+            scene_variant=str(scene_variant),
+            mark_count=len(labels),
+        )
+        marks = build_chart_mark_specs(
+            labels=labels,
+            values=values,
+            scene_variant=str(scene_variant),
+            mark_style=mark_style,
         )
         render_params = resolve_chart_render_params_for_task(
             {**dict(params), **mark_style},
@@ -161,6 +175,7 @@ class ChartsStatisticsSummaryValueTask:
                 "json_output_contract",
                 "json_output_contract_answer_only",
                 "answer_hint",
+                "object_description_area",
                 "object_description_bar",
                 "object_description_pie",
                 "object_description_donut",

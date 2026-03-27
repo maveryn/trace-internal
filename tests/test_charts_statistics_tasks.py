@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 
+from trace.core.type_registry import load_type_registry
+from trace.tasks.charts.statistics.summary_label import ChartsStatisticsSummaryLabelTask
 from trace.tasks.charts.statistics.summary_value import ChartsStatisticsSummaryValueTask
 from trace.tasks.shared.color_distance import color_distance
 from trace.tasks.shared.named_colors import darken_color
@@ -37,6 +39,22 @@ def _expected_answer(task_variant: str, values: list[int]) -> int:
         assert len(winners) == 1
         return int(winners[0])
     raise AssertionError(f"unsupported variant: {task_variant}")
+
+
+def _expected_label(task_variant: str, labels: list[str], values: list[int]) -> str:
+    by_label = {str(label): int(value) for label, value in zip(labels, values)}
+    if str(task_variant) == "argmax":
+        winning_value = int(max(values))
+    elif str(task_variant) == "argmin":
+        winning_value = int(min(values))
+    elif str(task_variant) == "median_label":
+        ordered = sorted((int(value), str(label)) for label, value in by_label.items())
+        return str(ordered[len(ordered) // 2][1])
+    else:
+        raise AssertionError(f"unsupported label-answer variant: {task_variant}")
+    winners = [str(label) for label, value in by_label.items() if int(value) == int(winning_value)]
+    assert len(winners) == 1
+    return str(winners[0])
 
 
 def test_chart_statistics_summary_value_variants_match_contract() -> None:
@@ -137,6 +155,85 @@ def test_chart_statistics_task_is_deterministic() -> None:
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
+
+
+def test_chart_statistics_summary_label_variants_match_contract() -> None:
+    task = ChartsStatisticsSummaryLabelTask()
+    cases = (
+        ("argmax", "bar"),
+        ("argmin", "line"),
+        ("median_label", "scatter"),
+    )
+    for seed, (task_variant, scene_variant) in enumerate(cases, start=9450):
+        out = task.generate(
+            seed,
+            params={"task_variant": task_variant, "scene_variant": scene_variant},
+            max_attempts=10,
+        )
+        trace = out.trace_payload
+        execution = trace["execution_trace"]
+        render = trace["render_spec"]
+
+        labels = [str(label) for label in execution["labels"]]
+        values = [int(value) for value in execution["values"]]
+        assert str(out.task_variant) == str(task_variant)
+        assert out.answer_gt.type == "option_letter"
+        assert out.evidence_gt.type == "integer"
+        assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+        assert str(execution["scene_variant"]) == str(scene_variant)
+        assert str(render["scene_variant"]) == str(scene_variant)
+        assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
+        assert str(out.answer_gt.value) == _expected_label(str(task_variant), labels, values)
+        assert int(out.evidence_gt.value) == int(execution["evidence_value"])
+        assert trace["projected_evidence"]["integer"] == int(out.evidence_gt.value)
+        assert str(trace["query_spec"]["task_variant"]) == str(task_variant)
+        assert str(trace["query_spec"]["params"]["scene_variant"]) == str(scene_variant)
+        assert len(trace["scene_ir"]["entities"]) == int(execution["mark_count"])
+        assert set(str(entity["attrs"]["label"]) for entity in trace["scene_ir"]["entities"]) == set(labels)
+        assert set(trace["render_map"]["label_centers_px"].keys()) == set(labels)
+        assert len(render["y_ticks"]) == int(render["y_axis_max"]) + 1
+
+        if str(task_variant) == "argmax":
+            assert int(out.evidence_gt.value) == int(max(values))
+        elif str(task_variant) == "argmin":
+            assert int(out.evidence_gt.value) == int(min(values))
+        else:
+            ordered_values = sorted(int(value) for value in values)
+            assert int(out.evidence_gt.value) == int(ordered_values[len(ordered_values) // 2])
+
+
+def test_chart_statistics_summary_label_prompt_examples_match_selected_variant() -> None:
+    task = ChartsStatisticsSummaryLabelTask()
+    expected = {
+        "argmax": {"evidence": 8, "answer": "D"},
+        "argmin": {"evidence": 2, "answer": "B"},
+        "median_label": {"evidence": 6, "answer": "M"},
+    }
+    for index, task_variant in enumerate(expected, start=9550):
+        out = task.generate(index, params={"task_variant": task_variant}, max_attempts=10)
+        answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
+        assert answer_and_evidence == expected[task_variant]
+        assert answer_only == {"answer": expected[task_variant]["answer"]}
+
+
+def test_chart_statistics_summary_label_task_is_deterministic() -> None:
+    task = ChartsStatisticsSummaryLabelTask()
+    params = {"task_variant": "median_label", "scene_variant": "scatter"}
+    out_a = task.generate(9651, params=params, max_attempts=10)
+    out_b = task.generate(9651, params=params, max_attempts=10)
+
+    assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
+    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
+    assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
+    assert out_a.prompt == out_b.prompt
+    assert out_a.image.tobytes() == out_b.image.tobytes()
+
+
+def test_integer_evidence_type_is_registered_for_chart_label_tasks() -> None:
+    registry = load_type_registry()
+    assert registry.validate_evidence_type("integer") is True
 
 
 def test_chart_statistics_labels_use_random_uppercase_subset() -> None:

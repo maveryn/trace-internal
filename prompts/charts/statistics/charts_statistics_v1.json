@@ -17,6 +17,13 @@
       "Use the chart values to answer the question.",
       "Compute the requested statistic from the chart values.",
       "Read the chart values and answer the question."
+    ],
+    "summary_label_query": [
+      "Answer this question.",
+      "Determine which label matches the requested statistic.",
+      "Use the chart values to identify the correct label.",
+      "Find the label of the mark that satisfies the requested statistic.",
+      "Read the chart values and name the matching label."
     ]
   },
   "task_variant_templates": {
@@ -68,6 +75,27 @@
       "Determine the unique mode of the labeled marks.",
       "What value appears most often in the chart?",
       "Compute the mode of the displayed values."
+    ],
+    "argmax": [
+      "Which label has the highest displayed value?",
+      "Find the label of the maximum-value mark.",
+      "Determine which labeled mark shows the largest value.",
+      "What label corresponds to the maximum value in the chart?",
+      "Identify the label of the highest-value mark."
+    ],
+    "argmin": [
+      "Which label has the lowest displayed value?",
+      "Find the label of the minimum-value mark.",
+      "Determine which labeled mark shows the smallest value.",
+      "What label corresponds to the minimum value in the chart?",
+      "Identify the label of the lowest-value mark."
+    ],
+    "median_label": [
+      "Which label is the median mark?",
+      "Find the label of the mark with the median value.",
+      "Determine which labeled mark is the median.",
+      "What label corresponds to the median value in the chart?",
+      "Identify the label of the median-value mark."
     ]
   },
   "required_slots_by_key": {

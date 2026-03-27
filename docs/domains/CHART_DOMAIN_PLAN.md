@@ -49,16 +49,17 @@ These are valid future targets, but they are not part of the initial implementat
 
 ## Initial implementation target
 
-The first implementation step is now active: `task_charts_statistics_summary_value` under `domain=charts`, `task_group=statistics`.
+The first implementation step is now active: `task_charts_statistics_summary_value` and `task_charts_statistics_summary_label` under `domain=charts`, `task_group=statistics`.
 
 The concrete v1 contract for the first rollout now lives in `CHART_TASK_SETUP.md`.
 
 ### First family
 1. The first planned chart family is `statistics`.
 2. This family should cover summary-value reasoning over the displayed data rather than chart-type-specific heuristics.
-3. The first concrete task in that family is:
+3. The first concrete tasks in that family are:
    - `task_charts_statistics_summary_value`
-4. Its statistic variants are:
+   - `task_charts_statistics_summary_label`
+4. The numeric-summary task variants are:
    - `max`
    - `min`
    - `range`
@@ -66,6 +67,10 @@ The concrete v1 contract for the first rollout now lives in `CHART_TASK_SETUP.md
    - `median`
    - `sum`
    - `mode`
+5. The label-answer companion task variants are:
+   - `argmax`
+   - `argmin`
+   - `median_label`
 
 ### First chart variants to implement
 These are the first chart variants we currently plan to support in the `statistics` family.

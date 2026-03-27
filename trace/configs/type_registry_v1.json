@@ -9,6 +9,7 @@
     "matrix"
   ],
   "evidence_types": [
+    "integer",
     "id_set",
     "id_path",
     "point_set",

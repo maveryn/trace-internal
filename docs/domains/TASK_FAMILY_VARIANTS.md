@@ -33,10 +33,12 @@ Define how we split tasks into reusable families so each dataset slice stays com
 1. Charts follow the same split as geometry: `task_group` encodes reasoning family, while chart type is treated as `scene_variant` inside the task.
 2. The first active chart family is `statistics`.
 3. Its first active task is `task_charts_statistics_summary_value`.
-4. Its semantic `task_variant` values are `max`, `min`, `range`, `mean`, `median`, `sum`, and `mode`.
-5. Its active `scene_variant` values are `bar`, `line`, and `scatter`.
-6. `histogram`, `pie`, and `heatmap` remain under consideration for later statistics support after the first rollout stabilizes.
-7. Keep the broader chart-type universe in `CHART_DOMAIN_PLAN.md` and the concrete v1 contract in `CHART_TASK_SETUP.md`.
+4. Its second active task is `task_charts_statistics_summary_label`.
+5. `task_charts_statistics_summary_value` uses semantic `task_variant` values `max`, `min`, `range`, `mean`, `median`, `sum`, and `mode`.
+6. `task_charts_statistics_summary_label` uses semantic `task_variant` values `argmax`, `argmin`, and `median_label`.
+7. Both chart statistics tasks use active `scene_variant` values `bar`, `line`, and `scatter`.
+8. `histogram`, `pie`, and `heatmap` remain under consideration for later statistics support after the first rollout stabilizes.
+9. Keep the broader chart-type universe in `CHART_DOMAIN_PLAN.md` and the concrete v1 contract in `CHART_TASK_SETUP.md`.
 
 ## Planned geometry measurement variants
 1. **Angle measurement**

@@ -243,9 +243,13 @@ def test_tile_relation_bundle_supports_min_distance_query() -> None:
 def test_charts_statistics_bundle_supports_summary_variants() -> None:
     bundle = load_prompt_bundle("charts", "statistics", "charts_statistics_v1")
     assert len(bundle.task_templates["summary_value_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_templates["summary_label_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_variant_templates["max"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_variant_templates["sum"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_variant_templates["mode"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["argmax"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["argmin"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["median_label"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["task_family:labeled_chart_statistics"]) == ["object_description"]
 
 

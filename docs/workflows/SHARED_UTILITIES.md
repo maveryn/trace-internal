@@ -130,8 +130,9 @@ Promote helpers when a second consumer appears.
    - `icons/counting/shared.py` provides the shared render-param resolution, icon-instance noise sampling, and canonical trace-style block for sibling reference-scene icon counting tasks; reuse it once a second icon counting task would otherwise duplicate the same render-default parsing or style-trace assembly.
    - `icon_transform.py` is the canonical home for D4 transform ids and image-space transform application; use it for icon rotation/mirror families instead of encoding transform names task-locally.
    - `icon_pair_grid_scene.py` provides the reusable Reference-pair + labeled Scene-grid renderer for icon transformation-style tasks; use cell labels from this renderer as evidence instead of inventing task-local grid containers.
-7. Charts: `trace/tasks/charts/shared/chart_scene.py`, `visual_defaults.py`
+7. Charts: `trace/tasks/charts/shared/chart_scene.py`, `statistics_common.py`, `visual_defaults.py`
    - `chart_scene.py` is the canonical labeled-chart renderer for the chart domain's first statistics family; it owns the shared axis/grid scaffold plus mark/label trace geometry for `bar`, `line`, and `scatter`.
+   - `statistics_common.py` is the shared construction layer for chart-statistics tasks; it owns mark-count/value bounds, balanced semantic/scene variant sampling, randomized label/color sampling, and reusable statistic dataset builders.
    - Chart mark colors should be sampled once per instance and then reused consistently across all marks in that chart; keep the renderer wired to the resolved per-instance fill/outline colors rather than tracing one style and drawing another.
    - `visual_defaults.py` is the canonical chart-domain background/noise loader layer shared across future chart task groups.
 

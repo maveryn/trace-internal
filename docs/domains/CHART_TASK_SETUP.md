@@ -8,8 +8,9 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
 ## V1 scope
 1. `domain = charts`
 2. First `task_group = statistics`
-3. First concrete task:
+3. First concrete statistics tasks:
    - `task_charts_statistics_summary_value`
+   - `task_charts_statistics_summary_label`
 4. First supported chart-type renderings:
    - `bar`
    - `line`
@@ -20,7 +21,7 @@ This is the chart-domain counterpart to `docs/domains/TILE_TASK_SETUP.md`: a sou
    - `domain -> task_group -> task`
 2. For this family:
    - `task_group = statistics`
-   - `task = summary_value`
+   - active tasks: `summary_value`, `summary_label`
 3. The semantic statistic is the public `task_variant`.
 4. The chart type is the visual `scene_variant`.
 
@@ -196,3 +197,15 @@ Note:
 1. Add a chart-native evidence type if `label_set` becomes too weak for later chart families.
 2. Formalize the cross-domain `scene_variant` ABI in core docs once charts are implemented.
 3. Revisit whether the seven statistic kinds should later split into multiple tasks if charts need more task-level mass.
+
+## Companion label-answer task
+1. The first follow-up companion task is `task_charts_statistics_summary_label`.
+2. It reuses the same chart scenes and `scene_variant` values (`bar|line|scatter`) but narrows the semantic `task_variant` set to:
+   - `argmax`
+   - `argmin`
+   - `median_label`
+3. Its contract is:
+   - `answer_gt.type = option_letter`
+   - `evidence_gt.type = integer`
+4. Prompt-facing evidence is the winning numeric statistic value, while the answer is the visible label of the winning mark.
+5. The label-answer task intentionally excludes `mean`, `sum`, `range`, and `mode` because those statistics do not map cleanly to one unique label answer in v1.

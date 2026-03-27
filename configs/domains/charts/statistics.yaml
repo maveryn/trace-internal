@@ -18,6 +18,12 @@ generation:
       scatter: 1.0
     balanced_task_variant_sampling: true
     balanced_scene_variant_sampling: true
+  task_overrides:
+    task_charts_statistics_summary_label:
+      task_variant_weights:
+        argmax: 1.0
+        argmin: 1.0
+        median_label: 1.0
 
 rendering:
   shared:
@@ -79,3 +85,16 @@ prompt:
     json_example_answer_only_median: '{"answer":6}'
     json_example_answer_only_sum: '{"answer":35}'
     json_example_answer_only_mode: '{"answer":6}'
+  task_overrides:
+    task_charts_statistics_summary_label:
+      task_key: summary_label_query
+      answer_hint: set "answer" to the single uppercase label of the requested mark
+      evidence_hint_argmax: set "evidence" to the maximum value as an integer
+      evidence_hint_argmin: set "evidence" to the minimum value as an integer
+      evidence_hint_median_label: set "evidence" to the median value as an integer
+      json_example_argmax: '{"evidence":8,"answer":"D"}'
+      json_example_argmin: '{"evidence":2,"answer":"B"}'
+      json_example_median_label: '{"evidence":6,"answer":"M"}'
+      json_example_answer_only_argmax: '{"answer":"D"}'
+      json_example_answer_only_argmin: '{"answer":"B"}'
+      json_example_answer_only_median_label: '{"answer":"M"}'

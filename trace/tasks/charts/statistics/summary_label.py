@@ -1,4 +1,4 @@
-"""Chart statistics task over labeled bar, line, and scatter scenes."""
+"""Chart statistics task that returns the winning mark label."""
 
 from __future__ import annotations
 
@@ -32,23 +32,21 @@ from ..shared.visual_defaults import load_chart_background_defaults, load_chart_
 StatisticKind = str
 SceneVariant = str
 
-TASK_ID = "task_charts_statistics_summary_value"
+TASK_ID = "task_charts_statistics_summary_label"
 _SUPPORTED_TASK_VARIANTS: Tuple[str, ...] = (
-    "max",
-    "min",
-    "range",
-    "mean",
-    "median",
-    "sum",
-    "mode",
+    "argmax",
+    "argmin",
+    "median_label",
 )
+_TASK_VARIANT_TO_STATISTIC: Dict[str, str] = {
+    "argmax": "max",
+    "argmin": "min",
+    "median_label": "median",
+}
 _TARGET_ANSWER_RANGES: Dict[str, Tuple[int, int]] = {
     "max": (4, 12),
     "min": (1, 8),
-    "range": (2, 8),
-    "mean": (4, 9),
     "median": (3, 10),
-    "mode": (3, 10),
 }
 
 _DEFAULTS = ChartStatisticsDefaults()
@@ -62,7 +60,7 @@ POST_IMAGE_NOISE_DEFAULTS = load_chart_noise_defaults(task_group="statistics", a
 
 
 def _resolve_task_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
-    """Resolve the semantic chart statistic variant."""
+    """Resolve the semantic label-answer chart variant."""
 
     return resolve_chart_axis_variant(
         params=params,
@@ -94,8 +92,8 @@ def _resolve_scene_variant(params: Mapping[str, Any], *, instance_seed: int) -> 
 
 
 @register_task
-class ChartsStatisticsSummaryValueTask:
-    """Return one requested numeric summary statistic from a labeled chart."""
+class ChartsStatisticsSummaryLabelTask:
+    """Return the label of the mark that matches a requested statistic."""
 
     task_id = TASK_ID
     domain = "charts"
@@ -105,8 +103,9 @@ class ChartsStatisticsSummaryValueTask:
         del max_attempts
         task_variant, task_variant_probabilities = _resolve_task_variant(params, instance_seed=int(instance_seed))
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
-        values, answer_value, evidence_labels, trace_extras = build_summary_statistics_dataset_for_variant(
-            statistic_kind=str(task_variant),
+        statistic_kind = str(_TASK_VARIANT_TO_STATISTIC[str(task_variant)])
+        values, evidence_value, evidence_labels, trace_extras = build_summary_statistics_dataset_for_variant(
+            statistic_kind=str(statistic_kind),
             params=params,
             instance_seed=int(instance_seed),
             gen_defaults=_GEN_DEFAULTS,
@@ -115,6 +114,7 @@ class ChartsStatisticsSummaryValueTask:
             task_id=self.task_id,
         )
 
+        answer_label = str(evidence_labels[0])
         labels = [str(label) for label in trace_extras["labels"]]
         marks = [ChartMarkSpec(label=str(label), value=int(value)) for label, value in zip(labels, values)]
         mark_style = resolve_chart_mark_colors(
@@ -162,27 +162,15 @@ class ChartsStatisticsSummaryValueTask:
                 "object_description_bar",
                 "object_description_line",
                 "object_description_scatter",
-                "evidence_hint_max",
-                "evidence_hint_min",
-                "evidence_hint_range",
-                "evidence_hint_mean",
-                "evidence_hint_median",
-                "evidence_hint_sum",
-                "evidence_hint_mode",
-                "json_example_max",
-                "json_example_min",
-                "json_example_range",
-                "json_example_mean",
-                "json_example_median",
-                "json_example_sum",
-                "json_example_mode",
-                "json_example_answer_only_max",
-                "json_example_answer_only_min",
-                "json_example_answer_only_range",
-                "json_example_answer_only_mean",
-                "json_example_answer_only_median",
-                "json_example_answer_only_sum",
-                "json_example_answer_only_mode",
+                "evidence_hint_argmax",
+                "evidence_hint_argmin",
+                "evidence_hint_median_label",
+                "json_example_argmax",
+                "json_example_argmin",
+                "json_example_median_label",
+                "json_example_answer_only_argmax",
+                "json_example_answer_only_argmin",
+                "json_example_answer_only_median_label",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -212,8 +200,8 @@ class ChartsStatisticsSummaryValueTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        answer_gt = TypedValue(type="integer", value=int(answer_value))
-        evidence_gt = TypedValue(type="label_set", value=list(evidence_labels))
+        answer_gt = TypedValue(type="option_letter", value=str(answer_label))
+        evidence_gt = TypedValue(type="integer", value=int(evidence_value))
         label_centers = {
             str(mark["label"]): list(mark["label_center_px"])
             for mark in rendered_scene.mark_traces
@@ -230,7 +218,9 @@ class ChartsStatisticsSummaryValueTask:
                 "relations": {
                     "task_variant": str(task_variant),
                     "scene_variant": str(scene_variant),
-                    "evidence_labels": list(evidence_labels),
+                    "statistic_kind": str(statistic_kind),
+                    "answer_label": str(answer_label),
+                    "evidence_value": int(evidence_value),
                 },
             },
             "query_spec": {
@@ -242,6 +232,7 @@ class ChartsStatisticsSummaryValueTask:
                 "params": {
                     "task_variant": str(task_variant),
                     "scene_variant": str(scene_variant),
+                    "statistic_kind": str(statistic_kind),
                     "task_variant_probabilities": dict(task_variant_probabilities),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "mark_count": int(trace_extras["mark_count"]),
@@ -288,8 +279,9 @@ class ChartsStatisticsSummaryValueTask:
             "execution_trace": {
                 "task_variant": str(task_variant),
                 "scene_variant": str(scene_variant),
-                "answer_value": int(answer_value),
-                "evidence_labels": list(evidence_labels),
+                "statistic_kind": str(statistic_kind),
+                "answer_label": str(answer_label),
+                "evidence_value": int(evidence_value),
                 "labels": [str(label) for label in labels],
                 "values": [int(value) for value in values],
                 "values_by_label": dict(values_by_label),
@@ -299,7 +291,7 @@ class ChartsStatisticsSummaryValueTask:
                 "target_answer_range": list(trace_extras["target_answer_range"]),
                 "task_variant_probabilities": dict(task_variant_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
-                "question_format": "numeric_open",
+                "question_format": "label_open",
                 "mark_color_sampling_policy": str(mark_style["sampling_policy"]),
                 "mark_fill_rgb": list(mark_style["mark_fill_rgb"]),
                 "mark_outline_rgb": list(mark_style["mark_outline_rgb"]),
@@ -315,21 +307,20 @@ class ChartsStatisticsSummaryValueTask:
                 },
             },
             "witness_symbolic": {
-                "type": "label_set",
-                "labels": list(evidence_labels),
+                "type": "integer",
+                "value": int(evidence_value),
             },
             "projected_evidence": {
-                "label_set": list(evidence_labels),
+                "integer": int(evidence_value),
             },
         }
 
         complexity = TaskComplexity(
-            complexity_score=float(0.18 + 0.05 * int(trace_extras["mark_count"]) + 0.03 * len(evidence_labels)),
+            complexity_score=float(0.2 + 0.05 * int(trace_extras["mark_count"])),
             complexity_components={
                 "task_variant": str(task_variant),
                 "scene_variant": str(scene_variant),
                 "mark_count": int(trace_extras["mark_count"]),
-                "evidence_size": int(len(evidence_labels)),
             },
         )
         return TaskOutput(
@@ -346,4 +337,4 @@ class ChartsStatisticsSummaryValueTask:
         )
 
 
-__all__ = ["ChartsStatisticsSummaryValueTask"]
+__all__ = ["ChartsStatisticsSummaryLabelTask"]

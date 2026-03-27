@@ -190,7 +190,7 @@ def test_charts_statistics_defaults_loaded() -> None:
     assert int(generation_shared["mark_count_min"]) >= 5
     assert int(generation_shared["mark_count_max"]) == 10
     assert int(generation_shared["value_min"]) >= 0
-    assert int(generation_shared["value_max"]) >= int(generation_shared["value_min"])
+    assert int(generation_shared["value_max"]) == 20
     assert sorted(generation_shared["task_variant_weights"].keys()) == [
         "max",
         "mean",
@@ -223,8 +223,23 @@ def test_charts_statistics_defaults_loaded() -> None:
     )
     assert int(generation_defaults["mark_count_min"]) >= 5
     assert int(generation_defaults["mark_count_max"]) == 10
+    assert int(generation_defaults["value_max"]) == 20
     assert int(rendering_defaults["canvas_width"]) > 0
     assert str(prompt_defaults["bundle_id"]).strip() == "charts_statistics_v1"
+
+    label_generation, _, label_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_charts_statistics_summary_label",
+    )
+    assert {
+        "argmax",
+        "argmin",
+        "median_label",
+    }.issubset(set(label_generation["task_variant_weights"].keys()))
+    assert str(label_prompt["task_key"]).strip() == "summary_label_query"
+    assert str(label_prompt["answer_hint"]).strip()
+    assert str(label_prompt["evidence_hint_argmax"]).strip()
+    assert str(label_prompt["json_example_median_label"]).strip()
 
 
 def test_geometry_analytical_defaults_loaded() -> None:

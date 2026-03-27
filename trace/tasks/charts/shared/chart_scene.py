@@ -462,9 +462,12 @@ def render_labeled_chart_scene(
             else float(radius) * 0.60
         )
         legend_left = float(chart_right + float(legend_gap))
-        legend_top = float(plot_top) + float(max(12.0, 0.5 * (plot_height - (len(marks) * (render_params.label_font_size_px + 10)))))
-        legend_row_height = float(max(render_params.label_font_size_px + 10, 34))
-        legend_swatch_side = float(max(18, int(round(render_params.label_font_size_px * 0.75))))
+        legend_row_height = float(max(render_params.label_font_size_px + 16, 42))
+        legend_top = float(plot_top) + float(max(12.0, 0.5 * (plot_height - (len(marks) * legend_row_height))))
+        legend_swatch_side = float(max(28, int(round(render_params.label_font_size_px * 1.05))))
+        legend_frame_pad = float(max(3, int(round(render_params.mark_outline_width_px * 1.5))))
+        legend_text_gap = float(max(16, int(render_params.label_font_size_px * 0.8)))
+        legend_frame_fill = tuple(int(value) for value in render_params.plot_fill_rgb)
         for index, mark in enumerate(marks):
             sweep = 360.0 * (float(int(mark.value)) / float(total_value))
             end_angle = float(start_angle + sweep)
@@ -526,14 +529,26 @@ def render_labeled_chart_scene(
                 float(legend_left + legend_swatch_side),
                 float(legend_row_y + legend_swatch_side),
             )
+            legend_frame_bbox = (
+                float(legend_swatch_bbox[0] - legend_frame_pad),
+                float(legend_swatch_bbox[1] - legend_frame_pad),
+                float(legend_swatch_bbox[2] + legend_frame_pad),
+                float(legend_swatch_bbox[3] + legend_frame_pad),
+            )
+            draw.rectangle(
+                legend_frame_bbox,
+                fill=legend_frame_fill,
+                outline=axis_color,
+                width=max(1, int(render_params.mark_outline_width_px)),
+            )
             draw.rectangle(
                 legend_swatch_bbox,
                 fill=fill_rgb,
                 outline=outline_rgb,
-                width=max(1, int(render_params.mark_outline_width_px)),
+                width=max(2, int(render_params.mark_outline_width_px)),
             )
             label_center = (
-                float(legend_swatch_bbox[2]) + float(max(14, int(render_params.label_font_size_px) * 0.7)),
+                float(legend_frame_bbox[2]) + float(legend_text_gap),
                 float(0.5 * (legend_swatch_bbox[1] + legend_swatch_bbox[3])),
             )
             draw_text_centered(

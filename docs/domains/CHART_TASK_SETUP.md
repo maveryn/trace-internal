@@ -147,7 +147,7 @@ Note:
 8. Labels remain the canonical prompt-facing identities for both mark-level and category-level evidence.
 9. Sample one random mark color per instance and use it consistently across all bars/points in that single-series chart.
 10. In v1, that mark color should be at least Lab distance `40` from white/light chart backgrounds.
-11. Pie-like scenes (`pie`, `donut`) are the exception: they use a distinct sampled color per slice and a legend on the right that maps slice colors to labels.
+11. Pie-like scenes (`pie`, `donut`) are the exception: they use a distinct sampled color per slice, a higher-contrast slice palette than the generic single-series charts, and a right-side legend with framed color swatches that maps slice colors to labels.
 12. Composition scenes use their own semantics:
    - stacked charts render one stack per category and print integer segment values inside the segments,
    - pie/donut scenes render positive integer percentages that sum to `100`.
@@ -171,10 +171,12 @@ Note:
 6. `pie`
    - when supported by a task, the numeric contract uses positive integer percentages that sum to `100`.
    - slices use distinct sampled colors, and a legend on the right maps colors to labels.
+   - legend swatches should be visually prominent even for lighter slice colors; framed swatches and stronger slice/background contrast are preferred.
    - slice angles are normalized for rendering only; tasks should reason over the printed percentages, not visual angle estimation alone.
 7. `donut`
    - when supported by a task, the numeric contract uses positive integer percentages that sum to `100`.
    - slices use distinct sampled colors, and a legend on the right maps colors to labels.
+   - legend swatches should be visually prominent even for lighter slice colors; framed swatches and stronger slice/background contrast are preferred.
    - donut hole size is a rendering choice only; tasks should reason over the printed percentages, not visual angle estimation alone.
 8. `dot_plot`
    - the statistic is computed over plotted point `y` values, not over `x`.

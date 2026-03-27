@@ -58,6 +58,8 @@ class LabeledChartDefaults:
     mark_color_channel_min: int = 0
     mark_color_channel_max: int = 220
     mark_color_min_distance: float = 40.0
+    pie_like_mark_color_channel_max: int = 200
+    pie_like_mark_color_min_distance: float = 58.0
     mark_color_distance_space: str = "lab"
     balanced_task_variant_sampling: bool = True
     balanced_scene_variant_sampling: bool = True
@@ -339,13 +341,33 @@ def resolve_chart_mark_colors(
         )
     ).strip().lower()
     if is_pie_like_scene_variant(str(scene_variant)):
+        pie_channel_max = int(
+            params.get(
+                "pie_like_mark_color_channel_max",
+                group_default(
+                    render_defaults,
+                    "pie_like_mark_color_channel_max",
+                    defaults.pie_like_mark_color_channel_max,
+                ),
+            )
+        )
+        pie_min_distance = float(
+            params.get(
+                "pie_like_mark_color_min_distance",
+                group_default(
+                    render_defaults,
+                    "pie_like_mark_color_min_distance",
+                    defaults.pie_like_mark_color_min_distance,
+                ),
+            )
+        )
         fill_palette = sample_color_palette_with_distance_constraints(
             color_rng,
             palette_size=int(mark_count),
             channel_min=int(channel_min),
-            channel_max=int(channel_max),
-            anchor_colors=((255, 255, 255), (248, 248, 248)),
-            min_distance=float(min_distance),
+            channel_max=int(min(int(channel_max), int(pie_channel_max))),
+            anchor_colors=((255, 255, 255), (248, 248, 248), (236, 238, 242)),
+            min_distance=float(max(float(min_distance), float(pie_min_distance))),
             distance_space=str(distance_space),
         )
         outline_palette = [darken_color(fill_rgb, factor=0.55) for fill_rgb in fill_palette]
@@ -355,7 +377,8 @@ def resolve_chart_mark_colors(
             "mark_outline_rgb": [int(channel) for channel in outline_palette[0]],
             "slice_fill_palette_rgb": [[int(channel) for channel in fill_rgb] for fill_rgb in fill_palette],
             "slice_outline_palette_rgb": [[int(channel) for channel in outline_rgb] for outline_rgb in outline_palette],
-            "mark_color_min_distance": float(min_distance),
+            "mark_color_min_distance": float(max(float(min_distance), float(pie_min_distance))),
+            "pie_like_mark_color_channel_max": int(min(int(channel_max), int(pie_channel_max))),
             "mark_color_distance_space": str(distance_space),
         }
     fill_rgb = sample_color_with_distance_constraints(

@@ -297,11 +297,18 @@ def test_chart_statistics_pie_and_donut_use_distinct_slice_colors_and_legend() -
     task = ChartsStatisticsSummaryLabelTask()
     for seed, scene_variant in enumerate(("pie", "donut"), start=9685):
         out = task.generate(seed, params={"task_variant": "argmax", "scene_variant": scene_variant}, max_attempts=10)
+        render_spec = out.trace_payload["render_spec"]
         entities = out.trace_payload["scene_ir"]["entities"]
         fill_colors = {tuple(int(channel) for channel in entity["attrs"]["mark_fill_rgb"]) for entity in entities}
         assert len(fill_colors) >= 3
         assert all("legend_swatch_bbox_px" in entity["attrs"] for entity in entities)
         assert all("percentage_center_px" in entity["attrs"] for entity in entities)
+        assert float(render_spec["mark_style"]["mark_color_min_distance"]) >= 58.0
+        assert int(render_spec["mark_style"]["pie_like_mark_color_channel_max"]) <= 200
+        assert all(
+            float(entity["attrs"]["legend_swatch_bbox_px"][2]) - float(entity["attrs"]["legend_swatch_bbox_px"][0]) >= 28.0
+            for entity in entities
+        )
 
 
 def test_chart_statistics_summary_label_radar_caps_default_mark_count() -> None:

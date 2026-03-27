@@ -6,7 +6,7 @@
 ## Next (P1)
 1. Expand the charts domain beyond the current `statistics` + `counting` + `readout` + `multiseries` + `distribution` + `trend` + `composition` tasks and formalize the next chart reasoning families after `task_charts_statistics_summary_value`, `task_charts_statistics_summary_label`, `task_charts_counting_value_count`, `task_charts_readout_subset_value`, `task_charts_multiseries_pairwise_comparison_count`, `task_charts_distribution_histogram_count`, `task_charts_distribution_boxplot_label`, `task_charts_distribution_density_label`, `task_charts_trend_structure_value`, and `task_charts_composition_subset_value`.
 2. Extend the new icons domain beyond counting/transformation using the curated Prism asset pipeline.
-3. Expand the new tables domain beyond `task_tables_statistics_summary_label` with column-summary value and counting/filter tasks while keeping `bbox_set` as the fixed table evidence contract.
+3. Expand the new tables domain beyond `task_tables_statistics_summary_label` and `task_tables_statistics_summary_value` with counting/filter tasks and later row-summary tasks while keeping `bbox_set` as the fixed table evidence contract.
 4. Expand the v1 `rectangular_tiling` tile task suite beyond the current active set and keep future ports aligned to `docs/domains/TILE_TASK_SETUP.md`.
 5. Add cross-domain `scene_variant` + role-binding spec in architecture/ABI docs.
 6. Improve dataset QA diagnostics/report summaries.
@@ -50,4 +50,4 @@
 6. Task-review/sample-generation tooling with per-task artifacts and inspection workbooks.
 7. Pre-finalize prompt validation checks (metadata/bundle/key/placeholder/cardinality).
 8. First charts-domain tasks: `task_charts_statistics_summary_value`, `task_charts_statistics_summary_label`, `task_charts_counting_value_count`, `task_charts_readout_subset_value`, `task_charts_multiseries_pairwise_comparison_count`, `task_charts_distribution_histogram_count`, `task_charts_distribution_boxplot_label`, `task_charts_distribution_density_label`, `task_charts_trend_structure_value`, `task_charts_composition_subset_value`.
-9. First tables-domain task: `task_tables_statistics_summary_label`.
+9. First tables-domain tasks: `task_tables_statistics_summary_label`, `task_tables_statistics_summary_value`.

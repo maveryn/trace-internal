@@ -59,6 +59,7 @@ Date: 2026-03-27
 48. Charts now also includes `task_charts_trend_structure_value`, the first `trend` family task under `domain=charts`, with semantic `task_variant` values `peak_count|trough_count|longest_increasing_streak|longest_decreasing_streak`, visual `scene_variant` values `area|bar|horizontal_bar|line|dot_plot|lollipop`, integer answers, and `label_set` evidence over the witnessing labels. It treats the chart as an ordered sequence in displayed category order, enforces strictly non-equal adjacent values, and uses unique-winning construction for the longest-streak variants.
 49. Charts now also includes `task_charts_composition_subset_value`, the first `composition` family task under `domain=charts`, with semantic `task_variant` values `stack_total_at_label|stack_segment_value|combined_share_subset`, visual `scene_variant` values `stacked_bar|stacked_horizontal_bar|pie|donut` subject to compatibility, integer answers, and ordered `integer_list` evidence over the relevant segment or slice values. Stacked scenes render one stack per category with printed segment values and a right-side legend, while pie/donut scenes render multicolor percentage compositions with a right-side legend and printed slice percentages.
 50. Tables now includes `task_tables_statistics_summary_label`, the first `statistics` family task under `domain=tables`, with semantic `task_variant` values `argmax|argmin`, visual `scene_variant` values `spreadsheet|zebra|ledger|card_table`, `string` row-name answers, and `bbox_set` evidence over the decisive numeric value cell. Tables use one leftmost `Name` column, `3..5` numeric columns, `5..10` data rows, short visible human-style row names sourced from the shared short-name manifest, and a queried numeric column whose extremum row is unique by construction.
+51. Tables now also includes `task_tables_statistics_summary_value`, a companion `statistics` task under `domain=tables`, with semantic `task_variant` values `column_sum|column_mean|column_median`, visual `scene_variant` values `spreadsheet|zebra|ledger|card_table`, integer answers, and `bbox_set` evidence over the supporting queried-column region. `column_mean` is constructed to stay integral, `column_median` uses odd row counts and a unique median by construction, and all active table statistics tasks share the same short-name row-label pool plus styled light-background table renderers.
 
 ## Active tasks
 1. `task_tile_count_color_count` (`domain=tile`, `task_group=count`)
@@ -106,12 +107,13 @@ Date: 2026-03-27
 43. `task_charts_trend_structure_value` (`domain=charts`, `task_group=trend`)
 44. `task_charts_composition_subset_value` (`domain=charts`, `task_group=composition`)
 45. `task_tables_statistics_summary_label` (`domain=tables`, `task_group=statistics`)
+46. `task_tables_statistics_summary_value` (`domain=tables`, `task_group=statistics`)
 
 ## Current quality baseline
 1. Tests are required to pass before finalize.
 2. Distribution QA uses `scripts/check_task_answer_distribution.py` with per-variant answer-only checks (`unique_answers >= 5`, `max_answer_frequency < 25%`) and multithreaded sample generation (`--workers`); numeric 5-bin summaries remain reported for review but are not hard pass/fail gates.
 3. Task-review tooling writes per-task artifacts under `task-reviews/<task_id>/`, including one inspection workbook named `<task_id>.xlsx` with one sheet per task variant.
-4. The current active reviewed task set (10 tile tasks + 20 geometry tasks + 4 icons tasks + 10 charts tasks + 1 table task) passes distribution review under the active gates.
+4. The current active reviewed task set (10 tile tasks + 20 geometry tasks + 4 icons tasks + 10 charts tasks + 2 table tasks) passes distribution review under the active gates.
 
 ## Next priorities
 1. Extend icons beyond counting/transformation using the new curated Prism asset pipeline (relation/comparison are the next natural families).

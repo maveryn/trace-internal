@@ -446,7 +446,6 @@ def test_tables_statistics_defaults_loaded() -> None:
     assert int(generation_shared["numeric_column_count_max"]) == 5
     assert int(generation_shared["value_min"]) >= 0
     assert int(generation_shared["value_max"]) == 32
-    assert sorted(generation_shared["task_variant_weights"].keys()) == ["argmax", "argmin"]
     assert sorted(generation_shared["scene_variant_weights"].keys()) == [
         "card_table",
         "ledger",
@@ -473,10 +472,27 @@ def test_tables_statistics_defaults_loaded() -> None:
         cfg,
         task_id="task_tables_statistics_summary_label",
     )
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == ["argmax", "argmin"]
     assert int(generation_defaults["row_count_min"]) >= 5
     assert int(generation_defaults["numeric_column_count_max"]) == 5
     assert int(rendering_defaults["canvas_width"]) > 0
     assert str(prompt_defaults["bundle_id"]).strip() == "tables_statistics_v1"
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_tables_statistics_summary_value",
+    )
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "column_mean",
+        "column_median",
+        "column_sum",
+    ]
+    assert int(generation_defaults["row_count_min"]) >= 5
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip() == "tables_statistics_v1"
+    assert str(prompt_defaults["task_key"]).strip() == "summary_value_query"
+    assert str(prompt_defaults["evidence_hint_column_sum"]).strip()
+    assert str(prompt_defaults["json_example_column_median"]).strip()
 
 
 def test_charts_multiseries_defaults_loaded() -> None:

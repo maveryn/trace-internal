@@ -143,7 +143,7 @@ Promote helpers when a second consumer appears.
    - `visual_defaults.py` is the canonical chart-domain background/noise loader layer shared across future chart task groups.
 8. Tables: `trace/tasks/tables/shared/table_scene.py`, `table_common.py`, `visual_defaults.py`
    - `table_scene.py` is the canonical styled-table renderer for active table tasks; it owns table cell geometry, row/column region bboxes, and the active `spreadsheet|zebra|ledger|card_table` scene variants.
-   - `table_common.py` is the shared construction layer for table tasks; it owns row/column count bounds, row-name/header sampling, summary-label dataset construction, render-param resolution, and bbox evidence projection.
+   - `table_common.py` is the shared construction layer for table tasks; it owns row/column count bounds, row-name/header sampling, summary-label/value dataset construction, render-param resolution, and both cell- and region-level bbox evidence projection.
    - `visual_defaults.py` is the canonical table-domain background/noise loader layer shared across future table task groups.
 
 ## 3) Reuse rules

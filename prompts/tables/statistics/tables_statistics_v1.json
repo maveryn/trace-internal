@@ -17,6 +17,13 @@
       "Use the table values to identify the correct row label.",
       "Find the row name that satisfies the requested column statistic.",
       "Read the table and name the matching row."
+    ],
+    "summary_value_query": [
+      "Answer this question.",
+      "Determine the requested summary value for the queried numeric column.",
+      "Use the table values to compute the requested column summary.",
+      "Find the numeric summary for the named column.",
+      "Read the table and report the requested column summary value."
     ]
   },
   "task_variant_templates": {
@@ -33,6 +40,27 @@
       "Determine which row shows the smallest value under {query_column}.",
       "What row name corresponds to the lowest value in {query_column}?",
       "Identify the row with the minimum value in the {query_column} column."
+    ],
+    "column_sum": [
+      "What is the sum of the values in the {query_column} column?",
+      "Find the total of all values in the {query_column} column.",
+      "Determine the column sum for {query_column}.",
+      "What total do you get when you add the values in {query_column}?",
+      "Compute the sum of the {query_column} column."
+    ],
+    "column_mean": [
+      "What is the mean of the values in the {query_column} column?",
+      "Find the average of all values in the {query_column} column.",
+      "Determine the column mean for {query_column}.",
+      "What average value does the {query_column} column have?",
+      "Compute the mean of the {query_column} column."
+    ],
+    "column_median": [
+      "What is the median of the values in the {query_column} column?",
+      "Find the median value in the {query_column} column.",
+      "Determine the column median for {query_column}.",
+      "What median value does the {query_column} column have?",
+      "Compute the median of the {query_column} column."
     ]
   },
   "required_slots_by_key": {

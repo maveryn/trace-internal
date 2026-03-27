@@ -36,6 +36,7 @@ Use this whenever the task lives under `domain=tables`.
 - When tasks aggregate over one column, keep that as a column-summary task instead of mixing row and column aggregation into one contract.
 - When tasks aggregate over one row, treat that as a separate row-summary task rather than overloading a column-summary task.
 - Keep prompts explicit about what evidence region should be boxed.
+- The current statistics family already splits naturally into row-identity questions (`summary_label`) and numeric column-summary questions (`summary_value`); follow that separation for future table tasks too.
 
 ## Schema lessons learned
 - Row-name answers can be real visible strings; they do not need to be forced into `option_letter`.

@@ -103,6 +103,7 @@ Use this as the implementation checklist for new or modified tasks.
 19. For polygon class-counting tasks with bulkier objects, use the roomier counting slot layout helper and a strict shared convexity classifier so object labels stay readable and class membership does not depend on ambiguous borderline outlines.
 20. For curated-asset icon tasks, resolve manifest ids through one shared asset loader instead of assuming manifest ids and SVG filenames match exactly; record the chosen manifest in query trace metadata.
 21. When adding a new chart `scene_variant`, update every active chart task group that shares the labeled-chart scene contract in the same patch: renderer support, `scene_variant_weights`, `object_description_<scene_variant>` prompt defaults, behavior tests, and regenerated task reviews should all land together.
+22. When sibling tasks inside one task group use disjoint `task_variant` vocabularies, keep `task_variant_weights` under `task_overrides.<task_id>` instead of `generation.shared` so merged defaults do not leak inactive variants across tasks.
 
 ## 5) Sampling rules
 1. Global sampling unit is `task`.

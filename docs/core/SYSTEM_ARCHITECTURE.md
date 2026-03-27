@@ -112,6 +112,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/charts/composition/subset_value.py`
 8. Tables:
    - `trace/tasks/tables/statistics/summary_label.py`
+   - `trace/tasks/tables/statistics/summary_value.py`
 
 ## 5) Architecture invariants
 1. Determinism from config + seeds + versions.

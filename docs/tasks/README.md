@@ -53,3 +53,4 @@ Current task docs:
 43. [task_charts_trend_structure_value.md](task_charts_trend_structure_value.md)
 44. [task_charts_composition_subset_value.md](task_charts_composition_subset_value.md)
 45. [task_tables_statistics_summary_label.md](task_tables_statistics_summary_label.md)
+46. [task_tables_statistics_summary_value.md](task_tables_statistics_summary_value.md)

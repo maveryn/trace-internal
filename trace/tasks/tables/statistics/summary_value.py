@@ -1,4 +1,4 @@
-"""Table statistics task that returns the winning row label for one column."""
+"""Table statistics task that returns a numeric summary over one column."""
 
 from __future__ import annotations
 
@@ -20,8 +20,8 @@ from ...shared.prompt_variants import (
 from ..shared.table_common import (
     SUPPORTED_TABLE_SCENE_VARIANTS,
     TableDefaults,
-    build_summary_label_dataset_for_variant,
-    projected_table_bbox_evidence,
+    build_summary_value_dataset_for_variant,
+    projected_table_region_bbox_evidence,
     resolve_table_axis_variant,
     resolve_table_render_params,
 )
@@ -29,8 +29,8 @@ from ..shared.table_scene import render_table_scene
 from ..shared.visual_defaults import load_table_background_defaults, load_table_noise_defaults
 
 
-TASK_ID = "task_tables_statistics_summary_label"
-_SUPPORTED_TASK_VARIANTS: Tuple[str, ...] = ("argmax", "argmin")
+TASK_ID = "task_tables_statistics_summary_value"
+_SUPPORTED_TASK_VARIANTS: Tuple[str, ...] = ("column_sum", "column_mean", "column_median")
 
 _DEFAULTS = TableDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("tables", "statistics")
@@ -75,8 +75,8 @@ def _resolve_scene_variant(params: Mapping[str, Any], *, instance_seed: int) -> 
 
 
 @register_task
-class TablesStatisticsSummaryLabelTask:
-    """Return the row label with the max/min value in a queried numeric column."""
+class TablesStatisticsSummaryValueTask:
+    """Return a numeric summary over one queried numeric column."""
 
     task_id = TASK_ID
     domain = "tables"
@@ -86,7 +86,7 @@ class TablesStatisticsSummaryLabelTask:
         del max_attempts
         task_variant, task_variant_probabilities = _resolve_task_variant(params, instance_seed=int(instance_seed))
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
-        dataset = build_summary_label_dataset_for_variant(
+        dataset = build_summary_value_dataset_for_variant(
             task_variant=str(task_variant),
             params=params,
             instance_seed=int(instance_seed),
@@ -135,12 +135,15 @@ class TablesStatisticsSummaryLabelTask:
                 "object_description_zebra",
                 "object_description_ledger",
                 "object_description_card_table",
-                "evidence_hint_argmax",
-                "evidence_hint_argmin",
-                "json_example_argmax",
-                "json_example_argmin",
-                "json_example_answer_only_argmax",
-                "json_example_answer_only_argmin",
+                "evidence_hint_column_sum",
+                "evidence_hint_column_mean",
+                "evidence_hint_column_median",
+                "json_example_column_sum",
+                "json_example_column_mean",
+                "json_example_column_median",
+                "json_example_answer_only_column_sum",
+                "json_example_answer_only_column_mean",
+                "json_example_answer_only_column_median",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -171,14 +174,17 @@ class TablesStatisticsSummaryLabelTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        answer_row_label = str(dataset["answer_row_label"])
-        evidence_cell_id = f"cell_r{int(dataset['answer_row_index']) + 1}_c{int(dataset['query_column_index']) + 1}"
-        evidence_projection = projected_table_bbox_evidence(rendered_scene, [str(evidence_cell_id)])
+        query_column = str(dataset["query_column"])
+        evidence_projection = projected_table_region_bbox_evidence(
+            rendered_scene,
+            column_headers=[str(query_column)],
+        )
         evidence_bboxes = [
             [round(float(value), 3) for value in bbox]
             for bbox in evidence_projection["bbox_set"]
         ]
-        answer_gt = TypedValue(type="string", value=str(answer_row_label))
+        answer_value = int(dataset["answer_value"])
+        answer_gt = TypedValue(type="integer", value=int(answer_value))
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
 
         values_by_row = {
@@ -199,10 +205,10 @@ class TablesStatisticsSummaryLabelTask:
                 "relations": {
                     "task_variant": str(task_variant),
                     "scene_variant": str(scene_variant),
-                    "query_column": str(dataset["query_column"]),
-                    "answer_row_label": str(answer_row_label),
-                    "answer_value": int(dataset["answer_value"]),
-                    "evidence_cell_id": str(evidence_cell_id),
+                    "query_column": str(query_column),
+                    "answer_value": int(answer_value),
+                    "supporting_region_kind": "column",
+                    "supporting_column_header": str(query_column),
                 },
             },
             "query_spec": {
@@ -214,7 +220,7 @@ class TablesStatisticsSummaryLabelTask:
                 "params": {
                     "task_variant": str(task_variant),
                     "scene_variant": str(scene_variant),
-                    "query_column": str(dataset["query_column"]),
+                    "query_column": str(query_column),
                     "task_variant_probabilities": dict(task_variant_probabilities),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "row_count": int(dataset["row_count"]),
@@ -250,9 +256,8 @@ class TablesStatisticsSummaryLabelTask:
             "execution_trace": {
                 "task_variant": str(task_variant),
                 "scene_variant": str(scene_variant),
-                "query_column": str(dataset["query_column"]),
-                "answer_row_label": str(answer_row_label),
-                "answer_value": int(dataset["answer_value"]),
+                "query_column": str(query_column),
+                "answer_value": int(answer_value),
                 "row_labels": [str(label) for label in dataset["row_labels"]],
                 "column_headers": [str(header) for header in dataset["column_headers"]],
                 "values_by_row": dict(values_by_row),
@@ -261,12 +266,12 @@ class TablesStatisticsSummaryLabelTask:
                 "row_count_range": list(dataset["row_count_range"]),
                 "numeric_column_count_range": list(dataset["numeric_column_count_range"]),
                 "value_range": list(dataset["value_range"]),
-                "answer_row_index": int(dataset["answer_row_index"]),
                 "query_column_index": int(dataset["query_column_index"]),
                 "task_variant_probabilities": dict(task_variant_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
-                "question_format": "row_name_open",
-                "supporting_cell_id": str(evidence_cell_id),
+                "question_format": "column_summary_value",
+                "supporting_region_kind": "column",
+                "supporting_column_header": str(query_column),
             },
             "witness_symbolic": {
                 "type": "bbox_set",
@@ -278,7 +283,7 @@ class TablesStatisticsSummaryLabelTask:
         }
 
         complexity = TaskComplexity(
-            complexity_score=float(0.18 + (0.03 * int(dataset["row_count"])) + (0.02 * int(dataset["numeric_column_count"]))),
+            complexity_score=float(0.2 + (0.03 * int(dataset["row_count"])) + (0.02 * int(dataset["numeric_column_count"]))),
             complexity_components={
                 "task_variant": str(task_variant),
                 "scene_variant": str(scene_variant),
@@ -300,4 +305,4 @@ class TablesStatisticsSummaryLabelTask:
         )
 
 
-__all__ = ["TablesStatisticsSummaryLabelTask"]
+__all__ = ["TablesStatisticsSummaryValueTask"]

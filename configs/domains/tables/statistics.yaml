@@ -6,9 +6,6 @@ generation:
     numeric_column_count_max: 5
     value_min: 1
     value_max: 32
-    task_variant_weights:
-      argmax: 1.0
-      argmin: 1.0
     scene_variant_weights:
       spreadsheet: 1.0
       zebra: 1.0
@@ -16,6 +13,16 @@ generation:
       card_table: 1.0
     balanced_task_variant_sampling: true
     balanced_scene_variant_sampling: true
+  task_overrides:
+    task_tables_statistics_summary_label:
+      task_variant_weights:
+        argmax: 1.0
+        argmin: 1.0
+    task_tables_statistics_summary_value:
+      task_variant_weights:
+        column_sum: 1.0
+        column_mean: 1.0
+        column_median: 1.0
 
 rendering:
   shared:
@@ -58,3 +65,16 @@ prompt:
     json_example_argmin: '{"evidence":[[260,180,372,236]],"answer":"Milo"}'
     json_example_answer_only_argmax: '{"answer":"Ava"}'
     json_example_answer_only_argmin: '{"answer":"Milo"}'
+  task_overrides:
+    task_tables_statistics_summary_value:
+      task_key: summary_value_query
+      answer_hint: set "answer" to the exact integer summary value
+      evidence_hint_column_sum: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting queried-column region
+      evidence_hint_column_mean: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting queried-column region
+      evidence_hint_column_median: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting queried-column region
+      json_example_column_sum: '{"evidence":[[260,180,372,520]],"answer":84}'
+      json_example_column_mean: '{"evidence":[[260,180,372,520]],"answer":14}'
+      json_example_column_median: '{"evidence":[[260,180,372,520]],"answer":13}'
+      json_example_answer_only_column_sum: '{"answer":84}'
+      json_example_answer_only_column_mean: '{"answer":14}'
+      json_example_answer_only_column_median: '{"answer":13}'

@@ -56,6 +56,74 @@ class TableDefaults:
     balanced_scene_variant_sampling: bool = True
 
 
+def _resolve_base_table_schema(
+    *,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    gen_defaults: Mapping[str, Any],
+    defaults: TableDefaults,
+    task_id: str,
+    odd_row_count_required: bool = False,
+) -> Dict[str, Any]:
+    """Resolve one reusable base table schema and queried numeric column."""
+
+    row_count_min, row_count_max = resolve_row_count_bounds(
+        params,
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        task_id=task_id,
+    )
+    numeric_col_count_min, numeric_col_count_max = resolve_numeric_column_count_bounds(
+        params,
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        task_id=task_id,
+    )
+    value_min, value_max = resolve_value_bounds(
+        params,
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        task_id=task_id,
+    )
+
+    rng = spawn_rng(int(instance_seed), f"{task_id}.dataset")
+    if bool(odd_row_count_required):
+        odd_counts = [
+            int(value)
+            for value in range(int(row_count_min), int(row_count_max) + 1)
+            if int(value) % 2 == 1
+        ]
+        if not odd_counts:
+            raise ValueError("table row-count bounds must include an odd count for this variant")
+        row_count = int(odd_counts[int(rng.randint(0, len(odd_counts) - 1))])
+    else:
+        row_count = int(rng.randint(int(row_count_min), int(row_count_max)))
+    numeric_column_count = int(rng.randint(int(numeric_col_count_min), int(numeric_col_count_max)))
+    row_labels = list(sample_table_row_labels(count=int(row_count), instance_seed=int(instance_seed)))
+    column_headers = list(sample_numeric_column_headers(count=int(numeric_column_count), instance_seed=int(instance_seed)))
+
+    query_col_index = int(resolve_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}:query_column",
+    )) % int(numeric_column_count)
+    query_column = str(column_headers[int(query_col_index)])
+    return {
+        "rng": rng,
+        "row_count": int(row_count),
+        "numeric_column_count": int(numeric_column_count),
+        "row_count_range": [int(row_count_min), int(row_count_max)],
+        "numeric_column_count_range": [int(numeric_col_count_min), int(numeric_col_count_max)],
+        "value_range": [int(value_min), int(value_max)],
+        "value_min": int(value_min),
+        "value_max": int(value_max),
+        "row_labels": [str(label) for label in row_labels],
+        "column_headers": [str(header) for header in column_headers],
+        "query_column": str(query_column),
+        "query_column_index": int(query_col_index),
+    }
+
+
 def resolve_table_axis_variant(
     *,
     params: Mapping[str, Any],
@@ -268,43 +336,28 @@ def build_summary_label_dataset_for_variant(
     if str(task_variant) not in {"argmax", "argmin"}:
         raise ValueError(f"unsupported table summary-label variant: {task_variant}")
 
-    row_count_min, row_count_max = resolve_row_count_bounds(
-        params,
-        gen_defaults=gen_defaults,
-        defaults=defaults,
-        task_id=task_id,
-    )
-    numeric_col_count_min, numeric_col_count_max = resolve_numeric_column_count_bounds(
-        params,
-        gen_defaults=gen_defaults,
-        defaults=defaults,
-        task_id=task_id,
-    )
-    value_min, value_max = resolve_value_bounds(
-        params,
-        gen_defaults=gen_defaults,
-        defaults=defaults,
-        task_id=task_id,
-    )
-
-    rng = spawn_rng(int(instance_seed), f"{task_id}.dataset")
-    row_count = int(rng.randint(int(row_count_min), int(row_count_max)))
-    numeric_column_count = int(rng.randint(int(numeric_col_count_min), int(numeric_col_count_max)))
-    row_labels = list(sample_table_row_labels(count=int(row_count), instance_seed=int(instance_seed)))
-    column_headers = list(sample_numeric_column_headers(count=int(numeric_column_count), instance_seed=int(instance_seed)))
-
-    query_col_index = int(resolve_selection_index(
+    base = _resolve_base_table_schema(
         params=params,
         instance_seed=int(instance_seed),
-        namespace=f"{task_id}:query_column",
-    )) % int(numeric_column_count)
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        task_id=task_id,
+    )
+    rng = base["rng"]
+    row_count = int(base["row_count"])
+    numeric_column_count = int(base["numeric_column_count"])
+    row_labels = list(base["row_labels"])
+    column_headers = list(base["column_headers"])
+    query_col_index = int(base["query_column_index"])
     answer_row_index = int(resolve_selection_index(
         params=params,
         instance_seed=int(instance_seed),
         namespace=f"{task_id}:answer_row",
     )) % int(row_count)
-    query_column = str(column_headers[int(query_col_index)])
+    query_column = str(base["query_column"])
     answer_row_label = str(row_labels[int(answer_row_index)])
+    value_min = int(base["value_min"])
+    value_max = int(base["value_max"])
 
     if int(value_max) - int(value_min) + 1 < int(row_count):
         raise ValueError("table value range must support unique column extrema")
@@ -332,9 +385,9 @@ def build_summary_label_dataset_for_variant(
     return {
         "row_count": int(row_count),
         "numeric_column_count": int(numeric_column_count),
-        "row_count_range": [int(row_count_min), int(row_count_max)],
-        "numeric_column_count_range": [int(numeric_col_count_min), int(numeric_col_count_max)],
-        "value_range": [int(value_min), int(value_max)],
+        "row_count_range": list(base["row_count_range"]),
+        "numeric_column_count_range": list(base["numeric_column_count_range"]),
+        "value_range": list(base["value_range"]),
         "row_labels": [str(label) for label in row_labels],
         "column_headers": [str(header) for header in column_headers],
         "query_column": str(query_column),
@@ -342,6 +395,107 @@ def build_summary_label_dataset_for_variant(
         "answer_row_label": str(answer_row_label),
         "answer_value": int(answer_value),
         "answer_row_index": int(answer_row_index),
+        "query_column_index": int(query_col_index),
+    }
+
+
+def build_summary_value_dataset_for_variant(
+    *,
+    task_variant: str,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    gen_defaults: Mapping[str, Any],
+    defaults: TableDefaults,
+    task_id: str,
+) -> Dict[str, Any]:
+    """Construct one deterministic table dataset for column-summary numeric queries."""
+
+    if str(task_variant) not in {"column_sum", "column_mean", "column_median"}:
+        raise ValueError(f"unsupported table summary-value variant: {task_variant}")
+
+    base = _resolve_base_table_schema(
+        params=params,
+        instance_seed=int(instance_seed),
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        task_id=task_id,
+        odd_row_count_required=(str(task_variant) == "column_median"),
+    )
+    rng = base["rng"]
+    row_count = int(base["row_count"])
+    numeric_column_count = int(base["numeric_column_count"])
+    row_labels = list(base["row_labels"])
+    column_headers = list(base["column_headers"])
+    query_col_index = int(base["query_column_index"])
+    query_column = str(base["query_column"])
+    value_min = int(base["value_min"])
+    value_max = int(base["value_max"])
+
+    def _sample_values_with_total(*, count: int, target_total: int, min_value: int, max_value: int) -> List[int]:
+        values: List[int] = []
+        remaining_total = int(target_total)
+        for index in range(int(count)):
+            slots_left = int(count) - int(index) - 1
+            min_here = max(int(min_value), int(remaining_total - (slots_left * int(max_value))))
+            max_here = min(int(max_value), int(remaining_total - (slots_left * int(min_value))))
+            if int(min_here) > int(max_here):
+                raise ValueError("failed to construct bounded column values for requested total")
+            values.append(int(rng.randint(int(min_here), int(max_here))))
+            remaining_total -= int(values[-1])
+        rng.shuffle(values)
+        return [int(value) for value in values]
+
+    if str(task_variant) == "column_sum":
+        target_sum = int(rng.randint(int(row_count * value_min), int(row_count * value_max)))
+        query_values = _sample_values_with_total(
+            count=int(row_count),
+            target_total=int(target_sum),
+            min_value=int(value_min),
+            max_value=int(value_max),
+        )
+        answer_value = int(target_sum)
+    elif str(task_variant) == "column_mean":
+        target_mean = int(rng.randint(int(value_min), int(value_max)))
+        query_values = _sample_values_with_total(
+            count=int(row_count),
+            target_total=int(row_count * target_mean),
+            min_value=int(value_min),
+            max_value=int(value_max),
+        )
+        answer_value = int(target_mean)
+    else:
+        if int(value_max) - int(value_min) < 2:
+            raise ValueError("table value range must support strict lower/upper values around the median")
+        target_median = int(rng.randint(int(value_min + 1), int(value_max - 1)))
+        lower_count = int(row_count // 2)
+        upper_count = int(row_count // 2)
+        lower_values = [int(rng.randint(int(value_min), int(target_median - 1))) for _ in range(int(lower_count))]
+        upper_values = [int(rng.randint(int(target_median + 1), int(value_max))) for _ in range(int(upper_count))]
+        query_values = [*lower_values, int(target_median), *upper_values]
+        rng.shuffle(query_values)
+        answer_value = int(target_median)
+
+    values_by_row: Dict[str, Dict[str, int]] = {}
+    for row_index, row_label in enumerate(row_labels):
+        row_values: Dict[str, int] = {}
+        for header in column_headers:
+            if str(header) == str(query_column):
+                row_values[str(header)] = int(query_values[int(row_index)])
+            else:
+                row_values[str(header)] = int(rng.randint(int(value_min), int(value_max)))
+        values_by_row[str(row_label)] = dict(row_values)
+
+    return {
+        "row_count": int(row_count),
+        "numeric_column_count": int(numeric_column_count),
+        "row_count_range": list(base["row_count_range"]),
+        "numeric_column_count_range": list(base["numeric_column_count_range"]),
+        "value_range": list(base["value_range"]),
+        "row_labels": [str(label) for label in row_labels],
+        "column_headers": [str(header) for header in column_headers],
+        "query_column": str(query_column),
+        "values_by_row": dict(values_by_row),
+        "answer_value": int(answer_value),
         "query_column_index": int(query_col_index),
     }
 
@@ -366,11 +520,47 @@ def projected_table_bbox_evidence(
     }
 
 
+def projected_table_region_bbox_evidence(
+    rendered_scene,
+    *,
+    row_labels: Sequence[str] = (),
+    column_headers: Sequence[str] = (),
+) -> Dict[str, Any]:
+    """Project ordered row/column table regions into `bbox_set` evidence."""
+
+    requested_rows = [str(row_label) for row_label in row_labels]
+    requested_columns = [str(header) for header in column_headers]
+    row_bbox_map = {
+        str(row_label): [float(value) for value in bbox]
+        for row_label, bbox in rendered_scene.row_region_bboxes.items()
+    }
+    column_bbox_map = {
+        str(header): [float(value) for value in bbox]
+        for header, bbox in rendered_scene.column_region_bboxes.items()
+    }
+    return {
+        "bbox_set": [
+            *[
+                list(row_bbox_map[str(row_label)])
+                for row_label in requested_rows
+                if str(row_label) in row_bbox_map
+            ],
+            *[
+                list(column_bbox_map[str(header)])
+                for header in requested_columns
+                if str(header) in column_bbox_map
+            ],
+        ]
+    }
+
+
 __all__ = [
     "SUPPORTED_TABLE_SCENE_VARIANTS",
     "TableDefaults",
     "build_summary_label_dataset_for_variant",
+    "build_summary_value_dataset_for_variant",
     "projected_table_bbox_evidence",
+    "projected_table_region_bbox_evidence",
     "resolve_numeric_column_count_bounds",
     "resolve_row_count_bounds",
     "resolve_table_axis_variant",

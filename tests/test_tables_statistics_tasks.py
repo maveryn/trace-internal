@@ -6,6 +6,7 @@ import json
 
 from trace.core.type_registry import load_type_registry
 from trace.tasks.tables.statistics.summary_label import TablesStatisticsSummaryLabelTask
+from trace.tasks.tables.statistics.summary_value import TablesStatisticsSummaryValueTask
 
 
 def _extract_prompt_json_example(prompt: str) -> dict:
@@ -119,4 +120,95 @@ def test_table_statistics_summary_label_task_is_deterministic() -> None:
 def test_table_statistics_registers_string_answer_and_bbox_evidence() -> None:
     registry = load_type_registry()
     assert registry.validate_answer_type("string") is True
+    assert registry.validate_evidence_type("bbox_set") is True
+
+
+def test_table_statistics_summary_value_variants_match_contract() -> None:
+    task = TablesStatisticsSummaryValueTask()
+    cases = (
+        ("column_sum", "spreadsheet"),
+        ("column_mean", "zebra"),
+        ("column_median", "ledger"),
+        ("column_sum", "card_table"),
+    )
+    for seed, (task_variant, scene_variant) in enumerate(cases, start=18110):
+        out = task.generate(seed, params={"task_variant": task_variant, "scene_variant": scene_variant}, max_attempts=10)
+        trace = out.trace_payload
+        execution = trace["execution_trace"]
+        render = trace["render_spec"]
+
+        row_labels = [str(label) for label in execution["row_labels"]]
+        column_headers = [str(header) for header in execution["column_headers"]]
+        query_column = str(execution["query_column"])
+        values_by_row = {
+            str(row_label): {
+                str(header): int(value)
+                for header, value in row_values.items()
+            }
+            for row_label, row_values in execution["values_by_row"].items()
+        }
+        query_values = [int(values_by_row[str(row_label)][str(query_column)]) for row_label in row_labels]
+        evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
+
+        assert str(out.task_variant) == str(task_variant)
+        assert out.answer_gt.type == "integer"
+        assert out.evidence_gt.type == "bbox_set"
+        assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+        assert str(execution["scene_variant"]) == str(scene_variant)
+        assert str(render["scene_variant"]) == str(scene_variant)
+        assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
+        assert 5 <= int(execution["row_count"]) <= 10
+        assert 3 <= int(execution["numeric_column_count"]) <= 5
+        assert len(row_labels) == int(execution["row_count"])
+        assert len(column_headers) == int(execution["numeric_column_count"])
+        assert len(evidence_bboxes) == 1
+        assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
+        assert str(query_column) in set(column_headers)
+        assert evidence_bboxes[0] == [
+            float(value) for value in trace["render_map"]["column_region_bboxes_px"][query_column]
+        ]
+
+        if str(task_variant) == "column_sum":
+            assert int(out.answer_gt.value) == sum(query_values)
+        elif str(task_variant) == "column_mean":
+            assert int(out.answer_gt.value) == (sum(query_values) // len(query_values))
+            assert sum(query_values) % len(query_values) == 0
+        else:
+            assert len(query_values) % 2 == 1
+            sorted_values = sorted(query_values)
+            assert int(out.answer_gt.value) == int(sorted_values[len(sorted_values) // 2])
+
+
+def test_table_statistics_summary_value_prompt_examples_match_selected_variant() -> None:
+    task = TablesStatisticsSummaryValueTask()
+    expected = {
+        "column_sum": {"evidence": [[260, 180, 372, 520]], "answer": 84},
+        "column_mean": {"evidence": [[260, 180, 372, 520]], "answer": 14},
+        "column_median": {"evidence": [[260, 180, 372, 520]], "answer": 13},
+    }
+    for index, task_variant in enumerate(expected, start=18130):
+        out = task.generate(index, params={"task_variant": task_variant}, max_attempts=10)
+        answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
+        assert answer_and_evidence == expected[task_variant]
+        assert answer_only == {"answer": expected[task_variant]["answer"]}
+
+
+def test_table_statistics_summary_value_task_is_deterministic() -> None:
+    task = TablesStatisticsSummaryValueTask()
+    params = {"task_variant": "column_mean", "scene_variant": "spreadsheet"}
+    out_a = task.generate(18160, params=params, max_attempts=10)
+    out_b = task.generate(18160, params=params, max_attempts=10)
+
+    assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
+    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
+    assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
+    assert out_a.prompt == out_b.prompt
+    assert out_a.image.tobytes() == out_b.image.tobytes()
+
+
+def test_table_statistics_registers_integer_and_bbox_evidence_for_summary_value() -> None:
+    registry = load_type_registry()
+    assert registry.validate_answer_type("integer") is True
     assert registry.validate_evidence_type("bbox_set") is True

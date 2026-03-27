@@ -50,3 +50,4 @@ Current task docs:
 40. [task_charts_distribution_histogram_count.md](task_charts_distribution_histogram_count.md)
 41. [task_charts_distribution_boxplot_label.md](task_charts_distribution_boxplot_label.md)
 42. [task_charts_distribution_density_label.md](task_charts_distribution_density_label.md)
+43. [task_charts_trend_structure_value.md](task_charts_trend_structure_value.md)

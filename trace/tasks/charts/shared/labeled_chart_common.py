@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from itertools import product
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
-from ....core.seed import spawn_rng
+from ....core.seed import hash64, spawn_rng
 from ...shared.color_distance import (
     sample_color_palette_with_distance_constraints,
     sample_color_with_distance_constraints,
@@ -1509,6 +1510,259 @@ def _build_pie_query_pair_for_readout(
     return [int(value) for value in values]
 
 
+def _trend_signs_for_values(values: Sequence[int]) -> List[int]:
+    """Return the +/- step-sign sequence for one ordered value list."""
+
+    resolved_values = [int(value) for value in values]
+    if len(resolved_values) < 2:
+        raise ValueError("trend analysis requires at least two values")
+    signs: List[int] = []
+    for left, right in zip(resolved_values[:-1], resolved_values[1:]):
+        delta = int(right) - int(left)
+        if int(delta) == 0:
+            raise ValueError("trend analysis requires strictly ordered adjacent values")
+        signs.append(1 if int(delta) > 0 else -1)
+    return [int(value) for value in signs]
+
+
+def _turning_point_indices(signs: Sequence[int], *, positive_then_negative: bool) -> List[int]:
+    """Return interior point indices for local peaks or troughs."""
+
+    resolved_signs = [int(value) for value in signs]
+    indices: List[int] = []
+    for index in range(len(resolved_signs) - 1):
+        left = int(resolved_signs[index])
+        right = int(resolved_signs[index + 1])
+        if bool(positive_then_negative):
+            if int(left) > 0 and int(right) < 0:
+                indices.append(int(index) + 1)
+        else:
+            if int(left) < 0 and int(right) > 0:
+                indices.append(int(index) + 1)
+    return [int(value) for value in indices]
+
+
+def _unique_longest_run_point_indices(signs: Sequence[int], *, direction: int) -> List[int] | None:
+    """Return the unique longest monotone run as point indices, or `None` on ties."""
+
+    resolved_signs = [int(value) for value in signs]
+    target_sign = 1 if int(direction) > 0 else -1
+    runs: List[List[int]] = []
+    index = 0
+    while int(index) < len(resolved_signs):
+        if int(resolved_signs[index]) != int(target_sign):
+            index += 1
+            continue
+        run_start = int(index)
+        while int(index) + 1 < len(resolved_signs) and int(resolved_signs[int(index) + 1]) == int(target_sign):
+            index += 1
+        run_end = int(index) + 1
+        runs.append(list(range(int(run_start), int(run_end) + 1)))
+        index += 1
+    if not runs:
+        return None
+    max_length = max(len(run) for run in runs)
+    winners = [list(run) for run in runs if len(run) == int(max_length)]
+    if len(winners) != 1:
+        return None
+    return [int(value) for value in winners[0]]
+
+
+def _summarize_trend_variant_from_signs(
+    *,
+    trend_variant: str,
+    signs: Sequence[int],
+) -> Tuple[int, List[int], Dict[str, Any]] | None:
+    """Resolve one trend-query answer from a sign sequence."""
+
+    resolved_signs = [int(value) for value in signs]
+    if str(trend_variant) == "peak_count":
+        indices = _turning_point_indices(resolved_signs, positive_then_negative=True)
+        return int(len(indices)), [int(value) for value in indices], {"turning_kind": "peak"}
+    if str(trend_variant) == "trough_count":
+        indices = _turning_point_indices(resolved_signs, positive_then_negative=False)
+        return int(len(indices)), [int(value) for value in indices], {"turning_kind": "trough"}
+    if str(trend_variant) == "longest_increasing_streak":
+        indices = _unique_longest_run_point_indices(resolved_signs, direction=1)
+        if indices is None:
+            return None
+        return (
+            int(len(indices)),
+            [int(value) for value in indices],
+            {"streak_direction": "increasing"},
+        )
+    if str(trend_variant) == "longest_decreasing_streak":
+        indices = _unique_longest_run_point_indices(resolved_signs, direction=-1)
+        if indices is None:
+            return None
+        return (
+            int(len(indices)),
+            [int(value) for value in indices],
+            {"streak_direction": "decreasing"},
+        )
+    raise ValueError(f"unsupported trend_variant: {trend_variant}")
+
+
+def _build_values_from_trend_signs(
+    *,
+    signs: Sequence[int],
+    value_min: int,
+    value_max: int,
+    instance_seed: int,
+    namespace: str,
+) -> List[int]:
+    """Construct one bounded integer value list that realizes the requested sign pattern."""
+
+    resolved_signs = [int(value) for value in signs]
+    prefix_values = [0]
+    current = 0
+    for sign in resolved_signs:
+        current += 2 * int(sign)
+        prefix_values.append(int(current))
+    min_prefix = min(prefix_values)
+    max_prefix = max(prefix_values)
+    feasible_bases = [
+        int(base)
+        for base in range(int(value_min) - int(min_prefix), int(value_max) - int(max_prefix) + 1)
+    ]
+    if not feasible_bases:
+        raise ValueError("no feasible base value for requested trend sign sequence")
+    base_value = balanced_choice_from_values(
+        feasible_bases,
+        params={},
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+    )
+    return [int(base_value) + int(prefix) for prefix in prefix_values]
+
+
+def build_trend_structure_dataset_for_variant(
+    *,
+    trend_variant: str,
+    scene_variant: SceneVariant,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    gen_defaults: Mapping[str, Any],
+    defaults: LabeledChartDefaults,
+    task_id: str,
+) -> Tuple[List[int], int, List[str], Dict[str, Any]]:
+    """Construct one ordered labeled-chart dataset for trend-structure queries."""
+
+    del scene_variant
+    value_min, value_max = resolve_value_bounds(params, gen_defaults=gen_defaults, defaults=defaults, task_id=task_id)
+    mark_count_min, mark_count_max = resolve_mark_count_bounds(
+        params,
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        task_id=task_id,
+    )
+    candidate_mark_counts = [
+        int(count)
+        for count in range(int(mark_count_min), int(mark_count_max) + 1)
+        if int(count) >= 3
+    ]
+    explicit_mark_count = params.get("mark_count")
+    if explicit_mark_count is not None:
+        candidate_mark_counts = [int(count) for count in candidate_mark_counts if int(count) == int(explicit_mark_count)]
+    if not candidate_mark_counts:
+        raise ValueError("trend structure tasks require at least three ordered marks")
+
+    feasible_by_answer: Dict[int, List[Tuple[int, Tuple[int, ...], List[int], Dict[str, Any]]]] = {}
+    for mark_count in candidate_mark_counts:
+        sign_length = int(mark_count) - 1
+        for sign_sequence in product((-1, 1), repeat=int(sign_length)):
+            resolved = _summarize_trend_variant_from_signs(
+                trend_variant=str(trend_variant),
+                signs=sign_sequence,
+            )
+            if resolved is None:
+                continue
+            answer_value, evidence_indices, metric_extras = resolved
+            feasible_by_answer.setdefault(int(answer_value), []).append(
+                (
+                    int(mark_count),
+                    tuple(int(value) for value in sign_sequence),
+                    [int(value) for value in evidence_indices],
+                    dict(metric_extras),
+                )
+            )
+    if not feasible_by_answer:
+        raise ValueError(f"no feasible trend support for variant={trend_variant}")
+
+    if str(trend_variant) in {"peak_count", "trough_count"}:
+        default_answer_min, default_answer_max = 0, max(int(value) for value in feasible_by_answer)
+    elif str(trend_variant) in {"longest_increasing_streak", "longest_decreasing_streak"}:
+        default_answer_min, default_answer_max = 2, max(int(value) for value in feasible_by_answer)
+    else:
+        raise ValueError(f"unsupported trend_variant: {trend_variant}")
+
+    explicit_min = params.get("target_answer_min")
+    explicit_max = params.get("target_answer_max")
+    supported_answer_min = int(default_answer_min if explicit_min is None else explicit_min)
+    supported_answer_max = int(default_answer_max if explicit_max is None else explicit_max)
+    if int(supported_answer_min) > int(supported_answer_max):
+        raise ValueError("target_answer_min must be <= target_answer_max")
+
+    answer_candidates = [
+        int(answer)
+        for answer in sorted(feasible_by_answer.keys())
+        if int(supported_answer_min) <= int(answer) <= int(supported_answer_max)
+    ]
+    if not answer_candidates:
+        raise ValueError("no feasible target answers for requested trend answer range")
+    if "_sampling_index" in params:
+        target_answer = balanced_choice_from_values(
+            answer_candidates,
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}.target_answer:{str(trend_variant)}",
+        )
+    else:
+        # Review collection does not pass `_sampling_index`, so use a second
+        # decorrelated deterministic hash stream for answer selection instead
+        # of coupling the answer too tightly to the semantic-variant seed path.
+        selection_index = abs(int(hash64(int(instance_seed), "trend-target", 16)))
+        target_answer = int(answer_candidates[int(selection_index) % len(answer_candidates)])
+    candidate_sequences = list(feasible_by_answer[int(target_answer)])
+    selection_index = resolve_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}.sequence:{str(trend_variant)}:{int(target_answer)}",
+    )
+    mark_count, sign_sequence, evidence_indices, metric_extras = candidate_sequences[
+        int(selection_index) % len(candidate_sequences)
+    ]
+
+    values = _build_values_from_trend_signs(
+        signs=sign_sequence,
+        value_min=int(value_min),
+        value_max=int(value_max),
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}.values:{str(trend_variant)}:{int(target_answer)}",
+    )
+    labels = list(sample_chart_labels(count=int(mark_count), instance_seed=int(instance_seed)))
+    ordered_evidence_labels = [str(labels[int(index)]) for index in evidence_indices]
+    evidence_labels = sorted_labels(ordered_evidence_labels)
+
+    trace_extras: Dict[str, Any] = {
+        "value_min": int(value_min),
+        "value_max": int(value_max),
+        "target_answer_range": [int(supported_answer_min), int(supported_answer_max)],
+        "mark_count_range": [int(mark_count_min), int(mark_count_max)],
+        "target_answer": int(target_answer),
+        "mark_count": int(mark_count),
+        "labels": [str(label) for label in labels],
+        "values_by_label": {str(label): int(value) for label, value in zip(labels, values)},
+        "evidence_labels": list(evidence_labels),
+        "ordered_evidence_labels": [str(label) for label in ordered_evidence_labels],
+        "evidence_point_indices": [int(value) for value in evidence_indices],
+        "step_signs": [int(value) for value in sign_sequence],
+        "step_directions": ["up" if int(value) > 0 else "down" for value in sign_sequence],
+        **dict(metric_extras),
+    }
+    return [int(value) for value in values], int(target_answer), evidence_labels, trace_extras
+
+
 def build_value_readout_dataset_for_variant(
     *,
     readout_variant: str,
@@ -1699,6 +1953,7 @@ __all__ = [
     "SceneVariant",
     "balanced_choice_from_values",
     "build_chart_mark_specs",
+    "build_trend_structure_dataset_for_variant",
     "build_value_readout_dataset_for_variant",
     "build_summary_statistics_dataset_for_variant",
     "build_value_count_dataset_for_variant",

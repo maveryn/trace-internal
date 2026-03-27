@@ -51,7 +51,7 @@ These are valid future targets, but they are not part of the initial implementat
 
 ## Initial implementation target
 
-The first implementation step is now active: `task_charts_statistics_summary_value`, `task_charts_statistics_summary_label`, `task_charts_counting_value_count`, `task_charts_readout_subset_value`, `task_charts_multiseries_pairwise_comparison_count`, `task_charts_distribution_histogram_count`, and `task_charts_distribution_boxplot_label` under `domain=charts`.
+The first implementation step is now active: `task_charts_statistics_summary_value`, `task_charts_statistics_summary_label`, `task_charts_counting_value_count`, `task_charts_readout_subset_value`, `task_charts_multiseries_pairwise_comparison_count`, `task_charts_distribution_histogram_count`, `task_charts_distribution_boxplot_label`, `task_charts_distribution_density_label`, and `task_charts_trend_structure_value` under `domain=charts`.
 
 The concrete v1 contract for the first rollout now lives in `CHART_TASK_SETUP.md`.
 
@@ -107,6 +107,16 @@ These are the active distribution-style chart variants we currently support in t
 2. `boxplot`
 3. `violin`
 
+### First active trend chart variants
+These are the active ordered single-series chart variants we currently support in the `trend` family.
+
+1. `area`
+2. `bar`
+3. `horizontal_bar`
+4. `line`
+5. `dot_plot`
+6. `lollipop`
+
 ### Deferred chart variants
 These remain under consideration, but they are not part of the current active chart contract.
 
@@ -129,9 +139,9 @@ Notes:
    - `readout`
    - `multiseries`
    - `distribution`
+   - `trend`
 2. Planned next:
    - `comparison`
-   - `trend`
    - `spatial`
    - `relation`
 

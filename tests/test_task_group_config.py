@@ -335,6 +335,56 @@ def test_charts_distribution_defaults_loaded() -> None:
     assert str(density_prompt["evidence_hint_bimodal_label"]).strip()
 
 
+def test_charts_trend_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("charts", "trend")
+    for section in ("generation", "rendering", "prompt"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["mark_count_min"]) == 6
+    assert int(generation_shared["mark_count_max"]) == 10
+    assert int(generation_shared["value_min"]) >= 1
+    assert int(generation_shared["value_max"]) == 20
+    assert sorted(generation_shared["task_variant_weights"].keys()) == [
+        "longest_decreasing_streak",
+        "longest_increasing_streak",
+        "peak_count",
+        "trough_count",
+    ]
+    assert sorted(generation_shared["scene_variant_weights"].keys()) == [
+        "area",
+        "bar",
+        "dot_plot",
+        "horizontal_bar",
+        "line",
+        "lollipop",
+    ]
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_width"]) > 0
+    assert int(render_shared["canvas_height"]) > 0
+    assert int(render_shared["plot_margin_left_px"]) > 0
+    assert int(render_shared["plot_margin_bottom_px"]) > 0
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "charts_trend_v1"
+    assert str(prompt_shared["task_family_key"]).strip() == "ordered_chart_trend"
+    assert str(prompt_shared["task_key"]).strip() == "structure_value_query"
+    assert str(prompt_shared["object_description_horizontal_bar"]).strip()
+    assert str(prompt_shared["evidence_hint_peak_count"]).strip()
+    assert str(prompt_shared["json_example_longest_increasing_streak"]).strip()
+    assert str(prompt_shared["json_example_answer_only_trough_count"]).strip()
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_charts_trend_structure_value",
+    )
+    assert int(generation_defaults["mark_count_min"]) == 6
+    assert int(generation_defaults["mark_count_max"]) == 10
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip() == "charts_trend_v1"
+
+
 def test_charts_multiseries_defaults_loaded() -> None:
     cfg = get_task_group_defaults("charts", "multiseries")
     for section in ("generation", "rendering", "prompt"):

@@ -132,7 +132,7 @@ Active task-to-bundle mapping:
    - `task_charts_composition_subset_value` -> `charts_composition_v1`
 9. Tables:
    - `task_tables_statistics_summary_label|summary_value|filtered_subset_value` -> `tables_statistics_v1`
-   - `task_tables_counting_value_count|counting_column_pair_count` -> `tables_counting_v1`
+   - `task_tables_counting_value_count` -> `tables_counting_v1`
    - `task_tables_readout_subset_value` -> `tables_readout_v1`
    - `task_tables_relation_row_compare_label|extremum_transfer_value` -> `tables_relation_v1`
    - `task_tables_ranking_label` -> `tables_ranking_v1`

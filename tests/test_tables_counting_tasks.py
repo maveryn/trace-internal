@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from trace.tasks.tables.counting.column_pair_count import TablesCountingColumnPairCountTask
 from trace.tasks.tables.counting.value_count import TablesCountingValueCountTask
 from tests.helpers import extract_prompt_json_example
 
@@ -108,8 +107,8 @@ def test_table_counting_value_count_task_is_deterministic() -> None:
     assert out_a.image.tobytes() == out_b.image.tobytes()
 
 
-def test_table_counting_column_pair_count_variants_match_contract() -> None:
-    task = TablesCountingColumnPairCountTask()
+def test_table_counting_pairwise_variants_match_contract() -> None:
+    task = TablesCountingValueCountTask()
     cases = (
         ("col_a_gt_col_b", "spreadsheet"),
         ("col_a_lt_col_b", "zebra"),
@@ -170,8 +169,8 @@ def test_table_counting_column_pair_count_variants_match_contract() -> None:
         assert evidence_bboxes == expected_bboxes
 
 
-def test_table_counting_column_pair_prompt_examples_match_selected_variant() -> None:
-    task = TablesCountingColumnPairCountTask()
+def test_table_counting_pairwise_prompt_examples_match_selected_variant() -> None:
+    task = TablesCountingValueCountTask()
     expected = {
         "col_a_gt_col_b": {
             "evidence": [[260, 180, 372, 236], [374, 180, 486, 236], [260, 236, 372, 292], [374, 236, 486, 292]],
@@ -190,8 +189,8 @@ def test_table_counting_column_pair_prompt_examples_match_selected_variant() -> 
         assert answer_only == {"answer": expected[task_variant]["answer"]}
 
 
-def test_table_counting_column_pair_count_task_is_deterministic() -> None:
-    task = TablesCountingColumnPairCountTask()
+def test_table_counting_pairwise_task_is_deterministic() -> None:
+    task = TablesCountingValueCountTask()
     params = {"task_variant": "col_a_gt_col_b", "scene_variant": "spreadsheet"}
     out_a = task.generate(18350, params=params, max_attempts=10)
     out_b = task.generate(18350, params=params, max_attempts=10)

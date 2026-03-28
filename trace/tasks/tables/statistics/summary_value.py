@@ -22,6 +22,7 @@ from ..shared.table_common import (
     TableDefaults,
     build_row_summary_value_dataset_for_variant,
     build_summary_value_dataset_for_variant,
+    build_table_summary_value_dataset_for_variant,
     projected_table_region_bbox_evidence,
     resolve_table_axis_variant,
     resolve_table_render_params,
@@ -31,7 +32,15 @@ from ..shared.visual_defaults import load_table_background_defaults, load_table_
 
 
 TASK_ID = "task_tables_statistics_summary_value"
-_SUPPORTED_TASK_VARIANTS: Tuple[str, ...] = ("column_sum", "column_mean", "column_median", "row_sum", "row_mean")
+_SUPPORTED_TASK_VARIANTS: Tuple[str, ...] = (
+    "column_sum",
+    "column_mean",
+    "column_median",
+    "row_sum",
+    "row_mean",
+    "table_sum",
+    "table_mean",
+)
 
 _DEFAULTS = TableDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("tables", "statistics")
@@ -88,8 +97,18 @@ class TablesStatisticsSummaryValueTask:
         task_variant, task_variant_probabilities = _resolve_task_variant(params, instance_seed=int(instance_seed))
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
         is_row_variant = str(task_variant).startswith("row_")
+        is_table_variant = str(task_variant).startswith("table_")
         if is_row_variant:
             dataset = build_row_summary_value_dataset_for_variant(
+                task_variant=str(task_variant),
+                params=params,
+                instance_seed=int(instance_seed),
+                gen_defaults=_GEN_DEFAULTS,
+                defaults=_DEFAULTS,
+                task_id=self.task_id,
+            )
+        elif is_table_variant:
+            dataset = build_table_summary_value_dataset_for_variant(
                 task_variant=str(task_variant),
                 params=params,
                 instance_seed=int(instance_seed),
@@ -152,16 +171,22 @@ class TablesStatisticsSummaryValueTask:
                 "evidence_hint_column_median",
                 "evidence_hint_row_sum",
                 "evidence_hint_row_mean",
+                "evidence_hint_table_sum",
+                "evidence_hint_table_mean",
                 "json_example_column_sum",
                 "json_example_column_mean",
                 "json_example_column_median",
                 "json_example_row_sum",
                 "json_example_row_mean",
+                "json_example_table_sum",
+                "json_example_table_mean",
                 "json_example_answer_only_column_sum",
                 "json_example_answer_only_column_mean",
                 "json_example_answer_only_column_median",
                 "json_example_answer_only_row_sum",
                 "json_example_answer_only_row_mean",
+                "json_example_answer_only_table_sum",
+                "json_example_answer_only_table_mean",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -169,7 +194,12 @@ class TablesStatisticsSummaryValueTask:
         evidence_hint = str(prompt_defaults[f"evidence_hint_{str(task_variant)}"])
         json_example = str(prompt_defaults[f"json_example_{str(task_variant)}"])
         json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(task_variant)}"])
-        task_key = "summary_row_value_query" if is_row_variant else str(prompt_defaults["task_key"])
+        if is_row_variant:
+            task_key = "summary_row_value_query"
+        elif is_table_variant:
+            task_key = "summary_table_value_query"
+        else:
+            task_key = str(prompt_defaults["task_key"])
         prompt_slots = {
             "object_description": str(object_description),
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
@@ -181,7 +211,7 @@ class TablesStatisticsSummaryValueTask:
         }
         if is_row_variant:
             prompt_slots["query_row_label"] = str(dataset["query_row_label"])
-        else:
+        elif not is_table_variant:
             prompt_slots["query_column"] = str(dataset["query_column"])
 
         prompt_selection = render_task_prompt_variants(
@@ -202,6 +232,11 @@ class TablesStatisticsSummaryValueTask:
             evidence_projection = projected_table_region_bbox_evidence(
                 rendered_scene,
                 row_labels=[str(query_row_label)],
+            )
+        elif is_table_variant:
+            evidence_projection = projected_table_region_bbox_evidence(
+                rendered_scene,
+                include_numeric_table_region=True,
             )
         else:
             query_column = str(dataset["query_column"])
@@ -242,14 +277,24 @@ class TablesStatisticsSummaryValueTask:
                         "supporting_row_label": str(query_row_label),
                     }
                     if is_row_variant
-                    else {
+                    else (
+                        {
+                            "task_variant": str(task_variant),
+                            "scene_variant": str(scene_variant),
+                            "answer_value": int(answer_value),
+                            "supporting_region_kind": "table",
+                            "supporting_table_region": "numeric_values",
+                        }
+                        if is_table_variant
+                        else {
                         "task_variant": str(task_variant),
                         "scene_variant": str(scene_variant),
                         "query_column": str(query_column),
                         "answer_value": int(answer_value),
                         "supporting_region_kind": "column",
                         "supporting_column_header": str(query_column),
-                    }
+                        }
+                    )
                 ),
             },
             "query_spec": {
@@ -269,7 +314,18 @@ class TablesStatisticsSummaryValueTask:
                         "numeric_column_count": int(dataset["numeric_column_count"]),
                     }
                     if is_row_variant
-                    else {
+                    else (
+                        {
+                            "task_variant": str(task_variant),
+                            "scene_variant": str(scene_variant),
+                            "task_variant_probabilities": dict(task_variant_probabilities),
+                            "scene_variant_probabilities": dict(scene_variant_probabilities),
+                            "row_count": int(dataset["row_count"]),
+                            "numeric_column_count": int(dataset["numeric_column_count"]),
+                            "numeric_cell_count": int(dataset["numeric_cell_count"]),
+                        }
+                        if is_table_variant
+                        else {
                         "task_variant": str(task_variant),
                         "scene_variant": str(scene_variant),
                         "query_column": str(query_column),
@@ -277,7 +333,8 @@ class TablesStatisticsSummaryValueTask:
                         "scene_variant_probabilities": dict(scene_variant_probabilities),
                         "row_count": int(dataset["row_count"]),
                         "numeric_column_count": int(dataset["numeric_column_count"]),
-                    }
+                        }
+                    )
                 ),
             },
             "render_spec": {
@@ -300,6 +357,7 @@ class TablesStatisticsSummaryValueTask:
             "render_map": {
                 "image_id": "img0",
                 "table_bbox_px": list(rendered_scene.table_bbox_px),
+                "numeric_table_region_bbox_px": list(rendered_scene.numeric_table_region_bbox),
                 "row_region_bboxes_px": dict(rendered_scene.row_region_bboxes),
                 "column_region_bboxes_px": dict(rendered_scene.column_region_bboxes),
                 "row_label_bboxes_px": dict(rendered_scene.row_label_bboxes),
@@ -329,13 +387,22 @@ class TablesStatisticsSummaryValueTask:
                         "supporting_row_label": str(query_row_label),
                     }
                     if is_row_variant
-                    else {
+                    else (
+                        {
+                            "question_format": "table_summary_value",
+                            "supporting_region_kind": "table",
+                            "supporting_table_region": "numeric_values",
+                            "numeric_cell_count": int(dataset["numeric_cell_count"]),
+                        }
+                        if is_table_variant
+                        else {
                         "query_column": str(query_column),
                         "query_column_index": int(dataset["query_column_index"]),
                         "question_format": "column_summary_value",
                         "supporting_region_kind": "column",
                         "supporting_column_header": str(query_column),
-                    }
+                        }
+                    )
                 ),
             },
             "witness_symbolic": {
@@ -347,11 +414,12 @@ class TablesStatisticsSummaryValueTask:
             },
         }
 
-        complexity_score = (
-            float(0.18 + (0.02 * int(dataset["row_count"])) + (0.03 * int(dataset["numeric_column_count"])))
-            if is_row_variant
-            else float(0.2 + (0.03 * int(dataset["row_count"])) + (0.02 * int(dataset["numeric_column_count"])))
-        )
+        if is_row_variant:
+            complexity_score = float(0.18 + (0.02 * int(dataset["row_count"])) + (0.03 * int(dataset["numeric_column_count"])))
+        elif is_table_variant:
+            complexity_score = float(0.22 + (0.03 * int(dataset["row_count"])) + (0.03 * int(dataset["numeric_column_count"])))
+        else:
+            complexity_score = float(0.2 + (0.03 * int(dataset["row_count"])) + (0.02 * int(dataset["numeric_column_count"])))
         complexity = TaskComplexity(
             complexity_score=float(complexity_score),
             complexity_components={
@@ -359,6 +427,7 @@ class TablesStatisticsSummaryValueTask:
                 "scene_variant": str(scene_variant),
                 "row_count": int(dataset["row_count"]),
                 "numeric_column_count": int(dataset["numeric_column_count"]),
+                **({"numeric_cell_count": int(dataset["numeric_cell_count"])} if is_table_variant else {}),
             },
         )
         return TaskOutput(

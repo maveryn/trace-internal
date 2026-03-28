@@ -39,6 +39,13 @@
       "Find the numeric summary for the named row.",
       "Read the table and report the requested row summary value."
     ],
+    "summary_table_value_query": [
+      "Answer this question.",
+      "Determine the requested summary value over all numeric cells in the table.",
+      "Use the table values to compute the requested whole-table numeric summary.",
+      "Find the numeric summary across the entire numeric part of the table.",
+      "Read the table and report the requested whole-table summary value."
+    ],
     "filtered_subset_value_query": [
       "Answer this question.",
       "Determine the requested target-column summary over the rows selected by the filter condition.",
@@ -110,6 +117,20 @@
       "Determine the row mean for {query_row_label}.",
       "What average value does row {query_row_label} have across the numeric columns?",
       "Compute the mean of the numeric cells in row {query_row_label}."
+    ],
+    "table_sum": [
+      "What is the sum of all numeric values in the table?",
+      "Find the total of all numeric cells in the table.",
+      "Determine the sum across the full numeric table.",
+      "What total do you get when you add every numeric cell in the table?",
+      "Compute the whole-table sum over the numeric cells."
+    ],
+    "table_mean": [
+      "What is the mean of all numeric values in the table?",
+      "Find the average of all numeric cells in the table.",
+      "Determine the mean across the full numeric table.",
+      "What average value do you get over every numeric cell in the table?",
+      "Compute the whole-table mean over the numeric cells."
     ],
     "filtered_column_sum": [
       "Among the rows with {filter_condition}, what is the sum of the values in the {query_target_column} column?",

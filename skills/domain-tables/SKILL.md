@@ -46,6 +46,8 @@ Use this whenever the task lives under `domain=tables`.
 - If a table readout task broadens from one exact cell to one-or-more queried cells with simple arithmetic, rename the task/module to the broader subset concept instead of keeping a stale `cell_value` name.
 - Keep prompts explicit about what evidence region should be boxed.
 - When row/column summary mirrors share the same answer shape and the same `bbox_set` evidence contract, prefer widening `task_variant` inside the existing statistics task instead of adding a near-duplicate sibling task id.
+- When a whole-table numeric summary uses the same integer answer shape and one region-level `bbox_set` witness, prefer adding it as another `task_tables_statistics_summary_value` variant instead of creating a separate global-summary task id.
+- When a table counting variant still returns one integer row count and uses deterministic `bbox_set` witnesses over the matching rows, prefer widening `task_tables_counting_value_count` rather than creating a sibling counting task id just because the predicate changes from one-column filtering to row-wise two-column comparison.
 - When a table task combines selection and aggregation, keep one semantic axis in `task_variant` and let simpler internal subtypes (for example filter condition flavor) vary inside the task if that avoids exploding the task count without changing the evidence contract.
 
 ## Schema lessons learned

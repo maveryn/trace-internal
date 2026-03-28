@@ -872,6 +872,80 @@ def build_summary_value_dataset_for_variant(
     }
 
 
+def build_table_summary_value_dataset_for_variant(
+    *,
+    task_variant: str,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    gen_defaults: Mapping[str, Any],
+    defaults: TableDefaults,
+    task_id: str,
+) -> Dict[str, Any]:
+    """Construct one deterministic table dataset for whole-table numeric summaries."""
+
+    if str(task_variant) not in {"table_sum", "table_mean"}:
+        raise ValueError(f"unsupported table summary-value variant: {task_variant}")
+
+    base = _resolve_base_table_schema(
+        params=params,
+        instance_seed=int(instance_seed),
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        task_id=task_id,
+    )
+    rng = base["rng"]
+    row_count = int(base["row_count"])
+    numeric_column_count = int(base["numeric_column_count"])
+    row_labels = list(base["row_labels"])
+    column_headers = list(base["column_headers"])
+    value_min = int(base["value_min"])
+    value_max = int(base["value_max"])
+    numeric_cell_count = int(row_count * numeric_column_count)
+
+    if str(task_variant) == "table_sum":
+        target_sum = int(rng.randint(int(numeric_cell_count * value_min), int(numeric_cell_count * value_max)))
+        flat_values = _sample_values_with_total(
+            count=int(numeric_cell_count),
+            target_total=int(target_sum),
+            min_value=int(value_min),
+            max_value=int(value_max),
+            rng=rng,
+        )
+        answer_value = int(target_sum)
+    else:
+        target_mean = int(rng.randint(int(value_min), int(value_max)))
+        flat_values = _sample_values_with_total(
+            count=int(numeric_cell_count),
+            target_total=int(numeric_cell_count * target_mean),
+            min_value=int(value_min),
+            max_value=int(value_max),
+            rng=rng,
+        )
+        answer_value = int(target_mean)
+
+    values_by_row: Dict[str, Dict[str, int]] = {}
+    flat_index = 0
+    for row_label in row_labels:
+        row_values: Dict[str, int] = {}
+        for header in column_headers:
+            row_values[str(header)] = int(flat_values[int(flat_index)])
+            flat_index += 1
+        values_by_row[str(row_label)] = dict(row_values)
+
+    return {
+        "row_count": int(row_count),
+        "numeric_column_count": int(numeric_column_count),
+        "numeric_cell_count": int(numeric_cell_count),
+        "row_count_range": list(base["row_count_range"]),
+        "numeric_column_count_range": list(base["numeric_column_count_range"]),
+        "value_range": list(base["value_range"]),
+        "row_labels": [str(label) for label in row_labels],
+        "column_headers": [str(header) for header in column_headers],
+        "values_by_row": dict(values_by_row),
+        "answer_value": int(answer_value),
+    }
+
+
 def build_row_summary_value_dataset_for_variant(
     *,
     task_variant: str,
@@ -1634,6 +1708,7 @@ def projected_table_region_bbox_evidence(
     *,
     row_labels: Sequence[str] = (),
     column_headers: Sequence[str] = (),
+    include_numeric_table_region: bool = False,
 ) -> Dict[str, Any]:
     """Project ordered row/column table regions into `bbox_set` evidence."""
 
@@ -1659,6 +1734,11 @@ def projected_table_region_bbox_evidence(
                 for header in requested_columns
                 if str(header) in column_bbox_map
             ],
+            *(
+                [list(rendered_scene.numeric_table_region_bbox)]
+                if bool(include_numeric_table_region)
+                else []
+            ),
         ]
     }
 
@@ -1676,6 +1756,7 @@ __all__ = [
     "build_row_summary_value_dataset_for_variant",
     "build_statistics_filtered_subset_dataset_for_variant",
     "build_summary_label_dataset_for_variant",
+    "build_table_summary_value_dataset_for_variant",
     "build_summary_value_dataset_for_variant",
     "projected_table_bbox_evidence",
     "projected_table_region_bbox_evidence",

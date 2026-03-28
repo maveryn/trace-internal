@@ -5,8 +5,6 @@ generation:
         above_threshold: 1.0
         below_threshold: 1.0
         in_interval: 1.0
-    task_tables_counting_column_pair_count:
-      task_variant_weights:
         col_a_gt_col_b: 1.0
         col_a_lt_col_b: 1.0
 
@@ -21,17 +19,15 @@ prompt:
       evidence_hint_above_threshold: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every matching value cell in top-to-bottom row order, or [] if none match
       evidence_hint_below_threshold: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every matching value cell in top-to-bottom row order, or [] if none match
       evidence_hint_in_interval: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every matching value cell in top-to-bottom row order, or [] if none match
+      evidence_hint_col_a_gt_col_b: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every matching row, ordered top-to-bottom, with the two queried column cells kept in the same order as the prompt for each row; use [] if none match
+      evidence_hint_col_a_lt_col_b: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every matching row, ordered top-to-bottom, with the two queried column cells kept in the same order as the prompt for each row; use [] if none match
       json_example_above_threshold: '{"evidence":[[260,180,372,236],[260,236,372,292]],"answer":2}'
       json_example_below_threshold: '{"evidence":[[260,180,372,236]],"answer":1}'
       json_example_in_interval: '{"evidence":[[260,180,372,236],[260,236,372,292],[260,292,372,348]],"answer":3}'
+      json_example_col_a_gt_col_b: '{"evidence":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],"answer":2}'
+      json_example_col_a_lt_col_b: '{"evidence":[[260,180,372,236],[374,180,486,236]],"answer":1}'
       json_example_answer_only_above_threshold: '{"answer":2}'
       json_example_answer_only_below_threshold: '{"answer":1}'
       json_example_answer_only_in_interval: '{"answer":3}'
-    task_tables_counting_column_pair_count:
-      task_key: column_pair_count_query
-      evidence_hint_col_a_gt_col_b: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every matching row, ordered top-to-bottom, with the two queried column cells kept in the same order as the prompt for each row; use [] if none match
-      evidence_hint_col_a_lt_col_b: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every matching row, ordered top-to-bottom, with the two queried column cells kept in the same order as the prompt for each row; use [] if none match
-      json_example_col_a_gt_col_b: '{"evidence":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],"answer":2}'
-      json_example_col_a_lt_col_b: '{"evidence":[[260,180,372,236],[374,180,486,236]],"answer":1}'
       json_example_answer_only_col_a_gt_col_b: '{"answer":2}'
       json_example_answer_only_col_a_lt_col_b: '{"answer":1}'

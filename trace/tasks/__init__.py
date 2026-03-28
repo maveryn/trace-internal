@@ -43,7 +43,6 @@ from .charts.statistics import summary_label as _task_charts_statistics_summary_
 from .charts.statistics import summary_value as _task_charts_statistics_summary_value
 from .charts.trend import structure_value as _task_charts_trend_structure_value
 from .tables.counting import value_count as _task_tables_counting_value_count
-from .tables.counting import column_pair_count as _task_tables_counting_column_pair_count
 from .tables.ranking import label as _task_tables_ranking_label
 from .tables.relation import extremum_transfer_value as _task_tables_relation_extremum_transfer_value
 from .tables.relation import row_compare_label as _task_tables_relation_row_compare_label

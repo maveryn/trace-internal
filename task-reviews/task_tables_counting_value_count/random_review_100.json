@@ -129,16 +129,20 @@
     "task_variant": {
       "expected_conflict": false,
       "expected_probabilities": {
-        "above_threshold": 0.3333333333333333,
-        "below_threshold": 0.3333333333333333,
-        "in_interval": 0.3333333333333333
+        "above_threshold": 0.2,
+        "below_threshold": 0.2,
+        "col_a_gt_col_b": 0.2,
+        "col_a_lt_col_b": 0.2,
+        "in_interval": 0.2
       },
       "expected_source": "execution_trace",
-      "max_observed_frequency": 0.39,
+      "max_observed_frequency": 0.25,
       "observed_counts": {
-        "above_threshold": 33,
-        "below_threshold": 28,
-        "in_interval": 39
+        "above_threshold": 21,
+        "below_threshold": 22,
+        "col_a_gt_col_b": 25,
+        "col_a_lt_col_b": 13,
+        "in_interval": 19
       },
       "sample_count": 100
     }
@@ -147,16 +151,20 @@
   "task_variant_distribution": {
     "expected_conflict": false,
     "expected_probabilities": {
-      "above_threshold": 0.3333333333333333,
-      "below_threshold": 0.3333333333333333,
-      "in_interval": 0.3333333333333333
+      "above_threshold": 0.2,
+      "below_threshold": 0.2,
+      "col_a_gt_col_b": 0.2,
+      "col_a_lt_col_b": 0.2,
+      "in_interval": 0.2
     },
     "expected_source": "execution_trace",
     "has_variants": true,
     "observed_counts": {
-      "above_threshold": 33,
-      "below_threshold": 28,
-      "in_interval": 39
+      "above_threshold": 21,
+      "below_threshold": 22,
+      "col_a_gt_col_b": 25,
+      "col_a_lt_col_b": 13,
+      "in_interval": 19
     },
     "status": "reported"
   }

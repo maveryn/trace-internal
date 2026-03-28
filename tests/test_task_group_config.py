@@ -560,6 +560,8 @@ def test_tables_statistics_defaults_loaded() -> None:
         "column_sum",
         "row_mean",
         "row_sum",
+        "table_mean",
+        "table_sum",
     ]
     assert int(generation_defaults["row_count_min"]) >= 5
     assert int(rendering_defaults["canvas_width"]) > 0
@@ -569,6 +571,8 @@ def test_tables_statistics_defaults_loaded() -> None:
     assert str(prompt_defaults["json_example_column_median"]).strip()
     assert str(prompt_defaults["evidence_hint_row_sum"]).strip()
     assert str(prompt_defaults["json_example_row_mean"]).strip()
+    assert str(prompt_defaults["evidence_hint_table_sum"]).strip()
+    assert str(prompt_defaults["json_example_table_mean"]).strip()
 
     generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
         cfg,
@@ -612,24 +616,14 @@ def test_tables_counting_defaults_loaded() -> None:
     assert sorted(generation_defaults["task_variant_weights"].keys()) == [
         "above_threshold",
         "below_threshold",
+        "col_a_gt_col_b",
+        "col_a_lt_col_b",
         "in_interval",
     ]
     assert int(rendering_defaults["canvas_width"]) > 0
     assert str(prompt_defaults["bundle_id"]).strip() == "tables_counting_v1"
     assert str(prompt_defaults["evidence_hint_above_threshold"]).strip()
     assert str(prompt_defaults["json_example_in_interval"]).strip()
-
-    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
-        cfg,
-        task_id="task_tables_counting_column_pair_count",
-    )
-    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
-        "col_a_gt_col_b",
-        "col_a_lt_col_b",
-    ]
-    assert int(rendering_defaults["canvas_width"]) > 0
-    assert str(prompt_defaults["bundle_id"]).strip() == "tables_counting_v1"
-    assert str(prompt_defaults["task_key"]).strip() == "column_pair_count_query"
     assert str(prompt_defaults["evidence_hint_col_a_gt_col_b"]).strip()
     assert str(prompt_defaults["json_example_col_a_lt_col_b"]).strip()
 

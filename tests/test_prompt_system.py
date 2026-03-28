@@ -344,6 +344,9 @@ def test_tables_relation_bundle_supports_row_compare_variants() -> None:
 
 def test_tables_statistics_bundle_supports_filtered_subset_variants() -> None:
     bundle = load_prompt_bundle("tables", "statistics", "tables_statistics_v1")
+    assert len(bundle.task_templates["summary_table_value_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["table_sum"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["table_mean"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_templates["filtered_subset_value_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_variant_templates["filtered_column_sum"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_variant_templates["filtered_column_mean"]) == REQUIRED_PROMPT_VARIANTS
@@ -379,6 +382,7 @@ def test_tables_ranking_bundle_supports_kth_label_variants() -> None:
 
 def test_tables_counting_bundle_supports_column_pair_variants() -> None:
     bundle = load_prompt_bundle("tables", "counting", "tables_counting_v1")
+    assert len(bundle.task_templates["value_count_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_templates["column_pair_count_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_variant_templates["col_a_gt_col_b"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_variant_templates["col_a_lt_col_b"]) == REQUIRED_PROMPT_VARIANTS

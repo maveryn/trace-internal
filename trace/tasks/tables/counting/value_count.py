@@ -1,4 +1,4 @@
-"""Table counting task that counts rows matching one queried column-value predicate."""
+"""Table counting task that counts rows matching one supported table predicate."""
 
 from __future__ import annotations
 
@@ -20,6 +20,7 @@ from ...shared.prompt_variants import (
 from ..shared.table_common import (
     SUPPORTED_TABLE_SCENE_VARIANTS,
     TableDefaults,
+    build_counting_column_pair_dataset_for_variant,
     build_counting_value_dataset_for_variant,
     projected_table_bbox_evidence,
     resolve_table_axis_variant,
@@ -31,7 +32,13 @@ from ..shared.visual_defaults import load_table_background_defaults, load_table_
 
 
 TASK_ID = "task_tables_counting_value_count"
-_SUPPORTED_TASK_VARIANTS: Tuple[str, ...] = ("above_threshold", "below_threshold", "in_interval")
+_SUPPORTED_TASK_VARIANTS: Tuple[str, ...] = (
+    "above_threshold",
+    "below_threshold",
+    "in_interval",
+    "col_a_gt_col_b",
+    "col_a_lt_col_b",
+)
 
 _DEFAULTS = TableDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("tables", "counting")
@@ -41,6 +48,12 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 )
 POST_IMAGE_BACKGROUND_DEFAULTS = load_table_background_defaults(task_group="counting")
 POST_IMAGE_NOISE_DEFAULTS = load_table_noise_defaults(task_group="counting", apply_prob=0.0)
+
+
+def _is_pairwise_count_variant(task_variant: str) -> bool:
+    """Return whether the counting variant compares two columns row-by-row."""
+
+    return str(task_variant) in {"col_a_gt_col_b", "col_a_lt_col_b"}
 
 
 def _resolve_task_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
@@ -77,7 +90,7 @@ def _resolve_scene_variant(params: Mapping[str, Any], *, instance_seed: int) -> 
 
 @register_task
 class TablesCountingValueCountTask:
-    """Count table rows whose queried numeric-column values satisfy one predicate."""
+    """Count table rows whose queried values satisfy one supported counting predicate."""
 
     task_id = TASK_ID
     domain = "tables"
@@ -87,14 +100,25 @@ class TablesCountingValueCountTask:
         del max_attempts
         task_variant, task_variant_probabilities = _resolve_task_variant(params, instance_seed=int(instance_seed))
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
-        dataset = build_counting_value_dataset_for_variant(
-            task_variant=str(task_variant),
-            params=params,
-            instance_seed=int(instance_seed),
-            gen_defaults=_GEN_DEFAULTS,
-            defaults=_DEFAULTS,
-            task_id=self.task_id,
-        )
+        is_pairwise_variant = _is_pairwise_count_variant(str(task_variant))
+        if is_pairwise_variant:
+            dataset = build_counting_column_pair_dataset_for_variant(
+                task_variant=str(task_variant),
+                params=params,
+                instance_seed=int(instance_seed),
+                gen_defaults=_GEN_DEFAULTS,
+                defaults=_DEFAULTS,
+                task_id=self.task_id,
+            )
+        else:
+            dataset = build_counting_value_dataset_for_variant(
+                task_variant=str(task_variant),
+                params=params,
+                instance_seed=int(instance_seed),
+                gen_defaults=_GEN_DEFAULTS,
+                defaults=_DEFAULTS,
+                task_id=self.task_id,
+            )
 
         render_params = resolve_table_render_params(
             params,
@@ -139,12 +163,18 @@ class TablesCountingValueCountTask:
                 "evidence_hint_above_threshold",
                 "evidence_hint_below_threshold",
                 "evidence_hint_in_interval",
+                "evidence_hint_col_a_gt_col_b",
+                "evidence_hint_col_a_lt_col_b",
                 "json_example_above_threshold",
                 "json_example_below_threshold",
                 "json_example_in_interval",
+                "json_example_col_a_gt_col_b",
+                "json_example_col_a_lt_col_b",
                 "json_example_answer_only_above_threshold",
                 "json_example_answer_only_below_threshold",
                 "json_example_answer_only_in_interval",
+                "json_example_answer_only_col_a_gt_col_b",
+                "json_example_answer_only_col_a_lt_col_b",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -152,19 +182,25 @@ class TablesCountingValueCountTask:
         evidence_hint = str(prompt_defaults[f"evidence_hint_{str(task_variant)}"])
         json_example = str(prompt_defaults[f"json_example_{str(task_variant)}"])
         json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(task_variant)}"])
-        variant_slots = {"query_column": str(dataset["query_column"])}
-        if str(task_variant) in {"above_threshold", "below_threshold"}:
-            variant_slots["threshold_value"] = int(dataset["threshold_value"])
+        if is_pairwise_variant:
+            variant_slots = {
+                "query_column_a": str(dataset["query_column_a"]),
+                "query_column_b": str(dataset["query_column_b"]),
+            }
         else:
-            variant_slots["interval_min"] = int(dataset["interval_min"])
-            variant_slots["interval_max"] = int(dataset["interval_max"])
+            variant_slots = {"query_column": str(dataset["query_column"])}
+            if str(task_variant) in {"above_threshold", "below_threshold"}:
+                variant_slots["threshold_value"] = int(dataset["threshold_value"])
+            else:
+                variant_slots["interval_min"] = int(dataset["interval_min"])
+                variant_slots["interval_max"] = int(dataset["interval_max"])
 
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             task_family_key=str(prompt_defaults["task_family_key"]),
-            task_key=str(prompt_defaults["task_key"]),
+            task_key="column_pair_count_query" if is_pairwise_variant else str(prompt_defaults["task_key"]),
             task_variant_key=str(task_variant),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
@@ -181,13 +217,29 @@ class TablesCountingValueCountTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        supporting_cell_ids = [
-            table_value_cell_id(
-                data_row_index=int(row_index),
-                numeric_column_index=int(dataset["query_column_index"]),
-            )
-            for row_index in dataset["matching_row_indices"]
-        ]
+        if is_pairwise_variant:
+            supporting_cell_ids = []
+            for row_index in dataset["matching_row_indices"]:
+                supporting_cell_ids.append(
+                    table_value_cell_id(
+                        data_row_index=int(row_index),
+                        numeric_column_index=int(dataset["query_column_a_index"]),
+                    )
+                )
+                supporting_cell_ids.append(
+                    table_value_cell_id(
+                        data_row_index=int(row_index),
+                        numeric_column_index=int(dataset["query_column_b_index"]),
+                    )
+                )
+        else:
+            supporting_cell_ids = [
+                table_value_cell_id(
+                    data_row_index=int(row_index),
+                    numeric_column_index=int(dataset["query_column_index"]),
+                )
+                for row_index in dataset["matching_row_indices"]
+            ]
         evidence_projection = projected_table_bbox_evidence(rendered_scene, supporting_cell_ids)
         evidence_bboxes = [
             [round(float(value), 3) for value in bbox]
@@ -215,15 +267,24 @@ class TablesCountingValueCountTask:
                 "relations": {
                     "task_variant": str(task_variant),
                     "scene_variant": str(scene_variant),
-                    "query_column": str(dataset["query_column"]),
                     "answer_value": int(answer_value),
                     "supporting_cell_ids": [str(cell_id) for cell_id in supporting_cell_ids],
                     **(
-                        {"threshold_value": int(dataset["threshold_value"])}
-                        if str(task_variant) in {"above_threshold", "below_threshold"}
+                        {
+                            "query_column_a": str(dataset["query_column_a"]),
+                            "query_column_b": str(dataset["query_column_b"]),
+                        }
+                        if is_pairwise_variant
                         else {
-                            "interval_min": int(dataset["interval_min"]),
-                            "interval_max": int(dataset["interval_max"]),
+                            "query_column": str(dataset["query_column"]),
+                            **(
+                                {"threshold_value": int(dataset["threshold_value"])}
+                                if str(task_variant) in {"above_threshold", "below_threshold"}
+                                else {
+                                    "interval_min": int(dataset["interval_min"]),
+                                    "interval_max": int(dataset["interval_max"]),
+                                }
+                            ),
                         }
                     ),
                 },
@@ -234,23 +295,36 @@ class TablesCountingValueCountTask:
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
-                "params": {
-                    "task_variant": str(task_variant),
-                    "scene_variant": str(scene_variant),
-                    "query_column": str(dataset["query_column"]),
-                    "task_variant_probabilities": dict(task_variant_probabilities),
-                    "scene_variant_probabilities": dict(scene_variant_probabilities),
-                    "row_count": int(dataset["row_count"]),
-                    "numeric_column_count": int(dataset["numeric_column_count"]),
-                    **(
-                        {"threshold_value": int(dataset["threshold_value"])}
-                        if str(task_variant) in {"above_threshold", "below_threshold"}
-                        else {
-                            "interval_min": int(dataset["interval_min"]),
-                            "interval_max": int(dataset["interval_max"]),
-                        }
-                    ),
-                },
+                "params": (
+                    {
+                        "task_variant": str(task_variant),
+                        "scene_variant": str(scene_variant),
+                        "query_column_a": str(dataset["query_column_a"]),
+                        "query_column_b": str(dataset["query_column_b"]),
+                        "task_variant_probabilities": dict(task_variant_probabilities),
+                        "scene_variant_probabilities": dict(scene_variant_probabilities),
+                        "row_count": int(dataset["row_count"]),
+                        "numeric_column_count": int(dataset["numeric_column_count"]),
+                    }
+                    if is_pairwise_variant
+                    else {
+                        "task_variant": str(task_variant),
+                        "scene_variant": str(scene_variant),
+                        "query_column": str(dataset["query_column"]),
+                        "task_variant_probabilities": dict(task_variant_probabilities),
+                        "scene_variant_probabilities": dict(scene_variant_probabilities),
+                        "row_count": int(dataset["row_count"]),
+                        "numeric_column_count": int(dataset["numeric_column_count"]),
+                        **(
+                            {"threshold_value": int(dataset["threshold_value"])}
+                            if str(task_variant) in {"above_threshold", "below_threshold"}
+                            else {
+                                "interval_min": int(dataset["interval_min"]),
+                                "interval_max": int(dataset["interval_max"]),
+                            }
+                        ),
+                    }
+                ),
             },
             "render_spec": {
                 "canvas_width": int(render_params.canvas_width),
@@ -281,7 +355,6 @@ class TablesCountingValueCountTask:
             "execution_trace": {
                 "task_variant": str(task_variant),
                 "scene_variant": str(scene_variant),
-                "query_column": str(dataset["query_column"]),
                 "answer_value": int(answer_value),
                 "row_labels": [str(label) for label in dataset["row_labels"]],
                 "column_headers": [str(header) for header in dataset["column_headers"]],
@@ -291,19 +364,32 @@ class TablesCountingValueCountTask:
                 "row_count_range": list(dataset["row_count_range"]),
                 "numeric_column_count_range": list(dataset["numeric_column_count_range"]),
                 "value_range": list(dataset["value_range"]),
-                "query_column_index": int(dataset["query_column_index"]),
                 "matching_row_indices": [int(row_index) for row_index in dataset["matching_row_indices"]],
                 "matching_row_labels": [str(label) for label in dataset["matching_row_labels"]],
                 "task_variant_probabilities": dict(task_variant_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
-                "question_format": "column_filter_count",
                 "supporting_cell_ids": [str(cell_id) for cell_id in supporting_cell_ids],
                 **(
-                    {"threshold_value": int(dataset["threshold_value"])}
-                    if str(task_variant) in {"above_threshold", "below_threshold"}
+                    {
+                        "query_column_a": str(dataset["query_column_a"]),
+                        "query_column_a_index": int(dataset["query_column_a_index"]),
+                        "query_column_b": str(dataset["query_column_b"]),
+                        "query_column_b_index": int(dataset["query_column_b_index"]),
+                        "question_format": "column_pair_count",
+                    }
+                    if is_pairwise_variant
                     else {
-                        "interval_min": int(dataset["interval_min"]),
-                        "interval_max": int(dataset["interval_max"]),
+                        "query_column": str(dataset["query_column"]),
+                        "query_column_index": int(dataset["query_column_index"]),
+                        "question_format": "column_filter_count",
+                        **(
+                            {"threshold_value": int(dataset["threshold_value"])}
+                            if str(task_variant) in {"above_threshold", "below_threshold"}
+                            else {
+                                "interval_min": int(dataset["interval_min"]),
+                                "interval_max": int(dataset["interval_max"]),
+                            }
+                        ),
                     }
                 ),
             },
@@ -316,19 +402,32 @@ class TablesCountingValueCountTask:
             },
         }
 
-        variant_bonus = 0.04 if str(task_variant) == "in_interval" else 0.01
+        if is_pairwise_variant:
+            variant_bonus = 0.05
+        else:
+            variant_bonus = 0.04 if str(task_variant) == "in_interval" else 0.01
         complexity = TaskComplexity(
             complexity_score=float(
-                0.14
-                + (0.025 * int(dataset["row_count"]))
-                + (0.015 * int(dataset["numeric_column_count"]))
-                + float(variant_bonus)
+                (
+                    0.18
+                    + (0.02 * int(dataset["row_count"]))
+                    + (0.015 * int(dataset["numeric_column_count"]))
+                    + (0.01 * int(answer_value))
+                )
+                if is_pairwise_variant
+                else (
+                    0.14
+                    + (0.025 * int(dataset["row_count"]))
+                    + (0.015 * int(dataset["numeric_column_count"]))
+                    + float(variant_bonus)
+                )
             ),
             complexity_components={
                 "task_variant": str(task_variant),
                 "scene_variant": str(scene_variant),
                 "row_count": int(dataset["row_count"]),
                 "numeric_column_count": int(dataset["numeric_column_count"]),
+                **({"matching_row_count": int(answer_value)} if is_pairwise_variant else {}),
             },
         )
         return TaskOutput(

@@ -13,6 +13,8 @@ generation:
         column_median: 1.0
         row_sum: 1.0
         row_mean: 1.0
+        table_sum: 1.0
+        table_mean: 1.0
     task_tables_statistics_filtered_subset_value:
       task_variant_weights:
         filtered_column_sum: 1.0
@@ -45,16 +47,22 @@ prompt:
       evidence_hint_column_median: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting queried-column region
       evidence_hint_row_sum: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting queried-row region
       evidence_hint_row_mean: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting queried-row region
+      evidence_hint_table_sum: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting full numeric-table region
+      evidence_hint_table_mean: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting full numeric-table region
       json_example_column_sum: '{"evidence":[[260,180,372,520]],"answer":84}'
       json_example_column_mean: '{"evidence":[[260,180,372,520]],"answer":14}'
       json_example_column_median: '{"evidence":[[260,180,372,520]],"answer":13}'
       json_example_row_sum: '{"evidence":[[150,180,780,236]],"answer":62}'
       json_example_row_mean: '{"evidence":[[150,180,780,236]],"answer":15}'
+      json_example_table_sum: '{"evidence":[[260,180,780,520]],"answer":224}'
+      json_example_table_mean: '{"evidence":[[260,180,780,520]],"answer":14}'
       json_example_answer_only_column_sum: '{"answer":84}'
       json_example_answer_only_column_mean: '{"answer":14}'
       json_example_answer_only_column_median: '{"answer":13}'
       json_example_answer_only_row_sum: '{"answer":62}'
       json_example_answer_only_row_mean: '{"answer":15}'
+      json_example_answer_only_table_sum: '{"answer":224}'
+      json_example_answer_only_table_mean: '{"answer":14}'
     task_tables_statistics_filtered_subset_value:
       task_key: filtered_subset_value_query
       answer_hint: set "answer" to the exact integer filtered summary value

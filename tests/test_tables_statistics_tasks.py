@@ -140,6 +140,8 @@ def test_table_statistics_summary_value_variants_match_contract() -> None:
         ("column_median", "ledger"),
         ("row_sum", "card_table"),
         ("row_mean", "spreadsheet"),
+        ("table_sum", "zebra"),
+        ("table_mean", "ledger"),
     )
     for seed, (task_variant, scene_variant) in enumerate(cases, start=18110):
         out = task.generate(seed, params={"task_variant": task_variant, "scene_variant": scene_variant}, max_attempts=10)
@@ -184,6 +186,20 @@ def test_table_statistics_summary_value_variants_match_contract() -> None:
             else:
                 assert int(out.answer_gt.value) == (sum(query_values) // len(query_values))
                 assert sum(query_values) % len(query_values) == 0
+        elif str(task_variant).startswith("table_"):
+            all_values = [
+                int(values_by_row[str(row_label)][str(header)])
+                for row_label in row_labels
+                for header in column_headers
+            ]
+            assert evidence_bboxes[0] == [
+                float(value) for value in trace["render_map"]["numeric_table_region_bbox_px"]
+            ]
+            if str(task_variant) == "table_sum":
+                assert int(out.answer_gt.value) == sum(all_values)
+            else:
+                assert int(out.answer_gt.value) == (sum(all_values) // len(all_values))
+                assert sum(all_values) % len(all_values) == 0
         else:
             query_column = str(execution["query_column"])
             query_values = [int(values_by_row[str(row_label)][str(query_column)]) for row_label in row_labels]
@@ -211,6 +227,8 @@ def test_table_statistics_summary_value_prompt_examples_match_selected_variant()
         "column_median": {"evidence": [[260, 180, 372, 520]], "answer": 13},
         "row_sum": {"evidence": [[150, 180, 780, 236]], "answer": 62},
         "row_mean": {"evidence": [[150, 180, 780, 236]], "answer": 15},
+        "table_sum": {"evidence": [[260, 180, 780, 520]], "answer": 224},
+        "table_mean": {"evidence": [[260, 180, 780, 520]], "answer": 14},
     }
     for index, task_variant in enumerate(expected, start=18130):
         out = task.generate(index, params={"task_variant": task_variant}, max_attempts=10)

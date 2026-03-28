@@ -8,7 +8,7 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_graph_counting_bridge_count"
+      "task_graph_optimization_minimum_spanning_tree_weight"
     ],
     "workers": 16
   },
@@ -22,17 +22,17 @@
       "distribution_pass": true,
       "domain": "graph",
       "inspection_count": 25,
-      "inspection_workbook": "graph/task_graph_counting_bridge_count/task_graph_counting_bridge_count.xlsx",
+      "inspection_workbook": "graph/task_graph_optimization_minimum_spanning_tree_weight/task_graph_optimization_minimum_spanning_tree_weight.xlsx",
       "inspection_workbook_sheets": {
-        "bridge_count": "bridge_count"
+        "minimum_spanning_tree_weight": "minimum_spanning_tree_weight"
       },
       "reports": {
-        "distribution_review": "graph/task_graph_counting_bridge_count/distribution_review.json",
-        "inspection_manifest": "graph/task_graph_counting_bridge_count/manifest.json",
-        "random_review": "graph/task_graph_counting_bridge_count/random_review_100.json"
+        "distribution_review": "graph/task_graph_optimization_minimum_spanning_tree_weight/distribution_review.json",
+        "inspection_manifest": "graph/task_graph_optimization_minimum_spanning_tree_weight/manifest.json",
+        "random_review": "graph/task_graph_optimization_minimum_spanning_tree_weight/random_review_100.json"
       },
-      "task_group": "counting",
-      "task_id": "task_graph_counting_bridge_count"
+      "task_group": "optimization",
+      "task_id": "task_graph_optimization_minimum_spanning_tree_weight"
     }
   ]
 }

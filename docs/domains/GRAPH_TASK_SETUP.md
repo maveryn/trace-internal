@@ -8,6 +8,7 @@ Define the concrete v1 setup for the current graph-domain task families.
 2. Active `task_group`s:
    - `counting`
    - `comparison`
+   - `optimization`
    - `path`
    - `relation`
 3. Current concrete tasks:
@@ -15,15 +16,16 @@ Define the concrete v1 setup for the current graph-domain task families.
    - `task_graph_counting_articulation_point_count`
    - `task_graph_counting_bridge_count`
    - `task_graph_comparison_largest_component_size`
+   - `task_graph_optimization_minimum_spanning_tree_weight`
    - `task_graph_path_shortest_path_length`
    - `task_graph_relation_reachable_count`
    - `task_graph_relation_same_component_count`
    - `task_graph_relation_unique_cycle_size`
 
 ## Scene contract
-1. Use one simple unweighted node-link graph per image.
+1. Use one simple node-link graph per image; keep graphs unweighted by default, and introduce weights only when they are semantically essential to the task.
 2. Keep node labels visible and canonical; v1 uses labels from `A..J`.
-3. Node count support is `5..10` for undirected graph tasks in v1 and `5..9` for the directed degree-count variants.
+3. Node count support is `5..10` for undirected graph tasks in v1, `5..9` for directed graph variants, and `5..8` for the current weighted MST task so edge labels stay readable.
 4. No self-loops or multi-edges.
 5. Directed variants also reject reciprocal edge pairs by default so arrowheads remain readable.
 6. Layout is visual variation only; the task semantics come from adjacency.
@@ -98,6 +100,15 @@ Define the concrete v1 setup for the current graph-domain task families.
    - default node-count support: `5..9`
    - default reachable-count support: `1..7`
    - prompt/evidence contract: the queried node itself is included in both the answer and the evidence set, traversal follows edge direction, and generation preserves at least one unreachable node
+9. `task_graph_optimization_minimum_spanning_tree_weight`
+   - ask:
+     - `The weighted graph has a unique minimum spanning tree. What is its total weight?`
+   - answer type: `integer`
+   - evidence type: `edge_set`
+   - default node-count support: `5..8`
+   - default extra-edge-count support: `1..2`
+   - default edge-weight support: distinct integers in `1..9`
+   - prompt/evidence contract: evidence contains every MST edge as an unordered endpoint pair, and answer equals the sum of the weights on those edges
 
 ## Variation axes
 1. `task_variant`
@@ -109,6 +120,7 @@ Define the concrete v1 setup for the current graph-domain task families.
    - `bridge_count`
    - `unique_cycle_size`
    - `largest_component_size`
+   - `minimum_spanning_tree_weight`
    - `shortest_path_length`
    - `directed_shortest_path_length`
    - `reachable_count`
@@ -125,7 +137,8 @@ Define the concrete v1 setup for the current graph-domain task families.
 1. Use a clean single-panel light-background graph scene in v1.
 2. Keep node labels inside the nodes and make them readable at all supported graph sizes.
 3. Directed variants should keep edge density lower than the undirected ceiling and render clear arrowheads without reciprocal-pair clutter.
-4. Prefer lower-crossing or roomier layouts, but never let layout position define the answer.
+4. Weighted graph tasks should render edge weights as small high-contrast labels near the edges; keep weights in a narrow visible range such as `1..9` and lower node/edge counts so labels remain readable.
+5. Prefer lower-crossing or roomier layouts, but never let layout position define the answer.
 
 ## Evidence policy
 1. Use `label_set` when the witness unit is one or more nodes.
@@ -140,3 +153,4 @@ Define the concrete v1 setup for the current graph-domain task families.
 10. For unique-cycle queries, build a connected unicyclic graph by construction and verify the final graph still has exactly one cycle before exposing the witness set.
 11. For shortest-path queries, verify the finalized adjacency still has exactly one shortest path between the queried endpoints before exposing a `label_path` witness.
 12. For directed shortest-path queries, compute forward distances over successor adjacency and reverse distances over predecessor adjacency before reconstructing the ordered witness path.
+13. For weighted edge-optimization queries, keep prompt-facing evidence on the selected edge set itself; vertex-only evidence is not sufficient when the answer depends on chosen edges and their weights.

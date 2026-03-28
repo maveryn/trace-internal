@@ -83,3 +83,4 @@ Current task docs:
 73. [task_puzzles_arithmetic_equation_value.md](task_puzzles_arithmetic_equation_value.md)
 74. [task_puzzles_arithmetic_balance_value.md](task_puzzles_arithmetic_balance_value.md)
 75. [task_graph_counting_bridge_count.md](task_graph_counting_bridge_count.md)
+76. [task_graph_optimization_minimum_spanning_tree_weight.md](task_graph_optimization_minimum_spanning_tree_weight.md)

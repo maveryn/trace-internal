@@ -71,6 +71,20 @@ Measure:
 - whether the task is directed or undirected, since directed path tracing adds extra control-flow burden even at the same witness length,
 - readability pressure from crossings, tight layouts, or small nodes.
 
+### `optimization`
+```yaml
+topology_reasoning: 0.50
+visual_scan: 0.20
+ambiguity: 0.20
+clutter: 0.10
+```
+
+Measure:
+- visible node/edge load plus edge-label count,
+- how much global edge-choice reasoning is required beyond local inspection (for example MST selection over one connected weighted graph),
+- how close alternative non-tree edges are to the selected tree under the task’s uniqueness rule,
+- readability pressure from crossings, tight layouts, or dense edge-weight labels.
+
 ## Notes
 - Keep graph-domain criteria broad at domain scope; `topology_reasoning` belongs at task-group scope unless every graph family needs it.
 - Do not let layout choice define difficulty directly unless the task truly depends on layout semantics; layout should usually feed `clutter` or `ambiguity`, not replace topology reasoning.

@@ -15,7 +15,7 @@ Use this whenever the task lives under `domain=graph`.
 5. `docs/workflows/SHARED_UTILITIES.md`
 
 ## V1 graph-domain policy
-- Keep graphs simple and unweighted by default; directionality should be an explicit task/task-variant contract rather than an implicit renderer detail.
+- Keep graphs simple and unweighted by default; if a task needs weights, make them explicit, keep them visually readable (for example small integers such as `1..9`), and ensure they are semantically essential rather than decorative.
 - Node labels are the canonical prompt-facing identities for this domain.
 - Layout is visual variation, not semantics.
 - Questions should be answerable from adjacency/topology alone even if the layout changes.
@@ -61,6 +61,8 @@ Use this whenever the task lives under `domain=graph`.
   - `task_graph_counting_bridge_count`
 - `path`
   - `task_graph_path_shortest_path_length`
+- `optimization`
+  - `task_graph_optimization_minimum_spanning_tree_weight`
 - `relation`
   - `task_graph_relation_reachable_count`
   - `task_graph_relation_same_component_count`

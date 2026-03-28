@@ -74,7 +74,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
 16. Evidence boxes should mark the minimal supporting table region(s): one decisive numeric cell bbox or one winning-row region bbox for `task_tables_statistics_summary_label`, one queried-column region bbox, queried-row region bbox, or full numeric-table region bbox for `task_tables_statistics_summary_value`, one ordered set of filter/target value-cell pairs for `task_tables_statistics_filtered_subset_value`, one ordered set of filter/target value-cell pairs for `task_tables_statistics_filtered_subset_label`, one ordered set of matching value-cell bboxes or compared two-column value-cell pairs for `task_tables_counting_value_count`, one queried value-cell bbox or ordered queried-cell pair for `task_tables_readout_subset_value`, one ordered pair of compared queried-column value-cell bboxes for `task_tables_relation_row_compare_label`, one ordered pair `[source extremum cell, target value cell]` for `task_tables_relation_extremum_transfer_value`, one queried-column region bbox for `task_tables_ranking_label`, and one ordered set of queried year-cell bboxes for `task_tables_temporal_value`.
 
 ## Graph direction (current)
-1. Graph tasks use one simple unweighted node-link graph per image in v1; directionality is an explicit task/task-variant contract rather than an implicit renderer choice.
+1. Graph tasks use one simple node-link graph per image in v1; keep graphs unweighted by default, and make directionality or edge weights explicit only when the task semantics truly require them.
 2. `task_group` should encode the reasoning family (for example `counting`, `relation`, `path`), while graph layout stays a visual `scene_variant` or trace-only sampling axis inside a task.
 3. Node labels are the canonical prompt-facing identities; prefer `label_set` evidence when the witness unit is one or more nodes.
 4. Layout variation should change readability only, not semantics; graph answers must come from adjacency/topology rather than absolute node position.
@@ -316,6 +316,13 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`), plus non-semantic label/shape/color/layout-transform diversity shared with the graph domain.
    - Answer type: integer count.
    - Evidence: unordered `label_set` of all node labels reachable from the queried source node, including the queried node itself.
+34. **Graph optimization minimum-spanning-tree weight (`task_graph_optimization_minimum_spanning_tree_weight`)**
+   - One single-panel labeled connected weighted node-link graph.
+   - Query: `The weighted graph has a unique minimum spanning tree. What is its total weight?`
+   - Graph contract: simple undirected graph with `5..8` nodes, `1..2` extra non-tree edges, distinct integer edge weights in `1..9`, and a unique MST by construction.
+   - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`), plus non-semantic label/shape/color/layout-transform diversity shared with the graph domain.
+   - Answer type: integer total weight.
+   - Evidence: `edge_set` of all MST edges, represented as unordered endpoint-label pairs.
 31. **Icons sequence missing count (`task_icons_sequence_missing_count`)**
    - One single-panel image with a horizontal row of `4..6` Scene boxes.
    - Query: how many icons should appear in the missing Scene box to continue the sequence.
@@ -367,4 +374,4 @@ Define how we split tasks into reusable families so each dataset slice stays com
 4. For counting families with object labels, prefer `label_set` evidence over geometric coordinates so multi-object grounding stays compact and readable.
 5. For reference+scene icon tasks, prefer `bbox_set` evidence over labels so grounding stays tied to visible scene instances rather than hidden asset ids.
 6. For graph path families, prefer an ordered graph-native witness type such as `label_path` instead of overloading unordered `label_set`.
-7. For graph edge-counting families, use one graph-native edge witness type such as `edge_set` rather than collapsing bridge-like witnesses onto nodes or pixel boxes.
+7. For graph edge-witness families, use one graph-native edge witness type such as `edge_set` rather than collapsing bridge- or MST-like witnesses onto nodes or pixel boxes.

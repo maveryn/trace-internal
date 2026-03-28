@@ -2155,9 +2155,70 @@ def test_graph_path_defaults_loaded() -> None:
     assert int(rendering_defaults["node_radius_min_px"]) > 0
     assert str(prompt_defaults["bundle_id"]).strip() == "graph_path_v1"
     assert str(prompt_defaults["task_family_key"]).strip() == "single_graph_path"
-    assert str(prompt_defaults["task_key"]).strip() == "shortest_path_length_query"
-    assert str(prompt_defaults["question_text_shortest_path_length"]).strip()
-    assert str(prompt_defaults["question_text_directed_shortest_path_length"]).strip()
+
+
+def test_graph_optimization_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("graph", "optimization")
+    for section in ("generation", "rendering", "prompt", "visual", "complexity"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["node_count_min"]) == 5
+    assert int(generation_shared["node_count_max"]) == 8
+    assert int(generation_shared["extra_edge_count_min"]) == 1
+    assert int(generation_shared["extra_edge_count_max"]) == 2
+    assert int(generation_shared["edge_weight_min"]) == 1
+    assert int(generation_shared["edge_weight_max"]) == 9
+    assert set(generation_shared["topology_profile_weights"].keys()) == {"balanced", "hub_heavy", "low_degree"}
+    assert set(generation_shared["label_variant_weights"].keys()) == {"letters", "numbers"}
+    assert set(generation_shared["layout_variant_weights"].keys()) == {"circular", "shell", "spring"}
+    assert set(generation_shared["node_shape_variant_weights"].keys()) == {"circle", "rounded_square", "hexagon"}
+    assert set(generation_shared["layout_transform_variant_weights"].keys()) == {
+        "identity",
+        "rotate_90",
+        "rotate_180",
+        "rotate_270",
+        "mirror_left_right",
+        "mirror_up_down",
+    }
+    assert set(generation_shared["node_color_name_weights"].keys()) == {
+        "red",
+        "blue",
+        "green",
+        "yellow",
+        "orange",
+        "purple",
+        "brown",
+        "cyan",
+        "magenta",
+        "maroon",
+    }
+
+    rendering_shared = cfg["rendering"]["shared"]
+    assert int(rendering_shared["canvas_width"]) > 0
+    assert int(rendering_shared["edge_weight_label_font_size_px"]) > 0
+    assert int(rendering_shared["edge_weight_label_offset_px"]) > 0
+    assert int(rendering_shared["edge_weight_label_padding_px"]) > 0
+
+    complexity_shared = cfg["complexity"]["shared"]["criteria_weights"]
+    assert set(complexity_shared.keys()) == {"topology_reasoning", "visual_scan", "ambiguity", "clutter"}
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "graph_optimization_v1"
+    assert str(prompt_shared["task_family_key"]).strip() == "single_graph_optimization"
+
+    _, _, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_graph_optimization_minimum_spanning_tree_weight",
+    )
+    assert str(prompt_defaults["bundle_id"]).strip() == "graph_optimization_v1"
+    assert str(prompt_defaults["task_family_key"]).strip() == "single_graph_optimization"
+    assert str(prompt_defaults["object_description_undirected"]).strip() == "a labeled connected weighted graph"
+    assert str(prompt_defaults["question_text_minimum_spanning_tree_weight"]).strip()
+    assert str(prompt_defaults["evidence_hint"]).strip()
+    assert str(prompt_defaults["answer_hint"]).strip()
+    assert str(prompt_defaults["json_example"]).strip()
+    assert str(prompt_defaults["json_example_answer_only"]).strip()
 
 
 def test_icons_transformation_defaults_loaded() -> None:

@@ -1,0 +1,11 @@
+{
+  "inspection_count": 25,
+  "task_id": "task_graph_optimization_minimum_spanning_tree_weight",
+  "variants": {
+    "": 25
+  },
+  "workbook": "graph/task_graph_optimization_minimum_spanning_tree_weight/task_graph_optimization_minimum_spanning_tree_weight.xlsx",
+  "workbook_sheets": {
+    "minimum_spanning_tree_weight": "minimum_spanning_tree_weight"
+  }
+}

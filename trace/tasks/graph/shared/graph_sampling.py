@@ -19,6 +19,7 @@ SUPPORTED_LABEL_VARIANTS: Tuple[str, ...] = ("letters", "numbers")
 SUPPORTED_DEGREE_TASK_VARIANTS: Tuple[str, ...] = ("degree_count", "in_degree_count", "out_degree_count")
 SUPPORTED_ARTICULATION_TASK_VARIANTS: Tuple[str, ...] = ("articulation_point_count",)
 SUPPORTED_BRIDGE_TASK_VARIANTS: Tuple[str, ...] = ("bridge_count",)
+SUPPORTED_OPTIMIZATION_TASK_VARIANTS: Tuple[str, ...] = ("minimum_spanning_tree_weight",)
 SUPPORTED_COMPONENT_TASK_VARIANTS: Tuple[str, ...] = ("same_component_count",)
 SUPPORTED_REACHABLE_TASK_VARIANTS: Tuple[str, ...] = ("reachable_count",)
 SUPPORTED_CYCLE_TASK_VARIANTS: Tuple[str, ...] = ("unique_cycle_size",)
@@ -128,6 +129,16 @@ class GraphBridgeSample(GraphTopologySample):
 
     target_edges: Tuple[Tuple[str, str], ...]
     target_count: int
+
+
+@dataclass(frozen=True)
+class GraphMinimumSpanningTreeSample(GraphTopologySample):
+    """Trace-ready weighted graph sample for unique MST tasks."""
+
+    edge_weights_by_label: Dict[Tuple[str, str], int]
+    target_edges: Tuple[Tuple[str, str], ...]
+    target_total_weight: int
+    extra_edge_count: int
 
 
 def graph_label_sort_key(label: str) -> Tuple[int, int | str]:
@@ -870,6 +881,40 @@ def feasible_node_counts_for_bridge_count(
             continue
         feasible.append(int(node_count_int))
     return tuple(int(value) for value in feasible)
+
+
+def feasible_extra_edge_counts_for_minimum_spanning_tree(
+    *,
+    node_count: int,
+    extra_edge_count_min: int,
+    extra_edge_count_max: int,
+    edge_weight_min: int,
+    edge_weight_max: int,
+) -> Tuple[int, ...]:
+    """Return feasible non-tree edge counts for one weighted MST query.
+
+    The MST construction uses a connected spanning tree plus a small number of
+    additional non-tree edges. We require all rendered edge weights to be
+    distinct integers in ``[edge_weight_min, edge_weight_max]``, so the total
+    edge count must not exceed the available weight support.
+    """
+
+    node_count_int = int(node_count)
+    tree_edge_count = max(0, int(node_count_int) - 1)
+    max_available_edges = int(edge_weight_max) - int(edge_weight_min) + 1
+    if int(tree_edge_count) <= 0 or int(max_available_edges) <= int(tree_edge_count):
+        return ()
+
+    max_non_edges = (int(node_count_int) * int(node_count_int - 1) // 2) - int(tree_edge_count)
+    feasible_max = min(
+        int(extra_edge_count_max),
+        int(max_non_edges),
+        int(max_available_edges - tree_edge_count),
+    )
+    feasible_min = max(1, int(extra_edge_count_min))
+    if int(feasible_min) > int(feasible_max):
+        return ()
+    return tuple(range(int(feasible_min), int(feasible_max) + 1))
 
 
 def _random_positive_composition(
@@ -2070,12 +2115,207 @@ def sample_bridge_count_graph(
     )
 
 
+def _sample_profile_tree_graph(
+    rng: random.Random,
+    *,
+    node_count: int,
+    topology_profile: str,
+) -> nx.Graph:
+    """Return one connected tree whose shape follows the requested profile."""
+
+    node_count_int = int(node_count)
+    if int(node_count_int) <= 0:
+        raise ValueError("tree sampling requires at least one node")
+    graph = nx.Graph()
+    graph.add_node(0)
+    for next_node in range(1, int(node_count_int)):
+        parent = _choose_attachment_parent(
+            rng,
+            graph=graph,
+            topology_profile=str(topology_profile),
+        )
+        graph.add_node(int(next_node))
+        graph.add_edge(int(parent), int(next_node))
+    return graph
+
+
+def _sample_profile_extra_edges(
+    rng: random.Random,
+    *,
+    graph: nx.Graph,
+    extra_edge_count: int,
+    topology_profile: str,
+) -> Tuple[Tuple[int, int], ...]:
+    """Add non-tree edges under the requested profile and return them."""
+
+    added_edges: list[Tuple[int, int]] = []
+    for _ in range(max(0, int(extra_edge_count))):
+        candidates = [(int(left), int(right)) for left, right in nx.non_edges(graph)]
+        if not candidates:
+            break
+        weights = [
+            _edge_weight_for_profile(
+                graph,
+                edge=(int(left), int(right)),
+                topology_profile=str(topology_profile),
+            )
+            for left, right in candidates
+        ]
+        left, right = rng.choices(candidates, weights=weights, k=1)[0]
+        graph.add_edge(int(left), int(right))
+        added_edges.append(tuple(sorted((int(left), int(right)))))
+    if int(len(added_edges)) != int(extra_edge_count):
+        raise ValueError("failed to add the requested number of non-tree edges")
+    return tuple(tuple(int(value) for value in edge) for edge in added_edges)
+
+
+def _assign_unique_mst_weights(
+    rng: random.Random,
+    *,
+    tree_edges: Sequence[Tuple[int, int]],
+    extra_edges: Sequence[Tuple[int, int]],
+    edge_weight_min: int,
+    edge_weight_max: int,
+) -> Dict[Tuple[int, int], int]:
+    """Assign distinct edge weights that make the tree the unique MST.
+
+    We sample a distinct subset of the allowed integer weights and reserve the
+    heaviest sampled weights for the non-tree edges. This guarantees every
+    non-tree edge is heavier than every tree edge, so the spanning tree is the
+    unique minimum spanning tree by the cycle property.
+    """
+
+    tree = [tuple(sorted((int(left), int(right)))) for left, right in tree_edges]
+    extras = [tuple(sorted((int(left), int(right)))) for left, right in extra_edges]
+    total_edge_count = int(len(tree) + len(extras))
+    available_weights = tuple(range(int(edge_weight_min), int(edge_weight_max) + 1))
+    if int(total_edge_count) > len(available_weights):
+        raise ValueError("not enough distinct edge weights available for weighted MST construction")
+
+    selected_weights = sorted(int(value) for value in rng.sample(available_weights, int(total_edge_count)))
+    tree_weights = selected_weights[: len(tree)]
+    extra_weights = selected_weights[len(tree) :]
+    rng.shuffle(tree_weights)
+    rng.shuffle(extra_weights)
+
+    weight_by_edge: Dict[Tuple[int, int], int] = {}
+    for edge, weight in zip(tree, tree_weights):
+        weight_by_edge[tuple(edge)] = int(weight)
+    for edge, weight in zip(extras, extra_weights):
+        weight_by_edge[tuple(edge)] = int(weight)
+    return weight_by_edge
+
+
+def sample_minimum_spanning_tree_weight_graph(
+    rng: random.Random,
+    *,
+    node_count: int,
+    extra_edge_count: int,
+    topology_profile: str,
+    label_variant: str,
+    edge_weight_min: int,
+    edge_weight_max: int,
+) -> GraphMinimumSpanningTreeSample:
+    """Construct one connected weighted graph with a unique minimum spanning tree."""
+
+    feasible_extra_support = feasible_extra_edge_counts_for_minimum_spanning_tree(
+        node_count=int(node_count),
+        extra_edge_count_min=int(extra_edge_count),
+        extra_edge_count_max=int(extra_edge_count),
+        edge_weight_min=int(edge_weight_min),
+        edge_weight_max=int(edge_weight_max),
+    )
+    if int(extra_edge_count) not in feasible_extra_support:
+        raise ValueError("extra_edge_count is outside feasible support for the requested MST query")
+
+    tree_graph = _sample_profile_tree_graph(
+        rng,
+        node_count=int(node_count),
+        topology_profile=str(topology_profile),
+    )
+    tree_edges = [tuple(sorted((int(left), int(right)))) for left, right in tree_graph.edges()]
+    graph = tree_graph.copy()
+    extra_edges = _sample_profile_extra_edges(
+        rng,
+        graph=graph,
+        extra_edge_count=int(extra_edge_count),
+        topology_profile=str(topology_profile),
+    )
+    weight_by_edge = _assign_unique_mst_weights(
+        rng,
+        tree_edges=tuple(tree_edges),
+        extra_edges=tuple(extra_edges),
+        edge_weight_min=int(edge_weight_min),
+        edge_weight_max=int(edge_weight_max),
+    )
+    for left, right in graph.edges():
+        graph[int(left)][int(right)]["weight"] = int(weight_by_edge[tuple(sorted((int(left), int(right))))])
+
+    mst_graph = nx.minimum_spanning_tree(graph, weight="weight", algorithm="kruskal")
+    mst_edges = sort_graph_edge_labels(
+        tuple((str(left), str(right)) for left, right in mst_graph.edges()),
+        directed=False,
+    )
+    tree_edges_canonical = sort_graph_edge_labels(
+        tuple((str(left), str(right)) for left, right in tree_edges),
+        directed=False,
+    )
+    if mst_edges != tree_edges_canonical:
+        raise ValueError("weighted MST sampler failed to preserve the intended unique spanning tree")
+
+    topology_sample, label_by_node = _build_labeled_graph_topology_sample(
+        rng,
+        graph=graph,
+        directed=False,
+        topology_profile=str(topology_profile),
+        label_variant=str(label_variant),
+    )
+    labeled_weight_by_edge: Dict[Tuple[str, str], int] = {}
+    for left, right in graph.edges():
+        left_label = str(label_by_node[int(left)])
+        right_label = str(label_by_node[int(right)])
+        edge_label = canonicalize_graph_edge_label(left_label, right_label, directed=False)
+        labeled_weight_by_edge[tuple(edge_label)] = int(graph[int(left)][int(right)]["weight"])
+
+    mst_edge_labels = sort_graph_edge_labels(
+        tuple(
+            (
+                str(label_by_node[int(left)]),
+                str(label_by_node[int(right)]),
+            )
+            for left, right in mst_graph.edges()
+        ),
+        directed=False,
+    )
+    target_total_weight = sum(int(labeled_weight_by_edge[tuple(edge)]) for edge in mst_edge_labels)
+    return GraphMinimumSpanningTreeSample(
+        graph=topology_sample.graph,
+        directed=False,
+        node_labels=tuple(str(label) for label in topology_sample.node_labels),
+        edge_labels=tuple((str(left), str(right)) for left, right in topology_sample.edge_labels),
+        degrees_by_label={str(key): int(value) for key, value in topology_sample.degrees_by_label.items()},
+        in_degrees_by_label={str(key): int(value) for key, value in topology_sample.in_degrees_by_label.items()},
+        out_degrees_by_label={str(key): int(value) for key, value in topology_sample.out_degrees_by_label.items()},
+        adjacency_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.adjacency_by_label.items()},
+        successors_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.successors_by_label.items()},
+        predecessors_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.predecessors_by_label.items()},
+        edge_count=int(topology_sample.edge_count),
+        topology_profile=str(topology_sample.topology_profile),
+        label_variant=str(topology_sample.label_variant),
+        edge_weights_by_label=dict(labeled_weight_by_edge),
+        target_edges=tuple((str(left), str(right)) for left, right in mst_edge_labels),
+        target_total_weight=int(target_total_weight),
+        extra_edge_count=int(extra_edge_count),
+    )
+
+
 __all__ = [
     "GraphArticulationPointSample",
     "GraphBridgeSample",
     "GraphComponentSample",
     "GraphCountSample",
     "GraphLargestComponentSample",
+    "GraphMinimumSpanningTreeSample",
     "GraphReachableSample",
     "GraphShortestPathSample",
     "GraphTopologySample",
@@ -2089,6 +2329,7 @@ __all__ = [
     "SUPPORTED_DEGREE_TASK_VARIANTS",
     "SUPPORTED_LAYOUT_VARIANTS",
     "SUPPORTED_LABEL_VARIANTS",
+    "SUPPORTED_OPTIMIZATION_TASK_VARIANTS",
     "SUPPORTED_REACHABLE_TASK_VARIANTS",
     "SUPPORTED_PATH_TASK_VARIANTS",
     "SUPPORTED_TOPOLOGY_PROFILES",
@@ -2097,6 +2338,7 @@ __all__ = [
     "feasible_node_counts_for_bridge_count",
     "feasible_node_counts_for_component_query",
     "feasible_node_counts_for_degree_count",
+    "feasible_extra_edge_counts_for_minimum_spanning_tree",
     "feasible_node_counts_for_reachable_count",
     "feasible_node_counts_for_shortest_path_length",
     "feasible_node_counts_for_unique_cycle_size",
@@ -2109,6 +2351,7 @@ __all__ = [
     "sample_component_count_graph",
     "sample_degree_count_graph",
     "sample_largest_component_size_graph",
+    "sample_minimum_spanning_tree_weight_graph",
     "sample_reachable_count_graph",
     "sample_shortest_path_length_graph",
     "sort_graph_edge_labels",

@@ -76,6 +76,8 @@ class RenderedGraphEdge:
     node_v_label: str
     directed: bool
     segment_px: Tuple[Point, Point]
+    weight: int | None = None
+    weight_label_bbox_xyxy: BBox | None = None
 
 
 @dataclass(frozen=True)
@@ -468,6 +470,70 @@ def _draw_edge(
     )
 
 
+def _draw_edge_weight_label(
+    draw: ImageDraw.ImageDraw,
+    *,
+    segment: Tuple[Point, Point],
+    weight: int,
+    font_size_px: int,
+    offset_px: int,
+    padding_px: int,
+    box_fill_rgb: Sequence[int],
+    box_border_rgb: Sequence[int],
+    text_rgb: Sequence[int],
+    side_sign: int,
+) -> BBox:
+    """Draw one small boxed edge-weight label near the segment midpoint."""
+
+    start, end = segment
+    x0, y0 = float(start[0]), float(start[1])
+    x1, y1 = float(end[0]), float(end[1])
+    dx = float(x1 - x0)
+    dy = float(y1 - y0)
+    norm = float(math.hypot(dx, dy))
+    mid_x = 0.5 * float(x0 + x1)
+    mid_y = 0.5 * float(y0 + y1)
+    if float(norm) <= 1e-6:
+        norm_x, norm_y = 0.0, -1.0
+    else:
+        norm_x = float(-dy / norm)
+        norm_y = float(dx / norm)
+    sign = 1.0 if int(side_sign) >= 0 else -1.0
+    center = (
+        float(mid_x + (sign * float(norm_x) * float(offset_px))),
+        float(mid_y + (sign * float(norm_y) * float(offset_px))),
+    )
+    font = load_font(max(10, int(font_size_px)), bold=True)
+    text = str(int(weight))
+    raw_bbox = draw.textbbox((0, 0), text, font=font, stroke_width=1)
+    text_width = max(1, int(raw_bbox[2] - raw_bbox[0]))
+    text_height = max(1, int(raw_bbox[3] - raw_bbox[1]))
+    pad = max(2, int(padding_px))
+    box = (
+        int(round(center[0] - ((text_width / 2.0) + pad))),
+        int(round(center[1] - ((text_height / 2.0) + pad))),
+        int(round(center[0] + ((text_width / 2.0) + pad))),
+        int(round(center[1] + ((text_height / 2.0) + pad))),
+    )
+    draw.rounded_rectangle(
+        box,
+        radius=max(4, int(round(float(pad) * 1.2))),
+        fill=tuple(int(value) for value in box_fill_rgb),
+        outline=tuple(int(value) for value in box_border_rgb),
+        width=1,
+    )
+    draw_text_centered(
+        draw,
+        text=text,
+        center=center,
+        font=font,
+        fill=tuple(int(value) for value in text_rgb),
+        stroke_fill=tuple(int(value) for value in box_fill_rgb),
+        stroke_width=1,
+    )
+    return tuple(int(value) for value in box)
+
+
 def _node_label_box(
     *,
     radius: int,
@@ -531,6 +597,10 @@ def render_graph_scene(
     scene_title: str = "Graph",
     directed: bool = False,
     base_image: Image.Image | None = None,
+    edge_weights_by_label: Mapping[Tuple[str, str], int] | None = None,
+    edge_weight_label_font_size_px: int | None = None,
+    edge_weight_label_offset_px: int = 12,
+    edge_weight_label_padding_px: int = 4,
 ) -> RenderedGraphScene:
     """Render one labeled single-panel node-link graph scene."""
 
@@ -566,6 +636,10 @@ def render_graph_scene(
     )
 
     label_to_node = {str(label): int(node) for node, label in zip(graph_sample.graph.nodes(), graph_sample.node_labels)}
+    edge_weight_lookup = {
+        (str(left), str(right)): int(weight)
+        for (left, right), weight in (edge_weights_by_label or {}).items()
+    }
     edge_segments: List[Tuple[Tuple[str, str], Tuple[Point, Point]]] = []
     rendered_edges: List[RenderedGraphEdge] = []
     for left_label, right_label in graph_sample.edge_labels:
@@ -585,6 +659,26 @@ def render_graph_scene(
             arrow_width_px=int(render_params.arrow_width_px),
         )
         edge_segments.append(((str(left_label), str(right_label)), segment))
+        weight_label_bbox = None
+        edge_weight = edge_weight_lookup.get((str(left_label), str(right_label)))
+        if edge_weight is not None:
+            side_sign = 1 if (sum(ord(char) for char in f"{left_label}-{right_label}") % 2 == 0) else -1
+            weight_label_bbox = _draw_edge_weight_label(
+                draw,
+                segment=segment,
+                weight=int(edge_weight),
+                font_size_px=int(
+                    edge_weight_label_font_size_px
+                    if edge_weight_label_font_size_px is not None
+                    else max(11, int(render_params.label_font_size_px) - 6)
+                ),
+                offset_px=int(edge_weight_label_offset_px),
+                padding_px=int(edge_weight_label_padding_px),
+                box_fill_rgb=tuple(int(v) for v in render_params.panel_fill_rgb),
+                box_border_rgb=tuple(int(v) for v in render_params.panel_border_rgb),
+                text_rgb=tuple(int(v) for v in render_params.title_color_rgb),
+                side_sign=int(side_sign),
+            )
         rendered_edges.append(
             RenderedGraphEdge(
                 edge_id=f"edge_{str(left_label)}_{str(right_label)}",
@@ -592,6 +686,8 @@ def render_graph_scene(
                 node_v_label=str(right_label),
                 directed=bool(directed),
                 segment_px=segment,
+                weight=int(edge_weight) if edge_weight is not None else None,
+                weight_label_bbox_xyxy=tuple(int(value) for value in weight_label_bbox) if weight_label_bbox is not None else None,
             )
         )
 

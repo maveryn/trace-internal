@@ -1,0 +1,327 @@
+{
+  "answer_distribution": {
+    "answer_type_counts": {
+      "integer": 100
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.18,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": 0.35,
+        "pass": null,
+        "status": "reported_not_gated_numeric_answers"
+      },
+      "min_unique_answers": {
+        "observed": 22,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": {
+      "bin_count": 5,
+      "bins": [
+        {
+          "bin_id": 0,
+          "count": 17,
+          "label": "[11, 15.6)"
+        },
+        {
+          "bin_id": 1,
+          "count": 19,
+          "label": "[15.6, 20.2)"
+        },
+        {
+          "bin_id": 2,
+          "count": 19,
+          "label": "[20.2, 24.8)"
+        },
+        {
+          "bin_id": 3,
+          "count": 35,
+          "label": "[24.8, 29.4)"
+        },
+        {
+          "bin_id": 4,
+          "count": 10,
+          "label": "[29.4, 34]"
+        }
+      ],
+      "max_bin_count": 35,
+      "max_bin_frequency": 0.35,
+      "range_max": 34.0,
+      "range_min": 11.0
+    },
+    "max_answer_count": 18,
+    "max_answer_frequency": 0.18,
+    "pass": true,
+    "sample_count": 100,
+    "top_answers": [
+      {
+        "answer_label": "28",
+        "count": 18
+      },
+      {
+        "answer_label": "25",
+        "count": 8
+      },
+      {
+        "answer_label": "21",
+        "count": 7
+      },
+      {
+        "answer_label": "19",
+        "count": 6
+      },
+      {
+        "answer_label": "15",
+        "count": 5
+      },
+      {
+        "answer_label": "20",
+        "count": 5
+      },
+      {
+        "answer_label": "23",
+        "count": 5
+      },
+      {
+        "answer_label": "24",
+        "count": 5
+      },
+      {
+        "answer_label": "34",
+        "count": 5
+      },
+      {
+        "answer_label": "14",
+        "count": 4
+      },
+      {
+        "answer_label": "17",
+        "count": 4
+      },
+      {
+        "answer_label": "26",
+        "count": 4
+      },
+      {
+        "answer_label": "11",
+        "count": 3
+      },
+      {
+        "answer_label": "12",
+        "count": 3
+      },
+      {
+        "answer_label": "29",
+        "count": 3
+      },
+      {
+        "answer_label": "33",
+        "count": 3
+      },
+      {
+        "answer_label": "13",
+        "count": 2
+      },
+      {
+        "answer_label": "16",
+        "count": 2
+      },
+      {
+        "answer_label": "18",
+        "count": 2
+      },
+      {
+        "answer_label": "22",
+        "count": 2
+      },
+      {
+        "answer_label": "27",
+        "count": 2
+      },
+      {
+        "answer_label": "32",
+        "count": 2
+      }
+    ],
+    "unique_answers": 22
+  },
+  "sample_count": 100,
+  "sampling_axes": {
+    "extra_edge_count": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "1": 0.5,
+        "2": 0.5
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.52,
+      "observed_counts": {
+        "1": 48,
+        "2": 52
+      },
+      "sample_count": 100
+    },
+    "label_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "letters": 0.5,
+        "numbers": 0.5
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.54,
+      "observed_counts": {
+        "letters": 46,
+        "numbers": 54
+      },
+      "sample_count": 100
+    },
+    "layout_transform_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "identity": 0.16666666666666666,
+        "mirror_left_right": 0.16666666666666666,
+        "mirror_up_down": 0.16666666666666666,
+        "rotate_180": 0.16666666666666666,
+        "rotate_270": 0.16666666666666666,
+        "rotate_90": 0.16666666666666666
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.25,
+      "observed_counts": {
+        "identity": 12,
+        "mirror_left_right": 15,
+        "mirror_up_down": 19,
+        "rotate_180": 25,
+        "rotate_270": 12,
+        "rotate_90": 17
+      },
+      "sample_count": 100
+    },
+    "layout_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "circular": 0.3333333333333333,
+        "shell": 0.3333333333333333,
+        "spring": 0.3333333333333333
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.34,
+      "observed_counts": {
+        "circular": 33,
+        "shell": 34,
+        "spring": 33
+      },
+      "sample_count": 100
+    },
+    "node_color_name": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "blue": 0.1,
+        "brown": 0.1,
+        "cyan": 0.1,
+        "green": 0.1,
+        "magenta": 0.1,
+        "maroon": 0.1,
+        "orange": 0.1,
+        "purple": 0.1,
+        "red": 0.1,
+        "yellow": 0.1
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.15,
+      "observed_counts": {
+        "blue": 8,
+        "brown": 9,
+        "cyan": 12,
+        "green": 15,
+        "magenta": 7,
+        "maroon": 15,
+        "orange": 7,
+        "purple": 10,
+        "red": 11,
+        "yellow": 6
+      },
+      "sample_count": 100
+    },
+    "node_count": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "5": 0.25,
+        "6": 0.25,
+        "7": 0.25,
+        "8": 0.25
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.28,
+      "observed_counts": {
+        "5": 26,
+        "6": 18,
+        "7": 28,
+        "8": 28
+      },
+      "sample_count": 100
+    },
+    "node_shape_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "circle": 0.3333333333333333,
+        "hexagon": 0.3333333333333333,
+        "rounded_square": 0.3333333333333333
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.39,
+      "observed_counts": {
+        "circle": 35,
+        "hexagon": 26,
+        "rounded_square": 39
+      },
+      "sample_count": 100
+    },
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "minimum_spanning_tree_weight": 1.0
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 1.0,
+      "observed_counts": {
+        "minimum_spanning_tree_weight": 100
+      },
+      "sample_count": 100
+    },
+    "topology_profile": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "balanced": 0.3333333333333333,
+        "hub_heavy": 0.3333333333333333,
+        "low_degree": 0.3333333333333333
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.35,
+      "observed_counts": {
+        "balanced": 33,
+        "hub_heavy": 32,
+        "low_degree": 35
+      },
+      "sample_count": 100
+    }
+  },
+  "task_id": "task_graph_optimization_minimum_spanning_tree_weight",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {
+      "minimum_spanning_tree_weight": 1.0
+    },
+    "expected_source": "query_params",
+    "has_variants": false,
+    "observed_counts": {
+      "minimum_spanning_tree_weight": 100
+    },
+    "status": "skipped_no_variants"
+  }
+}

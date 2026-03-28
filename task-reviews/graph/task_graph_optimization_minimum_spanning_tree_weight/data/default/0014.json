@@ -1,0 +1,1218 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 21
+  },
+  "evidence_gt": {
+    "type": "edge_set",
+    "value": [
+      [
+        "A",
+        "C"
+      ],
+      [
+        "B",
+        "C"
+      ],
+      [
+        "B",
+        "E"
+      ],
+      [
+        "C",
+        "G"
+      ],
+      [
+        "D",
+        "E"
+      ],
+      [
+        "E",
+        "F"
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "graph/task_graph_optimization_minimum_spanning_tree_weight/images/default/0014.png"
+  },
+  "instance_seed": 3635203092167799,
+  "prompt": "You are given an image with a labeled connected weighted graph. Answer this question: The weighted graph has a unique minimum spanning tree. What is its total weight?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of two-label arrays naming the endpoints of all edges in that minimum spanning tree.\nAnswer requirement: set \"answer\" to the total weight of that minimum spanning tree as an integer.\nExample JSON:\n{\"evidence\":[[\"B\",\"D\"],[\"D\",\"G\"],[\"C\",\"G\"]],\"answer\":12}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given an image with a labeled connected weighted graph. Answer this question: The weighted graph has a unique minimum spanning tree. What is its total weight?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of two-label arrays naming the endpoints of all edges in that minimum spanning tree.\nAnswer requirement: set \"answer\" to the total weight of that minimum spanning tree as an integer.\nExample JSON:\n{\"evidence\":[[\"B\",\"D\"],[\"D\",\"G\"],[\"C\",\"G\"]],\"answer\":12}",
+    "answer_only": "You are given an image with a labeled connected weighted graph. Answer this question: The weighted graph has a unique minimum spanning tree. What is its total weight?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the total weight of that minimum spanning tree as an integer.\nExample JSON:\n{\"answer\":12}"
+  },
+  "task": "task_graph_optimization_minimum_spanning_tree_weight",
+  "task_variant": "minimum_spanning_tree_weight",
+  "trace_payload": {
+    "execution_trace": {
+      "adjacency_by_label": {
+        "A": [
+          "C",
+          "G"
+        ],
+        "B": [
+          "C",
+          "E"
+        ],
+        "C": [
+          "A",
+          "B",
+          "F",
+          "G"
+        ],
+        "D": [
+          "E"
+        ],
+        "E": [
+          "B",
+          "D",
+          "F"
+        ],
+        "F": [
+          "C",
+          "E"
+        ],
+        "G": [
+          "A",
+          "C"
+        ]
+      },
+      "crossing_count": 3,
+      "degrees_by_label": {
+        "A": 2,
+        "B": 2,
+        "C": 4,
+        "D": 1,
+        "E": 3,
+        "F": 2,
+        "G": 2
+      },
+      "edge_count": 8,
+      "edge_weight_max": 9,
+      "edge_weight_min": 1,
+      "edge_weights_by_label": [
+        {
+          "endpoints": [
+            "A",
+            "C"
+          ],
+          "weight": 1
+        },
+        {
+          "endpoints": [
+            "A",
+            "G"
+          ],
+          "weight": 9
+        },
+        {
+          "endpoints": [
+            "B",
+            "C"
+          ],
+          "weight": 4
+        },
+        {
+          "endpoints": [
+            "B",
+            "E"
+          ],
+          "weight": 5
+        },
+        {
+          "endpoints": [
+            "C",
+            "F"
+          ],
+          "weight": 8
+        },
+        {
+          "endpoints": [
+            "C",
+            "G"
+          ],
+          "weight": 2
+        },
+        {
+          "endpoints": [
+            "D",
+            "E"
+          ],
+          "weight": 6
+        },
+        {
+          "endpoints": [
+            "E",
+            "F"
+          ],
+          "weight": 3
+        }
+      ],
+      "extra_edge_count": 2,
+      "graph_directionality": "undirected",
+      "label_variant": "letters",
+      "layout_transform_variant": "mirror_up_down",
+      "layout_variant_requested": "shell",
+      "layout_variant_used": "shell",
+      "minimum_spanning_tree_edges": [
+        [
+          "A",
+          "C"
+        ],
+        [
+          "B",
+          "C"
+        ],
+        [
+          "B",
+          "E"
+        ],
+        [
+          "C",
+          "G"
+        ],
+        [
+          "D",
+          "E"
+        ],
+        [
+          "E",
+          "F"
+        ]
+      ],
+      "minimum_spanning_tree_total_weight": 21,
+      "node_color_name": "magenta",
+      "node_count": 7,
+      "node_shape_variant": "circle",
+      "question_format": "sum_unique_mst_weights",
+      "scene_variant": "shell",
+      "task_variant": "minimum_spanning_tree_weight",
+      "topology_profile": "low_degree"
+    },
+    "projected_evidence": {
+      "edge_set": [
+        [
+          "A",
+          "C"
+        ],
+        [
+          "B",
+          "C"
+        ],
+        [
+          "B",
+          "E"
+        ],
+        [
+          "C",
+          "G"
+        ],
+        [
+          "D",
+          "E"
+        ],
+        [
+          "E",
+          "F"
+        ]
+      ],
+      "pixel_edge_set": [
+        [
+          [
+            773,
+            464
+          ],
+          [
+            485,
+            228
+          ]
+        ],
+        [
+          [
+            355,
+            545
+          ],
+          [
+            463,
+            234
+          ]
+        ],
+        [
+          [
+            363,
+            551
+          ],
+          [
+            455,
+            469
+          ]
+        ],
+        [
+          [
+            490,
+            214
+          ],
+          [
+            768,
+            195
+          ]
+        ],
+        [
+          [
+            355,
+            126
+          ],
+          [
+            463,
+            437
+          ]
+        ],
+        [
+          [
+            451,
+            450
+          ],
+          [
+            95,
+            342
+          ]
+        ]
+      ],
+      "type": "edge_set"
+    },
+    "query_spec": {
+      "params": {
+        "edge_count": 8,
+        "edge_weight_max": 9,
+        "edge_weight_min": 1,
+        "extra_edge_count": 2,
+        "extra_edge_count_probabilities": {
+          "1": 0.5,
+          "2": 0.5
+        },
+        "graph_directionality": "undirected",
+        "label_variant": "letters",
+        "label_variant_probabilities": {
+          "letters": 0.5,
+          "numbers": 0.5
+        },
+        "layout_transform_variant": "mirror_up_down",
+        "layout_transform_variant_probabilities": {
+          "identity": 0.16666666666666666,
+          "mirror_left_right": 0.16666666666666666,
+          "mirror_up_down": 0.16666666666666666,
+          "rotate_180": 0.16666666666666666,
+          "rotate_270": 0.16666666666666666,
+          "rotate_90": 0.16666666666666666
+        },
+        "layout_variant": "shell",
+        "layout_variant_probabilities": {
+          "circular": 0.3333333333333333,
+          "shell": 0.3333333333333333,
+          "spring": 0.3333333333333333
+        },
+        "node_color_name": "magenta",
+        "node_color_name_probabilities": {
+          "blue": 0.1,
+          "brown": 0.1,
+          "cyan": 0.1,
+          "green": 0.1,
+          "magenta": 0.1,
+          "maroon": 0.1,
+          "orange": 0.1,
+          "purple": 0.1,
+          "red": 0.1,
+          "yellow": 0.1
+        },
+        "node_count": 7,
+        "node_count_probabilities": {
+          "5": 0.25,
+          "6": 0.25,
+          "7": 0.25,
+          "8": 0.25
+        },
+        "node_shape_variant": "circle",
+        "node_shape_variant_probabilities": {
+          "circle": 0.3333333333333333,
+          "hexagon": 0.3333333333333333,
+          "rounded_square": 0.3333333333333333
+        },
+        "task_variant_probabilities": {
+          "minimum_spanning_tree_weight": 1.0
+        },
+        "topology_profile": "low_degree",
+        "topology_profile_probabilities": {
+          "balanced": 0.3333333333333333,
+          "hub_heavy": 0.3333333333333333,
+          "low_degree": 0.3333333333333333
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "graph_optimization_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the total weight of that minimum spanning tree as an integer",
+          "evidence_hint": "set \"evidence\" to an array of two-label arrays naming the endpoints of all edges in that minimum spanning tree",
+          "json_example": "{\"evidence\":[[\"B\",\"D\"],[\"D\",\"G\"],[\"C\",\"G\"]],\"answer\":12}",
+          "json_example_answer_only": "{\"answer\":12}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a labeled connected weighted graph",
+          "question_text": "The weighted graph has a unique minimum spanning tree. What is its total weight?"
+        },
+        "task_family_key": "single_graph_optimization",
+        "task_family_variant_index": 0,
+        "task_key": "minimum_spanning_tree_weight_query",
+        "task_variant_index": 3,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "graph/optimization/graph_optimization_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:minimum_spanning_tree_weight_query": 5,
+          "task_family:single_graph_optimization": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "graph_optimization_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the total weight of that minimum spanning tree as an integer",
+              "evidence_hint": "set \"evidence\" to an array of two-label arrays naming the endpoints of all edges in that minimum spanning tree",
+              "json_example": "{\"evidence\":[[\"B\",\"D\"],[\"D\",\"G\"],[\"C\",\"G\"]],\"answer\":12}",
+              "json_example_answer_only": "{\"answer\":12}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled connected weighted graph",
+              "question_text": "The weighted graph has a unique minimum spanning tree. What is its total weight?"
+            },
+            "task_family_key": "single_graph_optimization",
+            "task_family_variant_index": 0,
+            "task_key": "minimum_spanning_tree_weight_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "graph/optimization/graph_optimization_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:minimum_spanning_tree_weight_query": 5,
+              "task_family:single_graph_optimization": 5
+            }
+          },
+          "prompt": "You are given an image with a labeled connected weighted graph. Answer this question: The weighted graph has a unique minimum spanning tree. What is its total weight?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of two-label arrays naming the endpoints of all edges in that minimum spanning tree.\nAnswer requirement: set \"answer\" to the total weight of that minimum spanning tree as an integer.\nExample JSON:\n{\"evidence\":[[\"B\",\"D\"],[\"D\",\"G\"],[\"C\",\"G\"]],\"answer\":12}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "graph_optimization_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the total weight of that minimum spanning tree as an integer",
+              "evidence_hint": "set \"evidence\" to an array of two-label arrays naming the endpoints of all edges in that minimum spanning tree",
+              "json_example": "{\"evidence\":[[\"B\",\"D\"],[\"D\",\"G\"],[\"C\",\"G\"]],\"answer\":12}",
+              "json_example_answer_only": "{\"answer\":12}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled connected weighted graph",
+              "question_text": "The weighted graph has a unique minimum spanning tree. What is its total weight?"
+            },
+            "task_family_key": "single_graph_optimization",
+            "task_family_variant_index": 0,
+            "task_key": "minimum_spanning_tree_weight_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "graph/optimization/graph_optimization_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:minimum_spanning_tree_weight_query": 5,
+              "task_family:single_graph_optimization": 5
+            }
+          },
+          "prompt": "You are given an image with a labeled connected weighted graph. Answer this question: The weighted graph has a unique minimum spanning tree. What is its total weight?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the total weight of that minimum spanning tree as an integer.\nExample JSON:\n{\"answer\":12}"
+        }
+      },
+      "task_variant": "minimum_spanning_tree_weight",
+      "template_id": "graph_optimization_v1"
+    },
+    "render_map": {
+      "anchors": {},
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        864,
+        640
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          864,
+          640
+        ],
+        "scene_content_xyxy": [
+          52,
+          83,
+          812,
+          588
+        ],
+        "scene_panel_xyxy": [
+          28,
+          28,
+          836,
+          612
+        ],
+        "title_band_xyxy": [
+          28,
+          28,
+          836,
+          71
+        ]
+      },
+      "style": {
+        "background_color_rgb": [
+          254,
+          249,
+          252
+        ],
+        "background_meta": {
+          "available_styles": [
+            "solid_light"
+          ],
+          "enabled": true,
+          "selected_style": "solid_light",
+          "style_spec": {
+            "color": [
+              248,
+              248,
+              248
+            ],
+            "kind": "solid"
+          }
+        },
+        "edge_color_rgb": [
+          150,
+          32,
+          104
+        ],
+        "edge_weight_label_font_size_px": 14,
+        "edge_weight_label_offset_px": 14,
+        "edge_weight_label_padding_px": 4,
+        "edge_width_px": 4,
+        "label_font_size_px": 20,
+        "label_stroke_rgb": [
+          121,
+          26,
+          84
+        ],
+        "label_stroke_width_px": 2,
+        "label_text_rgb": [
+          255,
+          255,
+          255
+        ],
+        "node_border_rgb": [
+          121,
+          26,
+          84
+        ],
+        "node_border_width_px": 2,
+        "node_color_name": "magenta",
+        "node_fill_rgb": [
+          208,
+          44,
+          145
+        ],
+        "node_radius_px": 20,
+        "node_shape_variant": "circle",
+        "panel_border_rgb": [
+          242,
+          196,
+          224
+        ],
+        "panel_fill_rgb": [
+          252,
+          242,
+          248
+        ],
+        "post_image_noise_meta": {
+          "applied": false,
+          "apply_prob": 0.0,
+          "edit_count_range": [
+            1,
+            2
+          ],
+          "edit_types": [
+            "blur",
+            "downsample",
+            "jpeg",
+            "noise"
+          ],
+          "edits": [],
+          "enabled": false
+        },
+        "resolved_label_font_size_px": 20,
+        "title_color_rgb": [
+          96,
+          20,
+          67
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_xyxy": [
+            450,
+            436,
+            490,
+            476
+          ],
+          "center_px": [
+            470,
+            456
+          ],
+          "degree": 3,
+          "entity_id": "node_E",
+          "entity_kind": "graph_node",
+          "label": "E",
+          "neighbors": [
+            "B",
+            "D",
+            "F"
+          ],
+          "predecessors": [
+            "B",
+            "D",
+            "F"
+          ],
+          "successors": [
+            "B",
+            "D",
+            "F"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            56,
+            316,
+            96,
+            356
+          ],
+          "center_px": [
+            76,
+            336
+          ],
+          "degree": 2,
+          "entity_id": "node_F",
+          "entity_kind": "graph_node",
+          "label": "F",
+          "neighbors": [
+            "C",
+            "E"
+          ],
+          "predecessors": [
+            "C",
+            "E"
+          ],
+          "successors": [
+            "C",
+            "E"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            328,
+            544,
+            368,
+            584
+          ],
+          "center_px": [
+            348,
+            564
+          ],
+          "degree": 2,
+          "entity_id": "node_B",
+          "entity_kind": "graph_node",
+          "label": "B",
+          "neighbors": [
+            "C",
+            "E"
+          ],
+          "predecessors": [
+            "C",
+            "E"
+          ],
+          "successors": [
+            "C",
+            "E"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            450,
+            195,
+            490,
+            235
+          ],
+          "center_px": [
+            470,
+            215
+          ],
+          "degree": 4,
+          "entity_id": "node_C",
+          "entity_kind": "graph_node",
+          "label": "C",
+          "neighbors": [
+            "A",
+            "B",
+            "F",
+            "G"
+          ],
+          "predecessors": [
+            "A",
+            "B",
+            "F",
+            "G"
+          ],
+          "successors": [
+            "A",
+            "B",
+            "F",
+            "G"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            768,
+            457,
+            808,
+            497
+          ],
+          "center_px": [
+            788,
+            477
+          ],
+          "degree": 2,
+          "entity_id": "node_A",
+          "entity_kind": "graph_node",
+          "label": "A",
+          "neighbors": [
+            "C",
+            "G"
+          ],
+          "predecessors": [
+            "C",
+            "G"
+          ],
+          "successors": [
+            "C",
+            "G"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            328,
+            87,
+            368,
+            127
+          ],
+          "center_px": [
+            348,
+            107
+          ],
+          "degree": 1,
+          "entity_id": "node_D",
+          "entity_kind": "graph_node",
+          "label": "D",
+          "neighbors": [
+            "E"
+          ],
+          "predecessors": [
+            "E"
+          ],
+          "successors": [
+            "E"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            768,
+            174,
+            808,
+            214
+          ],
+          "center_px": [
+            788,
+            194
+          ],
+          "degree": 2,
+          "entity_id": "node_G",
+          "entity_kind": "graph_node",
+          "label": "G",
+          "neighbors": [
+            "A",
+            "C"
+          ],
+          "predecessors": [
+            "A",
+            "C"
+          ],
+          "successors": [
+            "A",
+            "C"
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_A_C",
+          "entity_kind": "graph_edge",
+          "is_in_minimum_spanning_tree": true,
+          "node_u_label": "A",
+          "node_v_label": "C",
+          "segment_px": [
+            [
+              773,
+              464
+            ],
+            [
+              485,
+              228
+            ]
+          ],
+          "weight": 1,
+          "weight_label_bbox_xyxy": [
+            610,
+            347,
+            630,
+            367
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_A_G",
+          "entity_kind": "graph_edge",
+          "is_in_minimum_spanning_tree": false,
+          "node_u_label": "A",
+          "node_v_label": "G",
+          "segment_px": [
+            [
+              788,
+              457
+            ],
+            [
+              788,
+              214
+            ]
+          ],
+          "weight": 9,
+          "weight_label_bbox_xyxy": [
+            764,
+            326,
+            784,
+            346
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_B_C",
+          "entity_kind": "graph_edge",
+          "is_in_minimum_spanning_tree": true,
+          "node_u_label": "B",
+          "node_v_label": "C",
+          "segment_px": [
+            [
+              355,
+              545
+            ],
+            [
+              463,
+              234
+            ]
+          ],
+          "weight": 4,
+          "weight_label_bbox_xyxy": [
+            412,
+            384,
+            432,
+            404
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_B_E",
+          "entity_kind": "graph_edge",
+          "is_in_minimum_spanning_tree": true,
+          "node_u_label": "B",
+          "node_v_label": "E",
+          "segment_px": [
+            [
+              363,
+              551
+            ],
+            [
+              455,
+              469
+            ]
+          ],
+          "weight": 5,
+          "weight_label_bbox_xyxy": [
+            408,
+            510,
+            428,
+            530
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_C_F",
+          "entity_kind": "graph_edge",
+          "is_in_minimum_spanning_tree": false,
+          "node_u_label": "C",
+          "node_v_label": "F",
+          "segment_px": [
+            [
+              451,
+              221
+            ],
+            [
+              95,
+              330
+            ]
+          ],
+          "weight": 8,
+          "weight_label_bbox_xyxy": [
+            259,
+            252,
+            279,
+            272
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_C_G",
+          "entity_kind": "graph_edge",
+          "is_in_minimum_spanning_tree": true,
+          "node_u_label": "C",
+          "node_v_label": "G",
+          "segment_px": [
+            [
+              490,
+              214
+            ],
+            [
+              768,
+              195
+            ]
+          ],
+          "weight": 2,
+          "weight_label_bbox_xyxy": [
+            618,
+            181,
+            638,
+            201
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_D_E",
+          "entity_kind": "graph_edge",
+          "is_in_minimum_spanning_tree": true,
+          "node_u_label": "D",
+          "node_v_label": "E",
+          "segment_px": [
+            [
+              355,
+              126
+            ],
+            [
+              463,
+              437
+            ]
+          ],
+          "weight": 6,
+          "weight_label_bbox_xyxy": [
+            386,
+            276,
+            406,
+            296
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_E_F",
+          "entity_kind": "graph_edge",
+          "is_in_minimum_spanning_tree": true,
+          "node_u_label": "E",
+          "node_v_label": "F",
+          "segment_px": [
+            [
+              451,
+              450
+            ],
+            [
+              95,
+              342
+            ]
+          ],
+          "weight": 3,
+          "weight_label_bbox_xyxy": [
+            267,
+            373,
+            287,
+            393
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            864,
+            640
+          ],
+          "scene_content_xyxy": [
+            52,
+            83,
+            812,
+            588
+          ],
+          "scene_panel_xyxy": [
+            28,
+            28,
+            836,
+            612
+          ],
+          "title_band_xyxy": [
+            28,
+            28,
+            836,
+            71
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "adjacency_by_label": {
+          "A": [
+            "C",
+            "G"
+          ],
+          "B": [
+            "C",
+            "E"
+          ],
+          "C": [
+            "A",
+            "B",
+            "F",
+            "G"
+          ],
+          "D": [
+            "E"
+          ],
+          "E": [
+            "B",
+            "D",
+            "F"
+          ],
+          "F": [
+            "C",
+            "E"
+          ],
+          "G": [
+            "A",
+            "C"
+          ]
+        },
+        "degrees_by_label": {
+          "A": 2,
+          "B": 2,
+          "C": 4,
+          "D": 1,
+          "E": 3,
+          "F": 2,
+          "G": 2
+        },
+        "edge_labels": [
+          [
+            "A",
+            "C"
+          ],
+          [
+            "A",
+            "G"
+          ],
+          [
+            "B",
+            "C"
+          ],
+          [
+            "B",
+            "E"
+          ],
+          [
+            "C",
+            "F"
+          ],
+          [
+            "C",
+            "G"
+          ],
+          [
+            "D",
+            "E"
+          ],
+          [
+            "E",
+            "F"
+          ]
+        ],
+        "edge_weights_by_label": [
+          {
+            "endpoints": [
+              "A",
+              "C"
+            ],
+            "weight": 1
+          },
+          {
+            "endpoints": [
+              "A",
+              "G"
+            ],
+            "weight": 9
+          },
+          {
+            "endpoints": [
+              "B",
+              "C"
+            ],
+            "weight": 4
+          },
+          {
+            "endpoints": [
+              "B",
+              "E"
+            ],
+            "weight": 5
+          },
+          {
+            "endpoints": [
+              "C",
+              "F"
+            ],
+            "weight": 8
+          },
+          {
+            "endpoints": [
+              "C",
+              "G"
+            ],
+            "weight": 2
+          },
+          {
+            "endpoints": [
+              "D",
+              "E"
+            ],
+            "weight": 6
+          },
+          {
+            "endpoints": [
+              "E",
+              "F"
+            ],
+            "weight": 3
+          }
+        ],
+        "graph_directionality": "undirected",
+        "minimum_spanning_tree_edges": [
+          [
+            "A",
+            "C"
+          ],
+          [
+            "B",
+            "C"
+          ],
+          [
+            "B",
+            "E"
+          ],
+          [
+            "C",
+            "G"
+          ],
+          [
+            "D",
+            "E"
+          ],
+          [
+            "E",
+            "F"
+          ]
+        ],
+        "question_rule": "sum_minimum_spanning_tree_weights"
+      },
+      "scene_kind": "graph_minimum_spanning_tree_weight"
+    },
+    "witness_symbolic": {
+      "edge_set": [
+        [
+          "A",
+          "C"
+        ],
+        [
+          "B",
+          "C"
+        ],
+        [
+          "B",
+          "E"
+        ],
+        [
+          "C",
+          "G"
+        ],
+        [
+          "D",
+          "E"
+        ],
+        [
+          "E",
+          "F"
+        ]
+      ],
+      "type": "edge_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

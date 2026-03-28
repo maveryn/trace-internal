@@ -128,6 +128,7 @@ Use this checklist during implementation and refactor reviews.
 112. Once a domain starts migrating tasks to config-weighted complexity criteria, promote weight resolution and weighted-score construction into one domain-shared helper immediately; do not copy criterion validation and weight normalization into each migrated task module.
 113. For chart complexity, keep `scene_variant_load` task-local even when the criterion name is domain-shared; do not reuse one global chart-type difficulty table across unrelated chart tasks whose scenes have different semantics or prompting contracts.
 114. For sibling icon counting tasks that share one task-group complexity policy, keep the weights in the task-group config and vary only the task-local normalized ambiguity signal tied to the distinguishing attribute (for example color separation, rotation support, or size gap); do not fork near-duplicate per-task weight constants.
+115. For icon relation tasks that stay under one shared relation complexity policy, do not fork task-local weight tables just because the visual primitive changes; keep the family weights in config and vary only the normalized spatial/ambiguity/clutter measurements that correspond to the task’s real difficulty knob (for example strip width, overlap/color contrast, or symmetry variant and cell density).
 
 ## 3) Process rule
 When a new reusable issue is discovered:

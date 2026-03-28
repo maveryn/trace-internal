@@ -10,7 +10,7 @@ from PIL import Image, ImageChops
 
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import (
@@ -18,7 +18,7 @@ from ...shared.config_defaults import (
     required_group_defaults,
     split_generation_rendering_prompt_defaults,
 )
-from ...shared.counting_sampling import counting_complexity_score, resolve_counting_target_and_distractor_triplet
+from ...shared.counting_sampling import resolve_counting_target_and_distractor_triplet
 from ...shared.labeling import LABEL_POOL_A_L, assign_shuffled_labels
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
@@ -27,6 +27,7 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
+from ..shared.complexity import build_icons_relation_mirror_symmetry_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.icon_assets import render_icon_rgba, resolve_icon_pool
 from ..shared.icon_labeled_grid_scene import prepare_two_panel_labeled_grid_scene
@@ -1400,16 +1401,14 @@ class IconsRelationMirrorSymmetryTask:
                 "label_set": list(scene_payload.matching_labels),
             },
         }
-        complexity = TaskComplexity(
-            complexity_score=counting_complexity_score(
-                object_count=int(scene_payload.object_count),
-                target_count=int(scene_payload.target_count),
-            ),
-            complexity_components={
-                "object_count": int(scene_payload.object_count),
-                "target_count": int(scene_payload.target_count),
-                "task_variant": str(scene_payload.task_variant),
-            },
+        complexity = build_icons_relation_mirror_symmetry_complexity(
+            task_group_defaults=_TASK_GROUP_DEFAULTS,
+            task_id=self.task_id,
+            task_variant=str(scene_payload.task_variant),
+            object_count=int(scene_payload.object_count),
+            target_count=int(scene_payload.target_count),
+            scene_cells=scene_payload.scene_cells,
+            render_params=render_params,
         )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),

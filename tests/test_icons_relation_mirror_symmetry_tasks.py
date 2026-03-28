@@ -42,6 +42,14 @@ def test_icons_relation_mirror_symmetry_contract_matches_scene() -> None:
     assert int(execution["object_count"]) == 6
     assert int(execution["target_count"]) == 2
     assert int(execution["distractor_count"]) == 4
+    assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
+    assert set(out.complexity.complexity_components.keys()) == {
+        "visual_scan",
+        "spatial_reasoning",
+        "ambiguity",
+        "clutter",
+    }
+    assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
 
     reference_cell = reference_entities[0]
     ref_bbox = reference_cell["cell_bbox_xyxy"]

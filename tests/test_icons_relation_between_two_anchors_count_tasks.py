@@ -68,6 +68,14 @@ def test_icons_relation_between_two_anchors_count_contract_matches_scene() -> No
     assert int(execution["object_count"]) == 6
     assert int(execution["target_count"]) == 2
     assert int(execution["distractor_count"]) == 4
+    assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
+    assert set(out.complexity.complexity_components.keys()) == {
+        "visual_scan",
+        "spatial_reasoning",
+        "ambiguity",
+        "clutter",
+    }
+    assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
     assert len(anchors) == 2
     assert len(scene_entities) == 6
     assert float(trace["render_spec"]["style"]["scene_max_overlap_fraction"]) == 0.08

@@ -14,6 +14,7 @@ from typing import Any, Dict, Mapping, Sequence
 
 from ....core.task_group_config import resolve_task_group_section_defaults
 from ....core.types import TaskComplexity
+from ...shared.color_distance import color_distance
 from .icon_scene import overlap_fraction_smaller
 
 
@@ -178,6 +179,101 @@ def icon_scene_clutter_score(
     )
 
     return _clip01((0.45 * size_load) + (0.35 * overlap_load) + (0.20 * noise_load))
+
+
+def _mean(values: Sequence[float]) -> float:
+    """Return one safe arithmetic mean."""
+
+    if not values:
+        return 0.0
+    return float(sum(float(value) for value in values)) / float(len(values))
+
+
+def _flatten_occlusion_scene_instances(scene_cells: Sequence[Mapping[str, Any]]) -> Sequence[Mapping[str, Any]]:
+    """Project occlusion-order cell contents into icon-like clutter records."""
+
+    flattened: list[Dict[str, Any]] = []
+    for cell in scene_cells:
+        flattened.append(
+            {
+                "bbox_xyxy": list(cell.get("icon_a_bbox_xyxy", ())),
+                "noise_edits": list(cell.get("icon_a_noise_edits", ())),
+            }
+        )
+        flattened.append(
+            {
+                "bbox_xyxy": list(cell.get("icon_b_bbox_xyxy", ())),
+                "noise_edits": list(cell.get("icon_b_noise_edits", ())),
+            }
+        )
+    return flattened
+
+
+def _flatten_mirror_scene_instances(scene_cells: Sequence[Mapping[str, Any]]) -> Sequence[Mapping[str, Any]]:
+    """Project mirror-symmetry placements into icon-like clutter records."""
+
+    flattened: list[Dict[str, Any]] = []
+    for cell in scene_cells:
+        for placement in cell.get("placements", ()):
+            flattened.append(
+                {
+                    "bbox_xyxy": list(placement.get("bbox_xyxy", ())),
+                    "noise_edits": list(placement.get("noise_edits", ())),
+                }
+            )
+    return flattened
+
+
+def _strip_boundary_difficulty(
+    *,
+    scene_instances: Sequence[Mapping[str, Any]],
+    anchor_a_center_xy: Sequence[float],
+    anchor_b_center_xy: Sequence[float],
+    task_variant: str,
+    boundary_margin_px: int,
+) -> float:
+    """Measure how close icon centers sit to the inferred strip boundary."""
+
+    if not scene_instances:
+        return 0.0
+
+    ax, ay = float(anchor_a_center_xy[0]), float(anchor_a_center_xy[1])
+    bx, by = float(anchor_b_center_xy[0]), float(anchor_b_center_xy[1])
+    margin = float(max(0, int(boundary_margin_px)))
+    if str(task_variant) == "inside_vertical_strip":
+        lower, upper = sorted((float(ax), float(bx)))
+    elif str(task_variant) == "inside_horizontal_strip":
+        lower, upper = sorted((float(ay), float(by)))
+    else:
+        raise ValueError(f"unsupported relation strip variant: {task_variant}")
+
+    distances: list[float] = []
+    for entity in scene_instances:
+        center_xy = entity.get("center_xy", ())
+        if not isinstance(center_xy, Sequence) or len(center_xy) < 2:
+            continue
+        coordinate = float(center_xy[0]) if str(task_variant) == "inside_vertical_strip" else float(center_xy[1])
+        distances.append(min(abs(float(coordinate) - float(lower)), abs(float(upper) - float(coordinate))))
+
+    if not distances:
+        return 0.0
+
+    avg_distance = _mean(distances)
+    max_reference_distance = max(float(margin) + 1.0, 0.5 * float(max(1e-6, float(upper) - float(lower))))
+    return 1.0 - _normalize_linear(
+        float(avg_distance),
+        min_value=float(margin),
+        max_value=float(max_reference_distance),
+    )
+
+
+_MIRROR_VARIANT_DIFFICULTY: Dict[str, float] = {
+    "mirror_vertical": 0.35,
+    "mirror_horizontal": 0.35,
+    "mirror_diagonal_main": 0.70,
+    "mirror_diagonal_anti": 0.70,
+    "mirror_both_axes": 0.85,
+}
 
 
 def build_icons_counting_type_complexity(
@@ -475,6 +571,211 @@ def build_icons_relation_relative_position_type_complexity(
     )
 
 
+def build_icons_relation_between_two_anchors_count_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    task_variant: str,
+    object_count: int,
+    target_count: int,
+    object_count_min: int,
+    object_count_max: int,
+    scene_content_bbox: Sequence[int | float],
+    anchor_a_center_xy: Sequence[float],
+    anchor_b_center_xy: Sequence[float],
+    strip_boundary_margin_px: int,
+    strip_span_ratio_min: float,
+    strip_span_ratio_max: float,
+    scene_instances: Sequence[Mapping[str, Any]],
+    render_params: Mapping[str, Any],
+) -> TaskComplexity:
+    """Build complexity for the two-anchor strip relation task."""
+
+    visual_scan = icon_visual_scan_score(
+        object_count=int(object_count),
+        object_count_min=int(object_count_min),
+        object_count_max=int(object_count_max),
+    )
+    x0, y0, x1, y1 = [float(value) for value in scene_content_bbox]
+    if str(task_variant) == "inside_vertical_strip":
+        strip_span = abs(float(anchor_a_center_xy[0]) - float(anchor_b_center_xy[0]))
+        total_span = max(1.0, float(x1) - float(x0))
+    elif str(task_variant) == "inside_horizontal_strip":
+        strip_span = abs(float(anchor_a_center_xy[1]) - float(anchor_b_center_xy[1]))
+        total_span = max(1.0, float(y1) - float(y0))
+    else:
+        raise ValueError(f"unsupported relation strip variant: {task_variant}")
+    span_ratio = float(strip_span) / float(total_span)
+    span_difficulty = 1.0 - _normalize_linear(
+        float(span_ratio),
+        min_value=float(strip_span_ratio_min),
+        max_value=float(strip_span_ratio_max),
+    )
+    boundary_difficulty = _strip_boundary_difficulty(
+        scene_instances=scene_instances,
+        anchor_a_center_xy=anchor_a_center_xy,
+        anchor_b_center_xy=anchor_b_center_xy,
+        task_variant=str(task_variant),
+        boundary_margin_px=int(strip_boundary_margin_px),
+    )
+    spatial_reasoning = _clip01((0.55 * span_difficulty) + (0.45 * visual_scan))
+    ambiguity = _clip01(
+        (0.45 * boundary_difficulty)
+        + (0.35 * icon_target_density_balance(target_count=int(target_count), object_count=int(object_count)))
+        + (0.20 * span_difficulty)
+    )
+    clutter = icon_scene_clutter_score(
+        scene_instances=scene_instances,
+        scene_icon_size_min_px=int(render_params["scene_icon_size_min_px"]),
+        scene_icon_size_max_px=int(render_params["scene_icon_size_max_px"]),
+        scene_max_overlap_fraction=float(render_params["scene_max_overlap_fraction"]),
+        noise_edit_count_range=render_params["icon_noise_edit_count_range"],
+    )
+    return build_icon_task_complexity(
+        task_group_defaults=task_group_defaults,
+        task_id=str(task_id),
+        criterion_values={
+            "visual_scan": float(visual_scan),
+            "spatial_reasoning": float(spatial_reasoning),
+            "ambiguity": float(ambiguity),
+            "clutter": float(clutter),
+        },
+    )
+
+
+def build_icons_relation_occlusion_order_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    object_count: int,
+    target_count: int,
+    object_count_min: int,
+    object_count_max: int,
+    scene_cells: Sequence[Mapping[str, Any]],
+    pair_min_color_distance: float,
+    color_distance_space: str,
+    overlap_ratio_range: Sequence[float],
+    render_params: Mapping[str, Any],
+) -> TaskComplexity:
+    """Build complexity for the reference-grid occlusion-order relation task."""
+
+    visual_scan = icon_visual_scan_score(
+        object_count=int(object_count),
+        object_count_min=int(object_count_min),
+        object_count_max=int(object_count_max),
+    )
+    avg_overlap = _mean([float(cell.get("overlap_ratio", 0.0)) for cell in scene_cells])
+    overlap_difficulty = _normalize_linear(
+        float(avg_overlap),
+        min_value=float(overlap_ratio_range[0]),
+        max_value=float(overlap_ratio_range[1]),
+    )
+    pair_color_distances = [
+        float(
+            color_distance(
+                tuple(int(value) for value in cell.get("icon_a_tint_rgb", (0, 0, 0))),
+                tuple(int(value) for value in cell.get("icon_b_tint_rgb", (0, 0, 0))),
+                distance_space=str(color_distance_space),
+            )
+        )
+        for cell in scene_cells
+    ]
+    avg_pair_color_distance = _mean(pair_color_distances)
+    color_similarity_difficulty = 1.0 - _normalize_linear(
+        float(avg_pair_color_distance),
+        min_value=float(pair_min_color_distance),
+        max_value=max(float(pair_min_color_distance) + 1.0, 200.0),
+    )
+    spatial_reasoning = _clip01((0.55 * overlap_difficulty) + (0.45 * visual_scan))
+    ambiguity = _clip01(
+        (0.60 * icon_target_density_balance(target_count=int(target_count), object_count=int(object_count)))
+        + (0.40 * color_similarity_difficulty)
+    )
+    clutter = icon_scene_clutter_score(
+        scene_instances=_flatten_occlusion_scene_instances(scene_cells),
+        scene_icon_size_min_px=int(render_params["scene_icon_size_min_px"]),
+        scene_icon_size_max_px=int(render_params["scene_icon_size_max_px"]),
+        scene_max_overlap_fraction=float(overlap_ratio_range[1]),
+        noise_edit_count_range=render_params["icon_noise_edit_count_range"],
+    )
+    return build_icon_task_complexity(
+        task_group_defaults=task_group_defaults,
+        task_id=str(task_id),
+        criterion_values={
+            "visual_scan": float(visual_scan),
+            "spatial_reasoning": float(spatial_reasoning),
+            "ambiguity": float(ambiguity),
+            "clutter": float(clutter),
+        },
+    )
+
+
+def build_icons_relation_mirror_symmetry_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    task_variant: str,
+    object_count: int,
+    target_count: int,
+    scene_cells: Sequence[Mapping[str, Any]],
+    render_params: Mapping[str, Any],
+) -> TaskComplexity:
+    """Build complexity for the reference-grid mirror-symmetry relation task."""
+
+    min_icons_per_cell = min(
+        min(int(value) for value in render_params["symmetric_icon_count_choices"]),
+        min(int(value) for value in render_params["both_axes_icon_count_choices"]),
+        min(int(value) for value in render_params["nonsymmetric_icon_count_choices"]),
+    )
+    max_icons_per_cell = max(
+        max(int(value) for value in render_params["symmetric_icon_count_choices"]),
+        max(int(value) for value in render_params["both_axes_icon_count_choices"]),
+        max(int(value) for value in render_params["nonsymmetric_icon_count_choices"]),
+    )
+    total_scene_icons = sum(int(cell.get("icon_count", 0)) for cell in scene_cells)
+    average_icons_per_cell = _mean([float(cell.get("icon_count", 0)) for cell in scene_cells])
+    visual_scan = _normalize_linear(
+        float(total_scene_icons),
+        min_value=float(int(object_count) * int(min_icons_per_cell)),
+        max_value=float(int(object_count) * int(max_icons_per_cell)),
+    )
+    icon_density = _normalize_linear(
+        float(average_icons_per_cell),
+        min_value=float(min_icons_per_cell),
+        max_value=float(max_icons_per_cell),
+    )
+    variant_load = _MIRROR_VARIANT_DIFFICULTY.get(str(task_variant), 0.50)
+    distractor_count = max(1, int(object_count) - int(target_count))
+    structured_distractor_share = sum(
+        1
+        for cell in scene_cells
+        if (not bool(cell.get("is_match"))) and str(cell.get("symmetry_id")) != "none"
+    ) / float(distractor_count)
+    spatial_reasoning = _clip01((0.65 * float(variant_load)) + (0.35 * icon_density))
+    ambiguity = _clip01(
+        (0.50 * structured_distractor_share)
+        + (0.30 * icon_target_density_balance(target_count=int(target_count), object_count=int(object_count)))
+        + (0.20 * icon_density)
+    )
+    clutter = icon_scene_clutter_score(
+        scene_instances=_flatten_mirror_scene_instances(scene_cells),
+        scene_icon_size_min_px=int(render_params["scene_icon_size_min_px"]),
+        scene_icon_size_max_px=int(render_params["scene_icon_size_max_px"]),
+        scene_max_overlap_fraction=0.05,
+        noise_edit_count_range=render_params["icon_noise_edit_count_range"],
+    )
+    return build_icon_task_complexity(
+        task_group_defaults=task_group_defaults,
+        task_id=str(task_id),
+        criterion_values={
+            "visual_scan": float(visual_scan),
+            "spatial_reasoning": float(spatial_reasoning),
+            "ambiguity": float(ambiguity),
+            "clutter": float(clutter),
+        },
+    )
+
+
 __all__ = [
     "build_icon_task_complexity",
     "build_icons_counting_color_complexity",
@@ -482,6 +783,9 @@ __all__ = [
     "build_icons_counting_orientation_complexity",
     "build_icons_counting_size_relation_complexity",
     "build_icons_counting_type_complexity",
+    "build_icons_relation_between_two_anchors_count_complexity",
+    "build_icons_relation_mirror_symmetry_complexity",
+    "build_icons_relation_occlusion_order_complexity",
     "build_icons_relation_relative_position_type_complexity",
     "icon_scene_clutter_score",
     "icon_semantic_match_score",

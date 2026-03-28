@@ -10,7 +10,7 @@ from PIL import Image
 
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import (
@@ -19,7 +19,7 @@ from ...shared.config_defaults import (
     required_group_defaults,
     split_generation_rendering_prompt_defaults,
 )
-from ...shared.counting_sampling import counting_complexity_score, resolve_counting_target_and_distractor_triplet
+from ...shared.counting_sampling import resolve_counting_target_and_distractor_triplet
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -28,6 +28,7 @@ from ...shared.prompt_variants import (
 )
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ..shared.anchor_marking import draw_anchor_marker
+from ..shared.complexity import build_icons_relation_between_two_anchors_count_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.icon_assets import render_icon_rgba, resolve_icon_pool
 from ..shared.icon_noise import serialize_icon_noise_edits
@@ -917,6 +918,27 @@ class IconsRelationBetweenTwoAnchorsCountTask:
                 "bbox_set": list(evidence_value),
             },
         }
+        complexity = build_icons_relation_between_two_anchors_count_complexity(
+            task_group_defaults=_TASK_GROUP_DEFAULTS,
+            task_id=self.task_id,
+            task_variant=str(scene_payload.task_variant),
+            object_count=int(scene_payload.object_count),
+            target_count=int(scene_payload.target_count),
+            object_count_min=int(group_default(_GEN_DEFAULTS, "object_count_min", _DEFAULTS.object_count_min)),
+            object_count_max=int(group_default(_GEN_DEFAULTS, "object_count_max", _DEFAULTS.object_count_max)),
+            scene_content_bbox=scene_payload.panel_geometry["scene_content_xyxy"],
+            anchor_a_center_xy=scene_payload.anchor_a_center_xy,
+            anchor_b_center_xy=scene_payload.anchor_b_center_xy,
+            strip_boundary_margin_px=int(scene_payload.strip_boundary_margin_px),
+            strip_span_ratio_min=float(
+                group_default(_RENDER_DEFAULTS, "strip_span_ratio_min", _DEFAULTS.strip_span_ratio_min)
+            ),
+            strip_span_ratio_max=float(
+                group_default(_RENDER_DEFAULTS, "strip_span_ratio_max", _DEFAULTS.strip_span_ratio_max)
+            ),
+            scene_instances=scene_payload.scene_instances,
+            render_params=render_params,
+        )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants={str(key): str(value) for key, value in prompt_artifacts.prompt_variants.items()},
@@ -925,17 +947,7 @@ class IconsRelationBetweenTwoAnchorsCountTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=TaskComplexity(
-                complexity_score=counting_complexity_score(
-                    object_count=int(scene_payload.object_count),
-                    target_count=int(scene_payload.target_count),
-                ),
-                complexity_components={
-                    "object_count": int(scene_payload.object_count),
-                    "target_count": int(scene_payload.target_count),
-                    "task_variant": str(scene_payload.task_variant),
-                },
-            ),
+            complexity=complexity,
             task_versions=default_task_versions(),
             task_variant=str(scene_payload.task_variant),
         )

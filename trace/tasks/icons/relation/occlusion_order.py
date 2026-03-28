@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import (
@@ -15,7 +15,7 @@ from ...shared.config_defaults import (
     required_group_defaults,
     split_generation_rendering_prompt_defaults,
 )
-from ...shared.counting_sampling import counting_complexity_score, resolve_counting_target_and_distractor_triplet
+from ...shared.counting_sampling import resolve_counting_target_and_distractor_triplet
 from ...shared.labeling import LABEL_POOL_A_L, assign_shuffled_labels
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
@@ -24,6 +24,7 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ..shared.icon_assets import resolve_icon_pool
+from ..shared.complexity import build_icons_relation_occlusion_order_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.icon_overlap_grid_scene import IconOverlapPairSpec, render_two_panel_icon_overlap_grid_scene
 from ..shared.icon_scene import IconInstanceSpec, panel_geometry_to_trace
@@ -653,16 +654,18 @@ class IconsRelationOcclusionOrderTask:
                 "label_set": list(scene_payload.matching_labels),
             },
         }
-        complexity = TaskComplexity(
-            complexity_score=counting_complexity_score(
-                object_count=int(scene_payload.object_count),
-                target_count=int(scene_payload.target_count),
-            ),
-            complexity_components={
-                "object_count": int(scene_payload.object_count),
-                "target_count": int(scene_payload.target_count),
-                "task_variant": _ORDER_MATCH_VARIANT,
-            },
+        complexity = build_icons_relation_occlusion_order_complexity(
+            task_group_defaults=_TASK_GROUP_DEFAULTS,
+            task_id=self.task_id,
+            object_count=int(scene_payload.object_count),
+            target_count=int(scene_payload.target_count),
+            object_count_min=int(group_default(_GEN_DEFAULTS, "object_count_min", _DEFAULTS.object_count_min)),
+            object_count_max=int(group_default(_GEN_DEFAULTS, "object_count_max", _DEFAULTS.object_count_max)),
+            scene_cells=scene_payload.scene_cells,
+            pair_min_color_distance=float(render_params["pair_min_color_distance"]),
+            color_distance_space=str(render_params["color_distance_space"]),
+            overlap_ratio_range=group_default(_RENDER_DEFAULTS, "overlap_ratio_range", list(_DEFAULTS.overlap_ratio_range)),
+            render_params=render_params,
         )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),

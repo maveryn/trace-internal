@@ -53,6 +53,7 @@ Use this as the implementation checklist for new or modified tasks.
 17. Use `skills/task-complexity/SKILL.md` whenever a patch introduces or revises a complexity policy.
 18. When a domain already has a shared complexity helper/policy layer, keep active criteria and weights in domain/task-group config and emit normalized criterion values through that shared helper instead of embedding new task-local weight constants.
 19. When sibling tasks in one family differ only by the queried icon attribute (for example type/color/orientation/size counting), keep them on the same family-level complexity weights and vary only the task-local normalized criterion measurements that reflect the distinguishing ambiguity knob.
+20. For icon relation tasks that share one family-level complexity policy, keep the relation weights stable and express task differences through task-local normalized `spatial_reasoning`, `ambiguity`, and `clutter` measurements (for example strip span, occlusion overlap/color separation, or symmetry-variant load) instead of forking per-task scoring policies unless a task truly breaks the family pattern.
 
 ## 3) Prompt rules
 1. Bundle path: `prompts/<domain>/<task_group>/<bundle>.json`.

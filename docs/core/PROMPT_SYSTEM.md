@@ -73,7 +73,9 @@ Active bundles:
    - `prompts/icons/relation/icons_relation_v1.json`
    - `prompts/icons/sequence/icons_sequence_v1.json`
    - `prompts/icons/transformation/icons_transformation_v1.json`
-3. Tile:
+3. Graph:
+   - `prompts/graph/counting/graph_counting_v1.json`
+4. Tile:
    - `prompts/tile/count/tile_count_v1.json`
    - `prompts/tile/path/tile_path_v1.json`
    - `prompts/tile/pattern/tile_pattern_v1.json`
@@ -81,7 +83,7 @@ Active bundles:
    - `prompts/tile/relation/tile_relation_v1.json`
    - `prompts/tile/symmetry/tile_symmetry_v1.json`
    - `prompts/tile/transition/tile_transition_v1.json`
-4. Charts:
+5. Charts:
    - `prompts/charts/statistics/charts_statistics_v1.json`
    - `prompts/charts/counting/charts_counting_v1.json`
    - `prompts/charts/readout/charts_readout_v1.json`
@@ -89,7 +91,7 @@ Active bundles:
    - `prompts/charts/distribution/charts_distribution_v1.json`
    - `prompts/charts/trend/charts_trend_v1.json`
    - `prompts/charts/composition/charts_composition_v1.json`
-5. Tables:
+6. Tables:
    - `prompts/tables/statistics/tables_statistics_v1.json`
    - `prompts/tables/counting/tables_counting_v1.json`
    - `prompts/tables/readout/tables_readout_v1.json`
@@ -114,7 +116,9 @@ Active task-to-bundle mapping:
    - `task_icons_relation_relative_position_type|between_two_anchors_count|mirror_symmetry|occlusion_order` -> `icons_relation_v1`
    - `task_icons_sequence_missing_count|rotation_violation` -> `icons_sequence_v1`
    - `task_icons_transformation_pair_count` -> `icons_transformation_v1`
-7. Tile:
+7. Graph:
+   - `task_graph_counting_degree_count` -> `graph_counting_v1`
+8. Tile:
    - `task_tile_count_color_count|color_components|largest_component_size` -> `tile_count_v1`
    - `task_tile_path_shortest_path|reachable_target_count` -> `tile_path_v1`
    - `task_tile_pattern_match3_run_count` -> `tile_pattern_v1`
@@ -122,7 +126,7 @@ Active task-to-bundle mapping:
    - `task_tile_relation_min_distance` -> `tile_relation_v1`
    - `task_tile_symmetry_violation_count` -> `tile_symmetry_v1`
    - `task_tile_transition_gravity_max_drop` -> `tile_transition_v1`
-8. Charts:
+9. Charts:
    - `task_charts_statistics_summary_value|summary_label` -> `charts_statistics_v1`
    - `task_charts_counting_value_count` -> `charts_counting_v1`
    - `task_charts_readout_subset_value` -> `charts_readout_v1`
@@ -130,7 +134,7 @@ Active task-to-bundle mapping:
    - `task_charts_distribution_histogram_count|boxplot_label|density_label` -> `charts_distribution_v1`
    - `task_charts_trend_structure_value` -> `charts_trend_v1`
    - `task_charts_composition_subset_value` -> `charts_composition_v1`
-9. Tables:
+10. Tables:
    - `task_tables_statistics_summary_label|summary_value` -> `tables_statistics_v1`
    - `task_tables_counting_value_count` -> `tables_counting_v1`
    - `task_tables_readout_cell_value` -> `tables_readout_v1`

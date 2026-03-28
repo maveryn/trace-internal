@@ -1,0 +1,33 @@
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.40
+      ambiguity: 0.35
+      clutter: 0.25
+
+visual:
+  background:
+    enabled: true
+    styles:
+      solid_light:
+        kind: solid
+        color: [248, 248, 248]
+    weights:
+      solid_light: 1.0
+  noise:
+    apply_prob: 0.0
+    edit_types:
+      - blur
+      - downsample
+      - jpeg
+      - noise
+    edit_count_range: [1, 2]
+    value_ranges:
+      blur:
+        radius: [0.2, 0.6]
+      downsample:
+        scale: [0.85, 0.95]
+      jpeg:
+        quality: [70.0, 90.0]
+      noise:
+        alpha: [0.03, 0.08]

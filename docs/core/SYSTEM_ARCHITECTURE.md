@@ -56,7 +56,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
 2. `trace/tasks/base.py` — task protocol and `TaskOutput`.
 3. `trace/tasks/shared/*` — reusable query/layout/evidence/config/prompt helpers.
 4. `trace/tasks/<domain>/<task_group>/*.py` — concrete tasks plus reusable task-group bases by default (for example `trace/tasks/geometry/measurement/shape_measure_base.py`); tile is the current exception and keeps concrete task modules flat under `trace/tasks/tile/<task_group>_<task_name>.py` with shared helpers in `trace/tasks/tile/shared/`.
-5. `trace/tasks/icons/shared/*` — icon-domain shared asset loading, shared two-panel render/default/noise helpers, cell-grid/row/single-panel labeled-grid scene renderers, and icon transform utilities.
+5. `trace/tasks/<domain>/shared/*` — domain/task-family shared helpers (for example `trace/tasks/icons/shared/*` for curated icon scenes and `trace/tasks/graph/shared/*` for labeled node-link graph sampling/rendering).
 
 ## 4) Current active tasks
 1. Tile:
@@ -126,6 +126,8 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/tables/statistics/summary_value.py`
    - `trace/tasks/tables/counting/value_count.py`
    - `trace/tasks/tables/readout/cell_value.py`
+9. Graph:
+   - `trace/tasks/graph/counting/degree_count.py`
 
 ## 5) Architecture invariants
 1. Determinism from config + seeds + versions.

@@ -1512,6 +1512,95 @@ def test_icons_counting_defaults_loaded() -> None:
     assert str(orientation_prompt["json_example_answer_only"]).strip()
 
 
+def test_graph_counting_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("graph", "counting")
+    for section in ("generation", "rendering", "prompt", "visual", "complexity"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["node_count_min"]) == 5
+    assert int(generation_shared["node_count_max"]) == 10
+    assert int(generation_shared["query_degree_min"]) == 0
+    assert int(generation_shared["query_degree_max"]) == 4
+    assert int(generation_shared["target_count_min"]) == 0
+    assert int(generation_shared["target_count_max"]) == 5
+    assert int(generation_shared["degree_sequence_max_degree"]) == 5
+    assert set(generation_shared["topology_profile_weights"].keys()) == {"balanced", "hub_heavy", "low_degree"}
+    assert set(generation_shared["label_variant_weights"].keys()) == {"letters", "numbers"}
+    assert set(generation_shared["layout_variant_weights"].keys()) == {"circular", "shell", "spring"}
+    assert set(generation_shared["node_shape_variant_weights"].keys()) == {"circle", "rounded_square", "hexagon"}
+    assert set(generation_shared["layout_transform_variant_weights"].keys()) == {
+        "identity",
+        "rotate_90",
+        "rotate_180",
+        "rotate_270",
+        "mirror_left_right",
+        "mirror_up_down",
+    }
+    assert set(generation_shared["node_color_name_weights"].keys()) == {
+        "red",
+        "blue",
+        "green",
+        "yellow",
+        "orange",
+        "purple",
+        "brown",
+        "cyan",
+        "magenta",
+        "maroon",
+    }
+    assert bool(generation_shared["balanced_topology_profile_sampling"]) is True
+    assert bool(generation_shared["balanced_label_variant_sampling"]) is True
+    assert bool(generation_shared["balanced_layout_variant_sampling"]) is True
+    assert bool(generation_shared["balanced_node_shape_variant_sampling"]) is True
+    assert bool(generation_shared["balanced_layout_transform_variant_sampling"]) is True
+    assert bool(generation_shared["balanced_node_color_name_sampling"]) is True
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_width"]) > 0
+    assert int(render_shared["canvas_height"]) > 0
+    assert int(render_shared["node_radius_min_px"]) > 0
+    assert int(render_shared["node_radius_max_px"]) >= int(render_shared["node_radius_min_px"])
+    assert int(render_shared["edge_width_px"]) > 0
+    assert int(render_shared["label_font_size_px"]) > 0
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip()
+    assert str(prompt_shared["task_family_key"]).strip()
+    assert str(prompt_shared["task_key"]).strip()
+    assert str(prompt_shared["json_output_contract"]).strip()
+    assert str(prompt_shared["json_output_contract_answer_only"]).strip()
+    assert str(prompt_shared["object_description"]).strip()
+    assert str(prompt_shared["question_text"]).strip()
+    assert str(prompt_shared["evidence_hint"]).strip()
+    assert str(prompt_shared["answer_hint"]).strip()
+    assert str(prompt_shared["json_example"]).strip()
+    assert str(prompt_shared["json_example_answer_only"]).strip()
+
+    complexity_shared = cfg["complexity"]["shared"]
+    assert dict(complexity_shared["criteria_weights"]) == {
+        "topology_reasoning": 0.40,
+        "visual_scan": 0.30,
+        "ambiguity": 0.20,
+        "clutter": 0.10,
+    }
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_graph_counting_degree_count",
+    )
+    assert int(generation_defaults["node_count_min"]) == 5
+    assert int(generation_defaults["node_count_max"]) == 10
+    assert int(generation_defaults["query_degree_min"]) == 0
+    assert int(generation_defaults["query_degree_max"]) == 4
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert int(rendering_defaults["node_radius_min_px"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip() == "graph_counting_v1"
+    assert str(prompt_defaults["task_family_key"]).strip() == "single_graph_counting"
+    assert str(prompt_defaults["task_key"]).strip() == "degree_count_query"
+    assert str(prompt_defaults["question_text"]).strip()
+
+
 def test_icons_transformation_defaults_loaded() -> None:
     cfg = get_task_group_defaults("icons", "transformation")
     for section in ("generation", "rendering", "prompt", "visual", "complexity"):

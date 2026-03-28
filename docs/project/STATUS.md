@@ -1,6 +1,6 @@
 # TRACE Status
 
-Date: 2026-03-27
+Date: 2026-03-28
 
 ## Implemented
 1. Deterministic build pipeline with sidecar trace shards and atomic finalize.
@@ -71,6 +71,7 @@ Date: 2026-03-27
 60. Icons pattern now includes `task_icons_pattern_grid_rotation_violation`, a single-panel numbered `3 x 3` grid task with integer index answers and one-box `bbox_set` evidence; every cell contains the same asymmetric icon type and tint, the clean grid follows one row/column rotation-offset rule over `{0, 90, 180, 270}`, and generation corrupts exactly one cell while rejecting any grid where another supported rule hypothesis would make a different violating index plausible.
 61. Icons pattern now also includes `task_icons_pattern_grid_size_violation`, a single-panel numbered `3 x 3` grid task with integer index answers and one-box `bbox_set` evidence; every cell contains the same icon type, tint, and rotation, the clean grid follows one row/column symbolic size-level rule over `{1,2,3,4,5}` with step support `{-1,0,1}`, and generation corrupts exactly one cell while rejecting any grid where another supported rule hypothesis would make a different violating index plausible. The rendered pixel sizes are derived only after sampled cell geometry is fixed, so the task reasons over stable symbolic size levels rather than whichever raw size ladder happened to fit that instance.
 62. Icons counting now also includes `task_icons_counting_singleton_type`, a single-panel scene-internal frequency task with integer answers and scene-only `bbox_set` evidence. It asks how many icons have a type that appears exactly once in the image, samples the answer support over `0..5`, caps total scene icons at `15`, and builds the remainder of the scene from repeated icon types with multiplicity `2..4` so at least one repeated type always remains. Colors and rotations vary per icon while grouping is defined only over `icon_id`, which makes the task genuinely about type-frequency reasoning rather than direct visual identity matching.
+63. Graph now includes `task_graph_counting_degree_count`, the first `counting` family task under `domain=graph`, with one labeled simple undirected node-link graph per image, integer answers, and sorted `label_set` evidence. The task asks how many nodes have degree `k`, samples node counts from `5..10`, balances query-degree / answer supports over `query_degree in 0..4` and `target_count in 0..5`, varies graph construction across `balanced|low_degree|hub_heavy` topology profiles, and varies rendering across `circular|shell|spring` layouts while keeping graph semantics anchored strictly in adjacency rather than node position. The graph renderer now also varies whole-image named node color, node glyph (`circle|rounded_square|hexagon`), label format (`letters|numbers`), and global layout transform, all recorded in trace and treated as non-semantic for this degree-count task.
 
 ## Active tasks
 1. `task_tile_count_color_count` (`domain=tile`, `task_group=count`)
@@ -132,14 +133,16 @@ Date: 2026-03-27
 57. `task_icons_pattern_grid_rotation_violation` (`domain=icons`, `task_group=pattern`)
 58. `task_icons_pattern_grid_size_violation` (`domain=icons`, `task_group=pattern`)
 59. `task_icons_counting_singleton_type` (`domain=icons`, `task_group=counting`)
+60. `task_graph_counting_degree_count` (`domain=graph`, `task_group=counting`)
 
 ## Current quality baseline
 1. Tests are required to pass before finalize.
 2. Distribution QA uses `scripts/check_task_answer_distribution.py` with per-variant answer-only checks (`unique_answers >= 5`, `max_answer_frequency < 25%`) and multithreaded sample generation (`--workers`); numeric 5-bin summaries remain reported for review but are not hard pass/fail gates.
 3. Task-review tooling writes per-task artifacts under `task-reviews/<task_id>/`, including one inspection workbook named `<task_id>.xlsx` with one sheet per task variant.
-4. The current active reviewed task set (10 tile tasks + 20 geometry tasks + 14 reviewed icons tasks + 10 charts tasks + 4 table tasks) passes distribution review under the active gates; there are currently 15 active icon tasks total, with `task_icons_relation_mirror_symmetry` still marked `needs_refresh` in `task-reviews/REVIEW_STATUS.md`.
+4. The current active reviewed task set (1 graph task + 10 tile tasks + 20 geometry tasks + 14 reviewed icons tasks + 10 charts tasks + 4 table tasks) passes distribution review under the active gates. There are currently `60` active tasks total and `59` tasks in the reviewed/pass bucket; `task_icons_relation_mirror_symmetry` remains the only active task still marked `needs_refresh` in `task-reviews/REVIEW_STATUS.md`.
 
 ## Next priorities
-1. Extend icons beyond the current counting/transformation/relation/sequence/pattern set using the curated Prism asset pipeline (`comparison` and richer pattern/transformation variants are the next natural families).
-2. Introduce cross-domain `scene_variant` and role-binding schema in architecture docs/contracts.
-3. Add future polygon variants as deferred tasks (diameter, min-side, max-side) after current scope stabilizes.
+1. Extend the new graph domain beyond the current counting baseline with additional degree/connectivity/path reasoning while keeping the simple labeled node-link contract stable.
+2. Extend icons beyond the current counting/transformation/relation/sequence/pattern set using the curated Prism asset pipeline (`comparison` and richer pattern/transformation variants are the next natural families).
+3. Introduce cross-domain `scene_variant` and role-binding schema in architecture docs/contracts.
+4. Add future polygon variants as deferred tasks (diameter, min-side, max-side) after current scope stabilizes.

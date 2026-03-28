@@ -21,6 +21,7 @@ from .geometry.measurement import area as _task_geometry_measurement_area
 from .geometry.measurement import length as _task_geometry_measurement_length
 from .geometry.measurement import perimeter as _task_geometry_measurement_perimeter
 from .geometry.measurement import slope as _task_geometry_measurement_slope
+from .graph.counting import degree_count as _task_graph_counting_degree_count
 from .icons.counting import color as _task_icons_counting_color
 from .icons.counting import attribute_binding as _task_icons_counting_attribute_binding
 from .icons.counting import orientation as _task_icons_counting_orientation

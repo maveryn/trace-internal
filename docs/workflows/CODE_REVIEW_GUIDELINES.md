@@ -144,6 +144,8 @@ Use this checklist during implementation and refactor reviews.
 128. For 2D icon size-pattern tasks, review the symbolic size ladder as well as the rendered pixels: the task should reason over discrete size levels in trace/uniqueness checks and only map those levels to pixel sizes after cell geometry is fixed, so raw rendered sizes never silently redefine the rule family.
 129. For scene-internal icon frequency tasks, review the grouping key explicitly: singleton/repeated counts should be computed from `icon_id` frequency only, while color and rotation may vary per icon as distractors. If the implementation groups on rendered appearance instead, the task is testing the wrong predicate.
 128. When a task contract requires one explicit grid shape (for example a true `3 x 3` icon grid), do not reuse a generic “compact grid” slot helper that may choose a different aspect such as `3 x 4`; use an explicit rows/cols grid helper and add a regression check on the realized row/column counts.
+130. For labeled node-link graph tasks, verify that graph semantics are layout-invariant: node labels and answers must come from the sampled topology/adjacency map, while layout variants only change readability and must not leak the answer or redefine the witness set.
+131. For graph tasks with non-semantic visual diversity, review whole-image style axes explicitly: label format, node glyph, named node color, and global layout transforms may vary for readability/diversity, but they must not create hidden categories or change how evidence labels are ordered or interpreted.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

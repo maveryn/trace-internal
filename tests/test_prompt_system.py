@@ -156,6 +156,7 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
         ("geometry", "analytical_2d", "geometry_analytical_perimeter_v1"),
         ("geometry", "measurement", "geometry_angle_measure_v1"),
         ("geometry", "measurement", "geometry_measurement_v1"),
+        ("graph", "counting", "graph_counting_v1"),
         ("icons", "counting", "icons_counting_v1"),
         ("icons", "pattern", "icons_pattern_v1"),
         ("icons", "relation", "icons_relation_v1"),
@@ -236,6 +237,13 @@ def test_icons_counting_bundle_supports_single_scene_counting_family() -> None:
     assert "single_scene_counting" in bundle.task_family_templates
     assert len(bundle.task_templates["counting_query"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["task:counting_query"]) == ["question_text"]
+
+
+def test_graph_counting_bundle_supports_degree_count_query() -> None:
+    bundle = load_prompt_bundle("graph", "counting", "graph_counting_v1")
+    assert "single_graph_counting" in bundle.task_family_templates
+    assert len(bundle.task_templates["degree_count_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task:degree_count_query"]) == ["question_text"]
 
 
 def test_tile_reachability_bundle_supports_region_size_query() -> None:

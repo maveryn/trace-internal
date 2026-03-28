@@ -67,6 +67,13 @@ Define how we split tasks into reusable families so each dataset slice stays com
 7. Table tasks use one fixed prompt-facing evidence type in v1: `bbox_set`.
 8. Evidence boxes should mark the minimal supporting table region(s): one decisive numeric cell bbox for `task_tables_statistics_summary_label`, one queried-column region bbox for `task_tables_statistics_summary_value`, one ordered set of matching value-cell bboxes for `task_tables_counting_value_count`, and one queried value-cell bbox for `task_tables_readout_cell_value`.
 
+## Graph direction (current)
+1. Graph tasks use one simple undirected unweighted node-link graph per image in v1.
+2. `task_group` should encode the reasoning family (for example `counting`, `relation`, `path`), while graph layout stays a visual `scene_variant` or trace-only sampling axis inside a task.
+3. Node labels are the canonical prompt-facing identities; prefer `label_set` evidence when the witness unit is one or more nodes.
+4. Layout variation should change readability only, not semantics; graph answers must come from adjacency/topology rather than absolute node position.
+5. Keep graph sampling variation split between topology families and layout families so graph semantics remain stable while scenes still vary visually.
+
 ## Planned geometry measurement variants
 1. **Angle measurement**
    - One angle per image.
@@ -235,6 +242,13 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Count support: `target_count` in `0..6`, `distractor_count` in `1..6`, total Scene cells in `2..12`.
    - Answer type: integer count.
    - Evidence: sorted `label_set` of the matching Scene cell labels.
+26. **Graph counting degree count (`task_graph_counting_degree_count`)**
+   - One single-panel labeled node-link graph.
+   - Query: `How many nodes have degree k?`
+   - Graph contract: simple undirected unweighted graph with `5..10` nodes labeled from `A..J`.
+   - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`).
+   - Answer type: integer count.
+   - Evidence: sorted `label_set` of the node labels whose degree equals `k`.
 26. **Icons sequence missing count (`task_icons_sequence_missing_count`)**
    - One single-panel image with a horizontal row of `4..6` Scene boxes.
    - Query: how many icons should appear in the missing Scene box to continue the sequence.

@@ -1,0 +1,676 @@
+{
+  "answer_gt": {
+    "type": "option_letter",
+    "value": "Y"
+  },
+  "evidence_gt": {
+    "type": "integer",
+    "value": 7
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_statistics_summary_label/images/median_label/0017.png"
+  },
+  "instance_seed": 4470636813244582,
+  "prompt": "Look at the chart in the image. It shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Read the chart values and name the matching label. Which label is the median mark?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to the median value as an integer.\nAnswer rule: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":6,\"answer\":\"M\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the chart in the image. It shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Read the chart values and name the matching label. Which label is the median mark?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to the median value as an integer.\nAnswer rule: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":6,\"answer\":\"M\"}",
+    "answer_only": "Look at the chart in the image. It shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Read the chart values and name the matching label. Which label is the median mark?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"answer\":\"M\"}"
+  },
+  "task": "task_charts_statistics_summary_label",
+  "task_variant": "median_label",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_label": "Y",
+      "evidence_value": 7,
+      "labels": [
+        "N",
+        "E",
+        "W",
+        "C",
+        "Y",
+        "V",
+        "Q"
+      ],
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb",
+      "mark_count": 7,
+      "mark_count_range": [
+        5,
+        7
+      ],
+      "mark_fill_rgb": [
+        194,
+        87,
+        210
+      ],
+      "mark_outline_rgb": [
+        107,
+        48,
+        116
+      ],
+      "median_label": "Y",
+      "question_format": "label_open",
+      "scene_variant": "radar",
+      "scene_variant_probabilities": {
+        "area": 0.1,
+        "bar": 0.1,
+        "donut": 0.1,
+        "dot_plot": 0.1,
+        "horizontal_bar": 0.1,
+        "line": 0.1,
+        "lollipop": 0.1,
+        "pie": 0.1,
+        "radar": 0.1,
+        "scatter": 0.1
+      },
+      "sorted_values": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "statistic_kind": "median",
+      "target_answer": 7,
+      "target_answer_range": [
+        3,
+        10
+      ],
+      "task_variant": "median_label",
+      "task_variant_probabilities": {
+        "argmax": 0.3333333333333333,
+        "argmin": 0.3333333333333333,
+        "median_label": 0.3333333333333333
+      },
+      "value_max": 20,
+      "value_min": 1,
+      "values": [
+        10,
+        4,
+        5,
+        6,
+        7,
+        9,
+        8
+      ],
+      "values_by_label": {
+        "C": 6,
+        "E": 4,
+        "N": 10,
+        "Q": 8,
+        "V": 9,
+        "W": 5,
+        "Y": 7
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          370.823,
+          359.735,
+          386.823,
+          375.735
+        ]
+      ],
+      "integer": 7,
+      "pixel_point_map": {
+        "Y": [
+          378.823,
+          367.735
+        ]
+      },
+      "pixel_point_set": [
+        [
+          378.823,
+          367.735
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "mark_count": 7,
+        "scene_variant": "radar",
+        "scene_variant_probabilities": {
+          "area": 0.1,
+          "bar": 0.1,
+          "donut": 0.1,
+          "dot_plot": 0.1,
+          "horizontal_bar": 0.1,
+          "line": 0.1,
+          "lollipop": 0.1,
+          "pie": 0.1,
+          "radar": 0.1,
+          "scatter": 0.1
+        },
+        "statistic_kind": "median",
+        "target_answer": 7,
+        "target_answer_range": [
+          3,
+          10
+        ],
+        "task_variant": "median_label",
+        "task_variant_probabilities": {
+          "argmax": 0.3333333333333333,
+          "argmin": 0.3333333333333333,
+          "median_label": 0.3333333333333333
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "charts_statistics_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the single uppercase label of the requested mark",
+          "evidence_hint": "set \"evidence\" to the median value as an integer",
+          "json_example": "{\"evidence\":6,\"answer\":\"M\"}",
+          "json_example_answer_only": "{\"answer\":\"M\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points"
+        },
+        "task_family_key": "labeled_chart_statistics",
+        "task_family_variant_index": 3,
+        "task_key": "summary_label_query",
+        "task_variant_index": 4,
+        "task_variant_key": "median_label",
+        "task_variant_template_index": 0,
+        "template_paths": [
+          "charts/statistics/charts_statistics_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:summary_label_query": 5,
+          "task_family:labeled_chart_statistics": 5,
+          "task_variant:median_label": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "charts_statistics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single uppercase label of the requested mark",
+              "evidence_hint": "set \"evidence\" to the median value as an integer",
+              "json_example": "{\"evidence\":6,\"answer\":\"M\"}",
+              "json_example_answer_only": "{\"answer\":\"M\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points"
+            },
+            "task_family_key": "labeled_chart_statistics",
+            "task_family_variant_index": 3,
+            "task_key": "summary_label_query",
+            "task_variant_index": 4,
+            "task_variant_key": "median_label",
+            "task_variant_template_index": 0,
+            "template_paths": [
+              "charts/statistics/charts_statistics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:summary_label_query": 5,
+              "task_family:labeled_chart_statistics": 5,
+              "task_variant:median_label": 5
+            }
+          },
+          "prompt": "Look at the chart in the image. It shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Read the chart values and name the matching label. Which label is the median mark?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to the median value as an integer.\nAnswer rule: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":6,\"answer\":\"M\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "charts_statistics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single uppercase label of the requested mark",
+              "evidence_hint": "set \"evidence\" to the median value as an integer",
+              "json_example": "{\"evidence\":6,\"answer\":\"M\"}",
+              "json_example_answer_only": "{\"answer\":\"M\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points"
+            },
+            "task_family_key": "labeled_chart_statistics",
+            "task_family_variant_index": 3,
+            "task_key": "summary_label_query",
+            "task_variant_index": 4,
+            "task_variant_key": "median_label",
+            "task_variant_template_index": 0,
+            "template_paths": [
+              "charts/statistics/charts_statistics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:summary_label_query": 5,
+              "task_family:labeled_chart_statistics": 5,
+              "task_variant:median_label": 5
+            }
+          },
+          "prompt": "Look at the chart in the image. It shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Read the chart values and name the matching label. Which label is the median mark?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"answer\":\"M\"}"
+        }
+      },
+      "task_variant": "median_label",
+      "template_id": "charts_statistics_v1"
+    },
+    "render_map": {
+      "image_id": "img0",
+      "label_centers_px": {
+        "C": [
+          505.438,
+          447.184
+        ],
+        "E": [
+          571.548,
+          157.537
+        ],
+        "N": [
+          423.0,
+          86.0
+        ],
+        "Q": [
+          274.452,
+          157.537
+        ],
+        "V": [
+          237.764,
+          318.279
+        ],
+        "W": [
+          608.236,
+          318.279
+        ],
+        "Y": [
+          340.562,
+          447.184
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 600,
+      "canvas_width": 800,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "mark_fill_rgb": [
+          194,
+          87,
+          210
+        ],
+        "mark_outline_rgb": [
+          107,
+          48,
+          116
+        ],
+        "sampling_policy": "random_rgb"
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "radar",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 11,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "label": "N",
+            "label_center_px": [
+              423.0,
+              86.0
+            ],
+            "mark_bbox_px": [
+              415.0,
+              122.545,
+              431.0,
+              138.545
+            ],
+            "mark_center_px": [
+              423.0,
+              130.545
+            ],
+            "mark_fill_rgb": [
+              194,
+              87,
+              210
+            ],
+            "mark_outline_rgb": [
+              107,
+              48,
+              116
+            ],
+            "scene_variant": "radar",
+            "value": 10,
+            "value_center_px": [
+              423.0,
+              148.545
+            ],
+            "x_rank": 0
+          },
+          "entity_id": "mark_N",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "E",
+            "label_center_px": [
+              571.548,
+              157.537
+            ],
+            "mark_bbox_px": [
+              460.488,
+              231.724,
+              476.488,
+              247.724
+            ],
+            "mark_center_px": [
+              468.488,
+              239.724
+            ],
+            "mark_fill_rgb": [
+              194,
+              87,
+              210
+            ],
+            "mark_outline_rgb": [
+              107,
+              48,
+              116
+            ],
+            "scene_variant": "radar",
+            "value": 4,
+            "value_center_px": [
+              454.415,
+              250.947
+            ],
+            "x_rank": 1
+          },
+          "entity_id": "mark_E",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "W",
+            "label_center_px": [
+              608.236,
+              318.279
+            ],
+            "mark_bbox_px": [
+              485.904,
+              284.183,
+              501.904,
+              300.183
+            ],
+            "mark_center_px": [
+              493.904,
+              292.183
+            ],
+            "mark_fill_rgb": [
+              194,
+              87,
+              210
+            ],
+            "mark_outline_rgb": [
+              107,
+              48,
+              116
+            ],
+            "scene_variant": "radar",
+            "value": 5,
+            "value_center_px": [
+              476.355,
+              288.178
+            ],
+            "x_rank": 2
+          },
+          "entity_id": "mark_W",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "C",
+            "label_center_px": [
+              505.438,
+              447.184
+            ],
+            "mark_bbox_px": [
+              452.866,
+              346.63,
+              468.866,
+              362.63
+            ],
+            "mark_center_px": [
+              460.866,
+              354.63
+            ],
+            "mark_fill_rgb": [
+              194,
+              87,
+              210
+            ],
+            "mark_outline_rgb": [
+              107,
+              48,
+              116
+            ],
+            "scene_variant": "radar",
+            "value": 6,
+            "value_center_px": [
+              453.056,
+              338.413
+            ],
+            "x_rank": 3
+          },
+          "entity_id": "mark_C",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "Y",
+            "label_center_px": [
+              340.562,
+              447.184
+            ],
+            "mark_bbox_px": [
+              370.823,
+              359.735,
+              386.823,
+              375.735
+            ],
+            "mark_center_px": [
+              378.823,
+              367.735
+            ],
+            "mark_fill_rgb": [
+              194,
+              87,
+              210
+            ],
+            "mark_outline_rgb": [
+              107,
+              48,
+              116
+            ],
+            "scene_variant": "radar",
+            "value": 7,
+            "value_center_px": [
+              386.633,
+              351.518
+            ],
+            "x_rank": 4
+          },
+          "entity_id": "mark_Y",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "V",
+            "label_center_px": [
+              237.764,
+              318.279
+            ],
+            "mark_bbox_px": [
+              287.373,
+              297.13,
+              303.373,
+              313.13
+            ],
+            "mark_center_px": [
+              295.373,
+              305.13
+            ],
+            "mark_fill_rgb": [
+              194,
+              87,
+              210
+            ],
+            "mark_outline_rgb": [
+              107,
+              48,
+              116
+            ],
+            "scene_variant": "radar",
+            "value": 9,
+            "value_center_px": [
+              312.922,
+              301.125
+            ],
+            "x_rank": 5
+          },
+          "entity_id": "mark_V",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "Q",
+            "label_center_px": [
+              274.452,
+              157.537
+            ],
+            "mark_bbox_px": [
+              324.023,
+              195.448,
+              340.023,
+              211.448
+            ],
+            "mark_center_px": [
+              332.023,
+              203.448
+            ],
+            "mark_fill_rgb": [
+              194,
+              87,
+              210
+            ],
+            "mark_outline_rgb": [
+              107,
+              48,
+              116
+            ],
+            "scene_variant": "radar",
+            "value": 8,
+            "value_center_px": [
+              346.096,
+              214.671
+            ],
+            "x_rank": 6
+          },
+          "entity_id": "mark_Q",
+          "entity_type": "point"
+        }
+      ],
+      "relations": {
+        "answer_label": "Y",
+        "evidence_value": 7,
+        "scene_variant": "radar",
+        "statistic_kind": "median",
+        "task_variant": "median_label"
+      },
+      "scene_kind": "chart_radar_statistics"
+    },
+    "witness_symbolic": {
+      "type": "integer",
+      "value": 7
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

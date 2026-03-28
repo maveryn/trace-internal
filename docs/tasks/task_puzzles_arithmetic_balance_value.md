@@ -4,7 +4,7 @@
 1. Domain: `puzzles`
 2. Task group: `arithmetic`
 3. Task id: `task_puzzles_arithmetic_balance_value`
-4. Objective: answer the exact integer value of the symbol shown in the highlighted query box of a balance-style arithmetic puzzle.
+4. Objective: answer the exact integer value of the symbol shown in the highlighted query box of an arithmetic equality-panel puzzle.
 
 ## 2) Scene + task contract
 1. Supported `task_variant` values:
@@ -18,12 +18,12 @@
 3. `answer_gt.type`: `integer`
 4. `evidence_gt.type`: `bbox_set`
 5. Scene contract:
-   - one arithmetic balance puzzle per image,
-   - `2..3` balance panels stacked vertically,
+   - one arithmetic equality puzzle per image,
+   - `2..3` equality panels stacked vertically,
    - each panel shows boxed symbols and/or boxed integers on a left side and a right side,
-   - a balanced-scale icon appears between the two sides of each panel,
+   - an explicit equals sign appears between the two sides of each panel,
    - one highlighted query box appears below the panels,
-   - the query box always shows one symbol that already appears in the balance panels,
+   - the query box always shows one symbol that already appears in the equality panels,
    - numeric boxes always contain visible positive integers,
    - symbol boxes never print their numeric value directly.
 6. Generation guarantees:
@@ -54,7 +54,8 @@
    - `bbox_set`
 3. `scene_ir.entities` stores:
    - `puzzle_balance_box` entities for panel boxes and the query box,
-   - `puzzle_balance_panel` entities for each balance panel.
+   - `puzzle_balance_equals` entities for the explicit equality markers,
+   - `puzzle_balance_panel` entities for each equality panel.
 4. `render_map` includes:
    - `scene_bbox_px`
    - `box_bboxes_px`
@@ -74,13 +75,13 @@
 
 ## 5) Visual policy
 1. Background and post-image noise use the merged puzzles-domain visual defaults from `configs/domains/puzzles/base.yaml`.
-2. V1 balance puzzles use clean light solid backgrounds only.
-3. Scene variants change framing and outline style while preserving the same balance-panel and query-box geometry contract.
+2. V1 equality-panel puzzles use clean light solid backgrounds only.
+3. Scene variants change framing and outline style while preserving the same equality-panel and query-box geometry contract.
 4. The highlighted query box should remain visually distinct from the panel boxes.
 
 ## 6) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.
 2. `task_variant` and `scene_variant` are sampled independently at the policy level.
-3. Answers and evidence come from the same generated balance scene.
+3. Answers and evidence come from the same generated equality scene.
 4. No semantic auto-relaxation.
 5. Review overlays rely on the recorded `query_box_id` projection, not OCR from pixels.

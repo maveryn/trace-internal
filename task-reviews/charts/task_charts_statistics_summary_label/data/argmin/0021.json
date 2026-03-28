@@ -1,0 +1,601 @@
+{
+  "answer_gt": {
+    "type": "option_letter",
+    "value": "B"
+  },
+  "evidence_gt": {
+    "type": "integer",
+    "value": 7
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_statistics_summary_label/images/argmin/0021.png"
+  },
+  "instance_seed": 4996844376463200,
+  "prompt": "The image shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the chart values and name the matching label. Identify the label of the lowest-value mark.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to the minimum value as an integer.\nAnswer field: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":2,\"answer\":\"B\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the chart values and name the matching label. Identify the label of the lowest-value mark.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to the minimum value as an integer.\nAnswer field: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":2,\"answer\":\"B\"}",
+    "answer_only": "The image shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the chart values and name the matching label. Identify the label of the lowest-value mark.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"answer\":\"B\"}"
+  },
+  "task": "task_charts_statistics_summary_label",
+  "task_variant": "argmin",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_label": "B",
+      "evidence_value": 7,
+      "labels": [
+        "B",
+        "T",
+        "R",
+        "X",
+        "N",
+        "M"
+      ],
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb",
+      "mark_count": 6,
+      "mark_count_range": [
+        5,
+        10
+      ],
+      "mark_fill_rgb": [
+        36,
+        90,
+        127
+      ],
+      "mark_outline_rgb": [
+        20,
+        50,
+        70
+      ],
+      "question_format": "label_open",
+      "scene_variant": "scatter",
+      "scene_variant_probabilities": {
+        "area": 0.1,
+        "bar": 0.1,
+        "donut": 0.1,
+        "dot_plot": 0.1,
+        "horizontal_bar": 0.1,
+        "line": 0.1,
+        "lollipop": 0.1,
+        "pie": 0.1,
+        "radar": 0.1,
+        "scatter": 0.1
+      },
+      "statistic_kind": "min",
+      "target_answer": 7,
+      "target_answer_range": [
+        1,
+        8
+      ],
+      "task_variant": "argmin",
+      "task_variant_probabilities": {
+        "argmax": 0.3333333333333333,
+        "argmin": 0.3333333333333333,
+        "median_label": 0.3333333333333333
+      },
+      "value_max": 20,
+      "value_min": 1,
+      "values": [
+        7,
+        8,
+        13,
+        13,
+        11,
+        13
+      ],
+      "values_by_label": {
+        "B": 7,
+        "M": 13,
+        "N": 11,
+        "R": 13,
+        "T": 8,
+        "X": 13
+      },
+      "winning_label": "B"
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          137.004,
+          268.0,
+          153.004,
+          284.0
+        ]
+      ],
+      "integer": 7,
+      "pixel_point_map": {
+        "B": [
+          145.004,
+          276.0
+        ]
+      },
+      "pixel_point_set": [
+        [
+          145.004,
+          276.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "mark_count": 6,
+        "scene_variant": "scatter",
+        "scene_variant_probabilities": {
+          "area": 0.1,
+          "bar": 0.1,
+          "donut": 0.1,
+          "dot_plot": 0.1,
+          "horizontal_bar": 0.1,
+          "line": 0.1,
+          "lollipop": 0.1,
+          "pie": 0.1,
+          "radar": 0.1,
+          "scatter": 0.1
+        },
+        "statistic_kind": "min",
+        "target_answer": 7,
+        "target_answer_range": [
+          1,
+          8
+        ],
+        "task_variant": "argmin",
+        "task_variant_probabilities": {
+          "argmax": 0.3333333333333333,
+          "argmin": 0.3333333333333333,
+          "median_label": 0.3333333333333333
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "charts_statistics_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the single uppercase label of the requested mark",
+          "evidence_hint": "set \"evidence\" to the minimum value as an integer",
+          "json_example": "{\"evidence\":2,\"answer\":\"B\"}",
+          "json_example_answer_only": "{\"answer\":\"B\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+        },
+        "task_family_key": "labeled_chart_statistics",
+        "task_family_variant_index": 0,
+        "task_key": "summary_label_query",
+        "task_variant_index": 4,
+        "task_variant_key": "argmin",
+        "task_variant_template_index": 4,
+        "template_paths": [
+          "charts/statistics/charts_statistics_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:summary_label_query": 5,
+          "task_family:labeled_chart_statistics": 5,
+          "task_variant:argmin": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "charts_statistics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single uppercase label of the requested mark",
+              "evidence_hint": "set \"evidence\" to the minimum value as an integer",
+              "json_example": "{\"evidence\":2,\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+            },
+            "task_family_key": "labeled_chart_statistics",
+            "task_family_variant_index": 0,
+            "task_key": "summary_label_query",
+            "task_variant_index": 4,
+            "task_variant_key": "argmin",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "charts/statistics/charts_statistics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:summary_label_query": 5,
+              "task_family:labeled_chart_statistics": 5,
+              "task_variant:argmin": 5
+            }
+          },
+          "prompt": "The image shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the chart values and name the matching label. Identify the label of the lowest-value mark.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to the minimum value as an integer.\nAnswer field: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":2,\"answer\":\"B\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "charts_statistics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single uppercase label of the requested mark",
+              "evidence_hint": "set \"evidence\" to the minimum value as an integer",
+              "json_example": "{\"evidence\":2,\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+            },
+            "task_family_key": "labeled_chart_statistics",
+            "task_family_variant_index": 0,
+            "task_key": "summary_label_query",
+            "task_variant_index": 4,
+            "task_variant_key": "argmin",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "charts/statistics/charts_statistics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:summary_label_query": 5,
+              "task_family:labeled_chart_statistics": 5,
+              "task_variant:argmin": 5
+            }
+          },
+          "prompt": "The image shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the chart values and name the matching label. Identify the label of the lowest-value mark.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"answer\":\"B\"}"
+        }
+      },
+      "task_variant": "argmin",
+      "template_id": "charts_statistics_v1"
+    },
+    "render_map": {
+      "image_id": "img0",
+      "label_centers_px": {
+        "B": [
+          145.004,
+          254.0
+        ],
+        "M": [
+          698.825,
+          55.143
+        ],
+        "N": [
+          602.426,
+          121.429
+        ],
+        "R": [
+          348.272,
+          55.143
+        ],
+        "T": [
+          268.777,
+          220.857
+        ],
+        "X": [
+          476.748,
+          55.143
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 600,
+      "canvas_width": 800,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "mark_fill_rgb": [
+          36,
+          90,
+          127
+        ],
+        "mark_outline_rgb": [
+          20,
+          50,
+          70
+        ],
+        "sampling_policy": "random_rgb"
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "scatter",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 14,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "label": "B",
+            "label_center_px": [
+              145.004,
+              254.0
+            ],
+            "mark_bbox_px": [
+              137.004,
+              268.0,
+              153.004,
+              284.0
+            ],
+            "mark_center_px": [
+              145.004,
+              276.0
+            ],
+            "mark_fill_rgb": [
+              36,
+              90,
+              127
+            ],
+            "mark_outline_rgb": [
+              20,
+              50,
+              70
+            ],
+            "scene_variant": "scatter",
+            "value": 7,
+            "x_rank": 0
+          },
+          "entity_id": "mark_B",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "T",
+            "label_center_px": [
+              268.777,
+              220.857
+            ],
+            "mark_bbox_px": [
+              260.777,
+              234.857,
+              276.777,
+              250.857
+            ],
+            "mark_center_px": [
+              268.777,
+              242.857
+            ],
+            "mark_fill_rgb": [
+              36,
+              90,
+              127
+            ],
+            "mark_outline_rgb": [
+              20,
+              50,
+              70
+            ],
+            "scene_variant": "scatter",
+            "value": 8,
+            "x_rank": 1
+          },
+          "entity_id": "mark_T",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "R",
+            "label_center_px": [
+              348.272,
+              55.143
+            ],
+            "mark_bbox_px": [
+              340.272,
+              69.143,
+              356.272,
+              85.143
+            ],
+            "mark_center_px": [
+              348.272,
+              77.143
+            ],
+            "mark_fill_rgb": [
+              36,
+              90,
+              127
+            ],
+            "mark_outline_rgb": [
+              20,
+              50,
+              70
+            ],
+            "scene_variant": "scatter",
+            "value": 13,
+            "x_rank": 2
+          },
+          "entity_id": "mark_R",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "X",
+            "label_center_px": [
+              476.748,
+              55.143
+            ],
+            "mark_bbox_px": [
+              468.748,
+              69.143,
+              484.748,
+              85.143
+            ],
+            "mark_center_px": [
+              476.748,
+              77.143
+            ],
+            "mark_fill_rgb": [
+              36,
+              90,
+              127
+            ],
+            "mark_outline_rgb": [
+              20,
+              50,
+              70
+            ],
+            "scene_variant": "scatter",
+            "value": 13,
+            "x_rank": 3
+          },
+          "entity_id": "mark_X",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "N",
+            "label_center_px": [
+              602.426,
+              121.429
+            ],
+            "mark_bbox_px": [
+              594.426,
+              135.429,
+              610.426,
+              151.429
+            ],
+            "mark_center_px": [
+              602.426,
+              143.429
+            ],
+            "mark_fill_rgb": [
+              36,
+              90,
+              127
+            ],
+            "mark_outline_rgb": [
+              20,
+              50,
+              70
+            ],
+            "scene_variant": "scatter",
+            "value": 11,
+            "x_rank": 4
+          },
+          "entity_id": "mark_N",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "M",
+            "label_center_px": [
+              698.825,
+              55.143
+            ],
+            "mark_bbox_px": [
+              690.825,
+              69.143,
+              706.825,
+              85.143
+            ],
+            "mark_center_px": [
+              698.825,
+              77.143
+            ],
+            "mark_fill_rgb": [
+              36,
+              90,
+              127
+            ],
+            "mark_outline_rgb": [
+              20,
+              50,
+              70
+            ],
+            "scene_variant": "scatter",
+            "value": 13,
+            "x_rank": 5
+          },
+          "entity_id": "mark_M",
+          "entity_type": "point"
+        }
+      ],
+      "relations": {
+        "answer_label": "B",
+        "evidence_value": 7,
+        "scene_variant": "scatter",
+        "statistic_kind": "min",
+        "task_variant": "argmin"
+      },
+      "scene_kind": "chart_scatter_statistics"
+    },
+    "witness_symbolic": {
+      "type": "integer",
+      "value": 7
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

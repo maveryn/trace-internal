@@ -1,4 +1,4 @@
-"""Shared rendering helpers for arithmetic balance-style puzzle scenes."""
+"""Shared rendering helpers for arithmetic equality-panel puzzle scenes."""
 
 from __future__ import annotations
 
@@ -29,7 +29,7 @@ _OBJECT_COLOR_BY_TYPE: Dict[str, Tuple[int, int, int]] = {
 
 @dataclass(frozen=True)
 class PuzzleBalanceRenderParams:
-    """Resolved render parameters for one balance-style arithmetic scene."""
+    """Resolved render parameters for one equality-panel arithmetic scene."""
 
     canvas_width: int
     canvas_height: int
@@ -63,7 +63,7 @@ class PuzzleBalanceRenderParams:
 
 @dataclass(frozen=True)
 class RenderedPuzzleBalanceScene:
-    """Rendered balance-style arithmetic image plus box geometry traces."""
+    """Rendered equality-panel arithmetic image plus box geometry traces."""
 
     image: Image.Image
     entities: List[Dict[str, Any]]
@@ -188,35 +188,29 @@ def _draw_balance_icon(
     color_rgb: Sequence[int],
     stroke_width: int,
 ) -> List[float]:
-    """Draw a simple balanced-scale icon between the two item groups."""
+    """Draw a centered explicit equality token between the two item groups."""
 
     cx, cy = float(center[0]), float(center[1])
-    width = float(width_px)
-    height = float(height_px)
-    half_beam = 0.5 * width
-    pole_top_y = cy - 0.12 * height
-    beam_y = cy - 0.18 * height
-    pole_bottom_y = cy + 0.42 * height
-    left_beam_x = cx - half_beam
-    right_beam_x = cx + half_beam
-    left_pan_x = cx - 0.32 * width
-    right_pan_x = cx + 0.32 * width
-    pan_y = cy + 0.08 * height
-    pan_half_width = 0.16 * width
-    color = tuple(int(value) for value in color_rgb)
-    weight = max(1, int(stroke_width))
-
-    draw.line((cx, pole_top_y, cx, pole_bottom_y), fill=color, width=weight)
-    draw.line((left_beam_x, beam_y, right_beam_x, beam_y), fill=color, width=weight)
-    draw.line((left_beam_x, beam_y, left_pan_x, pan_y), fill=color, width=weight)
-    draw.line((right_beam_x, beam_y, right_pan_x, pan_y), fill=color, width=weight)
-    draw.line((left_pan_x - pan_half_width, pan_y, left_pan_x + pan_half_width, pan_y), fill=color, width=weight)
-    draw.line((right_pan_x - pan_half_width, pan_y, right_pan_x + pan_half_width, pan_y), fill=color, width=weight)
+    equal_bbox = _draw_centered_text(
+        draw,
+        text="=",
+        center=(float(cx), float(cy)),
+        font=load_font(max(18, int(0.72 * float(height_px))), bold=True),
+        fill=color_rgb,
+        stroke_fill=(255, 255, 255),
+        stroke_width=max(1, int(stroke_width)),
+    )
+    left, top, right, bottom = [float(value) for value in equal_bbox]
+    min_width = float(max(28.0, 0.4 * float(width_px)))
+    if float(right - left) < float(min_width):
+        pad = 0.5 * (float(min_width) - float(right - left))
+        left -= float(pad)
+        right += float(pad)
     return [
-        round(float(left_beam_x), 3),
-        round(float(beam_y), 3),
-        round(float(right_beam_x), 3),
-        round(float(pole_bottom_y), 3),
+        round(float(left), 3),
+        round(float(top), 3),
+        round(float(right), 3),
+        round(float(bottom), 3),
     ]
 
 
@@ -228,14 +222,14 @@ def render_puzzle_balance_scene(
     query_spec: Mapping[str, Any],
     render_params: PuzzleBalanceRenderParams,
 ) -> RenderedPuzzleBalanceScene:
-    """Render one balance-style arithmetic scene with a highlighted query box."""
+    """Render one equality-panel arithmetic scene with a highlighted query box."""
 
     selected_variant = str(scene_variant)
     if selected_variant not in set(SUPPORTED_PUZZLE_BALANCE_SCENE_VARIANTS):
-        raise ValueError(f"unsupported puzzle balance scene_variant: {selected_variant}")
+        raise ValueError(f"unsupported puzzle equality scene_variant: {selected_variant}")
     panels = [dict(panel) for panel in panel_specs]
     if not panels:
-        raise ValueError("balance scenes require at least one panel")
+        raise ValueError("equality-panel scenes require at least one panel")
 
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
@@ -375,7 +369,7 @@ def render_puzzle_balance_scene(
                 )
                 current_x += float(box_width + item_gap)
 
-        scale_bbox = _draw_balance_icon(
+        equal_bbox = _draw_balance_icon(
             draw,
             center=(center_x, row_center_y),
             width_px=scale_width,
@@ -383,16 +377,27 @@ def render_puzzle_balance_scene(
             color_rgb=render_params.border_color_rgb,
             stroke_width=max(2, int(render_params.border_width_px)),
         )
-        scene_union_boxes.append(list(scale_bbox))
+        scene_union_boxes.append(list(equal_bbox))
+        entities.append(
+            {
+                "entity_id": f"balance_equals_{int(panel_index)}",
+                "entity_type": "puzzle_balance_equals",
+                "bbox_px": list(equal_bbox),
+                "attrs": {
+                    "panel_index": int(panel_index),
+                    "text": "=",
+                },
+            }
+        )
         entities.append(
             {
                 "entity_id": f"balance_panel_{int(panel_index)}",
                 "entity_type": "puzzle_balance_panel",
                 "bbox_px": list(
                     [
-                        round(float(min(left_start_x, scale_bbox[0], right_start_x)), 3),
+                        round(float(min(left_start_x, equal_bbox[0], right_start_x)), 3),
                         round(float(current_y), 3),
-                        round(float(max(right_start_x + right_width, scale_bbox[2], left_start_x + left_width)), 3),
+                        round(float(max(right_start_x + right_width, equal_bbox[2], left_start_x + left_width)), 3),
                         round(float(current_y + box_height), 3),
                     ]
                 ),

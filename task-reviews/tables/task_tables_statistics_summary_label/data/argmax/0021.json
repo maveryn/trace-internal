@@ -1,0 +1,1183 @@
+{
+  "answer_gt": {
+    "type": "string",
+    "value": "Bret"
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        687.36,
+        233.333,
+        888.0,
+        322.0
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "tables/task_tables_statistics_summary_label/images/argmax/0021.png"
+  },
+  "instance_seed": 2213326191326378,
+  "prompt": "Use the table in the image. It shows a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Read the table and name the matching row. Identify the row with the maximum value in the Dist column.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting maximum-value cell.\nAnswer: set \"answer\" to the exact row-name string from the table.\nExample JSON:\n{\"evidence\":[[260,180,372,236]],\"answer\":\"Ava\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the table in the image. It shows a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Read the table and name the matching row. Identify the row with the maximum value in the Dist column.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting maximum-value cell.\nAnswer: set \"answer\" to the exact row-name string from the table.\nExample JSON:\n{\"evidence\":[[260,180,372,236]],\"answer\":\"Ava\"}",
+    "answer_only": "Use the table in the image. It shows a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Read the table and name the matching row. Identify the row with the maximum value in the Dist column.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact row-name string from the table.\nExample JSON:\n{\"answer\":\"Ava\"}"
+  },
+  "task": "task_tables_statistics_summary_label",
+  "task_variant": "argmax",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_row_index": 1,
+      "answer_row_label": "Bret",
+      "answer_value": 30,
+      "column_headers": [
+        "Age",
+        "Cost",
+        "Dist"
+      ],
+      "numeric_column_count": 3,
+      "numeric_column_count_range": [
+        3,
+        5
+      ],
+      "query_column": "Dist",
+      "query_column_index": 2,
+      "question_format": "row_name_open",
+      "row_count": 5,
+      "row_count_range": [
+        5,
+        10
+      ],
+      "row_labels": [
+        "Hara",
+        "Bret",
+        "Lil",
+        "Coop",
+        "Miru"
+      ],
+      "scene_variant": "card_table",
+      "scene_variant_probabilities": {
+        "card_table": 0.25,
+        "ledger": 0.25,
+        "spreadsheet": 0.25,
+        "zebra": 0.25
+      },
+      "supporting_cell_id": "cell_r2_c3",
+      "task_variant": "argmax",
+      "task_variant_probabilities": {
+        "argmax": 1.0,
+        "argmin": 0.0,
+        "row_sum_argmax": 0.0,
+        "row_sum_argmin": 0.0
+      },
+      "value_range": [
+        1,
+        32
+      ],
+      "values_by_row": {
+        "Bret": {
+          "Age": 9,
+          "Cost": 28,
+          "Dist": 30
+        },
+        "Coop": {
+          "Age": 27,
+          "Cost": 27,
+          "Dist": 24
+        },
+        "Hara": {
+          "Age": 30,
+          "Cost": 6,
+          "Dist": 27
+        },
+        "Lil": {
+          "Age": 3,
+          "Cost": 30,
+          "Dist": 7
+        },
+        "Miru": {
+          "Age": 3,
+          "Cost": 8,
+          "Dist": 19
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          687.36,
+          233.333,
+          888.0,
+          322.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "numeric_column_count": 3,
+        "query_column": "Dist",
+        "row_count": 5,
+        "scene_variant": "card_table",
+        "scene_variant_probabilities": {
+          "card_table": 0.25,
+          "ledger": 0.25,
+          "spreadsheet": 0.25,
+          "zebra": 0.25
+        },
+        "task_variant": "argmax",
+        "task_variant_probabilities": {
+          "argmax": 1.0,
+          "argmin": 0.0,
+          "row_sum_argmax": 0.0,
+          "row_sum_argmin": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "tables_statistics_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the exact row-name string from the table",
+          "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting maximum-value cell",
+          "json_example": "{\"evidence\":[[260,180,372,236]],\"answer\":\"Ava\"}",
+          "json_example_answer_only": "{\"answer\":\"Ava\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row",
+          "query_column": "Dist"
+        },
+        "task_family_key": "styled_table_statistics",
+        "task_family_variant_index": 1,
+        "task_key": "summary_label_query",
+        "task_variant_index": 4,
+        "task_variant_key": "argmax",
+        "task_variant_template_index": 4,
+        "template_paths": [
+          "tables/statistics/tables_statistics_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:summary_label_query": 5,
+          "task_family:styled_table_statistics": 5,
+          "task_variant:argmax": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "tables_statistics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact row-name string from the table",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting maximum-value cell",
+              "json_example": "{\"evidence\":[[260,180,372,236]],\"answer\":\"Ava\"}",
+              "json_example_answer_only": "{\"answer\":\"Ava\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row",
+              "query_column": "Dist"
+            },
+            "task_family_key": "styled_table_statistics",
+            "task_family_variant_index": 1,
+            "task_key": "summary_label_query",
+            "task_variant_index": 4,
+            "task_variant_key": "argmax",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "tables/statistics/tables_statistics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:summary_label_query": 5,
+              "task_family:styled_table_statistics": 5,
+              "task_variant:argmax": 5
+            }
+          },
+          "prompt": "Use the table in the image. It shows a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Read the table and name the matching row. Identify the row with the maximum value in the Dist column.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting maximum-value cell.\nAnswer: set \"answer\" to the exact row-name string from the table.\nExample JSON:\n{\"evidence\":[[260,180,372,236]],\"answer\":\"Ava\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "tables_statistics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact row-name string from the table",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting maximum-value cell",
+              "json_example": "{\"evidence\":[[260,180,372,236]],\"answer\":\"Ava\"}",
+              "json_example_answer_only": "{\"answer\":\"Ava\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row",
+              "query_column": "Dist"
+            },
+            "task_family_key": "styled_table_statistics",
+            "task_family_variant_index": 1,
+            "task_key": "summary_label_query",
+            "task_variant_index": 4,
+            "task_variant_key": "argmax",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "tables/statistics/tables_statistics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:summary_label_query": 5,
+              "task_family:styled_table_statistics": 5,
+              "task_variant:argmax": 5
+            }
+          },
+          "prompt": "Use the table in the image. It shows a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Read the table and name the matching row. Identify the row with the maximum value in the Dist column.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact row-name string from the table.\nExample JSON:\n{\"answer\":\"Ava\"}"
+        }
+      },
+      "task_variant": "argmax",
+      "template_id": "tables_statistics_v1"
+    },
+    "render_map": {
+      "cell_bboxes_px": {
+        "cell_r0_c0": [
+          52.0,
+          56.0,
+          286.08,
+          144.667
+        ],
+        "cell_r0_c1": [
+          286.08,
+          56.0,
+          486.72,
+          144.667
+        ],
+        "cell_r0_c2": [
+          486.72,
+          56.0,
+          687.36,
+          144.667
+        ],
+        "cell_r0_c3": [
+          687.36,
+          56.0,
+          888.0,
+          144.667
+        ],
+        "cell_r1_c0": [
+          52.0,
+          144.667,
+          286.08,
+          233.333
+        ],
+        "cell_r1_c1": [
+          286.08,
+          144.667,
+          486.72,
+          233.333
+        ],
+        "cell_r1_c2": [
+          486.72,
+          144.667,
+          687.36,
+          233.333
+        ],
+        "cell_r1_c3": [
+          687.36,
+          144.667,
+          888.0,
+          233.333
+        ],
+        "cell_r2_c0": [
+          52.0,
+          233.333,
+          286.08,
+          322.0
+        ],
+        "cell_r2_c1": [
+          286.08,
+          233.333,
+          486.72,
+          322.0
+        ],
+        "cell_r2_c2": [
+          486.72,
+          233.333,
+          687.36,
+          322.0
+        ],
+        "cell_r2_c3": [
+          687.36,
+          233.333,
+          888.0,
+          322.0
+        ],
+        "cell_r3_c0": [
+          52.0,
+          322.0,
+          286.08,
+          410.667
+        ],
+        "cell_r3_c1": [
+          286.08,
+          322.0,
+          486.72,
+          410.667
+        ],
+        "cell_r3_c2": [
+          486.72,
+          322.0,
+          687.36,
+          410.667
+        ],
+        "cell_r3_c3": [
+          687.36,
+          322.0,
+          888.0,
+          410.667
+        ],
+        "cell_r4_c0": [
+          52.0,
+          410.667,
+          286.08,
+          499.333
+        ],
+        "cell_r4_c1": [
+          286.08,
+          410.667,
+          486.72,
+          499.333
+        ],
+        "cell_r4_c2": [
+          486.72,
+          410.667,
+          687.36,
+          499.333
+        ],
+        "cell_r4_c3": [
+          687.36,
+          410.667,
+          888.0,
+          499.333
+        ],
+        "cell_r5_c0": [
+          52.0,
+          499.333,
+          286.08,
+          588.0
+        ],
+        "cell_r5_c1": [
+          286.08,
+          499.333,
+          486.72,
+          588.0
+        ],
+        "cell_r5_c2": [
+          486.72,
+          499.333,
+          687.36,
+          588.0
+        ],
+        "cell_r5_c3": [
+          687.36,
+          499.333,
+          888.0,
+          588.0
+        ]
+      },
+      "column_region_bboxes_px": {
+        "Age": [
+          286.08,
+          144.667,
+          486.72,
+          588.0
+        ],
+        "Cost": [
+          486.72,
+          144.667,
+          687.36,
+          588.0
+        ],
+        "Dist": [
+          687.36,
+          144.667,
+          888.0,
+          588.0
+        ]
+      },
+      "header_bboxes_px": {
+        "Age": [
+          286.08,
+          56.0,
+          486.72,
+          144.667
+        ],
+        "Cost": [
+          486.72,
+          56.0,
+          687.36,
+          144.667
+        ],
+        "Dist": [
+          687.36,
+          56.0,
+          888.0,
+          144.667
+        ]
+      },
+      "image_id": "img0",
+      "row_label_bboxes_px": {
+        "Bret": [
+          52.0,
+          233.333,
+          286.08,
+          322.0
+        ],
+        "Coop": [
+          52.0,
+          410.667,
+          286.08,
+          499.333
+        ],
+        "Hara": [
+          52.0,
+          144.667,
+          286.08,
+          233.333
+        ],
+        "Lil": [
+          52.0,
+          322.0,
+          286.08,
+          410.667
+        ],
+        "Miru": [
+          52.0,
+          499.333,
+          286.08,
+          588.0
+        ]
+      },
+      "row_region_bboxes_px": {
+        "Bret": [
+          286.08,
+          233.333,
+          888.0,
+          322.0
+        ],
+        "Coop": [
+          286.08,
+          410.667,
+          888.0,
+          499.333
+        ],
+        "Hara": [
+          286.08,
+          144.667,
+          888.0,
+          233.333
+        ],
+        "Lil": [
+          286.08,
+          322.0,
+          888.0,
+          410.667
+        ],
+        "Miru": [
+          286.08,
+          499.333,
+          888.0,
+          588.0
+        ]
+      },
+      "table_bbox_px": [
+        52.0,
+        56.0,
+        888.0,
+        588.0
+      ]
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 640,
+      "canvas_width": 940,
+      "coord_space": "pixel",
+      "grid_style": {
+        "border_width_px": 2,
+        "grid_width_px": 1
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "card_table",
+      "table_bbox_px": [
+        52.0,
+        56.0,
+        888.0,
+        588.0
+      ],
+      "text_style": {
+        "label_font_size_px": 24,
+        "value_font_size_px": 22
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Name",
+            "text_bbox_px": [
+              130.54,
+              91.333,
+              207.54,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            56.0,
+            286.08,
+            144.667
+          ],
+          "entity_id": "cell_r0_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Age",
+            "text_bbox_px": [
+              360.4,
+              88.833,
+              412.4,
+              111.833
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            286.08,
+            56.0,
+            486.72,
+            144.667
+          ],
+          "entity_id": "cell_r0_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Cost",
+            "column_index": 2,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Cost",
+            "text_bbox_px": [
+              557.54,
+              91.333,
+              616.54,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            486.72,
+            56.0,
+            687.36,
+            144.667
+          ],
+          "entity_id": "cell_r0_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Dist",
+            "column_index": 3,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Dist",
+            "text_bbox_px": [
+              761.18,
+              91.333,
+              814.18,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            687.36,
+            56.0,
+            888.0,
+            144.667
+          ],
+          "entity_id": "cell_r0_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 1,
+            "row_label": "Hara",
+            "text": "Hara",
+            "text_bbox_px": [
+              66.0,
+              180.0,
+              130.0,
+              198.0
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            144.667,
+            286.08,
+            233.333
+          ],
+          "entity_id": "cell_r1_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 1,
+            "row_label": "Hara",
+            "text": "30",
+            "text_bbox_px": [
+              372.4,
+              181.0,
+              400.4,
+              197.0
+            ],
+            "value": 30
+          },
+          "bbox_px": [
+            286.08,
+            144.667,
+            486.72,
+            233.333
+          ],
+          "entity_id": "cell_r1_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Cost",
+            "column_index": 2,
+            "row_index": 1,
+            "row_label": "Hara",
+            "text": "6",
+            "text_bbox_px": [
+              580.04,
+              181.0,
+              594.04,
+              197.0
+            ],
+            "value": 6
+          },
+          "bbox_px": [
+            486.72,
+            144.667,
+            687.36,
+            233.333
+          ],
+          "entity_id": "cell_r1_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 3,
+            "row_index": 1,
+            "row_label": "Hara",
+            "text": "27",
+            "text_bbox_px": [
+              773.68,
+              181.0,
+              801.68,
+              197.0
+            ],
+            "value": 27
+          },
+          "bbox_px": [
+            687.36,
+            144.667,
+            888.0,
+            233.333
+          ],
+          "entity_id": "cell_r1_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 2,
+            "row_label": "Bret",
+            "text": "Bret",
+            "text_bbox_px": [
+              66.0,
+              268.667,
+              123.0,
+              286.667
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            233.333,
+            286.08,
+            322.0
+          ],
+          "entity_id": "cell_r2_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 2,
+            "row_label": "Bret",
+            "text": "9",
+            "text_bbox_px": [
+              379.4,
+              269.667,
+              393.4,
+              285.667
+            ],
+            "value": 9
+          },
+          "bbox_px": [
+            286.08,
+            233.333,
+            486.72,
+            322.0
+          ],
+          "entity_id": "cell_r2_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Cost",
+            "column_index": 2,
+            "row_index": 2,
+            "row_label": "Bret",
+            "text": "28",
+            "text_bbox_px": [
+              573.04,
+              269.667,
+              601.04,
+              285.667
+            ],
+            "value": 28
+          },
+          "bbox_px": [
+            486.72,
+            233.333,
+            687.36,
+            322.0
+          ],
+          "entity_id": "cell_r2_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 3,
+            "row_index": 2,
+            "row_label": "Bret",
+            "text": "30",
+            "text_bbox_px": [
+              773.68,
+              269.667,
+              801.68,
+              285.667
+            ],
+            "value": 30
+          },
+          "bbox_px": [
+            687.36,
+            233.333,
+            888.0,
+            322.0
+          ],
+          "entity_id": "cell_r2_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 3,
+            "row_label": "Lil",
+            "text": "Lil",
+            "text_bbox_px": [
+              66.0,
+              357.333,
+              97.0,
+              375.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            322.0,
+            286.08,
+            410.667
+          ],
+          "entity_id": "cell_r3_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 3,
+            "row_label": "Lil",
+            "text": "3",
+            "text_bbox_px": [
+              379.4,
+              358.333,
+              393.4,
+              374.333
+            ],
+            "value": 3
+          },
+          "bbox_px": [
+            286.08,
+            322.0,
+            486.72,
+            410.667
+          ],
+          "entity_id": "cell_r3_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Cost",
+            "column_index": 2,
+            "row_index": 3,
+            "row_label": "Lil",
+            "text": "30",
+            "text_bbox_px": [
+              573.04,
+              358.333,
+              601.04,
+              374.333
+            ],
+            "value": 30
+          },
+          "bbox_px": [
+            486.72,
+            322.0,
+            687.36,
+            410.667
+          ],
+          "entity_id": "cell_r3_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 3,
+            "row_index": 3,
+            "row_label": "Lil",
+            "text": "7",
+            "text_bbox_px": [
+              780.68,
+              358.333,
+              794.68,
+              374.333
+            ],
+            "value": 7
+          },
+          "bbox_px": [
+            687.36,
+            322.0,
+            888.0,
+            410.667
+          ],
+          "entity_id": "cell_r3_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 4,
+            "row_label": "Coop",
+            "text": "Coop",
+            "text_bbox_px": [
+              66.0,
+              443.5,
+              133.0,
+              466.5
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            410.667,
+            286.08,
+            499.333
+          ],
+          "entity_id": "cell_r4_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 4,
+            "row_label": "Coop",
+            "text": "27",
+            "text_bbox_px": [
+              372.4,
+              447.0,
+              400.4,
+              463.0
+            ],
+            "value": 27
+          },
+          "bbox_px": [
+            286.08,
+            410.667,
+            486.72,
+            499.333
+          ],
+          "entity_id": "cell_r4_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Cost",
+            "column_index": 2,
+            "row_index": 4,
+            "row_label": "Coop",
+            "text": "27",
+            "text_bbox_px": [
+              573.04,
+              447.0,
+              601.04,
+              463.0
+            ],
+            "value": 27
+          },
+          "bbox_px": [
+            486.72,
+            410.667,
+            687.36,
+            499.333
+          ],
+          "entity_id": "cell_r4_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 3,
+            "row_index": 4,
+            "row_label": "Coop",
+            "text": "24",
+            "text_bbox_px": [
+              773.68,
+              447.0,
+              801.68,
+              463.0
+            ],
+            "value": 24
+          },
+          "bbox_px": [
+            687.36,
+            410.667,
+            888.0,
+            499.333
+          ],
+          "entity_id": "cell_r4_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 5,
+            "row_label": "Miru",
+            "text": "Miru",
+            "text_bbox_px": [
+              66.0,
+              534.667,
+              127.0,
+              552.667
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            499.333,
+            286.08,
+            588.0
+          ],
+          "entity_id": "cell_r5_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 5,
+            "row_label": "Miru",
+            "text": "3",
+            "text_bbox_px": [
+              379.4,
+              535.667,
+              393.4,
+              551.667
+            ],
+            "value": 3
+          },
+          "bbox_px": [
+            286.08,
+            499.333,
+            486.72,
+            588.0
+          ],
+          "entity_id": "cell_r5_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Cost",
+            "column_index": 2,
+            "row_index": 5,
+            "row_label": "Miru",
+            "text": "8",
+            "text_bbox_px": [
+              580.04,
+              535.667,
+              594.04,
+              551.667
+            ],
+            "value": 8
+          },
+          "bbox_px": [
+            486.72,
+            499.333,
+            687.36,
+            588.0
+          ],
+          "entity_id": "cell_r5_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 3,
+            "row_index": 5,
+            "row_label": "Miru",
+            "text": "19",
+            "text_bbox_px": [
+              773.68,
+              535.667,
+              801.68,
+              551.667
+            ],
+            "value": 19
+          },
+          "bbox_px": [
+            687.36,
+            499.333,
+            888.0,
+            588.0
+          ],
+          "entity_id": "cell_r5_c3",
+          "entity_type": "table_cell"
+        }
+      ],
+      "relations": {
+        "answer_row_label": "Bret",
+        "answer_value": 30,
+        "evidence_cell_id": "cell_r2_c3",
+        "query_column": "Dist",
+        "scene_variant": "card_table",
+        "task_variant": "argmax"
+      },
+      "scene_kind": "table_card_table_statistics"
+    },
+    "witness_symbolic": {
+      "type": "bbox_set",
+      "value": [
+        [
+          687.36,
+          233.333,
+          888.0,
+          322.0
+        ]
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

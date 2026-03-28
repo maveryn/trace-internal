@@ -1,0 +1,2090 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 4
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        587.04,
+        162.4,
+        737.52,
+        215.6
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "tables/task_tables_temporal_value/images/value_at_year/0008.png"
+  },
+  "instance_seed": 2263469746392690,
+  "prompt": "Work from the styled table shown in the image: a zebra-striped table with one Name column, several year columns in chronological order, alternating row shading, and a shaded header row. Work from the queried row and year columns to evaluate the temporal expression. Determine the value where row Raye intersects year 2022.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the queried year cell.\nAnswer format: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"evidence\":[[260,180,372,236]],\"answer\":17}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the styled table shown in the image: a zebra-striped table with one Name column, several year columns in chronological order, alternating row shading, and a shaded header row. Work from the queried row and year columns to evaluate the temporal expression. Determine the value where row Raye intersects year 2022.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the queried year cell.\nAnswer format: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"evidence\":[[260,180,372,236]],\"answer\":17}",
+    "answer_only": "Work from the styled table shown in the image: a zebra-striped table with one Name column, several year columns in chronological order, alternating row shading, and a shaded header row. Work from the queried row and year columns to evaluate the temporal expression. Determine the value where row Raye intersects year 2022.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"answer\":17}"
+  },
+  "task": "task_tables_temporal_value",
+  "task_variant": "value_at_year",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 4,
+      "column_headers": [
+        "2020",
+        "2021",
+        "2022",
+        "2023"
+      ],
+      "numeric_column_count": 4,
+      "numeric_column_count_range": [
+        3,
+        5
+      ],
+      "query_cells": [
+        {
+          "cell_id": "cell_r2_c3",
+          "column": "2022",
+          "column_index": 2,
+          "row_index": 1,
+          "row_label": "Raye",
+          "value": 4
+        }
+      ],
+      "query_row_index": 1,
+      "query_row_label": "Raye",
+      "query_year_end": "2022",
+      "query_year_start": "2022",
+      "query_years": [
+        "2022"
+      ],
+      "row_count": 9,
+      "row_count_range": [
+        5,
+        10
+      ],
+      "row_labels": [
+        "Arde",
+        "Raye",
+        "Kaz",
+        "Brit",
+        "Ami",
+        "Boot",
+        "Hung",
+        "Edny",
+        "Pet"
+      ],
+      "scene_variant": "zebra",
+      "supporting_cell_ids": [
+        "cell_r2_c3"
+      ],
+      "task_variant": "value_at_year",
+      "value_range": [
+        1,
+        32
+      ],
+      "values_by_row": {
+        "Ami": {
+          "2020": 6,
+          "2021": 11,
+          "2022": 11,
+          "2023": 31
+        },
+        "Arde": {
+          "2020": 3,
+          "2021": 4,
+          "2022": 11,
+          "2023": 27
+        },
+        "Boot": {
+          "2020": 18,
+          "2021": 24,
+          "2022": 8,
+          "2023": 17
+        },
+        "Brit": {
+          "2020": 29,
+          "2021": 31,
+          "2022": 23,
+          "2023": 9
+        },
+        "Edny": {
+          "2020": 24,
+          "2021": 18,
+          "2022": 20,
+          "2023": 30
+        },
+        "Hung": {
+          "2020": 24,
+          "2021": 21,
+          "2022": 21,
+          "2023": 24
+        },
+        "Kaz": {
+          "2020": 29,
+          "2021": 3,
+          "2022": 1,
+          "2023": 9
+        },
+        "Pet": {
+          "2020": 21,
+          "2021": 29,
+          "2022": 10,
+          "2023": 3
+        },
+        "Raye": {
+          "2020": 6,
+          "2021": 12,
+          "2022": 4,
+          "2023": 17
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          587.04,
+          162.4,
+          737.52,
+          215.6
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "numeric_column_count": 4,
+        "query_row_label": "Raye",
+        "query_years": [
+          "2022"
+        ],
+        "row_count": 9,
+        "scene_variant": "zebra",
+        "scene_variant_probabilities": {
+          "card_table": 0.25,
+          "ledger": 0.25,
+          "spreadsheet": 0.25,
+          "zebra": 0.25
+        },
+        "task_variant": "value_at_year",
+        "task_variant_probabilities": {
+          "absolute_difference_between_years": 0.0,
+          "delta_between_years": 0.0,
+          "mean_over_year_interval": 0.0,
+          "sum_over_year_interval": 0.0,
+          "value_at_year": 1.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "tables_temporal_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the exact integer temporal result",
+          "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the queried year cell",
+          "json_example": "{\"evidence\":[[260,180,372,236]],\"answer\":17}",
+          "json_example_answer_only": "{\"answer\":17}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a zebra-striped table with one Name column, several year columns in chronological order, alternating row shading, and a shaded header row",
+          "query_row_label": "Raye",
+          "query_year": "2022"
+        },
+        "task_family_key": "styled_table_temporal",
+        "task_family_variant_index": 2,
+        "task_key": "temporal_value_query",
+        "task_variant_index": 3,
+        "task_variant_key": "value_at_year",
+        "task_variant_template_index": 4,
+        "template_paths": [
+          "tables/temporal/tables_temporal_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:temporal_value_query": 5,
+          "task_family:styled_table_temporal": 5,
+          "task_variant:value_at_year": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "tables_temporal_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact integer temporal result",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the queried year cell",
+              "json_example": "{\"evidence\":[[260,180,372,236]],\"answer\":17}",
+              "json_example_answer_only": "{\"answer\":17}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a zebra-striped table with one Name column, several year columns in chronological order, alternating row shading, and a shaded header row",
+              "query_row_label": "Raye",
+              "query_year": "2022"
+            },
+            "task_family_key": "styled_table_temporal",
+            "task_family_variant_index": 2,
+            "task_key": "temporal_value_query",
+            "task_variant_index": 3,
+            "task_variant_key": "value_at_year",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "tables/temporal/tables_temporal_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:temporal_value_query": 5,
+              "task_family:styled_table_temporal": 5,
+              "task_variant:value_at_year": 5
+            }
+          },
+          "prompt": "Work from the styled table shown in the image: a zebra-striped table with one Name column, several year columns in chronological order, alternating row shading, and a shaded header row. Work from the queried row and year columns to evaluate the temporal expression. Determine the value where row Raye intersects year 2022.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the queried year cell.\nAnswer format: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"evidence\":[[260,180,372,236]],\"answer\":17}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "tables_temporal_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact integer temporal result",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the queried year cell",
+              "json_example": "{\"evidence\":[[260,180,372,236]],\"answer\":17}",
+              "json_example_answer_only": "{\"answer\":17}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a zebra-striped table with one Name column, several year columns in chronological order, alternating row shading, and a shaded header row",
+              "query_row_label": "Raye",
+              "query_year": "2022"
+            },
+            "task_family_key": "styled_table_temporal",
+            "task_family_variant_index": 2,
+            "task_key": "temporal_value_query",
+            "task_variant_index": 3,
+            "task_variant_key": "value_at_year",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "tables/temporal/tables_temporal_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:temporal_value_query": 5,
+              "task_family:styled_table_temporal": 5,
+              "task_variant:value_at_year": 5
+            }
+          },
+          "prompt": "Work from the styled table shown in the image: a zebra-striped table with one Name column, several year columns in chronological order, alternating row shading, and a shaded header row. Work from the queried row and year columns to evaluate the temporal expression. Determine the value where row Raye intersects year 2022.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"answer\":17}"
+        }
+      },
+      "task_variant": "value_at_year",
+      "template_id": "tables_temporal_v1"
+    },
+    "render_map": {
+      "cell_bboxes_px": {
+        "cell_r0_c0": [
+          52.0,
+          56.0,
+          286.08,
+          109.2
+        ],
+        "cell_r0_c1": [
+          286.08,
+          56.0,
+          436.56,
+          109.2
+        ],
+        "cell_r0_c2": [
+          436.56,
+          56.0,
+          587.04,
+          109.2
+        ],
+        "cell_r0_c3": [
+          587.04,
+          56.0,
+          737.52,
+          109.2
+        ],
+        "cell_r0_c4": [
+          737.52,
+          56.0,
+          888.0,
+          109.2
+        ],
+        "cell_r1_c0": [
+          52.0,
+          109.2,
+          286.08,
+          162.4
+        ],
+        "cell_r1_c1": [
+          286.08,
+          109.2,
+          436.56,
+          162.4
+        ],
+        "cell_r1_c2": [
+          436.56,
+          109.2,
+          587.04,
+          162.4
+        ],
+        "cell_r1_c3": [
+          587.04,
+          109.2,
+          737.52,
+          162.4
+        ],
+        "cell_r1_c4": [
+          737.52,
+          109.2,
+          888.0,
+          162.4
+        ],
+        "cell_r2_c0": [
+          52.0,
+          162.4,
+          286.08,
+          215.6
+        ],
+        "cell_r2_c1": [
+          286.08,
+          162.4,
+          436.56,
+          215.6
+        ],
+        "cell_r2_c2": [
+          436.56,
+          162.4,
+          587.04,
+          215.6
+        ],
+        "cell_r2_c3": [
+          587.04,
+          162.4,
+          737.52,
+          215.6
+        ],
+        "cell_r2_c4": [
+          737.52,
+          162.4,
+          888.0,
+          215.6
+        ],
+        "cell_r3_c0": [
+          52.0,
+          215.6,
+          286.08,
+          268.8
+        ],
+        "cell_r3_c1": [
+          286.08,
+          215.6,
+          436.56,
+          268.8
+        ],
+        "cell_r3_c2": [
+          436.56,
+          215.6,
+          587.04,
+          268.8
+        ],
+        "cell_r3_c3": [
+          587.04,
+          215.6,
+          737.52,
+          268.8
+        ],
+        "cell_r3_c4": [
+          737.52,
+          215.6,
+          888.0,
+          268.8
+        ],
+        "cell_r4_c0": [
+          52.0,
+          268.8,
+          286.08,
+          322.0
+        ],
+        "cell_r4_c1": [
+          286.08,
+          268.8,
+          436.56,
+          322.0
+        ],
+        "cell_r4_c2": [
+          436.56,
+          268.8,
+          587.04,
+          322.0
+        ],
+        "cell_r4_c3": [
+          587.04,
+          268.8,
+          737.52,
+          322.0
+        ],
+        "cell_r4_c4": [
+          737.52,
+          268.8,
+          888.0,
+          322.0
+        ],
+        "cell_r5_c0": [
+          52.0,
+          322.0,
+          286.08,
+          375.2
+        ],
+        "cell_r5_c1": [
+          286.08,
+          322.0,
+          436.56,
+          375.2
+        ],
+        "cell_r5_c2": [
+          436.56,
+          322.0,
+          587.04,
+          375.2
+        ],
+        "cell_r5_c3": [
+          587.04,
+          322.0,
+          737.52,
+          375.2
+        ],
+        "cell_r5_c4": [
+          737.52,
+          322.0,
+          888.0,
+          375.2
+        ],
+        "cell_r6_c0": [
+          52.0,
+          375.2,
+          286.08,
+          428.4
+        ],
+        "cell_r6_c1": [
+          286.08,
+          375.2,
+          436.56,
+          428.4
+        ],
+        "cell_r6_c2": [
+          436.56,
+          375.2,
+          587.04,
+          428.4
+        ],
+        "cell_r6_c3": [
+          587.04,
+          375.2,
+          737.52,
+          428.4
+        ],
+        "cell_r6_c4": [
+          737.52,
+          375.2,
+          888.0,
+          428.4
+        ],
+        "cell_r7_c0": [
+          52.0,
+          428.4,
+          286.08,
+          481.6
+        ],
+        "cell_r7_c1": [
+          286.08,
+          428.4,
+          436.56,
+          481.6
+        ],
+        "cell_r7_c2": [
+          436.56,
+          428.4,
+          587.04,
+          481.6
+        ],
+        "cell_r7_c3": [
+          587.04,
+          428.4,
+          737.52,
+          481.6
+        ],
+        "cell_r7_c4": [
+          737.52,
+          428.4,
+          888.0,
+          481.6
+        ],
+        "cell_r8_c0": [
+          52.0,
+          481.6,
+          286.08,
+          534.8
+        ],
+        "cell_r8_c1": [
+          286.08,
+          481.6,
+          436.56,
+          534.8
+        ],
+        "cell_r8_c2": [
+          436.56,
+          481.6,
+          587.04,
+          534.8
+        ],
+        "cell_r8_c3": [
+          587.04,
+          481.6,
+          737.52,
+          534.8
+        ],
+        "cell_r8_c4": [
+          737.52,
+          481.6,
+          888.0,
+          534.8
+        ],
+        "cell_r9_c0": [
+          52.0,
+          534.8,
+          286.08,
+          588.0
+        ],
+        "cell_r9_c1": [
+          286.08,
+          534.8,
+          436.56,
+          588.0
+        ],
+        "cell_r9_c2": [
+          436.56,
+          534.8,
+          587.04,
+          588.0
+        ],
+        "cell_r9_c3": [
+          587.04,
+          534.8,
+          737.52,
+          588.0
+        ],
+        "cell_r9_c4": [
+          737.52,
+          534.8,
+          888.0,
+          588.0
+        ]
+      },
+      "column_region_bboxes_px": {
+        "2020": [
+          286.08,
+          109.2,
+          436.56,
+          588.0
+        ],
+        "2021": [
+          436.56,
+          109.2,
+          587.04,
+          588.0
+        ],
+        "2022": [
+          587.04,
+          109.2,
+          737.52,
+          588.0
+        ],
+        "2023": [
+          737.52,
+          109.2,
+          888.0,
+          588.0
+        ]
+      },
+      "header_bboxes_px": {
+        "2020": [
+          286.08,
+          56.0,
+          436.56,
+          109.2
+        ],
+        "2021": [
+          436.56,
+          56.0,
+          587.04,
+          109.2
+        ],
+        "2022": [
+          587.04,
+          56.0,
+          737.52,
+          109.2
+        ],
+        "2023": [
+          737.52,
+          56.0,
+          888.0,
+          109.2
+        ]
+      },
+      "image_id": "img0",
+      "row_label_bboxes_px": {
+        "Ami": [
+          52.0,
+          322.0,
+          286.08,
+          375.2
+        ],
+        "Arde": [
+          52.0,
+          109.2,
+          286.08,
+          162.4
+        ],
+        "Boot": [
+          52.0,
+          375.2,
+          286.08,
+          428.4
+        ],
+        "Brit": [
+          52.0,
+          268.8,
+          286.08,
+          322.0
+        ],
+        "Edny": [
+          52.0,
+          481.6,
+          286.08,
+          534.8
+        ],
+        "Hung": [
+          52.0,
+          428.4,
+          286.08,
+          481.6
+        ],
+        "Kaz": [
+          52.0,
+          215.6,
+          286.08,
+          268.8
+        ],
+        "Pet": [
+          52.0,
+          534.8,
+          286.08,
+          588.0
+        ],
+        "Raye": [
+          52.0,
+          162.4,
+          286.08,
+          215.6
+        ]
+      },
+      "row_region_bboxes_px": {
+        "Ami": [
+          286.08,
+          322.0,
+          888.0,
+          375.2
+        ],
+        "Arde": [
+          286.08,
+          109.2,
+          888.0,
+          162.4
+        ],
+        "Boot": [
+          286.08,
+          375.2,
+          888.0,
+          428.4
+        ],
+        "Brit": [
+          286.08,
+          268.8,
+          888.0,
+          322.0
+        ],
+        "Edny": [
+          286.08,
+          481.6,
+          888.0,
+          534.8
+        ],
+        "Hung": [
+          286.08,
+          428.4,
+          888.0,
+          481.6
+        ],
+        "Kaz": [
+          286.08,
+          215.6,
+          888.0,
+          268.8
+        ],
+        "Pet": [
+          286.08,
+          534.8,
+          888.0,
+          588.0
+        ],
+        "Raye": [
+          286.08,
+          162.4,
+          888.0,
+          215.6
+        ]
+      },
+      "table_bbox_px": [
+        52.0,
+        56.0,
+        888.0,
+        588.0
+      ]
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 640,
+      "canvas_width": 940,
+      "coord_space": "pixel",
+      "grid_style": {
+        "border_width_px": 2,
+        "grid_width_px": 1
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "zebra",
+      "table_bbox_px": [
+        52.0,
+        56.0,
+        888.0,
+        588.0
+      ],
+      "text_style": {
+        "label_font_size_px": 24,
+        "value_font_size_px": 22
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Name",
+            "text_bbox_px": [
+              130.54,
+              73.6,
+              207.54,
+              91.6
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            56.0,
+            286.08,
+            109.2
+          ],
+          "entity_id": "cell_r0_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "2020",
+            "column_index": 1,
+            "row_index": 0,
+            "row_label": null,
+            "text": "2020",
+            "text_bbox_px": [
+              327.32,
+              73.6,
+              395.32,
+              91.6
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            286.08,
+            56.0,
+            436.56,
+            109.2
+          ],
+          "entity_id": "cell_r0_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "2021",
+            "column_index": 2,
+            "row_index": 0,
+            "row_label": null,
+            "text": "2021",
+            "text_bbox_px": [
+              477.8,
+              73.6,
+              545.8,
+              91.6
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            436.56,
+            56.0,
+            587.04,
+            109.2
+          ],
+          "entity_id": "cell_r0_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "2022",
+            "column_index": 3,
+            "row_index": 0,
+            "row_label": null,
+            "text": "2022",
+            "text_bbox_px": [
+              628.28,
+              73.6,
+              696.28,
+              91.6
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            587.04,
+            56.0,
+            737.52,
+            109.2
+          ],
+          "entity_id": "cell_r0_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "2023",
+            "column_index": 4,
+            "row_index": 0,
+            "row_label": null,
+            "text": "2023",
+            "text_bbox_px": [
+              778.76,
+              73.6,
+              846.76,
+              91.6
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            737.52,
+            56.0,
+            888.0,
+            109.2
+          ],
+          "entity_id": "cell_r0_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 1,
+            "row_label": "Arde",
+            "text": "Arde",
+            "text_bbox_px": [
+              66.0,
+              126.8,
+              130.0,
+              144.8
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            109.2,
+            286.08,
+            162.4
+          ],
+          "entity_id": "cell_r1_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2020",
+            "column_index": 1,
+            "row_index": 1,
+            "row_label": "Arde",
+            "text": "3",
+            "text_bbox_px": [
+              354.32,
+              127.8,
+              368.32,
+              143.8
+            ],
+            "value": 3
+          },
+          "bbox_px": [
+            286.08,
+            109.2,
+            436.56,
+            162.4
+          ],
+          "entity_id": "cell_r1_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2021",
+            "column_index": 2,
+            "row_index": 1,
+            "row_label": "Arde",
+            "text": "4",
+            "text_bbox_px": [
+              504.8,
+              127.8,
+              518.8,
+              143.8
+            ],
+            "value": 4
+          },
+          "bbox_px": [
+            436.56,
+            109.2,
+            587.04,
+            162.4
+          ],
+          "entity_id": "cell_r1_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2022",
+            "column_index": 3,
+            "row_index": 1,
+            "row_label": "Arde",
+            "text": "11",
+            "text_bbox_px": [
+              648.28,
+              127.8,
+              676.28,
+              143.8
+            ],
+            "value": 11
+          },
+          "bbox_px": [
+            587.04,
+            109.2,
+            737.52,
+            162.4
+          ],
+          "entity_id": "cell_r1_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2023",
+            "column_index": 4,
+            "row_index": 1,
+            "row_label": "Arde",
+            "text": "27",
+            "text_bbox_px": [
+              798.76,
+              127.8,
+              826.76,
+              143.8
+            ],
+            "value": 27
+          },
+          "bbox_px": [
+            737.52,
+            109.2,
+            888.0,
+            162.4
+          ],
+          "entity_id": "cell_r1_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 2,
+            "row_label": "Raye",
+            "text": "Raye",
+            "text_bbox_px": [
+              66.0,
+              177.5,
+              132.0,
+              200.5
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            162.4,
+            286.08,
+            215.6
+          ],
+          "entity_id": "cell_r2_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2020",
+            "column_index": 1,
+            "row_index": 2,
+            "row_label": "Raye",
+            "text": "6",
+            "text_bbox_px": [
+              354.32,
+              181.0,
+              368.32,
+              197.0
+            ],
+            "value": 6
+          },
+          "bbox_px": [
+            286.08,
+            162.4,
+            436.56,
+            215.6
+          ],
+          "entity_id": "cell_r2_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2021",
+            "column_index": 2,
+            "row_index": 2,
+            "row_label": "Raye",
+            "text": "12",
+            "text_bbox_px": [
+              497.8,
+              181.0,
+              525.8,
+              197.0
+            ],
+            "value": 12
+          },
+          "bbox_px": [
+            436.56,
+            162.4,
+            587.04,
+            215.6
+          ],
+          "entity_id": "cell_r2_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2022",
+            "column_index": 3,
+            "row_index": 2,
+            "row_label": "Raye",
+            "text": "4",
+            "text_bbox_px": [
+              655.28,
+              181.0,
+              669.28,
+              197.0
+            ],
+            "value": 4
+          },
+          "bbox_px": [
+            587.04,
+            162.4,
+            737.52,
+            215.6
+          ],
+          "entity_id": "cell_r2_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2023",
+            "column_index": 4,
+            "row_index": 2,
+            "row_label": "Raye",
+            "text": "17",
+            "text_bbox_px": [
+              798.76,
+              181.0,
+              826.76,
+              197.0
+            ],
+            "value": 17
+          },
+          "bbox_px": [
+            737.52,
+            162.4,
+            888.0,
+            215.6
+          ],
+          "entity_id": "cell_r2_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 3,
+            "row_label": "Kaz",
+            "text": "Kaz",
+            "text_bbox_px": [
+              66.0,
+              233.2,
+              115.0,
+              251.2
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            215.6,
+            286.08,
+            268.8
+          ],
+          "entity_id": "cell_r3_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2020",
+            "column_index": 1,
+            "row_index": 3,
+            "row_label": "Kaz",
+            "text": "29",
+            "text_bbox_px": [
+              347.32,
+              234.2,
+              375.32,
+              250.2
+            ],
+            "value": 29
+          },
+          "bbox_px": [
+            286.08,
+            215.6,
+            436.56,
+            268.8
+          ],
+          "entity_id": "cell_r3_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2021",
+            "column_index": 2,
+            "row_index": 3,
+            "row_label": "Kaz",
+            "text": "3",
+            "text_bbox_px": [
+              504.8,
+              234.2,
+              518.8,
+              250.2
+            ],
+            "value": 3
+          },
+          "bbox_px": [
+            436.56,
+            215.6,
+            587.04,
+            268.8
+          ],
+          "entity_id": "cell_r3_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2022",
+            "column_index": 3,
+            "row_index": 3,
+            "row_label": "Kaz",
+            "text": "1",
+            "text_bbox_px": [
+              655.28,
+              234.2,
+              669.28,
+              250.2
+            ],
+            "value": 1
+          },
+          "bbox_px": [
+            587.04,
+            215.6,
+            737.52,
+            268.8
+          ],
+          "entity_id": "cell_r3_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2023",
+            "column_index": 4,
+            "row_index": 3,
+            "row_label": "Kaz",
+            "text": "9",
+            "text_bbox_px": [
+              805.76,
+              234.2,
+              819.76,
+              250.2
+            ],
+            "value": 9
+          },
+          "bbox_px": [
+            737.52,
+            215.6,
+            888.0,
+            268.8
+          ],
+          "entity_id": "cell_r3_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 4,
+            "row_label": "Brit",
+            "text": "Brit",
+            "text_bbox_px": [
+              66.0,
+              286.4,
+              115.0,
+              304.4
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            268.8,
+            286.08,
+            322.0
+          ],
+          "entity_id": "cell_r4_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2020",
+            "column_index": 1,
+            "row_index": 4,
+            "row_label": "Brit",
+            "text": "29",
+            "text_bbox_px": [
+              347.32,
+              287.4,
+              375.32,
+              303.4
+            ],
+            "value": 29
+          },
+          "bbox_px": [
+            286.08,
+            268.8,
+            436.56,
+            322.0
+          ],
+          "entity_id": "cell_r4_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2021",
+            "column_index": 2,
+            "row_index": 4,
+            "row_label": "Brit",
+            "text": "31",
+            "text_bbox_px": [
+              497.8,
+              287.4,
+              525.8,
+              303.4
+            ],
+            "value": 31
+          },
+          "bbox_px": [
+            436.56,
+            268.8,
+            587.04,
+            322.0
+          ],
+          "entity_id": "cell_r4_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2022",
+            "column_index": 3,
+            "row_index": 4,
+            "row_label": "Brit",
+            "text": "23",
+            "text_bbox_px": [
+              648.28,
+              287.4,
+              676.28,
+              303.4
+            ],
+            "value": 23
+          },
+          "bbox_px": [
+            587.04,
+            268.8,
+            737.52,
+            322.0
+          ],
+          "entity_id": "cell_r4_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2023",
+            "column_index": 4,
+            "row_index": 4,
+            "row_label": "Brit",
+            "text": "9",
+            "text_bbox_px": [
+              805.76,
+              287.4,
+              819.76,
+              303.4
+            ],
+            "value": 9
+          },
+          "bbox_px": [
+            737.52,
+            268.8,
+            888.0,
+            322.0
+          ],
+          "entity_id": "cell_r4_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 5,
+            "row_label": "Ami",
+            "text": "Ami",
+            "text_bbox_px": [
+              66.0,
+              339.6,
+              118.0,
+              357.6
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            322.0,
+            286.08,
+            375.2
+          ],
+          "entity_id": "cell_r5_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2020",
+            "column_index": 1,
+            "row_index": 5,
+            "row_label": "Ami",
+            "text": "6",
+            "text_bbox_px": [
+              354.32,
+              340.6,
+              368.32,
+              356.6
+            ],
+            "value": 6
+          },
+          "bbox_px": [
+            286.08,
+            322.0,
+            436.56,
+            375.2
+          ],
+          "entity_id": "cell_r5_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2021",
+            "column_index": 2,
+            "row_index": 5,
+            "row_label": "Ami",
+            "text": "11",
+            "text_bbox_px": [
+              497.8,
+              340.6,
+              525.8,
+              356.6
+            ],
+            "value": 11
+          },
+          "bbox_px": [
+            436.56,
+            322.0,
+            587.04,
+            375.2
+          ],
+          "entity_id": "cell_r5_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2022",
+            "column_index": 3,
+            "row_index": 5,
+            "row_label": "Ami",
+            "text": "11",
+            "text_bbox_px": [
+              648.28,
+              340.6,
+              676.28,
+              356.6
+            ],
+            "value": 11
+          },
+          "bbox_px": [
+            587.04,
+            322.0,
+            737.52,
+            375.2
+          ],
+          "entity_id": "cell_r5_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2023",
+            "column_index": 4,
+            "row_index": 5,
+            "row_label": "Ami",
+            "text": "31",
+            "text_bbox_px": [
+              798.76,
+              340.6,
+              826.76,
+              356.6
+            ],
+            "value": 31
+          },
+          "bbox_px": [
+            737.52,
+            322.0,
+            888.0,
+            375.2
+          ],
+          "entity_id": "cell_r5_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 6,
+            "row_label": "Boot",
+            "text": "Boot",
+            "text_bbox_px": [
+              66.0,
+              392.8,
+              127.0,
+              410.8
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            375.2,
+            286.08,
+            428.4
+          ],
+          "entity_id": "cell_r6_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2020",
+            "column_index": 1,
+            "row_index": 6,
+            "row_label": "Boot",
+            "text": "18",
+            "text_bbox_px": [
+              347.32,
+              393.8,
+              375.32,
+              409.8
+            ],
+            "value": 18
+          },
+          "bbox_px": [
+            286.08,
+            375.2,
+            436.56,
+            428.4
+          ],
+          "entity_id": "cell_r6_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2021",
+            "column_index": 2,
+            "row_index": 6,
+            "row_label": "Boot",
+            "text": "24",
+            "text_bbox_px": [
+              497.8,
+              393.8,
+              525.8,
+              409.8
+            ],
+            "value": 24
+          },
+          "bbox_px": [
+            436.56,
+            375.2,
+            587.04,
+            428.4
+          ],
+          "entity_id": "cell_r6_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2022",
+            "column_index": 3,
+            "row_index": 6,
+            "row_label": "Boot",
+            "text": "8",
+            "text_bbox_px": [
+              655.28,
+              393.8,
+              669.28,
+              409.8
+            ],
+            "value": 8
+          },
+          "bbox_px": [
+            587.04,
+            375.2,
+            737.52,
+            428.4
+          ],
+          "entity_id": "cell_r6_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2023",
+            "column_index": 4,
+            "row_index": 6,
+            "row_label": "Boot",
+            "text": "17",
+            "text_bbox_px": [
+              798.76,
+              393.8,
+              826.76,
+              409.8
+            ],
+            "value": 17
+          },
+          "bbox_px": [
+            737.52,
+            375.2,
+            888.0,
+            428.4
+          ],
+          "entity_id": "cell_r6_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 7,
+            "row_label": "Hung",
+            "text": "Hung",
+            "text_bbox_px": [
+              66.0,
+              443.5,
+              137.0,
+              466.5
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            428.4,
+            286.08,
+            481.6
+          ],
+          "entity_id": "cell_r7_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2020",
+            "column_index": 1,
+            "row_index": 7,
+            "row_label": "Hung",
+            "text": "24",
+            "text_bbox_px": [
+              347.32,
+              447.0,
+              375.32,
+              463.0
+            ],
+            "value": 24
+          },
+          "bbox_px": [
+            286.08,
+            428.4,
+            436.56,
+            481.6
+          ],
+          "entity_id": "cell_r7_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2021",
+            "column_index": 2,
+            "row_index": 7,
+            "row_label": "Hung",
+            "text": "21",
+            "text_bbox_px": [
+              497.8,
+              447.0,
+              525.8,
+              463.0
+            ],
+            "value": 21
+          },
+          "bbox_px": [
+            436.56,
+            428.4,
+            587.04,
+            481.6
+          ],
+          "entity_id": "cell_r7_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2022",
+            "column_index": 3,
+            "row_index": 7,
+            "row_label": "Hung",
+            "text": "21",
+            "text_bbox_px": [
+              648.28,
+              447.0,
+              676.28,
+              463.0
+            ],
+            "value": 21
+          },
+          "bbox_px": [
+            587.04,
+            428.4,
+            737.52,
+            481.6
+          ],
+          "entity_id": "cell_r7_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2023",
+            "column_index": 4,
+            "row_index": 7,
+            "row_label": "Hung",
+            "text": "24",
+            "text_bbox_px": [
+              798.76,
+              447.0,
+              826.76,
+              463.0
+            ],
+            "value": 24
+          },
+          "bbox_px": [
+            737.52,
+            428.4,
+            888.0,
+            481.6
+          ],
+          "entity_id": "cell_r7_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 8,
+            "row_label": "Edny",
+            "text": "Edny",
+            "text_bbox_px": [
+              66.0,
+              496.7,
+              132.0,
+              519.7
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            481.6,
+            286.08,
+            534.8
+          ],
+          "entity_id": "cell_r8_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2020",
+            "column_index": 1,
+            "row_index": 8,
+            "row_label": "Edny",
+            "text": "24",
+            "text_bbox_px": [
+              347.32,
+              500.2,
+              375.32,
+              516.2
+            ],
+            "value": 24
+          },
+          "bbox_px": [
+            286.08,
+            481.6,
+            436.56,
+            534.8
+          ],
+          "entity_id": "cell_r8_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2021",
+            "column_index": 2,
+            "row_index": 8,
+            "row_label": "Edny",
+            "text": "18",
+            "text_bbox_px": [
+              497.8,
+              500.2,
+              525.8,
+              516.2
+            ],
+            "value": 18
+          },
+          "bbox_px": [
+            436.56,
+            481.6,
+            587.04,
+            534.8
+          ],
+          "entity_id": "cell_r8_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2022",
+            "column_index": 3,
+            "row_index": 8,
+            "row_label": "Edny",
+            "text": "20",
+            "text_bbox_px": [
+              648.28,
+              500.2,
+              676.28,
+              516.2
+            ],
+            "value": 20
+          },
+          "bbox_px": [
+            587.04,
+            481.6,
+            737.52,
+            534.8
+          ],
+          "entity_id": "cell_r8_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2023",
+            "column_index": 4,
+            "row_index": 8,
+            "row_label": "Edny",
+            "text": "30",
+            "text_bbox_px": [
+              798.76,
+              500.2,
+              826.76,
+              516.2
+            ],
+            "value": 30
+          },
+          "bbox_px": [
+            737.52,
+            481.6,
+            888.0,
+            534.8
+          ],
+          "entity_id": "cell_r8_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 9,
+            "row_label": "Pet",
+            "text": "Pet",
+            "text_bbox_px": [
+              66.0,
+              552.4,
+              111.0,
+              570.4
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            534.8,
+            286.08,
+            588.0
+          ],
+          "entity_id": "cell_r9_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2020",
+            "column_index": 1,
+            "row_index": 9,
+            "row_label": "Pet",
+            "text": "21",
+            "text_bbox_px": [
+              347.32,
+              553.4,
+              375.32,
+              569.4
+            ],
+            "value": 21
+          },
+          "bbox_px": [
+            286.08,
+            534.8,
+            436.56,
+            588.0
+          ],
+          "entity_id": "cell_r9_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2021",
+            "column_index": 2,
+            "row_index": 9,
+            "row_label": "Pet",
+            "text": "29",
+            "text_bbox_px": [
+              497.8,
+              553.4,
+              525.8,
+              569.4
+            ],
+            "value": 29
+          },
+          "bbox_px": [
+            436.56,
+            534.8,
+            587.04,
+            588.0
+          ],
+          "entity_id": "cell_r9_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2022",
+            "column_index": 3,
+            "row_index": 9,
+            "row_label": "Pet",
+            "text": "10",
+            "text_bbox_px": [
+              648.28,
+              553.4,
+              676.28,
+              569.4
+            ],
+            "value": 10
+          },
+          "bbox_px": [
+            587.04,
+            534.8,
+            737.52,
+            588.0
+          ],
+          "entity_id": "cell_r9_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2023",
+            "column_index": 4,
+            "row_index": 9,
+            "row_label": "Pet",
+            "text": "3",
+            "text_bbox_px": [
+              805.76,
+              553.4,
+              819.76,
+              569.4
+            ],
+            "value": 3
+          },
+          "bbox_px": [
+            737.52,
+            534.8,
+            888.0,
+            588.0
+          ],
+          "entity_id": "cell_r9_c4",
+          "entity_type": "table_cell"
+        }
+      ],
+      "relations": {
+        "answer_value": 4,
+        "query_row_label": "Raye",
+        "query_years": [
+          "2022"
+        ],
+        "scene_variant": "zebra",
+        "supporting_cell_ids": [
+          "cell_r2_c3"
+        ],
+        "task_variant": "value_at_year"
+      },
+      "scene_kind": "table_zebra_temporal"
+    },
+    "verifier_spec": {
+      "answer_type": "integer",
+      "evidence_order": "query_year_order",
+      "evidence_type": "bbox_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

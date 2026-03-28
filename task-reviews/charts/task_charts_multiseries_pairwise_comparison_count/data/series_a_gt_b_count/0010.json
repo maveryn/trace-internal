@@ -1,0 +1,976 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 1
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "G"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_gt_b_count/0010.png"
+  },
+  "instance_seed": 4567934860884189,
+  "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. How many labeled categories have Papp above Uni?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. How many labeled categories have Papp above Uni?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+    "answer_only": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. How many labeled categories have Papp above Uni?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_charts_multiseries_pairwise_comparison_count",
+  "task_variant": "series_a_gt_b_count",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 1,
+      "category_count": 6,
+      "category_count_range": [
+        5,
+        10
+      ],
+      "category_labels": [
+        "C",
+        "G",
+        "Q",
+        "B",
+        "H",
+        "E"
+      ],
+      "comparison": "greater_than",
+      "evidence_labels": [
+        "G"
+      ],
+      "left_series_label": "Papp",
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb_palette",
+      "queried_series_labels": [
+        "Papp",
+        "Uni"
+      ],
+      "question_format": "numeric_open",
+      "right_series_label": "Uni",
+      "scene_variant": "multi_line",
+      "scene_variant_probabilities": {
+        "grouped_bar": 0.25,
+        "grouped_horizontal_bar": 0.25,
+        "grouped_lollipop": 0.25,
+        "multi_line": 0.25
+      },
+      "series_count": 2,
+      "series_count_range": [
+        2,
+        3
+      ],
+      "series_fill_palette_rgb": [
+        [
+          31,
+          137,
+          144
+        ],
+        [
+          210,
+          147,
+          24
+        ]
+      ],
+      "series_labels": [
+        "Papp",
+        "Uni"
+      ],
+      "series_outline_palette_rgb": [
+        [
+          17,
+          75,
+          79
+        ],
+        [
+          116,
+          81,
+          13
+        ]
+      ],
+      "target_answer": 1,
+      "target_answer_range": [
+        0,
+        8
+      ],
+      "task_variant": "series_a_gt_b_count",
+      "task_variant_probabilities": {
+        "series_a_gt_b_count": 0.5,
+        "series_a_lt_b_count": 0.5
+      },
+      "values_by_category": {
+        "B": {
+          "Papp": 10,
+          "Uni": 20
+        },
+        "C": {
+          "Papp": 1,
+          "Uni": 10
+        },
+        "E": {
+          "Papp": 17,
+          "Uni": 19
+        },
+        "G": {
+          "Papp": 7,
+          "Uni": 6
+        },
+        "H": {
+          "Papp": 8,
+          "Uni": 16
+        },
+        "Q": {
+          "Papp": 9,
+          "Uni": 13
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          273.5,
+          358.667,
+          291.5,
+          562.0
+        ]
+      ],
+      "label_set": [
+        "G"
+      ],
+      "pixel_point_map": {
+        "G": [
+          282.5,
+          554.0
+        ]
+      },
+      "pixel_point_set": [
+        [
+          282.5,
+          554.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "category_count": 6,
+        "category_count_range": [
+          5,
+          10
+        ],
+        "comparison": "greater_than",
+        "queried_series_labels": [
+          "Papp",
+          "Uni"
+        ],
+        "scene_variant": "multi_line",
+        "scene_variant_probabilities": {
+          "grouped_bar": 0.25,
+          "grouped_horizontal_bar": 0.25,
+          "grouped_lollipop": 0.25,
+          "multi_line": 0.25
+        },
+        "series_count": 2,
+        "series_count_range": [
+          2,
+          3
+        ],
+        "target_answer": 1,
+        "target_answer_range": [
+          0,
+          8
+        ],
+        "task_variant": "series_a_gt_b_count",
+        "task_variant_probabilities": {
+          "series_a_gt_b_count": 0.5,
+          "series_a_lt_b_count": 0.5
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "charts_multiseries_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series",
+          "json_example": "{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "left_series": "Papp",
+          "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+          "right_series": "Uni"
+        },
+        "task_family_key": "multiseries_chart_comparison",
+        "task_family_variant_index": 2,
+        "task_key": "pairwise_comparison_count_query",
+        "task_variant_index": 3,
+        "task_variant_key": "series_a_gt_b_count",
+        "task_variant_template_index": 2,
+        "template_paths": [
+          "charts/multiseries/charts_multiseries_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:pairwise_comparison_count_query": 5,
+          "task_family:multiseries_chart_comparison": 5,
+          "task_variant:series_a_gt_b_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series",
+              "json_example": "{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Papp",
+              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+              "right_series": "Uni"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 2,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 3,
+            "task_variant_key": "series_a_gt_b_count",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_gt_b_count": 5
+            }
+          },
+          "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. How many labeled categories have Papp above Uni?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series",
+              "json_example": "{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Papp",
+              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+              "right_series": "Uni"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 2,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 3,
+            "task_variant_key": "series_a_gt_b_count",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_gt_b_count": 5
+            }
+          },
+          "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. How many labeled categories have Papp above Uni?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "series_a_gt_b_count",
+      "template_id": "charts_multiseries_v1"
+    },
+    "render_map": {
+      "category_label_centers_px": {
+        "B": [
+          536.5,
+          554.0
+        ],
+        "C": [
+          155.5,
+          554.0
+        ],
+        "E": [
+          790.5,
+          554.0
+        ],
+        "G": [
+          282.5,
+          554.0
+        ],
+        "H": [
+          663.5,
+          554.0
+        ],
+        "Q": [
+          409.5,
+          554.0
+        ]
+      },
+      "image_id": "img0",
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 620,
+      "canvas_width": 1100,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "sampling_policy": "random_rgb_palette",
+        "series_fill_palette_rgb": [
+          [
+            31,
+            137,
+            144
+          ],
+          [
+            210,
+            147,
+            24
+          ]
+        ],
+        "series_outline_palette_rgb": [
+          [
+            17,
+            75,
+            79
+          ],
+          [
+            116,
+            81,
+            13
+          ]
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "multi_line",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 21,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              147.5,
+              289.524,
+              163.5,
+              562.0
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              155.5,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              147.5,
+              496.952,
+              163.5,
+              512.952
+            ],
+            "mark_center_px": [
+              155.5,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              31,
+              137,
+              144
+            ],
+            "mark_outline_rgb": [
+              17,
+              75,
+              79
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Papp",
+            "series_rank": 0,
+            "value": 1
+          },
+          "entity_id": "mark_C_Papp",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              147.5,
+              289.524,
+              163.5,
+              562.0
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              155.5,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              147.5,
+              289.524,
+              163.5,
+              305.524
+            ],
+            "mark_center_px": [
+              155.5,
+              297.524
+            ],
+            "mark_fill_rgb": [
+              210,
+              147,
+              24
+            ],
+            "mark_outline_rgb": [
+              116,
+              81,
+              13
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Uni",
+            "series_rank": 1,
+            "value": 10
+          },
+          "entity_id": "mark_C_Uni",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              273.5,
+              358.667,
+              291.5,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              274.5,
+              358.667,
+              290.5,
+              374.667
+            ],
+            "mark_center_px": [
+              282.5,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              31,
+              137,
+              144
+            ],
+            "mark_outline_rgb": [
+              17,
+              75,
+              79
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Papp",
+            "series_rank": 0,
+            "value": 7
+          },
+          "entity_id": "mark_G_Papp",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              273.5,
+              358.667,
+              291.5,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              274.5,
+              381.714,
+              290.5,
+              397.714
+            ],
+            "mark_center_px": [
+              282.5,
+              389.714
+            ],
+            "mark_fill_rgb": [
+              210,
+              147,
+              24
+            ],
+            "mark_outline_rgb": [
+              116,
+              81,
+              13
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Uni",
+            "series_rank": 1,
+            "value": 6
+          },
+          "entity_id": "mark_G_Uni",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              400.0,
+              220.381,
+              419.0,
+              563.5
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              409.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              401.5,
+              312.571,
+              417.5,
+              328.571
+            ],
+            "mark_center_px": [
+              409.5,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              31,
+              137,
+              144
+            ],
+            "mark_outline_rgb": [
+              17,
+              75,
+              79
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Papp",
+            "series_rank": 0,
+            "value": 9
+          },
+          "entity_id": "mark_Q_Papp",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              400.0,
+              220.381,
+              419.0,
+              563.5
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              409.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              401.5,
+              220.381,
+              417.5,
+              236.381
+            ],
+            "mark_center_px": [
+              409.5,
+              228.381
+            ],
+            "mark_fill_rgb": [
+              210,
+              147,
+              24
+            ],
+            "mark_outline_rgb": [
+              116,
+              81,
+              13
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Uni",
+            "series_rank": 1,
+            "value": 13
+          },
+          "entity_id": "mark_Q_Uni",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              528.0,
+              59.048,
+              545.0,
+              562.0
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              536.5,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              528.5,
+              289.524,
+              544.5,
+              305.524
+            ],
+            "mark_center_px": [
+              536.5,
+              297.524
+            ],
+            "mark_fill_rgb": [
+              31,
+              137,
+              144
+            ],
+            "mark_outline_rgb": [
+              17,
+              75,
+              79
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Papp",
+            "series_rank": 0,
+            "value": 10
+          },
+          "entity_id": "mark_B_Papp",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              528.0,
+              59.048,
+              545.0,
+              562.0
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              536.5,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              528.5,
+              59.048,
+              544.5,
+              75.048
+            ],
+            "mark_center_px": [
+              536.5,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              210,
+              147,
+              24
+            ],
+            "mark_outline_rgb": [
+              116,
+              81,
+              13
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Uni",
+            "series_rank": 1,
+            "value": 20
+          },
+          "entity_id": "mark_B_Uni",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              654.5,
+              151.238,
+              672.5,
+              562.0
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              655.5,
+              335.619,
+              671.5,
+              351.619
+            ],
+            "mark_center_px": [
+              663.5,
+              343.619
+            ],
+            "mark_fill_rgb": [
+              31,
+              137,
+              144
+            ],
+            "mark_outline_rgb": [
+              17,
+              75,
+              79
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Papp",
+            "series_rank": 0,
+            "value": 8
+          },
+          "entity_id": "mark_H_Papp",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              654.5,
+              151.238,
+              672.5,
+              562.0
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              655.5,
+              151.238,
+              671.5,
+              167.238
+            ],
+            "mark_center_px": [
+              663.5,
+              159.238
+            ],
+            "mark_fill_rgb": [
+              210,
+              147,
+              24
+            ],
+            "mark_outline_rgb": [
+              116,
+              81,
+              13
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Uni",
+            "series_rank": 1,
+            "value": 16
+          },
+          "entity_id": "mark_H_Uni",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              782.5,
+              82.095,
+              798.5,
+              562.0
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              790.5,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              782.5,
+              128.19,
+              798.5,
+              144.19
+            ],
+            "mark_center_px": [
+              790.5,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              31,
+              137,
+              144
+            ],
+            "mark_outline_rgb": [
+              17,
+              75,
+              79
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Papp",
+            "series_rank": 0,
+            "value": 17
+          },
+          "entity_id": "mark_E_Papp",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              782.5,
+              82.095,
+              798.5,
+              562.0
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              790.5,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              782.5,
+              82.095,
+              798.5,
+              98.095
+            ],
+            "mark_center_px": [
+              790.5,
+              90.095
+            ],
+            "mark_fill_rgb": [
+              210,
+              147,
+              24
+            ],
+            "mark_outline_rgb": [
+              116,
+              81,
+              13
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Uni",
+            "series_rank": 1,
+            "value": 19
+          },
+          "entity_id": "mark_E_Uni",
+          "entity_type": "point"
+        }
+      ],
+      "relations": {
+        "comparison": "greater_than",
+        "evidence_labels": [
+          "G"
+        ],
+        "queried_series_labels": [
+          "Papp",
+          "Uni"
+        ],
+        "scene_variant": "multi_line",
+        "task_variant": "series_a_gt_b_count"
+      },
+      "scene_kind": "chart_multi_line_multiseries"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "G"
+      ],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

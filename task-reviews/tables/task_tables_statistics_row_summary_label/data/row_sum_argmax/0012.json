@@ -1,0 +1,1884 @@
+{
+  "answer_gt": {
+    "type": "string",
+    "value": "Ky"
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        286.08,
+        297.818,
+        888.0,
+        346.182
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "tables/task_tables_statistics_row_summary_label/images/row_sum_argmax/0012.png"
+  },
+  "instance_seed": 2612175788802501,
+  "prompt": "You are given a table: a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Use the table values to identify the correct row name after summarizing each row. Determine which row has the maximum row total.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting winning-row region.\nAnswer format: set \"answer\" to the exact row-name string from the table.\nExample JSON:\n{\"evidence\":[[150,180,780,236]],\"answer\":\"Ava\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given a table: a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Use the table values to identify the correct row name after summarizing each row. Determine which row has the maximum row total.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting winning-row region.\nAnswer format: set \"answer\" to the exact row-name string from the table.\nExample JSON:\n{\"evidence\":[[150,180,780,236]],\"answer\":\"Ava\"}",
+    "answer_only": "You are given a table: a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Use the table values to identify the correct row name after summarizing each row. Determine which row has the maximum row total.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact row-name string from the table.\nExample JSON:\n{\"answer\":\"Ava\"}"
+  },
+  "task": "task_tables_statistics_row_summary_label",
+  "task_variant": "row_sum_argmax",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_row_index": 4,
+      "answer_row_label": "Ky",
+      "answer_value": 90,
+      "column_headers": [
+        "Rank",
+        "Time",
+        "Mass"
+      ],
+      "numeric_column_count": 3,
+      "numeric_column_count_range": [
+        3,
+        5
+      ],
+      "question_format": "row_summary_label",
+      "row_count": 10,
+      "row_count_range": [
+        5,
+        10
+      ],
+      "row_labels": [
+        "Seta",
+        "Abad",
+        "Dao",
+        "Allx",
+        "Ky",
+        "Pare",
+        "Huei",
+        "Fonz",
+        "Nur",
+        "Addy"
+      ],
+      "scene_variant": "card_table",
+      "scene_variant_probabilities": {
+        "card_table": 0.25,
+        "ledger": 0.25,
+        "spreadsheet": 0.25,
+        "zebra": 0.25
+      },
+      "supporting_region_kind": "row",
+      "supporting_row_label": "Ky",
+      "task_variant": "row_sum_argmax",
+      "task_variant_probabilities": {
+        "row_sum_argmax": 1.0,
+        "row_sum_argmin": 0.0
+      },
+      "value_range": [
+        1,
+        32
+      ],
+      "values_by_row": {
+        "Abad": {
+          "Mass": 7,
+          "Rank": 13,
+          "Time": 17
+        },
+        "Addy": {
+          "Mass": 5,
+          "Rank": 6,
+          "Time": 10
+        },
+        "Allx": {
+          "Mass": 7,
+          "Rank": 31,
+          "Time": 21
+        },
+        "Dao": {
+          "Mass": 4,
+          "Rank": 17,
+          "Time": 2
+        },
+        "Fonz": {
+          "Mass": 32,
+          "Rank": 30,
+          "Time": 24
+        },
+        "Huei": {
+          "Mass": 1,
+          "Rank": 12,
+          "Time": 21
+        },
+        "Ky": {
+          "Mass": 32,
+          "Rank": 28,
+          "Time": 30
+        },
+        "Nur": {
+          "Mass": 29,
+          "Rank": 23,
+          "Time": 21
+        },
+        "Pare": {
+          "Mass": 14,
+          "Rank": 10,
+          "Time": 16
+        },
+        "Seta": {
+          "Mass": 2,
+          "Rank": 6,
+          "Time": 2
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          286.08,
+          297.818,
+          888.0,
+          346.182
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "numeric_column_count": 3,
+        "row_count": 10,
+        "scene_variant": "card_table",
+        "scene_variant_probabilities": {
+          "card_table": 0.25,
+          "ledger": 0.25,
+          "spreadsheet": 0.25,
+          "zebra": 0.25
+        },
+        "task_variant": "row_sum_argmax",
+        "task_variant_probabilities": {
+          "row_sum_argmax": 1.0,
+          "row_sum_argmin": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "tables_statistics_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the exact row-name string from the table",
+          "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting winning-row region",
+          "json_example": "{\"evidence\":[[150,180,780,236]],\"answer\":\"Ava\"}",
+          "json_example_answer_only": "{\"answer\":\"Ava\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row"
+        },
+        "task_family_key": "styled_table_statistics",
+        "task_family_variant_index": 4,
+        "task_key": "summary_row_label_query",
+        "task_variant_index": 2,
+        "task_variant_key": "row_sum_argmax",
+        "task_variant_template_index": 2,
+        "template_paths": [
+          "tables/statistics/tables_statistics_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:summary_row_label_query": 5,
+          "task_family:styled_table_statistics": 5,
+          "task_variant:row_sum_argmax": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "tables_statistics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact row-name string from the table",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting winning-row region",
+              "json_example": "{\"evidence\":[[150,180,780,236]],\"answer\":\"Ava\"}",
+              "json_example_answer_only": "{\"answer\":\"Ava\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row"
+            },
+            "task_family_key": "styled_table_statistics",
+            "task_family_variant_index": 4,
+            "task_key": "summary_row_label_query",
+            "task_variant_index": 2,
+            "task_variant_key": "row_sum_argmax",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "tables/statistics/tables_statistics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:summary_row_label_query": 5,
+              "task_family:styled_table_statistics": 5,
+              "task_variant:row_sum_argmax": 5
+            }
+          },
+          "prompt": "You are given a table: a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Use the table values to identify the correct row name after summarizing each row. Determine which row has the maximum row total.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting winning-row region.\nAnswer format: set \"answer\" to the exact row-name string from the table.\nExample JSON:\n{\"evidence\":[[150,180,780,236]],\"answer\":\"Ava\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "tables_statistics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact row-name string from the table",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting winning-row region",
+              "json_example": "{\"evidence\":[[150,180,780,236]],\"answer\":\"Ava\"}",
+              "json_example_answer_only": "{\"answer\":\"Ava\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row"
+            },
+            "task_family_key": "styled_table_statistics",
+            "task_family_variant_index": 4,
+            "task_key": "summary_row_label_query",
+            "task_variant_index": 2,
+            "task_variant_key": "row_sum_argmax",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "tables/statistics/tables_statistics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:summary_row_label_query": 5,
+              "task_family:styled_table_statistics": 5,
+              "task_variant:row_sum_argmax": 5
+            }
+          },
+          "prompt": "You are given a table: a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Use the table values to identify the correct row name after summarizing each row. Determine which row has the maximum row total.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact row-name string from the table.\nExample JSON:\n{\"answer\":\"Ava\"}"
+        }
+      },
+      "task_variant": "row_sum_argmax",
+      "template_id": "tables_statistics_v1"
+    },
+    "render_map": {
+      "cell_bboxes_px": {
+        "cell_r0_c0": [
+          52.0,
+          56.0,
+          286.08,
+          104.364
+        ],
+        "cell_r0_c1": [
+          286.08,
+          56.0,
+          486.72,
+          104.364
+        ],
+        "cell_r0_c2": [
+          486.72,
+          56.0,
+          687.36,
+          104.364
+        ],
+        "cell_r0_c3": [
+          687.36,
+          56.0,
+          888.0,
+          104.364
+        ],
+        "cell_r10_c0": [
+          52.0,
+          539.636,
+          286.08,
+          588.0
+        ],
+        "cell_r10_c1": [
+          286.08,
+          539.636,
+          486.72,
+          588.0
+        ],
+        "cell_r10_c2": [
+          486.72,
+          539.636,
+          687.36,
+          588.0
+        ],
+        "cell_r10_c3": [
+          687.36,
+          539.636,
+          888.0,
+          588.0
+        ],
+        "cell_r1_c0": [
+          52.0,
+          104.364,
+          286.08,
+          152.727
+        ],
+        "cell_r1_c1": [
+          286.08,
+          104.364,
+          486.72,
+          152.727
+        ],
+        "cell_r1_c2": [
+          486.72,
+          104.364,
+          687.36,
+          152.727
+        ],
+        "cell_r1_c3": [
+          687.36,
+          104.364,
+          888.0,
+          152.727
+        ],
+        "cell_r2_c0": [
+          52.0,
+          152.727,
+          286.08,
+          201.091
+        ],
+        "cell_r2_c1": [
+          286.08,
+          152.727,
+          486.72,
+          201.091
+        ],
+        "cell_r2_c2": [
+          486.72,
+          152.727,
+          687.36,
+          201.091
+        ],
+        "cell_r2_c3": [
+          687.36,
+          152.727,
+          888.0,
+          201.091
+        ],
+        "cell_r3_c0": [
+          52.0,
+          201.091,
+          286.08,
+          249.455
+        ],
+        "cell_r3_c1": [
+          286.08,
+          201.091,
+          486.72,
+          249.455
+        ],
+        "cell_r3_c2": [
+          486.72,
+          201.091,
+          687.36,
+          249.455
+        ],
+        "cell_r3_c3": [
+          687.36,
+          201.091,
+          888.0,
+          249.455
+        ],
+        "cell_r4_c0": [
+          52.0,
+          249.455,
+          286.08,
+          297.818
+        ],
+        "cell_r4_c1": [
+          286.08,
+          249.455,
+          486.72,
+          297.818
+        ],
+        "cell_r4_c2": [
+          486.72,
+          249.455,
+          687.36,
+          297.818
+        ],
+        "cell_r4_c3": [
+          687.36,
+          249.455,
+          888.0,
+          297.818
+        ],
+        "cell_r5_c0": [
+          52.0,
+          297.818,
+          286.08,
+          346.182
+        ],
+        "cell_r5_c1": [
+          286.08,
+          297.818,
+          486.72,
+          346.182
+        ],
+        "cell_r5_c2": [
+          486.72,
+          297.818,
+          687.36,
+          346.182
+        ],
+        "cell_r5_c3": [
+          687.36,
+          297.818,
+          888.0,
+          346.182
+        ],
+        "cell_r6_c0": [
+          52.0,
+          346.182,
+          286.08,
+          394.545
+        ],
+        "cell_r6_c1": [
+          286.08,
+          346.182,
+          486.72,
+          394.545
+        ],
+        "cell_r6_c2": [
+          486.72,
+          346.182,
+          687.36,
+          394.545
+        ],
+        "cell_r6_c3": [
+          687.36,
+          346.182,
+          888.0,
+          394.545
+        ],
+        "cell_r7_c0": [
+          52.0,
+          394.545,
+          286.08,
+          442.909
+        ],
+        "cell_r7_c1": [
+          286.08,
+          394.545,
+          486.72,
+          442.909
+        ],
+        "cell_r7_c2": [
+          486.72,
+          394.545,
+          687.36,
+          442.909
+        ],
+        "cell_r7_c3": [
+          687.36,
+          394.545,
+          888.0,
+          442.909
+        ],
+        "cell_r8_c0": [
+          52.0,
+          442.909,
+          286.08,
+          491.273
+        ],
+        "cell_r8_c1": [
+          286.08,
+          442.909,
+          486.72,
+          491.273
+        ],
+        "cell_r8_c2": [
+          486.72,
+          442.909,
+          687.36,
+          491.273
+        ],
+        "cell_r8_c3": [
+          687.36,
+          442.909,
+          888.0,
+          491.273
+        ],
+        "cell_r9_c0": [
+          52.0,
+          491.273,
+          286.08,
+          539.636
+        ],
+        "cell_r9_c1": [
+          286.08,
+          491.273,
+          486.72,
+          539.636
+        ],
+        "cell_r9_c2": [
+          486.72,
+          491.273,
+          687.36,
+          539.636
+        ],
+        "cell_r9_c3": [
+          687.36,
+          491.273,
+          888.0,
+          539.636
+        ]
+      },
+      "column_region_bboxes_px": {
+        "Mass": [
+          687.36,
+          104.364,
+          888.0,
+          588.0
+        ],
+        "Rank": [
+          286.08,
+          104.364,
+          486.72,
+          588.0
+        ],
+        "Time": [
+          486.72,
+          104.364,
+          687.36,
+          588.0
+        ]
+      },
+      "header_bboxes_px": {
+        "Mass": [
+          687.36,
+          56.0,
+          888.0,
+          104.364
+        ],
+        "Rank": [
+          286.08,
+          56.0,
+          486.72,
+          104.364
+        ],
+        "Time": [
+          486.72,
+          56.0,
+          687.36,
+          104.364
+        ]
+      },
+      "image_id": "img0",
+      "row_label_bboxes_px": {
+        "Abad": [
+          52.0,
+          152.727,
+          286.08,
+          201.091
+        ],
+        "Addy": [
+          52.0,
+          539.636,
+          286.08,
+          588.0
+        ],
+        "Allx": [
+          52.0,
+          249.455,
+          286.08,
+          297.818
+        ],
+        "Dao": [
+          52.0,
+          201.091,
+          286.08,
+          249.455
+        ],
+        "Fonz": [
+          52.0,
+          442.909,
+          286.08,
+          491.273
+        ],
+        "Huei": [
+          52.0,
+          394.545,
+          286.08,
+          442.909
+        ],
+        "Ky": [
+          52.0,
+          297.818,
+          286.08,
+          346.182
+        ],
+        "Nur": [
+          52.0,
+          491.273,
+          286.08,
+          539.636
+        ],
+        "Pare": [
+          52.0,
+          346.182,
+          286.08,
+          394.545
+        ],
+        "Seta": [
+          52.0,
+          104.364,
+          286.08,
+          152.727
+        ]
+      },
+      "row_region_bboxes_px": {
+        "Abad": [
+          286.08,
+          152.727,
+          888.0,
+          201.091
+        ],
+        "Addy": [
+          286.08,
+          539.636,
+          888.0,
+          588.0
+        ],
+        "Allx": [
+          286.08,
+          249.455,
+          888.0,
+          297.818
+        ],
+        "Dao": [
+          286.08,
+          201.091,
+          888.0,
+          249.455
+        ],
+        "Fonz": [
+          286.08,
+          442.909,
+          888.0,
+          491.273
+        ],
+        "Huei": [
+          286.08,
+          394.545,
+          888.0,
+          442.909
+        ],
+        "Ky": [
+          286.08,
+          297.818,
+          888.0,
+          346.182
+        ],
+        "Nur": [
+          286.08,
+          491.273,
+          888.0,
+          539.636
+        ],
+        "Pare": [
+          286.08,
+          346.182,
+          888.0,
+          394.545
+        ],
+        "Seta": [
+          286.08,
+          104.364,
+          888.0,
+          152.727
+        ]
+      },
+      "table_bbox_px": [
+        52.0,
+        56.0,
+        888.0,
+        588.0
+      ]
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 640,
+      "canvas_width": 940,
+      "coord_space": "pixel",
+      "grid_style": {
+        "border_width_px": 2,
+        "grid_width_px": 1
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "card_table",
+      "table_bbox_px": [
+        52.0,
+        56.0,
+        888.0,
+        588.0
+      ],
+      "text_style": {
+        "label_font_size_px": 24,
+        "value_font_size_px": 22
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Name",
+            "text_bbox_px": [
+              130.54,
+              71.182,
+              207.54,
+              89.182
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            56.0,
+            286.08,
+            104.364
+          ],
+          "entity_id": "cell_r0_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Rank",
+            "column_index": 1,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Rank",
+            "text_bbox_px": [
+              352.4,
+              71.182,
+              420.4,
+              89.182
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            286.08,
+            56.0,
+            486.72,
+            104.364
+          ],
+          "entity_id": "cell_r0_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Time",
+            "column_index": 2,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Time",
+            "text_bbox_px": [
+              554.54,
+              71.182,
+              619.54,
+              89.182
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            486.72,
+            56.0,
+            687.36,
+            104.364
+          ],
+          "entity_id": "cell_r0_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Mass",
+            "column_index": 3,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Mass",
+            "text_bbox_px": [
+              753.68,
+              71.182,
+              821.68,
+              89.182
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            687.36,
+            56.0,
+            888.0,
+            104.364
+          ],
+          "entity_id": "cell_r0_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 1,
+            "row_label": "Seta",
+            "text": "Seta",
+            "text_bbox_px": [
+              66.0,
+              119.545,
+              126.0,
+              137.545
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            104.364,
+            286.08,
+            152.727
+          ],
+          "entity_id": "cell_r1_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Rank",
+            "column_index": 1,
+            "row_index": 1,
+            "row_label": "Seta",
+            "text": "6",
+            "text_bbox_px": [
+              379.4,
+              120.545,
+              393.4,
+              136.545
+            ],
+            "value": 6
+          },
+          "bbox_px": [
+            286.08,
+            104.364,
+            486.72,
+            152.727
+          ],
+          "entity_id": "cell_r1_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 2,
+            "row_index": 1,
+            "row_label": "Seta",
+            "text": "2",
+            "text_bbox_px": [
+              580.04,
+              120.545,
+              594.04,
+              136.545
+            ],
+            "value": 2
+          },
+          "bbox_px": [
+            486.72,
+            104.364,
+            687.36,
+            152.727
+          ],
+          "entity_id": "cell_r1_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Mass",
+            "column_index": 3,
+            "row_index": 1,
+            "row_label": "Seta",
+            "text": "2",
+            "text_bbox_px": [
+              780.68,
+              120.545,
+              794.68,
+              136.545
+            ],
+            "value": 2
+          },
+          "bbox_px": [
+            687.36,
+            104.364,
+            888.0,
+            152.727
+          ],
+          "entity_id": "cell_r1_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 2,
+            "row_label": "Abad",
+            "text": "Abad",
+            "text_bbox_px": [
+              66.0,
+              167.909,
+              135.0,
+              185.909
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            152.727,
+            286.08,
+            201.091
+          ],
+          "entity_id": "cell_r2_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Rank",
+            "column_index": 1,
+            "row_index": 2,
+            "row_label": "Abad",
+            "text": "13",
+            "text_bbox_px": [
+              372.4,
+              168.909,
+              400.4,
+              184.909
+            ],
+            "value": 13
+          },
+          "bbox_px": [
+            286.08,
+            152.727,
+            486.72,
+            201.091
+          ],
+          "entity_id": "cell_r2_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 2,
+            "row_index": 2,
+            "row_label": "Abad",
+            "text": "17",
+            "text_bbox_px": [
+              573.04,
+              168.909,
+              601.04,
+              184.909
+            ],
+            "value": 17
+          },
+          "bbox_px": [
+            486.72,
+            152.727,
+            687.36,
+            201.091
+          ],
+          "entity_id": "cell_r2_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Mass",
+            "column_index": 3,
+            "row_index": 2,
+            "row_label": "Abad",
+            "text": "7",
+            "text_bbox_px": [
+              780.68,
+              168.909,
+              794.68,
+              184.909
+            ],
+            "value": 7
+          },
+          "bbox_px": [
+            687.36,
+            152.727,
+            888.0,
+            201.091
+          ],
+          "entity_id": "cell_r2_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 3,
+            "row_label": "Dao",
+            "text": "Dao",
+            "text_bbox_px": [
+              66.0,
+              216.273,
+              118.0,
+              234.273
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            201.091,
+            286.08,
+            249.455
+          ],
+          "entity_id": "cell_r3_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Rank",
+            "column_index": 1,
+            "row_index": 3,
+            "row_label": "Dao",
+            "text": "17",
+            "text_bbox_px": [
+              372.4,
+              217.273,
+              400.4,
+              233.273
+            ],
+            "value": 17
+          },
+          "bbox_px": [
+            286.08,
+            201.091,
+            486.72,
+            249.455
+          ],
+          "entity_id": "cell_r3_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 2,
+            "row_index": 3,
+            "row_label": "Dao",
+            "text": "2",
+            "text_bbox_px": [
+              580.04,
+              217.273,
+              594.04,
+              233.273
+            ],
+            "value": 2
+          },
+          "bbox_px": [
+            486.72,
+            201.091,
+            687.36,
+            249.455
+          ],
+          "entity_id": "cell_r3_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Mass",
+            "column_index": 3,
+            "row_index": 3,
+            "row_label": "Dao",
+            "text": "4",
+            "text_bbox_px": [
+              780.68,
+              217.273,
+              794.68,
+              233.273
+            ],
+            "value": 4
+          },
+          "bbox_px": [
+            687.36,
+            201.091,
+            888.0,
+            249.455
+          ],
+          "entity_id": "cell_r3_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 4,
+            "row_label": "Allx",
+            "text": "Allx",
+            "text_bbox_px": [
+              66.0,
+              264.636,
+              117.0,
+              282.636
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            249.455,
+            286.08,
+            297.818
+          ],
+          "entity_id": "cell_r4_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Rank",
+            "column_index": 1,
+            "row_index": 4,
+            "row_label": "Allx",
+            "text": "31",
+            "text_bbox_px": [
+              372.4,
+              265.636,
+              400.4,
+              281.636
+            ],
+            "value": 31
+          },
+          "bbox_px": [
+            286.08,
+            249.455,
+            486.72,
+            297.818
+          ],
+          "entity_id": "cell_r4_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 2,
+            "row_index": 4,
+            "row_label": "Allx",
+            "text": "21",
+            "text_bbox_px": [
+              573.04,
+              265.636,
+              601.04,
+              281.636
+            ],
+            "value": 21
+          },
+          "bbox_px": [
+            486.72,
+            249.455,
+            687.36,
+            297.818
+          ],
+          "entity_id": "cell_r4_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Mass",
+            "column_index": 3,
+            "row_index": 4,
+            "row_label": "Allx",
+            "text": "7",
+            "text_bbox_px": [
+              780.68,
+              265.636,
+              794.68,
+              281.636
+            ],
+            "value": 7
+          },
+          "bbox_px": [
+            687.36,
+            249.455,
+            888.0,
+            297.818
+          ],
+          "entity_id": "cell_r4_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 5,
+            "row_label": "Ky",
+            "text": "Ky",
+            "text_bbox_px": [
+              66.0,
+              310.5,
+              101.0,
+              333.5
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            297.818,
+            286.08,
+            346.182
+          ],
+          "entity_id": "cell_r5_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Rank",
+            "column_index": 1,
+            "row_index": 5,
+            "row_label": "Ky",
+            "text": "28",
+            "text_bbox_px": [
+              372.4,
+              314.0,
+              400.4,
+              330.0
+            ],
+            "value": 28
+          },
+          "bbox_px": [
+            286.08,
+            297.818,
+            486.72,
+            346.182
+          ],
+          "entity_id": "cell_r5_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 2,
+            "row_index": 5,
+            "row_label": "Ky",
+            "text": "30",
+            "text_bbox_px": [
+              573.04,
+              314.0,
+              601.04,
+              330.0
+            ],
+            "value": 30
+          },
+          "bbox_px": [
+            486.72,
+            297.818,
+            687.36,
+            346.182
+          ],
+          "entity_id": "cell_r5_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Mass",
+            "column_index": 3,
+            "row_index": 5,
+            "row_label": "Ky",
+            "text": "32",
+            "text_bbox_px": [
+              773.68,
+              314.0,
+              801.68,
+              330.0
+            ],
+            "value": 32
+          },
+          "bbox_px": [
+            687.36,
+            297.818,
+            888.0,
+            346.182
+          ],
+          "entity_id": "cell_r5_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 6,
+            "row_label": "Pare",
+            "text": "Pare",
+            "text_bbox_px": [
+              66.0,
+              361.364,
+              128.0,
+              379.364
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            346.182,
+            286.08,
+            394.545
+          ],
+          "entity_id": "cell_r6_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Rank",
+            "column_index": 1,
+            "row_index": 6,
+            "row_label": "Pare",
+            "text": "10",
+            "text_bbox_px": [
+              372.4,
+              362.364,
+              400.4,
+              378.364
+            ],
+            "value": 10
+          },
+          "bbox_px": [
+            286.08,
+            346.182,
+            486.72,
+            394.545
+          ],
+          "entity_id": "cell_r6_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 2,
+            "row_index": 6,
+            "row_label": "Pare",
+            "text": "16",
+            "text_bbox_px": [
+              573.04,
+              362.364,
+              601.04,
+              378.364
+            ],
+            "value": 16
+          },
+          "bbox_px": [
+            486.72,
+            346.182,
+            687.36,
+            394.545
+          ],
+          "entity_id": "cell_r6_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Mass",
+            "column_index": 3,
+            "row_index": 6,
+            "row_label": "Pare",
+            "text": "14",
+            "text_bbox_px": [
+              773.68,
+              362.364,
+              801.68,
+              378.364
+            ],
+            "value": 14
+          },
+          "bbox_px": [
+            687.36,
+            346.182,
+            888.0,
+            394.545
+          ],
+          "entity_id": "cell_r6_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 7,
+            "row_label": "Huei",
+            "text": "Huei",
+            "text_bbox_px": [
+              66.0,
+              409.727,
+              127.0,
+              427.727
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            394.545,
+            286.08,
+            442.909
+          ],
+          "entity_id": "cell_r7_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Rank",
+            "column_index": 1,
+            "row_index": 7,
+            "row_label": "Huei",
+            "text": "12",
+            "text_bbox_px": [
+              372.4,
+              410.727,
+              400.4,
+              426.727
+            ],
+            "value": 12
+          },
+          "bbox_px": [
+            286.08,
+            394.545,
+            486.72,
+            442.909
+          ],
+          "entity_id": "cell_r7_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 2,
+            "row_index": 7,
+            "row_label": "Huei",
+            "text": "21",
+            "text_bbox_px": [
+              573.04,
+              410.727,
+              601.04,
+              426.727
+            ],
+            "value": 21
+          },
+          "bbox_px": [
+            486.72,
+            394.545,
+            687.36,
+            442.909
+          ],
+          "entity_id": "cell_r7_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Mass",
+            "column_index": 3,
+            "row_index": 7,
+            "row_label": "Huei",
+            "text": "1",
+            "text_bbox_px": [
+              780.68,
+              410.727,
+              794.68,
+              426.727
+            ],
+            "value": 1
+          },
+          "bbox_px": [
+            687.36,
+            394.545,
+            888.0,
+            442.909
+          ],
+          "entity_id": "cell_r7_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 8,
+            "row_label": "Fonz",
+            "text": "Fonz",
+            "text_bbox_px": [
+              66.0,
+              458.091,
+              129.0,
+              476.091
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            442.909,
+            286.08,
+            491.273
+          ],
+          "entity_id": "cell_r8_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Rank",
+            "column_index": 1,
+            "row_index": 8,
+            "row_label": "Fonz",
+            "text": "30",
+            "text_bbox_px": [
+              372.4,
+              459.091,
+              400.4,
+              475.091
+            ],
+            "value": 30
+          },
+          "bbox_px": [
+            286.08,
+            442.909,
+            486.72,
+            491.273
+          ],
+          "entity_id": "cell_r8_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 2,
+            "row_index": 8,
+            "row_label": "Fonz",
+            "text": "24",
+            "text_bbox_px": [
+              573.04,
+              459.091,
+              601.04,
+              475.091
+            ],
+            "value": 24
+          },
+          "bbox_px": [
+            486.72,
+            442.909,
+            687.36,
+            491.273
+          ],
+          "entity_id": "cell_r8_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Mass",
+            "column_index": 3,
+            "row_index": 8,
+            "row_label": "Fonz",
+            "text": "32",
+            "text_bbox_px": [
+              773.68,
+              459.091,
+              801.68,
+              475.091
+            ],
+            "value": 32
+          },
+          "bbox_px": [
+            687.36,
+            442.909,
+            888.0,
+            491.273
+          ],
+          "entity_id": "cell_r8_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 9,
+            "row_label": "Nur",
+            "text": "Nur",
+            "text_bbox_px": [
+              66.0,
+              506.455,
+              115.0,
+              524.455
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            491.273,
+            286.08,
+            539.636
+          ],
+          "entity_id": "cell_r9_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Rank",
+            "column_index": 1,
+            "row_index": 9,
+            "row_label": "Nur",
+            "text": "23",
+            "text_bbox_px": [
+              372.4,
+              507.455,
+              400.4,
+              523.455
+            ],
+            "value": 23
+          },
+          "bbox_px": [
+            286.08,
+            491.273,
+            486.72,
+            539.636
+          ],
+          "entity_id": "cell_r9_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 2,
+            "row_index": 9,
+            "row_label": "Nur",
+            "text": "21",
+            "text_bbox_px": [
+              573.04,
+              507.455,
+              601.04,
+              523.455
+            ],
+            "value": 21
+          },
+          "bbox_px": [
+            486.72,
+            491.273,
+            687.36,
+            539.636
+          ],
+          "entity_id": "cell_r9_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Mass",
+            "column_index": 3,
+            "row_index": 9,
+            "row_label": "Nur",
+            "text": "29",
+            "text_bbox_px": [
+              773.68,
+              507.455,
+              801.68,
+              523.455
+            ],
+            "value": 29
+          },
+          "bbox_px": [
+            687.36,
+            491.273,
+            888.0,
+            539.636
+          ],
+          "entity_id": "cell_r9_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 10,
+            "row_label": "Addy",
+            "text": "Addy",
+            "text_bbox_px": [
+              66.0,
+              552.318,
+              135.0,
+              575.318
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            539.636,
+            286.08,
+            588.0
+          ],
+          "entity_id": "cell_r10_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Rank",
+            "column_index": 1,
+            "row_index": 10,
+            "row_label": "Addy",
+            "text": "6",
+            "text_bbox_px": [
+              379.4,
+              555.818,
+              393.4,
+              571.818
+            ],
+            "value": 6
+          },
+          "bbox_px": [
+            286.08,
+            539.636,
+            486.72,
+            588.0
+          ],
+          "entity_id": "cell_r10_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 2,
+            "row_index": 10,
+            "row_label": "Addy",
+            "text": "10",
+            "text_bbox_px": [
+              573.04,
+              555.818,
+              601.04,
+              571.818
+            ],
+            "value": 10
+          },
+          "bbox_px": [
+            486.72,
+            539.636,
+            687.36,
+            588.0
+          ],
+          "entity_id": "cell_r10_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Mass",
+            "column_index": 3,
+            "row_index": 10,
+            "row_label": "Addy",
+            "text": "5",
+            "text_bbox_px": [
+              780.68,
+              555.818,
+              794.68,
+              571.818
+            ],
+            "value": 5
+          },
+          "bbox_px": [
+            687.36,
+            539.636,
+            888.0,
+            588.0
+          ],
+          "entity_id": "cell_r10_c3",
+          "entity_type": "table_cell"
+        }
+      ],
+      "relations": {
+        "answer_row_label": "Ky",
+        "answer_value": 90,
+        "scene_variant": "card_table",
+        "supporting_region_kind": "row",
+        "supporting_row_label": "Ky",
+        "task_variant": "row_sum_argmax"
+      },
+      "scene_kind": "table_card_table_statistics"
+    },
+    "witness_symbolic": {
+      "type": "bbox_set",
+      "value": [
+        [
+          286.08,
+          297.818,
+          888.0,
+          346.182
+        ]
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

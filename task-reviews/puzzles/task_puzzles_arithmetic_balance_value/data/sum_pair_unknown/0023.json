@@ -1,0 +1,584 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 5
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        456.0,
+        449.0,
+        568.0,
+        561.0
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "puzzles/task_puzzles_arithmetic_balance_value/images/sum_pair_unknown/0023.png"
+  },
+  "instance_seed": 4137756631751613,
+  "prompt": "Work from the equality-style arithmetic puzzle shown in the image: a card-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers separated by an explicit equals sign, plus one highlighted query box below the panels. Read the equality puzzle and determine the number that matches the highlighted query box. Which integer matches the highlighted query box?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the highlighted query box.\nAnswer requirement: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[456,508,568,620]],\"answer\":7}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the equality-style arithmetic puzzle shown in the image: a card-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers separated by an explicit equals sign, plus one highlighted query box below the panels. Read the equality puzzle and determine the number that matches the highlighted query box. Which integer matches the highlighted query box?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the highlighted query box.\nAnswer requirement: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[456,508,568,620]],\"answer\":7}",
+    "answer_only": "Work from the equality-style arithmetic puzzle shown in the image: a card-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers separated by an explicit equals sign, plus one highlighted query box below the panels. Read the equality puzzle and determine the number that matches the highlighted query box. Which integer matches the highlighted query box?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"answer\":7}"
+  },
+  "task": "task_puzzles_arithmetic_balance_value",
+  "task_variant": "sum_pair_unknown",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_range": [
+        1,
+        24
+      ],
+      "answer_value": 5,
+      "max_visible_value": 32,
+      "panel_count": 2,
+      "panel_count_range": [
+        2,
+        3
+      ],
+      "panel_specs": [
+        {
+          "left_items": [
+            {
+              "box_id": "panel_0_left_0",
+              "kind": "object",
+              "object_type": "triangle",
+              "value": null
+            },
+            {
+              "box_id": "panel_0_left_1",
+              "kind": "object",
+              "object_type": "star",
+              "value": null
+            }
+          ],
+          "panel_id": "panel_0",
+          "right_items": [
+            {
+              "box_id": "panel_0_right_0",
+              "kind": "number",
+              "text": "8",
+              "value": 8
+            }
+          ]
+        },
+        {
+          "left_items": [
+            {
+              "box_id": "panel_1_left_0",
+              "kind": "object",
+              "object_type": "triangle",
+              "value": null
+            },
+            {
+              "box_id": "panel_1_left_1",
+              "kind": "object",
+              "object_type": "triangle",
+              "value": null
+            }
+          ],
+          "panel_id": "panel_1",
+          "right_items": [
+            {
+              "box_id": "panel_1_right_0",
+              "kind": "number",
+              "text": "6",
+              "value": 6
+            }
+          ]
+        }
+      ],
+      "query_box_id": "query_box",
+      "query_object_type": "star",
+      "question_format": "query_box_balance",
+      "scene_variant": "balance_card",
+      "scene_variant_probabilities": {
+        "balance_card": 0.3333333333333333,
+        "balance_outline": 0.3333333333333333,
+        "balance_strip": 0.3333333333333333
+      },
+      "solver_trace": {
+        "object_values": {
+          "star": 5,
+          "triangle": 3
+        },
+        "panel_count": 2,
+        "query_object_type": "star"
+      },
+      "supporting_box_ids": [
+        "query_box"
+      ],
+      "task_variant": "sum_pair_unknown",
+      "task_variant_probabilities": {
+        "sum_pair_unknown": 1.0,
+        "three_panel_chain_unknown": 0.0,
+        "two_panel_chain_unknown": 0.0
+      },
+      "total_box_count": 7,
+      "total_box_count_range": [
+        7,
+        10
+      ]
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          456.0,
+          449.0,
+          568.0,
+          561.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_range": [
+          1,
+          24
+        ],
+        "panel_count": 2,
+        "panel_count_range": [
+          2,
+          3
+        ],
+        "scene_variant": "balance_card",
+        "scene_variant_probabilities": {
+          "balance_card": 0.3333333333333333,
+          "balance_outline": 0.3333333333333333,
+          "balance_strip": 0.3333333333333333
+        },
+        "task_variant": "sum_pair_unknown",
+        "task_variant_probabilities": {
+          "sum_pair_unknown": 1.0,
+          "three_panel_chain_unknown": 0.0,
+          "two_panel_chain_unknown": 0.0
+        },
+        "total_box_count": 7,
+        "total_box_count_range": [
+          7,
+          10
+        ]
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "puzzles_arithmetic_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the exact integer value requested by the puzzle",
+          "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the highlighted query box",
+          "json_example": "{\"evidence\":[[456,508,568,620]],\"answer\":7}",
+          "json_example_answer_only": "{\"answer\":7}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a card-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers separated by an explicit equals sign, plus one highlighted query box below the panels"
+        },
+        "task_family_key": "arithmetic_balance_query_puzzle",
+        "task_family_variant_index": 3,
+        "task_key": "balance_value_query",
+        "task_variant_index": 4,
+        "task_variant_key": "sum_pair_unknown",
+        "task_variant_template_index": 2,
+        "template_paths": [
+          "puzzles/arithmetic/puzzles_arithmetic_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:balance_value_query": 5,
+          "task_family:arithmetic_balance_query_puzzle": 5,
+          "task_variant:sum_pair_unknown": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "puzzles_arithmetic_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact integer value requested by the puzzle",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the highlighted query box",
+              "json_example": "{\"evidence\":[[456,508,568,620]],\"answer\":7}",
+              "json_example_answer_only": "{\"answer\":7}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a card-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers separated by an explicit equals sign, plus one highlighted query box below the panels"
+            },
+            "task_family_key": "arithmetic_balance_query_puzzle",
+            "task_family_variant_index": 3,
+            "task_key": "balance_value_query",
+            "task_variant_index": 4,
+            "task_variant_key": "sum_pair_unknown",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "puzzles/arithmetic/puzzles_arithmetic_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:balance_value_query": 5,
+              "task_family:arithmetic_balance_query_puzzle": 5,
+              "task_variant:sum_pair_unknown": 5
+            }
+          },
+          "prompt": "Work from the equality-style arithmetic puzzle shown in the image: a card-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers separated by an explicit equals sign, plus one highlighted query box below the panels. Read the equality puzzle and determine the number that matches the highlighted query box. Which integer matches the highlighted query box?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the highlighted query box.\nAnswer requirement: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[456,508,568,620]],\"answer\":7}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "puzzles_arithmetic_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact integer value requested by the puzzle",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the highlighted query box",
+              "json_example": "{\"evidence\":[[456,508,568,620]],\"answer\":7}",
+              "json_example_answer_only": "{\"answer\":7}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a card-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers separated by an explicit equals sign, plus one highlighted query box below the panels"
+            },
+            "task_family_key": "arithmetic_balance_query_puzzle",
+            "task_family_variant_index": 3,
+            "task_key": "balance_value_query",
+            "task_variant_index": 4,
+            "task_variant_key": "sum_pair_unknown",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "puzzles/arithmetic/puzzles_arithmetic_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:balance_value_query": 5,
+              "task_family:arithmetic_balance_query_puzzle": 5,
+              "task_variant:sum_pair_unknown": 5
+            }
+          },
+          "prompt": "Work from the equality-style arithmetic puzzle shown in the image: a card-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers separated by an explicit equals sign, plus one highlighted query box below the panels. Read the equality puzzle and determine the number that matches the highlighted query box. Which integer matches the highlighted query box?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"answer\":7}"
+        }
+      },
+      "task_variant": "sum_pair_unknown",
+      "template_id": "puzzles_arithmetic_v1"
+    },
+    "render_map": {
+      "box_bboxes_px": {
+        "panel_0_left_0": [
+          212.0,
+          159.0,
+          308.0,
+          255.0
+        ],
+        "panel_0_left_1": [
+          326.0,
+          159.0,
+          422.0,
+          255.0
+        ],
+        "panel_0_right_0": [
+          602.0,
+          159.0,
+          698.0,
+          255.0
+        ],
+        "panel_1_left_0": [
+          212.0,
+          309.0,
+          308.0,
+          405.0
+        ],
+        "panel_1_left_1": [
+          326.0,
+          309.0,
+          422.0,
+          405.0
+        ],
+        "panel_1_right_0": [
+          602.0,
+          309.0,
+          698.0,
+          405.0
+        ],
+        "query_box": [
+          456.0,
+          449.0,
+          568.0,
+          561.0
+        ]
+      },
+      "image_id": "img0",
+      "scene_bbox_px": [
+        72.0,
+        64.0,
+        952.0,
+        656.0
+      ]
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 720,
+      "canvas_width": 1024,
+      "coord_space": "pixel",
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_bbox_px": [
+        72.0,
+        64.0,
+        952.0,
+        656.0
+      ],
+      "scene_variant": "balance_card",
+      "text_style": {
+        "value_font_size_px": 44
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "is_query_box": false,
+            "item_index": 0,
+            "kind": "object",
+            "object_type": "triangle",
+            "panel_index": 0,
+            "side": "left",
+            "value": null
+          },
+          "bbox_px": [
+            212.0,
+            159.0,
+            308.0,
+            255.0
+          ],
+          "entity_id": "panel_0_left_0",
+          "entity_type": "puzzle_balance_box"
+        },
+        {
+          "attrs": {
+            "is_query_box": false,
+            "item_index": 1,
+            "kind": "object",
+            "object_type": "star",
+            "panel_index": 0,
+            "side": "left",
+            "value": null
+          },
+          "bbox_px": [
+            326.0,
+            159.0,
+            422.0,
+            255.0
+          ],
+          "entity_id": "panel_0_left_1",
+          "entity_type": "puzzle_balance_box"
+        },
+        {
+          "attrs": {
+            "is_query_box": false,
+            "item_index": 0,
+            "kind": "number",
+            "object_type": null,
+            "panel_index": 0,
+            "side": "right",
+            "value": 8
+          },
+          "bbox_px": [
+            602.0,
+            159.0,
+            698.0,
+            255.0
+          ],
+          "entity_id": "panel_0_right_0",
+          "entity_type": "puzzle_balance_box"
+        },
+        {
+          "attrs": {
+            "panel_index": 0,
+            "text": "="
+          },
+          "bbox_px": [
+            482.5,
+            189.0,
+            541.5,
+            225.0
+          ],
+          "entity_id": "balance_equals_0",
+          "entity_type": "puzzle_balance_equals"
+        },
+        {
+          "attrs": {
+            "panel_index": 0
+          },
+          "bbox_px": [
+            212.0,
+            159.0,
+            698.0,
+            255.0
+          ],
+          "entity_id": "balance_panel_0",
+          "entity_type": "puzzle_balance_panel"
+        },
+        {
+          "attrs": {
+            "is_query_box": false,
+            "item_index": 0,
+            "kind": "object",
+            "object_type": "triangle",
+            "panel_index": 1,
+            "side": "left",
+            "value": null
+          },
+          "bbox_px": [
+            212.0,
+            309.0,
+            308.0,
+            405.0
+          ],
+          "entity_id": "panel_1_left_0",
+          "entity_type": "puzzle_balance_box"
+        },
+        {
+          "attrs": {
+            "is_query_box": false,
+            "item_index": 1,
+            "kind": "object",
+            "object_type": "triangle",
+            "panel_index": 1,
+            "side": "left",
+            "value": null
+          },
+          "bbox_px": [
+            326.0,
+            309.0,
+            422.0,
+            405.0
+          ],
+          "entity_id": "panel_1_left_1",
+          "entity_type": "puzzle_balance_box"
+        },
+        {
+          "attrs": {
+            "is_query_box": false,
+            "item_index": 0,
+            "kind": "number",
+            "object_type": null,
+            "panel_index": 1,
+            "side": "right",
+            "value": 6
+          },
+          "bbox_px": [
+            602.0,
+            309.0,
+            698.0,
+            405.0
+          ],
+          "entity_id": "panel_1_right_0",
+          "entity_type": "puzzle_balance_box"
+        },
+        {
+          "attrs": {
+            "panel_index": 1,
+            "text": "="
+          },
+          "bbox_px": [
+            482.5,
+            339.0,
+            541.5,
+            375.0
+          ],
+          "entity_id": "balance_equals_1",
+          "entity_type": "puzzle_balance_equals"
+        },
+        {
+          "attrs": {
+            "panel_index": 1
+          },
+          "bbox_px": [
+            212.0,
+            309.0,
+            698.0,
+            405.0
+          ],
+          "entity_id": "balance_panel_1",
+          "entity_type": "puzzle_balance_panel"
+        },
+        {
+          "attrs": {
+            "is_query_box": true,
+            "item_index": 0,
+            "kind": "object",
+            "object_type": "star",
+            "panel_index": null,
+            "side": "query",
+            "value": null
+          },
+          "bbox_px": [
+            456.0,
+            449.0,
+            568.0,
+            561.0
+          ],
+          "entity_id": "query_box",
+          "entity_type": "puzzle_balance_box"
+        }
+      ],
+      "relations": {
+        "answer_value": 5,
+        "query_box_id": "query_box",
+        "query_object_type": "star",
+        "scene_variant": "balance_card",
+        "task_variant": "sum_pair_unknown"
+      },
+      "scene_kind": "puzzle_balance_balance_card"
+    },
+    "witness_symbolic": {
+      "type": "bbox_set",
+      "value": [
+        [
+          456.0,
+          449.0,
+          568.0,
+          561.0
+        ]
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

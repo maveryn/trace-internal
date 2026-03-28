@@ -1,0 +1,1018 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 3
+  },
+  "evidence_gt": {
+    "type": "grid_point_set",
+    "value": [
+      [
+        0,
+        2
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        0,
+        4
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        1,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        1
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        2,
+        3
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "tile/task_tile_pattern_match3_run_count/images/rows/0003.png"
+  },
+  "instance_seed": 1480377133517446,
+  "prompt": "The image shows one rectangular tile board with 3 rows and 5 columns. Row labels are on the left and column labels are on the top. Find the number of rows that contain at least one contiguous brown [#887044] segment of length 3 or more.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to the row-major list of [row, col] coordinates for one canonical 3-tile witness run from each counted line.\nAnswer rule: set \"answer\" to the number of qualifying rows or columns as an integer.\nExample JSON:\n{\"evidence\":[[0,1],[0,2],[0,3],[2,0],[2,1],[2,2]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows one rectangular tile board with 3 rows and 5 columns. Row labels are on the left and column labels are on the top. Find the number of rows that contain at least one contiguous brown [#887044] segment of length 3 or more.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to the row-major list of [row, col] coordinates for one canonical 3-tile witness run from each counted line.\nAnswer rule: set \"answer\" to the number of qualifying rows or columns as an integer.\nExample JSON:\n{\"evidence\":[[0,1],[0,2],[0,3],[2,0],[2,1],[2,2]],\"answer\":2}",
+    "answer_only": "The image shows one rectangular tile board with 3 rows and 5 columns. Row labels are on the left and column labels are on the top. Find the number of rows that contain at least one contiguous brown [#887044] segment of length 3 or more.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of qualifying rows or columns as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_tile_pattern_match3_run_count",
+  "task_variant": "rows",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 3,
+      "cols": 5,
+      "construction_strategy": "exact_target_qualifying_line_count",
+      "line_axis": "rows",
+      "palette": [
+        {
+          "hex": "#D02C91",
+          "label": "magenta [#D02C91]",
+          "name": "magenta",
+          "rgb": [
+            208,
+            44,
+            145
+          ]
+        },
+        {
+          "hex": "#887044",
+          "label": "brown [#887044]",
+          "name": "brown",
+          "rgb": [
+            136,
+            112,
+            68
+          ]
+        }
+      ],
+      "palette_size": 2,
+      "qualifying_line_indices": [
+        0,
+        1,
+        2
+      ],
+      "qualifying_runs": [
+        {
+          "coords": [
+            [
+              0,
+              2
+            ],
+            [
+              0,
+              3
+            ],
+            [
+              0,
+              4
+            ]
+          ],
+          "ids": [
+            "cell_0_2",
+            "cell_0_3",
+            "cell_0_4"
+          ],
+          "line_index": 0,
+          "run_index": 0
+        },
+        {
+          "coords": [
+            [
+              1,
+              0
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              1,
+              2
+            ]
+          ],
+          "ids": [
+            "cell_1_0",
+            "cell_1_1",
+            "cell_1_2"
+          ],
+          "line_index": 1,
+          "run_index": 1
+        },
+        {
+          "coords": [
+            [
+              2,
+              1
+            ],
+            [
+              2,
+              2
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          "ids": [
+            "cell_2_1",
+            "cell_2_2",
+            "cell_2_3"
+          ],
+          "line_index": 2,
+          "run_index": 2
+        }
+      ],
+      "query_color_hex": "#887044",
+      "query_color_label": "brown [#887044]",
+      "query_color_name": "brown",
+      "query_color_rgb": [
+        136,
+        112,
+        68
+      ],
+      "rows": 3,
+      "run_length": 3,
+      "target_qualifying_line_count": 3,
+      "target_qualifying_line_count_range": [
+        1,
+        7
+      ],
+      "task_variant": "rows"
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          157.0,
+          98.0,
+          203.0,
+          189.0
+        ],
+        [
+          203.0,
+          98.0,
+          249.0,
+          189.0
+        ],
+        [
+          249.0,
+          98.0,
+          295.0,
+          189.0
+        ],
+        [
+          65.0,
+          189.0,
+          111.0,
+          280.0
+        ],
+        [
+          111.0,
+          189.0,
+          157.0,
+          280.0
+        ],
+        [
+          157.0,
+          189.0,
+          203.0,
+          280.0
+        ],
+        [
+          111.0,
+          280.0,
+          157.0,
+          371.0
+        ],
+        [
+          157.0,
+          280.0,
+          203.0,
+          371.0
+        ],
+        [
+          203.0,
+          280.0,
+          249.0,
+          371.0
+        ]
+      ],
+      "grid_point_set": [
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          180.0,
+          143.5
+        ],
+        [
+          226.0,
+          143.5
+        ],
+        [
+          272.0,
+          143.5
+        ],
+        [
+          88.0,
+          234.5
+        ],
+        [
+          134.0,
+          234.5
+        ],
+        [
+          180.0,
+          234.5
+        ],
+        [
+          134.0,
+          325.5
+        ],
+        [
+          180.0,
+          325.5
+        ],
+        [
+          226.0,
+          325.5
+        ]
+      ]
+    },
+    "query_spec": {
+      "dsl_program": [
+        {
+          "entity_type": "tile_cell",
+          "op": "select",
+          "out": "cells"
+        },
+        {
+          "in": "cells",
+          "op": "filter",
+          "out": "query_cells",
+          "predicate": {
+            "color_name": "brown"
+          }
+        },
+        {
+          "axis": "rows",
+          "in": "query_cells",
+          "op": "detect_consecutive_runs",
+          "out": "qualifying_runs",
+          "return": "one_canonical_run_per_qualifying_line",
+          "run_length_min": 3
+        },
+        {
+          "coord_space": "tile_grid",
+          "coord_type": "grid_point_set",
+          "in": "qualifying_runs",
+          "op": "project_coords",
+          "ordering": "row_major",
+          "out": "evidence"
+        },
+        {
+          "in": "qualifying_runs",
+          "op": "count",
+          "out": "answer"
+        }
+      ],
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "tile_pattern_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of qualifying rows or columns as an integer",
+          "cols": 5,
+          "evidence_hint": "set \"evidence\" to the row-major list of [row, col] coordinates for one canonical 3-tile witness run from each counted line",
+          "json_example": "{\"evidence\":[[0,1],[0,2],[0,3],[2,0],[2,1],[2,2]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "line_axis": "rows",
+          "query_color": "brown [#887044]",
+          "rows": 3,
+          "run_length": 3
+        },
+        "task_family_key": "rectangular_tile_board",
+        "task_family_variant_index": 0,
+        "task_key": "match3_run_count_query",
+        "task_variant_index": 4,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "tile/pattern/tile_pattern_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:match3_run_count_query": 5,
+          "task_family:rectangular_tile_board": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "tile_pattern_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of qualifying rows or columns as an integer",
+              "cols": 5,
+              "evidence_hint": "set \"evidence\" to the row-major list of [row, col] coordinates for one canonical 3-tile witness run from each counted line",
+              "json_example": "{\"evidence\":[[0,1],[0,2],[0,3],[2,0],[2,1],[2,2]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "line_axis": "rows",
+              "query_color": "brown [#887044]",
+              "rows": 3,
+              "run_length": 3
+            },
+            "task_family_key": "rectangular_tile_board",
+            "task_family_variant_index": 0,
+            "task_key": "match3_run_count_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "tile/pattern/tile_pattern_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:match3_run_count_query": 5,
+              "task_family:rectangular_tile_board": 5
+            }
+          },
+          "prompt": "The image shows one rectangular tile board with 3 rows and 5 columns. Row labels are on the left and column labels are on the top. Find the number of rows that contain at least one contiguous brown [#887044] segment of length 3 or more.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to the row-major list of [row, col] coordinates for one canonical 3-tile witness run from each counted line.\nAnswer rule: set \"answer\" to the number of qualifying rows or columns as an integer.\nExample JSON:\n{\"evidence\":[[0,1],[0,2],[0,3],[2,0],[2,1],[2,2]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "tile_pattern_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of qualifying rows or columns as an integer",
+              "cols": 5,
+              "evidence_hint": "set \"evidence\" to the row-major list of [row, col] coordinates for one canonical 3-tile witness run from each counted line",
+              "json_example": "{\"evidence\":[[0,1],[0,2],[0,3],[2,0],[2,1],[2,2]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "line_axis": "rows",
+              "query_color": "brown [#887044]",
+              "rows": 3,
+              "run_length": 3
+            },
+            "task_family_key": "rectangular_tile_board",
+            "task_family_variant_index": 0,
+            "task_key": "match3_run_count_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "tile/pattern/tile_pattern_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:match3_run_count_query": 5,
+              "task_family:rectangular_tile_board": 5
+            }
+          },
+          "prompt": "The image shows one rectangular tile board with 3 rows and 5 columns. Row labels are on the left and column labels are on the top. Find the number of rows that contain at least one contiguous brown [#887044] segment of length 3 or more.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of qualifying rows or columns as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "rows",
+      "template_id": "match3_run_count_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "cell_0_0": {
+          "bbox": [
+            65.0,
+            98.0,
+            111.0,
+            189.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            88.0,
+            143.5
+          ]
+        },
+        "cell_0_1": {
+          "bbox": [
+            111.0,
+            98.0,
+            157.0,
+            189.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            134.0,
+            143.5
+          ]
+        },
+        "cell_0_2": {
+          "bbox": [
+            157.0,
+            98.0,
+            203.0,
+            189.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            180.0,
+            143.5
+          ]
+        },
+        "cell_0_3": {
+          "bbox": [
+            203.0,
+            98.0,
+            249.0,
+            189.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            226.0,
+            143.5
+          ]
+        },
+        "cell_0_4": {
+          "bbox": [
+            249.0,
+            98.0,
+            295.0,
+            189.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            272.0,
+            143.5
+          ]
+        },
+        "cell_1_0": {
+          "bbox": [
+            65.0,
+            189.0,
+            111.0,
+            280.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            88.0,
+            234.5
+          ]
+        },
+        "cell_1_1": {
+          "bbox": [
+            111.0,
+            189.0,
+            157.0,
+            280.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            134.0,
+            234.5
+          ]
+        },
+        "cell_1_2": {
+          "bbox": [
+            157.0,
+            189.0,
+            203.0,
+            280.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            180.0,
+            234.5
+          ]
+        },
+        "cell_1_3": {
+          "bbox": [
+            203.0,
+            189.0,
+            249.0,
+            280.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            226.0,
+            234.5
+          ]
+        },
+        "cell_1_4": {
+          "bbox": [
+            249.0,
+            189.0,
+            295.0,
+            280.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            272.0,
+            234.5
+          ]
+        },
+        "cell_2_0": {
+          "bbox": [
+            65.0,
+            280.0,
+            111.0,
+            371.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            88.0,
+            325.5
+          ]
+        },
+        "cell_2_1": {
+          "bbox": [
+            111.0,
+            280.0,
+            157.0,
+            371.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            134.0,
+            325.5
+          ]
+        },
+        "cell_2_2": {
+          "bbox": [
+            157.0,
+            280.0,
+            203.0,
+            371.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            180.0,
+            325.5
+          ]
+        },
+        "cell_2_3": {
+          "bbox": [
+            203.0,
+            280.0,
+            249.0,
+            371.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            226.0,
+            325.5
+          ]
+        },
+        "cell_2_4": {
+          "bbox": [
+            249.0,
+            280.0,
+            295.0,
+            371.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            272.0,
+            325.5
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            246,
+            246,
+            246
+          ],
+          "kind": "solid"
+        }
+      },
+      "board_origin_px": [
+        65,
+        98
+      ],
+      "board_size_px": [
+        230,
+        273
+      ],
+      "canvas_height_px": 402,
+      "canvas_width_px": 320,
+      "cols": 5,
+      "coord_space": "tile_grid",
+      "coordinate_gutters_px": {
+        "left": 37,
+        "top": 66
+      },
+      "label_style": {
+        "font_size_px": 21,
+        "stroke_width_px": 3
+      },
+      "outer_padding_px": {
+        "x": 24,
+        "y": 29
+      },
+      "placement_offset_px": {
+        "x": 4,
+        "y": 3
+      },
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "radius": 0.155893
+            },
+            "type": "blur"
+          }
+        ],
+        "enabled": true
+      },
+      "rows": 3,
+      "tile_aspect_ratio": 1.967753,
+      "tile_height_px": 91,
+      "tile_orientation": "tall",
+      "tile_outline_width_px": 3,
+      "tile_width_px": 46,
+      "tiling_type": "rectangular_tiling"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "magenta",
+            "fill_rgb": [
+              208,
+              44,
+              145
+            ],
+            "is_query_match": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "magenta",
+            "fill_rgb": [
+              208,
+              44,
+              145
+            ],
+            "is_query_match": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "canonical_run_index": 0,
+            "col": 2,
+            "color_name": "brown",
+            "fill_rgb": [
+              136,
+              112,
+              68
+            ],
+            "is_canonical_run_evidence": true,
+            "is_query_match": true,
+            "qualifying_line_index": 0,
+            "row": 0
+          },
+          "entity_id": "cell_0_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "canonical_run_index": 0,
+            "col": 3,
+            "color_name": "brown",
+            "fill_rgb": [
+              136,
+              112,
+              68
+            ],
+            "is_canonical_run_evidence": true,
+            "is_query_match": true,
+            "qualifying_line_index": 0,
+            "row": 0
+          },
+          "entity_id": "cell_0_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "canonical_run_index": 0,
+            "col": 4,
+            "color_name": "brown",
+            "fill_rgb": [
+              136,
+              112,
+              68
+            ],
+            "is_canonical_run_evidence": true,
+            "is_query_match": true,
+            "qualifying_line_index": 0,
+            "row": 0
+          },
+          "entity_id": "cell_0_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "canonical_run_index": 1,
+            "col": 0,
+            "color_name": "brown",
+            "fill_rgb": [
+              136,
+              112,
+              68
+            ],
+            "is_canonical_run_evidence": true,
+            "is_query_match": true,
+            "qualifying_line_index": 1,
+            "row": 1
+          },
+          "entity_id": "cell_1_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "canonical_run_index": 1,
+            "col": 1,
+            "color_name": "brown",
+            "fill_rgb": [
+              136,
+              112,
+              68
+            ],
+            "is_canonical_run_evidence": true,
+            "is_query_match": true,
+            "qualifying_line_index": 1,
+            "row": 1
+          },
+          "entity_id": "cell_1_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "canonical_run_index": 1,
+            "col": 2,
+            "color_name": "brown",
+            "fill_rgb": [
+              136,
+              112,
+              68
+            ],
+            "is_canonical_run_evidence": true,
+            "is_query_match": true,
+            "qualifying_line_index": 1,
+            "row": 1
+          },
+          "entity_id": "cell_1_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "magenta",
+            "fill_rgb": [
+              208,
+              44,
+              145
+            ],
+            "is_query_match": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "magenta",
+            "fill_rgb": [
+              208,
+              44,
+              145
+            ],
+            "is_query_match": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "magenta",
+            "fill_rgb": [
+              208,
+              44,
+              145
+            ],
+            "is_query_match": false,
+            "row": 2
+          },
+          "entity_id": "cell_2_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "canonical_run_index": 2,
+            "col": 1,
+            "color_name": "brown",
+            "fill_rgb": [
+              136,
+              112,
+              68
+            ],
+            "is_canonical_run_evidence": true,
+            "is_query_match": true,
+            "qualifying_line_index": 2,
+            "row": 2
+          },
+          "entity_id": "cell_2_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "canonical_run_index": 2,
+            "col": 2,
+            "color_name": "brown",
+            "fill_rgb": [
+              136,
+              112,
+              68
+            ],
+            "is_canonical_run_evidence": true,
+            "is_query_match": true,
+            "qualifying_line_index": 2,
+            "row": 2
+          },
+          "entity_id": "cell_2_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "canonical_run_index": 2,
+            "col": 3,
+            "color_name": "brown",
+            "fill_rgb": [
+              136,
+              112,
+              68
+            ],
+            "is_canonical_run_evidence": true,
+            "is_query_match": true,
+            "qualifying_line_index": 2,
+            "row": 2
+          },
+          "entity_id": "cell_2_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "magenta",
+            "fill_rgb": [
+              208,
+              44,
+              145
+            ],
+            "is_query_match": false,
+            "row": 2
+          },
+          "entity_id": "cell_2_4",
+          "entity_type": "tile_cell"
+        }
+      ],
+      "relations": {},
+      "scene_kind": "rectangular_tile_board"
+    },
+    "witness_symbolic": {
+      "ids": [
+        "cell_0_2",
+        "cell_0_3",
+        "cell_0_4",
+        "cell_1_0",
+        "cell_1_1",
+        "cell_1_2",
+        "cell_2_1",
+        "cell_2_2",
+        "cell_2_3"
+      ],
+      "type": "id_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

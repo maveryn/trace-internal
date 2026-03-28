@@ -1,0 +1,684 @@
+{
+  "answer_gt": {
+    "type": "option_letter",
+    "value": "R"
+  },
+  "evidence_gt": {
+    "type": "integer_list",
+    "value": [
+      16
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_distribution_density_label/images/highest_mode/0001.png"
+  },
+  "instance_seed": 5216223580282190,
+  "prompt": "Look at the chart in the image. It shows a set of labeled violin plots. Each violin shows the shape of one value distribution along the vertical axis, and the most prominent peaks indicate the modal values. Determine which labeled violin plot matches the requested property. Find the label of the violin plot whose density peak is highest on the value axis.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the winning modal value as one integer.\nAnswer format: set \"answer\" to the single uppercase label of the requested violin plot.\nExample JSON:\n{\"evidence\":[14],\"answer\":\"Q\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the chart in the image. It shows a set of labeled violin plots. Each violin shows the shape of one value distribution along the vertical axis, and the most prominent peaks indicate the modal values. Determine which labeled violin plot matches the requested property. Find the label of the violin plot whose density peak is highest on the value axis.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the winning modal value as one integer.\nAnswer format: set \"answer\" to the single uppercase label of the requested violin plot.\nExample JSON:\n{\"evidence\":[14],\"answer\":\"Q\"}",
+    "answer_only": "Look at the chart in the image. It shows a set of labeled violin plots. Each violin shows the shape of one value distribution along the vertical axis, and the most prominent peaks indicate the modal values. Determine which labeled violin plot matches the requested property. Find the label of the violin plot whose density peak is highest on the value axis.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the single uppercase label of the requested violin plot.\nExample JSON:\n{\"answer\":\"Q\"}"
+  },
+  "task": "task_charts_distribution_density_label",
+  "task_variant": "highest_mode",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_label": "R",
+      "category_count": 6,
+      "category_count_range": [
+        4,
+        7
+      ],
+      "evidence_values": [
+        16
+      ],
+      "labels": [
+        "Y",
+        "A",
+        "S",
+        "V",
+        "Q",
+        "R"
+      ],
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb",
+      "mark_fill_rgb": [
+        180,
+        1,
+        217
+      ],
+      "mark_outline_rgb": [
+        99,
+        1,
+        119
+      ],
+      "question_format": "label_open",
+      "scene_variant": "violin",
+      "support_by_label": {
+        "A": {
+          "bimodal": false,
+          "mode_values": [
+            7
+          ],
+          "support_max": 12,
+          "support_min": 4
+        },
+        "Q": {
+          "bimodal": false,
+          "mode_values": [
+            9
+          ],
+          "support_max": 13,
+          "support_min": 6
+        },
+        "R": {
+          "bimodal": false,
+          "mode_values": [
+            16
+          ],
+          "support_max": 20,
+          "support_min": 13
+        },
+        "S": {
+          "bimodal": false,
+          "mode_values": [
+            11
+          ],
+          "support_max": 13,
+          "support_min": 6
+        },
+        "V": {
+          "bimodal": false,
+          "mode_values": [
+            13
+          ],
+          "support_max": 16,
+          "support_min": 9
+        },
+        "Y": {
+          "bimodal": false,
+          "mode_values": [
+            4
+          ],
+          "support_max": 7,
+          "support_min": 1
+        }
+      },
+      "task_variant": "highest_mode",
+      "task_variant_probabilities": {
+        "bimodal_label": 0.3333333333333333,
+        "highest_mode": 0.3333333333333333,
+        "lowest_mode": 0.3333333333333333
+      },
+      "value_range": [
+        1,
+        20
+      ]
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          712.5,
+          66.19,
+          782.5,
+          221.524
+        ]
+      ],
+      "integer_list": [
+        16
+      ],
+      "pixel_point_map": {
+        "R": [
+          747.5,
+          143.857
+        ]
+      },
+      "pixel_point_set": [
+        [
+          747.5,
+          143.857
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "category_count": 6,
+        "category_count_range": [
+          4,
+          7
+        ],
+        "scene_variant": "violin",
+        "task_variant": "highest_mode",
+        "task_variant_probabilities": {
+          "bimodal_label": 0.3333333333333333,
+          "highest_mode": 0.3333333333333333,
+          "lowest_mode": 0.3333333333333333
+        },
+        "value_range": [
+          1,
+          20
+        ]
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "charts_distribution_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the single uppercase label of the requested violin plot",
+          "evidence_hint": "set \"evidence\" to an array containing the winning modal value as one integer",
+          "json_example": "{\"evidence\":[14],\"answer\":\"Q\"}",
+          "json_example_answer_only": "{\"answer\":\"Q\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a set of labeled violin plots. Each violin shows the shape of one value distribution along the vertical axis, and the most prominent peaks indicate the modal values"
+        },
+        "task_family_key": "distribution_chart",
+        "task_family_variant_index": 3,
+        "task_key": "density_label_query",
+        "task_variant_index": 1,
+        "task_variant_key": "highest_mode",
+        "task_variant_template_index": 1,
+        "template_paths": [
+          "charts/distribution/charts_distribution_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:density_label_query": 5,
+          "task_family:distribution_chart": 5,
+          "task_variant:highest_mode": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "charts_distribution_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single uppercase label of the requested violin plot",
+              "evidence_hint": "set \"evidence\" to an array containing the winning modal value as one integer",
+              "json_example": "{\"evidence\":[14],\"answer\":\"Q\"}",
+              "json_example_answer_only": "{\"answer\":\"Q\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a set of labeled violin plots. Each violin shows the shape of one value distribution along the vertical axis, and the most prominent peaks indicate the modal values"
+            },
+            "task_family_key": "distribution_chart",
+            "task_family_variant_index": 3,
+            "task_key": "density_label_query",
+            "task_variant_index": 1,
+            "task_variant_key": "highest_mode",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/distribution/charts_distribution_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:density_label_query": 5,
+              "task_family:distribution_chart": 5,
+              "task_variant:highest_mode": 5
+            }
+          },
+          "prompt": "Look at the chart in the image. It shows a set of labeled violin plots. Each violin shows the shape of one value distribution along the vertical axis, and the most prominent peaks indicate the modal values. Determine which labeled violin plot matches the requested property. Find the label of the violin plot whose density peak is highest on the value axis.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the winning modal value as one integer.\nAnswer format: set \"answer\" to the single uppercase label of the requested violin plot.\nExample JSON:\n{\"evidence\":[14],\"answer\":\"Q\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "charts_distribution_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single uppercase label of the requested violin plot",
+              "evidence_hint": "set \"evidence\" to an array containing the winning modal value as one integer",
+              "json_example": "{\"evidence\":[14],\"answer\":\"Q\"}",
+              "json_example_answer_only": "{\"answer\":\"Q\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a set of labeled violin plots. Each violin shows the shape of one value distribution along the vertical axis, and the most prominent peaks indicate the modal values"
+            },
+            "task_family_key": "distribution_chart",
+            "task_family_variant_index": 3,
+            "task_key": "density_label_query",
+            "task_variant_index": 1,
+            "task_variant_key": "highest_mode",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/distribution/charts_distribution_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:density_label_query": 5,
+              "task_family:distribution_chart": 5,
+              "task_variant:highest_mode": 5
+            }
+          },
+          "prompt": "Look at the chart in the image. It shows a set of labeled violin plots. Each violin shows the shape of one value distribution along the vertical axis, and the most prominent peaks indicate the modal values. Determine which labeled violin plot matches the requested property. Find the label of the violin plot whose density peak is highest on the value axis.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the single uppercase label of the requested violin plot.\nExample JSON:\n{\"answer\":\"Q\"}"
+        }
+      },
+      "task_variant": "highest_mode",
+      "template_id": "charts_distribution_v1"
+    },
+    "render_map": {
+      "image_id": "img0",
+      "label_centers_px": {
+        "A": [
+          279.5,
+          538.0
+        ],
+        "Q": [
+          630.5,
+          538.0
+        ],
+        "R": [
+          747.5,
+          538.0
+        ],
+        "S": [
+          396.5,
+          538.0
+        ],
+        "V": [
+          513.5,
+          538.0
+        ],
+        "Y": [
+          162.5,
+          538.0
+        ]
+      },
+      "plot_bbox_px": [
+        104,
+        44,
+        806,
+        510
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 620,
+      "canvas_width": 860,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "mark_fill_rgb": [
+          180,
+          1,
+          217
+        ],
+        "mark_outline_rgb": [
+          99,
+          1,
+          119
+        ],
+        "sampling_policy": "random_rgb"
+      },
+      "plot_bbox_px": [
+        104,
+        44,
+        806,
+        510
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "violin",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 21,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "label": "Y",
+            "label_center_px": [
+              162.5,
+              538.0
+            ],
+            "mark_bbox_px": [
+              127.494,
+              354.667,
+              197.506,
+              487.81
+            ],
+            "mark_center_px": [
+              162.5,
+              421.238
+            ],
+            "mark_fill_rgb": [
+              180,
+              1,
+              217
+            ],
+            "mark_outline_rgb": [
+              99,
+              1,
+              119
+            ],
+            "mode_center_points_px": [
+              [
+                162.5,
+                421.238
+              ]
+            ],
+            "mode_values": [
+              4
+            ],
+            "scene_variant": "violin",
+            "support_max": 7,
+            "support_min": 1,
+            "x_rank": 0
+          },
+          "entity_id": "violin_Y",
+          "entity_type": "violin"
+        },
+        {
+          "attrs": {
+            "label": "A",
+            "label_center_px": [
+              279.5,
+              538.0
+            ],
+            "mark_bbox_px": [
+              244.494,
+              243.714,
+              314.506,
+              421.238
+            ],
+            "mark_center_px": [
+              279.5,
+              332.476
+            ],
+            "mark_fill_rgb": [
+              180,
+              1,
+              217
+            ],
+            "mark_outline_rgb": [
+              99,
+              1,
+              119
+            ],
+            "mode_center_points_px": [
+              [
+                279.5,
+                354.667
+              ]
+            ],
+            "mode_values": [
+              7
+            ],
+            "scene_variant": "violin",
+            "support_max": 12,
+            "support_min": 4,
+            "x_rank": 1
+          },
+          "entity_id": "violin_A",
+          "entity_type": "violin"
+        },
+        {
+          "attrs": {
+            "label": "S",
+            "label_center_px": [
+              396.5,
+              538.0
+            ],
+            "mark_bbox_px": [
+              361.554,
+              221.524,
+              431.446,
+              376.857
+            ],
+            "mark_center_px": [
+              396.5,
+              299.19
+            ],
+            "mark_fill_rgb": [
+              180,
+              1,
+              217
+            ],
+            "mark_outline_rgb": [
+              99,
+              1,
+              119
+            ],
+            "mode_center_points_px": [
+              [
+                396.5,
+                265.905
+              ]
+            ],
+            "mode_values": [
+              11
+            ],
+            "scene_variant": "violin",
+            "support_max": 13,
+            "support_min": 6,
+            "x_rank": 2
+          },
+          "entity_id": "violin_S",
+          "entity_type": "violin"
+        },
+        {
+          "attrs": {
+            "label": "V",
+            "label_center_px": [
+              513.5,
+              538.0
+            ],
+            "mark_bbox_px": [
+              478.5,
+              154.952,
+              548.5,
+              310.286
+            ],
+            "mark_center_px": [
+              513.5,
+              232.619
+            ],
+            "mark_fill_rgb": [
+              180,
+              1,
+              217
+            ],
+            "mark_outline_rgb": [
+              99,
+              1,
+              119
+            ],
+            "mode_center_points_px": [
+              [
+                513.5,
+                221.524
+              ]
+            ],
+            "mode_values": [
+              13
+            ],
+            "scene_variant": "violin",
+            "support_max": 16,
+            "support_min": 9,
+            "x_rank": 3
+          },
+          "entity_id": "violin_V",
+          "entity_type": "violin"
+        },
+        {
+          "attrs": {
+            "label": "Q",
+            "label_center_px": [
+              630.5,
+              538.0
+            ],
+            "mark_bbox_px": [
+              595.5,
+              221.524,
+              665.5,
+              376.857
+            ],
+            "mark_center_px": [
+              630.5,
+              299.19
+            ],
+            "mark_fill_rgb": [
+              180,
+              1,
+              217
+            ],
+            "mark_outline_rgb": [
+              99,
+              1,
+              119
+            ],
+            "mode_center_points_px": [
+              [
+                630.5,
+                310.286
+              ]
+            ],
+            "mode_values": [
+              9
+            ],
+            "scene_variant": "violin",
+            "support_max": 13,
+            "support_min": 6,
+            "x_rank": 4
+          },
+          "entity_id": "violin_Q",
+          "entity_type": "violin"
+        },
+        {
+          "attrs": {
+            "label": "R",
+            "label_center_px": [
+              747.5,
+              538.0
+            ],
+            "mark_bbox_px": [
+              712.5,
+              66.19,
+              782.5,
+              221.524
+            ],
+            "mark_center_px": [
+              747.5,
+              143.857
+            ],
+            "mark_fill_rgb": [
+              180,
+              1,
+              217
+            ],
+            "mark_outline_rgb": [
+              99,
+              1,
+              119
+            ],
+            "mode_center_points_px": [
+              [
+                747.5,
+                154.952
+              ]
+            ],
+            "mode_values": [
+              16
+            ],
+            "scene_variant": "violin",
+            "support_max": 20,
+            "support_min": 13,
+            "x_rank": 5
+          },
+          "entity_id": "violin_R",
+          "entity_type": "violin"
+        }
+      ],
+      "relations": {
+        "answer_label": "R",
+        "evidence_values": [
+          16
+        ],
+        "scene_variant": "violin",
+        "task_variant": "highest_mode"
+      },
+      "scene_kind": "chart_violin_distribution"
+    },
+    "witness_symbolic": {
+      "type": "integer_list",
+      "value": [
+        16
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

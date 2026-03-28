@@ -38,7 +38,7 @@ PYTHONPATH=. python scripts/run_task_review.py --tasks <task_id> --mode inspecti
 ```
 
 ## Output layout
-Each task review writes under `task-reviews/<task_id>/`:
+Each task review writes under `task-reviews/<domain>/<task_id>/`:
 - `random_review_100.json`
 - `distribution_review.json`
 - `<task_id>.xlsx` (one sheet per task variant)

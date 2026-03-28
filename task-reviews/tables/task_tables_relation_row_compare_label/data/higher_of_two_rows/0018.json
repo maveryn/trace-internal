@@ -1,0 +1,1250 @@
+{
+  "answer_gt": {
+    "type": "string",
+    "value": "Hako"
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        486.72,
+        233.333,
+        687.36,
+        322.0
+      ],
+      [
+        486.72,
+        499.333,
+        687.36,
+        588.0
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "tables/task_tables_relation_row_compare_label/images/higher_of_two_rows/0018.png"
+  },
+  "instance_seed": 2801296396992692,
+  "prompt": "Use the table in the image. It shows a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Find which of the two specified rows has the requested value relation in the named column. Look at the Gain column for rows Soo and Hako. Which row is larger?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two compared value cells in the prompt.\nAnswer field: set \"answer\" to the row label with the requested higher or lower value.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[260,238,372,294]],\"answer\":\"Ava\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the table in the image. It shows a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Find which of the two specified rows has the requested value relation in the named column. Look at the Gain column for rows Soo and Hako. Which row is larger?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two compared value cells in the prompt.\nAnswer field: set \"answer\" to the row label with the requested higher or lower value.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[260,238,372,294]],\"answer\":\"Ava\"}",
+    "answer_only": "Use the table in the image. It shows a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Find which of the two specified rows has the requested value relation in the named column. Look at the Gain column for rows Soo and Hako. Which row is larger?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the row label with the requested higher or lower value.\nExample JSON:\n{\"answer\":\"Ava\"}"
+  },
+  "task": "task_tables_relation_row_compare_label",
+  "task_variant": "higher_of_two_rows",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_row_index": 4,
+      "answer_row_label": "Hako",
+      "answer_value": 15,
+      "column_headers": [
+        "Time",
+        "Gain",
+        "Dist"
+      ],
+      "numeric_column_count": 3,
+      "numeric_column_count_range": [
+        3,
+        5
+      ],
+      "query_column": "Gain",
+      "query_column_index": 1,
+      "query_rows": [
+        {
+          "cell_id": "cell_r2_c2",
+          "row_index": 1,
+          "row_label": "Soo",
+          "value": 14
+        },
+        {
+          "cell_id": "cell_r5_c2",
+          "row_index": 4,
+          "row_label": "Hako",
+          "value": 15
+        }
+      ],
+      "row_count": 5,
+      "row_count_range": [
+        5,
+        10
+      ],
+      "row_labels": [
+        "Pru",
+        "Soo",
+        "Jeth",
+        "Olia",
+        "Hako"
+      ],
+      "scene_variant": "spreadsheet",
+      "scene_variant_probabilities": {
+        "card_table": 0.25,
+        "ledger": 0.25,
+        "spreadsheet": 0.25,
+        "zebra": 0.25
+      },
+      "supporting_cell_ids": [
+        "cell_r2_c2",
+        "cell_r5_c2"
+      ],
+      "task_variant": "higher_of_two_rows",
+      "task_variant_probabilities": {
+        "higher_of_two_rows": 1.0,
+        "lower_of_two_rows": 0.0
+      },
+      "value_range": [
+        1,
+        32
+      ],
+      "values_by_row": {
+        "Hako": {
+          "Dist": 12,
+          "Gain": 15,
+          "Time": 9
+        },
+        "Jeth": {
+          "Dist": 7,
+          "Gain": 26,
+          "Time": 17
+        },
+        "Olia": {
+          "Dist": 27,
+          "Gain": 17,
+          "Time": 6
+        },
+        "Pru": {
+          "Dist": 21,
+          "Gain": 24,
+          "Time": 20
+        },
+        "Soo": {
+          "Dist": 21,
+          "Gain": 14,
+          "Time": 16
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          486.72,
+          233.333,
+          687.36,
+          322.0
+        ],
+        [
+          486.72,
+          499.333,
+          687.36,
+          588.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "numeric_column_count": 3,
+        "query_column": "Gain",
+        "query_rows": [
+          {
+            "cell_id": "cell_r2_c2",
+            "row_index": 1,
+            "row_label": "Soo",
+            "value": 14
+          },
+          {
+            "cell_id": "cell_r5_c2",
+            "row_index": 4,
+            "row_label": "Hako",
+            "value": 15
+          }
+        ],
+        "row_count": 5,
+        "scene_variant": "spreadsheet",
+        "scene_variant_probabilities": {
+          "card_table": 0.25,
+          "ledger": 0.25,
+          "spreadsheet": 0.25,
+          "zebra": 0.25
+        },
+        "task_variant": "higher_of_two_rows",
+        "task_variant_probabilities": {
+          "higher_of_two_rows": 1.0,
+          "lower_of_two_rows": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "tables_relation_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the row label with the requested higher or lower value",
+          "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two compared value cells in the prompt",
+          "json_example": "{\"evidence\":[[260,180,372,236],[260,238,372,294]],\"answer\":\"Ava\"}",
+          "json_example_answer_only": "{\"answer\":\"Ava\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row",
+          "query_column": "Gain",
+          "query_row_label_a": "Soo",
+          "query_row_label_b": "Hako"
+        },
+        "task_family_key": "styled_table_relation",
+        "task_family_variant_index": 1,
+        "task_key": "row_compare_label_query",
+        "task_variant_index": 3,
+        "task_variant_key": "higher_of_two_rows",
+        "task_variant_template_index": 1,
+        "template_paths": [
+          "tables/relation/tables_relation_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:row_compare_label_query": 5,
+          "task_family:styled_table_relation": 5,
+          "task_variant:higher_of_two_rows": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "tables_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the row label with the requested higher or lower value",
+              "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two compared value cells in the prompt",
+              "json_example": "{\"evidence\":[[260,180,372,236],[260,238,372,294]],\"answer\":\"Ava\"}",
+              "json_example_answer_only": "{\"answer\":\"Ava\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row",
+              "query_column": "Gain",
+              "query_row_label_a": "Soo",
+              "query_row_label_b": "Hako"
+            },
+            "task_family_key": "styled_table_relation",
+            "task_family_variant_index": 1,
+            "task_key": "row_compare_label_query",
+            "task_variant_index": 3,
+            "task_variant_key": "higher_of_two_rows",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "tables/relation/tables_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:row_compare_label_query": 5,
+              "task_family:styled_table_relation": 5,
+              "task_variant:higher_of_two_rows": 5
+            }
+          },
+          "prompt": "Use the table in the image. It shows a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Find which of the two specified rows has the requested value relation in the named column. Look at the Gain column for rows Soo and Hako. Which row is larger?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two compared value cells in the prompt.\nAnswer field: set \"answer\" to the row label with the requested higher or lower value.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[260,238,372,294]],\"answer\":\"Ava\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "tables_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the row label with the requested higher or lower value",
+              "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two compared value cells in the prompt",
+              "json_example": "{\"evidence\":[[260,180,372,236],[260,238,372,294]],\"answer\":\"Ava\"}",
+              "json_example_answer_only": "{\"answer\":\"Ava\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row",
+              "query_column": "Gain",
+              "query_row_label_a": "Soo",
+              "query_row_label_b": "Hako"
+            },
+            "task_family_key": "styled_table_relation",
+            "task_family_variant_index": 1,
+            "task_key": "row_compare_label_query",
+            "task_variant_index": 3,
+            "task_variant_key": "higher_of_two_rows",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "tables/relation/tables_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:row_compare_label_query": 5,
+              "task_family:styled_table_relation": 5,
+              "task_variant:higher_of_two_rows": 5
+            }
+          },
+          "prompt": "Use the table in the image. It shows a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Find which of the two specified rows has the requested value relation in the named column. Look at the Gain column for rows Soo and Hako. Which row is larger?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the row label with the requested higher or lower value.\nExample JSON:\n{\"answer\":\"Ava\"}"
+        }
+      },
+      "task_variant": "higher_of_two_rows",
+      "template_id": "tables_relation_v1"
+    },
+    "render_map": {
+      "cell_bboxes_px": {
+        "cell_r0_c0": [
+          52.0,
+          56.0,
+          286.08,
+          144.667
+        ],
+        "cell_r0_c1": [
+          286.08,
+          56.0,
+          486.72,
+          144.667
+        ],
+        "cell_r0_c2": [
+          486.72,
+          56.0,
+          687.36,
+          144.667
+        ],
+        "cell_r0_c3": [
+          687.36,
+          56.0,
+          888.0,
+          144.667
+        ],
+        "cell_r1_c0": [
+          52.0,
+          144.667,
+          286.08,
+          233.333
+        ],
+        "cell_r1_c1": [
+          286.08,
+          144.667,
+          486.72,
+          233.333
+        ],
+        "cell_r1_c2": [
+          486.72,
+          144.667,
+          687.36,
+          233.333
+        ],
+        "cell_r1_c3": [
+          687.36,
+          144.667,
+          888.0,
+          233.333
+        ],
+        "cell_r2_c0": [
+          52.0,
+          233.333,
+          286.08,
+          322.0
+        ],
+        "cell_r2_c1": [
+          286.08,
+          233.333,
+          486.72,
+          322.0
+        ],
+        "cell_r2_c2": [
+          486.72,
+          233.333,
+          687.36,
+          322.0
+        ],
+        "cell_r2_c3": [
+          687.36,
+          233.333,
+          888.0,
+          322.0
+        ],
+        "cell_r3_c0": [
+          52.0,
+          322.0,
+          286.08,
+          410.667
+        ],
+        "cell_r3_c1": [
+          286.08,
+          322.0,
+          486.72,
+          410.667
+        ],
+        "cell_r3_c2": [
+          486.72,
+          322.0,
+          687.36,
+          410.667
+        ],
+        "cell_r3_c3": [
+          687.36,
+          322.0,
+          888.0,
+          410.667
+        ],
+        "cell_r4_c0": [
+          52.0,
+          410.667,
+          286.08,
+          499.333
+        ],
+        "cell_r4_c1": [
+          286.08,
+          410.667,
+          486.72,
+          499.333
+        ],
+        "cell_r4_c2": [
+          486.72,
+          410.667,
+          687.36,
+          499.333
+        ],
+        "cell_r4_c3": [
+          687.36,
+          410.667,
+          888.0,
+          499.333
+        ],
+        "cell_r5_c0": [
+          52.0,
+          499.333,
+          286.08,
+          588.0
+        ],
+        "cell_r5_c1": [
+          286.08,
+          499.333,
+          486.72,
+          588.0
+        ],
+        "cell_r5_c2": [
+          486.72,
+          499.333,
+          687.36,
+          588.0
+        ],
+        "cell_r5_c3": [
+          687.36,
+          499.333,
+          888.0,
+          588.0
+        ]
+      },
+      "column_region_bboxes_px": {
+        "Dist": [
+          687.36,
+          144.667,
+          888.0,
+          588.0
+        ],
+        "Gain": [
+          486.72,
+          144.667,
+          687.36,
+          588.0
+        ],
+        "Time": [
+          286.08,
+          144.667,
+          486.72,
+          588.0
+        ]
+      },
+      "header_bboxes_px": {
+        "Dist": [
+          687.36,
+          56.0,
+          888.0,
+          144.667
+        ],
+        "Gain": [
+          486.72,
+          56.0,
+          687.36,
+          144.667
+        ],
+        "Time": [
+          286.08,
+          56.0,
+          486.72,
+          144.667
+        ]
+      },
+      "image_id": "img0",
+      "row_label_bboxes_px": {
+        "Hako": [
+          52.0,
+          499.333,
+          286.08,
+          588.0
+        ],
+        "Jeth": [
+          52.0,
+          322.0,
+          286.08,
+          410.667
+        ],
+        "Olia": [
+          52.0,
+          410.667,
+          286.08,
+          499.333
+        ],
+        "Pru": [
+          52.0,
+          144.667,
+          286.08,
+          233.333
+        ],
+        "Soo": [
+          52.0,
+          233.333,
+          286.08,
+          322.0
+        ]
+      },
+      "row_region_bboxes_px": {
+        "Hako": [
+          286.08,
+          499.333,
+          888.0,
+          588.0
+        ],
+        "Jeth": [
+          286.08,
+          322.0,
+          888.0,
+          410.667
+        ],
+        "Olia": [
+          286.08,
+          410.667,
+          888.0,
+          499.333
+        ],
+        "Pru": [
+          286.08,
+          144.667,
+          888.0,
+          233.333
+        ],
+        "Soo": [
+          286.08,
+          233.333,
+          888.0,
+          322.0
+        ]
+      },
+      "table_bbox_px": [
+        52.0,
+        56.0,
+        888.0,
+        588.0
+      ]
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 640,
+      "canvas_width": 940,
+      "coord_space": "pixel",
+      "grid_style": {
+        "border_width_px": 2,
+        "grid_width_px": 1
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "spreadsheet",
+      "table_bbox_px": [
+        52.0,
+        56.0,
+        888.0,
+        588.0
+      ],
+      "text_style": {
+        "label_font_size_px": 24,
+        "value_font_size_px": 22
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Name",
+            "text_bbox_px": [
+              130.54,
+              91.333,
+              207.54,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            56.0,
+            286.08,
+            144.667
+          ],
+          "entity_id": "cell_r0_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Time",
+            "column_index": 1,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Time",
+            "text_bbox_px": [
+              353.9,
+              91.333,
+              418.9,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            286.08,
+            56.0,
+            486.72,
+            144.667
+          ],
+          "entity_id": "cell_r0_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Gain",
+            "column_index": 2,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Gain",
+            "text_bbox_px": [
+              556.54,
+              91.333,
+              617.54,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            486.72,
+            56.0,
+            687.36,
+            144.667
+          ],
+          "entity_id": "cell_r0_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Dist",
+            "column_index": 3,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Dist",
+            "text_bbox_px": [
+              761.18,
+              91.333,
+              814.18,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            687.36,
+            56.0,
+            888.0,
+            144.667
+          ],
+          "entity_id": "cell_r0_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 1,
+            "row_label": "Pru",
+            "text": "Pru",
+            "text_bbox_px": [
+              66.0,
+              180.0,
+              113.0,
+              198.0
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            144.667,
+            286.08,
+            233.333
+          ],
+          "entity_id": "cell_r1_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 1,
+            "row_index": 1,
+            "row_label": "Pru",
+            "text": "20",
+            "text_bbox_px": [
+              372.4,
+              181.0,
+              400.4,
+              197.0
+            ],
+            "value": 20
+          },
+          "bbox_px": [
+            286.08,
+            144.667,
+            486.72,
+            233.333
+          ],
+          "entity_id": "cell_r1_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Gain",
+            "column_index": 2,
+            "row_index": 1,
+            "row_label": "Pru",
+            "text": "24",
+            "text_bbox_px": [
+              573.04,
+              181.0,
+              601.04,
+              197.0
+            ],
+            "value": 24
+          },
+          "bbox_px": [
+            486.72,
+            144.667,
+            687.36,
+            233.333
+          ],
+          "entity_id": "cell_r1_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 3,
+            "row_index": 1,
+            "row_label": "Pru",
+            "text": "21",
+            "text_bbox_px": [
+              773.68,
+              181.0,
+              801.68,
+              197.0
+            ],
+            "value": 21
+          },
+          "bbox_px": [
+            687.36,
+            144.667,
+            888.0,
+            233.333
+          ],
+          "entity_id": "cell_r1_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 2,
+            "row_label": "Soo",
+            "text": "Soo",
+            "text_bbox_px": [
+              66.0,
+              268.667,
+              115.0,
+              286.667
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            233.333,
+            286.08,
+            322.0
+          ],
+          "entity_id": "cell_r2_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 1,
+            "row_index": 2,
+            "row_label": "Soo",
+            "text": "16",
+            "text_bbox_px": [
+              372.4,
+              269.667,
+              400.4,
+              285.667
+            ],
+            "value": 16
+          },
+          "bbox_px": [
+            286.08,
+            233.333,
+            486.72,
+            322.0
+          ],
+          "entity_id": "cell_r2_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Gain",
+            "column_index": 2,
+            "row_index": 2,
+            "row_label": "Soo",
+            "text": "14",
+            "text_bbox_px": [
+              573.04,
+              269.667,
+              601.04,
+              285.667
+            ],
+            "value": 14
+          },
+          "bbox_px": [
+            486.72,
+            233.333,
+            687.36,
+            322.0
+          ],
+          "entity_id": "cell_r2_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 3,
+            "row_index": 2,
+            "row_label": "Soo",
+            "text": "21",
+            "text_bbox_px": [
+              773.68,
+              269.667,
+              801.68,
+              285.667
+            ],
+            "value": 21
+          },
+          "bbox_px": [
+            687.36,
+            233.333,
+            888.0,
+            322.0
+          ],
+          "entity_id": "cell_r2_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 3,
+            "row_label": "Jeth",
+            "text": "Jeth",
+            "text_bbox_px": [
+              66.0,
+              354.833,
+              121.0,
+              377.833
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            322.0,
+            286.08,
+            410.667
+          ],
+          "entity_id": "cell_r3_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 1,
+            "row_index": 3,
+            "row_label": "Jeth",
+            "text": "17",
+            "text_bbox_px": [
+              372.4,
+              358.333,
+              400.4,
+              374.333
+            ],
+            "value": 17
+          },
+          "bbox_px": [
+            286.08,
+            322.0,
+            486.72,
+            410.667
+          ],
+          "entity_id": "cell_r3_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Gain",
+            "column_index": 2,
+            "row_index": 3,
+            "row_label": "Jeth",
+            "text": "26",
+            "text_bbox_px": [
+              573.04,
+              358.333,
+              601.04,
+              374.333
+            ],
+            "value": 26
+          },
+          "bbox_px": [
+            486.72,
+            322.0,
+            687.36,
+            410.667
+          ],
+          "entity_id": "cell_r3_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 3,
+            "row_index": 3,
+            "row_label": "Jeth",
+            "text": "7",
+            "text_bbox_px": [
+              780.68,
+              358.333,
+              794.68,
+              374.333
+            ],
+            "value": 7
+          },
+          "bbox_px": [
+            687.36,
+            322.0,
+            888.0,
+            410.667
+          ],
+          "entity_id": "cell_r3_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 4,
+            "row_label": "Olia",
+            "text": "Olia",
+            "text_bbox_px": [
+              66.0,
+              446.0,
+              118.0,
+              464.0
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            410.667,
+            286.08,
+            499.333
+          ],
+          "entity_id": "cell_r4_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 1,
+            "row_index": 4,
+            "row_label": "Olia",
+            "text": "6",
+            "text_bbox_px": [
+              379.4,
+              447.0,
+              393.4,
+              463.0
+            ],
+            "value": 6
+          },
+          "bbox_px": [
+            286.08,
+            410.667,
+            486.72,
+            499.333
+          ],
+          "entity_id": "cell_r4_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Gain",
+            "column_index": 2,
+            "row_index": 4,
+            "row_label": "Olia",
+            "text": "17",
+            "text_bbox_px": [
+              573.04,
+              447.0,
+              601.04,
+              463.0
+            ],
+            "value": 17
+          },
+          "bbox_px": [
+            486.72,
+            410.667,
+            687.36,
+            499.333
+          ],
+          "entity_id": "cell_r4_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 3,
+            "row_index": 4,
+            "row_label": "Olia",
+            "text": "27",
+            "text_bbox_px": [
+              773.68,
+              447.0,
+              801.68,
+              463.0
+            ],
+            "value": 27
+          },
+          "bbox_px": [
+            687.36,
+            410.667,
+            888.0,
+            499.333
+          ],
+          "entity_id": "cell_r4_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 5,
+            "row_label": "Hako",
+            "text": "Hako",
+            "text_bbox_px": [
+              66.0,
+              534.667,
+              134.0,
+              552.667
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            499.333,
+            286.08,
+            588.0
+          ],
+          "entity_id": "cell_r5_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 1,
+            "row_index": 5,
+            "row_label": "Hako",
+            "text": "9",
+            "text_bbox_px": [
+              379.4,
+              535.667,
+              393.4,
+              551.667
+            ],
+            "value": 9
+          },
+          "bbox_px": [
+            286.08,
+            499.333,
+            486.72,
+            588.0
+          ],
+          "entity_id": "cell_r5_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Gain",
+            "column_index": 2,
+            "row_index": 5,
+            "row_label": "Hako",
+            "text": "15",
+            "text_bbox_px": [
+              573.04,
+              535.667,
+              601.04,
+              551.667
+            ],
+            "value": 15
+          },
+          "bbox_px": [
+            486.72,
+            499.333,
+            687.36,
+            588.0
+          ],
+          "entity_id": "cell_r5_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 3,
+            "row_index": 5,
+            "row_label": "Hako",
+            "text": "12",
+            "text_bbox_px": [
+              773.68,
+              535.667,
+              801.68,
+              551.667
+            ],
+            "value": 12
+          },
+          "bbox_px": [
+            687.36,
+            499.333,
+            888.0,
+            588.0
+          ],
+          "entity_id": "cell_r5_c3",
+          "entity_type": "table_cell"
+        }
+      ],
+      "relations": {
+        "answer_row_label": "Hako",
+        "answer_value": 15,
+        "query_column": "Gain",
+        "query_rows": [
+          {
+            "cell_id": "cell_r2_c2",
+            "row_index": 1,
+            "row_label": "Soo",
+            "value": 14
+          },
+          {
+            "cell_id": "cell_r5_c2",
+            "row_index": 4,
+            "row_label": "Hako",
+            "value": 15
+          }
+        ],
+        "scene_variant": "spreadsheet",
+        "supporting_cell_ids": [
+          "cell_r2_c2",
+          "cell_r5_c2"
+        ],
+        "task_variant": "higher_of_two_rows"
+      },
+      "scene_kind": "table_spreadsheet_relation"
+    },
+    "witness_symbolic": {
+      "type": "bbox_set",
+      "value": [
+        [
+          486.72,
+          233.333,
+          687.36,
+          322.0
+        ],
+        [
+          486.72,
+          499.333,
+          687.36,
+          588.0
+        ]
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

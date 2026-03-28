@@ -1,0 +1,1772 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 0
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": []
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_gt_b_count/0004.png"
+  },
+  "instance_seed": 7029981128948676,
+  "prompt": "Look at the multiseries chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Gula higher than Weed.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the multiseries chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Gula higher than Weed.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+    "answer_only": "Look at the multiseries chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Gula higher than Weed.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_charts_multiseries_pairwise_comparison_count",
+  "task_variant": "series_a_gt_b_count",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 0,
+      "category_count": 10,
+      "category_count_range": [
+        5,
+        10
+      ],
+      "category_labels": [
+        "T",
+        "V",
+        "P",
+        "C",
+        "H",
+        "J",
+        "F",
+        "B",
+        "L",
+        "G"
+      ],
+      "comparison": "greater_than",
+      "evidence_labels": [],
+      "left_series_label": "Gula",
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb_palette",
+      "queried_series_labels": [
+        "Gula",
+        "Weed"
+      ],
+      "question_format": "numeric_open",
+      "right_series_label": "Weed",
+      "scene_variant": "grouped_bar",
+      "scene_variant_probabilities": {
+        "grouped_bar": 0.25,
+        "grouped_horizontal_bar": 0.25,
+        "grouped_lollipop": 0.25,
+        "multi_line": 0.25
+      },
+      "series_count": 3,
+      "series_count_range": [
+        2,
+        3
+      ],
+      "series_fill_palette_rgb": [
+        [
+          218,
+          105,
+          217
+        ],
+        [
+          43,
+          59,
+          201
+        ],
+        [
+          113,
+          215,
+          112
+        ]
+      ],
+      "series_labels": [
+        "Gula",
+        "Weed",
+        "Heid"
+      ],
+      "series_outline_palette_rgb": [
+        [
+          120,
+          58,
+          119
+        ],
+        [
+          24,
+          32,
+          111
+        ],
+        [
+          62,
+          118,
+          62
+        ]
+      ],
+      "target_answer": 0,
+      "target_answer_range": [
+        0,
+        8
+      ],
+      "task_variant": "series_a_gt_b_count",
+      "task_variant_probabilities": {
+        "series_a_gt_b_count": 0.5,
+        "series_a_lt_b_count": 0.5
+      },
+      "values_by_category": {
+        "B": {
+          "Gula": 7,
+          "Heid": 8,
+          "Weed": 9
+        },
+        "C": {
+          "Gula": 4,
+          "Heid": 6,
+          "Weed": 10
+        },
+        "F": {
+          "Gula": 4,
+          "Heid": 14,
+          "Weed": 15
+        },
+        "G": {
+          "Gula": 4,
+          "Heid": 9,
+          "Weed": 17
+        },
+        "H": {
+          "Gula": 1,
+          "Heid": 9,
+          "Weed": 16
+        },
+        "J": {
+          "Gula": 1,
+          "Heid": 4,
+          "Weed": 20
+        },
+        "L": {
+          "Gula": 8,
+          "Heid": 10,
+          "Weed": 17
+        },
+        "P": {
+          "Gula": 2,
+          "Heid": 3,
+          "Weed": 18
+        },
+        "T": {
+          "Gula": 8,
+          "Heid": 12,
+          "Weed": 16
+        },
+        "V": {
+          "Gula": 1,
+          "Heid": 3,
+          "Weed": 6
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [],
+      "label_set": [],
+      "pixel_point_map": {},
+      "pixel_point_set": []
+    },
+    "query_spec": {
+      "params": {
+        "category_count": 10,
+        "category_count_range": [
+          5,
+          10
+        ],
+        "comparison": "greater_than",
+        "queried_series_labels": [
+          "Gula",
+          "Weed"
+        ],
+        "scene_variant": "grouped_bar",
+        "scene_variant_probabilities": {
+          "grouped_bar": 0.25,
+          "grouped_horizontal_bar": 0.25,
+          "grouped_lollipop": 0.25,
+          "multi_line": 0.25
+        },
+        "series_count": 3,
+        "series_count_range": [
+          2,
+          3
+        ],
+        "target_answer": 0,
+        "target_answer_range": [
+          0,
+          8
+        ],
+        "task_variant": "series_a_gt_b_count",
+        "task_variant_probabilities": {
+          "series_a_gt_b_count": 0.5,
+          "series_a_lt_b_count": 0.5
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "charts_multiseries_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series",
+          "json_example": "{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "left_series": "Gula",
+          "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+          "right_series": "Weed"
+        },
+        "task_family_key": "multiseries_chart_comparison",
+        "task_family_variant_index": 3,
+        "task_key": "pairwise_comparison_count_query",
+        "task_variant_index": 0,
+        "task_variant_key": "series_a_gt_b_count",
+        "task_variant_template_index": 4,
+        "template_paths": [
+          "charts/multiseries/charts_multiseries_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:pairwise_comparison_count_query": 5,
+          "task_family:multiseries_chart_comparison": 5,
+          "task_variant:series_a_gt_b_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series",
+              "json_example": "{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Gula",
+              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+              "right_series": "Weed"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 3,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 0,
+            "task_variant_key": "series_a_gt_b_count",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_gt_b_count": 5
+            }
+          },
+          "prompt": "Look at the multiseries chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Gula higher than Weed.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series",
+              "json_example": "{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Gula",
+              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+              "right_series": "Weed"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 3,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 0,
+            "task_variant_key": "series_a_gt_b_count",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_gt_b_count": 5
+            }
+          },
+          "prompt": "Look at the multiseries chart in the image. It shows a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Gula higher than Weed.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "series_a_gt_b_count",
+      "template_id": "charts_multiseries_v1"
+    },
+    "render_map": {
+      "category_label_centers_px": {
+        "B": [
+          663.5,
+          554.0
+        ],
+        "C": [
+          358.7,
+          554.0
+        ],
+        "F": [
+          587.3,
+          554.0
+        ],
+        "G": [
+          815.9,
+          554.0
+        ],
+        "H": [
+          434.9,
+          554.0
+        ],
+        "J": [
+          511.1,
+          554.0
+        ],
+        "L": [
+          739.7,
+          554.0
+        ],
+        "P": [
+          282.5,
+          554.0
+        ],
+        "T": [
+          130.1,
+          554.0
+        ],
+        "V": [
+          206.3,
+          554.0
+        ]
+      },
+      "image_id": "img0",
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 620,
+      "canvas_width": 1100,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "sampling_policy": "random_rgb_palette",
+        "series_fill_palette_rgb": [
+          [
+            218,
+            105,
+            217
+          ],
+          [
+            43,
+            59,
+            201
+          ],
+          [
+            113,
+            215,
+            112
+          ]
+        ],
+        "series_outline_palette_rgb": [
+          [
+            120,
+            58,
+            119
+          ],
+          [
+            24,
+            32,
+            111
+          ],
+          [
+            62,
+            118,
+            62
+          ]
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "grouped_bar",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 21,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              109.374,
+              159.238,
+              150.826,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              130.1,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              109.374,
+              343.619,
+              120.346,
+              528.0
+            ],
+            "mark_center_px": [
+              114.86,
+              343.619
+            ],
+            "mark_fill_rgb": [
+              218,
+              105,
+              217
+            ],
+            "mark_outline_rgb": [
+              120,
+              58,
+              119
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Gula",
+            "series_rank": 0,
+            "value": 8
+          },
+          "entity_id": "mark_T_Gula",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              109.374,
+              159.238,
+              150.826,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              130.1,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              124.614,
+              159.238,
+              135.586,
+              528.0
+            ],
+            "mark_center_px": [
+              130.1,
+              159.238
+            ],
+            "mark_fill_rgb": [
+              43,
+              59,
+              201
+            ],
+            "mark_outline_rgb": [
+              24,
+              32,
+              111
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Weed",
+            "series_rank": 1,
+            "value": 16
+          },
+          "entity_id": "mark_T_Weed",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              109.374,
+              159.238,
+              150.826,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              130.1,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              139.854,
+              251.429,
+              150.826,
+              528.0
+            ],
+            "mark_center_px": [
+              145.34,
+              251.429
+            ],
+            "mark_fill_rgb": [
+              113,
+              215,
+              112
+            ],
+            "mark_outline_rgb": [
+              62,
+              118,
+              62
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Heid",
+            "series_rank": 2,
+            "value": 12
+          },
+          "entity_id": "mark_T_Heid",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              185.574,
+              389.714,
+              227.026,
+              562.0
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              206.3,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              185.574,
+              504.952,
+              196.546,
+              528.0
+            ],
+            "mark_center_px": [
+              191.06,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              218,
+              105,
+              217
+            ],
+            "mark_outline_rgb": [
+              120,
+              58,
+              119
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Gula",
+            "series_rank": 0,
+            "value": 1
+          },
+          "entity_id": "mark_V_Gula",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              185.574,
+              389.714,
+              227.026,
+              562.0
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              206.3,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              200.814,
+              389.714,
+              211.786,
+              528.0
+            ],
+            "mark_center_px": [
+              206.3,
+              389.714
+            ],
+            "mark_fill_rgb": [
+              43,
+              59,
+              201
+            ],
+            "mark_outline_rgb": [
+              24,
+              32,
+              111
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Weed",
+            "series_rank": 1,
+            "value": 6
+          },
+          "entity_id": "mark_V_Weed",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              185.574,
+              389.714,
+              227.026,
+              562.0
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              206.3,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              216.054,
+              458.857,
+              227.026,
+              528.0
+            ],
+            "mark_center_px": [
+              221.54,
+              458.857
+            ],
+            "mark_fill_rgb": [
+              113,
+              215,
+              112
+            ],
+            "mark_outline_rgb": [
+              62,
+              118,
+              62
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Heid",
+            "series_rank": 2,
+            "value": 3
+          },
+          "entity_id": "mark_V_Heid",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              261.774,
+              113.143,
+              303.226,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              261.774,
+              481.905,
+              272.746,
+              528.0
+            ],
+            "mark_center_px": [
+              267.26,
+              481.905
+            ],
+            "mark_fill_rgb": [
+              218,
+              105,
+              217
+            ],
+            "mark_outline_rgb": [
+              120,
+              58,
+              119
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Gula",
+            "series_rank": 0,
+            "value": 2
+          },
+          "entity_id": "mark_P_Gula",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              261.774,
+              113.143,
+              303.226,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              277.014,
+              113.143,
+              287.986,
+              528.0
+            ],
+            "mark_center_px": [
+              282.5,
+              113.143
+            ],
+            "mark_fill_rgb": [
+              43,
+              59,
+              201
+            ],
+            "mark_outline_rgb": [
+              24,
+              32,
+              111
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Weed",
+            "series_rank": 1,
+            "value": 18
+          },
+          "entity_id": "mark_P_Weed",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              261.774,
+              113.143,
+              303.226,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              292.254,
+              458.857,
+              303.226,
+              528.0
+            ],
+            "mark_center_px": [
+              297.74,
+              458.857
+            ],
+            "mark_fill_rgb": [
+              113,
+              215,
+              112
+            ],
+            "mark_outline_rgb": [
+              62,
+              118,
+              62
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Heid",
+            "series_rank": 2,
+            "value": 3
+          },
+          "entity_id": "mark_P_Heid",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              337.974,
+              297.524,
+              379.426,
+              562.0
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              358.7,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              337.974,
+              435.81,
+              348.946,
+              528.0
+            ],
+            "mark_center_px": [
+              343.46,
+              435.81
+            ],
+            "mark_fill_rgb": [
+              218,
+              105,
+              217
+            ],
+            "mark_outline_rgb": [
+              120,
+              58,
+              119
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Gula",
+            "series_rank": 0,
+            "value": 4
+          },
+          "entity_id": "mark_C_Gula",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              337.974,
+              297.524,
+              379.426,
+              562.0
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              358.7,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              353.214,
+              297.524,
+              364.186,
+              528.0
+            ],
+            "mark_center_px": [
+              358.7,
+              297.524
+            ],
+            "mark_fill_rgb": [
+              43,
+              59,
+              201
+            ],
+            "mark_outline_rgb": [
+              24,
+              32,
+              111
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Weed",
+            "series_rank": 1,
+            "value": 10
+          },
+          "entity_id": "mark_C_Weed",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              337.974,
+              297.524,
+              379.426,
+              562.0
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              358.7,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              368.454,
+              389.714,
+              379.426,
+              528.0
+            ],
+            "mark_center_px": [
+              373.94,
+              389.714
+            ],
+            "mark_fill_rgb": [
+              113,
+              215,
+              112
+            ],
+            "mark_outline_rgb": [
+              62,
+              118,
+              62
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Heid",
+            "series_rank": 2,
+            "value": 6
+          },
+          "entity_id": "mark_C_Heid",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              414.174,
+              159.238,
+              455.626,
+              562.0
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              434.9,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              414.174,
+              504.952,
+              425.146,
+              528.0
+            ],
+            "mark_center_px": [
+              419.66,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              218,
+              105,
+              217
+            ],
+            "mark_outline_rgb": [
+              120,
+              58,
+              119
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Gula",
+            "series_rank": 0,
+            "value": 1
+          },
+          "entity_id": "mark_H_Gula",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              414.174,
+              159.238,
+              455.626,
+              562.0
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              434.9,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              429.414,
+              159.238,
+              440.386,
+              528.0
+            ],
+            "mark_center_px": [
+              434.9,
+              159.238
+            ],
+            "mark_fill_rgb": [
+              43,
+              59,
+              201
+            ],
+            "mark_outline_rgb": [
+              24,
+              32,
+              111
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Weed",
+            "series_rank": 1,
+            "value": 16
+          },
+          "entity_id": "mark_H_Weed",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              414.174,
+              159.238,
+              455.626,
+              562.0
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              434.9,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              444.654,
+              320.571,
+              455.626,
+              528.0
+            ],
+            "mark_center_px": [
+              450.14,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              113,
+              215,
+              112
+            ],
+            "mark_outline_rgb": [
+              62,
+              118,
+              62
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Heid",
+            "series_rank": 2,
+            "value": 9
+          },
+          "entity_id": "mark_H_Heid",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              490.374,
+              67.048,
+              531.826,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              511.1,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              490.374,
+              504.952,
+              501.346,
+              528.0
+            ],
+            "mark_center_px": [
+              495.86,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              218,
+              105,
+              217
+            ],
+            "mark_outline_rgb": [
+              120,
+              58,
+              119
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Gula",
+            "series_rank": 0,
+            "value": 1
+          },
+          "entity_id": "mark_J_Gula",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              490.374,
+              67.048,
+              531.826,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              511.1,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              505.614,
+              67.048,
+              516.586,
+              528.0
+            ],
+            "mark_center_px": [
+              511.1,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              43,
+              59,
+              201
+            ],
+            "mark_outline_rgb": [
+              24,
+              32,
+              111
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Weed",
+            "series_rank": 1,
+            "value": 20
+          },
+          "entity_id": "mark_J_Weed",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              490.374,
+              67.048,
+              531.826,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              511.1,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              520.854,
+              435.81,
+              531.826,
+              528.0
+            ],
+            "mark_center_px": [
+              526.34,
+              435.81
+            ],
+            "mark_fill_rgb": [
+              113,
+              215,
+              112
+            ],
+            "mark_outline_rgb": [
+              62,
+              118,
+              62
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Heid",
+            "series_rank": 2,
+            "value": 4
+          },
+          "entity_id": "mark_J_Heid",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              566.574,
+              182.286,
+              608.026,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              587.3,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              566.574,
+              435.81,
+              577.546,
+              528.0
+            ],
+            "mark_center_px": [
+              572.06,
+              435.81
+            ],
+            "mark_fill_rgb": [
+              218,
+              105,
+              217
+            ],
+            "mark_outline_rgb": [
+              120,
+              58,
+              119
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Gula",
+            "series_rank": 0,
+            "value": 4
+          },
+          "entity_id": "mark_F_Gula",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              566.574,
+              182.286,
+              608.026,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              587.3,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              581.814,
+              182.286,
+              592.786,
+              528.0
+            ],
+            "mark_center_px": [
+              587.3,
+              182.286
+            ],
+            "mark_fill_rgb": [
+              43,
+              59,
+              201
+            ],
+            "mark_outline_rgb": [
+              24,
+              32,
+              111
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Weed",
+            "series_rank": 1,
+            "value": 15
+          },
+          "entity_id": "mark_F_Weed",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              566.574,
+              182.286,
+              608.026,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              587.3,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              597.054,
+              205.333,
+              608.026,
+              528.0
+            ],
+            "mark_center_px": [
+              602.54,
+              205.333
+            ],
+            "mark_fill_rgb": [
+              113,
+              215,
+              112
+            ],
+            "mark_outline_rgb": [
+              62,
+              118,
+              62
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Heid",
+            "series_rank": 2,
+            "value": 14
+          },
+          "entity_id": "mark_F_Heid",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              642.774,
+              320.571,
+              684.226,
+              562.0
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              642.774,
+              366.667,
+              653.746,
+              528.0
+            ],
+            "mark_center_px": [
+              648.26,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              218,
+              105,
+              217
+            ],
+            "mark_outline_rgb": [
+              120,
+              58,
+              119
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Gula",
+            "series_rank": 0,
+            "value": 7
+          },
+          "entity_id": "mark_B_Gula",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              642.774,
+              320.571,
+              684.226,
+              562.0
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              658.014,
+              320.571,
+              668.986,
+              528.0
+            ],
+            "mark_center_px": [
+              663.5,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              43,
+              59,
+              201
+            ],
+            "mark_outline_rgb": [
+              24,
+              32,
+              111
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Weed",
+            "series_rank": 1,
+            "value": 9
+          },
+          "entity_id": "mark_B_Weed",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              642.774,
+              320.571,
+              684.226,
+              562.0
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              673.254,
+              343.619,
+              684.226,
+              528.0
+            ],
+            "mark_center_px": [
+              678.74,
+              343.619
+            ],
+            "mark_fill_rgb": [
+              113,
+              215,
+              112
+            ],
+            "mark_outline_rgb": [
+              62,
+              118,
+              62
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Heid",
+            "series_rank": 2,
+            "value": 8
+          },
+          "entity_id": "mark_B_Heid",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              718.974,
+              136.19,
+              760.426,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              739.7,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              718.974,
+              343.619,
+              729.946,
+              528.0
+            ],
+            "mark_center_px": [
+              724.46,
+              343.619
+            ],
+            "mark_fill_rgb": [
+              218,
+              105,
+              217
+            ],
+            "mark_outline_rgb": [
+              120,
+              58,
+              119
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Gula",
+            "series_rank": 0,
+            "value": 8
+          },
+          "entity_id": "mark_L_Gula",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              718.974,
+              136.19,
+              760.426,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              739.7,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              734.214,
+              136.19,
+              745.186,
+              528.0
+            ],
+            "mark_center_px": [
+              739.7,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              43,
+              59,
+              201
+            ],
+            "mark_outline_rgb": [
+              24,
+              32,
+              111
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Weed",
+            "series_rank": 1,
+            "value": 17
+          },
+          "entity_id": "mark_L_Weed",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              718.974,
+              136.19,
+              760.426,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              739.7,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              749.454,
+              297.524,
+              760.426,
+              528.0
+            ],
+            "mark_center_px": [
+              754.94,
+              297.524
+            ],
+            "mark_fill_rgb": [
+              113,
+              215,
+              112
+            ],
+            "mark_outline_rgb": [
+              62,
+              118,
+              62
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Heid",
+            "series_rank": 2,
+            "value": 10
+          },
+          "entity_id": "mark_L_Heid",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              795.174,
+              136.19,
+              836.626,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              815.9,
+              554.0
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              795.174,
+              435.81,
+              806.146,
+              528.0
+            ],
+            "mark_center_px": [
+              800.66,
+              435.81
+            ],
+            "mark_fill_rgb": [
+              218,
+              105,
+              217
+            ],
+            "mark_outline_rgb": [
+              120,
+              58,
+              119
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Gula",
+            "series_rank": 0,
+            "value": 4
+          },
+          "entity_id": "mark_G_Gula",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              795.174,
+              136.19,
+              836.626,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              815.9,
+              554.0
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              810.414,
+              136.19,
+              821.386,
+              528.0
+            ],
+            "mark_center_px": [
+              815.9,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              43,
+              59,
+              201
+            ],
+            "mark_outline_rgb": [
+              24,
+              32,
+              111
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Weed",
+            "series_rank": 1,
+            "value": 17
+          },
+          "entity_id": "mark_G_Weed",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              795.174,
+              136.19,
+              836.626,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              815.9,
+              554.0
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              825.654,
+              320.571,
+              836.626,
+              528.0
+            ],
+            "mark_center_px": [
+              831.14,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              113,
+              215,
+              112
+            ],
+            "mark_outline_rgb": [
+              62,
+              118,
+              62
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Heid",
+            "series_rank": 2,
+            "value": 9
+          },
+          "entity_id": "mark_G_Heid",
+          "entity_type": "bar"
+        }
+      ],
+      "relations": {
+        "comparison": "greater_than",
+        "evidence_labels": [],
+        "queried_series_labels": [
+          "Gula",
+          "Weed"
+        ],
+        "scene_variant": "grouped_bar",
+        "task_variant": "series_a_gt_b_count"
+      },
+      "scene_kind": "chart_grouped_bar_multiseries"
+    },
+    "witness_symbolic": {
+      "labels": [],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

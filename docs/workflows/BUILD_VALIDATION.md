@@ -36,7 +36,7 @@ For new or distribution-changing task logic:
 2. Required review scope:
    - random sample review: 100 samples per task (`random_review_100.json`)
    - per-variant distribution review: 100 samples per task variant when variants exist (`distribution_review.json`)
-   - manual inspection workbook: 25 samples per task variant in `<task_id>.xlsx` (one sheet per task variant)
+   - manual inspection workbook: 25 samples per task variant in `task-reviews/<domain>/<task_id>/<task_id>.xlsx` (one sheet per task variant)
 3. Required gating checks (computed from answer values only):
    - `unique_answers >= 5`
    - `max_answer_frequency < 25%`

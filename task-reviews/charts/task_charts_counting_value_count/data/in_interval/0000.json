@@ -1,0 +1,650 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 2
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "T",
+      "U"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_counting_value_count/images/in_interval/0000.png"
+  },
+  "instance_seed": 3424476419096767,
+  "prompt": "Use the chart in the image. It shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Answer this question. Find how many labeled marks have values from 13 to 15, inclusive.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the labels of all marks with values in the inclusive interval.\nAnswer field: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"C\",\"F\",\"Q\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the chart in the image. It shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Answer this question. Find how many labeled marks have values from 13 to 15, inclusive.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the labels of all marks with values in the inclusive interval.\nAnswer field: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"C\",\"F\",\"Q\"],\"answer\":3}",
+    "answer_only": "Use the chart in the image. It shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Answer this question. Find how many labeled marks have values from 13 to 15, inclusive.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_charts_counting_value_count",
+  "task_variant": "in_interval",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 2,
+      "evidence_labels": [
+        "T",
+        "U"
+      ],
+      "interval_inclusive": true,
+      "interval_max": 15,
+      "interval_min": 13,
+      "labels": [
+        "F",
+        "Y",
+        "T",
+        "X",
+        "R",
+        "U"
+      ],
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb",
+      "mark_count": 6,
+      "mark_count_range": [
+        5,
+        10
+      ],
+      "mark_fill_rgb": [
+        104,
+        102,
+        193
+      ],
+      "mark_outline_rgb": [
+        57,
+        56,
+        106
+      ],
+      "question_format": "numeric_open",
+      "scene_variant": "scatter",
+      "scene_variant_probabilities": {
+        "area": 0.1,
+        "bar": 0.1,
+        "donut": 0.1,
+        "dot_plot": 0.1,
+        "horizontal_bar": 0.1,
+        "line": 0.1,
+        "lollipop": 0.1,
+        "pie": 0.1,
+        "radar": 0.1,
+        "scatter": 0.1
+      },
+      "target_answer": 2,
+      "target_answer_range": [
+        0,
+        10
+      ],
+      "task_variant": "in_interval",
+      "task_variant_probabilities": {
+        "above_threshold": 0.3333333333333333,
+        "below_threshold": 0.3333333333333333,
+        "in_interval": 0.3333333333333333
+      },
+      "value_max": 20,
+      "value_min": 1,
+      "values": [
+        17,
+        5,
+        14,
+        20,
+        5,
+        13
+      ],
+      "values_by_label": {
+        "F": 17,
+        "R": 5,
+        "T": 14,
+        "U": 13,
+        "X": 20,
+        "Y": 5
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          370.977,
+          190.667,
+          386.977,
+          206.667
+        ],
+        [
+          681.398,
+          212.762,
+          697.398,
+          228.762
+        ]
+      ],
+      "label_set": [
+        "T",
+        "U"
+      ],
+      "pixel_point_map": {
+        "T": [
+          378.977,
+          198.667
+        ],
+        "U": [
+          689.398,
+          220.762
+        ]
+      },
+      "pixel_point_set": [
+        [
+          378.977,
+          198.667
+        ],
+        [
+          689.398,
+          220.762
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "interval_inclusive": true,
+        "interval_max": 15,
+        "interval_min": 13,
+        "mark_count": 6,
+        "scene_variant": "scatter",
+        "scene_variant_probabilities": {
+          "area": 0.1,
+          "bar": 0.1,
+          "donut": 0.1,
+          "dot_plot": 0.1,
+          "horizontal_bar": 0.1,
+          "line": 0.1,
+          "lollipop": 0.1,
+          "pie": 0.1,
+          "radar": 0.1,
+          "scatter": 0.1
+        },
+        "target_answer": 2,
+        "target_answer_range": [
+          0,
+          10
+        ],
+        "task_variant": "in_interval",
+        "task_variant_probabilities": {
+          "above_threshold": 0.3333333333333333,
+          "below_threshold": 0.3333333333333333,
+          "in_interval": 0.3333333333333333
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "charts_counting_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of matching marks as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the labels of all marks with values in the inclusive interval",
+          "interval_max": "15",
+          "interval_min": "13",
+          "json_example": "{\"evidence\":[\"C\",\"F\",\"Q\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+          "threshold": ""
+        },
+        "task_family_key": "labeled_chart_counting",
+        "task_family_variant_index": 1,
+        "task_key": "value_count_query",
+        "task_variant_index": 0,
+        "task_variant_key": "in_interval",
+        "task_variant_template_index": 4,
+        "template_paths": [
+          "charts/counting/charts_counting_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:value_count_query": 5,
+          "task_family:labeled_chart_counting": 5,
+          "task_variant:in_interval": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "charts_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of matching marks as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the labels of all marks with values in the inclusive interval",
+              "interval_max": "15",
+              "interval_min": "13",
+              "json_example": "{\"evidence\":[\"C\",\"F\",\"Q\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+              "threshold": ""
+            },
+            "task_family_key": "labeled_chart_counting",
+            "task_family_variant_index": 1,
+            "task_key": "value_count_query",
+            "task_variant_index": 0,
+            "task_variant_key": "in_interval",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "charts/counting/charts_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:value_count_query": 5,
+              "task_family:labeled_chart_counting": 5,
+              "task_variant:in_interval": 5
+            }
+          },
+          "prompt": "Use the chart in the image. It shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Answer this question. Find how many labeled marks have values from 13 to 15, inclusive.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the labels of all marks with values in the inclusive interval.\nAnswer field: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"C\",\"F\",\"Q\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "charts_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of matching marks as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the labels of all marks with values in the inclusive interval",
+              "interval_max": "15",
+              "interval_min": "13",
+              "json_example": "{\"evidence\":[\"C\",\"F\",\"Q\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+              "threshold": ""
+            },
+            "task_family_key": "labeled_chart_counting",
+            "task_family_variant_index": 1,
+            "task_key": "value_count_query",
+            "task_variant_index": 0,
+            "task_variant_key": "in_interval",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "charts/counting/charts_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:value_count_query": 5,
+              "task_family:labeled_chart_counting": 5,
+              "task_variant:in_interval": 5
+            }
+          },
+          "prompt": "Use the chart in the image. It shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Answer this question. Find how many labeled marks have values from 13 to 15, inclusive.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "in_interval",
+      "template_id": "charts_counting_v1"
+    },
+    "render_map": {
+      "image_id": "img0",
+      "label_centers_px": {
+        "F": [
+          140.495,
+          110.381
+        ],
+        "R": [
+          580.516,
+          375.524
+        ],
+        "T": [
+          378.977,
+          176.667
+        ],
+        "U": [
+          689.398,
+          198.762
+        ],
+        "X": [
+          469.278,
+          44.095
+        ],
+        "Y": [
+          267.53,
+          375.524
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 600,
+      "canvas_width": 800,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "mark_fill_rgb": [
+          104,
+          102,
+          193
+        ],
+        "mark_outline_rgb": [
+          57,
+          56,
+          106
+        ],
+        "sampling_policy": "random_rgb"
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "scatter",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 21,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "label": "F",
+            "label_center_px": [
+              140.495,
+              110.381
+            ],
+            "mark_bbox_px": [
+              132.495,
+              124.381,
+              148.495,
+              140.381
+            ],
+            "mark_center_px": [
+              140.495,
+              132.381
+            ],
+            "mark_fill_rgb": [
+              104,
+              102,
+              193
+            ],
+            "mark_outline_rgb": [
+              57,
+              56,
+              106
+            ],
+            "scene_variant": "scatter",
+            "value": 17,
+            "x_rank": 0
+          },
+          "entity_id": "mark_F",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "Y",
+            "label_center_px": [
+              267.53,
+              375.524
+            ],
+            "mark_bbox_px": [
+              259.53,
+              389.524,
+              275.53,
+              405.524
+            ],
+            "mark_center_px": [
+              267.53,
+              397.524
+            ],
+            "mark_fill_rgb": [
+              104,
+              102,
+              193
+            ],
+            "mark_outline_rgb": [
+              57,
+              56,
+              106
+            ],
+            "scene_variant": "scatter",
+            "value": 5,
+            "x_rank": 1
+          },
+          "entity_id": "mark_Y",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "T",
+            "label_center_px": [
+              378.977,
+              176.667
+            ],
+            "mark_bbox_px": [
+              370.977,
+              190.667,
+              386.977,
+              206.667
+            ],
+            "mark_center_px": [
+              378.977,
+              198.667
+            ],
+            "mark_fill_rgb": [
+              104,
+              102,
+              193
+            ],
+            "mark_outline_rgb": [
+              57,
+              56,
+              106
+            ],
+            "scene_variant": "scatter",
+            "value": 14,
+            "x_rank": 2
+          },
+          "entity_id": "mark_T",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "X",
+            "label_center_px": [
+              469.278,
+              44.095
+            ],
+            "mark_bbox_px": [
+              461.278,
+              58.095,
+              477.278,
+              74.095
+            ],
+            "mark_center_px": [
+              469.278,
+              66.095
+            ],
+            "mark_fill_rgb": [
+              104,
+              102,
+              193
+            ],
+            "mark_outline_rgb": [
+              57,
+              56,
+              106
+            ],
+            "scene_variant": "scatter",
+            "value": 20,
+            "x_rank": 3
+          },
+          "entity_id": "mark_X",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "R",
+            "label_center_px": [
+              580.516,
+              375.524
+            ],
+            "mark_bbox_px": [
+              572.516,
+              389.524,
+              588.516,
+              405.524
+            ],
+            "mark_center_px": [
+              580.516,
+              397.524
+            ],
+            "mark_fill_rgb": [
+              104,
+              102,
+              193
+            ],
+            "mark_outline_rgb": [
+              57,
+              56,
+              106
+            ],
+            "scene_variant": "scatter",
+            "value": 5,
+            "x_rank": 4
+          },
+          "entity_id": "mark_R",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "U",
+            "label_center_px": [
+              689.398,
+              198.762
+            ],
+            "mark_bbox_px": [
+              681.398,
+              212.762,
+              697.398,
+              228.762
+            ],
+            "mark_center_px": [
+              689.398,
+              220.762
+            ],
+            "mark_fill_rgb": [
+              104,
+              102,
+              193
+            ],
+            "mark_outline_rgb": [
+              57,
+              56,
+              106
+            ],
+            "scene_variant": "scatter",
+            "value": 13,
+            "x_rank": 5
+          },
+          "entity_id": "mark_U",
+          "entity_type": "point"
+        }
+      ],
+      "relations": {
+        "evidence_labels": [
+          "T",
+          "U"
+        ],
+        "interval_inclusive": true,
+        "interval_max": 15,
+        "interval_min": 13,
+        "scene_variant": "scatter",
+        "task_variant": "in_interval"
+      },
+      "scene_kind": "chart_scatter_counting"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "T",
+        "U"
+      ],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

@@ -1,0 +1,656 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 13
+  },
+  "evidence_gt": {
+    "type": "integer_list",
+    "value": [
+      2,
+      13
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_readout_subset_value/images/max_two/0007.png"
+  },
+  "instance_seed": 1775776135911168,
+  "prompt": "You are given a labeled chart: a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the values of the requested labels from the chart and compute the answer. Find the higher of the two chart values for labels Q and Z.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,13],\"answer\":13}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given a labeled chart: a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the values of the requested labels from the chart and compute the answer. Find the higher of the two chart values for labels Q and Z.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,13],\"answer\":13}",
+    "answer_only": "You are given a labeled chart: a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the values of the requested labels from the chart and compute the answer. Find the higher of the two chart values for labels Q and Z.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":13}"
+  },
+  "task": "task_charts_readout_subset_value",
+  "task_variant": "max_two",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 13,
+      "labels": [
+        "C",
+        "S",
+        "Q",
+        "T",
+        "H",
+        "Z"
+      ],
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb",
+      "mark_count": 6,
+      "mark_count_range": [
+        5,
+        10
+      ],
+      "mark_fill_rgb": [
+        34,
+        195,
+        136
+      ],
+      "mark_outline_rgb": [
+        19,
+        107,
+        75
+      ],
+      "query_labels": [
+        "Q",
+        "Z"
+      ],
+      "query_values": [
+        2,
+        13
+      ],
+      "question_format": "numeric_open",
+      "scene_variant": "scatter",
+      "scene_variant_probabilities": {
+        "area": 0.1,
+        "bar": 0.1,
+        "donut": 0.1,
+        "dot_plot": 0.1,
+        "horizontal_bar": 0.1,
+        "line": 0.1,
+        "lollipop": 0.1,
+        "pie": 0.1,
+        "radar": 0.1,
+        "scatter": 0.1
+      },
+      "target_answer": 13,
+      "target_answer_range": [
+        1,
+        20
+      ],
+      "task_variant": "max_two",
+      "task_variant_probabilities": {
+        "difference_two_abs": 0.2,
+        "max_two": 0.2,
+        "mean_two": 0.2,
+        "min_two": 0.2,
+        "sum_two": 0.2
+      },
+      "value_max": 20,
+      "value_min": 1,
+      "values": [
+        17,
+        13,
+        2,
+        16,
+        3,
+        13
+      ],
+      "values_by_label": {
+        "C": 17,
+        "H": 3,
+        "Q": 2,
+        "S": 13,
+        "T": 16,
+        "Z": 13
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          373.833,
+          448.444,
+          389.833,
+          464.444
+        ],
+        [
+          687.962,
+          164.889,
+          703.962,
+          180.889
+        ]
+      ],
+      "integer_list": [
+        2,
+        13
+      ],
+      "pixel_point_map": {
+        "Q": [
+          381.833,
+          456.444
+        ],
+        "Z": [
+          695.962,
+          172.889
+        ]
+      },
+      "pixel_point_set": [
+        [
+          381.833,
+          456.444
+        ],
+        [
+          695.962,
+          172.889
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "mark_count": 6,
+        "query_labels": [
+          "Q",
+          "Z"
+        ],
+        "scene_variant": "scatter",
+        "scene_variant_probabilities": {
+          "area": 0.1,
+          "bar": 0.1,
+          "donut": 0.1,
+          "dot_plot": 0.1,
+          "horizontal_bar": 0.1,
+          "line": 0.1,
+          "lollipop": 0.1,
+          "pie": 0.1,
+          "radar": 0.1,
+          "scatter": 0.1
+        },
+        "target_answer": 13,
+        "target_answer_range": [
+          1,
+          20
+        ],
+        "task_variant": "max_two",
+        "task_variant_probabilities": {
+          "difference_two_abs": 0.2,
+          "max_two": 0.2,
+          "mean_two": 0.2,
+          "min_two": 0.2,
+          "sum_two": 0.2
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "charts_readout_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the requested integer value",
+          "evidence_hint": "set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question",
+          "json_example": "{\"evidence\":[6,13],\"answer\":13}",
+          "json_example_answer_only": "{\"answer\":13}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+          "query_label_a": "Q",
+          "query_label_b": "Z"
+        },
+        "task_family_key": "labeled_chart_readout",
+        "task_family_variant_index": 4,
+        "task_key": "subset_value_query",
+        "task_variant_index": 2,
+        "task_variant_key": "max_two",
+        "task_variant_template_index": 3,
+        "template_paths": [
+          "charts/readout/charts_readout_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:subset_value_query": 5,
+          "task_family:labeled_chart_readout": 5,
+          "task_variant:max_two": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "charts_readout_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested integer value",
+              "evidence_hint": "set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question",
+              "json_example": "{\"evidence\":[6,13],\"answer\":13}",
+              "json_example_answer_only": "{\"answer\":13}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+              "query_label_a": "Q",
+              "query_label_b": "Z"
+            },
+            "task_family_key": "labeled_chart_readout",
+            "task_family_variant_index": 4,
+            "task_key": "subset_value_query",
+            "task_variant_index": 2,
+            "task_variant_key": "max_two",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "charts/readout/charts_readout_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:subset_value_query": 5,
+              "task_family:labeled_chart_readout": 5,
+              "task_variant:max_two": 5
+            }
+          },
+          "prompt": "You are given a labeled chart: a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the values of the requested labels from the chart and compute the answer. Find the higher of the two chart values for labels Q and Z.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[6,13],\"answer\":13}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "charts_readout_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested integer value",
+              "evidence_hint": "set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question",
+              "json_example": "{\"evidence\":[6,13],\"answer\":13}",
+              "json_example_answer_only": "{\"answer\":13}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+              "query_label_a": "Q",
+              "query_label_b": "Z"
+            },
+            "task_family_key": "labeled_chart_readout",
+            "task_family_variant_index": 4,
+            "task_key": "subset_value_query",
+            "task_variant_index": 2,
+            "task_variant_key": "max_two",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "charts/readout/charts_readout_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:subset_value_query": 5,
+              "task_family:labeled_chart_readout": 5,
+              "task_variant:max_two": 5
+            }
+          },
+          "prompt": "You are given a labeled chart: a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the values of the requested labels from the chart and compute the answer. Find the higher of the two chart values for labels Q and Z.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":13}"
+        }
+      },
+      "task_variant": "max_two",
+      "template_id": "charts_readout_v1"
+    },
+    "render_map": {
+      "image_id": "img0",
+      "label_centers_px": {
+        "C": [
+          130.374,
+          47.778
+        ],
+        "H": [
+          600.075,
+          408.667
+        ],
+        "Q": [
+          381.833,
+          434.444
+        ],
+        "S": [
+          271.724,
+          150.889
+        ],
+        "T": [
+          493.887,
+          73.556
+        ],
+        "Z": [
+          695.962,
+          150.889
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 600,
+      "canvas_width": 800,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "mark_fill_rgb": [
+          34,
+          195,
+          136
+        ],
+        "mark_outline_rgb": [
+          19,
+          107,
+          75
+        ],
+        "sampling_policy": "random_rgb"
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "scatter",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 18,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "label": "C",
+            "label_center_px": [
+              130.374,
+              47.778
+            ],
+            "mark_bbox_px": [
+              122.374,
+              61.778,
+              138.374,
+              77.778
+            ],
+            "mark_center_px": [
+              130.374,
+              69.778
+            ],
+            "mark_fill_rgb": [
+              34,
+              195,
+              136
+            ],
+            "mark_outline_rgb": [
+              19,
+              107,
+              75
+            ],
+            "scene_variant": "scatter",
+            "value": 17,
+            "x_rank": 0
+          },
+          "entity_id": "mark_C",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "S",
+            "label_center_px": [
+              271.724,
+              150.889
+            ],
+            "mark_bbox_px": [
+              263.724,
+              164.889,
+              279.724,
+              180.889
+            ],
+            "mark_center_px": [
+              271.724,
+              172.889
+            ],
+            "mark_fill_rgb": [
+              34,
+              195,
+              136
+            ],
+            "mark_outline_rgb": [
+              19,
+              107,
+              75
+            ],
+            "scene_variant": "scatter",
+            "value": 13,
+            "x_rank": 1
+          },
+          "entity_id": "mark_S",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "Q",
+            "label_center_px": [
+              381.833,
+              434.444
+            ],
+            "mark_bbox_px": [
+              373.833,
+              448.444,
+              389.833,
+              464.444
+            ],
+            "mark_center_px": [
+              381.833,
+              456.444
+            ],
+            "mark_fill_rgb": [
+              34,
+              195,
+              136
+            ],
+            "mark_outline_rgb": [
+              19,
+              107,
+              75
+            ],
+            "scene_variant": "scatter",
+            "value": 2,
+            "x_rank": 2
+          },
+          "entity_id": "mark_Q",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "T",
+            "label_center_px": [
+              493.887,
+              73.556
+            ],
+            "mark_bbox_px": [
+              485.887,
+              87.556,
+              501.887,
+              103.556
+            ],
+            "mark_center_px": [
+              493.887,
+              95.556
+            ],
+            "mark_fill_rgb": [
+              34,
+              195,
+              136
+            ],
+            "mark_outline_rgb": [
+              19,
+              107,
+              75
+            ],
+            "scene_variant": "scatter",
+            "value": 16,
+            "x_rank": 3
+          },
+          "entity_id": "mark_T",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "H",
+            "label_center_px": [
+              600.075,
+              408.667
+            ],
+            "mark_bbox_px": [
+              592.075,
+              422.667,
+              608.075,
+              438.667
+            ],
+            "mark_center_px": [
+              600.075,
+              430.667
+            ],
+            "mark_fill_rgb": [
+              34,
+              195,
+              136
+            ],
+            "mark_outline_rgb": [
+              19,
+              107,
+              75
+            ],
+            "scene_variant": "scatter",
+            "value": 3,
+            "x_rank": 4
+          },
+          "entity_id": "mark_H",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "Z",
+            "label_center_px": [
+              695.962,
+              150.889
+            ],
+            "mark_bbox_px": [
+              687.962,
+              164.889,
+              703.962,
+              180.889
+            ],
+            "mark_center_px": [
+              695.962,
+              172.889
+            ],
+            "mark_fill_rgb": [
+              34,
+              195,
+              136
+            ],
+            "mark_outline_rgb": [
+              19,
+              107,
+              75
+            ],
+            "scene_variant": "scatter",
+            "value": 13,
+            "x_rank": 5
+          },
+          "entity_id": "mark_Z",
+          "entity_type": "point"
+        }
+      ],
+      "relations": {
+        "answer_value": 13,
+        "query_labels": [
+          "Q",
+          "Z"
+        ],
+        "query_values": [
+          2,
+          13
+        ],
+        "scene_variant": "scatter",
+        "task_variant": "max_two"
+      },
+      "scene_kind": "chart_scatter_readout"
+    },
+    "witness_symbolic": {
+      "query_labels": [
+        "Q",
+        "Z"
+      ],
+      "type": "integer_list",
+      "values": [
+        2,
+        13
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

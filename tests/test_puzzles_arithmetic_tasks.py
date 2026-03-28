@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from trace.tasks.puzzles.arithmetic.balance_value import PuzzlesArithmeticBalanceValueTask
 from trace.tasks.puzzles.arithmetic.equation_value import PuzzlesArithmeticEquationValueTask
+from trace.tasks.puzzles.arithmetic.grid_value import PuzzlesArithmeticGridValueTask
 from tests.helpers import extract_prompt_json_example
 
 
@@ -31,6 +32,16 @@ def _resolve_balance_item_value(item: dict[str, object], *, object_values: dict[
     if str(item.get("kind")) == "number":
         return int(item["value"])
     return int(object_values[str(item["object_type"])])
+
+
+def _evaluate_grid_rule(*, left_value: int, right_value: int, operator_symbol: str) -> int:
+    if str(operator_symbol) == "+":
+        return int(left_value + right_value)
+    if str(operator_symbol) == "-":
+        return int(left_value - right_value)
+    if str(operator_symbol) == "×":
+        return int(left_value * right_value)
+    raise AssertionError(f"unexpected grid operator: {operator_symbol}")
 
 
 def test_puzzle_arithmetic_equation_value_contract_matches_unknown_slot() -> None:
@@ -179,6 +190,134 @@ def test_puzzle_arithmetic_slot_count_varies_with_seed() -> None:
         assert len(slot_counts) >= 2
 
 
+def test_puzzle_arithmetic_grid_value_contract_matches_unknown_cell() -> None:
+    task = PuzzlesArithmeticGridValueTask()
+    task_variants = (
+        "sum_rule_missing",
+        "difference_rule_missing",
+        "product_rule_missing",
+    )
+    scene_variants = (
+        "grid_strip",
+        "grid_card",
+        "grid_outline",
+    )
+    expected_operator_by_variant = {
+        "sum_rule_missing": "+",
+        "difference_rule_missing": "-",
+        "product_rule_missing": "×",
+    }
+
+    for variant_index, task_variant in enumerate(task_variants):
+        for scene_index, scene_variant in enumerate(scene_variants):
+            seed = 23180 + (variant_index * 20) + scene_index
+            out = task.generate(
+                seed,
+                params={"task_variant": task_variant, "scene_variant": scene_variant},
+                max_attempts=10,
+            )
+            trace = out.trace_payload
+            execution = trace["execution_trace"]
+            render = trace["render_spec"]
+            render_map = trace["render_map"]
+            solver = execution["solver_trace"]
+            evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
+
+            assert str(out.task_variant) == str(task_variant)
+            assert out.answer_gt.type == "integer"
+            assert out.evidence_gt.type == "bbox_set"
+            assert len(evidence_bboxes) == 1
+            assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+            assert str(execution["scene_variant"]) == str(scene_variant)
+            assert str(render["scene_variant"]) == str(scene_variant)
+            assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
+            assert list(execution["row_count_range"]) == [3, 5]
+            assert int(execution["col_count"]) == 3
+            assert list(execution["cell_count_range"]) == [9, 15]
+            assert 3 <= int(execution["row_count"]) <= 5
+            assert int(execution["cell_count"]) == int(execution["row_count"]) * 3
+            assert str(execution["question_format"]) == "unknown_cell_grid"
+            assert int(execution["answer_value"]) == int(out.answer_gt.value)
+            assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
+            assert [str(cell_id) for cell_id in execution["supporting_cell_ids"]] == [str(execution["query_cell_id"])]
+            assert str(solver["operator_symbol"]) == str(expected_operator_by_variant[str(task_variant)])
+            assert bool(solver["complete_rows_unique_operator"]) is True
+            assert len(execution["visible_example_rows"]) == int(execution["row_count"]) - 1
+
+            expected_bbox = [
+                float(value)
+                for value in render_map["cell_bboxes_px"][str(execution["query_cell_id"])]
+            ]
+            assert evidence_bboxes[0] == expected_bbox
+            assert all(float(bbox[0]) >= 0.0 for bbox in render_map["cell_bboxes_px"].values())
+            assert all(float(bbox[2]) <= float(render["canvas_width"]) for bbox in render_map["cell_bboxes_px"].values())
+
+            for row in execution["visible_example_rows"]:
+                assert len(row) == 3
+                assert int(row[2]) == _evaluate_grid_rule(
+                    left_value=int(row[0]),
+                    right_value=int(row[1]),
+                    operator_symbol=str(solver["operator_symbol"]),
+                )
+
+            row_values = [[int(value) for value in row] for row in execution["row_values"]]
+            query_row_index = int(execution["query_row_index"])
+            query_col_index = int(execution["query_col_index"])
+            assert int(out.answer_gt.value) == int(row_values[query_row_index][query_col_index])
+
+
+def test_puzzle_arithmetic_grid_prompt_examples_match_selected_variants() -> None:
+    task = PuzzlesArithmeticGridValueTask()
+    expected = {
+        "sum_rule_missing": (
+            {"evidence": [[420, 250, 540, 350]], "answer": 7},
+            {"answer": 7},
+        ),
+        "difference_rule_missing": (
+            {"evidence": [[420, 250, 540, 350]], "answer": 6},
+            {"answer": 6},
+        ),
+        "product_rule_missing": (
+            {"evidence": [[420, 250, 540, 350]], "answer": 8},
+            {"answer": 8},
+        ),
+    }
+    for index, (task_variant, (expected_answer_and_evidence, expected_answer_only)) in enumerate(expected.items(), start=23220):
+        out = task.generate(index, params={"task_variant": task_variant}, max_attempts=10)
+        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
+        assert answer_and_evidence == expected_answer_and_evidence
+        assert answer_only == expected_answer_only
+
+
+def test_puzzle_arithmetic_grid_task_is_deterministic() -> None:
+    task = PuzzlesArithmeticGridValueTask()
+    params = {"task_variant": "product_rule_missing", "scene_variant": "grid_card"}
+    out_a = task.generate(23240, params=params, max_attempts=10)
+    out_b = task.generate(23240, params=params, max_attempts=10)
+
+    assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
+    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
+    assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
+    assert out_a.prompt == out_b.prompt
+    assert out_a.image.tobytes() == out_b.image.tobytes()
+
+
+def test_puzzle_arithmetic_grid_row_count_and_hidden_position_vary_with_seed() -> None:
+    task = PuzzlesArithmeticGridValueTask()
+    row_counts = set()
+    query_positions = set()
+    for seed in range(23280, 23294):
+        out = task.generate(seed, params={"task_variant": "sum_rule_missing"}, max_attempts=10)
+        execution = out.trace_payload["execution_trace"]
+        row_counts.add(int(execution["row_count"]))
+        query_positions.add((int(execution["query_row_index"]), int(execution["query_col_index"])))
+    assert all(3 <= int(row_count) <= 5 for row_count in row_counts)
+    assert len(row_counts) >= 2
+    assert len(query_positions) >= 3
+
+
 def test_puzzle_arithmetic_balance_value_contract_matches_query_box() -> None:
     task = PuzzlesArithmeticBalanceValueTask()
     task_variants = (
@@ -244,6 +383,12 @@ def test_puzzle_arithmetic_balance_value_contract_matches_query_box() -> None:
                 )
                 assert int(left_total) == int(right_total)
             assert int(out.answer_gt.value) == int(object_values[str(execution["query_object_type"])])
+            equal_entities = [
+                entity
+                for entity in trace["scene_ir"]["entities"]
+                if str(entity.get("entity_type")) == "puzzle_balance_equals"
+            ]
+            assert len(equal_entities) == int(execution["panel_count"])
 
 
 def test_puzzle_arithmetic_balance_prompt_examples_match_selected_variants() -> None:

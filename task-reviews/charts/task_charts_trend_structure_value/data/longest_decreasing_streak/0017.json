@@ -1,0 +1,757 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 2
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "M",
+      "S"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_trend_structure_value/images/longest_decreasing_streak/0017.png"
+  },
+  "instance_seed": 493716723547812,
+  "prompt": "The image shows an ordered labeled bar chart with bars arranged from left to right. Each bar's numeric height can be read from the vertical axis. Use the chart's displayed order when reasoning about peaks, troughs, and streaks. Use the ordered chart values to answer the question. What is the length of the longest strictly decreasing streak of consecutive labels in displayed order? Count labels in the streak.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak.\nAnswer field: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows an ordered labeled bar chart with bars arranged from left to right. Each bar's numeric height can be read from the vertical axis. Use the chart's displayed order when reasoning about peaks, troughs, and streaks. Use the ordered chart values to answer the question. What is the length of the longest strictly decreasing streak of consecutive labels in displayed order? Count labels in the streak.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak.\nAnswer field: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+    "answer_only": "The image shows an ordered labeled bar chart with bars arranged from left to right. Each bar's numeric height can be read from the vertical axis. Use the chart's displayed order when reasoning about peaks, troughs, and streaks. Use the ordered chart values to answer the question. What is the length of the longest strictly decreasing streak of consecutive labels in displayed order? Count labels in the streak.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_charts_trend_structure_value",
+  "task_variant": "longest_decreasing_streak",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 2,
+      "evidence_labels": [
+        "M",
+        "S"
+      ],
+      "evidence_point_indices": [
+        1,
+        2
+      ],
+      "labels": [
+        "Z",
+        "M",
+        "S",
+        "V",
+        "H",
+        "J",
+        "F",
+        "R"
+      ],
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb",
+      "mark_count": 8,
+      "mark_count_range": [
+        6,
+        10
+      ],
+      "mark_fill_rgb": [
+        219,
+        213,
+        74
+      ],
+      "mark_outline_rgb": [
+        120,
+        117,
+        41
+      ],
+      "ordered_evidence_labels": [
+        "M",
+        "S"
+      ],
+      "question_format": "numeric_open",
+      "scene_variant": "bar",
+      "scene_variant_probabilities": {
+        "area": 0.16666666666666666,
+        "bar": 0.16666666666666666,
+        "dot_plot": 0.16666666666666666,
+        "horizontal_bar": 0.16666666666666666,
+        "line": 0.16666666666666666,
+        "lollipop": 0.16666666666666666
+      },
+      "step_directions": [
+        "up",
+        "down",
+        "up",
+        "up",
+        "up",
+        "up",
+        "up"
+      ],
+      "step_signs": [
+        1,
+        -1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "streak_direction": "decreasing",
+      "target_answer": 2,
+      "target_answer_range": [
+        2,
+        10
+      ],
+      "task_variant": "longest_decreasing_streak",
+      "task_variant_probabilities": {
+        "longest_decreasing_streak": 0.25,
+        "longest_increasing_streak": 0.25,
+        "peak_count": 0.25,
+        "trough_count": 0.25
+      },
+      "value_max": 20,
+      "value_min": 1,
+      "values": [
+        5,
+        7,
+        5,
+        7,
+        9,
+        11,
+        13,
+        15
+      ],
+      "values_by_label": {
+        "F": 13,
+        "H": 9,
+        "J": 11,
+        "M": 7,
+        "R": 15,
+        "S": 5,
+        "V": 7,
+        "Z": 5
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          192.127,
+          305.0,
+          240.123,
+          508.0
+        ],
+        [
+          274.877,
+          363.0,
+          322.873,
+          508.0
+        ]
+      ],
+      "label_set": [
+        "M",
+        "S"
+      ],
+      "pixel_point_map": {
+        "M": [
+          216.125,
+          305.0
+        ],
+        "S": [
+          298.875,
+          363.0
+        ]
+      },
+      "pixel_point_set": [
+        [
+          216.125,
+          305.0
+        ],
+        [
+          298.875,
+          363.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "mark_count": 8,
+        "scene_variant": "bar",
+        "scene_variant_probabilities": {
+          "area": 0.16666666666666666,
+          "bar": 0.16666666666666666,
+          "dot_plot": 0.16666666666666666,
+          "horizontal_bar": 0.16666666666666666,
+          "line": 0.16666666666666666,
+          "lollipop": 0.16666666666666666
+        },
+        "target_answer": 2,
+        "target_answer_range": [
+          2,
+          10
+        ],
+        "task_variant": "longest_decreasing_streak",
+        "task_variant_probabilities": {
+          "longest_decreasing_streak": 0.25,
+          "longest_increasing_streak": 0.25,
+          "peak_count": 0.25,
+          "trough_count": 0.25
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "charts_trend_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the requested count or streak length as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak",
+          "json_example": "{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "an ordered labeled bar chart with bars arranged from left to right. Each bar's numeric height can be read from the vertical axis"
+        },
+        "task_family_key": "ordered_chart_trend",
+        "task_family_variant_index": 0,
+        "task_key": "structure_value_query",
+        "task_variant_index": 2,
+        "task_variant_key": "longest_decreasing_streak",
+        "task_variant_template_index": 0,
+        "template_paths": [
+          "charts/trend/charts_trend_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:structure_value_query": 5,
+          "task_family:ordered_chart_trend": 5,
+          "task_variant:longest_decreasing_streak": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "charts_trend_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested count or streak length as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak",
+              "json_example": "{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an ordered labeled bar chart with bars arranged from left to right. Each bar's numeric height can be read from the vertical axis"
+            },
+            "task_family_key": "ordered_chart_trend",
+            "task_family_variant_index": 0,
+            "task_key": "structure_value_query",
+            "task_variant_index": 2,
+            "task_variant_key": "longest_decreasing_streak",
+            "task_variant_template_index": 0,
+            "template_paths": [
+              "charts/trend/charts_trend_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:structure_value_query": 5,
+              "task_family:ordered_chart_trend": 5,
+              "task_variant:longest_decreasing_streak": 5
+            }
+          },
+          "prompt": "The image shows an ordered labeled bar chart with bars arranged from left to right. Each bar's numeric height can be read from the vertical axis. Use the chart's displayed order when reasoning about peaks, troughs, and streaks. Use the ordered chart values to answer the question. What is the length of the longest strictly decreasing streak of consecutive labels in displayed order? Count labels in the streak.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak.\nAnswer field: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "charts_trend_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested count or streak length as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak",
+              "json_example": "{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an ordered labeled bar chart with bars arranged from left to right. Each bar's numeric height can be read from the vertical axis"
+            },
+            "task_family_key": "ordered_chart_trend",
+            "task_family_variant_index": 0,
+            "task_key": "structure_value_query",
+            "task_variant_index": 2,
+            "task_variant_key": "longest_decreasing_streak",
+            "task_variant_template_index": 0,
+            "template_paths": [
+              "charts/trend/charts_trend_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:structure_value_query": 5,
+              "task_family:ordered_chart_trend": 5,
+              "task_variant:longest_decreasing_streak": 5
+            }
+          },
+          "prompt": "The image shows an ordered labeled bar chart with bars arranged from left to right. Each bar's numeric height can be read from the vertical axis. Use the chart's displayed order when reasoning about peaks, troughs, and streaks. Use the ordered chart values to answer the question. What is the length of the longest strictly decreasing streak of consecutive labels in displayed order? Count labels in the streak.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "longest_decreasing_streak",
+      "template_id": "charts_trend_v1"
+    },
+    "render_map": {
+      "image_id": "img0",
+      "label_centers_px": {
+        "F": [
+          629.875,
+          534.0
+        ],
+        "H": [
+          464.375,
+          534.0
+        ],
+        "J": [
+          547.125,
+          534.0
+        ],
+        "M": [
+          216.125,
+          534.0
+        ],
+        "R": [
+          712.625,
+          534.0
+        ],
+        "S": [
+          298.875,
+          534.0
+        ],
+        "V": [
+          381.625,
+          534.0
+        ],
+        "Z": [
+          133.375,
+          534.0
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 600,
+      "canvas_width": 800,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "mark_fill_rgb": [
+          219,
+          213,
+          74
+        ],
+        "mark_outline_rgb": [
+          120,
+          117,
+          41
+        ],
+        "sampling_policy": "random_rgb"
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "bar",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 16,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "label": "Z",
+            "label_center_px": [
+              133.375,
+              534.0
+            ],
+            "mark_bbox_px": [
+              109.377,
+              363.0,
+              157.373,
+              508.0
+            ],
+            "mark_center_px": [
+              133.375,
+              363.0
+            ],
+            "mark_fill_rgb": [
+              219,
+              213,
+              74
+            ],
+            "mark_outline_rgb": [
+              120,
+              117,
+              41
+            ],
+            "scene_variant": "bar",
+            "value": 5,
+            "x_rank": 0
+          },
+          "entity_id": "mark_Z",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "label": "M",
+            "label_center_px": [
+              216.125,
+              534.0
+            ],
+            "mark_bbox_px": [
+              192.127,
+              305.0,
+              240.123,
+              508.0
+            ],
+            "mark_center_px": [
+              216.125,
+              305.0
+            ],
+            "mark_fill_rgb": [
+              219,
+              213,
+              74
+            ],
+            "mark_outline_rgb": [
+              120,
+              117,
+              41
+            ],
+            "scene_variant": "bar",
+            "value": 7,
+            "x_rank": 1
+          },
+          "entity_id": "mark_M",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "label": "S",
+            "label_center_px": [
+              298.875,
+              534.0
+            ],
+            "mark_bbox_px": [
+              274.877,
+              363.0,
+              322.873,
+              508.0
+            ],
+            "mark_center_px": [
+              298.875,
+              363.0
+            ],
+            "mark_fill_rgb": [
+              219,
+              213,
+              74
+            ],
+            "mark_outline_rgb": [
+              120,
+              117,
+              41
+            ],
+            "scene_variant": "bar",
+            "value": 5,
+            "x_rank": 2
+          },
+          "entity_id": "mark_S",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "label": "V",
+            "label_center_px": [
+              381.625,
+              534.0
+            ],
+            "mark_bbox_px": [
+              357.627,
+              305.0,
+              405.623,
+              508.0
+            ],
+            "mark_center_px": [
+              381.625,
+              305.0
+            ],
+            "mark_fill_rgb": [
+              219,
+              213,
+              74
+            ],
+            "mark_outline_rgb": [
+              120,
+              117,
+              41
+            ],
+            "scene_variant": "bar",
+            "value": 7,
+            "x_rank": 3
+          },
+          "entity_id": "mark_V",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "label": "H",
+            "label_center_px": [
+              464.375,
+              534.0
+            ],
+            "mark_bbox_px": [
+              440.377,
+              247.0,
+              488.373,
+              508.0
+            ],
+            "mark_center_px": [
+              464.375,
+              247.0
+            ],
+            "mark_fill_rgb": [
+              219,
+              213,
+              74
+            ],
+            "mark_outline_rgb": [
+              120,
+              117,
+              41
+            ],
+            "scene_variant": "bar",
+            "value": 9,
+            "x_rank": 4
+          },
+          "entity_id": "mark_H",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "label": "J",
+            "label_center_px": [
+              547.125,
+              534.0
+            ],
+            "mark_bbox_px": [
+              523.128,
+              189.0,
+              571.122,
+              508.0
+            ],
+            "mark_center_px": [
+              547.125,
+              189.0
+            ],
+            "mark_fill_rgb": [
+              219,
+              213,
+              74
+            ],
+            "mark_outline_rgb": [
+              120,
+              117,
+              41
+            ],
+            "scene_variant": "bar",
+            "value": 11,
+            "x_rank": 5
+          },
+          "entity_id": "mark_J",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "label": "F",
+            "label_center_px": [
+              629.875,
+              534.0
+            ],
+            "mark_bbox_px": [
+              605.878,
+              131.0,
+              653.872,
+              508.0
+            ],
+            "mark_center_px": [
+              629.875,
+              131.0
+            ],
+            "mark_fill_rgb": [
+              219,
+              213,
+              74
+            ],
+            "mark_outline_rgb": [
+              120,
+              117,
+              41
+            ],
+            "scene_variant": "bar",
+            "value": 13,
+            "x_rank": 6
+          },
+          "entity_id": "mark_F",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "label": "R",
+            "label_center_px": [
+              712.625,
+              534.0
+            ],
+            "mark_bbox_px": [
+              688.628,
+              73.0,
+              736.622,
+              508.0
+            ],
+            "mark_center_px": [
+              712.625,
+              73.0
+            ],
+            "mark_fill_rgb": [
+              219,
+              213,
+              74
+            ],
+            "mark_outline_rgb": [
+              120,
+              117,
+              41
+            ],
+            "scene_variant": "bar",
+            "value": 15,
+            "x_rank": 7
+          },
+          "entity_id": "mark_R",
+          "entity_type": "bar"
+        }
+      ],
+      "relations": {
+        "evidence_labels": [
+          "M",
+          "S"
+        ],
+        "evidence_point_indices": [
+          1,
+          2
+        ],
+        "ordered_evidence_labels": [
+          "M",
+          "S"
+        ],
+        "scene_variant": "bar",
+        "step_directions": [
+          "up",
+          "down",
+          "up",
+          "up",
+          "up",
+          "up",
+          "up"
+        ],
+        "step_signs": [
+          1,
+          -1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "streak_direction": "decreasing",
+        "task_variant": "longest_decreasing_streak"
+      },
+      "scene_kind": "chart_bar_trend"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "M",
+        "S"
+      ],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

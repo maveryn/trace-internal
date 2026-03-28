@@ -1,0 +1,648 @@
+{
+  "answer_gt": {
+    "type": "option_letter",
+    "value": "G"
+  },
+  "evidence_gt": {
+    "type": "integer",
+    "value": 7
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_statistics_summary_label/images/median_label/0001.png"
+  },
+  "instance_seed": 3269593829095386,
+  "prompt": "You are given a labeled chart: a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine which label matches the requested statistic. Identify the label of the median-value mark.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to the median value as an integer.\nAnswer requirement: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":6,\"answer\":\"M\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given a labeled chart: a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine which label matches the requested statistic. Identify the label of the median-value mark.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to the median value as an integer.\nAnswer requirement: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":6,\"answer\":\"M\"}",
+    "answer_only": "You are given a labeled chart: a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine which label matches the requested statistic. Identify the label of the median-value mark.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"answer\":\"M\"}"
+  },
+  "task": "task_charts_statistics_summary_label",
+  "task_variant": "median_label",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_label": "G",
+      "evidence_value": 7,
+      "labels": [
+        "G",
+        "P",
+        "F",
+        "B",
+        "U",
+        "K",
+        "V"
+      ],
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb",
+      "mark_count": 7,
+      "mark_count_range": [
+        5,
+        10
+      ],
+      "mark_fill_rgb": [
+        128,
+        214,
+        157
+      ],
+      "mark_outline_rgb": [
+        70,
+        118,
+        86
+      ],
+      "median_label": "G",
+      "question_format": "label_open",
+      "scene_variant": "area",
+      "scene_variant_probabilities": {
+        "area": 0.1,
+        "bar": 0.1,
+        "donut": 0.1,
+        "dot_plot": 0.1,
+        "horizontal_bar": 0.1,
+        "line": 0.1,
+        "lollipop": 0.1,
+        "pie": 0.1,
+        "radar": 0.1,
+        "scatter": 0.1
+      },
+      "sorted_values": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "statistic_kind": "median",
+      "target_answer": 7,
+      "target_answer_range": [
+        3,
+        10
+      ],
+      "task_variant": "median_label",
+      "task_variant_probabilities": {
+        "argmax": 0.3333333333333333,
+        "argmin": 0.3333333333333333,
+        "median_label": 0.3333333333333333
+      },
+      "value_max": 20,
+      "value_min": 1,
+      "values": [
+        7,
+        10,
+        8,
+        9,
+        6,
+        5,
+        4
+      ],
+      "values_by_label": {
+        "B": 9,
+        "F": 8,
+        "G": 7,
+        "K": 5,
+        "P": 10,
+        "U": 6,
+        "V": 4
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          131.286,
+          204.727,
+          147.286,
+          220.727
+        ]
+      ],
+      "integer": 7,
+      "pixel_point_map": {
+        "G": [
+          139.286,
+          212.727
+        ]
+      },
+      "pixel_point_set": [
+        [
+          139.286,
+          212.727
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "mark_count": 7,
+        "scene_variant": "area",
+        "scene_variant_probabilities": {
+          "area": 0.1,
+          "bar": 0.1,
+          "donut": 0.1,
+          "dot_plot": 0.1,
+          "horizontal_bar": 0.1,
+          "line": 0.1,
+          "lollipop": 0.1,
+          "pie": 0.1,
+          "radar": 0.1,
+          "scatter": 0.1
+        },
+        "statistic_kind": "median",
+        "target_answer": 7,
+        "target_answer_range": [
+          3,
+          10
+        ],
+        "task_variant": "median_label",
+        "task_variant_probabilities": {
+          "argmax": 0.3333333333333333,
+          "argmin": 0.3333333333333333,
+          "median_label": 0.3333333333333333
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "charts_statistics_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the single uppercase label of the requested mark",
+          "evidence_hint": "set \"evidence\" to the median value as an integer",
+          "json_example": "{\"evidence\":6,\"answer\":\"M\"}",
+          "json_example_answer_only": "{\"answer\":\"M\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+        },
+        "task_family_key": "labeled_chart_statistics",
+        "task_family_variant_index": 4,
+        "task_key": "summary_label_query",
+        "task_variant_index": 1,
+        "task_variant_key": "median_label",
+        "task_variant_template_index": 4,
+        "template_paths": [
+          "charts/statistics/charts_statistics_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:summary_label_query": 5,
+          "task_family:labeled_chart_statistics": 5,
+          "task_variant:median_label": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "charts_statistics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single uppercase label of the requested mark",
+              "evidence_hint": "set \"evidence\" to the median value as an integer",
+              "json_example": "{\"evidence\":6,\"answer\":\"M\"}",
+              "json_example_answer_only": "{\"answer\":\"M\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+            },
+            "task_family_key": "labeled_chart_statistics",
+            "task_family_variant_index": 4,
+            "task_key": "summary_label_query",
+            "task_variant_index": 1,
+            "task_variant_key": "median_label",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "charts/statistics/charts_statistics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:summary_label_query": 5,
+              "task_family:labeled_chart_statistics": 5,
+              "task_variant:median_label": 5
+            }
+          },
+          "prompt": "You are given a labeled chart: a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine which label matches the requested statistic. Identify the label of the median-value mark.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to the median value as an integer.\nAnswer requirement: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":6,\"answer\":\"M\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "charts_statistics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single uppercase label of the requested mark",
+              "evidence_hint": "set \"evidence\" to the median value as an integer",
+              "json_example": "{\"evidence\":6,\"answer\":\"M\"}",
+              "json_example_answer_only": "{\"answer\":\"M\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+            },
+            "task_family_key": "labeled_chart_statistics",
+            "task_family_variant_index": 4,
+            "task_key": "summary_label_query",
+            "task_variant_index": 1,
+            "task_variant_key": "median_label",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "charts/statistics/charts_statistics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:summary_label_query": 5,
+              "task_family:labeled_chart_statistics": 5,
+              "task_variant:median_label": 5
+            }
+          },
+          "prompt": "You are given a labeled chart: a labeled area chart with visible point markers. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine which label matches the requested statistic. Identify the label of the median-value mark.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"answer\":\"M\"}"
+        }
+      },
+      "task_variant": "median_label",
+      "template_id": "charts_statistics_v1"
+    },
+    "render_map": {
+      "image_id": "img0",
+      "label_centers_px": {
+        "B": [
+          423.0,
+          106.364
+        ],
+        "F": [
+          328.429,
+          148.545
+        ],
+        "G": [
+          139.286,
+          190.727
+        ],
+        "K": [
+          612.143,
+          275.091
+        ],
+        "P": [
+          233.857,
+          64.182
+        ],
+        "U": [
+          517.571,
+          232.909
+        ],
+        "V": [
+          706.714,
+          317.273
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 600,
+      "canvas_width": 800,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "mark_fill_rgb": [
+          128,
+          214,
+          157
+        ],
+        "mark_outline_rgb": [
+          70,
+          118,
+          86
+        ],
+        "sampling_policy": "random_rgb"
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "area",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 11,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "label": "G",
+            "label_center_px": [
+              139.286,
+              190.727
+            ],
+            "mark_bbox_px": [
+              131.286,
+              204.727,
+              147.286,
+              220.727
+            ],
+            "mark_center_px": [
+              139.286,
+              212.727
+            ],
+            "mark_fill_rgb": [
+              128,
+              214,
+              157
+            ],
+            "mark_outline_rgb": [
+              70,
+              118,
+              86
+            ],
+            "scene_variant": "area",
+            "value": 7,
+            "x_rank": 0
+          },
+          "entity_id": "mark_G",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "P",
+            "label_center_px": [
+              233.857,
+              64.182
+            ],
+            "mark_bbox_px": [
+              225.857,
+              78.182,
+              241.857,
+              94.182
+            ],
+            "mark_center_px": [
+              233.857,
+              86.182
+            ],
+            "mark_fill_rgb": [
+              128,
+              214,
+              157
+            ],
+            "mark_outline_rgb": [
+              70,
+              118,
+              86
+            ],
+            "scene_variant": "area",
+            "value": 10,
+            "x_rank": 1
+          },
+          "entity_id": "mark_P",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "F",
+            "label_center_px": [
+              328.429,
+              148.545
+            ],
+            "mark_bbox_px": [
+              320.429,
+              162.545,
+              336.429,
+              178.545
+            ],
+            "mark_center_px": [
+              328.429,
+              170.545
+            ],
+            "mark_fill_rgb": [
+              128,
+              214,
+              157
+            ],
+            "mark_outline_rgb": [
+              70,
+              118,
+              86
+            ],
+            "scene_variant": "area",
+            "value": 8,
+            "x_rank": 2
+          },
+          "entity_id": "mark_F",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "B",
+            "label_center_px": [
+              423.0,
+              106.364
+            ],
+            "mark_bbox_px": [
+              415.0,
+              120.364,
+              431.0,
+              136.364
+            ],
+            "mark_center_px": [
+              423.0,
+              128.364
+            ],
+            "mark_fill_rgb": [
+              128,
+              214,
+              157
+            ],
+            "mark_outline_rgb": [
+              70,
+              118,
+              86
+            ],
+            "scene_variant": "area",
+            "value": 9,
+            "x_rank": 3
+          },
+          "entity_id": "mark_B",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "U",
+            "label_center_px": [
+              517.571,
+              232.909
+            ],
+            "mark_bbox_px": [
+              509.571,
+              246.909,
+              525.571,
+              262.909
+            ],
+            "mark_center_px": [
+              517.571,
+              254.909
+            ],
+            "mark_fill_rgb": [
+              128,
+              214,
+              157
+            ],
+            "mark_outline_rgb": [
+              70,
+              118,
+              86
+            ],
+            "scene_variant": "area",
+            "value": 6,
+            "x_rank": 4
+          },
+          "entity_id": "mark_U",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "K",
+            "label_center_px": [
+              612.143,
+              275.091
+            ],
+            "mark_bbox_px": [
+              604.143,
+              289.091,
+              620.143,
+              305.091
+            ],
+            "mark_center_px": [
+              612.143,
+              297.091
+            ],
+            "mark_fill_rgb": [
+              128,
+              214,
+              157
+            ],
+            "mark_outline_rgb": [
+              70,
+              118,
+              86
+            ],
+            "scene_variant": "area",
+            "value": 5,
+            "x_rank": 5
+          },
+          "entity_id": "mark_K",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "V",
+            "label_center_px": [
+              706.714,
+              317.273
+            ],
+            "mark_bbox_px": [
+              698.714,
+              331.273,
+              714.714,
+              347.273
+            ],
+            "mark_center_px": [
+              706.714,
+              339.273
+            ],
+            "mark_fill_rgb": [
+              128,
+              214,
+              157
+            ],
+            "mark_outline_rgb": [
+              70,
+              118,
+              86
+            ],
+            "scene_variant": "area",
+            "value": 4,
+            "x_rank": 6
+          },
+          "entity_id": "mark_V",
+          "entity_type": "point"
+        }
+      ],
+      "relations": {
+        "answer_label": "G",
+        "evidence_value": 7,
+        "scene_variant": "area",
+        "statistic_kind": "median",
+        "task_variant": "median_label"
+      },
+      "scene_kind": "chart_area_statistics"
+    },
+    "witness_symbolic": {
+      "type": "integer",
+      "value": 7
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

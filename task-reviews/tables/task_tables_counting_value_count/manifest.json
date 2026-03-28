@@ -1,0 +1,19 @@
+{
+  "inspection_count": 125,
+  "task_id": "task_tables_counting_value_count",
+  "variants": {
+    "above_threshold": 25,
+    "below_threshold": 25,
+    "col_a_gt_col_b": 25,
+    "col_a_lt_col_b": 25,
+    "in_interval": 25
+  },
+  "workbook": "tables/task_tables_counting_value_count/task_tables_counting_value_count.xlsx",
+  "workbook_sheets": {
+    "above_threshold": "above_threshold",
+    "below_threshold": "below_threshold",
+    "col_a_gt_col_b": "col_a_gt_col_b",
+    "col_a_lt_col_b": "col_a_lt_col_b",
+    "in_interval": "in_interval"
+  }
+}

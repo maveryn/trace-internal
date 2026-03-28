@@ -1,0 +1,13 @@
+{
+  "inspection_count": 50,
+  "task_id": "task_tile_symmetry_violation_count",
+  "variants": {
+    "horizontal": 25,
+    "vertical": 25
+  },
+  "workbook": "tile/task_tile_symmetry_violation_count/task_tile_symmetry_violation_count.xlsx",
+  "workbook_sheets": {
+    "horizontal": "horizontal",
+    "vertical": "vertical"
+  }
+}

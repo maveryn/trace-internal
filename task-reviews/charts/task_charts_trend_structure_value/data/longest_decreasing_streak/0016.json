@@ -1,0 +1,826 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 7
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "B",
+      "D",
+      "E",
+      "M",
+      "P",
+      "S",
+      "X"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_trend_structure_value/images/longest_decreasing_streak/0016.png"
+  },
+  "instance_seed": 728902812409552,
+  "prompt": "The image shows an ordered labeled lollipop chart with points arranged from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart's displayed order when reasoning about peaks, troughs, and streaks. Determine the requested trend-structure value. Determine the length of the longest streak where each consecutive label decreases in value. Count labels, not gaps.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak.\nAnswer format: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows an ordered labeled lollipop chart with points arranged from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart's displayed order when reasoning about peaks, troughs, and streaks. Determine the requested trend-structure value. Determine the length of the longest streak where each consecutive label decreases in value. Count labels, not gaps.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak.\nAnswer format: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+    "answer_only": "The image shows an ordered labeled lollipop chart with points arranged from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart's displayed order when reasoning about peaks, troughs, and streaks. Determine the requested trend-structure value. Determine the length of the longest streak where each consecutive label decreases in value. Count labels, not gaps.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_charts_trend_structure_value",
+  "task_variant": "longest_decreasing_streak",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 7,
+      "evidence_labels": [
+        "B",
+        "D",
+        "E",
+        "M",
+        "P",
+        "S",
+        "X"
+      ],
+      "evidence_point_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "labels": [
+        "M",
+        "D",
+        "X",
+        "P",
+        "E",
+        "B",
+        "S"
+      ],
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb",
+      "mark_count": 7,
+      "mark_count_range": [
+        6,
+        10
+      ],
+      "mark_fill_rgb": [
+        45,
+        128,
+        22
+      ],
+      "mark_outline_rgb": [
+        25,
+        70,
+        12
+      ],
+      "ordered_evidence_labels": [
+        "M",
+        "D",
+        "X",
+        "P",
+        "E",
+        "B",
+        "S"
+      ],
+      "question_format": "numeric_open",
+      "scene_variant": "lollipop",
+      "scene_variant_probabilities": {
+        "area": 0.16666666666666666,
+        "bar": 0.16666666666666666,
+        "dot_plot": 0.16666666666666666,
+        "horizontal_bar": 0.16666666666666666,
+        "line": 0.16666666666666666,
+        "lollipop": 0.16666666666666666
+      },
+      "step_directions": [
+        "down",
+        "down",
+        "down",
+        "down",
+        "down",
+        "down"
+      ],
+      "step_signs": [
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "streak_direction": "decreasing",
+      "target_answer": 7,
+      "target_answer_range": [
+        2,
+        10
+      ],
+      "task_variant": "longest_decreasing_streak",
+      "task_variant_probabilities": {
+        "longest_decreasing_streak": 0.25,
+        "longest_increasing_streak": 0.25,
+        "peak_count": 0.25,
+        "trough_count": 0.25
+      },
+      "value_max": 20,
+      "value_min": 1,
+      "values": [
+        14,
+        12,
+        10,
+        8,
+        6,
+        4,
+        2
+      ],
+      "values_by_label": {
+        "B": 4,
+        "D": 12,
+        "E": 6,
+        "M": 14,
+        "P": 8,
+        "S": 2,
+        "X": 10
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          604.143,
+          376.267,
+          620.143,
+          392.267
+        ],
+        [
+          225.857,
+          128.8,
+          241.857,
+          144.8
+        ],
+        [
+          509.571,
+          314.4,
+          525.571,
+          330.4
+        ],
+        [
+          131.286,
+          66.933,
+          147.286,
+          82.933
+        ],
+        [
+          415.0,
+          252.533,
+          431.0,
+          268.533
+        ],
+        [
+          698.714,
+          438.133,
+          714.714,
+          454.133
+        ],
+        [
+          320.429,
+          190.667,
+          336.429,
+          206.667
+        ]
+      ],
+      "label_set": [
+        "B",
+        "D",
+        "E",
+        "M",
+        "P",
+        "S",
+        "X"
+      ],
+      "pixel_point_map": {
+        "B": [
+          612.143,
+          384.267
+        ],
+        "D": [
+          233.857,
+          136.8
+        ],
+        "E": [
+          517.571,
+          322.4
+        ],
+        "M": [
+          139.286,
+          74.933
+        ],
+        "P": [
+          423.0,
+          260.533
+        ],
+        "S": [
+          706.714,
+          446.133
+        ],
+        "X": [
+          328.429,
+          198.667
+        ]
+      },
+      "pixel_point_set": [
+        [
+          612.143,
+          384.267
+        ],
+        [
+          233.857,
+          136.8
+        ],
+        [
+          517.571,
+          322.4
+        ],
+        [
+          139.286,
+          74.933
+        ],
+        [
+          423.0,
+          260.533
+        ],
+        [
+          706.714,
+          446.133
+        ],
+        [
+          328.429,
+          198.667
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "mark_count": 7,
+        "scene_variant": "lollipop",
+        "scene_variant_probabilities": {
+          "area": 0.16666666666666666,
+          "bar": 0.16666666666666666,
+          "dot_plot": 0.16666666666666666,
+          "horizontal_bar": 0.16666666666666666,
+          "line": 0.16666666666666666,
+          "lollipop": 0.16666666666666666
+        },
+        "target_answer": 7,
+        "target_answer_range": [
+          2,
+          10
+        ],
+        "task_variant": "longest_decreasing_streak",
+        "task_variant_probabilities": {
+          "longest_decreasing_streak": 0.25,
+          "longest_increasing_streak": 0.25,
+          "peak_count": 0.25,
+          "trough_count": 0.25
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "charts_trend_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the requested count or streak length as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak",
+          "json_example": "{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "an ordered labeled lollipop chart with points arranged from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+        },
+        "task_family_key": "ordered_chart_trend",
+        "task_family_variant_index": 0,
+        "task_key": "structure_value_query",
+        "task_variant_index": 1,
+        "task_variant_key": "longest_decreasing_streak",
+        "task_variant_template_index": 2,
+        "template_paths": [
+          "charts/trend/charts_trend_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:structure_value_query": 5,
+          "task_family:ordered_chart_trend": 5,
+          "task_variant:longest_decreasing_streak": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "charts_trend_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested count or streak length as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak",
+              "json_example": "{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an ordered labeled lollipop chart with points arranged from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+            },
+            "task_family_key": "ordered_chart_trend",
+            "task_family_variant_index": 0,
+            "task_key": "structure_value_query",
+            "task_variant_index": 1,
+            "task_variant_key": "longest_decreasing_streak",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "charts/trend/charts_trend_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:structure_value_query": 5,
+              "task_family:ordered_chart_trend": 5,
+              "task_variant:longest_decreasing_streak": 5
+            }
+          },
+          "prompt": "The image shows an ordered labeled lollipop chart with points arranged from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart's displayed order when reasoning about peaks, troughs, and streaks. Determine the requested trend-structure value. Determine the length of the longest streak where each consecutive label decreases in value. Count labels, not gaps.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak.\nAnswer format: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "charts_trend_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested count or streak length as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing all labels in the unique longest strictly decreasing streak",
+              "json_example": "{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an ordered labeled lollipop chart with points arranged from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+            },
+            "task_family_key": "ordered_chart_trend",
+            "task_family_variant_index": 0,
+            "task_key": "structure_value_query",
+            "task_variant_index": 1,
+            "task_variant_key": "longest_decreasing_streak",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "charts/trend/charts_trend_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:structure_value_query": 5,
+              "task_family:ordered_chart_trend": 5,
+              "task_variant:longest_decreasing_streak": 5
+            }
+          },
+          "prompt": "The image shows an ordered labeled lollipop chart with points arranged from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart's displayed order when reasoning about peaks, troughs, and streaks. Determine the requested trend-structure value. Determine the length of the longest streak where each consecutive label decreases in value. Count labels, not gaps.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "longest_decreasing_streak",
+      "template_id": "charts_trend_v1"
+    },
+    "render_map": {
+      "image_id": "img0",
+      "label_centers_px": {
+        "B": [
+          612.143,
+          362.267
+        ],
+        "D": [
+          233.857,
+          114.8
+        ],
+        "E": [
+          517.571,
+          300.4
+        ],
+        "M": [
+          139.286,
+          52.933
+        ],
+        "P": [
+          423.0,
+          238.533
+        ],
+        "S": [
+          706.714,
+          424.133
+        ],
+        "X": [
+          328.429,
+          176.667
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 600,
+      "canvas_width": 800,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "mark_fill_rgb": [
+          45,
+          128,
+          22
+        ],
+        "mark_outline_rgb": [
+          25,
+          70,
+          12
+        ],
+        "sampling_policy": "random_rgb"
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "lollipop",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 15,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "label": "M",
+            "label_center_px": [
+              139.286,
+              52.933
+            ],
+            "mark_bbox_px": [
+              131.286,
+              66.933,
+              147.286,
+              82.933
+            ],
+            "mark_center_px": [
+              139.286,
+              74.933
+            ],
+            "mark_fill_rgb": [
+              45,
+              128,
+              22
+            ],
+            "mark_outline_rgb": [
+              25,
+              70,
+              12
+            ],
+            "scene_variant": "lollipop",
+            "value": 14,
+            "x_rank": 0
+          },
+          "entity_id": "mark_M",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "D",
+            "label_center_px": [
+              233.857,
+              114.8
+            ],
+            "mark_bbox_px": [
+              225.857,
+              128.8,
+              241.857,
+              144.8
+            ],
+            "mark_center_px": [
+              233.857,
+              136.8
+            ],
+            "mark_fill_rgb": [
+              45,
+              128,
+              22
+            ],
+            "mark_outline_rgb": [
+              25,
+              70,
+              12
+            ],
+            "scene_variant": "lollipop",
+            "value": 12,
+            "x_rank": 1
+          },
+          "entity_id": "mark_D",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "X",
+            "label_center_px": [
+              328.429,
+              176.667
+            ],
+            "mark_bbox_px": [
+              320.429,
+              190.667,
+              336.429,
+              206.667
+            ],
+            "mark_center_px": [
+              328.429,
+              198.667
+            ],
+            "mark_fill_rgb": [
+              45,
+              128,
+              22
+            ],
+            "mark_outline_rgb": [
+              25,
+              70,
+              12
+            ],
+            "scene_variant": "lollipop",
+            "value": 10,
+            "x_rank": 2
+          },
+          "entity_id": "mark_X",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "P",
+            "label_center_px": [
+              423.0,
+              238.533
+            ],
+            "mark_bbox_px": [
+              415.0,
+              252.533,
+              431.0,
+              268.533
+            ],
+            "mark_center_px": [
+              423.0,
+              260.533
+            ],
+            "mark_fill_rgb": [
+              45,
+              128,
+              22
+            ],
+            "mark_outline_rgb": [
+              25,
+              70,
+              12
+            ],
+            "scene_variant": "lollipop",
+            "value": 8,
+            "x_rank": 3
+          },
+          "entity_id": "mark_P",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "E",
+            "label_center_px": [
+              517.571,
+              300.4
+            ],
+            "mark_bbox_px": [
+              509.571,
+              314.4,
+              525.571,
+              330.4
+            ],
+            "mark_center_px": [
+              517.571,
+              322.4
+            ],
+            "mark_fill_rgb": [
+              45,
+              128,
+              22
+            ],
+            "mark_outline_rgb": [
+              25,
+              70,
+              12
+            ],
+            "scene_variant": "lollipop",
+            "value": 6,
+            "x_rank": 4
+          },
+          "entity_id": "mark_E",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "B",
+            "label_center_px": [
+              612.143,
+              362.267
+            ],
+            "mark_bbox_px": [
+              604.143,
+              376.267,
+              620.143,
+              392.267
+            ],
+            "mark_center_px": [
+              612.143,
+              384.267
+            ],
+            "mark_fill_rgb": [
+              45,
+              128,
+              22
+            ],
+            "mark_outline_rgb": [
+              25,
+              70,
+              12
+            ],
+            "scene_variant": "lollipop",
+            "value": 4,
+            "x_rank": 5
+          },
+          "entity_id": "mark_B",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "S",
+            "label_center_px": [
+              706.714,
+              424.133
+            ],
+            "mark_bbox_px": [
+              698.714,
+              438.133,
+              714.714,
+              454.133
+            ],
+            "mark_center_px": [
+              706.714,
+              446.133
+            ],
+            "mark_fill_rgb": [
+              45,
+              128,
+              22
+            ],
+            "mark_outline_rgb": [
+              25,
+              70,
+              12
+            ],
+            "scene_variant": "lollipop",
+            "value": 2,
+            "x_rank": 6
+          },
+          "entity_id": "mark_S",
+          "entity_type": "point"
+        }
+      ],
+      "relations": {
+        "evidence_labels": [
+          "B",
+          "D",
+          "E",
+          "M",
+          "P",
+          "S",
+          "X"
+        ],
+        "evidence_point_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "ordered_evidence_labels": [
+          "M",
+          "D",
+          "X",
+          "P",
+          "E",
+          "B",
+          "S"
+        ],
+        "scene_variant": "lollipop",
+        "step_directions": [
+          "down",
+          "down",
+          "down",
+          "down",
+          "down",
+          "down"
+        ],
+        "step_signs": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "streak_direction": "decreasing",
+        "task_variant": "longest_decreasing_streak"
+      },
+      "scene_kind": "chart_lollipop_trend"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "B",
+        "D",
+        "E",
+        "M",
+        "P",
+        "S",
+        "X"
+      ],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

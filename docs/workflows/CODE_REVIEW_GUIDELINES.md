@@ -143,6 +143,9 @@ Use this checklist during implementation and refactor reviews.
 127. For early puzzle arithmetic tasks with a one-box unknown-slot witness, prefer widening structural variety inside the same task (for example operand count, operator mix, unknown side) instead of splitting that contract into multiple near-duplicate mini-puzzle variants.
 128. For balance-style puzzle arithmetic tasks, keep prompt-facing evidence on one dedicated query box rather than widening it to all supporting balance panels; the panels may be the solver witness in trace, but the prompt contract should stay local and visually obvious.
 128. When a puzzle-family refactor retires old `task_variant` names, remove those retired keys from task docs, prompt/config examples, and behavior tests in the same patch; do not leave stale variant vocabularies alongside the active one-box evidence contract.
+129. For arithmetic rule-grid puzzles, require at least two fully visible example rows after hiding the query cell and verify that those complete rows support exactly one active operator family; do not accept `2`-row grids or row sets that remain consistent with multiple hidden-rule interpretations.
+130. When task-review artifact layout changes, update both the review script and every doc that names the canonical review path, and migrate stored relative JSON paths in manifests/summaries so checked-in review artifacts remain usable after the move.
+131. For arithmetic equality puzzles, prefer an explicit `=` marker between the two sides when the intended semantics are exact equality; do not rely on a decorative scale glyph alone if it makes the algebraic relation less obvious.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

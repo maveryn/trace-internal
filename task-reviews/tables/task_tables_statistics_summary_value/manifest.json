@@ -1,0 +1,23 @@
+{
+  "inspection_count": 175,
+  "task_id": "task_tables_statistics_summary_value",
+  "variants": {
+    "column_mean": 25,
+    "column_median": 25,
+    "column_sum": 25,
+    "row_mean": 25,
+    "row_sum": 25,
+    "table_mean": 25,
+    "table_sum": 25
+  },
+  "workbook": "tables/task_tables_statistics_summary_value/task_tables_statistics_summary_value.xlsx",
+  "workbook_sheets": {
+    "column_mean": "column_mean",
+    "column_median": "column_median",
+    "column_sum": "column_sum",
+    "row_mean": "row_mean",
+    "row_sum": "row_sum",
+    "table_mean": "table_mean",
+    "table_sum": "table_sum"
+  }
+}

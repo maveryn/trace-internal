@@ -1,0 +1,697 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 11
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "12-15",
+      "16-19",
+      "20-23"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_distribution_histogram_count/images/cumulative_count_to_bin/0011.png"
+  },
+  "instance_seed": 6474218269726454,
+  "prompt": "Look at the chart in the image. It shows a histogram with contiguous numeric interval bins on the horizontal axis. Each bar height gives the count for that interval. Work from the bin counts shown in the histogram. What is the total count from the first bin through 20-23?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the labels of all bins from the first bin through the queried bin.\nAnswer field: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[\"0-2\",\"3-5\",\"6-8\"],\"answer\":18}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the chart in the image. It shows a histogram with contiguous numeric interval bins on the horizontal axis. Each bar height gives the count for that interval. Work from the bin counts shown in the histogram. What is the total count from the first bin through 20-23?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the labels of all bins from the first bin through the queried bin.\nAnswer field: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[\"0-2\",\"3-5\",\"6-8\"],\"answer\":18}",
+    "answer_only": "Look at the chart in the image. It shows a histogram with contiguous numeric interval bins on the horizontal axis. Each bar height gives the count for that interval. Work from the bin counts shown in the histogram. What is the total count from the first bin through 20-23?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":18}"
+  },
+  "task": "task_charts_distribution_histogram_count",
+  "task_variant": "cumulative_count_to_bin",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 11,
+      "bin_count": 7,
+      "bin_count_range": [
+        4,
+        7
+      ],
+      "bin_counts": [
+        5,
+        2,
+        4,
+        5,
+        1,
+        3,
+        8
+      ],
+      "bin_frequency_range": [
+        1,
+        12
+      ],
+      "bin_start": 12,
+      "bin_start_range": [
+        0,
+        12
+      ],
+      "bin_width": 4,
+      "bin_width_range": [
+        2,
+        4
+      ],
+      "counts_by_label": {
+        "12-15": 5,
+        "16-19": 2,
+        "20-23": 4,
+        "24-27": 5,
+        "28-31": 1,
+        "32-35": 3,
+        "36-39": 8
+      },
+      "evidence_labels": [
+        "12-15",
+        "16-19",
+        "20-23"
+      ],
+      "labels": [
+        "12-15",
+        "16-19",
+        "20-23",
+        "24-27",
+        "28-31",
+        "32-35",
+        "36-39"
+      ],
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb",
+      "mark_fill_rgb": [
+        7,
+        27,
+        132
+      ],
+      "mark_outline_rgb": [
+        4,
+        15,
+        73
+      ],
+      "prefix_bin_count": 3,
+      "query_bin_label": "20-23",
+      "query_interval_label": "",
+      "question_format": "numeric_open",
+      "scene_variant": "histogram",
+      "target_answer": 11,
+      "target_answer_range": [
+        4,
+        36
+      ],
+      "task_variant": "cumulative_count_to_bin",
+      "task_variant_probabilities": {
+        "cumulative_count_to_bin": 0.3333333333333333,
+        "interval_mass": 0.3333333333333333,
+        "modal_bin_count": 0.3333333333333333
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          104.0,
+          251.111,
+          204.286,
+          510.0
+        ],
+        [
+          204.286,
+          406.444,
+          304.571,
+          510.0
+        ],
+        [
+          304.571,
+          302.889,
+          404.857,
+          510.0
+        ]
+      ],
+      "label_set": [
+        "12-15",
+        "16-19",
+        "20-23"
+      ],
+      "pixel_point_map": {
+        "12-15": [
+          154.143,
+          380.556
+        ],
+        "16-19": [
+          254.429,
+          458.222
+        ],
+        "20-23": [
+          354.714,
+          406.444
+        ]
+      },
+      "pixel_point_set": [
+        [
+          154.143,
+          380.556
+        ],
+        [
+          254.429,
+          458.222
+        ],
+        [
+          354.714,
+          406.444
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "bin_count": 7,
+        "prefix_bin_count": 3,
+        "query_bin_label": "20-23",
+        "query_interval_label": "",
+        "scene_variant": "histogram",
+        "target_answer": 11,
+        "target_answer_range": [
+          4,
+          36
+        ],
+        "task_variant": "cumulative_count_to_bin",
+        "task_variant_probabilities": {
+          "cumulative_count_to_bin": 0.3333333333333333,
+          "interval_mass": 0.3333333333333333,
+          "modal_bin_count": 0.3333333333333333
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "charts_distribution_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the requested count as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the labels of all bins from the first bin through the queried bin",
+          "json_example": "{\"evidence\":[\"0-2\",\"3-5\",\"6-8\"],\"answer\":18}",
+          "json_example_answer_only": "{\"answer\":18}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a histogram with contiguous numeric interval bins on the horizontal axis. Each bar height gives the count for that interval",
+          "query_bin_label": "20-23",
+          "query_interval_label": ""
+        },
+        "task_family_key": "distribution_chart",
+        "task_family_variant_index": 3,
+        "task_key": "histogram_count_query",
+        "task_variant_index": 4,
+        "task_variant_key": "cumulative_count_to_bin",
+        "task_variant_template_index": 3,
+        "template_paths": [
+          "charts/distribution/charts_distribution_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:histogram_count_query": 5,
+          "task_family:distribution_chart": 5,
+          "task_variant:cumulative_count_to_bin": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "charts_distribution_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested count as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the labels of all bins from the first bin through the queried bin",
+              "json_example": "{\"evidence\":[\"0-2\",\"3-5\",\"6-8\"],\"answer\":18}",
+              "json_example_answer_only": "{\"answer\":18}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a histogram with contiguous numeric interval bins on the horizontal axis. Each bar height gives the count for that interval",
+              "query_bin_label": "20-23",
+              "query_interval_label": ""
+            },
+            "task_family_key": "distribution_chart",
+            "task_family_variant_index": 3,
+            "task_key": "histogram_count_query",
+            "task_variant_index": 4,
+            "task_variant_key": "cumulative_count_to_bin",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "charts/distribution/charts_distribution_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:histogram_count_query": 5,
+              "task_family:distribution_chart": 5,
+              "task_variant:cumulative_count_to_bin": 5
+            }
+          },
+          "prompt": "Look at the chart in the image. It shows a histogram with contiguous numeric interval bins on the horizontal axis. Each bar height gives the count for that interval. Work from the bin counts shown in the histogram. What is the total count from the first bin through 20-23?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the labels of all bins from the first bin through the queried bin.\nAnswer field: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[\"0-2\",\"3-5\",\"6-8\"],\"answer\":18}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "charts_distribution_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested count as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the labels of all bins from the first bin through the queried bin",
+              "json_example": "{\"evidence\":[\"0-2\",\"3-5\",\"6-8\"],\"answer\":18}",
+              "json_example_answer_only": "{\"answer\":18}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a histogram with contiguous numeric interval bins on the horizontal axis. Each bar height gives the count for that interval",
+              "query_bin_label": "20-23",
+              "query_interval_label": ""
+            },
+            "task_family_key": "distribution_chart",
+            "task_family_variant_index": 3,
+            "task_key": "histogram_count_query",
+            "task_variant_index": 4,
+            "task_variant_key": "cumulative_count_to_bin",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "charts/distribution/charts_distribution_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:histogram_count_query": 5,
+              "task_family:distribution_chart": 5,
+              "task_variant:cumulative_count_to_bin": 5
+            }
+          },
+          "prompt": "Look at the chart in the image. It shows a histogram with contiguous numeric interval bins on the horizontal axis. Each bar height gives the count for that interval. Work from the bin counts shown in the histogram. What is the total count from the first bin through 20-23?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":18}"
+        }
+      },
+      "task_variant": "cumulative_count_to_bin",
+      "template_id": "charts_distribution_v1"
+    },
+    "render_map": {
+      "image_id": "img0",
+      "label_centers_px": {
+        "12-15": [
+          154.143,
+          538.0
+        ],
+        "16-19": [
+          254.429,
+          538.0
+        ],
+        "20-23": [
+          354.714,
+          538.0
+        ],
+        "24-27": [
+          455.0,
+          538.0
+        ],
+        "28-31": [
+          555.286,
+          538.0
+        ],
+        "32-35": [
+          655.571,
+          538.0
+        ],
+        "36-39": [
+          755.857,
+          538.0
+        ]
+      },
+      "plot_bbox_px": [
+        104,
+        44,
+        806,
+        510
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 620,
+      "canvas_width": 860,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "mark_fill_rgb": [
+          7,
+          27,
+          132
+        ],
+        "mark_outline_rgb": [
+          4,
+          15,
+          73
+        ],
+        "sampling_policy": "random_rgb"
+      },
+      "plot_bbox_px": [
+        104,
+        44,
+        806,
+        510
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "histogram",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 9,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "count": 5,
+            "interval_end": 15,
+            "interval_start": 12,
+            "label": "12-15",
+            "label_center_px": [
+              154.143,
+              538.0
+            ],
+            "mark_bbox_px": [
+              104.0,
+              251.111,
+              204.286,
+              510.0
+            ],
+            "mark_center_px": [
+              154.143,
+              380.556
+            ],
+            "mark_fill_rgb": [
+              7,
+              27,
+              132
+            ],
+            "mark_outline_rgb": [
+              4,
+              15,
+              73
+            ],
+            "scene_variant": "histogram",
+            "x_rank": 0
+          },
+          "entity_id": "bin_0",
+          "entity_type": "bin"
+        },
+        {
+          "attrs": {
+            "count": 2,
+            "interval_end": 19,
+            "interval_start": 16,
+            "label": "16-19",
+            "label_center_px": [
+              254.429,
+              538.0
+            ],
+            "mark_bbox_px": [
+              204.286,
+              406.444,
+              304.571,
+              510.0
+            ],
+            "mark_center_px": [
+              254.429,
+              458.222
+            ],
+            "mark_fill_rgb": [
+              7,
+              27,
+              132
+            ],
+            "mark_outline_rgb": [
+              4,
+              15,
+              73
+            ],
+            "scene_variant": "histogram",
+            "x_rank": 1
+          },
+          "entity_id": "bin_1",
+          "entity_type": "bin"
+        },
+        {
+          "attrs": {
+            "count": 4,
+            "interval_end": 23,
+            "interval_start": 20,
+            "label": "20-23",
+            "label_center_px": [
+              354.714,
+              538.0
+            ],
+            "mark_bbox_px": [
+              304.571,
+              302.889,
+              404.857,
+              510.0
+            ],
+            "mark_center_px": [
+              354.714,
+              406.444
+            ],
+            "mark_fill_rgb": [
+              7,
+              27,
+              132
+            ],
+            "mark_outline_rgb": [
+              4,
+              15,
+              73
+            ],
+            "scene_variant": "histogram",
+            "x_rank": 2
+          },
+          "entity_id": "bin_2",
+          "entity_type": "bin"
+        },
+        {
+          "attrs": {
+            "count": 5,
+            "interval_end": 27,
+            "interval_start": 24,
+            "label": "24-27",
+            "label_center_px": [
+              455.0,
+              538.0
+            ],
+            "mark_bbox_px": [
+              404.857,
+              251.111,
+              505.143,
+              510.0
+            ],
+            "mark_center_px": [
+              455.0,
+              380.556
+            ],
+            "mark_fill_rgb": [
+              7,
+              27,
+              132
+            ],
+            "mark_outline_rgb": [
+              4,
+              15,
+              73
+            ],
+            "scene_variant": "histogram",
+            "x_rank": 3
+          },
+          "entity_id": "bin_3",
+          "entity_type": "bin"
+        },
+        {
+          "attrs": {
+            "count": 1,
+            "interval_end": 31,
+            "interval_start": 28,
+            "label": "28-31",
+            "label_center_px": [
+              555.286,
+              538.0
+            ],
+            "mark_bbox_px": [
+              505.143,
+              458.222,
+              605.429,
+              510.0
+            ],
+            "mark_center_px": [
+              555.286,
+              484.111
+            ],
+            "mark_fill_rgb": [
+              7,
+              27,
+              132
+            ],
+            "mark_outline_rgb": [
+              4,
+              15,
+              73
+            ],
+            "scene_variant": "histogram",
+            "x_rank": 4
+          },
+          "entity_id": "bin_4",
+          "entity_type": "bin"
+        },
+        {
+          "attrs": {
+            "count": 3,
+            "interval_end": 35,
+            "interval_start": 32,
+            "label": "32-35",
+            "label_center_px": [
+              655.571,
+              538.0
+            ],
+            "mark_bbox_px": [
+              605.429,
+              354.667,
+              705.714,
+              510.0
+            ],
+            "mark_center_px": [
+              655.571,
+              432.333
+            ],
+            "mark_fill_rgb": [
+              7,
+              27,
+              132
+            ],
+            "mark_outline_rgb": [
+              4,
+              15,
+              73
+            ],
+            "scene_variant": "histogram",
+            "x_rank": 5
+          },
+          "entity_id": "bin_5",
+          "entity_type": "bin"
+        },
+        {
+          "attrs": {
+            "count": 8,
+            "interval_end": 39,
+            "interval_start": 36,
+            "label": "36-39",
+            "label_center_px": [
+              755.857,
+              538.0
+            ],
+            "mark_bbox_px": [
+              705.714,
+              95.778,
+              806.0,
+              510.0
+            ],
+            "mark_center_px": [
+              755.857,
+              302.889
+            ],
+            "mark_fill_rgb": [
+              7,
+              27,
+              132
+            ],
+            "mark_outline_rgb": [
+              4,
+              15,
+              73
+            ],
+            "scene_variant": "histogram",
+            "x_rank": 6
+          },
+          "entity_id": "bin_6",
+          "entity_type": "bin"
+        }
+      ],
+      "relations": {
+        "evidence_labels": [
+          "12-15",
+          "16-19",
+          "20-23"
+        ],
+        "prefix_bin_count": 3,
+        "query_bin_label": "20-23",
+        "query_interval_label": "",
+        "scene_variant": "histogram",
+        "task_variant": "cumulative_count_to_bin"
+      },
+      "scene_kind": "chart_histogram_distribution"
+    },
+    "witness_symbolic": {
+      "type": "label_set",
+      "value": [
+        "12-15",
+        "16-19",
+        "20-23"
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

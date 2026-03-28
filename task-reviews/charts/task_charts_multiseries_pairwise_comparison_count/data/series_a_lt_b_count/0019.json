@@ -1,0 +1,1772 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 0
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": []
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0019.png"
+  },
+  "instance_seed": 2174477378724091,
+  "prompt": "Use the chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Count the category labels where Beck is below Kast.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Count the category labels where Beck is below Kast.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "Use the chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Count the category labels where Beck is below Kast.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_charts_multiseries_pairwise_comparison_count",
+  "task_variant": "series_a_lt_b_count",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 0,
+      "category_count": 10,
+      "category_count_range": [
+        5,
+        10
+      ],
+      "category_labels": [
+        "A",
+        "Y",
+        "H",
+        "J",
+        "W",
+        "Q",
+        "V",
+        "T",
+        "Z",
+        "L"
+      ],
+      "comparison": "less_than",
+      "evidence_labels": [],
+      "left_series_label": "Beck",
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb_palette",
+      "queried_series_labels": [
+        "Beck",
+        "Kast"
+      ],
+      "question_format": "numeric_open",
+      "right_series_label": "Kast",
+      "scene_variant": "grouped_horizontal_bar",
+      "scene_variant_probabilities": {
+        "grouped_bar": 0.25,
+        "grouped_horizontal_bar": 0.25,
+        "grouped_lollipop": 0.25,
+        "multi_line": 0.25
+      },
+      "series_count": 3,
+      "series_count_range": [
+        2,
+        3
+      ],
+      "series_fill_palette_rgb": [
+        [
+          46,
+          114,
+          169
+        ],
+        [
+          116,
+          51,
+          215
+        ],
+        [
+          211,
+          68,
+          22
+        ]
+      ],
+      "series_labels": [
+        "Beck",
+        "Kast",
+        "Kenn"
+      ],
+      "series_outline_palette_rgb": [
+        [
+          25,
+          63,
+          93
+        ],
+        [
+          64,
+          28,
+          118
+        ],
+        [
+          116,
+          37,
+          12
+        ]
+      ],
+      "target_answer": 0,
+      "target_answer_range": [
+        0,
+        8
+      ],
+      "task_variant": "series_a_lt_b_count",
+      "task_variant_probabilities": {
+        "series_a_gt_b_count": 0.5,
+        "series_a_lt_b_count": 0.5
+      },
+      "values_by_category": {
+        "A": {
+          "Beck": 16,
+          "Kast": 4,
+          "Kenn": 7
+        },
+        "H": {
+          "Beck": 20,
+          "Kast": 13,
+          "Kenn": 17
+        },
+        "J": {
+          "Beck": 17,
+          "Kast": 1,
+          "Kenn": 16
+        },
+        "L": {
+          "Beck": 11,
+          "Kast": 4,
+          "Kenn": 10
+        },
+        "Q": {
+          "Beck": 19,
+          "Kast": 6,
+          "Kenn": 10
+        },
+        "T": {
+          "Beck": 18,
+          "Kast": 12,
+          "Kenn": 13
+        },
+        "V": {
+          "Beck": 16,
+          "Kast": 3,
+          "Kenn": 12
+        },
+        "W": {
+          "Beck": 18,
+          "Kast": 3,
+          "Kenn": 17
+        },
+        "Y": {
+          "Beck": 11,
+          "Kast": 1,
+          "Kenn": 9
+        },
+        "Z": {
+          "Beck": 17,
+          "Kast": 1,
+          "Kenn": 4
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [],
+      "label_set": [],
+      "pixel_point_map": {},
+      "pixel_point_set": []
+    },
+    "query_spec": {
+      "params": {
+        "category_count": 10,
+        "category_count_range": [
+          5,
+          10
+        ],
+        "comparison": "less_than",
+        "queried_series_labels": [
+          "Beck",
+          "Kast"
+        ],
+        "scene_variant": "grouped_horizontal_bar",
+        "scene_variant_probabilities": {
+          "grouped_bar": 0.25,
+          "grouped_horizontal_bar": 0.25,
+          "grouped_lollipop": 0.25,
+          "multi_line": 0.25
+        },
+        "series_count": 3,
+        "series_count_range": [
+          2,
+          3
+        ],
+        "target_answer": 0,
+        "target_answer_range": [
+          0,
+          8
+        ],
+        "task_variant": "series_a_lt_b_count",
+        "task_variant_probabilities": {
+          "series_a_gt_b_count": 0.5,
+          "series_a_lt_b_count": 0.5
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "charts_multiseries_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+          "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "left_series": "Beck",
+          "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+          "right_series": "Kast"
+        },
+        "task_family_key": "multiseries_chart_comparison",
+        "task_family_variant_index": 1,
+        "task_key": "pairwise_comparison_count_query",
+        "task_variant_index": 1,
+        "task_variant_key": "series_a_lt_b_count",
+        "task_variant_template_index": 1,
+        "template_paths": [
+          "charts/multiseries/charts_multiseries_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:pairwise_comparison_count_query": 5,
+          "task_family:multiseries_chart_comparison": 5,
+          "task_variant:series_a_lt_b_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+              "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Beck",
+              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+              "right_series": "Kast"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 1,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 1,
+            "task_variant_key": "series_a_lt_b_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_lt_b_count": 5
+            }
+          },
+          "prompt": "Use the chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Count the category labels where Beck is below Kast.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+              "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Beck",
+              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+              "right_series": "Kast"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 1,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 1,
+            "task_variant_key": "series_a_lt_b_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_lt_b_count": 5
+            }
+          },
+          "prompt": "Use the chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Use the chart to compare the queried pair of series across the category labels. Count the category labels where Beck is below Kast.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "series_a_lt_b_count",
+      "template_id": "charts_multiseries_v1"
+    },
+    "render_map": {
+      "category_label_centers_px": {
+        "A": [
+          62.0,
+          68.2
+        ],
+        "H": [
+          62.0,
+          165.0
+        ],
+        "J": [
+          62.0,
+          213.4
+        ],
+        "L": [
+          62.0,
+          503.8
+        ],
+        "Q": [
+          62.0,
+          310.2
+        ],
+        "T": [
+          62.0,
+          407.0
+        ],
+        "V": [
+          62.0,
+          358.6
+        ],
+        "W": [
+          62.0,
+          261.8
+        ],
+        "Y": [
+          62.0,
+          116.6
+        ],
+        "Z": [
+          62.0,
+          455.4
+        ]
+      },
+      "image_id": "img0",
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 620,
+      "canvas_width": 1100,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "sampling_policy": "random_rgb_palette",
+        "series_fill_palette_rgb": [
+          [
+            46,
+            114,
+            169
+          ],
+          [
+            116,
+            51,
+            215
+          ],
+          [
+            211,
+            68,
+            22
+          ]
+        ],
+        "series_outline_palette_rgb": [
+          [
+            25,
+            63,
+            93
+          ],
+          [
+            64,
+            28,
+            118
+          ],
+          [
+            116,
+            37,
+            12
+          ]
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "grouped_horizontal_bar",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 21,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              54.52,
+              672.571,
+              81.88
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              62.0,
+              68.2
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              92.0,
+              54.52,
+              672.571,
+              62.52
+            ],
+            "mark_center_px": [
+              382.286,
+              58.52
+            ],
+            "mark_fill_rgb": [
+              46,
+              114,
+              169
+            ],
+            "mark_outline_rgb": [
+              25,
+              63,
+              93
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Beck",
+            "series_rank": 0,
+            "value": 16
+          },
+          "entity_id": "mark_A_Beck",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              54.52,
+              672.571,
+              81.88
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              62.0,
+              68.2
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              92.0,
+              64.2,
+              237.143,
+              72.2
+            ],
+            "mark_center_px": [
+              164.571,
+              68.2
+            ],
+            "mark_fill_rgb": [
+              116,
+              51,
+              215
+            ],
+            "mark_outline_rgb": [
+              64,
+              28,
+              118
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Kast",
+            "series_rank": 1,
+            "value": 4
+          },
+          "entity_id": "mark_A_Kast",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              54.52,
+              672.571,
+              81.88
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              62.0,
+              68.2
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              92.0,
+              73.88,
+              346.0,
+              81.88
+            ],
+            "mark_center_px": [
+              219.0,
+              77.88
+            ],
+            "mark_fill_rgb": [
+              211,
+              68,
+              22
+            ],
+            "mark_outline_rgb": [
+              116,
+              37,
+              12
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Kenn",
+            "series_rank": 2,
+            "value": 7
+          },
+          "entity_id": "mark_A_Kenn",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              102.92,
+              491.143,
+              130.28
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              62.0,
+              116.6
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              92.0,
+              102.92,
+              491.143,
+              110.92
+            ],
+            "mark_center_px": [
+              291.571,
+              106.92
+            ],
+            "mark_fill_rgb": [
+              46,
+              114,
+              169
+            ],
+            "mark_outline_rgb": [
+              25,
+              63,
+              93
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Beck",
+            "series_rank": 0,
+            "value": 11
+          },
+          "entity_id": "mark_Y_Beck",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              102.92,
+              491.143,
+              130.28
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              62.0,
+              116.6
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              92.0,
+              112.6,
+              128.286,
+              120.6
+            ],
+            "mark_center_px": [
+              110.143,
+              116.6
+            ],
+            "mark_fill_rgb": [
+              116,
+              51,
+              215
+            ],
+            "mark_outline_rgb": [
+              64,
+              28,
+              118
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Kast",
+            "series_rank": 1,
+            "value": 1
+          },
+          "entity_id": "mark_Y_Kast",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              102.92,
+              491.143,
+              130.28
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              62.0,
+              116.6
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              92.0,
+              122.28,
+              418.571,
+              130.28
+            ],
+            "mark_center_px": [
+              255.286,
+              126.28
+            ],
+            "mark_fill_rgb": [
+              211,
+              68,
+              22
+            ],
+            "mark_outline_rgb": [
+              116,
+              37,
+              12
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Kenn",
+            "series_rank": 2,
+            "value": 9
+          },
+          "entity_id": "mark_Y_Kenn",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              151.32,
+              817.714,
+              178.68
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              62.0,
+              165.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              151.32,
+              817.714,
+              159.32
+            ],
+            "mark_center_px": [
+              454.857,
+              155.32
+            ],
+            "mark_fill_rgb": [
+              46,
+              114,
+              169
+            ],
+            "mark_outline_rgb": [
+              25,
+              63,
+              93
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Beck",
+            "series_rank": 0,
+            "value": 20
+          },
+          "entity_id": "mark_H_Beck",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              151.32,
+              817.714,
+              178.68
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              62.0,
+              165.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              161.0,
+              563.714,
+              169.0
+            ],
+            "mark_center_px": [
+              327.857,
+              165.0
+            ],
+            "mark_fill_rgb": [
+              116,
+              51,
+              215
+            ],
+            "mark_outline_rgb": [
+              64,
+              28,
+              118
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Kast",
+            "series_rank": 1,
+            "value": 13
+          },
+          "entity_id": "mark_H_Kast",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              151.32,
+              817.714,
+              178.68
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              62.0,
+              165.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              170.68,
+              708.857,
+              178.68
+            ],
+            "mark_center_px": [
+              400.429,
+              174.68
+            ],
+            "mark_fill_rgb": [
+              211,
+              68,
+              22
+            ],
+            "mark_outline_rgb": [
+              116,
+              37,
+              12
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Kenn",
+            "series_rank": 2,
+            "value": 17
+          },
+          "entity_id": "mark_H_Kenn",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              57.0,
+              199.72,
+              708.857,
+              227.08
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              62.0,
+              213.4
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              199.72,
+              708.857,
+              207.72
+            ],
+            "mark_center_px": [
+              400.429,
+              203.72
+            ],
+            "mark_fill_rgb": [
+              46,
+              114,
+              169
+            ],
+            "mark_outline_rgb": [
+              25,
+              63,
+              93
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Beck",
+            "series_rank": 0,
+            "value": 17
+          },
+          "entity_id": "mark_J_Beck",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              57.0,
+              199.72,
+              708.857,
+              227.08
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              62.0,
+              213.4
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              209.4,
+              128.286,
+              217.4
+            ],
+            "mark_center_px": [
+              110.143,
+              213.4
+            ],
+            "mark_fill_rgb": [
+              116,
+              51,
+              215
+            ],
+            "mark_outline_rgb": [
+              64,
+              28,
+              118
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Kast",
+            "series_rank": 1,
+            "value": 1
+          },
+          "entity_id": "mark_J_Kast",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              57.0,
+              199.72,
+              708.857,
+              227.08
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              62.0,
+              213.4
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              219.08,
+              672.571,
+              227.08
+            ],
+            "mark_center_px": [
+              382.286,
+              223.08
+            ],
+            "mark_fill_rgb": [
+              211,
+              68,
+              22
+            ],
+            "mark_outline_rgb": [
+              116,
+              37,
+              12
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Kenn",
+            "series_rank": 2,
+            "value": 16
+          },
+          "entity_id": "mark_J_Kenn",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              50.0,
+              248.12,
+              745.143,
+              275.48
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              62.0,
+              261.8
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              248.12,
+              745.143,
+              256.12
+            ],
+            "mark_center_px": [
+              418.571,
+              252.12
+            ],
+            "mark_fill_rgb": [
+              46,
+              114,
+              169
+            ],
+            "mark_outline_rgb": [
+              25,
+              63,
+              93
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Beck",
+            "series_rank": 0,
+            "value": 18
+          },
+          "entity_id": "mark_W_Beck",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              50.0,
+              248.12,
+              745.143,
+              275.48
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              62.0,
+              261.8
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              257.8,
+              200.857,
+              265.8
+            ],
+            "mark_center_px": [
+              146.429,
+              261.8
+            ],
+            "mark_fill_rgb": [
+              116,
+              51,
+              215
+            ],
+            "mark_outline_rgb": [
+              64,
+              28,
+              118
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Kast",
+            "series_rank": 1,
+            "value": 3
+          },
+          "entity_id": "mark_W_Kast",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              50.0,
+              248.12,
+              745.143,
+              275.48
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              62.0,
+              261.8
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              267.48,
+              708.857,
+              275.48
+            ],
+            "mark_center_px": [
+              400.429,
+              271.48
+            ],
+            "mark_fill_rgb": [
+              211,
+              68,
+              22
+            ],
+            "mark_outline_rgb": [
+              116,
+              37,
+              12
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Kenn",
+            "series_rank": 2,
+            "value": 17
+          },
+          "entity_id": "mark_W_Kenn",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              52.5,
+              296.52,
+              781.429,
+              323.88
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              62.0,
+              310.2
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              92.0,
+              296.52,
+              781.429,
+              304.52
+            ],
+            "mark_center_px": [
+              436.714,
+              300.52
+            ],
+            "mark_fill_rgb": [
+              46,
+              114,
+              169
+            ],
+            "mark_outline_rgb": [
+              25,
+              63,
+              93
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Beck",
+            "series_rank": 0,
+            "value": 19
+          },
+          "entity_id": "mark_Q_Beck",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              52.5,
+              296.52,
+              781.429,
+              323.88
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              62.0,
+              310.2
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              92.0,
+              306.2,
+              309.714,
+              314.2
+            ],
+            "mark_center_px": [
+              200.857,
+              310.2
+            ],
+            "mark_fill_rgb": [
+              116,
+              51,
+              215
+            ],
+            "mark_outline_rgb": [
+              64,
+              28,
+              118
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Kast",
+            "series_rank": 1,
+            "value": 6
+          },
+          "entity_id": "mark_Q_Kast",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              52.5,
+              296.52,
+              781.429,
+              323.88
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              62.0,
+              310.2
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              92.0,
+              315.88,
+              454.857,
+              323.88
+            ],
+            "mark_center_px": [
+              273.429,
+              319.88
+            ],
+            "mark_fill_rgb": [
+              211,
+              68,
+              22
+            ],
+            "mark_outline_rgb": [
+              116,
+              37,
+              12
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Kenn",
+            "series_rank": 2,
+            "value": 10
+          },
+          "entity_id": "mark_Q_Kenn",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              344.92,
+              672.571,
+              372.28
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              62.0,
+              358.6
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              92.0,
+              344.92,
+              672.571,
+              352.92
+            ],
+            "mark_center_px": [
+              382.286,
+              348.92
+            ],
+            "mark_fill_rgb": [
+              46,
+              114,
+              169
+            ],
+            "mark_outline_rgb": [
+              25,
+              63,
+              93
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Beck",
+            "series_rank": 0,
+            "value": 16
+          },
+          "entity_id": "mark_V_Beck",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              344.92,
+              672.571,
+              372.28
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              62.0,
+              358.6
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              92.0,
+              354.6,
+              200.857,
+              362.6
+            ],
+            "mark_center_px": [
+              146.429,
+              358.6
+            ],
+            "mark_fill_rgb": [
+              116,
+              51,
+              215
+            ],
+            "mark_outline_rgb": [
+              64,
+              28,
+              118
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Kast",
+            "series_rank": 1,
+            "value": 3
+          },
+          "entity_id": "mark_V_Kast",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              344.92,
+              672.571,
+              372.28
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              62.0,
+              358.6
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              92.0,
+              364.28,
+              527.429,
+              372.28
+            ],
+            "mark_center_px": [
+              309.714,
+              368.28
+            ],
+            "mark_fill_rgb": [
+              211,
+              68,
+              22
+            ],
+            "mark_outline_rgb": [
+              116,
+              37,
+              12
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Kenn",
+            "series_rank": 2,
+            "value": 12
+          },
+          "entity_id": "mark_V_Kenn",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.5,
+              393.32,
+              745.143,
+              420.68
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              62.0,
+              407.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              92.0,
+              393.32,
+              745.143,
+              401.32
+            ],
+            "mark_center_px": [
+              418.571,
+              397.32
+            ],
+            "mark_fill_rgb": [
+              46,
+              114,
+              169
+            ],
+            "mark_outline_rgb": [
+              25,
+              63,
+              93
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Beck",
+            "series_rank": 0,
+            "value": 18
+          },
+          "entity_id": "mark_T_Beck",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.5,
+              393.32,
+              745.143,
+              420.68
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              62.0,
+              407.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              92.0,
+              403.0,
+              527.429,
+              411.0
+            ],
+            "mark_center_px": [
+              309.714,
+              407.0
+            ],
+            "mark_fill_rgb": [
+              116,
+              51,
+              215
+            ],
+            "mark_outline_rgb": [
+              64,
+              28,
+              118
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Kast",
+            "series_rank": 1,
+            "value": 12
+          },
+          "entity_id": "mark_T_Kast",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.5,
+              393.32,
+              745.143,
+              420.68
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              62.0,
+              407.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              92.0,
+              412.68,
+              563.714,
+              420.68
+            ],
+            "mark_center_px": [
+              327.857,
+              416.68
+            ],
+            "mark_fill_rgb": [
+              211,
+              68,
+              22
+            ],
+            "mark_outline_rgb": [
+              116,
+              37,
+              12
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Kenn",
+            "series_rank": 2,
+            "value": 13
+          },
+          "entity_id": "mark_T_Kenn",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.0,
+              441.72,
+              708.857,
+              469.08
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              62.0,
+              455.4
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              92.0,
+              441.72,
+              708.857,
+              449.72
+            ],
+            "mark_center_px": [
+              400.429,
+              445.72
+            ],
+            "mark_fill_rgb": [
+              46,
+              114,
+              169
+            ],
+            "mark_outline_rgb": [
+              25,
+              63,
+              93
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Beck",
+            "series_rank": 0,
+            "value": 17
+          },
+          "entity_id": "mark_Z_Beck",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.0,
+              441.72,
+              708.857,
+              469.08
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              62.0,
+              455.4
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              92.0,
+              451.4,
+              128.286,
+              459.4
+            ],
+            "mark_center_px": [
+              110.143,
+              455.4
+            ],
+            "mark_fill_rgb": [
+              116,
+              51,
+              215
+            ],
+            "mark_outline_rgb": [
+              64,
+              28,
+              118
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Kast",
+            "series_rank": 1,
+            "value": 1
+          },
+          "entity_id": "mark_Z_Kast",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.0,
+              441.72,
+              708.857,
+              469.08
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              62.0,
+              455.4
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              92.0,
+              461.08,
+              237.143,
+              469.08
+            ],
+            "mark_center_px": [
+              164.571,
+              465.08
+            ],
+            "mark_fill_rgb": [
+              211,
+              68,
+              22
+            ],
+            "mark_outline_rgb": [
+              116,
+              37,
+              12
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Kenn",
+            "series_rank": 2,
+            "value": 4
+          },
+          "entity_id": "mark_Z_Kenn",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              55.0,
+              490.12,
+              491.143,
+              517.48
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              62.0,
+              503.8
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              92.0,
+              490.12,
+              491.143,
+              498.12
+            ],
+            "mark_center_px": [
+              291.571,
+              494.12
+            ],
+            "mark_fill_rgb": [
+              46,
+              114,
+              169
+            ],
+            "mark_outline_rgb": [
+              25,
+              63,
+              93
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Beck",
+            "series_rank": 0,
+            "value": 11
+          },
+          "entity_id": "mark_L_Beck",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              55.0,
+              490.12,
+              491.143,
+              517.48
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              62.0,
+              503.8
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              92.0,
+              499.8,
+              237.143,
+              507.8
+            ],
+            "mark_center_px": [
+              164.571,
+              503.8
+            ],
+            "mark_fill_rgb": [
+              116,
+              51,
+              215
+            ],
+            "mark_outline_rgb": [
+              64,
+              28,
+              118
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Kast",
+            "series_rank": 1,
+            "value": 4
+          },
+          "entity_id": "mark_L_Kast",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              55.0,
+              490.12,
+              491.143,
+              517.48
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              62.0,
+              503.8
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              92.0,
+              509.48,
+              454.857,
+              517.48
+            ],
+            "mark_center_px": [
+              273.429,
+              513.48
+            ],
+            "mark_fill_rgb": [
+              211,
+              68,
+              22
+            ],
+            "mark_outline_rgb": [
+              116,
+              37,
+              12
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Kenn",
+            "series_rank": 2,
+            "value": 10
+          },
+          "entity_id": "mark_L_Kenn",
+          "entity_type": "bar"
+        }
+      ],
+      "relations": {
+        "comparison": "less_than",
+        "evidence_labels": [],
+        "queried_series_labels": [
+          "Beck",
+          "Kast"
+        ],
+        "scene_variant": "grouped_horizontal_bar",
+        "task_variant": "series_a_lt_b_count"
+      },
+      "scene_kind": "chart_grouped_horizontal_bar_multiseries"
+    },
+    "witness_symbolic": {
+      "labels": [],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

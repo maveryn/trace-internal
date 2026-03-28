@@ -1,0 +1,1682 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 4
+  },
+  "evidence_gt": {
+    "type": "grid_point_path",
+    "value": [
+      [
+        1,
+        3
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        3
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        5,
+        3
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "tile/task_tile_transition_gravity_max_drop/images/default/0019.png"
+  },
+  "instance_seed": 4351028577961889,
+  "prompt": "Work from the labeled rectangular tile board in the image. It has 7 rows and 5 columns with visible row and column indices. Each column contains one purple [#963ACA] tile. If all of them fall straight downward until blocked by a black [#000000] tile or the bottom edge, what is the maximum number of cells any tile moves?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to the ordered [row, col] path of the uniquely farthest-falling tile from its start cell to its final cell.\nAnswer field: set \"answer\" to the maximum downward drop distance in cells as an integer.\nExample JSON:\n{\"evidence\":[[0,1],[1,1],[2,1]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the labeled rectangular tile board in the image. It has 7 rows and 5 columns with visible row and column indices. Each column contains one purple [#963ACA] tile. If all of them fall straight downward until blocked by a black [#000000] tile or the bottom edge, what is the maximum number of cells any tile moves?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to the ordered [row, col] path of the uniquely farthest-falling tile from its start cell to its final cell.\nAnswer field: set \"answer\" to the maximum downward drop distance in cells as an integer.\nExample JSON:\n{\"evidence\":[[0,1],[1,1],[2,1]],\"answer\":2}",
+    "answer_only": "Work from the labeled rectangular tile board in the image. It has 7 rows and 5 columns with visible row and column indices. Each column contains one purple [#963ACA] tile. If all of them fall straight downward until blocked by a black [#000000] tile or the bottom edge, what is the maximum number of cells any tile moves?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the maximum downward drop distance in cells as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_tile_transition_gravity_max_drop",
+  "task_variant": "gravity_max_drop",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 4,
+      "board_color_hex": "#FFFFFF",
+      "board_color_name": "white",
+      "cols": 5,
+      "columns": [
+        {
+          "column": 0,
+          "drop_distance": 1,
+          "final_coord": [
+            3,
+            0
+          ],
+          "is_winner": false,
+          "obstacle_height": 3,
+          "source_coord": [
+            2,
+            0
+          ]
+        },
+        {
+          "column": 1,
+          "drop_distance": 1,
+          "final_coord": [
+            1,
+            1
+          ],
+          "is_winner": false,
+          "obstacle_height": 5,
+          "source_coord": [
+            0,
+            1
+          ]
+        },
+        {
+          "column": 2,
+          "drop_distance": 0,
+          "final_coord": [
+            0,
+            2
+          ],
+          "is_winner": false,
+          "obstacle_height": 6,
+          "source_coord": [
+            0,
+            2
+          ]
+        },
+        {
+          "column": 3,
+          "drop_distance": 4,
+          "final_coord": [
+            5,
+            3
+          ],
+          "is_winner": true,
+          "obstacle_height": 1,
+          "source_coord": [
+            1,
+            3
+          ]
+        },
+        {
+          "column": 4,
+          "drop_distance": 3,
+          "final_coord": [
+            3,
+            4
+          ],
+          "is_winner": false,
+          "obstacle_height": 3,
+          "source_coord": [
+            0,
+            4
+          ]
+        }
+      ],
+      "construction_strategy": "uniform_target_max_drop_with_unique_winner",
+      "drop_color_hex": "#963ACA",
+      "drop_color_label": "purple [#963ACA]",
+      "drop_color_name": "purple",
+      "drop_color_rgb": [
+        150,
+        58,
+        202
+      ],
+      "drops": [
+        1,
+        1,
+        0,
+        4,
+        3
+      ],
+      "final_cells": [
+        [
+          3,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "obstacle_color_hex": "#000000",
+      "obstacle_color_label": "black [#000000]",
+      "obstacle_color_name": "black",
+      "obstacle_heights": [
+        3,
+        5,
+        6,
+        1,
+        3
+      ],
+      "palette": [
+        {
+          "hex": "#FFFFFF",
+          "label": "white [#FFFFFF]",
+          "name": "white",
+          "rgb": [
+            255,
+            255,
+            255
+          ]
+        },
+        {
+          "hex": "#000000",
+          "label": "black [#000000]",
+          "name": "black",
+          "rgb": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "hex": "#963ACA",
+          "label": "purple [#963ACA]",
+          "name": "purple",
+          "rgb": [
+            150,
+            58,
+            202
+          ]
+        }
+      ],
+      "palette_size": 3,
+      "rows": 7,
+      "source_cells": [
+        [
+          2,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          0,
+          4
+        ]
+      ],
+      "target_max_drop": 4,
+      "target_max_drop_range": [
+        1,
+        5
+      ],
+      "task_variant": "gravity_max_drop",
+      "unique_max": true,
+      "winner_col": 3,
+      "winner_final_coord": [
+        5,
+        3
+      ],
+      "winner_path_coords": [
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          5,
+          3
+        ]
+      ],
+      "winner_path_ids": [
+        "cell_1_3",
+        "cell_2_3",
+        "cell_3_3",
+        "cell_4_3",
+        "cell_5_3"
+      ],
+      "winner_source_coord": [
+        1,
+        3
+      ]
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          235.0,
+          93.0,
+          289.0,
+          126.0
+        ],
+        [
+          235.0,
+          126.0,
+          289.0,
+          159.0
+        ],
+        [
+          235.0,
+          159.0,
+          289.0,
+          192.0
+        ],
+        [
+          235.0,
+          192.0,
+          289.0,
+          225.0
+        ],
+        [
+          235.0,
+          225.0,
+          289.0,
+          258.0
+        ]
+      ],
+      "grid_point_path": [
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          5,
+          3
+        ]
+      ],
+      "pixel_point_path": [
+        [
+          262.0,
+          109.5
+        ],
+        [
+          262.0,
+          142.5
+        ],
+        [
+          262.0,
+          175.5
+        ],
+        [
+          262.0,
+          208.5
+        ],
+        [
+          262.0,
+          241.5
+        ]
+      ]
+    },
+    "query_spec": {
+      "dsl_program": [
+        {
+          "entity_type": "tile_cell",
+          "op": "select",
+          "out": "cells"
+        },
+        {
+          "in": "cells",
+          "op": "filter",
+          "out": "drop_tiles",
+          "predicate": {
+            "role": "drop_tile"
+          }
+        },
+        {
+          "blocking_role": "obstacle",
+          "direction": "down",
+          "in": "drop_tiles",
+          "op": "apply_gravity",
+          "out": "transitions"
+        },
+        {
+          "in": "transitions",
+          "op": "argmax",
+          "out": "winner",
+          "tie_break": "reject_non_unique",
+          "value": "drop_distance"
+        },
+        {
+          "coord_space": "tile_grid",
+          "coord_type": "grid_point_path",
+          "in": "winner",
+          "op": "project_path_coords",
+          "out": "evidence"
+        },
+        {
+          "attr": "drop_distance",
+          "in": "winner",
+          "op": "read_attr",
+          "out": "answer"
+        }
+      ],
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "tile_transition_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the maximum downward drop distance in cells as an integer",
+          "cols": 5,
+          "drop_color": "purple [#963ACA]",
+          "evidence_hint": "set \"evidence\" to the ordered [row, col] path of the uniquely farthest-falling tile from its start cell to its final cell",
+          "json_example": "{\"evidence\":[[0,1],[1,1],[2,1]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "obstacle_color": "black [#000000]",
+          "rows": 7
+        },
+        "task_family_key": "rectangular_tile_board",
+        "task_family_variant_index": 4,
+        "task_key": "gravity_max_drop_query",
+        "task_variant_index": 0,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "tile/transition/tile_transition_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:gravity_max_drop_query": 5,
+          "task_family:rectangular_tile_board": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "tile_transition_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the maximum downward drop distance in cells as an integer",
+              "cols": 5,
+              "drop_color": "purple [#963ACA]",
+              "evidence_hint": "set \"evidence\" to the ordered [row, col] path of the uniquely farthest-falling tile from its start cell to its final cell",
+              "json_example": "{\"evidence\":[[0,1],[1,1],[2,1]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "obstacle_color": "black [#000000]",
+              "rows": 7
+            },
+            "task_family_key": "rectangular_tile_board",
+            "task_family_variant_index": 4,
+            "task_key": "gravity_max_drop_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "tile/transition/tile_transition_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:gravity_max_drop_query": 5,
+              "task_family:rectangular_tile_board": 5
+            }
+          },
+          "prompt": "Work from the labeled rectangular tile board in the image. It has 7 rows and 5 columns with visible row and column indices. Each column contains one purple [#963ACA] tile. If all of them fall straight downward until blocked by a black [#000000] tile or the bottom edge, what is the maximum number of cells any tile moves?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to the ordered [row, col] path of the uniquely farthest-falling tile from its start cell to its final cell.\nAnswer field: set \"answer\" to the maximum downward drop distance in cells as an integer.\nExample JSON:\n{\"evidence\":[[0,1],[1,1],[2,1]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "tile_transition_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the maximum downward drop distance in cells as an integer",
+              "cols": 5,
+              "drop_color": "purple [#963ACA]",
+              "evidence_hint": "set \"evidence\" to the ordered [row, col] path of the uniquely farthest-falling tile from its start cell to its final cell",
+              "json_example": "{\"evidence\":[[0,1],[1,1],[2,1]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "obstacle_color": "black [#000000]",
+              "rows": 7
+            },
+            "task_family_key": "rectangular_tile_board",
+            "task_family_variant_index": 4,
+            "task_key": "gravity_max_drop_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "tile/transition/tile_transition_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:gravity_max_drop_query": 5,
+              "task_family:rectangular_tile_board": 5
+            }
+          },
+          "prompt": "Work from the labeled rectangular tile board in the image. It has 7 rows and 5 columns with visible row and column indices. Each column contains one purple [#963ACA] tile. If all of them fall straight downward until blocked by a black [#000000] tile or the bottom edge, what is the maximum number of cells any tile moves?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the maximum downward drop distance in cells as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "gravity_max_drop",
+      "template_id": "gravity_max_drop_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "cell_0_0": {
+          "bbox": [
+            73.0,
+            60.0,
+            127.0,
+            93.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            100.0,
+            76.5
+          ]
+        },
+        "cell_0_1": {
+          "bbox": [
+            127.0,
+            60.0,
+            181.0,
+            93.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            154.0,
+            76.5
+          ]
+        },
+        "cell_0_2": {
+          "bbox": [
+            181.0,
+            60.0,
+            235.0,
+            93.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            208.0,
+            76.5
+          ]
+        },
+        "cell_0_3": {
+          "bbox": [
+            235.0,
+            60.0,
+            289.0,
+            93.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            262.0,
+            76.5
+          ]
+        },
+        "cell_0_4": {
+          "bbox": [
+            289.0,
+            60.0,
+            343.0,
+            93.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            316.0,
+            76.5
+          ]
+        },
+        "cell_1_0": {
+          "bbox": [
+            73.0,
+            93.0,
+            127.0,
+            126.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            100.0,
+            109.5
+          ]
+        },
+        "cell_1_1": {
+          "bbox": [
+            127.0,
+            93.0,
+            181.0,
+            126.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            154.0,
+            109.5
+          ]
+        },
+        "cell_1_2": {
+          "bbox": [
+            181.0,
+            93.0,
+            235.0,
+            126.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            208.0,
+            109.5
+          ]
+        },
+        "cell_1_3": {
+          "bbox": [
+            235.0,
+            93.0,
+            289.0,
+            126.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            262.0,
+            109.5
+          ]
+        },
+        "cell_1_4": {
+          "bbox": [
+            289.0,
+            93.0,
+            343.0,
+            126.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            316.0,
+            109.5
+          ]
+        },
+        "cell_2_0": {
+          "bbox": [
+            73.0,
+            126.0,
+            127.0,
+            159.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            100.0,
+            142.5
+          ]
+        },
+        "cell_2_1": {
+          "bbox": [
+            127.0,
+            126.0,
+            181.0,
+            159.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            154.0,
+            142.5
+          ]
+        },
+        "cell_2_2": {
+          "bbox": [
+            181.0,
+            126.0,
+            235.0,
+            159.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            208.0,
+            142.5
+          ]
+        },
+        "cell_2_3": {
+          "bbox": [
+            235.0,
+            126.0,
+            289.0,
+            159.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            262.0,
+            142.5
+          ]
+        },
+        "cell_2_4": {
+          "bbox": [
+            289.0,
+            126.0,
+            343.0,
+            159.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            316.0,
+            142.5
+          ]
+        },
+        "cell_3_0": {
+          "bbox": [
+            73.0,
+            159.0,
+            127.0,
+            192.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            100.0,
+            175.5
+          ]
+        },
+        "cell_3_1": {
+          "bbox": [
+            127.0,
+            159.0,
+            181.0,
+            192.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            154.0,
+            175.5
+          ]
+        },
+        "cell_3_2": {
+          "bbox": [
+            181.0,
+            159.0,
+            235.0,
+            192.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            208.0,
+            175.5
+          ]
+        },
+        "cell_3_3": {
+          "bbox": [
+            235.0,
+            159.0,
+            289.0,
+            192.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            262.0,
+            175.5
+          ]
+        },
+        "cell_3_4": {
+          "bbox": [
+            289.0,
+            159.0,
+            343.0,
+            192.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            316.0,
+            175.5
+          ]
+        },
+        "cell_4_0": {
+          "bbox": [
+            73.0,
+            192.0,
+            127.0,
+            225.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            100.0,
+            208.5
+          ]
+        },
+        "cell_4_1": {
+          "bbox": [
+            127.0,
+            192.0,
+            181.0,
+            225.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            154.0,
+            208.5
+          ]
+        },
+        "cell_4_2": {
+          "bbox": [
+            181.0,
+            192.0,
+            235.0,
+            225.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            208.0,
+            208.5
+          ]
+        },
+        "cell_4_3": {
+          "bbox": [
+            235.0,
+            192.0,
+            289.0,
+            225.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            262.0,
+            208.5
+          ]
+        },
+        "cell_4_4": {
+          "bbox": [
+            289.0,
+            192.0,
+            343.0,
+            225.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            316.0,
+            208.5
+          ]
+        },
+        "cell_5_0": {
+          "bbox": [
+            73.0,
+            225.0,
+            127.0,
+            258.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            100.0,
+            241.5
+          ]
+        },
+        "cell_5_1": {
+          "bbox": [
+            127.0,
+            225.0,
+            181.0,
+            258.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            154.0,
+            241.5
+          ]
+        },
+        "cell_5_2": {
+          "bbox": [
+            181.0,
+            225.0,
+            235.0,
+            258.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            208.0,
+            241.5
+          ]
+        },
+        "cell_5_3": {
+          "bbox": [
+            235.0,
+            225.0,
+            289.0,
+            258.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            262.0,
+            241.5
+          ]
+        },
+        "cell_5_4": {
+          "bbox": [
+            289.0,
+            225.0,
+            343.0,
+            258.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            316.0,
+            241.5
+          ]
+        },
+        "cell_6_0": {
+          "bbox": [
+            73.0,
+            258.0,
+            127.0,
+            291.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            100.0,
+            274.5
+          ]
+        },
+        "cell_6_1": {
+          "bbox": [
+            127.0,
+            258.0,
+            181.0,
+            291.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            154.0,
+            274.5
+          ]
+        },
+        "cell_6_2": {
+          "bbox": [
+            181.0,
+            258.0,
+            235.0,
+            291.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            208.0,
+            274.5
+          ]
+        },
+        "cell_6_3": {
+          "bbox": [
+            235.0,
+            258.0,
+            289.0,
+            291.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            262.0,
+            274.5
+          ]
+        },
+        "cell_6_4": {
+          "bbox": [
+            289.0,
+            258.0,
+            343.0,
+            291.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            316.0,
+            274.5
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            246,
+            246,
+            246
+          ],
+          "kind": "solid"
+        }
+      },
+      "board_origin_px": [
+        73,
+        60
+      ],
+      "board_size_px": [
+        270,
+        231
+      ],
+      "canvas_height_px": 322,
+      "canvas_width_px": 379,
+      "cols": 5,
+      "coord_space": "tile_grid",
+      "coordinate_gutters_px": {
+        "left": 39,
+        "top": 31
+      },
+      "label_style": {
+        "font_size_px": 15,
+        "stroke_width_px": 2
+      },
+      "outer_padding_px": {
+        "x": 29,
+        "y": 25
+      },
+      "placement_offset_px": {
+        "x": 5,
+        "y": 4
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "rows": 7,
+      "tile_aspect_ratio": 1.628824,
+      "tile_height_px": 33,
+      "tile_orientation": "wide",
+      "tile_outline_width_px": 2,
+      "tile_width_px": 54,
+      "tiling_type": "rectangular_tiling"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_query_match": false,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "empty",
+            "row": 0
+          },
+          "entity_id": "cell_0_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "purple",
+            "fill_rgb": [
+              150,
+              58,
+              202
+            ],
+            "is_query_match": true,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "drop_tile",
+            "row": 0
+          },
+          "entity_id": "cell_0_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "purple",
+            "fill_rgb": [
+              150,
+              58,
+              202
+            ],
+            "is_query_match": true,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "drop_tile",
+            "row": 0
+          },
+          "entity_id": "cell_0_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_query_match": false,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "empty",
+            "row": 0
+          },
+          "entity_id": "cell_0_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "purple",
+            "fill_rgb": [
+              150,
+              58,
+              202
+            ],
+            "is_query_match": true,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "drop_tile",
+            "row": 0
+          },
+          "entity_id": "cell_0_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_query_match": false,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "empty",
+            "row": 1
+          },
+          "entity_id": "cell_1_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_query_match": false,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "empty",
+            "row": 1
+          },
+          "entity_id": "cell_1_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "black",
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_query_match": false,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "obstacle",
+            "row": 1
+          },
+          "entity_id": "cell_1_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "purple",
+            "fill_rgb": [
+              150,
+              58,
+              202
+            ],
+            "is_query_match": true,
+            "is_winning_path": true,
+            "is_winning_source": true,
+            "role": "drop_tile",
+            "row": 1
+          },
+          "entity_id": "cell_1_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_query_match": false,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "empty",
+            "row": 1
+          },
+          "entity_id": "cell_1_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "purple",
+            "fill_rgb": [
+              150,
+              58,
+              202
+            ],
+            "is_query_match": true,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "drop_tile",
+            "row": 2
+          },
+          "entity_id": "cell_2_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "black",
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_query_match": false,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "obstacle",
+            "row": 2
+          },
+          "entity_id": "cell_2_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "black",
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_query_match": false,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "obstacle",
+            "row": 2
+          },
+          "entity_id": "cell_2_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_query_match": false,
+            "is_winning_path": true,
+            "is_winning_source": false,
+            "role": "empty",
+            "row": 2
+          },
+          "entity_id": "cell_2_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_query_match": false,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "empty",
+            "row": 2
+          },
+          "entity_id": "cell_2_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_query_match": false,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "empty",
+            "row": 3
+          },
+          "entity_id": "cell_3_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "black",
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_query_match": false,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "obstacle",
+            "row": 3
+          },
+          "entity_id": "cell_3_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "black",
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_query_match": false,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "obstacle",
+            "row": 3
+          },
+          "entity_id": "cell_3_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_query_match": false,
+            "is_winning_path": true,
+            "is_winning_source": false,
+            "role": "empty",
+            "row": 3
+          },
+          "entity_id": "cell_3_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_query_match": false,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "empty",
+            "row": 3
+          },
+          "entity_id": "cell_3_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "black",
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_query_match": false,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "obstacle",
+            "row": 4
+          },
+          "entity_id": "cell_4_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "black",
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_query_match": false,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "obstacle",
+            "row": 4
+          },
+          "entity_id": "cell_4_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "black",
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_query_match": false,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "obstacle",
+            "row": 4
+          },
+          "entity_id": "cell_4_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_query_match": false,
+            "is_winning_path": true,
+            "is_winning_source": false,
+            "role": "empty",
+            "row": 4
+          },
+          "entity_id": "cell_4_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "black",
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_query_match": false,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "obstacle",
+            "row": 4
+          },
+          "entity_id": "cell_4_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "black",
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_query_match": false,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "obstacle",
+            "row": 5
+          },
+          "entity_id": "cell_5_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "black",
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_query_match": false,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "obstacle",
+            "row": 5
+          },
+          "entity_id": "cell_5_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "black",
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_query_match": false,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "obstacle",
+            "row": 5
+          },
+          "entity_id": "cell_5_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_query_match": false,
+            "is_winning_path": true,
+            "is_winning_source": false,
+            "role": "empty",
+            "row": 5
+          },
+          "entity_id": "cell_5_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "black",
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_query_match": false,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "obstacle",
+            "row": 5
+          },
+          "entity_id": "cell_5_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "black",
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_query_match": false,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "obstacle",
+            "row": 6
+          },
+          "entity_id": "cell_6_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "black",
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_query_match": false,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "obstacle",
+            "row": 6
+          },
+          "entity_id": "cell_6_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "black",
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_query_match": false,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "obstacle",
+            "row": 6
+          },
+          "entity_id": "cell_6_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "black",
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_query_match": false,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "obstacle",
+            "row": 6
+          },
+          "entity_id": "cell_6_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "black",
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_query_match": false,
+            "is_winning_path": false,
+            "is_winning_source": false,
+            "role": "obstacle",
+            "row": 6
+          },
+          "entity_id": "cell_6_4",
+          "entity_type": "tile_cell"
+        }
+      ],
+      "relations": {},
+      "scene_kind": "rectangular_tile_board"
+    },
+    "witness_symbolic": {
+      "ids": [
+        "cell_1_3",
+        "cell_2_3",
+        "cell_3_3",
+        "cell_4_3",
+        "cell_5_3"
+      ],
+      "type": "id_path"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

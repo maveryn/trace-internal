@@ -1,0 +1,1867 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 5
+  },
+  "evidence_gt": {
+    "type": "grid_point_set",
+    "value": [
+      [
+        4,
+        1
+      ],
+      [
+        4,
+        2
+      ],
+      [
+        5,
+        3
+      ],
+      [
+        6,
+        0
+      ],
+      [
+        6,
+        1
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "tile/task_tile_symmetry_violation_count/images/horizontal/0010.png"
+  },
+  "instance_seed": 886373200331692,
+  "prompt": "Use the single rectangular tile board in the image. It has 7 rows and 5 columns, with rows labeled on the left and columns labeled on the top. Find how many tiles on the bottom side have a color mismatch with their horizontal mirror partner.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to the row-major list of [row, col] coordinates for every violating tile on the counted side.\nAnswer: set \"answer\" to the number of violating tiles as an integer.\nExample JSON:\n{\"evidence\":[[0,2],[1,2]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the single rectangular tile board in the image. It has 7 rows and 5 columns, with rows labeled on the left and columns labeled on the top. Find how many tiles on the bottom side have a color mismatch with their horizontal mirror partner.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to the row-major list of [row, col] coordinates for every violating tile on the counted side.\nAnswer: set \"answer\" to the number of violating tiles as an integer.\nExample JSON:\n{\"evidence\":[[0,2],[1,2]],\"answer\":2}",
+    "answer_only": "Use the single rectangular tile board in the image. It has 7 rows and 5 columns, with rows labeled on the left and columns labeled on the top. Find how many tiles on the bottom side have a color mismatch with their horizontal mirror partner.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of violating tiles as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_tile_symmetry_violation_count",
+  "task_variant": "horizontal",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 5,
+      "board_capacity": 15,
+      "centerline_coords": [
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "counted_side": "bottom side",
+      "counted_side_coords": [
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          6,
+          1
+        ],
+        [
+          6,
+          2
+        ],
+        [
+          6,
+          3
+        ],
+        [
+          6,
+          4
+        ]
+      ],
+      "counted_side_ids": [
+        "cell_4_0",
+        "cell_4_1",
+        "cell_4_2",
+        "cell_4_3",
+        "cell_4_4",
+        "cell_5_0",
+        "cell_5_1",
+        "cell_5_2",
+        "cell_5_3",
+        "cell_5_4",
+        "cell_6_0",
+        "cell_6_1",
+        "cell_6_2",
+        "cell_6_3",
+        "cell_6_4"
+      ],
+      "mirror_axis": "horizontal",
+      "mirror_pairs": [
+        {
+          "counted_coord": [
+            4,
+            0
+          ],
+          "counted_id": "cell_4_0",
+          "is_violation": false,
+          "reference_coord": [
+            2,
+            0
+          ],
+          "reference_id": "cell_2_0"
+        },
+        {
+          "counted_coord": [
+            4,
+            1
+          ],
+          "counted_id": "cell_4_1",
+          "is_violation": true,
+          "reference_coord": [
+            2,
+            1
+          ],
+          "reference_id": "cell_2_1"
+        },
+        {
+          "counted_coord": [
+            4,
+            2
+          ],
+          "counted_id": "cell_4_2",
+          "is_violation": true,
+          "reference_coord": [
+            2,
+            2
+          ],
+          "reference_id": "cell_2_2"
+        },
+        {
+          "counted_coord": [
+            4,
+            3
+          ],
+          "counted_id": "cell_4_3",
+          "is_violation": false,
+          "reference_coord": [
+            2,
+            3
+          ],
+          "reference_id": "cell_2_3"
+        },
+        {
+          "counted_coord": [
+            4,
+            4
+          ],
+          "counted_id": "cell_4_4",
+          "is_violation": false,
+          "reference_coord": [
+            2,
+            4
+          ],
+          "reference_id": "cell_2_4"
+        },
+        {
+          "counted_coord": [
+            5,
+            0
+          ],
+          "counted_id": "cell_5_0",
+          "is_violation": false,
+          "reference_coord": [
+            1,
+            0
+          ],
+          "reference_id": "cell_1_0"
+        },
+        {
+          "counted_coord": [
+            5,
+            1
+          ],
+          "counted_id": "cell_5_1",
+          "is_violation": false,
+          "reference_coord": [
+            1,
+            1
+          ],
+          "reference_id": "cell_1_1"
+        },
+        {
+          "counted_coord": [
+            5,
+            2
+          ],
+          "counted_id": "cell_5_2",
+          "is_violation": false,
+          "reference_coord": [
+            1,
+            2
+          ],
+          "reference_id": "cell_1_2"
+        },
+        {
+          "counted_coord": [
+            5,
+            3
+          ],
+          "counted_id": "cell_5_3",
+          "is_violation": true,
+          "reference_coord": [
+            1,
+            3
+          ],
+          "reference_id": "cell_1_3"
+        },
+        {
+          "counted_coord": [
+            5,
+            4
+          ],
+          "counted_id": "cell_5_4",
+          "is_violation": false,
+          "reference_coord": [
+            1,
+            4
+          ],
+          "reference_id": "cell_1_4"
+        },
+        {
+          "counted_coord": [
+            6,
+            0
+          ],
+          "counted_id": "cell_6_0",
+          "is_violation": true,
+          "reference_coord": [
+            0,
+            0
+          ],
+          "reference_id": "cell_0_0"
+        },
+        {
+          "counted_coord": [
+            6,
+            1
+          ],
+          "counted_id": "cell_6_1",
+          "is_violation": true,
+          "reference_coord": [
+            0,
+            1
+          ],
+          "reference_id": "cell_0_1"
+        },
+        {
+          "counted_coord": [
+            6,
+            2
+          ],
+          "counted_id": "cell_6_2",
+          "is_violation": false,
+          "reference_coord": [
+            0,
+            2
+          ],
+          "reference_id": "cell_0_2"
+        },
+        {
+          "counted_coord": [
+            6,
+            3
+          ],
+          "counted_id": "cell_6_3",
+          "is_violation": false,
+          "reference_coord": [
+            0,
+            3
+          ],
+          "reference_id": "cell_0_3"
+        },
+        {
+          "counted_coord": [
+            6,
+            4
+          ],
+          "counted_id": "cell_6_4",
+          "is_violation": false,
+          "reference_coord": [
+            0,
+            4
+          ],
+          "reference_id": "cell_0_4"
+        }
+      ],
+      "palette": [
+        {
+          "hex": "#E63232",
+          "label": "red [#E63232]",
+          "name": "red",
+          "rgb": [
+            230,
+            50,
+            50
+          ]
+        },
+        {
+          "hex": "#D4C21E",
+          "label": "yellow [#D4C21E]",
+          "name": "yellow",
+          "rgb": [
+            212,
+            194,
+            30
+          ]
+        },
+        {
+          "hex": "#963644",
+          "label": "maroon [#963644]",
+          "name": "maroon",
+          "rgb": [
+            150,
+            54,
+            68
+          ]
+        }
+      ],
+      "palette_size": 3,
+      "query_selection_strategy": "uniform_over_target_violation_range_with_constructive_board_support",
+      "target_violation_count": 5,
+      "target_violation_count_range": [
+        1,
+        10
+      ],
+      "task_variant": "horizontal",
+      "violation_coords": [
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          6,
+          1
+        ]
+      ],
+      "violation_ids": [
+        "cell_4_1",
+        "cell_4_2",
+        "cell_5_3",
+        "cell_6_0",
+        "cell_6_1"
+      ]
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          111.0,
+          252.0,
+          154.0,
+          295.0
+        ],
+        [
+          154.0,
+          252.0,
+          197.0,
+          295.0
+        ],
+        [
+          197.0,
+          295.0,
+          240.0,
+          338.0
+        ],
+        [
+          68.0,
+          338.0,
+          111.0,
+          381.0
+        ],
+        [
+          111.0,
+          338.0,
+          154.0,
+          381.0
+        ]
+      ],
+      "grid_point_set": [
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          6,
+          1
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          132.5,
+          273.5
+        ],
+        [
+          175.5,
+          273.5
+        ],
+        [
+          218.5,
+          316.5
+        ],
+        [
+          89.5,
+          359.5
+        ],
+        [
+          132.5,
+          359.5
+        ]
+      ]
+    },
+    "query_spec": {
+      "dsl_program": [
+        {
+          "entity_type": "tile_cell",
+          "op": "select",
+          "out": "cells"
+        },
+        {
+          "in": "cells",
+          "op": "filter",
+          "out": "counted_side_cells",
+          "predicate": {
+            "is_counted_side": true
+          }
+        },
+        {
+          "in": "counted_side_cells",
+          "op": "filter",
+          "out": "violations",
+          "predicate": {
+            "is_violation": true
+          }
+        },
+        {
+          "coord_space": "tile_grid",
+          "coord_type": "grid_point_set",
+          "in": "violations",
+          "op": "project_coords",
+          "ordering": "row_major",
+          "out": "evidence"
+        },
+        {
+          "in": "violations",
+          "op": "count",
+          "out": "answer"
+        }
+      ],
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "tile_symmetry_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of violating tiles as an integer",
+          "cols": 5,
+          "counted_side": "bottom side",
+          "evidence_hint": "set \"evidence\" to the row-major list of [row, col] coordinates for every violating tile on the counted side",
+          "json_example": "{\"evidence\":[[0,2],[1,2]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "mirror_axis": "horizontal",
+          "rows": 7
+        },
+        "task_family_key": "rectangular_tile_board",
+        "task_family_variant_index": 1,
+        "task_key": "symmetry_violation_count_query",
+        "task_variant_index": 4,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "tile/symmetry/tile_symmetry_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:symmetry_violation_count_query": 5,
+          "task_family:rectangular_tile_board": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "tile_symmetry_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of violating tiles as an integer",
+              "cols": 5,
+              "counted_side": "bottom side",
+              "evidence_hint": "set \"evidence\" to the row-major list of [row, col] coordinates for every violating tile on the counted side",
+              "json_example": "{\"evidence\":[[0,2],[1,2]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "mirror_axis": "horizontal",
+              "rows": 7
+            },
+            "task_family_key": "rectangular_tile_board",
+            "task_family_variant_index": 1,
+            "task_key": "symmetry_violation_count_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "tile/symmetry/tile_symmetry_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:symmetry_violation_count_query": 5,
+              "task_family:rectangular_tile_board": 5
+            }
+          },
+          "prompt": "Use the single rectangular tile board in the image. It has 7 rows and 5 columns, with rows labeled on the left and columns labeled on the top. Find how many tiles on the bottom side have a color mismatch with their horizontal mirror partner.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to the row-major list of [row, col] coordinates for every violating tile on the counted side.\nAnswer: set \"answer\" to the number of violating tiles as an integer.\nExample JSON:\n{\"evidence\":[[0,2],[1,2]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "tile_symmetry_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of violating tiles as an integer",
+              "cols": 5,
+              "counted_side": "bottom side",
+              "evidence_hint": "set \"evidence\" to the row-major list of [row, col] coordinates for every violating tile on the counted side",
+              "json_example": "{\"evidence\":[[0,2],[1,2]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "mirror_axis": "horizontal",
+              "rows": 7
+            },
+            "task_family_key": "rectangular_tile_board",
+            "task_family_variant_index": 1,
+            "task_key": "symmetry_violation_count_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "tile/symmetry/tile_symmetry_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:symmetry_violation_count_query": 5,
+              "task_family:rectangular_tile_board": 5
+            }
+          },
+          "prompt": "Use the single rectangular tile board in the image. It has 7 rows and 5 columns, with rows labeled on the left and columns labeled on the top. Find how many tiles on the bottom side have a color mismatch with their horizontal mirror partner.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of violating tiles as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "horizontal",
+      "template_id": "symmetry_violation_count_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "cell_0_0": {
+          "bbox": [
+            68.0,
+            80.0,
+            111.0,
+            123.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            89.5,
+            101.5
+          ]
+        },
+        "cell_0_1": {
+          "bbox": [
+            111.0,
+            80.0,
+            154.0,
+            123.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            132.5,
+            101.5
+          ]
+        },
+        "cell_0_2": {
+          "bbox": [
+            154.0,
+            80.0,
+            197.0,
+            123.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            175.5,
+            101.5
+          ]
+        },
+        "cell_0_3": {
+          "bbox": [
+            197.0,
+            80.0,
+            240.0,
+            123.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            218.5,
+            101.5
+          ]
+        },
+        "cell_0_4": {
+          "bbox": [
+            240.0,
+            80.0,
+            283.0,
+            123.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            261.5,
+            101.5
+          ]
+        },
+        "cell_1_0": {
+          "bbox": [
+            68.0,
+            123.0,
+            111.0,
+            166.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            89.5,
+            144.5
+          ]
+        },
+        "cell_1_1": {
+          "bbox": [
+            111.0,
+            123.0,
+            154.0,
+            166.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            132.5,
+            144.5
+          ]
+        },
+        "cell_1_2": {
+          "bbox": [
+            154.0,
+            123.0,
+            197.0,
+            166.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            175.5,
+            144.5
+          ]
+        },
+        "cell_1_3": {
+          "bbox": [
+            197.0,
+            123.0,
+            240.0,
+            166.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            218.5,
+            144.5
+          ]
+        },
+        "cell_1_4": {
+          "bbox": [
+            240.0,
+            123.0,
+            283.0,
+            166.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            261.5,
+            144.5
+          ]
+        },
+        "cell_2_0": {
+          "bbox": [
+            68.0,
+            166.0,
+            111.0,
+            209.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            89.5,
+            187.5
+          ]
+        },
+        "cell_2_1": {
+          "bbox": [
+            111.0,
+            166.0,
+            154.0,
+            209.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            132.5,
+            187.5
+          ]
+        },
+        "cell_2_2": {
+          "bbox": [
+            154.0,
+            166.0,
+            197.0,
+            209.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            175.5,
+            187.5
+          ]
+        },
+        "cell_2_3": {
+          "bbox": [
+            197.0,
+            166.0,
+            240.0,
+            209.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            218.5,
+            187.5
+          ]
+        },
+        "cell_2_4": {
+          "bbox": [
+            240.0,
+            166.0,
+            283.0,
+            209.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            261.5,
+            187.5
+          ]
+        },
+        "cell_3_0": {
+          "bbox": [
+            68.0,
+            209.0,
+            111.0,
+            252.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            89.5,
+            230.5
+          ]
+        },
+        "cell_3_1": {
+          "bbox": [
+            111.0,
+            209.0,
+            154.0,
+            252.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            132.5,
+            230.5
+          ]
+        },
+        "cell_3_2": {
+          "bbox": [
+            154.0,
+            209.0,
+            197.0,
+            252.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            175.5,
+            230.5
+          ]
+        },
+        "cell_3_3": {
+          "bbox": [
+            197.0,
+            209.0,
+            240.0,
+            252.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            218.5,
+            230.5
+          ]
+        },
+        "cell_3_4": {
+          "bbox": [
+            240.0,
+            209.0,
+            283.0,
+            252.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            261.5,
+            230.5
+          ]
+        },
+        "cell_4_0": {
+          "bbox": [
+            68.0,
+            252.0,
+            111.0,
+            295.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            89.5,
+            273.5
+          ]
+        },
+        "cell_4_1": {
+          "bbox": [
+            111.0,
+            252.0,
+            154.0,
+            295.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            132.5,
+            273.5
+          ]
+        },
+        "cell_4_2": {
+          "bbox": [
+            154.0,
+            252.0,
+            197.0,
+            295.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            175.5,
+            273.5
+          ]
+        },
+        "cell_4_3": {
+          "bbox": [
+            197.0,
+            252.0,
+            240.0,
+            295.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            218.5,
+            273.5
+          ]
+        },
+        "cell_4_4": {
+          "bbox": [
+            240.0,
+            252.0,
+            283.0,
+            295.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            261.5,
+            273.5
+          ]
+        },
+        "cell_5_0": {
+          "bbox": [
+            68.0,
+            295.0,
+            111.0,
+            338.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            89.5,
+            316.5
+          ]
+        },
+        "cell_5_1": {
+          "bbox": [
+            111.0,
+            295.0,
+            154.0,
+            338.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            132.5,
+            316.5
+          ]
+        },
+        "cell_5_2": {
+          "bbox": [
+            154.0,
+            295.0,
+            197.0,
+            338.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            175.5,
+            316.5
+          ]
+        },
+        "cell_5_3": {
+          "bbox": [
+            197.0,
+            295.0,
+            240.0,
+            338.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            218.5,
+            316.5
+          ]
+        },
+        "cell_5_4": {
+          "bbox": [
+            240.0,
+            295.0,
+            283.0,
+            338.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            261.5,
+            316.5
+          ]
+        },
+        "cell_6_0": {
+          "bbox": [
+            68.0,
+            338.0,
+            111.0,
+            381.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            89.5,
+            359.5
+          ]
+        },
+        "cell_6_1": {
+          "bbox": [
+            111.0,
+            338.0,
+            154.0,
+            381.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            132.5,
+            359.5
+          ]
+        },
+        "cell_6_2": {
+          "bbox": [
+            154.0,
+            338.0,
+            197.0,
+            381.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            175.5,
+            359.5
+          ]
+        },
+        "cell_6_3": {
+          "bbox": [
+            197.0,
+            338.0,
+            240.0,
+            381.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            218.5,
+            359.5
+          ]
+        },
+        "cell_6_4": {
+          "bbox": [
+            240.0,
+            338.0,
+            283.0,
+            381.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            261.5,
+            359.5
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            246,
+            246,
+            246
+          ],
+          "kind": "solid"
+        }
+      },
+      "board_origin_px": [
+        68,
+        80
+      ],
+      "board_size_px": [
+        215,
+        301
+      ],
+      "canvas_height_px": 425,
+      "canvas_width_px": 313,
+      "cols": 5,
+      "coord_space": "tile_grid",
+      "coordinate_gutters_px": {
+        "left": 36,
+        "top": 36
+      },
+      "label_style": {
+        "font_size_px": 20,
+        "stroke_width_px": 2
+      },
+      "outer_padding_px": {
+        "x": 25,
+        "y": 36
+      },
+      "placement_offset_px": {
+        "x": 7,
+        "y": 8
+      },
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "alpha": 0.010057
+            },
+            "type": "noise"
+          }
+        ],
+        "enabled": true
+      },
+      "rows": 7,
+      "tile_aspect_ratio": 1.00095,
+      "tile_height_px": 43,
+      "tile_orientation": "wide",
+      "tile_outline_width_px": 3,
+      "tile_width_px": 43,
+      "tiling_type": "rectangular_tiling"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "red",
+            "fill_rgb": [
+              230,
+              50,
+              50
+            ],
+            "is_centerline": false,
+            "is_counted_side": false,
+            "is_violation": false,
+            "mirror_partner_id": "cell_6_0",
+            "row": 0
+          },
+          "entity_id": "cell_0_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "red",
+            "fill_rgb": [
+              230,
+              50,
+              50
+            ],
+            "is_centerline": false,
+            "is_counted_side": false,
+            "is_violation": false,
+            "mirror_partner_id": "cell_6_1",
+            "row": 0
+          },
+          "entity_id": "cell_0_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_centerline": false,
+            "is_counted_side": false,
+            "is_violation": false,
+            "mirror_partner_id": "cell_6_2",
+            "row": 0
+          },
+          "entity_id": "cell_0_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "red",
+            "fill_rgb": [
+              230,
+              50,
+              50
+            ],
+            "is_centerline": false,
+            "is_counted_side": false,
+            "is_violation": false,
+            "mirror_partner_id": "cell_6_3",
+            "row": 0
+          },
+          "entity_id": "cell_0_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_centerline": false,
+            "is_counted_side": false,
+            "is_violation": false,
+            "mirror_partner_id": "cell_6_4",
+            "row": 0
+          },
+          "entity_id": "cell_0_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "red",
+            "fill_rgb": [
+              230,
+              50,
+              50
+            ],
+            "is_centerline": false,
+            "is_counted_side": false,
+            "is_violation": false,
+            "mirror_partner_id": "cell_5_0",
+            "row": 1
+          },
+          "entity_id": "cell_1_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "red",
+            "fill_rgb": [
+              230,
+              50,
+              50
+            ],
+            "is_centerline": false,
+            "is_counted_side": false,
+            "is_violation": false,
+            "mirror_partner_id": "cell_5_1",
+            "row": 1
+          },
+          "entity_id": "cell_1_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "yellow",
+            "fill_rgb": [
+              212,
+              194,
+              30
+            ],
+            "is_centerline": false,
+            "is_counted_side": false,
+            "is_violation": false,
+            "mirror_partner_id": "cell_5_2",
+            "row": 1
+          },
+          "entity_id": "cell_1_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "yellow",
+            "fill_rgb": [
+              212,
+              194,
+              30
+            ],
+            "is_centerline": false,
+            "is_counted_side": false,
+            "is_violation": false,
+            "mirror_partner_id": "cell_5_3",
+            "row": 1
+          },
+          "entity_id": "cell_1_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "yellow",
+            "fill_rgb": [
+              212,
+              194,
+              30
+            ],
+            "is_centerline": false,
+            "is_counted_side": false,
+            "is_violation": false,
+            "mirror_partner_id": "cell_5_4",
+            "row": 1
+          },
+          "entity_id": "cell_1_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_centerline": false,
+            "is_counted_side": false,
+            "is_violation": false,
+            "mirror_partner_id": "cell_4_0",
+            "row": 2
+          },
+          "entity_id": "cell_2_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "yellow",
+            "fill_rgb": [
+              212,
+              194,
+              30
+            ],
+            "is_centerline": false,
+            "is_counted_side": false,
+            "is_violation": false,
+            "mirror_partner_id": "cell_4_1",
+            "row": 2
+          },
+          "entity_id": "cell_2_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "red",
+            "fill_rgb": [
+              230,
+              50,
+              50
+            ],
+            "is_centerline": false,
+            "is_counted_side": false,
+            "is_violation": false,
+            "mirror_partner_id": "cell_4_2",
+            "row": 2
+          },
+          "entity_id": "cell_2_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_centerline": false,
+            "is_counted_side": false,
+            "is_violation": false,
+            "mirror_partner_id": "cell_4_3",
+            "row": 2
+          },
+          "entity_id": "cell_2_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "red",
+            "fill_rgb": [
+              230,
+              50,
+              50
+            ],
+            "is_centerline": false,
+            "is_counted_side": false,
+            "is_violation": false,
+            "mirror_partner_id": "cell_4_4",
+            "row": 2
+          },
+          "entity_id": "cell_2_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "yellow",
+            "fill_rgb": [
+              212,
+              194,
+              30
+            ],
+            "is_centerline": true,
+            "is_counted_side": false,
+            "is_violation": false,
+            "mirror_partner_id": "cell_3_0",
+            "row": 3
+          },
+          "entity_id": "cell_3_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "yellow",
+            "fill_rgb": [
+              212,
+              194,
+              30
+            ],
+            "is_centerline": true,
+            "is_counted_side": false,
+            "is_violation": false,
+            "mirror_partner_id": "cell_3_1",
+            "row": 3
+          },
+          "entity_id": "cell_3_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_centerline": true,
+            "is_counted_side": false,
+            "is_violation": false,
+            "mirror_partner_id": "cell_3_2",
+            "row": 3
+          },
+          "entity_id": "cell_3_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "red",
+            "fill_rgb": [
+              230,
+              50,
+              50
+            ],
+            "is_centerline": true,
+            "is_counted_side": false,
+            "is_violation": false,
+            "mirror_partner_id": "cell_3_3",
+            "row": 3
+          },
+          "entity_id": "cell_3_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "red",
+            "fill_rgb": [
+              230,
+              50,
+              50
+            ],
+            "is_centerline": true,
+            "is_counted_side": false,
+            "is_violation": false,
+            "mirror_partner_id": "cell_3_4",
+            "row": 3
+          },
+          "entity_id": "cell_3_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_centerline": false,
+            "is_counted_side": true,
+            "is_violation": false,
+            "mirror_partner_id": "cell_2_0",
+            "row": 4
+          },
+          "entity_id": "cell_4_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_centerline": false,
+            "is_counted_side": true,
+            "is_violation": true,
+            "mirror_partner_id": "cell_2_1",
+            "row": 4
+          },
+          "entity_id": "cell_4_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "yellow",
+            "fill_rgb": [
+              212,
+              194,
+              30
+            ],
+            "is_centerline": false,
+            "is_counted_side": true,
+            "is_violation": true,
+            "mirror_partner_id": "cell_2_2",
+            "row": 4
+          },
+          "entity_id": "cell_4_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_centerline": false,
+            "is_counted_side": true,
+            "is_violation": false,
+            "mirror_partner_id": "cell_2_3",
+            "row": 4
+          },
+          "entity_id": "cell_4_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "red",
+            "fill_rgb": [
+              230,
+              50,
+              50
+            ],
+            "is_centerline": false,
+            "is_counted_side": true,
+            "is_violation": false,
+            "mirror_partner_id": "cell_2_4",
+            "row": 4
+          },
+          "entity_id": "cell_4_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "red",
+            "fill_rgb": [
+              230,
+              50,
+              50
+            ],
+            "is_centerline": false,
+            "is_counted_side": true,
+            "is_violation": false,
+            "mirror_partner_id": "cell_1_0",
+            "row": 5
+          },
+          "entity_id": "cell_5_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "red",
+            "fill_rgb": [
+              230,
+              50,
+              50
+            ],
+            "is_centerline": false,
+            "is_counted_side": true,
+            "is_violation": false,
+            "mirror_partner_id": "cell_1_1",
+            "row": 5
+          },
+          "entity_id": "cell_5_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "yellow",
+            "fill_rgb": [
+              212,
+              194,
+              30
+            ],
+            "is_centerline": false,
+            "is_counted_side": true,
+            "is_violation": false,
+            "mirror_partner_id": "cell_1_2",
+            "row": 5
+          },
+          "entity_id": "cell_5_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "red",
+            "fill_rgb": [
+              230,
+              50,
+              50
+            ],
+            "is_centerline": false,
+            "is_counted_side": true,
+            "is_violation": true,
+            "mirror_partner_id": "cell_1_3",
+            "row": 5
+          },
+          "entity_id": "cell_5_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "yellow",
+            "fill_rgb": [
+              212,
+              194,
+              30
+            ],
+            "is_centerline": false,
+            "is_counted_side": true,
+            "is_violation": false,
+            "mirror_partner_id": "cell_1_4",
+            "row": 5
+          },
+          "entity_id": "cell_5_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_centerline": false,
+            "is_counted_side": true,
+            "is_violation": true,
+            "mirror_partner_id": "cell_0_0",
+            "row": 6
+          },
+          "entity_id": "cell_6_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_centerline": false,
+            "is_counted_side": true,
+            "is_violation": true,
+            "mirror_partner_id": "cell_0_1",
+            "row": 6
+          },
+          "entity_id": "cell_6_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_centerline": false,
+            "is_counted_side": true,
+            "is_violation": false,
+            "mirror_partner_id": "cell_0_2",
+            "row": 6
+          },
+          "entity_id": "cell_6_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "red",
+            "fill_rgb": [
+              230,
+              50,
+              50
+            ],
+            "is_centerline": false,
+            "is_counted_side": true,
+            "is_violation": false,
+            "mirror_partner_id": "cell_0_3",
+            "row": 6
+          },
+          "entity_id": "cell_6_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_centerline": false,
+            "is_counted_side": true,
+            "is_violation": false,
+            "mirror_partner_id": "cell_0_4",
+            "row": 6
+          },
+          "entity_id": "cell_6_4",
+          "entity_type": "tile_cell"
+        }
+      ],
+      "relations": {
+        "mirror_partner": {
+          "cell_0_0": "cell_6_0",
+          "cell_0_1": "cell_6_1",
+          "cell_0_2": "cell_6_2",
+          "cell_0_3": "cell_6_3",
+          "cell_0_4": "cell_6_4",
+          "cell_1_0": "cell_5_0",
+          "cell_1_1": "cell_5_1",
+          "cell_1_2": "cell_5_2",
+          "cell_1_3": "cell_5_3",
+          "cell_1_4": "cell_5_4",
+          "cell_2_0": "cell_4_0",
+          "cell_2_1": "cell_4_1",
+          "cell_2_2": "cell_4_2",
+          "cell_2_3": "cell_4_3",
+          "cell_2_4": "cell_4_4",
+          "cell_3_0": "cell_3_0",
+          "cell_3_1": "cell_3_1",
+          "cell_3_2": "cell_3_2",
+          "cell_3_3": "cell_3_3",
+          "cell_3_4": "cell_3_4",
+          "cell_4_0": "cell_2_0",
+          "cell_4_1": "cell_2_1",
+          "cell_4_2": "cell_2_2",
+          "cell_4_3": "cell_2_3",
+          "cell_4_4": "cell_2_4",
+          "cell_5_0": "cell_1_0",
+          "cell_5_1": "cell_1_1",
+          "cell_5_2": "cell_1_2",
+          "cell_5_3": "cell_1_3",
+          "cell_5_4": "cell_1_4",
+          "cell_6_0": "cell_0_0",
+          "cell_6_1": "cell_0_1",
+          "cell_6_2": "cell_0_2",
+          "cell_6_3": "cell_0_3",
+          "cell_6_4": "cell_0_4"
+        }
+      },
+      "scene_kind": "rectangular_tile_symmetry_board"
+    },
+    "witness_symbolic": {
+      "ids": [
+        "cell_4_1",
+        "cell_4_2",
+        "cell_5_3",
+        "cell_6_0",
+        "cell_6_1"
+      ],
+      "type": "id_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

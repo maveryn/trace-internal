@@ -1,4 +1,4 @@
-"""Puzzle arithmetic task that solves a highlighted symbol from balance panels."""
+"""Puzzle arithmetic task that solves a highlighted symbol from equality panels."""
 
 from __future__ import annotations
 
@@ -54,7 +54,7 @@ _OBJECT_TYPES: Tuple[str, ...] = ("circle", "triangle", "diamond", "square", "he
 
 @dataclass(frozen=True)
 class PuzzleBalanceDefaults:
-    """Stable fallback defaults for the first arithmetic balance puzzle task."""
+    """Stable fallback defaults for the first arithmetic equality-panel puzzle task."""
 
     answer_min: int = 1
     answer_max: int = 24
@@ -216,7 +216,7 @@ def _build_balance_dataset(
 
     selected_variant = str(task_variant)
     if selected_variant not in set(_SUPPORTED_TASK_VARIANTS):
-        raise ValueError(f"unsupported balance puzzle variant: {task_variant}")
+        raise ValueError(f"unsupported equality-panel puzzle variant: {task_variant}")
 
     rng = spawn_rng(int(instance_seed), f"{task_id}.dataset")
     answer_min, answer_max = resolve_arithmetic_answer_bounds(
@@ -368,7 +368,7 @@ def _build_balance_dataset(
         break
 
     if panel_specs is None or object_values is None or query_object_type is None or answer_value is None:
-        raise ValueError(f"{task_id} could not construct a valid balance puzzle for variant={selected_variant}")
+        raise ValueError(f"{task_id} could not construct a valid equality puzzle for variant={selected_variant}")
 
     total_box_count = int(sum(len(panel["left_items"]) + len(panel["right_items"]) for panel in panel_specs) + 1)
     query_box_id = "query_box"
@@ -398,7 +398,7 @@ def _build_balance_dataset(
 
 @register_task
 class PuzzlesArithmeticBalanceValueTask:
-    """Return the integer value of the highlighted query symbol in one balance puzzle."""
+    """Return the integer value of the highlighted query symbol in one equality puzzle."""
 
     task_id = TASK_ID
     domain = "puzzles"

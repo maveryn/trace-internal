@@ -1,0 +1,1422 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 61
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        436.56,
+        410.667,
+        587.04,
+        499.333
+      ],
+      [
+        587.04,
+        410.667,
+        737.52,
+        499.333
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "tables/task_tables_temporal_value/images/sum_over_year_interval/0001.png"
+  },
+  "instance_seed": 8350597805774746,
+  "prompt": "Look at the time-series table in the image. It shows a zebra-striped table with one Name column, several year columns in chronological order, alternating row shading, and a shaded header row. Work from the queried row and year columns to evaluate the temporal expression. For row Par, what is the sum of the values from 2020 through 2021, inclusive?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the ordered queried year-cell bounding boxes from the start year through the end year.\nAnswer requirement: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236],[488,180,600,236]],\"answer\":29}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the time-series table in the image. It shows a zebra-striped table with one Name column, several year columns in chronological order, alternating row shading, and a shaded header row. Work from the queried row and year columns to evaluate the temporal expression. For row Par, what is the sum of the values from 2020 through 2021, inclusive?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the ordered queried year-cell bounding boxes from the start year through the end year.\nAnswer requirement: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236],[488,180,600,236]],\"answer\":29}",
+    "answer_only": "Look at the time-series table in the image. It shows a zebra-striped table with one Name column, several year columns in chronological order, alternating row shading, and a shaded header row. Work from the queried row and year columns to evaluate the temporal expression. For row Par, what is the sum of the values from 2020 through 2021, inclusive?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"answer\":29}"
+  },
+  "task": "task_tables_temporal_value",
+  "task_variant": "sum_over_year_interval",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 61,
+      "column_headers": [
+        "2019",
+        "2020",
+        "2021",
+        "2022"
+      ],
+      "numeric_column_count": 4,
+      "numeric_column_count_range": [
+        3,
+        5
+      ],
+      "query_cells": [
+        {
+          "cell_id": "cell_r4_c2",
+          "column": "2020",
+          "column_index": 1,
+          "row_index": 3,
+          "row_label": "Par",
+          "value": 32
+        },
+        {
+          "cell_id": "cell_r4_c3",
+          "column": "2021",
+          "column_index": 2,
+          "row_index": 3,
+          "row_label": "Par",
+          "value": 29
+        }
+      ],
+      "query_row_index": 3,
+      "query_row_label": "Par",
+      "query_year_end": "2021",
+      "query_year_start": "2020",
+      "query_years": [
+        "2020",
+        "2021"
+      ],
+      "row_count": 5,
+      "row_count_range": [
+        5,
+        10
+      ],
+      "row_labels": [
+        "Job",
+        "Ole",
+        "Sly",
+        "Par",
+        "Chow"
+      ],
+      "scene_variant": "zebra",
+      "supporting_cell_ids": [
+        "cell_r4_c2",
+        "cell_r4_c3"
+      ],
+      "task_variant": "sum_over_year_interval",
+      "value_range": [
+        1,
+        32
+      ],
+      "values_by_row": {
+        "Chow": {
+          "2019": 5,
+          "2020": 13,
+          "2021": 26,
+          "2022": 14
+        },
+        "Job": {
+          "2019": 13,
+          "2020": 30,
+          "2021": 31,
+          "2022": 24
+        },
+        "Ole": {
+          "2019": 14,
+          "2020": 32,
+          "2021": 3,
+          "2022": 11
+        },
+        "Par": {
+          "2019": 3,
+          "2020": 32,
+          "2021": 29,
+          "2022": 3
+        },
+        "Sly": {
+          "2019": 4,
+          "2020": 17,
+          "2021": 31,
+          "2022": 5
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          436.56,
+          410.667,
+          587.04,
+          499.333
+        ],
+        [
+          587.04,
+          410.667,
+          737.52,
+          499.333
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "numeric_column_count": 4,
+        "query_row_label": "Par",
+        "query_years": [
+          "2020",
+          "2021"
+        ],
+        "row_count": 5,
+        "scene_variant": "zebra",
+        "scene_variant_probabilities": {
+          "card_table": 0.25,
+          "ledger": 0.25,
+          "spreadsheet": 0.25,
+          "zebra": 0.25
+        },
+        "task_variant": "sum_over_year_interval",
+        "task_variant_probabilities": {
+          "absolute_difference_between_years": 0.0,
+          "delta_between_years": 0.0,
+          "mean_over_year_interval": 0.0,
+          "sum_over_year_interval": 1.0,
+          "value_at_year": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "tables_temporal_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the exact integer temporal result",
+          "evidence_hint": "set \"evidence\" to an array containing the ordered queried year-cell bounding boxes from the start year through the end year",
+          "json_example": "{\"evidence\":[[260,180,372,236],[374,180,486,236],[488,180,600,236]],\"answer\":29}",
+          "json_example_answer_only": "{\"answer\":29}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a zebra-striped table with one Name column, several year columns in chronological order, alternating row shading, and a shaded header row",
+          "query_row_label": "Par",
+          "query_year_end": "2021",
+          "query_year_start": "2020"
+        },
+        "task_family_key": "styled_table_temporal",
+        "task_family_variant_index": 3,
+        "task_key": "temporal_value_query",
+        "task_variant_index": 3,
+        "task_variant_key": "sum_over_year_interval",
+        "task_variant_template_index": 0,
+        "template_paths": [
+          "tables/temporal/tables_temporal_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:temporal_value_query": 5,
+          "task_family:styled_table_temporal": 5,
+          "task_variant:sum_over_year_interval": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "tables_temporal_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact integer temporal result",
+              "evidence_hint": "set \"evidence\" to an array containing the ordered queried year-cell bounding boxes from the start year through the end year",
+              "json_example": "{\"evidence\":[[260,180,372,236],[374,180,486,236],[488,180,600,236]],\"answer\":29}",
+              "json_example_answer_only": "{\"answer\":29}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a zebra-striped table with one Name column, several year columns in chronological order, alternating row shading, and a shaded header row",
+              "query_row_label": "Par",
+              "query_year_end": "2021",
+              "query_year_start": "2020"
+            },
+            "task_family_key": "styled_table_temporal",
+            "task_family_variant_index": 3,
+            "task_key": "temporal_value_query",
+            "task_variant_index": 3,
+            "task_variant_key": "sum_over_year_interval",
+            "task_variant_template_index": 0,
+            "template_paths": [
+              "tables/temporal/tables_temporal_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:temporal_value_query": 5,
+              "task_family:styled_table_temporal": 5,
+              "task_variant:sum_over_year_interval": 5
+            }
+          },
+          "prompt": "Look at the time-series table in the image. It shows a zebra-striped table with one Name column, several year columns in chronological order, alternating row shading, and a shaded header row. Work from the queried row and year columns to evaluate the temporal expression. For row Par, what is the sum of the values from 2020 through 2021, inclusive?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the ordered queried year-cell bounding boxes from the start year through the end year.\nAnswer requirement: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236],[488,180,600,236]],\"answer\":29}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "tables_temporal_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact integer temporal result",
+              "evidence_hint": "set \"evidence\" to an array containing the ordered queried year-cell bounding boxes from the start year through the end year",
+              "json_example": "{\"evidence\":[[260,180,372,236],[374,180,486,236],[488,180,600,236]],\"answer\":29}",
+              "json_example_answer_only": "{\"answer\":29}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a zebra-striped table with one Name column, several year columns in chronological order, alternating row shading, and a shaded header row",
+              "query_row_label": "Par",
+              "query_year_end": "2021",
+              "query_year_start": "2020"
+            },
+            "task_family_key": "styled_table_temporal",
+            "task_family_variant_index": 3,
+            "task_key": "temporal_value_query",
+            "task_variant_index": 3,
+            "task_variant_key": "sum_over_year_interval",
+            "task_variant_template_index": 0,
+            "template_paths": [
+              "tables/temporal/tables_temporal_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:temporal_value_query": 5,
+              "task_family:styled_table_temporal": 5,
+              "task_variant:sum_over_year_interval": 5
+            }
+          },
+          "prompt": "Look at the time-series table in the image. It shows a zebra-striped table with one Name column, several year columns in chronological order, alternating row shading, and a shaded header row. Work from the queried row and year columns to evaluate the temporal expression. For row Par, what is the sum of the values from 2020 through 2021, inclusive?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact integer temporal result.\nExample JSON:\n{\"answer\":29}"
+        }
+      },
+      "task_variant": "sum_over_year_interval",
+      "template_id": "tables_temporal_v1"
+    },
+    "render_map": {
+      "cell_bboxes_px": {
+        "cell_r0_c0": [
+          52.0,
+          56.0,
+          286.08,
+          144.667
+        ],
+        "cell_r0_c1": [
+          286.08,
+          56.0,
+          436.56,
+          144.667
+        ],
+        "cell_r0_c2": [
+          436.56,
+          56.0,
+          587.04,
+          144.667
+        ],
+        "cell_r0_c3": [
+          587.04,
+          56.0,
+          737.52,
+          144.667
+        ],
+        "cell_r0_c4": [
+          737.52,
+          56.0,
+          888.0,
+          144.667
+        ],
+        "cell_r1_c0": [
+          52.0,
+          144.667,
+          286.08,
+          233.333
+        ],
+        "cell_r1_c1": [
+          286.08,
+          144.667,
+          436.56,
+          233.333
+        ],
+        "cell_r1_c2": [
+          436.56,
+          144.667,
+          587.04,
+          233.333
+        ],
+        "cell_r1_c3": [
+          587.04,
+          144.667,
+          737.52,
+          233.333
+        ],
+        "cell_r1_c4": [
+          737.52,
+          144.667,
+          888.0,
+          233.333
+        ],
+        "cell_r2_c0": [
+          52.0,
+          233.333,
+          286.08,
+          322.0
+        ],
+        "cell_r2_c1": [
+          286.08,
+          233.333,
+          436.56,
+          322.0
+        ],
+        "cell_r2_c2": [
+          436.56,
+          233.333,
+          587.04,
+          322.0
+        ],
+        "cell_r2_c3": [
+          587.04,
+          233.333,
+          737.52,
+          322.0
+        ],
+        "cell_r2_c4": [
+          737.52,
+          233.333,
+          888.0,
+          322.0
+        ],
+        "cell_r3_c0": [
+          52.0,
+          322.0,
+          286.08,
+          410.667
+        ],
+        "cell_r3_c1": [
+          286.08,
+          322.0,
+          436.56,
+          410.667
+        ],
+        "cell_r3_c2": [
+          436.56,
+          322.0,
+          587.04,
+          410.667
+        ],
+        "cell_r3_c3": [
+          587.04,
+          322.0,
+          737.52,
+          410.667
+        ],
+        "cell_r3_c4": [
+          737.52,
+          322.0,
+          888.0,
+          410.667
+        ],
+        "cell_r4_c0": [
+          52.0,
+          410.667,
+          286.08,
+          499.333
+        ],
+        "cell_r4_c1": [
+          286.08,
+          410.667,
+          436.56,
+          499.333
+        ],
+        "cell_r4_c2": [
+          436.56,
+          410.667,
+          587.04,
+          499.333
+        ],
+        "cell_r4_c3": [
+          587.04,
+          410.667,
+          737.52,
+          499.333
+        ],
+        "cell_r4_c4": [
+          737.52,
+          410.667,
+          888.0,
+          499.333
+        ],
+        "cell_r5_c0": [
+          52.0,
+          499.333,
+          286.08,
+          588.0
+        ],
+        "cell_r5_c1": [
+          286.08,
+          499.333,
+          436.56,
+          588.0
+        ],
+        "cell_r5_c2": [
+          436.56,
+          499.333,
+          587.04,
+          588.0
+        ],
+        "cell_r5_c3": [
+          587.04,
+          499.333,
+          737.52,
+          588.0
+        ],
+        "cell_r5_c4": [
+          737.52,
+          499.333,
+          888.0,
+          588.0
+        ]
+      },
+      "column_region_bboxes_px": {
+        "2019": [
+          286.08,
+          144.667,
+          436.56,
+          588.0
+        ],
+        "2020": [
+          436.56,
+          144.667,
+          587.04,
+          588.0
+        ],
+        "2021": [
+          587.04,
+          144.667,
+          737.52,
+          588.0
+        ],
+        "2022": [
+          737.52,
+          144.667,
+          888.0,
+          588.0
+        ]
+      },
+      "header_bboxes_px": {
+        "2019": [
+          286.08,
+          56.0,
+          436.56,
+          144.667
+        ],
+        "2020": [
+          436.56,
+          56.0,
+          587.04,
+          144.667
+        ],
+        "2021": [
+          587.04,
+          56.0,
+          737.52,
+          144.667
+        ],
+        "2022": [
+          737.52,
+          56.0,
+          888.0,
+          144.667
+        ]
+      },
+      "image_id": "img0",
+      "row_label_bboxes_px": {
+        "Chow": [
+          52.0,
+          499.333,
+          286.08,
+          588.0
+        ],
+        "Job": [
+          52.0,
+          144.667,
+          286.08,
+          233.333
+        ],
+        "Ole": [
+          52.0,
+          233.333,
+          286.08,
+          322.0
+        ],
+        "Par": [
+          52.0,
+          410.667,
+          286.08,
+          499.333
+        ],
+        "Sly": [
+          52.0,
+          322.0,
+          286.08,
+          410.667
+        ]
+      },
+      "row_region_bboxes_px": {
+        "Chow": [
+          286.08,
+          499.333,
+          888.0,
+          588.0
+        ],
+        "Job": [
+          286.08,
+          144.667,
+          888.0,
+          233.333
+        ],
+        "Ole": [
+          286.08,
+          233.333,
+          888.0,
+          322.0
+        ],
+        "Par": [
+          286.08,
+          410.667,
+          888.0,
+          499.333
+        ],
+        "Sly": [
+          286.08,
+          322.0,
+          888.0,
+          410.667
+        ]
+      },
+      "table_bbox_px": [
+        52.0,
+        56.0,
+        888.0,
+        588.0
+      ]
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 640,
+      "canvas_width": 940,
+      "coord_space": "pixel",
+      "grid_style": {
+        "border_width_px": 2,
+        "grid_width_px": 1
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "zebra",
+      "table_bbox_px": [
+        52.0,
+        56.0,
+        888.0,
+        588.0
+      ],
+      "text_style": {
+        "label_font_size_px": 24,
+        "value_font_size_px": 22
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Name",
+            "text_bbox_px": [
+              130.54,
+              91.333,
+              207.54,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            56.0,
+            286.08,
+            144.667
+          ],
+          "entity_id": "cell_r0_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "2019",
+            "column_index": 1,
+            "row_index": 0,
+            "row_label": null,
+            "text": "2019",
+            "text_bbox_px": [
+              327.32,
+              91.333,
+              395.32,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            286.08,
+            56.0,
+            436.56,
+            144.667
+          ],
+          "entity_id": "cell_r0_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "2020",
+            "column_index": 2,
+            "row_index": 0,
+            "row_label": null,
+            "text": "2020",
+            "text_bbox_px": [
+              477.8,
+              91.333,
+              545.8,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            436.56,
+            56.0,
+            587.04,
+            144.667
+          ],
+          "entity_id": "cell_r0_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "2021",
+            "column_index": 3,
+            "row_index": 0,
+            "row_label": null,
+            "text": "2021",
+            "text_bbox_px": [
+              628.28,
+              91.333,
+              696.28,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            587.04,
+            56.0,
+            737.52,
+            144.667
+          ],
+          "entity_id": "cell_r0_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "2022",
+            "column_index": 4,
+            "row_index": 0,
+            "row_label": null,
+            "text": "2022",
+            "text_bbox_px": [
+              778.76,
+              91.333,
+              846.76,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            737.52,
+            56.0,
+            888.0,
+            144.667
+          ],
+          "entity_id": "cell_r0_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 1,
+            "row_label": "Job",
+            "text": "Job",
+            "text_bbox_px": [
+              66.0,
+              177.5,
+              110.0,
+              200.5
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            144.667,
+            286.08,
+            233.333
+          ],
+          "entity_id": "cell_r1_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2019",
+            "column_index": 1,
+            "row_index": 1,
+            "row_label": "Job",
+            "text": "13",
+            "text_bbox_px": [
+              347.32,
+              181.0,
+              375.32,
+              197.0
+            ],
+            "value": 13
+          },
+          "bbox_px": [
+            286.08,
+            144.667,
+            436.56,
+            233.333
+          ],
+          "entity_id": "cell_r1_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2020",
+            "column_index": 2,
+            "row_index": 1,
+            "row_label": "Job",
+            "text": "30",
+            "text_bbox_px": [
+              497.8,
+              181.0,
+              525.8,
+              197.0
+            ],
+            "value": 30
+          },
+          "bbox_px": [
+            436.56,
+            144.667,
+            587.04,
+            233.333
+          ],
+          "entity_id": "cell_r1_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2021",
+            "column_index": 3,
+            "row_index": 1,
+            "row_label": "Job",
+            "text": "31",
+            "text_bbox_px": [
+              648.28,
+              181.0,
+              676.28,
+              197.0
+            ],
+            "value": 31
+          },
+          "bbox_px": [
+            587.04,
+            144.667,
+            737.52,
+            233.333
+          ],
+          "entity_id": "cell_r1_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2022",
+            "column_index": 4,
+            "row_index": 1,
+            "row_label": "Job",
+            "text": "24",
+            "text_bbox_px": [
+              798.76,
+              181.0,
+              826.76,
+              197.0
+            ],
+            "value": 24
+          },
+          "bbox_px": [
+            737.52,
+            144.667,
+            888.0,
+            233.333
+          ],
+          "entity_id": "cell_r1_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 2,
+            "row_label": "Ole",
+            "text": "Ole",
+            "text_bbox_px": [
+              66.0,
+              268.667,
+              110.0,
+              286.667
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            233.333,
+            286.08,
+            322.0
+          ],
+          "entity_id": "cell_r2_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2019",
+            "column_index": 1,
+            "row_index": 2,
+            "row_label": "Ole",
+            "text": "14",
+            "text_bbox_px": [
+              347.32,
+              269.667,
+              375.32,
+              285.667
+            ],
+            "value": 14
+          },
+          "bbox_px": [
+            286.08,
+            233.333,
+            436.56,
+            322.0
+          ],
+          "entity_id": "cell_r2_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2020",
+            "column_index": 2,
+            "row_index": 2,
+            "row_label": "Ole",
+            "text": "32",
+            "text_bbox_px": [
+              497.8,
+              269.667,
+              525.8,
+              285.667
+            ],
+            "value": 32
+          },
+          "bbox_px": [
+            436.56,
+            233.333,
+            587.04,
+            322.0
+          ],
+          "entity_id": "cell_r2_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2021",
+            "column_index": 3,
+            "row_index": 2,
+            "row_label": "Ole",
+            "text": "3",
+            "text_bbox_px": [
+              655.28,
+              269.667,
+              669.28,
+              285.667
+            ],
+            "value": 3
+          },
+          "bbox_px": [
+            587.04,
+            233.333,
+            737.52,
+            322.0
+          ],
+          "entity_id": "cell_r2_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2022",
+            "column_index": 4,
+            "row_index": 2,
+            "row_label": "Ole",
+            "text": "11",
+            "text_bbox_px": [
+              798.76,
+              269.667,
+              826.76,
+              285.667
+            ],
+            "value": 11
+          },
+          "bbox_px": [
+            737.52,
+            233.333,
+            888.0,
+            322.0
+          ],
+          "entity_id": "cell_r2_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 3,
+            "row_label": "Sly",
+            "text": "Sly",
+            "text_bbox_px": [
+              66.0,
+              354.833,
+              107.0,
+              377.833
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            322.0,
+            286.08,
+            410.667
+          ],
+          "entity_id": "cell_r3_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2019",
+            "column_index": 1,
+            "row_index": 3,
+            "row_label": "Sly",
+            "text": "4",
+            "text_bbox_px": [
+              354.32,
+              358.333,
+              368.32,
+              374.333
+            ],
+            "value": 4
+          },
+          "bbox_px": [
+            286.08,
+            322.0,
+            436.56,
+            410.667
+          ],
+          "entity_id": "cell_r3_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2020",
+            "column_index": 2,
+            "row_index": 3,
+            "row_label": "Sly",
+            "text": "17",
+            "text_bbox_px": [
+              497.8,
+              358.333,
+              525.8,
+              374.333
+            ],
+            "value": 17
+          },
+          "bbox_px": [
+            436.56,
+            322.0,
+            587.04,
+            410.667
+          ],
+          "entity_id": "cell_r3_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2021",
+            "column_index": 3,
+            "row_index": 3,
+            "row_label": "Sly",
+            "text": "31",
+            "text_bbox_px": [
+              648.28,
+              358.333,
+              676.28,
+              374.333
+            ],
+            "value": 31
+          },
+          "bbox_px": [
+            587.04,
+            322.0,
+            737.52,
+            410.667
+          ],
+          "entity_id": "cell_r3_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2022",
+            "column_index": 4,
+            "row_index": 3,
+            "row_label": "Sly",
+            "text": "5",
+            "text_bbox_px": [
+              805.76,
+              358.333,
+              819.76,
+              374.333
+            ],
+            "value": 5
+          },
+          "bbox_px": [
+            737.52,
+            322.0,
+            888.0,
+            410.667
+          ],
+          "entity_id": "cell_r3_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 4,
+            "row_label": "Par",
+            "text": "Par",
+            "text_bbox_px": [
+              66.0,
+              446.0,
+              112.0,
+              464.0
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            410.667,
+            286.08,
+            499.333
+          ],
+          "entity_id": "cell_r4_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2019",
+            "column_index": 1,
+            "row_index": 4,
+            "row_label": "Par",
+            "text": "3",
+            "text_bbox_px": [
+              354.32,
+              447.0,
+              368.32,
+              463.0
+            ],
+            "value": 3
+          },
+          "bbox_px": [
+            286.08,
+            410.667,
+            436.56,
+            499.333
+          ],
+          "entity_id": "cell_r4_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2020",
+            "column_index": 2,
+            "row_index": 4,
+            "row_label": "Par",
+            "text": "32",
+            "text_bbox_px": [
+              497.8,
+              447.0,
+              525.8,
+              463.0
+            ],
+            "value": 32
+          },
+          "bbox_px": [
+            436.56,
+            410.667,
+            587.04,
+            499.333
+          ],
+          "entity_id": "cell_r4_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2021",
+            "column_index": 3,
+            "row_index": 4,
+            "row_label": "Par",
+            "text": "29",
+            "text_bbox_px": [
+              648.28,
+              447.0,
+              676.28,
+              463.0
+            ],
+            "value": 29
+          },
+          "bbox_px": [
+            587.04,
+            410.667,
+            737.52,
+            499.333
+          ],
+          "entity_id": "cell_r4_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2022",
+            "column_index": 4,
+            "row_index": 4,
+            "row_label": "Par",
+            "text": "3",
+            "text_bbox_px": [
+              805.76,
+              447.0,
+              819.76,
+              463.0
+            ],
+            "value": 3
+          },
+          "bbox_px": [
+            737.52,
+            410.667,
+            888.0,
+            499.333
+          ],
+          "entity_id": "cell_r4_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 5,
+            "row_label": "Chow",
+            "text": "Chow",
+            "text_bbox_px": [
+              66.0,
+              534.667,
+              139.0,
+              552.667
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            499.333,
+            286.08,
+            588.0
+          ],
+          "entity_id": "cell_r5_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2019",
+            "column_index": 1,
+            "row_index": 5,
+            "row_label": "Chow",
+            "text": "5",
+            "text_bbox_px": [
+              354.32,
+              535.667,
+              368.32,
+              551.667
+            ],
+            "value": 5
+          },
+          "bbox_px": [
+            286.08,
+            499.333,
+            436.56,
+            588.0
+          ],
+          "entity_id": "cell_r5_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2020",
+            "column_index": 2,
+            "row_index": 5,
+            "row_label": "Chow",
+            "text": "13",
+            "text_bbox_px": [
+              497.8,
+              535.667,
+              525.8,
+              551.667
+            ],
+            "value": 13
+          },
+          "bbox_px": [
+            436.56,
+            499.333,
+            587.04,
+            588.0
+          ],
+          "entity_id": "cell_r5_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2021",
+            "column_index": 3,
+            "row_index": 5,
+            "row_label": "Chow",
+            "text": "26",
+            "text_bbox_px": [
+              648.28,
+              535.667,
+              676.28,
+              551.667
+            ],
+            "value": 26
+          },
+          "bbox_px": [
+            587.04,
+            499.333,
+            737.52,
+            588.0
+          ],
+          "entity_id": "cell_r5_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "2022",
+            "column_index": 4,
+            "row_index": 5,
+            "row_label": "Chow",
+            "text": "14",
+            "text_bbox_px": [
+              798.76,
+              535.667,
+              826.76,
+              551.667
+            ],
+            "value": 14
+          },
+          "bbox_px": [
+            737.52,
+            499.333,
+            888.0,
+            588.0
+          ],
+          "entity_id": "cell_r5_c4",
+          "entity_type": "table_cell"
+        }
+      ],
+      "relations": {
+        "answer_value": 61,
+        "query_row_label": "Par",
+        "query_years": [
+          "2020",
+          "2021"
+        ],
+        "scene_variant": "zebra",
+        "supporting_cell_ids": [
+          "cell_r4_c2",
+          "cell_r4_c3"
+        ],
+        "task_variant": "sum_over_year_interval"
+      },
+      "scene_kind": "table_zebra_temporal"
+    },
+    "verifier_spec": {
+      "answer_type": "integer",
+      "evidence_order": "query_year_order",
+      "evidence_type": "bbox_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

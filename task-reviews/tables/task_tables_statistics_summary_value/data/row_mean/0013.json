@@ -1,0 +1,1398 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 30
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        286.08,
+        410.667,
+        888.0,
+        499.333
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "tables/task_tables_statistics_summary_value/images/row_mean/0013.png"
+  },
+  "instance_seed": 7203149160616879,
+  "prompt": "You are given a table: a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Use the table values to compute the requested row summary. What average value does row Ulla have across the numeric columns?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting queried-row region.\nAnswer requirement: set \"answer\" to the exact integer summary value.\nExample JSON:\n{\"evidence\":[[150,180,780,236]],\"answer\":15}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given a table: a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Use the table values to compute the requested row summary. What average value does row Ulla have across the numeric columns?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting queried-row region.\nAnswer requirement: set \"answer\" to the exact integer summary value.\nExample JSON:\n{\"evidence\":[[150,180,780,236]],\"answer\":15}",
+    "answer_only": "You are given a table: a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Use the table values to compute the requested row summary. What average value does row Ulla have across the numeric columns?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact integer summary value.\nExample JSON:\n{\"answer\":15}"
+  },
+  "task": "task_tables_statistics_summary_value",
+  "task_variant": "row_mean",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 30,
+      "column_headers": [
+        "Mass",
+        "Rate",
+        "Pts",
+        "Age"
+      ],
+      "numeric_column_count": 4,
+      "numeric_column_count_range": [
+        3,
+        5
+      ],
+      "query_row_index": 3,
+      "query_row_label": "Ulla",
+      "question_format": "row_summary_value",
+      "row_count": 5,
+      "row_count_range": [
+        5,
+        10
+      ],
+      "row_labels": [
+        "Kern",
+        "Koo",
+        "Daly",
+        "Ulla",
+        "Doll"
+      ],
+      "scene_variant": "spreadsheet",
+      "scene_variant_probabilities": {
+        "card_table": 0.25,
+        "ledger": 0.25,
+        "spreadsheet": 0.25,
+        "zebra": 0.25
+      },
+      "supporting_region_kind": "row",
+      "supporting_row_label": "Ulla",
+      "task_variant": "row_mean",
+      "task_variant_probabilities": {
+        "column_mean": 0.0,
+        "column_median": 0.0,
+        "column_sum": 0.0,
+        "row_mean": 1.0,
+        "row_sum": 0.0,
+        "table_mean": 0.0,
+        "table_sum": 0.0
+      },
+      "value_range": [
+        1,
+        32
+      ],
+      "values_by_row": {
+        "Daly": {
+          "Age": 17,
+          "Mass": 12,
+          "Pts": 22,
+          "Rate": 1
+        },
+        "Doll": {
+          "Age": 19,
+          "Mass": 12,
+          "Pts": 25,
+          "Rate": 6
+        },
+        "Kern": {
+          "Age": 13,
+          "Mass": 11,
+          "Pts": 22,
+          "Rate": 24
+        },
+        "Koo": {
+          "Age": 32,
+          "Mass": 20,
+          "Pts": 23,
+          "Rate": 19
+        },
+        "Ulla": {
+          "Age": 25,
+          "Mass": 31,
+          "Pts": 32,
+          "Rate": 32
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          286.08,
+          410.667,
+          888.0,
+          499.333
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "numeric_column_count": 4,
+        "query_row_label": "Ulla",
+        "row_count": 5,
+        "scene_variant": "spreadsheet",
+        "scene_variant_probabilities": {
+          "card_table": 0.25,
+          "ledger": 0.25,
+          "spreadsheet": 0.25,
+          "zebra": 0.25
+        },
+        "task_variant": "row_mean",
+        "task_variant_probabilities": {
+          "column_mean": 0.0,
+          "column_median": 0.0,
+          "column_sum": 0.0,
+          "row_mean": 1.0,
+          "row_sum": 0.0,
+          "table_mean": 0.0,
+          "table_sum": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "tables_statistics_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the exact integer summary value",
+          "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting queried-row region",
+          "json_example": "{\"evidence\":[[150,180,780,236]],\"answer\":15}",
+          "json_example_answer_only": "{\"answer\":15}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row",
+          "query_row_label": "Ulla"
+        },
+        "task_family_key": "styled_table_statistics",
+        "task_family_variant_index": 4,
+        "task_key": "summary_row_value_query",
+        "task_variant_index": 2,
+        "task_variant_key": "row_mean",
+        "task_variant_template_index": 3,
+        "template_paths": [
+          "tables/statistics/tables_statistics_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:summary_row_value_query": 5,
+          "task_family:styled_table_statistics": 5,
+          "task_variant:row_mean": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "tables_statistics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact integer summary value",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting queried-row region",
+              "json_example": "{\"evidence\":[[150,180,780,236]],\"answer\":15}",
+              "json_example_answer_only": "{\"answer\":15}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row",
+              "query_row_label": "Ulla"
+            },
+            "task_family_key": "styled_table_statistics",
+            "task_family_variant_index": 4,
+            "task_key": "summary_row_value_query",
+            "task_variant_index": 2,
+            "task_variant_key": "row_mean",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "tables/statistics/tables_statistics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:summary_row_value_query": 5,
+              "task_family:styled_table_statistics": 5,
+              "task_variant:row_mean": 5
+            }
+          },
+          "prompt": "You are given a table: a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Use the table values to compute the requested row summary. What average value does row Ulla have across the numeric columns?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting queried-row region.\nAnswer requirement: set \"answer\" to the exact integer summary value.\nExample JSON:\n{\"evidence\":[[150,180,780,236]],\"answer\":15}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "tables_statistics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact integer summary value",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting queried-row region",
+              "json_example": "{\"evidence\":[[150,180,780,236]],\"answer\":15}",
+              "json_example_answer_only": "{\"answer\":15}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row",
+              "query_row_label": "Ulla"
+            },
+            "task_family_key": "styled_table_statistics",
+            "task_family_variant_index": 4,
+            "task_key": "summary_row_value_query",
+            "task_variant_index": 2,
+            "task_variant_key": "row_mean",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "tables/statistics/tables_statistics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:summary_row_value_query": 5,
+              "task_family:styled_table_statistics": 5,
+              "task_variant:row_mean": 5
+            }
+          },
+          "prompt": "You are given a table: a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Use the table values to compute the requested row summary. What average value does row Ulla have across the numeric columns?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact integer summary value.\nExample JSON:\n{\"answer\":15}"
+        }
+      },
+      "task_variant": "row_mean",
+      "template_id": "tables_statistics_v1"
+    },
+    "render_map": {
+      "cell_bboxes_px": {
+        "cell_r0_c0": [
+          52.0,
+          56.0,
+          286.08,
+          144.667
+        ],
+        "cell_r0_c1": [
+          286.08,
+          56.0,
+          436.56,
+          144.667
+        ],
+        "cell_r0_c2": [
+          436.56,
+          56.0,
+          587.04,
+          144.667
+        ],
+        "cell_r0_c3": [
+          587.04,
+          56.0,
+          737.52,
+          144.667
+        ],
+        "cell_r0_c4": [
+          737.52,
+          56.0,
+          888.0,
+          144.667
+        ],
+        "cell_r1_c0": [
+          52.0,
+          144.667,
+          286.08,
+          233.333
+        ],
+        "cell_r1_c1": [
+          286.08,
+          144.667,
+          436.56,
+          233.333
+        ],
+        "cell_r1_c2": [
+          436.56,
+          144.667,
+          587.04,
+          233.333
+        ],
+        "cell_r1_c3": [
+          587.04,
+          144.667,
+          737.52,
+          233.333
+        ],
+        "cell_r1_c4": [
+          737.52,
+          144.667,
+          888.0,
+          233.333
+        ],
+        "cell_r2_c0": [
+          52.0,
+          233.333,
+          286.08,
+          322.0
+        ],
+        "cell_r2_c1": [
+          286.08,
+          233.333,
+          436.56,
+          322.0
+        ],
+        "cell_r2_c2": [
+          436.56,
+          233.333,
+          587.04,
+          322.0
+        ],
+        "cell_r2_c3": [
+          587.04,
+          233.333,
+          737.52,
+          322.0
+        ],
+        "cell_r2_c4": [
+          737.52,
+          233.333,
+          888.0,
+          322.0
+        ],
+        "cell_r3_c0": [
+          52.0,
+          322.0,
+          286.08,
+          410.667
+        ],
+        "cell_r3_c1": [
+          286.08,
+          322.0,
+          436.56,
+          410.667
+        ],
+        "cell_r3_c2": [
+          436.56,
+          322.0,
+          587.04,
+          410.667
+        ],
+        "cell_r3_c3": [
+          587.04,
+          322.0,
+          737.52,
+          410.667
+        ],
+        "cell_r3_c4": [
+          737.52,
+          322.0,
+          888.0,
+          410.667
+        ],
+        "cell_r4_c0": [
+          52.0,
+          410.667,
+          286.08,
+          499.333
+        ],
+        "cell_r4_c1": [
+          286.08,
+          410.667,
+          436.56,
+          499.333
+        ],
+        "cell_r4_c2": [
+          436.56,
+          410.667,
+          587.04,
+          499.333
+        ],
+        "cell_r4_c3": [
+          587.04,
+          410.667,
+          737.52,
+          499.333
+        ],
+        "cell_r4_c4": [
+          737.52,
+          410.667,
+          888.0,
+          499.333
+        ],
+        "cell_r5_c0": [
+          52.0,
+          499.333,
+          286.08,
+          588.0
+        ],
+        "cell_r5_c1": [
+          286.08,
+          499.333,
+          436.56,
+          588.0
+        ],
+        "cell_r5_c2": [
+          436.56,
+          499.333,
+          587.04,
+          588.0
+        ],
+        "cell_r5_c3": [
+          587.04,
+          499.333,
+          737.52,
+          588.0
+        ],
+        "cell_r5_c4": [
+          737.52,
+          499.333,
+          888.0,
+          588.0
+        ]
+      },
+      "column_region_bboxes_px": {
+        "Age": [
+          737.52,
+          144.667,
+          888.0,
+          588.0
+        ],
+        "Mass": [
+          286.08,
+          144.667,
+          436.56,
+          588.0
+        ],
+        "Pts": [
+          587.04,
+          144.667,
+          737.52,
+          588.0
+        ],
+        "Rate": [
+          436.56,
+          144.667,
+          587.04,
+          588.0
+        ]
+      },
+      "header_bboxes_px": {
+        "Age": [
+          737.52,
+          56.0,
+          888.0,
+          144.667
+        ],
+        "Mass": [
+          286.08,
+          56.0,
+          436.56,
+          144.667
+        ],
+        "Pts": [
+          587.04,
+          56.0,
+          737.52,
+          144.667
+        ],
+        "Rate": [
+          436.56,
+          56.0,
+          587.04,
+          144.667
+        ]
+      },
+      "image_id": "img0",
+      "numeric_table_region_bbox_px": [
+        286.08,
+        144.667,
+        888.0,
+        588.0
+      ],
+      "row_label_bboxes_px": {
+        "Daly": [
+          52.0,
+          322.0,
+          286.08,
+          410.667
+        ],
+        "Doll": [
+          52.0,
+          499.333,
+          286.08,
+          588.0
+        ],
+        "Kern": [
+          52.0,
+          144.667,
+          286.08,
+          233.333
+        ],
+        "Koo": [
+          52.0,
+          233.333,
+          286.08,
+          322.0
+        ],
+        "Ulla": [
+          52.0,
+          410.667,
+          286.08,
+          499.333
+        ]
+      },
+      "row_region_bboxes_px": {
+        "Daly": [
+          286.08,
+          322.0,
+          888.0,
+          410.667
+        ],
+        "Doll": [
+          286.08,
+          499.333,
+          888.0,
+          588.0
+        ],
+        "Kern": [
+          286.08,
+          144.667,
+          888.0,
+          233.333
+        ],
+        "Koo": [
+          286.08,
+          233.333,
+          888.0,
+          322.0
+        ],
+        "Ulla": [
+          286.08,
+          410.667,
+          888.0,
+          499.333
+        ]
+      },
+      "table_bbox_px": [
+        52.0,
+        56.0,
+        888.0,
+        588.0
+      ]
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 640,
+      "canvas_width": 940,
+      "coord_space": "pixel",
+      "grid_style": {
+        "border_width_px": 2,
+        "grid_width_px": 1
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "spreadsheet",
+      "table_bbox_px": [
+        52.0,
+        56.0,
+        888.0,
+        588.0
+      ],
+      "text_style": {
+        "label_font_size_px": 24,
+        "value_font_size_px": 22
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Name",
+            "text_bbox_px": [
+              130.54,
+              91.333,
+              207.54,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            56.0,
+            286.08,
+            144.667
+          ],
+          "entity_id": "cell_r0_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Mass",
+            "column_index": 1,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Mass",
+            "text_bbox_px": [
+              327.32,
+              91.333,
+              395.32,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            286.08,
+            56.0,
+            436.56,
+            144.667
+          ],
+          "entity_id": "cell_r0_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Rate",
+            "column_index": 2,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Rate",
+            "text_bbox_px": [
+              481.3,
+              91.333,
+              542.3,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            436.56,
+            56.0,
+            587.04,
+            144.667
+          ],
+          "entity_id": "cell_r0_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Pts",
+            "column_index": 3,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Pts",
+            "text_bbox_px": [
+              640.78,
+              91.333,
+              683.78,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            587.04,
+            56.0,
+            737.52,
+            144.667
+          ],
+          "entity_id": "cell_r0_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Age",
+            "column_index": 4,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Age",
+            "text_bbox_px": [
+              786.76,
+              88.833,
+              838.76,
+              111.833
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            737.52,
+            56.0,
+            888.0,
+            144.667
+          ],
+          "entity_id": "cell_r0_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 1,
+            "row_label": "Kern",
+            "text": "Kern",
+            "text_bbox_px": [
+              66.0,
+              180.0,
+              130.0,
+              198.0
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            144.667,
+            286.08,
+            233.333
+          ],
+          "entity_id": "cell_r1_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Mass",
+            "column_index": 1,
+            "row_index": 1,
+            "row_label": "Kern",
+            "text": "11",
+            "text_bbox_px": [
+              347.32,
+              181.0,
+              375.32,
+              197.0
+            ],
+            "value": 11
+          },
+          "bbox_px": [
+            286.08,
+            144.667,
+            436.56,
+            233.333
+          ],
+          "entity_id": "cell_r1_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Rate",
+            "column_index": 2,
+            "row_index": 1,
+            "row_label": "Kern",
+            "text": "24",
+            "text_bbox_px": [
+              497.8,
+              181.0,
+              525.8,
+              197.0
+            ],
+            "value": 24
+          },
+          "bbox_px": [
+            436.56,
+            144.667,
+            587.04,
+            233.333
+          ],
+          "entity_id": "cell_r1_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Pts",
+            "column_index": 3,
+            "row_index": 1,
+            "row_label": "Kern",
+            "text": "22",
+            "text_bbox_px": [
+              648.28,
+              181.0,
+              676.28,
+              197.0
+            ],
+            "value": 22
+          },
+          "bbox_px": [
+            587.04,
+            144.667,
+            737.52,
+            233.333
+          ],
+          "entity_id": "cell_r1_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 4,
+            "row_index": 1,
+            "row_label": "Kern",
+            "text": "13",
+            "text_bbox_px": [
+              798.76,
+              181.0,
+              826.76,
+              197.0
+            ],
+            "value": 13
+          },
+          "bbox_px": [
+            737.52,
+            144.667,
+            888.0,
+            233.333
+          ],
+          "entity_id": "cell_r1_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 2,
+            "row_label": "Koo",
+            "text": "Koo",
+            "text_bbox_px": [
+              66.0,
+              268.667,
+              117.0,
+              286.667
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            233.333,
+            286.08,
+            322.0
+          ],
+          "entity_id": "cell_r2_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Mass",
+            "column_index": 1,
+            "row_index": 2,
+            "row_label": "Koo",
+            "text": "20",
+            "text_bbox_px": [
+              347.32,
+              269.667,
+              375.32,
+              285.667
+            ],
+            "value": 20
+          },
+          "bbox_px": [
+            286.08,
+            233.333,
+            436.56,
+            322.0
+          ],
+          "entity_id": "cell_r2_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Rate",
+            "column_index": 2,
+            "row_index": 2,
+            "row_label": "Koo",
+            "text": "19",
+            "text_bbox_px": [
+              497.8,
+              269.667,
+              525.8,
+              285.667
+            ],
+            "value": 19
+          },
+          "bbox_px": [
+            436.56,
+            233.333,
+            587.04,
+            322.0
+          ],
+          "entity_id": "cell_r2_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Pts",
+            "column_index": 3,
+            "row_index": 2,
+            "row_label": "Koo",
+            "text": "23",
+            "text_bbox_px": [
+              648.28,
+              269.667,
+              676.28,
+              285.667
+            ],
+            "value": 23
+          },
+          "bbox_px": [
+            587.04,
+            233.333,
+            737.52,
+            322.0
+          ],
+          "entity_id": "cell_r2_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 4,
+            "row_index": 2,
+            "row_label": "Koo",
+            "text": "32",
+            "text_bbox_px": [
+              798.76,
+              269.667,
+              826.76,
+              285.667
+            ],
+            "value": 32
+          },
+          "bbox_px": [
+            737.52,
+            233.333,
+            888.0,
+            322.0
+          ],
+          "entity_id": "cell_r2_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 3,
+            "row_label": "Daly",
+            "text": "Daly",
+            "text_bbox_px": [
+              66.0,
+              354.833,
+              126.0,
+              377.833
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            322.0,
+            286.08,
+            410.667
+          ],
+          "entity_id": "cell_r3_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Mass",
+            "column_index": 1,
+            "row_index": 3,
+            "row_label": "Daly",
+            "text": "12",
+            "text_bbox_px": [
+              347.32,
+              358.333,
+              375.32,
+              374.333
+            ],
+            "value": 12
+          },
+          "bbox_px": [
+            286.08,
+            322.0,
+            436.56,
+            410.667
+          ],
+          "entity_id": "cell_r3_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Rate",
+            "column_index": 2,
+            "row_index": 3,
+            "row_label": "Daly",
+            "text": "1",
+            "text_bbox_px": [
+              504.8,
+              358.333,
+              518.8,
+              374.333
+            ],
+            "value": 1
+          },
+          "bbox_px": [
+            436.56,
+            322.0,
+            587.04,
+            410.667
+          ],
+          "entity_id": "cell_r3_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Pts",
+            "column_index": 3,
+            "row_index": 3,
+            "row_label": "Daly",
+            "text": "22",
+            "text_bbox_px": [
+              648.28,
+              358.333,
+              676.28,
+              374.333
+            ],
+            "value": 22
+          },
+          "bbox_px": [
+            587.04,
+            322.0,
+            737.52,
+            410.667
+          ],
+          "entity_id": "cell_r3_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 4,
+            "row_index": 3,
+            "row_label": "Daly",
+            "text": "17",
+            "text_bbox_px": [
+              798.76,
+              358.333,
+              826.76,
+              374.333
+            ],
+            "value": 17
+          },
+          "bbox_px": [
+            737.52,
+            322.0,
+            888.0,
+            410.667
+          ],
+          "entity_id": "cell_r3_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 4,
+            "row_label": "Ulla",
+            "text": "Ulla",
+            "text_bbox_px": [
+              66.0,
+              446.0,
+              117.0,
+              464.0
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            410.667,
+            286.08,
+            499.333
+          ],
+          "entity_id": "cell_r4_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Mass",
+            "column_index": 1,
+            "row_index": 4,
+            "row_label": "Ulla",
+            "text": "31",
+            "text_bbox_px": [
+              347.32,
+              447.0,
+              375.32,
+              463.0
+            ],
+            "value": 31
+          },
+          "bbox_px": [
+            286.08,
+            410.667,
+            436.56,
+            499.333
+          ],
+          "entity_id": "cell_r4_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Rate",
+            "column_index": 2,
+            "row_index": 4,
+            "row_label": "Ulla",
+            "text": "32",
+            "text_bbox_px": [
+              497.8,
+              447.0,
+              525.8,
+              463.0
+            ],
+            "value": 32
+          },
+          "bbox_px": [
+            436.56,
+            410.667,
+            587.04,
+            499.333
+          ],
+          "entity_id": "cell_r4_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Pts",
+            "column_index": 3,
+            "row_index": 4,
+            "row_label": "Ulla",
+            "text": "32",
+            "text_bbox_px": [
+              648.28,
+              447.0,
+              676.28,
+              463.0
+            ],
+            "value": 32
+          },
+          "bbox_px": [
+            587.04,
+            410.667,
+            737.52,
+            499.333
+          ],
+          "entity_id": "cell_r4_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 4,
+            "row_index": 4,
+            "row_label": "Ulla",
+            "text": "25",
+            "text_bbox_px": [
+              798.76,
+              447.0,
+              826.76,
+              463.0
+            ],
+            "value": 25
+          },
+          "bbox_px": [
+            737.52,
+            410.667,
+            888.0,
+            499.333
+          ],
+          "entity_id": "cell_r4_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 5,
+            "row_label": "Doll",
+            "text": "Doll",
+            "text_bbox_px": [
+              66.0,
+              534.667,
+              118.0,
+              552.667
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            499.333,
+            286.08,
+            588.0
+          ],
+          "entity_id": "cell_r5_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Mass",
+            "column_index": 1,
+            "row_index": 5,
+            "row_label": "Doll",
+            "text": "12",
+            "text_bbox_px": [
+              347.32,
+              535.667,
+              375.32,
+              551.667
+            ],
+            "value": 12
+          },
+          "bbox_px": [
+            286.08,
+            499.333,
+            436.56,
+            588.0
+          ],
+          "entity_id": "cell_r5_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Rate",
+            "column_index": 2,
+            "row_index": 5,
+            "row_label": "Doll",
+            "text": "6",
+            "text_bbox_px": [
+              504.8,
+              535.667,
+              518.8,
+              551.667
+            ],
+            "value": 6
+          },
+          "bbox_px": [
+            436.56,
+            499.333,
+            587.04,
+            588.0
+          ],
+          "entity_id": "cell_r5_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Pts",
+            "column_index": 3,
+            "row_index": 5,
+            "row_label": "Doll",
+            "text": "25",
+            "text_bbox_px": [
+              648.28,
+              535.667,
+              676.28,
+              551.667
+            ],
+            "value": 25
+          },
+          "bbox_px": [
+            587.04,
+            499.333,
+            737.52,
+            588.0
+          ],
+          "entity_id": "cell_r5_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 4,
+            "row_index": 5,
+            "row_label": "Doll",
+            "text": "19",
+            "text_bbox_px": [
+              798.76,
+              535.667,
+              826.76,
+              551.667
+            ],
+            "value": 19
+          },
+          "bbox_px": [
+            737.52,
+            499.333,
+            888.0,
+            588.0
+          ],
+          "entity_id": "cell_r5_c4",
+          "entity_type": "table_cell"
+        }
+      ],
+      "relations": {
+        "answer_value": 30,
+        "query_row_label": "Ulla",
+        "scene_variant": "spreadsheet",
+        "supporting_region_kind": "row",
+        "supporting_row_label": "Ulla",
+        "task_variant": "row_mean"
+      },
+      "scene_kind": "table_spreadsheet_statistics"
+    },
+    "witness_symbolic": {
+      "type": "bbox_set",
+      "value": [
+        [
+          286.08,
+          410.667,
+          888.0,
+          499.333
+        ]
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

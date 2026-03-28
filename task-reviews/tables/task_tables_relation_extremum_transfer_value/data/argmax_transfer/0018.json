@@ -1,0 +1,1639 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 14
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        486.72,
+        292.444,
+        687.36,
+        351.556
+      ],
+      [
+        286.08,
+        292.444,
+        486.72,
+        351.556
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "tables/task_tables_relation_extremum_transfer_value/images/argmax_transfer/0018.png"
+  },
+  "instance_seed": 6796314805692021,
+  "prompt": "You are given a table: a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Find the row that wins the requested source-column extremum, then read the requested target-column value from that same row. Determine the Dist value from the row whose Temp value is largest.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] with the decisive source extremum cell first and the transferred target value cell second.\nAnswer requirement: set \"answer\" to the exact integer value from the transferred target cell.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":19}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given a table: a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Find the row that wins the requested source-column extremum, then read the requested target-column value from that same row. Determine the Dist value from the row whose Temp value is largest.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] with the decisive source extremum cell first and the transferred target value cell second.\nAnswer requirement: set \"answer\" to the exact integer value from the transferred target cell.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":19}",
+    "answer_only": "You are given a table: a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Find the row that wins the requested source-column extremum, then read the requested target-column value from that same row. Determine the Dist value from the row whose Temp value is largest.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact integer value from the transferred target cell.\nExample JSON:\n{\"answer\":19}"
+  },
+  "task": "task_tables_relation_extremum_transfer_value",
+  "task_variant": "argmax_transfer",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_row_index": 3,
+      "answer_row_label": "Hera",
+      "answer_value": 14,
+      "column_headers": [
+        "Dist",
+        "Temp",
+        "Wins"
+      ],
+      "numeric_column_count": 3,
+      "numeric_column_count_range": [
+        3,
+        5
+      ],
+      "question_format": "extremum_transfer_value",
+      "row_count": 8,
+      "row_count_range": [
+        5,
+        10
+      ],
+      "row_labels": [
+        "Inez",
+        "Eads",
+        "Nels",
+        "Hera",
+        "Pet",
+        "Orme",
+        "Faux",
+        "Ami"
+      ],
+      "scene_variant": "spreadsheet",
+      "scene_variant_probabilities": {
+        "card_table": 0.25,
+        "ledger": 0.25,
+        "spreadsheet": 0.25,
+        "zebra": 0.25
+      },
+      "source_column": "Temp",
+      "source_column_index": 1,
+      "source_value": 30,
+      "supporting_cell_ids": [
+        "cell_r4_c2",
+        "cell_r4_c1"
+      ],
+      "target_column": "Dist",
+      "target_column_index": 0,
+      "task_variant": "argmax_transfer",
+      "task_variant_probabilities": {
+        "argmax_transfer": 1.0,
+        "argmin_transfer": 0.0
+      },
+      "value_range": [
+        1,
+        32
+      ],
+      "values_by_row": {
+        "Ami": {
+          "Dist": 17,
+          "Temp": 27,
+          "Wins": 16
+        },
+        "Eads": {
+          "Dist": 20,
+          "Temp": 20,
+          "Wins": 16
+        },
+        "Faux": {
+          "Dist": 19,
+          "Temp": 15,
+          "Wins": 15
+        },
+        "Hera": {
+          "Dist": 14,
+          "Temp": 30,
+          "Wins": 18
+        },
+        "Inez": {
+          "Dist": 32,
+          "Temp": 10,
+          "Wins": 9
+        },
+        "Nels": {
+          "Dist": 14,
+          "Temp": 22,
+          "Wins": 30
+        },
+        "Orme": {
+          "Dist": 14,
+          "Temp": 5,
+          "Wins": 22
+        },
+        "Pet": {
+          "Dist": 1,
+          "Temp": 17,
+          "Wins": 30
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          486.72,
+          292.444,
+          687.36,
+          351.556
+        ],
+        [
+          286.08,
+          292.444,
+          486.72,
+          351.556
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "numeric_column_count": 3,
+        "row_count": 8,
+        "scene_variant": "spreadsheet",
+        "scene_variant_probabilities": {
+          "card_table": 0.25,
+          "ledger": 0.25,
+          "spreadsheet": 0.25,
+          "zebra": 0.25
+        },
+        "source_column": "Temp",
+        "target_column": "Dist",
+        "task_variant": "argmax_transfer",
+        "task_variant_probabilities": {
+          "argmax_transfer": 1.0,
+          "argmin_transfer": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "tables_relation_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the exact integer value from the transferred target cell",
+          "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] with the decisive source extremum cell first and the transferred target value cell second",
+          "json_example": "{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":19}",
+          "json_example_answer_only": "{\"answer\":19}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row",
+          "query_source_column": "Temp",
+          "query_target_column": "Dist"
+        },
+        "task_family_key": "styled_table_relation",
+        "task_family_variant_index": 4,
+        "task_key": "extremum_transfer_value_query",
+        "task_variant_index": 1,
+        "task_variant_key": "argmax_transfer",
+        "task_variant_template_index": 2,
+        "template_paths": [
+          "tables/relation/tables_relation_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:extremum_transfer_value_query": 5,
+          "task_family:styled_table_relation": 5,
+          "task_variant:argmax_transfer": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "tables_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact integer value from the transferred target cell",
+              "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] with the decisive source extremum cell first and the transferred target value cell second",
+              "json_example": "{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":19}",
+              "json_example_answer_only": "{\"answer\":19}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row",
+              "query_source_column": "Temp",
+              "query_target_column": "Dist"
+            },
+            "task_family_key": "styled_table_relation",
+            "task_family_variant_index": 4,
+            "task_key": "extremum_transfer_value_query",
+            "task_variant_index": 1,
+            "task_variant_key": "argmax_transfer",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "tables/relation/tables_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:extremum_transfer_value_query": 5,
+              "task_family:styled_table_relation": 5,
+              "task_variant:argmax_transfer": 5
+            }
+          },
+          "prompt": "You are given a table: a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Find the row that wins the requested source-column extremum, then read the requested target-column value from that same row. Determine the Dist value from the row whose Temp value is largest.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] with the decisive source extremum cell first and the transferred target value cell second.\nAnswer requirement: set \"answer\" to the exact integer value from the transferred target cell.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":19}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "tables_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact integer value from the transferred target cell",
+              "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] with the decisive source extremum cell first and the transferred target value cell second",
+              "json_example": "{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":19}",
+              "json_example_answer_only": "{\"answer\":19}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row",
+              "query_source_column": "Temp",
+              "query_target_column": "Dist"
+            },
+            "task_family_key": "styled_table_relation",
+            "task_family_variant_index": 4,
+            "task_key": "extremum_transfer_value_query",
+            "task_variant_index": 1,
+            "task_variant_key": "argmax_transfer",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "tables/relation/tables_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:extremum_transfer_value_query": 5,
+              "task_family:styled_table_relation": 5,
+              "task_variant:argmax_transfer": 5
+            }
+          },
+          "prompt": "You are given a table: a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Find the row that wins the requested source-column extremum, then read the requested target-column value from that same row. Determine the Dist value from the row whose Temp value is largest.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact integer value from the transferred target cell.\nExample JSON:\n{\"answer\":19}"
+        }
+      },
+      "task_variant": "argmax_transfer",
+      "template_id": "tables_relation_v1"
+    },
+    "render_map": {
+      "cell_bboxes_px": {
+        "cell_r0_c0": [
+          52.0,
+          56.0,
+          286.08,
+          115.111
+        ],
+        "cell_r0_c1": [
+          286.08,
+          56.0,
+          486.72,
+          115.111
+        ],
+        "cell_r0_c2": [
+          486.72,
+          56.0,
+          687.36,
+          115.111
+        ],
+        "cell_r0_c3": [
+          687.36,
+          56.0,
+          888.0,
+          115.111
+        ],
+        "cell_r1_c0": [
+          52.0,
+          115.111,
+          286.08,
+          174.222
+        ],
+        "cell_r1_c1": [
+          286.08,
+          115.111,
+          486.72,
+          174.222
+        ],
+        "cell_r1_c2": [
+          486.72,
+          115.111,
+          687.36,
+          174.222
+        ],
+        "cell_r1_c3": [
+          687.36,
+          115.111,
+          888.0,
+          174.222
+        ],
+        "cell_r2_c0": [
+          52.0,
+          174.222,
+          286.08,
+          233.333
+        ],
+        "cell_r2_c1": [
+          286.08,
+          174.222,
+          486.72,
+          233.333
+        ],
+        "cell_r2_c2": [
+          486.72,
+          174.222,
+          687.36,
+          233.333
+        ],
+        "cell_r2_c3": [
+          687.36,
+          174.222,
+          888.0,
+          233.333
+        ],
+        "cell_r3_c0": [
+          52.0,
+          233.333,
+          286.08,
+          292.444
+        ],
+        "cell_r3_c1": [
+          286.08,
+          233.333,
+          486.72,
+          292.444
+        ],
+        "cell_r3_c2": [
+          486.72,
+          233.333,
+          687.36,
+          292.444
+        ],
+        "cell_r3_c3": [
+          687.36,
+          233.333,
+          888.0,
+          292.444
+        ],
+        "cell_r4_c0": [
+          52.0,
+          292.444,
+          286.08,
+          351.556
+        ],
+        "cell_r4_c1": [
+          286.08,
+          292.444,
+          486.72,
+          351.556
+        ],
+        "cell_r4_c2": [
+          486.72,
+          292.444,
+          687.36,
+          351.556
+        ],
+        "cell_r4_c3": [
+          687.36,
+          292.444,
+          888.0,
+          351.556
+        ],
+        "cell_r5_c0": [
+          52.0,
+          351.556,
+          286.08,
+          410.667
+        ],
+        "cell_r5_c1": [
+          286.08,
+          351.556,
+          486.72,
+          410.667
+        ],
+        "cell_r5_c2": [
+          486.72,
+          351.556,
+          687.36,
+          410.667
+        ],
+        "cell_r5_c3": [
+          687.36,
+          351.556,
+          888.0,
+          410.667
+        ],
+        "cell_r6_c0": [
+          52.0,
+          410.667,
+          286.08,
+          469.778
+        ],
+        "cell_r6_c1": [
+          286.08,
+          410.667,
+          486.72,
+          469.778
+        ],
+        "cell_r6_c2": [
+          486.72,
+          410.667,
+          687.36,
+          469.778
+        ],
+        "cell_r6_c3": [
+          687.36,
+          410.667,
+          888.0,
+          469.778
+        ],
+        "cell_r7_c0": [
+          52.0,
+          469.778,
+          286.08,
+          528.889
+        ],
+        "cell_r7_c1": [
+          286.08,
+          469.778,
+          486.72,
+          528.889
+        ],
+        "cell_r7_c2": [
+          486.72,
+          469.778,
+          687.36,
+          528.889
+        ],
+        "cell_r7_c3": [
+          687.36,
+          469.778,
+          888.0,
+          528.889
+        ],
+        "cell_r8_c0": [
+          52.0,
+          528.889,
+          286.08,
+          588.0
+        ],
+        "cell_r8_c1": [
+          286.08,
+          528.889,
+          486.72,
+          588.0
+        ],
+        "cell_r8_c2": [
+          486.72,
+          528.889,
+          687.36,
+          588.0
+        ],
+        "cell_r8_c3": [
+          687.36,
+          528.889,
+          888.0,
+          588.0
+        ]
+      },
+      "column_region_bboxes_px": {
+        "Dist": [
+          286.08,
+          115.111,
+          486.72,
+          588.0
+        ],
+        "Temp": [
+          486.72,
+          115.111,
+          687.36,
+          588.0
+        ],
+        "Wins": [
+          687.36,
+          115.111,
+          888.0,
+          588.0
+        ]
+      },
+      "header_bboxes_px": {
+        "Dist": [
+          286.08,
+          56.0,
+          486.72,
+          115.111
+        ],
+        "Temp": [
+          486.72,
+          56.0,
+          687.36,
+          115.111
+        ],
+        "Wins": [
+          687.36,
+          56.0,
+          888.0,
+          115.111
+        ]
+      },
+      "image_id": "img0",
+      "row_label_bboxes_px": {
+        "Ami": [
+          52.0,
+          528.889,
+          286.08,
+          588.0
+        ],
+        "Eads": [
+          52.0,
+          174.222,
+          286.08,
+          233.333
+        ],
+        "Faux": [
+          52.0,
+          469.778,
+          286.08,
+          528.889
+        ],
+        "Hera": [
+          52.0,
+          292.444,
+          286.08,
+          351.556
+        ],
+        "Inez": [
+          52.0,
+          115.111,
+          286.08,
+          174.222
+        ],
+        "Nels": [
+          52.0,
+          233.333,
+          286.08,
+          292.444
+        ],
+        "Orme": [
+          52.0,
+          410.667,
+          286.08,
+          469.778
+        ],
+        "Pet": [
+          52.0,
+          351.556,
+          286.08,
+          410.667
+        ]
+      },
+      "row_region_bboxes_px": {
+        "Ami": [
+          286.08,
+          528.889,
+          888.0,
+          588.0
+        ],
+        "Eads": [
+          286.08,
+          174.222,
+          888.0,
+          233.333
+        ],
+        "Faux": [
+          286.08,
+          469.778,
+          888.0,
+          528.889
+        ],
+        "Hera": [
+          286.08,
+          292.444,
+          888.0,
+          351.556
+        ],
+        "Inez": [
+          286.08,
+          115.111,
+          888.0,
+          174.222
+        ],
+        "Nels": [
+          286.08,
+          233.333,
+          888.0,
+          292.444
+        ],
+        "Orme": [
+          286.08,
+          410.667,
+          888.0,
+          469.778
+        ],
+        "Pet": [
+          286.08,
+          351.556,
+          888.0,
+          410.667
+        ]
+      },
+      "table_bbox_px": [
+        52.0,
+        56.0,
+        888.0,
+        588.0
+      ]
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 640,
+      "canvas_width": 940,
+      "coord_space": "pixel",
+      "grid_style": {
+        "border_width_px": 2,
+        "grid_width_px": 1
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "spreadsheet",
+      "table_bbox_px": [
+        52.0,
+        56.0,
+        888.0,
+        588.0
+      ],
+      "text_style": {
+        "label_font_size_px": 24,
+        "value_font_size_px": 22
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Name",
+            "text_bbox_px": [
+              130.54,
+              76.556,
+              207.54,
+              94.556
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            56.0,
+            286.08,
+            115.111
+          ],
+          "entity_id": "cell_r0_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Dist",
+            "column_index": 1,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Dist",
+            "text_bbox_px": [
+              359.9,
+              76.556,
+              412.9,
+              94.556
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            286.08,
+            56.0,
+            486.72,
+            115.111
+          ],
+          "entity_id": "cell_r0_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Temp",
+            "column_index": 2,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Temp",
+            "text_bbox_px": [
+              550.04,
+              74.056,
+              624.04,
+              97.056
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            486.72,
+            56.0,
+            687.36,
+            115.111
+          ],
+          "entity_id": "cell_r0_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Wins",
+            "column_index": 3,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Wins",
+            "text_bbox_px": [
+              755.18,
+              76.556,
+              820.18,
+              94.556
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            687.36,
+            56.0,
+            888.0,
+            115.111
+          ],
+          "entity_id": "cell_r0_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 1,
+            "row_label": "Inez",
+            "text": "Inez",
+            "text_bbox_px": [
+              66.0,
+              135.667,
+              122.0,
+              153.667
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            115.111,
+            286.08,
+            174.222
+          ],
+          "entity_id": "cell_r1_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 1,
+            "row_index": 1,
+            "row_label": "Inez",
+            "text": "32",
+            "text_bbox_px": [
+              372.4,
+              136.667,
+              400.4,
+              152.667
+            ],
+            "value": 32
+          },
+          "bbox_px": [
+            286.08,
+            115.111,
+            486.72,
+            174.222
+          ],
+          "entity_id": "cell_r1_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 2,
+            "row_index": 1,
+            "row_label": "Inez",
+            "text": "10",
+            "text_bbox_px": [
+              573.04,
+              136.667,
+              601.04,
+              152.667
+            ],
+            "value": 10
+          },
+          "bbox_px": [
+            486.72,
+            115.111,
+            687.36,
+            174.222
+          ],
+          "entity_id": "cell_r1_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Wins",
+            "column_index": 3,
+            "row_index": 1,
+            "row_label": "Inez",
+            "text": "9",
+            "text_bbox_px": [
+              780.68,
+              136.667,
+              794.68,
+              152.667
+            ],
+            "value": 9
+          },
+          "bbox_px": [
+            687.36,
+            115.111,
+            888.0,
+            174.222
+          ],
+          "entity_id": "cell_r1_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 2,
+            "row_label": "Eads",
+            "text": "Eads",
+            "text_bbox_px": [
+              66.0,
+              194.778,
+              129.0,
+              212.778
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            174.222,
+            286.08,
+            233.333
+          ],
+          "entity_id": "cell_r2_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 1,
+            "row_index": 2,
+            "row_label": "Eads",
+            "text": "20",
+            "text_bbox_px": [
+              372.4,
+              195.778,
+              400.4,
+              211.778
+            ],
+            "value": 20
+          },
+          "bbox_px": [
+            286.08,
+            174.222,
+            486.72,
+            233.333
+          ],
+          "entity_id": "cell_r2_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 2,
+            "row_index": 2,
+            "row_label": "Eads",
+            "text": "20",
+            "text_bbox_px": [
+              573.04,
+              195.778,
+              601.04,
+              211.778
+            ],
+            "value": 20
+          },
+          "bbox_px": [
+            486.72,
+            174.222,
+            687.36,
+            233.333
+          ],
+          "entity_id": "cell_r2_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Wins",
+            "column_index": 3,
+            "row_index": 2,
+            "row_label": "Eads",
+            "text": "16",
+            "text_bbox_px": [
+              773.68,
+              195.778,
+              801.68,
+              211.778
+            ],
+            "value": 16
+          },
+          "bbox_px": [
+            687.36,
+            174.222,
+            888.0,
+            233.333
+          ],
+          "entity_id": "cell_r2_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 3,
+            "row_label": "Nels",
+            "text": "Nels",
+            "text_bbox_px": [
+              66.0,
+              253.889,
+              124.0,
+              271.889
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            233.333,
+            286.08,
+            292.444
+          ],
+          "entity_id": "cell_r3_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 1,
+            "row_index": 3,
+            "row_label": "Nels",
+            "text": "14",
+            "text_bbox_px": [
+              372.4,
+              254.889,
+              400.4,
+              270.889
+            ],
+            "value": 14
+          },
+          "bbox_px": [
+            286.08,
+            233.333,
+            486.72,
+            292.444
+          ],
+          "entity_id": "cell_r3_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 2,
+            "row_index": 3,
+            "row_label": "Nels",
+            "text": "22",
+            "text_bbox_px": [
+              573.04,
+              254.889,
+              601.04,
+              270.889
+            ],
+            "value": 22
+          },
+          "bbox_px": [
+            486.72,
+            233.333,
+            687.36,
+            292.444
+          ],
+          "entity_id": "cell_r3_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Wins",
+            "column_index": 3,
+            "row_index": 3,
+            "row_label": "Nels",
+            "text": "30",
+            "text_bbox_px": [
+              773.68,
+              254.889,
+              801.68,
+              270.889
+            ],
+            "value": 30
+          },
+          "bbox_px": [
+            687.36,
+            233.333,
+            888.0,
+            292.444
+          ],
+          "entity_id": "cell_r3_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 4,
+            "row_label": "Hera",
+            "text": "Hera",
+            "text_bbox_px": [
+              66.0,
+              313.0,
+              130.0,
+              331.0
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            292.444,
+            286.08,
+            351.556
+          ],
+          "entity_id": "cell_r4_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 1,
+            "row_index": 4,
+            "row_label": "Hera",
+            "text": "14",
+            "text_bbox_px": [
+              372.4,
+              314.0,
+              400.4,
+              330.0
+            ],
+            "value": 14
+          },
+          "bbox_px": [
+            286.08,
+            292.444,
+            486.72,
+            351.556
+          ],
+          "entity_id": "cell_r4_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 2,
+            "row_index": 4,
+            "row_label": "Hera",
+            "text": "30",
+            "text_bbox_px": [
+              573.04,
+              314.0,
+              601.04,
+              330.0
+            ],
+            "value": 30
+          },
+          "bbox_px": [
+            486.72,
+            292.444,
+            687.36,
+            351.556
+          ],
+          "entity_id": "cell_r4_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Wins",
+            "column_index": 3,
+            "row_index": 4,
+            "row_label": "Hera",
+            "text": "18",
+            "text_bbox_px": [
+              773.68,
+              314.0,
+              801.68,
+              330.0
+            ],
+            "value": 18
+          },
+          "bbox_px": [
+            687.36,
+            292.444,
+            888.0,
+            351.556
+          ],
+          "entity_id": "cell_r4_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 5,
+            "row_label": "Pet",
+            "text": "Pet",
+            "text_bbox_px": [
+              66.0,
+              372.111,
+              111.0,
+              390.111
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            351.556,
+            286.08,
+            410.667
+          ],
+          "entity_id": "cell_r5_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 1,
+            "row_index": 5,
+            "row_label": "Pet",
+            "text": "1",
+            "text_bbox_px": [
+              379.4,
+              373.111,
+              393.4,
+              389.111
+            ],
+            "value": 1
+          },
+          "bbox_px": [
+            286.08,
+            351.556,
+            486.72,
+            410.667
+          ],
+          "entity_id": "cell_r5_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 2,
+            "row_index": 5,
+            "row_label": "Pet",
+            "text": "17",
+            "text_bbox_px": [
+              573.04,
+              373.111,
+              601.04,
+              389.111
+            ],
+            "value": 17
+          },
+          "bbox_px": [
+            486.72,
+            351.556,
+            687.36,
+            410.667
+          ],
+          "entity_id": "cell_r5_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Wins",
+            "column_index": 3,
+            "row_index": 5,
+            "row_label": "Pet",
+            "text": "30",
+            "text_bbox_px": [
+              773.68,
+              373.111,
+              801.68,
+              389.111
+            ],
+            "value": 30
+          },
+          "bbox_px": [
+            687.36,
+            351.556,
+            888.0,
+            410.667
+          ],
+          "entity_id": "cell_r5_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 6,
+            "row_label": "Orme",
+            "text": "Orme",
+            "text_bbox_px": [
+              66.0,
+              431.222,
+              139.0,
+              449.222
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            410.667,
+            286.08,
+            469.778
+          ],
+          "entity_id": "cell_r6_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 1,
+            "row_index": 6,
+            "row_label": "Orme",
+            "text": "14",
+            "text_bbox_px": [
+              372.4,
+              432.222,
+              400.4,
+              448.222
+            ],
+            "value": 14
+          },
+          "bbox_px": [
+            286.08,
+            410.667,
+            486.72,
+            469.778
+          ],
+          "entity_id": "cell_r6_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 2,
+            "row_index": 6,
+            "row_label": "Orme",
+            "text": "5",
+            "text_bbox_px": [
+              580.04,
+              432.222,
+              594.04,
+              448.222
+            ],
+            "value": 5
+          },
+          "bbox_px": [
+            486.72,
+            410.667,
+            687.36,
+            469.778
+          ],
+          "entity_id": "cell_r6_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Wins",
+            "column_index": 3,
+            "row_index": 6,
+            "row_label": "Orme",
+            "text": "22",
+            "text_bbox_px": [
+              773.68,
+              432.222,
+              801.68,
+              448.222
+            ],
+            "value": 22
+          },
+          "bbox_px": [
+            687.36,
+            410.667,
+            888.0,
+            469.778
+          ],
+          "entity_id": "cell_r6_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 7,
+            "row_label": "Faux",
+            "text": "Faux",
+            "text_bbox_px": [
+              66.0,
+              490.333,
+              131.0,
+              508.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            469.778,
+            286.08,
+            528.889
+          ],
+          "entity_id": "cell_r7_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 1,
+            "row_index": 7,
+            "row_label": "Faux",
+            "text": "19",
+            "text_bbox_px": [
+              372.4,
+              491.333,
+              400.4,
+              507.333
+            ],
+            "value": 19
+          },
+          "bbox_px": [
+            286.08,
+            469.778,
+            486.72,
+            528.889
+          ],
+          "entity_id": "cell_r7_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 2,
+            "row_index": 7,
+            "row_label": "Faux",
+            "text": "15",
+            "text_bbox_px": [
+              573.04,
+              491.333,
+              601.04,
+              507.333
+            ],
+            "value": 15
+          },
+          "bbox_px": [
+            486.72,
+            469.778,
+            687.36,
+            528.889
+          ],
+          "entity_id": "cell_r7_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Wins",
+            "column_index": 3,
+            "row_index": 7,
+            "row_label": "Faux",
+            "text": "15",
+            "text_bbox_px": [
+              773.68,
+              491.333,
+              801.68,
+              507.333
+            ],
+            "value": 15
+          },
+          "bbox_px": [
+            687.36,
+            469.778,
+            888.0,
+            528.889
+          ],
+          "entity_id": "cell_r7_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 8,
+            "row_label": "Ami",
+            "text": "Ami",
+            "text_bbox_px": [
+              66.0,
+              549.444,
+              118.0,
+              567.444
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            528.889,
+            286.08,
+            588.0
+          ],
+          "entity_id": "cell_r8_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 1,
+            "row_index": 8,
+            "row_label": "Ami",
+            "text": "17",
+            "text_bbox_px": [
+              372.4,
+              550.444,
+              400.4,
+              566.444
+            ],
+            "value": 17
+          },
+          "bbox_px": [
+            286.08,
+            528.889,
+            486.72,
+            588.0
+          ],
+          "entity_id": "cell_r8_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 2,
+            "row_index": 8,
+            "row_label": "Ami",
+            "text": "27",
+            "text_bbox_px": [
+              573.04,
+              550.444,
+              601.04,
+              566.444
+            ],
+            "value": 27
+          },
+          "bbox_px": [
+            486.72,
+            528.889,
+            687.36,
+            588.0
+          ],
+          "entity_id": "cell_r8_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Wins",
+            "column_index": 3,
+            "row_index": 8,
+            "row_label": "Ami",
+            "text": "16",
+            "text_bbox_px": [
+              773.68,
+              550.444,
+              801.68,
+              566.444
+            ],
+            "value": 16
+          },
+          "bbox_px": [
+            687.36,
+            528.889,
+            888.0,
+            588.0
+          ],
+          "entity_id": "cell_r8_c3",
+          "entity_type": "table_cell"
+        }
+      ],
+      "relations": {
+        "answer_row_index": 3,
+        "answer_row_label": "Hera",
+        "answer_value": 14,
+        "scene_variant": "spreadsheet",
+        "source_column": "Temp",
+        "source_value": 30,
+        "supporting_cell_ids": [
+          "cell_r4_c2",
+          "cell_r4_c1"
+        ],
+        "target_column": "Dist",
+        "task_variant": "argmax_transfer"
+      },
+      "scene_kind": "table_spreadsheet_relation"
+    },
+    "witness_symbolic": {
+      "type": "bbox_set",
+      "value": [
+        [
+          486.72,
+          292.444,
+          687.36,
+          351.556
+        ],
+        [
+          286.08,
+          292.444,
+          486.72,
+          351.556
+        ]
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

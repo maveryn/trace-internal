@@ -1,0 +1,805 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 6
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "C",
+      "G",
+      "K",
+      "L",
+      "W",
+      "X"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_counting_value_count/images/above_threshold/0011.png"
+  },
+  "instance_seed": 8867904069595298,
+  "prompt": "Use the chart in the image. It shows a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the matching marks. What number of labeled marks have values higher than 4?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the labels of all marks with values greater than the threshold.\nAnswer requirement: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"K\",\"T\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the chart in the image. It shows a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the matching marks. What number of labeled marks have values higher than 4?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the labels of all marks with values greater than the threshold.\nAnswer requirement: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"K\",\"T\"],\"answer\":3}",
+    "answer_only": "Use the chart in the image. It shows a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the matching marks. What number of labeled marks have values higher than 4?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_charts_counting_value_count",
+  "task_variant": "above_threshold",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 6,
+      "comparison": "greater_than",
+      "evidence_labels": [
+        "C",
+        "G",
+        "K",
+        "L",
+        "W",
+        "X"
+      ],
+      "labels": [
+        "G",
+        "V",
+        "C",
+        "W",
+        "B",
+        "L",
+        "K",
+        "X"
+      ],
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb",
+      "mark_count": 8,
+      "mark_count_range": [
+        5,
+        10
+      ],
+      "mark_fill_rgb": [
+        200,
+        85,
+        81
+      ],
+      "mark_outline_rgb": [
+        110,
+        47,
+        45
+      ],
+      "question_format": "numeric_open",
+      "scene_variant": "lollipop",
+      "scene_variant_probabilities": {
+        "area": 0.1,
+        "bar": 0.1,
+        "donut": 0.1,
+        "dot_plot": 0.1,
+        "horizontal_bar": 0.1,
+        "line": 0.1,
+        "lollipop": 0.1,
+        "pie": 0.1,
+        "radar": 0.1,
+        "scatter": 0.1
+      },
+      "target_answer": 6,
+      "target_answer_range": [
+        0,
+        10
+      ],
+      "task_variant": "above_threshold",
+      "task_variant_probabilities": {
+        "above_threshold": 0.3333333333333333,
+        "below_threshold": 0.3333333333333333,
+        "in_interval": 0.3333333333333333
+      },
+      "threshold": 4,
+      "value_max": 20,
+      "value_min": 1,
+      "values": [
+        10,
+        3,
+        16,
+        20,
+        4,
+        14,
+        9,
+        14
+      ],
+      "values_by_label": {
+        "B": 4,
+        "C": 16,
+        "G": 10,
+        "K": 9,
+        "L": 14,
+        "V": 3,
+        "W": 20,
+        "X": 14
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          290.875,
+          146.476,
+          306.875,
+          162.476
+        ],
+        [
+          125.375,
+          279.048,
+          141.375,
+          295.048
+        ],
+        [
+          621.875,
+          301.143,
+          637.875,
+          317.143
+        ],
+        [
+          539.125,
+          190.667,
+          555.125,
+          206.667
+        ],
+        [
+          373.625,
+          58.095,
+          389.625,
+          74.095
+        ],
+        [
+          704.625,
+          190.667,
+          720.625,
+          206.667
+        ]
+      ],
+      "label_set": [
+        "C",
+        "G",
+        "K",
+        "L",
+        "W",
+        "X"
+      ],
+      "pixel_point_map": {
+        "C": [
+          298.875,
+          154.476
+        ],
+        "G": [
+          133.375,
+          287.048
+        ],
+        "K": [
+          629.875,
+          309.143
+        ],
+        "L": [
+          547.125,
+          198.667
+        ],
+        "W": [
+          381.625,
+          66.095
+        ],
+        "X": [
+          712.625,
+          198.667
+        ]
+      },
+      "pixel_point_set": [
+        [
+          298.875,
+          154.476
+        ],
+        [
+          133.375,
+          287.048
+        ],
+        [
+          629.875,
+          309.143
+        ],
+        [
+          547.125,
+          198.667
+        ],
+        [
+          381.625,
+          66.095
+        ],
+        [
+          712.625,
+          198.667
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "comparison": "greater_than",
+        "mark_count": 8,
+        "scene_variant": "lollipop",
+        "scene_variant_probabilities": {
+          "area": 0.1,
+          "bar": 0.1,
+          "donut": 0.1,
+          "dot_plot": 0.1,
+          "horizontal_bar": 0.1,
+          "line": 0.1,
+          "lollipop": 0.1,
+          "pie": 0.1,
+          "radar": 0.1,
+          "scatter": 0.1
+        },
+        "target_answer": 6,
+        "target_answer_range": [
+          0,
+          10
+        ],
+        "task_variant": "above_threshold",
+        "task_variant_probabilities": {
+          "above_threshold": 0.3333333333333333,
+          "below_threshold": 0.3333333333333333,
+          "in_interval": 0.3333333333333333
+        },
+        "threshold": 4
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "charts_counting_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of matching marks as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the labels of all marks with values greater than the threshold",
+          "interval_max": "",
+          "interval_min": "",
+          "json_example": "{\"evidence\":[\"B\",\"K\",\"T\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+          "threshold": "4"
+        },
+        "task_family_key": "labeled_chart_counting",
+        "task_family_variant_index": 1,
+        "task_key": "value_count_query",
+        "task_variant_index": 4,
+        "task_variant_key": "above_threshold",
+        "task_variant_template_index": 3,
+        "template_paths": [
+          "charts/counting/charts_counting_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:value_count_query": 5,
+          "task_family:labeled_chart_counting": 5,
+          "task_variant:above_threshold": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "charts_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of matching marks as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the labels of all marks with values greater than the threshold",
+              "interval_max": "",
+              "interval_min": "",
+              "json_example": "{\"evidence\":[\"B\",\"K\",\"T\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+              "threshold": "4"
+            },
+            "task_family_key": "labeled_chart_counting",
+            "task_family_variant_index": 1,
+            "task_key": "value_count_query",
+            "task_variant_index": 4,
+            "task_variant_key": "above_threshold",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "charts/counting/charts_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:value_count_query": 5,
+              "task_family:labeled_chart_counting": 5,
+              "task_variant:above_threshold": 5
+            }
+          },
+          "prompt": "Use the chart in the image. It shows a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the matching marks. What number of labeled marks have values higher than 4?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the labels of all marks with values greater than the threshold.\nAnswer requirement: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"K\",\"T\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "charts_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of matching marks as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the labels of all marks with values greater than the threshold",
+              "interval_max": "",
+              "interval_min": "",
+              "json_example": "{\"evidence\":[\"B\",\"K\",\"T\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+              "threshold": "4"
+            },
+            "task_family_key": "labeled_chart_counting",
+            "task_family_variant_index": 1,
+            "task_key": "value_count_query",
+            "task_variant_index": 4,
+            "task_variant_key": "above_threshold",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "charts/counting/charts_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:value_count_query": 5,
+              "task_family:labeled_chart_counting": 5,
+              "task_variant:above_threshold": 5
+            }
+          },
+          "prompt": "Use the chart in the image. It shows a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the matching marks. What number of labeled marks have values higher than 4?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of matching marks as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "above_threshold",
+      "template_id": "charts_counting_v1"
+    },
+    "render_map": {
+      "image_id": "img0",
+      "label_centers_px": {
+        "B": [
+          464.375,
+          397.619
+        ],
+        "C": [
+          298.875,
+          132.476
+        ],
+        "G": [
+          133.375,
+          265.048
+        ],
+        "K": [
+          629.875,
+          287.143
+        ],
+        "L": [
+          547.125,
+          176.667
+        ],
+        "V": [
+          216.125,
+          419.714
+        ],
+        "W": [
+          381.625,
+          44.095
+        ],
+        "X": [
+          712.625,
+          176.667
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 600,
+      "canvas_width": 800,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "mark_fill_rgb": [
+          200,
+          85,
+          81
+        ],
+        "mark_outline_rgb": [
+          110,
+          47,
+          45
+        ],
+        "sampling_policy": "random_rgb"
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "lollipop",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 21,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "label": "G",
+            "label_center_px": [
+              133.375,
+              265.048
+            ],
+            "mark_bbox_px": [
+              125.375,
+              279.048,
+              141.375,
+              295.048
+            ],
+            "mark_center_px": [
+              133.375,
+              287.048
+            ],
+            "mark_fill_rgb": [
+              200,
+              85,
+              81
+            ],
+            "mark_outline_rgb": [
+              110,
+              47,
+              45
+            ],
+            "scene_variant": "lollipop",
+            "value": 10,
+            "x_rank": 0
+          },
+          "entity_id": "mark_G",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "V",
+            "label_center_px": [
+              216.125,
+              419.714
+            ],
+            "mark_bbox_px": [
+              208.125,
+              433.714,
+              224.125,
+              449.714
+            ],
+            "mark_center_px": [
+              216.125,
+              441.714
+            ],
+            "mark_fill_rgb": [
+              200,
+              85,
+              81
+            ],
+            "mark_outline_rgb": [
+              110,
+              47,
+              45
+            ],
+            "scene_variant": "lollipop",
+            "value": 3,
+            "x_rank": 1
+          },
+          "entity_id": "mark_V",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "C",
+            "label_center_px": [
+              298.875,
+              132.476
+            ],
+            "mark_bbox_px": [
+              290.875,
+              146.476,
+              306.875,
+              162.476
+            ],
+            "mark_center_px": [
+              298.875,
+              154.476
+            ],
+            "mark_fill_rgb": [
+              200,
+              85,
+              81
+            ],
+            "mark_outline_rgb": [
+              110,
+              47,
+              45
+            ],
+            "scene_variant": "lollipop",
+            "value": 16,
+            "x_rank": 2
+          },
+          "entity_id": "mark_C",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "W",
+            "label_center_px": [
+              381.625,
+              44.095
+            ],
+            "mark_bbox_px": [
+              373.625,
+              58.095,
+              389.625,
+              74.095
+            ],
+            "mark_center_px": [
+              381.625,
+              66.095
+            ],
+            "mark_fill_rgb": [
+              200,
+              85,
+              81
+            ],
+            "mark_outline_rgb": [
+              110,
+              47,
+              45
+            ],
+            "scene_variant": "lollipop",
+            "value": 20,
+            "x_rank": 3
+          },
+          "entity_id": "mark_W",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "B",
+            "label_center_px": [
+              464.375,
+              397.619
+            ],
+            "mark_bbox_px": [
+              456.375,
+              411.619,
+              472.375,
+              427.619
+            ],
+            "mark_center_px": [
+              464.375,
+              419.619
+            ],
+            "mark_fill_rgb": [
+              200,
+              85,
+              81
+            ],
+            "mark_outline_rgb": [
+              110,
+              47,
+              45
+            ],
+            "scene_variant": "lollipop",
+            "value": 4,
+            "x_rank": 4
+          },
+          "entity_id": "mark_B",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "L",
+            "label_center_px": [
+              547.125,
+              176.667
+            ],
+            "mark_bbox_px": [
+              539.125,
+              190.667,
+              555.125,
+              206.667
+            ],
+            "mark_center_px": [
+              547.125,
+              198.667
+            ],
+            "mark_fill_rgb": [
+              200,
+              85,
+              81
+            ],
+            "mark_outline_rgb": [
+              110,
+              47,
+              45
+            ],
+            "scene_variant": "lollipop",
+            "value": 14,
+            "x_rank": 5
+          },
+          "entity_id": "mark_L",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "K",
+            "label_center_px": [
+              629.875,
+              287.143
+            ],
+            "mark_bbox_px": [
+              621.875,
+              301.143,
+              637.875,
+              317.143
+            ],
+            "mark_center_px": [
+              629.875,
+              309.143
+            ],
+            "mark_fill_rgb": [
+              200,
+              85,
+              81
+            ],
+            "mark_outline_rgb": [
+              110,
+              47,
+              45
+            ],
+            "scene_variant": "lollipop",
+            "value": 9,
+            "x_rank": 6
+          },
+          "entity_id": "mark_K",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "X",
+            "label_center_px": [
+              712.625,
+              176.667
+            ],
+            "mark_bbox_px": [
+              704.625,
+              190.667,
+              720.625,
+              206.667
+            ],
+            "mark_center_px": [
+              712.625,
+              198.667
+            ],
+            "mark_fill_rgb": [
+              200,
+              85,
+              81
+            ],
+            "mark_outline_rgb": [
+              110,
+              47,
+              45
+            ],
+            "scene_variant": "lollipop",
+            "value": 14,
+            "x_rank": 7
+          },
+          "entity_id": "mark_X",
+          "entity_type": "point"
+        }
+      ],
+      "relations": {
+        "comparison": "greater_than",
+        "evidence_labels": [
+          "C",
+          "G",
+          "K",
+          "L",
+          "W",
+          "X"
+        ],
+        "scene_variant": "lollipop",
+        "task_variant": "above_threshold",
+        "threshold": 4
+      },
+      "scene_kind": "chart_lollipop_counting"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "C",
+        "G",
+        "K",
+        "L",
+        "W",
+        "X"
+      ],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

@@ -1,0 +1,1660 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 8
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "A",
+      "D",
+      "F",
+      "G",
+      "H",
+      "L",
+      "R",
+      "T"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0017.png"
+  },
+  "instance_seed": 5480769873525435,
+  "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Count the category labels where Joey is below Blau.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Count the category labels where Joey is below Blau.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Count the category labels where Joey is below Blau.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_charts_multiseries_pairwise_comparison_count",
+  "task_variant": "series_a_lt_b_count",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 8,
+      "category_count": 8,
+      "category_count_range": [
+        5,
+        10
+      ],
+      "category_labels": [
+        "G",
+        "H",
+        "A",
+        "T",
+        "L",
+        "R",
+        "D",
+        "F"
+      ],
+      "comparison": "less_than",
+      "evidence_labels": [
+        "A",
+        "D",
+        "F",
+        "G",
+        "H",
+        "L",
+        "R",
+        "T"
+      ],
+      "left_series_label": "Joey",
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb_palette",
+      "queried_series_labels": [
+        "Joey",
+        "Blau"
+      ],
+      "question_format": "numeric_open",
+      "right_series_label": "Blau",
+      "scene_variant": "grouped_horizontal_bar",
+      "scene_variant_probabilities": {
+        "grouped_bar": 0.25,
+        "grouped_horizontal_bar": 0.25,
+        "grouped_lollipop": 0.25,
+        "multi_line": 0.25
+      },
+      "series_count": 3,
+      "series_count_range": [
+        2,
+        3
+      ],
+      "series_fill_palette_rgb": [
+        [
+          100,
+          57,
+          194
+        ],
+        [
+          216,
+          125,
+          162
+        ],
+        [
+          110,
+          20,
+          35
+        ]
+      ],
+      "series_labels": [
+        "On",
+        "Joey",
+        "Blau"
+      ],
+      "series_outline_palette_rgb": [
+        [
+          55,
+          31,
+          107
+        ],
+        [
+          119,
+          69,
+          89
+        ],
+        [
+          61,
+          11,
+          19
+        ]
+      ],
+      "target_answer": 8,
+      "target_answer_range": [
+        0,
+        8
+      ],
+      "task_variant": "series_a_lt_b_count",
+      "task_variant_probabilities": {
+        "series_a_gt_b_count": 0.5,
+        "series_a_lt_b_count": 0.5
+      },
+      "values_by_category": {
+        "A": {
+          "Blau": 20,
+          "Joey": 10,
+          "On": 11
+        },
+        "D": {
+          "Blau": 18,
+          "Joey": 8,
+          "On": 14
+        },
+        "F": {
+          "Blau": 20,
+          "Joey": 8,
+          "On": 9
+        },
+        "G": {
+          "Blau": 4,
+          "Joey": 1,
+          "On": 3
+        },
+        "H": {
+          "Blau": 17,
+          "Joey": 2,
+          "On": 16
+        },
+        "L": {
+          "Blau": 18,
+          "Joey": 12,
+          "On": 17
+        },
+        "R": {
+          "Blau": 15,
+          "Joey": 5,
+          "On": 11
+        },
+        "T": {
+          "Blau": 20,
+          "Joey": 4,
+          "On": 19
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          53.5,
+          178.794,
+          817.714,
+          211.706
+        ],
+        [
+          53.0,
+          420.794,
+          745.143,
+          453.706
+        ],
+        [
+          54.5,
+          481.294,
+          817.714,
+          514.206
+        ],
+        [
+          53.0,
+          57.794,
+          237.143,
+          90.706
+        ],
+        [
+          53.0,
+          118.294,
+          708.857,
+          151.206
+        ],
+        [
+          55.0,
+          299.794,
+          745.143,
+          332.706
+        ],
+        [
+          53.5,
+          360.294,
+          636.286,
+          393.206
+        ],
+        [
+          54.5,
+          239.294,
+          817.714,
+          272.206
+        ]
+      ],
+      "label_set": [
+        "A",
+        "D",
+        "F",
+        "G",
+        "H",
+        "L",
+        "R",
+        "T"
+      ],
+      "pixel_point_map": {
+        "A": [
+          62.0,
+          195.25
+        ],
+        "D": [
+          62.0,
+          437.25
+        ],
+        "F": [
+          62.0,
+          497.75
+        ],
+        "G": [
+          62.0,
+          74.25
+        ],
+        "H": [
+          62.0,
+          134.75
+        ],
+        "L": [
+          62.0,
+          316.25
+        ],
+        "R": [
+          62.0,
+          376.75
+        ],
+        "T": [
+          62.0,
+          255.75
+        ]
+      },
+      "pixel_point_set": [
+        [
+          62.0,
+          195.25
+        ],
+        [
+          62.0,
+          437.25
+        ],
+        [
+          62.0,
+          497.75
+        ],
+        [
+          62.0,
+          74.25
+        ],
+        [
+          62.0,
+          134.75
+        ],
+        [
+          62.0,
+          316.25
+        ],
+        [
+          62.0,
+          376.75
+        ],
+        [
+          62.0,
+          255.75
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "category_count": 8,
+        "category_count_range": [
+          5,
+          10
+        ],
+        "comparison": "less_than",
+        "queried_series_labels": [
+          "Joey",
+          "Blau"
+        ],
+        "scene_variant": "grouped_horizontal_bar",
+        "scene_variant_probabilities": {
+          "grouped_bar": 0.25,
+          "grouped_horizontal_bar": 0.25,
+          "grouped_lollipop": 0.25,
+          "multi_line": 0.25
+        },
+        "series_count": 3,
+        "series_count_range": [
+          2,
+          3
+        ],
+        "target_answer": 8,
+        "target_answer_range": [
+          0,
+          8
+        ],
+        "task_variant": "series_a_lt_b_count",
+        "task_variant_probabilities": {
+          "series_a_gt_b_count": 0.5,
+          "series_a_lt_b_count": 0.5
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "charts_multiseries_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+          "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "left_series": "Joey",
+          "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+          "right_series": "Blau"
+        },
+        "task_family_key": "multiseries_chart_comparison",
+        "task_family_variant_index": 2,
+        "task_key": "pairwise_comparison_count_query",
+        "task_variant_index": 2,
+        "task_variant_key": "series_a_lt_b_count",
+        "task_variant_template_index": 1,
+        "template_paths": [
+          "charts/multiseries/charts_multiseries_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:pairwise_comparison_count_query": 5,
+          "task_family:multiseries_chart_comparison": 5,
+          "task_variant:series_a_lt_b_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+              "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Joey",
+              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+              "right_series": "Blau"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 2,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 2,
+            "task_variant_key": "series_a_lt_b_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_lt_b_count": 5
+            }
+          },
+          "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Count the category labels where Joey is below Blau.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+              "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Joey",
+              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+              "right_series": "Blau"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 2,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 2,
+            "task_variant_key": "series_a_lt_b_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_lt_b_count": 5
+            }
+          },
+          "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Count the category labels where Joey is below Blau.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "series_a_lt_b_count",
+      "template_id": "charts_multiseries_v1"
+    },
+    "render_map": {
+      "category_label_centers_px": {
+        "A": [
+          62.0,
+          195.25
+        ],
+        "D": [
+          62.0,
+          437.25
+        ],
+        "F": [
+          62.0,
+          497.75
+        ],
+        "G": [
+          62.0,
+          74.25
+        ],
+        "H": [
+          62.0,
+          134.75
+        ],
+        "L": [
+          62.0,
+          316.25
+        ],
+        "R": [
+          62.0,
+          376.75
+        ],
+        "T": [
+          62.0,
+          255.75
+        ]
+      },
+      "image_id": "img0",
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 620,
+      "canvas_width": 1100,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "sampling_policy": "random_rgb_palette",
+        "series_fill_palette_rgb": [
+          [
+            100,
+            57,
+            194
+          ],
+          [
+            216,
+            125,
+            162
+          ],
+          [
+            110,
+            20,
+            35
+          ]
+        ],
+        "series_outline_palette_rgb": [
+          [
+            55,
+            31,
+            107
+          ],
+          [
+            119,
+            69,
+            89
+          ],
+          [
+            61,
+            11,
+            19
+          ]
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "grouped_horizontal_bar",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 21,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              57.794,
+              237.143,
+              90.706
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              62.0,
+              74.25
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              92.0,
+              57.794,
+              200.857,
+              66.506
+            ],
+            "mark_center_px": [
+              146.429,
+              62.15
+            ],
+            "mark_fill_rgb": [
+              100,
+              57,
+              194
+            ],
+            "mark_outline_rgb": [
+              55,
+              31,
+              107
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "On",
+            "series_rank": 0,
+            "value": 3
+          },
+          "entity_id": "mark_G_On",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              57.794,
+              237.143,
+              90.706
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              62.0,
+              74.25
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              92.0,
+              69.894,
+              128.286,
+              78.606
+            ],
+            "mark_center_px": [
+              110.143,
+              74.25
+            ],
+            "mark_fill_rgb": [
+              216,
+              125,
+              162
+            ],
+            "mark_outline_rgb": [
+              119,
+              69,
+              89
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Joey",
+            "series_rank": 1,
+            "value": 1
+          },
+          "entity_id": "mark_G_Joey",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              57.794,
+              237.143,
+              90.706
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              62.0,
+              74.25
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              92.0,
+              81.994,
+              237.143,
+              90.706
+            ],
+            "mark_center_px": [
+              164.571,
+              86.35
+            ],
+            "mark_fill_rgb": [
+              110,
+              20,
+              35
+            ],
+            "mark_outline_rgb": [
+              61,
+              11,
+              19
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Blau",
+            "series_rank": 2,
+            "value": 4
+          },
+          "entity_id": "mark_G_Blau",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              118.294,
+              708.857,
+              151.206
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              62.0,
+              134.75
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              92.0,
+              118.294,
+              672.571,
+              127.006
+            ],
+            "mark_center_px": [
+              382.286,
+              122.65
+            ],
+            "mark_fill_rgb": [
+              100,
+              57,
+              194
+            ],
+            "mark_outline_rgb": [
+              55,
+              31,
+              107
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "On",
+            "series_rank": 0,
+            "value": 16
+          },
+          "entity_id": "mark_H_On",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              118.294,
+              708.857,
+              151.206
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              62.0,
+              134.75
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              92.0,
+              130.394,
+              164.571,
+              139.106
+            ],
+            "mark_center_px": [
+              128.286,
+              134.75
+            ],
+            "mark_fill_rgb": [
+              216,
+              125,
+              162
+            ],
+            "mark_outline_rgb": [
+              119,
+              69,
+              89
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Joey",
+            "series_rank": 1,
+            "value": 2
+          },
+          "entity_id": "mark_H_Joey",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              118.294,
+              708.857,
+              151.206
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              62.0,
+              134.75
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              92.0,
+              142.494,
+              708.857,
+              151.206
+            ],
+            "mark_center_px": [
+              400.429,
+              146.85
+            ],
+            "mark_fill_rgb": [
+              110,
+              20,
+              35
+            ],
+            "mark_outline_rgb": [
+              61,
+              11,
+              19
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Blau",
+            "series_rank": 2,
+            "value": 17
+          },
+          "entity_id": "mark_H_Blau",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              178.794,
+              817.714,
+              211.706
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              62.0,
+              195.25
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              178.794,
+              491.143,
+              187.506
+            ],
+            "mark_center_px": [
+              291.571,
+              183.15
+            ],
+            "mark_fill_rgb": [
+              100,
+              57,
+              194
+            ],
+            "mark_outline_rgb": [
+              55,
+              31,
+              107
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "On",
+            "series_rank": 0,
+            "value": 11
+          },
+          "entity_id": "mark_A_On",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              178.794,
+              817.714,
+              211.706
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              62.0,
+              195.25
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              190.894,
+              454.857,
+              199.606
+            ],
+            "mark_center_px": [
+              273.429,
+              195.25
+            ],
+            "mark_fill_rgb": [
+              216,
+              125,
+              162
+            ],
+            "mark_outline_rgb": [
+              119,
+              69,
+              89
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Joey",
+            "series_rank": 1,
+            "value": 10
+          },
+          "entity_id": "mark_A_Joey",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              178.794,
+              817.714,
+              211.706
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              62.0,
+              195.25
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              202.994,
+              817.714,
+              211.706
+            ],
+            "mark_center_px": [
+              454.857,
+              207.35
+            ],
+            "mark_fill_rgb": [
+              110,
+              20,
+              35
+            ],
+            "mark_outline_rgb": [
+              61,
+              11,
+              19
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Blau",
+            "series_rank": 2,
+            "value": 20
+          },
+          "entity_id": "mark_A_Blau",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.5,
+              239.294,
+              817.714,
+              272.206
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              62.0,
+              255.75
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              239.294,
+              781.429,
+              248.006
+            ],
+            "mark_center_px": [
+              436.714,
+              243.65
+            ],
+            "mark_fill_rgb": [
+              100,
+              57,
+              194
+            ],
+            "mark_outline_rgb": [
+              55,
+              31,
+              107
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "On",
+            "series_rank": 0,
+            "value": 19
+          },
+          "entity_id": "mark_T_On",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.5,
+              239.294,
+              817.714,
+              272.206
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              62.0,
+              255.75
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              251.394,
+              237.143,
+              260.106
+            ],
+            "mark_center_px": [
+              164.571,
+              255.75
+            ],
+            "mark_fill_rgb": [
+              216,
+              125,
+              162
+            ],
+            "mark_outline_rgb": [
+              119,
+              69,
+              89
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Joey",
+            "series_rank": 1,
+            "value": 4
+          },
+          "entity_id": "mark_T_Joey",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.5,
+              239.294,
+              817.714,
+              272.206
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              62.0,
+              255.75
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              263.494,
+              817.714,
+              272.206
+            ],
+            "mark_center_px": [
+              454.857,
+              267.85
+            ],
+            "mark_fill_rgb": [
+              110,
+              20,
+              35
+            ],
+            "mark_outline_rgb": [
+              61,
+              11,
+              19
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Blau",
+            "series_rank": 2,
+            "value": 20
+          },
+          "entity_id": "mark_T_Blau",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              55.0,
+              299.794,
+              745.143,
+              332.706
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              62.0,
+              316.25
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              299.794,
+              708.857,
+              308.506
+            ],
+            "mark_center_px": [
+              400.429,
+              304.15
+            ],
+            "mark_fill_rgb": [
+              100,
+              57,
+              194
+            ],
+            "mark_outline_rgb": [
+              55,
+              31,
+              107
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "On",
+            "series_rank": 0,
+            "value": 17
+          },
+          "entity_id": "mark_L_On",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              55.0,
+              299.794,
+              745.143,
+              332.706
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              62.0,
+              316.25
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              311.894,
+              527.429,
+              320.606
+            ],
+            "mark_center_px": [
+              309.714,
+              316.25
+            ],
+            "mark_fill_rgb": [
+              216,
+              125,
+              162
+            ],
+            "mark_outline_rgb": [
+              119,
+              69,
+              89
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Joey",
+            "series_rank": 1,
+            "value": 12
+          },
+          "entity_id": "mark_L_Joey",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              55.0,
+              299.794,
+              745.143,
+              332.706
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              62.0,
+              316.25
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              323.994,
+              745.143,
+              332.706
+            ],
+            "mark_center_px": [
+              418.571,
+              328.35
+            ],
+            "mark_fill_rgb": [
+              110,
+              20,
+              35
+            ],
+            "mark_outline_rgb": [
+              61,
+              11,
+              19
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Blau",
+            "series_rank": 2,
+            "value": 18
+          },
+          "entity_id": "mark_L_Blau",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              360.294,
+              636.286,
+              393.206
+            ],
+            "category_label": "R",
+            "category_label_center_px": [
+              62.0,
+              376.75
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              92.0,
+              360.294,
+              491.143,
+              369.006
+            ],
+            "mark_center_px": [
+              291.571,
+              364.65
+            ],
+            "mark_fill_rgb": [
+              100,
+              57,
+              194
+            ],
+            "mark_outline_rgb": [
+              55,
+              31,
+              107
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "On",
+            "series_rank": 0,
+            "value": 11
+          },
+          "entity_id": "mark_R_On",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              360.294,
+              636.286,
+              393.206
+            ],
+            "category_label": "R",
+            "category_label_center_px": [
+              62.0,
+              376.75
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              92.0,
+              372.394,
+              273.429,
+              381.106
+            ],
+            "mark_center_px": [
+              182.714,
+              376.75
+            ],
+            "mark_fill_rgb": [
+              216,
+              125,
+              162
+            ],
+            "mark_outline_rgb": [
+              119,
+              69,
+              89
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Joey",
+            "series_rank": 1,
+            "value": 5
+          },
+          "entity_id": "mark_R_Joey",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              360.294,
+              636.286,
+              393.206
+            ],
+            "category_label": "R",
+            "category_label_center_px": [
+              62.0,
+              376.75
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              92.0,
+              384.494,
+              636.286,
+              393.206
+            ],
+            "mark_center_px": [
+              364.143,
+              388.85
+            ],
+            "mark_fill_rgb": [
+              110,
+              20,
+              35
+            ],
+            "mark_outline_rgb": [
+              61,
+              11,
+              19
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Blau",
+            "series_rank": 2,
+            "value": 15
+          },
+          "entity_id": "mark_R_Blau",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              420.794,
+              745.143,
+              453.706
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              62.0,
+              437.25
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              92.0,
+              420.794,
+              600.0,
+              429.506
+            ],
+            "mark_center_px": [
+              346.0,
+              425.15
+            ],
+            "mark_fill_rgb": [
+              100,
+              57,
+              194
+            ],
+            "mark_outline_rgb": [
+              55,
+              31,
+              107
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "On",
+            "series_rank": 0,
+            "value": 14
+          },
+          "entity_id": "mark_D_On",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              420.794,
+              745.143,
+              453.706
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              62.0,
+              437.25
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              92.0,
+              432.894,
+              382.286,
+              441.606
+            ],
+            "mark_center_px": [
+              237.143,
+              437.25
+            ],
+            "mark_fill_rgb": [
+              216,
+              125,
+              162
+            ],
+            "mark_outline_rgb": [
+              119,
+              69,
+              89
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Joey",
+            "series_rank": 1,
+            "value": 8
+          },
+          "entity_id": "mark_D_Joey",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              420.794,
+              745.143,
+              453.706
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              62.0,
+              437.25
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              92.0,
+              444.994,
+              745.143,
+              453.706
+            ],
+            "mark_center_px": [
+              418.571,
+              449.35
+            ],
+            "mark_fill_rgb": [
+              110,
+              20,
+              35
+            ],
+            "mark_outline_rgb": [
+              61,
+              11,
+              19
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Blau",
+            "series_rank": 2,
+            "value": 18
+          },
+          "entity_id": "mark_D_Blau",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.5,
+              481.294,
+              817.714,
+              514.206
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              62.0,
+              497.75
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              92.0,
+              481.294,
+              418.571,
+              490.006
+            ],
+            "mark_center_px": [
+              255.286,
+              485.65
+            ],
+            "mark_fill_rgb": [
+              100,
+              57,
+              194
+            ],
+            "mark_outline_rgb": [
+              55,
+              31,
+              107
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "On",
+            "series_rank": 0,
+            "value": 9
+          },
+          "entity_id": "mark_F_On",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.5,
+              481.294,
+              817.714,
+              514.206
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              62.0,
+              497.75
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              92.0,
+              493.394,
+              382.286,
+              502.106
+            ],
+            "mark_center_px": [
+              237.143,
+              497.75
+            ],
+            "mark_fill_rgb": [
+              216,
+              125,
+              162
+            ],
+            "mark_outline_rgb": [
+              119,
+              69,
+              89
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Joey",
+            "series_rank": 1,
+            "value": 8
+          },
+          "entity_id": "mark_F_Joey",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.5,
+              481.294,
+              817.714,
+              514.206
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              62.0,
+              497.75
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              92.0,
+              505.494,
+              817.714,
+              514.206
+            ],
+            "mark_center_px": [
+              454.857,
+              509.85
+            ],
+            "mark_fill_rgb": [
+              110,
+              20,
+              35
+            ],
+            "mark_outline_rgb": [
+              61,
+              11,
+              19
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Blau",
+            "series_rank": 2,
+            "value": 20
+          },
+          "entity_id": "mark_F_Blau",
+          "entity_type": "bar"
+        }
+      ],
+      "relations": {
+        "comparison": "less_than",
+        "evidence_labels": [
+          "A",
+          "D",
+          "F",
+          "G",
+          "H",
+          "L",
+          "R",
+          "T"
+        ],
+        "queried_series_labels": [
+          "Joey",
+          "Blau"
+        ],
+        "scene_variant": "grouped_horizontal_bar",
+        "task_variant": "series_a_lt_b_count"
+      },
+      "scene_kind": "chart_grouped_horizontal_bar_multiseries"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "A",
+        "D",
+        "F",
+        "G",
+        "H",
+        "L",
+        "R",
+        "T"
+      ],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

@@ -1,0 +1,1403 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 40
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        286.08,
+        284.0,
+        486.72,
+        360.0
+      ],
+      [
+        286.08,
+        512.0,
+        486.72,
+        588.0
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "tables/task_tables_readout_subset_value/images/cell_sum_two/0024.png"
+  },
+  "instance_seed": 4203617780703076,
+  "prompt": "The image shows a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Answer this question. Add the value from row Pepe, column Pts to the value from row Dobb, column Pts. What is the result?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two queried cells.\nAnswer format: set \"answer\" to the exact requested integer result.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":29}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Answer this question. Add the value from row Pepe, column Pts to the value from row Dobb, column Pts. What is the result?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two queried cells.\nAnswer format: set \"answer\" to the exact requested integer result.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":29}",
+    "answer_only": "The image shows a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Answer this question. Add the value from row Pepe, column Pts to the value from row Dobb, column Pts. What is the result?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact requested integer result.\nExample JSON:\n{\"answer\":29}"
+  },
+  "task": "task_tables_readout_subset_value",
+  "task_variant": "cell_sum_two",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 40,
+      "column_headers": [
+        "Pts",
+        "Cost",
+        "Gain"
+      ],
+      "numeric_column_count": 3,
+      "numeric_column_count_range": [
+        3,
+        5
+      ],
+      "query_cells": [
+        {
+          "cell_id": "cell_r3_c1",
+          "column": "Pts",
+          "column_index": 0,
+          "row_index": 2,
+          "row_label": "Pepe",
+          "value": 10
+        },
+        {
+          "cell_id": "cell_r6_c1",
+          "column": "Pts",
+          "column_index": 0,
+          "row_index": 5,
+          "row_label": "Dobb",
+          "value": 30
+        }
+      ],
+      "question_format": "cell_sum_two",
+      "row_count": 6,
+      "row_count_range": [
+        5,
+        10
+      ],
+      "row_labels": [
+        "Raff",
+        "Paff",
+        "Pepe",
+        "Jon",
+        "Fast",
+        "Dobb"
+      ],
+      "scene_variant": "card_table",
+      "scene_variant_probabilities": {
+        "card_table": 0.25,
+        "ledger": 0.25,
+        "spreadsheet": 0.25,
+        "zebra": 0.25
+      },
+      "supporting_cell_ids": [
+        "cell_r3_c1",
+        "cell_r6_c1"
+      ],
+      "task_variant": "cell_sum_two",
+      "task_variant_probabilities": {
+        "cell_difference_two_abs": 0.0,
+        "cell_lookup": 0.0,
+        "cell_sum_two": 1.0
+      },
+      "value_range": [
+        1,
+        32
+      ],
+      "values_by_row": {
+        "Dobb": {
+          "Cost": 32,
+          "Gain": 32,
+          "Pts": 30
+        },
+        "Fast": {
+          "Cost": 19,
+          "Gain": 26,
+          "Pts": 28
+        },
+        "Jon": {
+          "Cost": 13,
+          "Gain": 14,
+          "Pts": 4
+        },
+        "Paff": {
+          "Cost": 14,
+          "Gain": 22,
+          "Pts": 27
+        },
+        "Pepe": {
+          "Cost": 3,
+          "Gain": 10,
+          "Pts": 10
+        },
+        "Raff": {
+          "Cost": 32,
+          "Gain": 7,
+          "Pts": 31
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          286.08,
+          284.0,
+          486.72,
+          360.0
+        ],
+        [
+          286.08,
+          512.0,
+          486.72,
+          588.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "numeric_column_count": 3,
+        "query_cells": [
+          {
+            "cell_id": "cell_r3_c1",
+            "column": "Pts",
+            "column_index": 0,
+            "row_index": 2,
+            "row_label": "Pepe",
+            "value": 10
+          },
+          {
+            "cell_id": "cell_r6_c1",
+            "column": "Pts",
+            "column_index": 0,
+            "row_index": 5,
+            "row_label": "Dobb",
+            "value": 30
+          }
+        ],
+        "row_count": 6,
+        "scene_variant": "card_table",
+        "scene_variant_probabilities": {
+          "card_table": 0.25,
+          "ledger": 0.25,
+          "spreadsheet": 0.25,
+          "zebra": 0.25
+        },
+        "task_variant": "cell_sum_two",
+        "task_variant_probabilities": {
+          "cell_difference_two_abs": 0.0,
+          "cell_lookup": 0.0,
+          "cell_sum_two": 1.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "tables_readout_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the exact requested integer result",
+          "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two queried cells",
+          "json_example": "{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":29}",
+          "json_example_answer_only": "{\"answer\":29}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row",
+          "query_column_1": "Pts",
+          "query_column_2": "Pts",
+          "query_row_label_1": "Pepe",
+          "query_row_label_2": "Dobb"
+        },
+        "task_family_key": "styled_table_readout",
+        "task_family_variant_index": 0,
+        "task_key": "subset_value_query",
+        "task_variant_index": 0,
+        "task_variant_key": "cell_sum_two",
+        "task_variant_template_index": 1,
+        "template_paths": [
+          "tables/readout/tables_readout_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:subset_value_query": 5,
+          "task_family:styled_table_readout": 5,
+          "task_variant:cell_sum_two": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "tables_readout_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact requested integer result",
+              "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two queried cells",
+              "json_example": "{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":29}",
+              "json_example_answer_only": "{\"answer\":29}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row",
+              "query_column_1": "Pts",
+              "query_column_2": "Pts",
+              "query_row_label_1": "Pepe",
+              "query_row_label_2": "Dobb"
+            },
+            "task_family_key": "styled_table_readout",
+            "task_family_variant_index": 0,
+            "task_key": "subset_value_query",
+            "task_variant_index": 0,
+            "task_variant_key": "cell_sum_two",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "tables/readout/tables_readout_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:subset_value_query": 5,
+              "task_family:styled_table_readout": 5,
+              "task_variant:cell_sum_two": 5
+            }
+          },
+          "prompt": "The image shows a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Answer this question. Add the value from row Pepe, column Pts to the value from row Dobb, column Pts. What is the result?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two queried cells.\nAnswer format: set \"answer\" to the exact requested integer result.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":29}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "tables_readout_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact requested integer result",
+              "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two queried cells",
+              "json_example": "{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":29}",
+              "json_example_answer_only": "{\"answer\":29}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row",
+              "query_column_1": "Pts",
+              "query_column_2": "Pts",
+              "query_row_label_1": "Pepe",
+              "query_row_label_2": "Dobb"
+            },
+            "task_family_key": "styled_table_readout",
+            "task_family_variant_index": 0,
+            "task_key": "subset_value_query",
+            "task_variant_index": 0,
+            "task_variant_key": "cell_sum_two",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "tables/readout/tables_readout_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:subset_value_query": 5,
+              "task_family:styled_table_readout": 5,
+              "task_variant:cell_sum_two": 5
+            }
+          },
+          "prompt": "The image shows a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row. Answer this question. Add the value from row Pepe, column Pts to the value from row Dobb, column Pts. What is the result?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact requested integer result.\nExample JSON:\n{\"answer\":29}"
+        }
+      },
+      "task_variant": "cell_sum_two",
+      "template_id": "tables_readout_v1"
+    },
+    "render_map": {
+      "cell_bboxes_px": {
+        "cell_r0_c0": [
+          52.0,
+          56.0,
+          286.08,
+          132.0
+        ],
+        "cell_r0_c1": [
+          286.08,
+          56.0,
+          486.72,
+          132.0
+        ],
+        "cell_r0_c2": [
+          486.72,
+          56.0,
+          687.36,
+          132.0
+        ],
+        "cell_r0_c3": [
+          687.36,
+          56.0,
+          888.0,
+          132.0
+        ],
+        "cell_r1_c0": [
+          52.0,
+          132.0,
+          286.08,
+          208.0
+        ],
+        "cell_r1_c1": [
+          286.08,
+          132.0,
+          486.72,
+          208.0
+        ],
+        "cell_r1_c2": [
+          486.72,
+          132.0,
+          687.36,
+          208.0
+        ],
+        "cell_r1_c3": [
+          687.36,
+          132.0,
+          888.0,
+          208.0
+        ],
+        "cell_r2_c0": [
+          52.0,
+          208.0,
+          286.08,
+          284.0
+        ],
+        "cell_r2_c1": [
+          286.08,
+          208.0,
+          486.72,
+          284.0
+        ],
+        "cell_r2_c2": [
+          486.72,
+          208.0,
+          687.36,
+          284.0
+        ],
+        "cell_r2_c3": [
+          687.36,
+          208.0,
+          888.0,
+          284.0
+        ],
+        "cell_r3_c0": [
+          52.0,
+          284.0,
+          286.08,
+          360.0
+        ],
+        "cell_r3_c1": [
+          286.08,
+          284.0,
+          486.72,
+          360.0
+        ],
+        "cell_r3_c2": [
+          486.72,
+          284.0,
+          687.36,
+          360.0
+        ],
+        "cell_r3_c3": [
+          687.36,
+          284.0,
+          888.0,
+          360.0
+        ],
+        "cell_r4_c0": [
+          52.0,
+          360.0,
+          286.08,
+          436.0
+        ],
+        "cell_r4_c1": [
+          286.08,
+          360.0,
+          486.72,
+          436.0
+        ],
+        "cell_r4_c2": [
+          486.72,
+          360.0,
+          687.36,
+          436.0
+        ],
+        "cell_r4_c3": [
+          687.36,
+          360.0,
+          888.0,
+          436.0
+        ],
+        "cell_r5_c0": [
+          52.0,
+          436.0,
+          286.08,
+          512.0
+        ],
+        "cell_r5_c1": [
+          286.08,
+          436.0,
+          486.72,
+          512.0
+        ],
+        "cell_r5_c2": [
+          486.72,
+          436.0,
+          687.36,
+          512.0
+        ],
+        "cell_r5_c3": [
+          687.36,
+          436.0,
+          888.0,
+          512.0
+        ],
+        "cell_r6_c0": [
+          52.0,
+          512.0,
+          286.08,
+          588.0
+        ],
+        "cell_r6_c1": [
+          286.08,
+          512.0,
+          486.72,
+          588.0
+        ],
+        "cell_r6_c2": [
+          486.72,
+          512.0,
+          687.36,
+          588.0
+        ],
+        "cell_r6_c3": [
+          687.36,
+          512.0,
+          888.0,
+          588.0
+        ]
+      },
+      "column_region_bboxes_px": {
+        "Cost": [
+          486.72,
+          132.0,
+          687.36,
+          588.0
+        ],
+        "Gain": [
+          687.36,
+          132.0,
+          888.0,
+          588.0
+        ],
+        "Pts": [
+          286.08,
+          132.0,
+          486.72,
+          588.0
+        ]
+      },
+      "header_bboxes_px": {
+        "Cost": [
+          486.72,
+          56.0,
+          687.36,
+          132.0
+        ],
+        "Gain": [
+          687.36,
+          56.0,
+          888.0,
+          132.0
+        ],
+        "Pts": [
+          286.08,
+          56.0,
+          486.72,
+          132.0
+        ]
+      },
+      "image_id": "img0",
+      "row_label_bboxes_px": {
+        "Dobb": [
+          52.0,
+          512.0,
+          286.08,
+          588.0
+        ],
+        "Fast": [
+          52.0,
+          436.0,
+          286.08,
+          512.0
+        ],
+        "Jon": [
+          52.0,
+          360.0,
+          286.08,
+          436.0
+        ],
+        "Paff": [
+          52.0,
+          208.0,
+          286.08,
+          284.0
+        ],
+        "Pepe": [
+          52.0,
+          284.0,
+          286.08,
+          360.0
+        ],
+        "Raff": [
+          52.0,
+          132.0,
+          286.08,
+          208.0
+        ]
+      },
+      "row_region_bboxes_px": {
+        "Dobb": [
+          286.08,
+          512.0,
+          888.0,
+          588.0
+        ],
+        "Fast": [
+          286.08,
+          436.0,
+          888.0,
+          512.0
+        ],
+        "Jon": [
+          286.08,
+          360.0,
+          888.0,
+          436.0
+        ],
+        "Paff": [
+          286.08,
+          208.0,
+          888.0,
+          284.0
+        ],
+        "Pepe": [
+          286.08,
+          284.0,
+          888.0,
+          360.0
+        ],
+        "Raff": [
+          286.08,
+          132.0,
+          888.0,
+          208.0
+        ]
+      },
+      "table_bbox_px": [
+        52.0,
+        56.0,
+        888.0,
+        588.0
+      ]
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 640,
+      "canvas_width": 940,
+      "coord_space": "pixel",
+      "grid_style": {
+        "border_width_px": 2,
+        "grid_width_px": 1
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "card_table",
+      "table_bbox_px": [
+        52.0,
+        56.0,
+        888.0,
+        588.0
+      ],
+      "text_style": {
+        "label_font_size_px": 24,
+        "value_font_size_px": 22
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Name",
+            "text_bbox_px": [
+              130.54,
+              85.0,
+              207.54,
+              103.0
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            56.0,
+            286.08,
+            132.0
+          ],
+          "entity_id": "cell_r0_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Pts",
+            "column_index": 1,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Pts",
+            "text_bbox_px": [
+              364.9,
+              85.0,
+              407.9,
+              103.0
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            286.08,
+            56.0,
+            486.72,
+            132.0
+          ],
+          "entity_id": "cell_r0_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Cost",
+            "column_index": 2,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Cost",
+            "text_bbox_px": [
+              557.54,
+              85.0,
+              616.54,
+              103.0
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            486.72,
+            56.0,
+            687.36,
+            132.0
+          ],
+          "entity_id": "cell_r0_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Gain",
+            "column_index": 3,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Gain",
+            "text_bbox_px": [
+              757.18,
+              85.0,
+              818.18,
+              103.0
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            687.36,
+            56.0,
+            888.0,
+            132.0
+          ],
+          "entity_id": "cell_r0_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 1,
+            "row_label": "Raff",
+            "text": "Raff",
+            "text_bbox_px": [
+              66.0,
+              161.0,
+              121.0,
+              179.0
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            132.0,
+            286.08,
+            208.0
+          ],
+          "entity_id": "cell_r1_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Pts",
+            "column_index": 1,
+            "row_index": 1,
+            "row_label": "Raff",
+            "text": "31",
+            "text_bbox_px": [
+              372.4,
+              162.0,
+              400.4,
+              178.0
+            ],
+            "value": 31
+          },
+          "bbox_px": [
+            286.08,
+            132.0,
+            486.72,
+            208.0
+          ],
+          "entity_id": "cell_r1_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Cost",
+            "column_index": 2,
+            "row_index": 1,
+            "row_label": "Raff",
+            "text": "32",
+            "text_bbox_px": [
+              573.04,
+              162.0,
+              601.04,
+              178.0
+            ],
+            "value": 32
+          },
+          "bbox_px": [
+            486.72,
+            132.0,
+            687.36,
+            208.0
+          ],
+          "entity_id": "cell_r1_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Gain",
+            "column_index": 3,
+            "row_index": 1,
+            "row_label": "Raff",
+            "text": "7",
+            "text_bbox_px": [
+              780.68,
+              162.0,
+              794.68,
+              178.0
+            ],
+            "value": 7
+          },
+          "bbox_px": [
+            687.36,
+            132.0,
+            888.0,
+            208.0
+          ],
+          "entity_id": "cell_r1_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 2,
+            "row_label": "Paff",
+            "text": "Paff",
+            "text_bbox_px": [
+              66.0,
+              237.0,
+              121.0,
+              255.0
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            208.0,
+            286.08,
+            284.0
+          ],
+          "entity_id": "cell_r2_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Pts",
+            "column_index": 1,
+            "row_index": 2,
+            "row_label": "Paff",
+            "text": "27",
+            "text_bbox_px": [
+              372.4,
+              238.0,
+              400.4,
+              254.0
+            ],
+            "value": 27
+          },
+          "bbox_px": [
+            286.08,
+            208.0,
+            486.72,
+            284.0
+          ],
+          "entity_id": "cell_r2_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Cost",
+            "column_index": 2,
+            "row_index": 2,
+            "row_label": "Paff",
+            "text": "14",
+            "text_bbox_px": [
+              573.04,
+              238.0,
+              601.04,
+              254.0
+            ],
+            "value": 14
+          },
+          "bbox_px": [
+            486.72,
+            208.0,
+            687.36,
+            284.0
+          ],
+          "entity_id": "cell_r2_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Gain",
+            "column_index": 3,
+            "row_index": 2,
+            "row_label": "Paff",
+            "text": "22",
+            "text_bbox_px": [
+              773.68,
+              238.0,
+              801.68,
+              254.0
+            ],
+            "value": 22
+          },
+          "bbox_px": [
+            687.36,
+            208.0,
+            888.0,
+            284.0
+          ],
+          "entity_id": "cell_r2_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 3,
+            "row_label": "Pepe",
+            "text": "Pepe",
+            "text_bbox_px": [
+              66.0,
+              310.5,
+              133.0,
+              333.5
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            284.0,
+            286.08,
+            360.0
+          ],
+          "entity_id": "cell_r3_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Pts",
+            "column_index": 1,
+            "row_index": 3,
+            "row_label": "Pepe",
+            "text": "10",
+            "text_bbox_px": [
+              372.4,
+              314.0,
+              400.4,
+              330.0
+            ],
+            "value": 10
+          },
+          "bbox_px": [
+            286.08,
+            284.0,
+            486.72,
+            360.0
+          ],
+          "entity_id": "cell_r3_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Cost",
+            "column_index": 2,
+            "row_index": 3,
+            "row_label": "Pepe",
+            "text": "3",
+            "text_bbox_px": [
+              580.04,
+              314.0,
+              594.04,
+              330.0
+            ],
+            "value": 3
+          },
+          "bbox_px": [
+            486.72,
+            284.0,
+            687.36,
+            360.0
+          ],
+          "entity_id": "cell_r3_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Gain",
+            "column_index": 3,
+            "row_index": 3,
+            "row_label": "Pepe",
+            "text": "10",
+            "text_bbox_px": [
+              773.68,
+              314.0,
+              801.68,
+              330.0
+            ],
+            "value": 10
+          },
+          "bbox_px": [
+            687.36,
+            284.0,
+            888.0,
+            360.0
+          ],
+          "entity_id": "cell_r3_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 4,
+            "row_label": "Jon",
+            "text": "Jon",
+            "text_bbox_px": [
+              66.0,
+              386.5,
+              110.0,
+              409.5
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            360.0,
+            286.08,
+            436.0
+          ],
+          "entity_id": "cell_r4_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Pts",
+            "column_index": 1,
+            "row_index": 4,
+            "row_label": "Jon",
+            "text": "4",
+            "text_bbox_px": [
+              379.4,
+              390.0,
+              393.4,
+              406.0
+            ],
+            "value": 4
+          },
+          "bbox_px": [
+            286.08,
+            360.0,
+            486.72,
+            436.0
+          ],
+          "entity_id": "cell_r4_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Cost",
+            "column_index": 2,
+            "row_index": 4,
+            "row_label": "Jon",
+            "text": "13",
+            "text_bbox_px": [
+              573.04,
+              390.0,
+              601.04,
+              406.0
+            ],
+            "value": 13
+          },
+          "bbox_px": [
+            486.72,
+            360.0,
+            687.36,
+            436.0
+          ],
+          "entity_id": "cell_r4_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Gain",
+            "column_index": 3,
+            "row_index": 4,
+            "row_label": "Jon",
+            "text": "14",
+            "text_bbox_px": [
+              773.68,
+              390.0,
+              801.68,
+              406.0
+            ],
+            "value": 14
+          },
+          "bbox_px": [
+            687.36,
+            360.0,
+            888.0,
+            436.0
+          ],
+          "entity_id": "cell_r4_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 5,
+            "row_label": "Fast",
+            "text": "Fast",
+            "text_bbox_px": [
+              66.0,
+              465.0,
+              123.0,
+              483.0
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            436.0,
+            286.08,
+            512.0
+          ],
+          "entity_id": "cell_r5_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Pts",
+            "column_index": 1,
+            "row_index": 5,
+            "row_label": "Fast",
+            "text": "28",
+            "text_bbox_px": [
+              372.4,
+              466.0,
+              400.4,
+              482.0
+            ],
+            "value": 28
+          },
+          "bbox_px": [
+            286.08,
+            436.0,
+            486.72,
+            512.0
+          ],
+          "entity_id": "cell_r5_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Cost",
+            "column_index": 2,
+            "row_index": 5,
+            "row_label": "Fast",
+            "text": "19",
+            "text_bbox_px": [
+              573.04,
+              466.0,
+              601.04,
+              482.0
+            ],
+            "value": 19
+          },
+          "bbox_px": [
+            486.72,
+            436.0,
+            687.36,
+            512.0
+          ],
+          "entity_id": "cell_r5_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Gain",
+            "column_index": 3,
+            "row_index": 5,
+            "row_label": "Fast",
+            "text": "26",
+            "text_bbox_px": [
+              773.68,
+              466.0,
+              801.68,
+              482.0
+            ],
+            "value": 26
+          },
+          "bbox_px": [
+            687.36,
+            436.0,
+            888.0,
+            512.0
+          ],
+          "entity_id": "cell_r5_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 6,
+            "row_label": "Dobb",
+            "text": "Dobb",
+            "text_bbox_px": [
+              66.0,
+              541.0,
+              136.0,
+              559.0
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            512.0,
+            286.08,
+            588.0
+          ],
+          "entity_id": "cell_r6_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Pts",
+            "column_index": 1,
+            "row_index": 6,
+            "row_label": "Dobb",
+            "text": "30",
+            "text_bbox_px": [
+              372.4,
+              542.0,
+              400.4,
+              558.0
+            ],
+            "value": 30
+          },
+          "bbox_px": [
+            286.08,
+            512.0,
+            486.72,
+            588.0
+          ],
+          "entity_id": "cell_r6_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Cost",
+            "column_index": 2,
+            "row_index": 6,
+            "row_label": "Dobb",
+            "text": "32",
+            "text_bbox_px": [
+              573.04,
+              542.0,
+              601.04,
+              558.0
+            ],
+            "value": 32
+          },
+          "bbox_px": [
+            486.72,
+            512.0,
+            687.36,
+            588.0
+          ],
+          "entity_id": "cell_r6_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Gain",
+            "column_index": 3,
+            "row_index": 6,
+            "row_label": "Dobb",
+            "text": "32",
+            "text_bbox_px": [
+              773.68,
+              542.0,
+              801.68,
+              558.0
+            ],
+            "value": 32
+          },
+          "bbox_px": [
+            687.36,
+            512.0,
+            888.0,
+            588.0
+          ],
+          "entity_id": "cell_r6_c3",
+          "entity_type": "table_cell"
+        }
+      ],
+      "relations": {
+        "answer_value": 40,
+        "query_cells": [
+          {
+            "cell_id": "cell_r3_c1",
+            "column": "Pts",
+            "column_index": 0,
+            "row_index": 2,
+            "row_label": "Pepe",
+            "value": 10
+          },
+          {
+            "cell_id": "cell_r6_c1",
+            "column": "Pts",
+            "column_index": 0,
+            "row_index": 5,
+            "row_label": "Dobb",
+            "value": 30
+          }
+        ],
+        "scene_variant": "card_table",
+        "supporting_cell_ids": [
+          "cell_r3_c1",
+          "cell_r6_c1"
+        ],
+        "task_variant": "cell_sum_two"
+      },
+      "scene_kind": "table_card_table_readout"
+    },
+    "witness_symbolic": {
+      "type": "bbox_set",
+      "value": [
+        [
+          286.08,
+          284.0,
+          486.72,
+          360.0
+        ],
+        [
+          286.08,
+          512.0,
+          486.72,
+          588.0
+        ]
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

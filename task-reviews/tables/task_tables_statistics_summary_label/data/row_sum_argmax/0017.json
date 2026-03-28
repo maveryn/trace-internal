@@ -1,0 +1,1586 @@
+{
+  "answer_gt": {
+    "type": "string",
+    "value": "Kape"
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        286.08,
+        144.667,
+        888.0,
+        233.333
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "tables/task_tables_statistics_summary_label/images/row_sum_argmax/0017.png"
+  },
+  "instance_seed": 1902798961810106,
+  "prompt": "Use the table in the image. It shows a ledger-style table with one Name column, several numeric columns, strong horizontal rules, and minimal vertical separators. Use the table values to identify the correct row name after summarizing each row. Find the row label with the largest sum across the numeric columns.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting winning-row region.\nAnswer: set \"answer\" to the exact row-name string from the table.\nExample JSON:\n{\"evidence\":[[150,180,780,236]],\"answer\":\"Ava\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the table in the image. It shows a ledger-style table with one Name column, several numeric columns, strong horizontal rules, and minimal vertical separators. Use the table values to identify the correct row name after summarizing each row. Find the row label with the largest sum across the numeric columns.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting winning-row region.\nAnswer: set \"answer\" to the exact row-name string from the table.\nExample JSON:\n{\"evidence\":[[150,180,780,236]],\"answer\":\"Ava\"}",
+    "answer_only": "Use the table in the image. It shows a ledger-style table with one Name column, several numeric columns, strong horizontal rules, and minimal vertical separators. Use the table values to identify the correct row name after summarizing each row. Find the row label with the largest sum across the numeric columns.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact row-name string from the table.\nExample JSON:\n{\"answer\":\"Ava\"}"
+  },
+  "task": "task_tables_statistics_summary_label",
+  "task_variant": "row_sum_argmax",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_row_index": 0,
+      "answer_row_label": "Kape",
+      "answer_value": 113,
+      "column_headers": [
+        "Temp",
+        "Wins",
+        "Gain",
+        "Score",
+        "Cost"
+      ],
+      "numeric_column_count": 5,
+      "numeric_column_count_range": [
+        3,
+        5
+      ],
+      "question_format": "row_summary_label",
+      "row_count": 5,
+      "row_count_range": [
+        5,
+        10
+      ],
+      "row_labels": [
+        "Kape",
+        "Zela",
+        "Vena",
+        "Issi",
+        "Fons"
+      ],
+      "scene_variant": "ledger",
+      "scene_variant_probabilities": {
+        "card_table": 0.25,
+        "ledger": 0.25,
+        "spreadsheet": 0.25,
+        "zebra": 0.25
+      },
+      "supporting_region_kind": "row",
+      "supporting_row_label": "Kape",
+      "task_variant": "row_sum_argmax",
+      "task_variant_probabilities": {
+        "argmax": 0.0,
+        "argmin": 0.0,
+        "row_sum_argmax": 1.0,
+        "row_sum_argmin": 0.0
+      },
+      "value_range": [
+        1,
+        32
+      ],
+      "values_by_row": {
+        "Fons": {
+          "Cost": 3,
+          "Gain": 7,
+          "Score": 31,
+          "Temp": 11,
+          "Wins": 5
+        },
+        "Issi": {
+          "Cost": 30,
+          "Gain": 3,
+          "Score": 29,
+          "Temp": 1,
+          "Wins": 21
+        },
+        "Kape": {
+          "Cost": 32,
+          "Gain": 18,
+          "Score": 9,
+          "Temp": 24,
+          "Wins": 30
+        },
+        "Vena": {
+          "Cost": 1,
+          "Gain": 2,
+          "Score": 14,
+          "Temp": 23,
+          "Wins": 11
+        },
+        "Zela": {
+          "Cost": 16,
+          "Gain": 4,
+          "Score": 11,
+          "Temp": 27,
+          "Wins": 25
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          286.08,
+          144.667,
+          888.0,
+          233.333
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "numeric_column_count": 5,
+        "row_count": 5,
+        "scene_variant": "ledger",
+        "scene_variant_probabilities": {
+          "card_table": 0.25,
+          "ledger": 0.25,
+          "spreadsheet": 0.25,
+          "zebra": 0.25
+        },
+        "task_variant": "row_sum_argmax",
+        "task_variant_probabilities": {
+          "argmax": 0.0,
+          "argmin": 0.0,
+          "row_sum_argmax": 1.0,
+          "row_sum_argmin": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "tables_statistics_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the exact row-name string from the table",
+          "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting winning-row region",
+          "json_example": "{\"evidence\":[[150,180,780,236]],\"answer\":\"Ava\"}",
+          "json_example_answer_only": "{\"answer\":\"Ava\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a ledger-style table with one Name column, several numeric columns, strong horizontal rules, and minimal vertical separators"
+        },
+        "task_family_key": "styled_table_statistics",
+        "task_family_variant_index": 1,
+        "task_key": "summary_row_label_query",
+        "task_variant_index": 2,
+        "task_variant_key": "row_sum_argmax",
+        "task_variant_template_index": 1,
+        "template_paths": [
+          "tables/statistics/tables_statistics_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:summary_row_label_query": 5,
+          "task_family:styled_table_statistics": 5,
+          "task_variant:row_sum_argmax": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "tables_statistics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact row-name string from the table",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting winning-row region",
+              "json_example": "{\"evidence\":[[150,180,780,236]],\"answer\":\"Ava\"}",
+              "json_example_answer_only": "{\"answer\":\"Ava\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a ledger-style table with one Name column, several numeric columns, strong horizontal rules, and minimal vertical separators"
+            },
+            "task_family_key": "styled_table_statistics",
+            "task_family_variant_index": 1,
+            "task_key": "summary_row_label_query",
+            "task_variant_index": 2,
+            "task_variant_key": "row_sum_argmax",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "tables/statistics/tables_statistics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:summary_row_label_query": 5,
+              "task_family:styled_table_statistics": 5,
+              "task_variant:row_sum_argmax": 5
+            }
+          },
+          "prompt": "Use the table in the image. It shows a ledger-style table with one Name column, several numeric columns, strong horizontal rules, and minimal vertical separators. Use the table values to identify the correct row name after summarizing each row. Find the row label with the largest sum across the numeric columns.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting winning-row region.\nAnswer: set \"answer\" to the exact row-name string from the table.\nExample JSON:\n{\"evidence\":[[150,180,780,236]],\"answer\":\"Ava\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "tables_statistics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact row-name string from the table",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the supporting winning-row region",
+              "json_example": "{\"evidence\":[[150,180,780,236]],\"answer\":\"Ava\"}",
+              "json_example_answer_only": "{\"answer\":\"Ava\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a ledger-style table with one Name column, several numeric columns, strong horizontal rules, and minimal vertical separators"
+            },
+            "task_family_key": "styled_table_statistics",
+            "task_family_variant_index": 1,
+            "task_key": "summary_row_label_query",
+            "task_variant_index": 2,
+            "task_variant_key": "row_sum_argmax",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "tables/statistics/tables_statistics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:summary_row_label_query": 5,
+              "task_family:styled_table_statistics": 5,
+              "task_variant:row_sum_argmax": 5
+            }
+          },
+          "prompt": "Use the table in the image. It shows a ledger-style table with one Name column, several numeric columns, strong horizontal rules, and minimal vertical separators. Use the table values to identify the correct row name after summarizing each row. Find the row label with the largest sum across the numeric columns.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact row-name string from the table.\nExample JSON:\n{\"answer\":\"Ava\"}"
+        }
+      },
+      "task_variant": "row_sum_argmax",
+      "template_id": "tables_statistics_v1"
+    },
+    "render_map": {
+      "cell_bboxes_px": {
+        "cell_r0_c0": [
+          52.0,
+          56.0,
+          286.08,
+          144.667
+        ],
+        "cell_r0_c1": [
+          286.08,
+          56.0,
+          406.464,
+          144.667
+        ],
+        "cell_r0_c2": [
+          406.464,
+          56.0,
+          526.848,
+          144.667
+        ],
+        "cell_r0_c3": [
+          526.848,
+          56.0,
+          647.232,
+          144.667
+        ],
+        "cell_r0_c4": [
+          647.232,
+          56.0,
+          767.616,
+          144.667
+        ],
+        "cell_r0_c5": [
+          767.616,
+          56.0,
+          888.0,
+          144.667
+        ],
+        "cell_r1_c0": [
+          52.0,
+          144.667,
+          286.08,
+          233.333
+        ],
+        "cell_r1_c1": [
+          286.08,
+          144.667,
+          406.464,
+          233.333
+        ],
+        "cell_r1_c2": [
+          406.464,
+          144.667,
+          526.848,
+          233.333
+        ],
+        "cell_r1_c3": [
+          526.848,
+          144.667,
+          647.232,
+          233.333
+        ],
+        "cell_r1_c4": [
+          647.232,
+          144.667,
+          767.616,
+          233.333
+        ],
+        "cell_r1_c5": [
+          767.616,
+          144.667,
+          888.0,
+          233.333
+        ],
+        "cell_r2_c0": [
+          52.0,
+          233.333,
+          286.08,
+          322.0
+        ],
+        "cell_r2_c1": [
+          286.08,
+          233.333,
+          406.464,
+          322.0
+        ],
+        "cell_r2_c2": [
+          406.464,
+          233.333,
+          526.848,
+          322.0
+        ],
+        "cell_r2_c3": [
+          526.848,
+          233.333,
+          647.232,
+          322.0
+        ],
+        "cell_r2_c4": [
+          647.232,
+          233.333,
+          767.616,
+          322.0
+        ],
+        "cell_r2_c5": [
+          767.616,
+          233.333,
+          888.0,
+          322.0
+        ],
+        "cell_r3_c0": [
+          52.0,
+          322.0,
+          286.08,
+          410.667
+        ],
+        "cell_r3_c1": [
+          286.08,
+          322.0,
+          406.464,
+          410.667
+        ],
+        "cell_r3_c2": [
+          406.464,
+          322.0,
+          526.848,
+          410.667
+        ],
+        "cell_r3_c3": [
+          526.848,
+          322.0,
+          647.232,
+          410.667
+        ],
+        "cell_r3_c4": [
+          647.232,
+          322.0,
+          767.616,
+          410.667
+        ],
+        "cell_r3_c5": [
+          767.616,
+          322.0,
+          888.0,
+          410.667
+        ],
+        "cell_r4_c0": [
+          52.0,
+          410.667,
+          286.08,
+          499.333
+        ],
+        "cell_r4_c1": [
+          286.08,
+          410.667,
+          406.464,
+          499.333
+        ],
+        "cell_r4_c2": [
+          406.464,
+          410.667,
+          526.848,
+          499.333
+        ],
+        "cell_r4_c3": [
+          526.848,
+          410.667,
+          647.232,
+          499.333
+        ],
+        "cell_r4_c4": [
+          647.232,
+          410.667,
+          767.616,
+          499.333
+        ],
+        "cell_r4_c5": [
+          767.616,
+          410.667,
+          888.0,
+          499.333
+        ],
+        "cell_r5_c0": [
+          52.0,
+          499.333,
+          286.08,
+          588.0
+        ],
+        "cell_r5_c1": [
+          286.08,
+          499.333,
+          406.464,
+          588.0
+        ],
+        "cell_r5_c2": [
+          406.464,
+          499.333,
+          526.848,
+          588.0
+        ],
+        "cell_r5_c3": [
+          526.848,
+          499.333,
+          647.232,
+          588.0
+        ],
+        "cell_r5_c4": [
+          647.232,
+          499.333,
+          767.616,
+          588.0
+        ],
+        "cell_r5_c5": [
+          767.616,
+          499.333,
+          888.0,
+          588.0
+        ]
+      },
+      "column_region_bboxes_px": {
+        "Cost": [
+          767.616,
+          144.667,
+          888.0,
+          588.0
+        ],
+        "Gain": [
+          526.848,
+          144.667,
+          647.232,
+          588.0
+        ],
+        "Score": [
+          647.232,
+          144.667,
+          767.616,
+          588.0
+        ],
+        "Temp": [
+          286.08,
+          144.667,
+          406.464,
+          588.0
+        ],
+        "Wins": [
+          406.464,
+          144.667,
+          526.848,
+          588.0
+        ]
+      },
+      "header_bboxes_px": {
+        "Cost": [
+          767.616,
+          56.0,
+          888.0,
+          144.667
+        ],
+        "Gain": [
+          526.848,
+          56.0,
+          647.232,
+          144.667
+        ],
+        "Score": [
+          647.232,
+          56.0,
+          767.616,
+          144.667
+        ],
+        "Temp": [
+          286.08,
+          56.0,
+          406.464,
+          144.667
+        ],
+        "Wins": [
+          406.464,
+          56.0,
+          526.848,
+          144.667
+        ]
+      },
+      "image_id": "img0",
+      "row_label_bboxes_px": {
+        "Fons": [
+          52.0,
+          499.333,
+          286.08,
+          588.0
+        ],
+        "Issi": [
+          52.0,
+          410.667,
+          286.08,
+          499.333
+        ],
+        "Kape": [
+          52.0,
+          144.667,
+          286.08,
+          233.333
+        ],
+        "Vena": [
+          52.0,
+          322.0,
+          286.08,
+          410.667
+        ],
+        "Zela": [
+          52.0,
+          233.333,
+          286.08,
+          322.0
+        ]
+      },
+      "row_region_bboxes_px": {
+        "Fons": [
+          286.08,
+          499.333,
+          888.0,
+          588.0
+        ],
+        "Issi": [
+          286.08,
+          410.667,
+          888.0,
+          499.333
+        ],
+        "Kape": [
+          286.08,
+          144.667,
+          888.0,
+          233.333
+        ],
+        "Vena": [
+          286.08,
+          322.0,
+          888.0,
+          410.667
+        ],
+        "Zela": [
+          286.08,
+          233.333,
+          888.0,
+          322.0
+        ]
+      },
+      "table_bbox_px": [
+        52.0,
+        56.0,
+        888.0,
+        588.0
+      ]
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 640,
+      "canvas_width": 940,
+      "coord_space": "pixel",
+      "grid_style": {
+        "border_width_px": 2,
+        "grid_width_px": 1
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "ledger",
+      "table_bbox_px": [
+        52.0,
+        56.0,
+        888.0,
+        588.0
+      ],
+      "text_style": {
+        "label_font_size_px": 24,
+        "value_font_size_px": 22
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Name",
+            "text_bbox_px": [
+              130.54,
+              91.333,
+              207.54,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            56.0,
+            286.08,
+            144.667
+          ],
+          "entity_id": "cell_r0_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Temp",
+            "column_index": 1,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Temp",
+            "text_bbox_px": [
+              309.272,
+              88.833,
+              383.272,
+              111.833
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            286.08,
+            56.0,
+            406.464,
+            144.667
+          ],
+          "entity_id": "cell_r0_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Wins",
+            "column_index": 2,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Wins",
+            "text_bbox_px": [
+              434.156,
+              91.333,
+              499.156,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            406.464,
+            56.0,
+            526.848,
+            144.667
+          ],
+          "entity_id": "cell_r0_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Gain",
+            "column_index": 3,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Gain",
+            "text_bbox_px": [
+              556.54,
+              91.333,
+              617.54,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            526.848,
+            56.0,
+            647.232,
+            144.667
+          ],
+          "entity_id": "cell_r0_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Score",
+            "column_index": 4,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Score",
+            "text_bbox_px": [
+              669.924,
+              91.333,
+              744.924,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            647.232,
+            56.0,
+            767.616,
+            144.667
+          ],
+          "entity_id": "cell_r0_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Cost",
+            "column_index": 5,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Cost",
+            "text_bbox_px": [
+              798.308,
+              91.333,
+              857.308,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            767.616,
+            56.0,
+            888.0,
+            144.667
+          ],
+          "entity_id": "cell_r0_c5",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 1,
+            "row_label": "Kape",
+            "text": "Kape",
+            "text_bbox_px": [
+              66.0,
+              177.5,
+              134.0,
+              200.5
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            144.667,
+            286.08,
+            233.333
+          ],
+          "entity_id": "cell_r1_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 1,
+            "row_index": 1,
+            "row_label": "Kape",
+            "text": "24",
+            "text_bbox_px": [
+              332.272,
+              181.0,
+              360.272,
+              197.0
+            ],
+            "value": 24
+          },
+          "bbox_px": [
+            286.08,
+            144.667,
+            406.464,
+            233.333
+          ],
+          "entity_id": "cell_r1_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Wins",
+            "column_index": 2,
+            "row_index": 1,
+            "row_label": "Kape",
+            "text": "30",
+            "text_bbox_px": [
+              452.656,
+              181.0,
+              480.656,
+              197.0
+            ],
+            "value": 30
+          },
+          "bbox_px": [
+            406.464,
+            144.667,
+            526.848,
+            233.333
+          ],
+          "entity_id": "cell_r1_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Gain",
+            "column_index": 3,
+            "row_index": 1,
+            "row_label": "Kape",
+            "text": "18",
+            "text_bbox_px": [
+              573.04,
+              181.0,
+              601.04,
+              197.0
+            ],
+            "value": 18
+          },
+          "bbox_px": [
+            526.848,
+            144.667,
+            647.232,
+            233.333
+          ],
+          "entity_id": "cell_r1_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Score",
+            "column_index": 4,
+            "row_index": 1,
+            "row_label": "Kape",
+            "text": "9",
+            "text_bbox_px": [
+              700.424,
+              181.0,
+              714.424,
+              197.0
+            ],
+            "value": 9
+          },
+          "bbox_px": [
+            647.232,
+            144.667,
+            767.616,
+            233.333
+          ],
+          "entity_id": "cell_r1_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Cost",
+            "column_index": 5,
+            "row_index": 1,
+            "row_label": "Kape",
+            "text": "32",
+            "text_bbox_px": [
+              813.808,
+              181.0,
+              841.808,
+              197.0
+            ],
+            "value": 32
+          },
+          "bbox_px": [
+            767.616,
+            144.667,
+            888.0,
+            233.333
+          ],
+          "entity_id": "cell_r1_c5",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 2,
+            "row_label": "Zela",
+            "text": "Zela",
+            "text_bbox_px": [
+              66.0,
+              268.667,
+              123.0,
+              286.667
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            233.333,
+            286.08,
+            322.0
+          ],
+          "entity_id": "cell_r2_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 1,
+            "row_index": 2,
+            "row_label": "Zela",
+            "text": "27",
+            "text_bbox_px": [
+              332.272,
+              269.667,
+              360.272,
+              285.667
+            ],
+            "value": 27
+          },
+          "bbox_px": [
+            286.08,
+            233.333,
+            406.464,
+            322.0
+          ],
+          "entity_id": "cell_r2_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Wins",
+            "column_index": 2,
+            "row_index": 2,
+            "row_label": "Zela",
+            "text": "25",
+            "text_bbox_px": [
+              452.656,
+              269.667,
+              480.656,
+              285.667
+            ],
+            "value": 25
+          },
+          "bbox_px": [
+            406.464,
+            233.333,
+            526.848,
+            322.0
+          ],
+          "entity_id": "cell_r2_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Gain",
+            "column_index": 3,
+            "row_index": 2,
+            "row_label": "Zela",
+            "text": "4",
+            "text_bbox_px": [
+              580.04,
+              269.667,
+              594.04,
+              285.667
+            ],
+            "value": 4
+          },
+          "bbox_px": [
+            526.848,
+            233.333,
+            647.232,
+            322.0
+          ],
+          "entity_id": "cell_r2_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Score",
+            "column_index": 4,
+            "row_index": 2,
+            "row_label": "Zela",
+            "text": "11",
+            "text_bbox_px": [
+              693.424,
+              269.667,
+              721.424,
+              285.667
+            ],
+            "value": 11
+          },
+          "bbox_px": [
+            647.232,
+            233.333,
+            767.616,
+            322.0
+          ],
+          "entity_id": "cell_r2_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Cost",
+            "column_index": 5,
+            "row_index": 2,
+            "row_label": "Zela",
+            "text": "16",
+            "text_bbox_px": [
+              813.808,
+              269.667,
+              841.808,
+              285.667
+            ],
+            "value": 16
+          },
+          "bbox_px": [
+            767.616,
+            233.333,
+            888.0,
+            322.0
+          ],
+          "entity_id": "cell_r2_c5",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 3,
+            "row_label": "Vena",
+            "text": "Vena",
+            "text_bbox_px": [
+              66.0,
+              357.333,
+              134.0,
+              375.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            322.0,
+            286.08,
+            410.667
+          ],
+          "entity_id": "cell_r3_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 1,
+            "row_index": 3,
+            "row_label": "Vena",
+            "text": "23",
+            "text_bbox_px": [
+              332.272,
+              358.333,
+              360.272,
+              374.333
+            ],
+            "value": 23
+          },
+          "bbox_px": [
+            286.08,
+            322.0,
+            406.464,
+            410.667
+          ],
+          "entity_id": "cell_r3_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Wins",
+            "column_index": 2,
+            "row_index": 3,
+            "row_label": "Vena",
+            "text": "11",
+            "text_bbox_px": [
+              452.656,
+              358.333,
+              480.656,
+              374.333
+            ],
+            "value": 11
+          },
+          "bbox_px": [
+            406.464,
+            322.0,
+            526.848,
+            410.667
+          ],
+          "entity_id": "cell_r3_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Gain",
+            "column_index": 3,
+            "row_index": 3,
+            "row_label": "Vena",
+            "text": "2",
+            "text_bbox_px": [
+              580.04,
+              358.333,
+              594.04,
+              374.333
+            ],
+            "value": 2
+          },
+          "bbox_px": [
+            526.848,
+            322.0,
+            647.232,
+            410.667
+          ],
+          "entity_id": "cell_r3_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Score",
+            "column_index": 4,
+            "row_index": 3,
+            "row_label": "Vena",
+            "text": "14",
+            "text_bbox_px": [
+              693.424,
+              358.333,
+              721.424,
+              374.333
+            ],
+            "value": 14
+          },
+          "bbox_px": [
+            647.232,
+            322.0,
+            767.616,
+            410.667
+          ],
+          "entity_id": "cell_r3_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Cost",
+            "column_index": 5,
+            "row_index": 3,
+            "row_label": "Vena",
+            "text": "1",
+            "text_bbox_px": [
+              820.808,
+              358.333,
+              834.808,
+              374.333
+            ],
+            "value": 1
+          },
+          "bbox_px": [
+            767.616,
+            322.0,
+            888.0,
+            410.667
+          ],
+          "entity_id": "cell_r3_c5",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 4,
+            "row_label": "Issi",
+            "text": "Issi",
+            "text_bbox_px": [
+              66.0,
+              446.0,
+              111.0,
+              464.0
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            410.667,
+            286.08,
+            499.333
+          ],
+          "entity_id": "cell_r4_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 1,
+            "row_index": 4,
+            "row_label": "Issi",
+            "text": "1",
+            "text_bbox_px": [
+              339.272,
+              447.0,
+              353.272,
+              463.0
+            ],
+            "value": 1
+          },
+          "bbox_px": [
+            286.08,
+            410.667,
+            406.464,
+            499.333
+          ],
+          "entity_id": "cell_r4_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Wins",
+            "column_index": 2,
+            "row_index": 4,
+            "row_label": "Issi",
+            "text": "21",
+            "text_bbox_px": [
+              452.656,
+              447.0,
+              480.656,
+              463.0
+            ],
+            "value": 21
+          },
+          "bbox_px": [
+            406.464,
+            410.667,
+            526.848,
+            499.333
+          ],
+          "entity_id": "cell_r4_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Gain",
+            "column_index": 3,
+            "row_index": 4,
+            "row_label": "Issi",
+            "text": "3",
+            "text_bbox_px": [
+              580.04,
+              447.0,
+              594.04,
+              463.0
+            ],
+            "value": 3
+          },
+          "bbox_px": [
+            526.848,
+            410.667,
+            647.232,
+            499.333
+          ],
+          "entity_id": "cell_r4_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Score",
+            "column_index": 4,
+            "row_index": 4,
+            "row_label": "Issi",
+            "text": "29",
+            "text_bbox_px": [
+              693.424,
+              447.0,
+              721.424,
+              463.0
+            ],
+            "value": 29
+          },
+          "bbox_px": [
+            647.232,
+            410.667,
+            767.616,
+            499.333
+          ],
+          "entity_id": "cell_r4_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Cost",
+            "column_index": 5,
+            "row_index": 4,
+            "row_label": "Issi",
+            "text": "30",
+            "text_bbox_px": [
+              813.808,
+              447.0,
+              841.808,
+              463.0
+            ],
+            "value": 30
+          },
+          "bbox_px": [
+            767.616,
+            410.667,
+            888.0,
+            499.333
+          ],
+          "entity_id": "cell_r4_c5",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 5,
+            "row_label": "Fons",
+            "text": "Fons",
+            "text_bbox_px": [
+              66.0,
+              534.667,
+              129.0,
+              552.667
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            499.333,
+            286.08,
+            588.0
+          ],
+          "entity_id": "cell_r5_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 1,
+            "row_index": 5,
+            "row_label": "Fons",
+            "text": "11",
+            "text_bbox_px": [
+              332.272,
+              535.667,
+              360.272,
+              551.667
+            ],
+            "value": 11
+          },
+          "bbox_px": [
+            286.08,
+            499.333,
+            406.464,
+            588.0
+          ],
+          "entity_id": "cell_r5_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Wins",
+            "column_index": 2,
+            "row_index": 5,
+            "row_label": "Fons",
+            "text": "5",
+            "text_bbox_px": [
+              459.656,
+              535.667,
+              473.656,
+              551.667
+            ],
+            "value": 5
+          },
+          "bbox_px": [
+            406.464,
+            499.333,
+            526.848,
+            588.0
+          ],
+          "entity_id": "cell_r5_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Gain",
+            "column_index": 3,
+            "row_index": 5,
+            "row_label": "Fons",
+            "text": "7",
+            "text_bbox_px": [
+              580.04,
+              535.667,
+              594.04,
+              551.667
+            ],
+            "value": 7
+          },
+          "bbox_px": [
+            526.848,
+            499.333,
+            647.232,
+            588.0
+          ],
+          "entity_id": "cell_r5_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Score",
+            "column_index": 4,
+            "row_index": 5,
+            "row_label": "Fons",
+            "text": "31",
+            "text_bbox_px": [
+              693.424,
+              535.667,
+              721.424,
+              551.667
+            ],
+            "value": 31
+          },
+          "bbox_px": [
+            647.232,
+            499.333,
+            767.616,
+            588.0
+          ],
+          "entity_id": "cell_r5_c4",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Cost",
+            "column_index": 5,
+            "row_index": 5,
+            "row_label": "Fons",
+            "text": "3",
+            "text_bbox_px": [
+              820.808,
+              535.667,
+              834.808,
+              551.667
+            ],
+            "value": 3
+          },
+          "bbox_px": [
+            767.616,
+            499.333,
+            888.0,
+            588.0
+          ],
+          "entity_id": "cell_r5_c5",
+          "entity_type": "table_cell"
+        }
+      ],
+      "relations": {
+        "answer_row_label": "Kape",
+        "answer_value": 113,
+        "scene_variant": "ledger",
+        "supporting_region_kind": "row",
+        "supporting_row_label": "Kape",
+        "task_variant": "row_sum_argmax"
+      },
+      "scene_kind": "table_ledger_statistics"
+    },
+    "witness_symbolic": {
+      "type": "bbox_set",
+      "value": [
+        [
+          286.08,
+          144.667,
+          888.0,
+          233.333
+        ]
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

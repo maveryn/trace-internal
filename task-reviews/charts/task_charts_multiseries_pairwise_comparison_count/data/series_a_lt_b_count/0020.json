@@ -1,0 +1,1467 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 5
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "A",
+      "K",
+      "M",
+      "S",
+      "W"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0020.png"
+  },
+  "instance_seed": 1321848568164841,
+  "prompt": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Count the category labels where Behm is below Case.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Count the category labels where Behm is below Case.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Count the category labels where Behm is below Case.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_charts_multiseries_pairwise_comparison_count",
+  "task_variant": "series_a_lt_b_count",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 5,
+      "category_count": 7,
+      "category_count_range": [
+        5,
+        10
+      ],
+      "category_labels": [
+        "M",
+        "Y",
+        "S",
+        "A",
+        "T",
+        "W",
+        "K"
+      ],
+      "comparison": "less_than",
+      "evidence_labels": [
+        "A",
+        "K",
+        "M",
+        "S",
+        "W"
+      ],
+      "left_series_label": "Behm",
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb_palette",
+      "queried_series_labels": [
+        "Behm",
+        "Case"
+      ],
+      "question_format": "numeric_open",
+      "right_series_label": "Case",
+      "scene_variant": "multi_line",
+      "scene_variant_probabilities": {
+        "grouped_bar": 0.25,
+        "grouped_horizontal_bar": 0.25,
+        "grouped_lollipop": 0.25,
+        "multi_line": 0.25
+      },
+      "series_count": 3,
+      "series_count_range": [
+        2,
+        3
+      ],
+      "series_fill_palette_rgb": [
+        [
+          30,
+          120,
+          115
+        ],
+        [
+          174,
+          184,
+          119
+        ],
+        [
+          174,
+          124,
+          161
+        ]
+      ],
+      "series_labels": [
+        "Rodi",
+        "Behm",
+        "Case"
+      ],
+      "series_outline_palette_rgb": [
+        [
+          16,
+          66,
+          63
+        ],
+        [
+          96,
+          101,
+          65
+        ],
+        [
+          96,
+          68,
+          89
+        ]
+      ],
+      "target_answer": 5,
+      "target_answer_range": [
+        0,
+        8
+      ],
+      "task_variant": "series_a_lt_b_count",
+      "task_variant_probabilities": {
+        "series_a_gt_b_count": 0.5,
+        "series_a_lt_b_count": 0.5
+      },
+      "values_by_category": {
+        "A": {
+          "Behm": 8,
+          "Case": 20,
+          "Rodi": 17
+        },
+        "K": {
+          "Behm": 3,
+          "Case": 20,
+          "Rodi": 19
+        },
+        "M": {
+          "Behm": 3,
+          "Case": 19,
+          "Rodi": 10
+        },
+        "S": {
+          "Behm": 7,
+          "Case": 15,
+          "Rodi": 10
+        },
+        "T": {
+          "Behm": 13,
+          "Case": 7,
+          "Rodi": 10
+        },
+        "W": {
+          "Behm": 6,
+          "Case": 20,
+          "Rodi": 7
+        },
+        "Y": {
+          "Behm": 19,
+          "Case": 3,
+          "Rodi": 7
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          464.5,
+          59.048,
+          481.5,
+          562.0
+        ],
+        [
+          790.571,
+          59.048,
+          808.571,
+          562.0
+        ],
+        [
+          135.429,
+          82.095,
+          157.429,
+          562.0
+        ],
+        [
+          356.143,
+          174.286,
+          372.143,
+          562.0
+        ],
+        [
+          678.714,
+          59.048,
+          702.714,
+          562.0
+        ]
+      ],
+      "label_set": [
+        "A",
+        "K",
+        "M",
+        "S",
+        "W"
+      ],
+      "pixel_point_map": {
+        "A": [
+          473.0,
+          554.0
+        ],
+        "K": [
+          799.571,
+          554.0
+        ],
+        "M": [
+          146.429,
+          554.0
+        ],
+        "S": [
+          364.143,
+          554.0
+        ],
+        "W": [
+          690.714,
+          554.0
+        ]
+      },
+      "pixel_point_set": [
+        [
+          473.0,
+          554.0
+        ],
+        [
+          799.571,
+          554.0
+        ],
+        [
+          146.429,
+          554.0
+        ],
+        [
+          364.143,
+          554.0
+        ],
+        [
+          690.714,
+          554.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "category_count": 7,
+        "category_count_range": [
+          5,
+          10
+        ],
+        "comparison": "less_than",
+        "queried_series_labels": [
+          "Behm",
+          "Case"
+        ],
+        "scene_variant": "multi_line",
+        "scene_variant_probabilities": {
+          "grouped_bar": 0.25,
+          "grouped_horizontal_bar": 0.25,
+          "grouped_lollipop": 0.25,
+          "multi_line": 0.25
+        },
+        "series_count": 3,
+        "series_count_range": [
+          2,
+          3
+        ],
+        "target_answer": 5,
+        "target_answer_range": [
+          0,
+          8
+        ],
+        "task_variant": "series_a_lt_b_count",
+        "task_variant_probabilities": {
+          "series_a_gt_b_count": 0.5,
+          "series_a_lt_b_count": 0.5
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "charts_multiseries_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+          "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "left_series": "Behm",
+          "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+          "right_series": "Case"
+        },
+        "task_family_key": "multiseries_chart_comparison",
+        "task_family_variant_index": 4,
+        "task_key": "pairwise_comparison_count_query",
+        "task_variant_index": 3,
+        "task_variant_key": "series_a_lt_b_count",
+        "task_variant_template_index": 1,
+        "template_paths": [
+          "charts/multiseries/charts_multiseries_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:pairwise_comparison_count_query": 5,
+          "task_family:multiseries_chart_comparison": 5,
+          "task_variant:series_a_lt_b_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+              "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Behm",
+              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+              "right_series": "Case"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 4,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 3,
+            "task_variant_key": "series_a_lt_b_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_lt_b_count": 5
+            }
+          },
+          "prompt": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Count the category labels where Behm is below Case.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+              "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Behm",
+              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+              "right_series": "Case"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 4,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 3,
+            "task_variant_key": "series_a_lt_b_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_lt_b_count": 5
+            }
+          },
+          "prompt": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Count the category labels where Behm is below Case.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "series_a_lt_b_count",
+      "template_id": "charts_multiseries_v1"
+    },
+    "render_map": {
+      "category_label_centers_px": {
+        "A": [
+          473.0,
+          554.0
+        ],
+        "K": [
+          799.571,
+          554.0
+        ],
+        "M": [
+          146.429,
+          554.0
+        ],
+        "S": [
+          364.143,
+          554.0
+        ],
+        "T": [
+          581.857,
+          554.0
+        ],
+        "W": [
+          690.714,
+          554.0
+        ],
+        "Y": [
+          255.286,
+          554.0
+        ]
+      },
+      "image_id": "img0",
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 620,
+      "canvas_width": 1100,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "sampling_policy": "random_rgb_palette",
+        "series_fill_palette_rgb": [
+          [
+            30,
+            120,
+            115
+          ],
+          [
+            174,
+            184,
+            119
+          ],
+          [
+            174,
+            124,
+            161
+          ]
+        ],
+        "series_outline_palette_rgb": [
+          [
+            16,
+            66,
+            63
+          ],
+          [
+            96,
+            101,
+            65
+          ],
+          [
+            96,
+            68,
+            89
+          ]
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "multi_line",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 21,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              135.429,
+              82.095,
+              157.429,
+              562.0
+            ],
+            "category_label": "M",
+            "category_label_center_px": [
+              146.429,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              138.429,
+              289.524,
+              154.429,
+              305.524
+            ],
+            "mark_center_px": [
+              146.429,
+              297.524
+            ],
+            "mark_fill_rgb": [
+              30,
+              120,
+              115
+            ],
+            "mark_outline_rgb": [
+              16,
+              66,
+              63
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Rodi",
+            "series_rank": 0,
+            "value": 10
+          },
+          "entity_id": "mark_M_Rodi",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              135.429,
+              82.095,
+              157.429,
+              562.0
+            ],
+            "category_label": "M",
+            "category_label_center_px": [
+              146.429,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              138.429,
+              450.857,
+              154.429,
+              466.857
+            ],
+            "mark_center_px": [
+              146.429,
+              458.857
+            ],
+            "mark_fill_rgb": [
+              174,
+              184,
+              119
+            ],
+            "mark_outline_rgb": [
+              96,
+              101,
+              65
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Behm",
+            "series_rank": 1,
+            "value": 3
+          },
+          "entity_id": "mark_M_Behm",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              135.429,
+              82.095,
+              157.429,
+              562.0
+            ],
+            "category_label": "M",
+            "category_label_center_px": [
+              146.429,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              138.429,
+              82.095,
+              154.429,
+              98.095
+            ],
+            "mark_center_px": [
+              146.429,
+              90.095
+            ],
+            "mark_fill_rgb": [
+              174,
+              124,
+              161
+            ],
+            "mark_outline_rgb": [
+              96,
+              68,
+              89
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Case",
+            "series_rank": 2,
+            "value": 19
+          },
+          "entity_id": "mark_M_Case",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              246.286,
+              82.095,
+              264.286,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              255.286,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              247.286,
+              358.667,
+              263.286,
+              374.667
+            ],
+            "mark_center_px": [
+              255.286,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              30,
+              120,
+              115
+            ],
+            "mark_outline_rgb": [
+              16,
+              66,
+              63
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Rodi",
+            "series_rank": 0,
+            "value": 7
+          },
+          "entity_id": "mark_Y_Rodi",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              246.286,
+              82.095,
+              264.286,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              255.286,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              247.286,
+              82.095,
+              263.286,
+              98.095
+            ],
+            "mark_center_px": [
+              255.286,
+              90.095
+            ],
+            "mark_fill_rgb": [
+              174,
+              184,
+              119
+            ],
+            "mark_outline_rgb": [
+              96,
+              101,
+              65
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Behm",
+            "series_rank": 1,
+            "value": 19
+          },
+          "entity_id": "mark_Y_Behm",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              246.286,
+              82.095,
+              264.286,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              255.286,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              247.286,
+              450.857,
+              263.286,
+              466.857
+            ],
+            "mark_center_px": [
+              255.286,
+              458.857
+            ],
+            "mark_fill_rgb": [
+              174,
+              124,
+              161
+            ],
+            "mark_outline_rgb": [
+              96,
+              68,
+              89
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Case",
+            "series_rank": 2,
+            "value": 3
+          },
+          "entity_id": "mark_Y_Case",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              356.143,
+              174.286,
+              372.143,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              364.143,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              356.143,
+              289.524,
+              372.143,
+              305.524
+            ],
+            "mark_center_px": [
+              364.143,
+              297.524
+            ],
+            "mark_fill_rgb": [
+              30,
+              120,
+              115
+            ],
+            "mark_outline_rgb": [
+              16,
+              66,
+              63
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Rodi",
+            "series_rank": 0,
+            "value": 10
+          },
+          "entity_id": "mark_S_Rodi",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              356.143,
+              174.286,
+              372.143,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              364.143,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              356.143,
+              358.667,
+              372.143,
+              374.667
+            ],
+            "mark_center_px": [
+              364.143,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              174,
+              184,
+              119
+            ],
+            "mark_outline_rgb": [
+              96,
+              101,
+              65
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Behm",
+            "series_rank": 1,
+            "value": 7
+          },
+          "entity_id": "mark_S_Behm",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              356.143,
+              174.286,
+              372.143,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              364.143,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              356.143,
+              174.286,
+              372.143,
+              190.286
+            ],
+            "mark_center_px": [
+              364.143,
+              182.286
+            ],
+            "mark_fill_rgb": [
+              174,
+              124,
+              161
+            ],
+            "mark_outline_rgb": [
+              96,
+              68,
+              89
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Case",
+            "series_rank": 2,
+            "value": 15
+          },
+          "entity_id": "mark_S_Case",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              464.5,
+              59.048,
+              481.5,
+              562.0
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              465.0,
+              128.19,
+              481.0,
+              144.19
+            ],
+            "mark_center_px": [
+              473.0,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              30,
+              120,
+              115
+            ],
+            "mark_outline_rgb": [
+              16,
+              66,
+              63
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Rodi",
+            "series_rank": 0,
+            "value": 17
+          },
+          "entity_id": "mark_A_Rodi",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              464.5,
+              59.048,
+              481.5,
+              562.0
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              465.0,
+              335.619,
+              481.0,
+              351.619
+            ],
+            "mark_center_px": [
+              473.0,
+              343.619
+            ],
+            "mark_fill_rgb": [
+              174,
+              184,
+              119
+            ],
+            "mark_outline_rgb": [
+              96,
+              101,
+              65
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Behm",
+            "series_rank": 1,
+            "value": 8
+          },
+          "entity_id": "mark_A_Behm",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              464.5,
+              59.048,
+              481.5,
+              562.0
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              465.0,
+              59.048,
+              481.0,
+              75.048
+            ],
+            "mark_center_px": [
+              473.0,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              174,
+              124,
+              161
+            ],
+            "mark_outline_rgb": [
+              96,
+              68,
+              89
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Case",
+            "series_rank": 2,
+            "value": 20
+          },
+          "entity_id": "mark_A_Case",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              573.857,
+              220.381,
+              589.857,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              581.857,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              573.857,
+              289.524,
+              589.857,
+              305.524
+            ],
+            "mark_center_px": [
+              581.857,
+              297.524
+            ],
+            "mark_fill_rgb": [
+              30,
+              120,
+              115
+            ],
+            "mark_outline_rgb": [
+              16,
+              66,
+              63
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Rodi",
+            "series_rank": 0,
+            "value": 10
+          },
+          "entity_id": "mark_T_Rodi",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              573.857,
+              220.381,
+              589.857,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              581.857,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              573.857,
+              220.381,
+              589.857,
+              236.381
+            ],
+            "mark_center_px": [
+              581.857,
+              228.381
+            ],
+            "mark_fill_rgb": [
+              174,
+              184,
+              119
+            ],
+            "mark_outline_rgb": [
+              96,
+              101,
+              65
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Behm",
+            "series_rank": 1,
+            "value": 13
+          },
+          "entity_id": "mark_T_Behm",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              573.857,
+              220.381,
+              589.857,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              581.857,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              573.857,
+              358.667,
+              589.857,
+              374.667
+            ],
+            "mark_center_px": [
+              581.857,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              174,
+              124,
+              161
+            ],
+            "mark_outline_rgb": [
+              96,
+              68,
+              89
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Case",
+            "series_rank": 2,
+            "value": 7
+          },
+          "entity_id": "mark_T_Case",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              678.714,
+              59.048,
+              702.714,
+              562.0
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              690.714,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              682.714,
+              358.667,
+              698.714,
+              374.667
+            ],
+            "mark_center_px": [
+              690.714,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              30,
+              120,
+              115
+            ],
+            "mark_outline_rgb": [
+              16,
+              66,
+              63
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Rodi",
+            "series_rank": 0,
+            "value": 7
+          },
+          "entity_id": "mark_W_Rodi",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              678.714,
+              59.048,
+              702.714,
+              562.0
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              690.714,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              682.714,
+              381.714,
+              698.714,
+              397.714
+            ],
+            "mark_center_px": [
+              690.714,
+              389.714
+            ],
+            "mark_fill_rgb": [
+              174,
+              184,
+              119
+            ],
+            "mark_outline_rgb": [
+              96,
+              101,
+              65
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Behm",
+            "series_rank": 1,
+            "value": 6
+          },
+          "entity_id": "mark_W_Behm",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              678.714,
+              59.048,
+              702.714,
+              562.0
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              690.714,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              682.714,
+              59.048,
+              698.714,
+              75.048
+            ],
+            "mark_center_px": [
+              690.714,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              174,
+              124,
+              161
+            ],
+            "mark_outline_rgb": [
+              96,
+              68,
+              89
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Case",
+            "series_rank": 2,
+            "value": 20
+          },
+          "entity_id": "mark_W_Case",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              790.571,
+              59.048,
+              808.571,
+              562.0
+            ],
+            "category_label": "K",
+            "category_label_center_px": [
+              799.571,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              791.571,
+              82.095,
+              807.571,
+              98.095
+            ],
+            "mark_center_px": [
+              799.571,
+              90.095
+            ],
+            "mark_fill_rgb": [
+              30,
+              120,
+              115
+            ],
+            "mark_outline_rgb": [
+              16,
+              66,
+              63
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Rodi",
+            "series_rank": 0,
+            "value": 19
+          },
+          "entity_id": "mark_K_Rodi",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              790.571,
+              59.048,
+              808.571,
+              562.0
+            ],
+            "category_label": "K",
+            "category_label_center_px": [
+              799.571,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              791.571,
+              450.857,
+              807.571,
+              466.857
+            ],
+            "mark_center_px": [
+              799.571,
+              458.857
+            ],
+            "mark_fill_rgb": [
+              174,
+              184,
+              119
+            ],
+            "mark_outline_rgb": [
+              96,
+              101,
+              65
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Behm",
+            "series_rank": 1,
+            "value": 3
+          },
+          "entity_id": "mark_K_Behm",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              790.571,
+              59.048,
+              808.571,
+              562.0
+            ],
+            "category_label": "K",
+            "category_label_center_px": [
+              799.571,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              791.571,
+              59.048,
+              807.571,
+              75.048
+            ],
+            "mark_center_px": [
+              799.571,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              174,
+              124,
+              161
+            ],
+            "mark_outline_rgb": [
+              96,
+              68,
+              89
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Case",
+            "series_rank": 2,
+            "value": 20
+          },
+          "entity_id": "mark_K_Case",
+          "entity_type": "point"
+        }
+      ],
+      "relations": {
+        "comparison": "less_than",
+        "evidence_labels": [
+          "A",
+          "K",
+          "M",
+          "S",
+          "W"
+        ],
+        "queried_series_labels": [
+          "Behm",
+          "Case"
+        ],
+        "scene_variant": "multi_line",
+        "task_variant": "series_a_lt_b_count"
+      },
+      "scene_kind": "chart_multi_line_multiseries"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "A",
+        "K",
+        "M",
+        "S",
+        "W"
+      ],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

@@ -1,0 +1,654 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 2
+  },
+  "evidence_gt": {
+    "type": "grid_point_set",
+    "value": [
+      [
+        1,
+        0
+      ],
+      [
+        2,
+        0
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "tile/task_tile_count_color_count/images/default/0019.png"
+  },
+  "instance_seed": 5976457439482803,
+  "prompt": "Look at the rectangular tile board with 3 rows and 3 columns. The board uses row labels on the left and column labels on the top. Determine how many board tiles have color blue [#2D75E6].\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to the row-major list of [row, col] coordinates for every tile matching the query color.\nAnswer format: set \"answer\" to the number of tiles matching the query color as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the rectangular tile board with 3 rows and 3 columns. The board uses row labels on the left and column labels on the top. Determine how many board tiles have color blue [#2D75E6].\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to the row-major list of [row, col] coordinates for every tile matching the query color.\nAnswer format: set \"answer\" to the number of tiles matching the query color as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":8}",
+    "answer_only": "Look at the rectangular tile board with 3 rows and 3 columns. The board uses row labels on the left and column labels on the top. Determine how many board tiles have color blue [#2D75E6].\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of tiles matching the query color as an integer.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_tile_count_color_count",
+  "task_variant": "color_count",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 2,
+      "cols": 3,
+      "counts_by_color_name": {
+        "blue": 2,
+        "brown": 2,
+        "cyan": 2,
+        "maroon": 1,
+        "purple": 1,
+        "yellow": 1
+      },
+      "matching_coords": [
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ]
+      ],
+      "matching_ids": [
+        "cell_1_0",
+        "cell_2_0"
+      ],
+      "palette": [
+        {
+          "hex": "#887044",
+          "label": "brown [#887044]",
+          "name": "brown",
+          "rgb": [
+            136,
+            112,
+            68
+          ]
+        },
+        {
+          "hex": "#963644",
+          "label": "maroon [#963644]",
+          "name": "maroon",
+          "rgb": [
+            150,
+            54,
+            68
+          ]
+        },
+        {
+          "hex": "#963ACA",
+          "label": "purple [#963ACA]",
+          "name": "purple",
+          "rgb": [
+            150,
+            58,
+            202
+          ]
+        },
+        {
+          "hex": "#2D75E6",
+          "label": "blue [#2D75E6]",
+          "name": "blue",
+          "rgb": [
+            45,
+            117,
+            230
+          ]
+        },
+        {
+          "hex": "#D4C21E",
+          "label": "yellow [#D4C21E]",
+          "name": "yellow",
+          "rgb": [
+            212,
+            194,
+            30
+          ]
+        },
+        {
+          "hex": "#34C4E0",
+          "label": "cyan [#34C4E0]",
+          "name": "cyan",
+          "rgb": [
+            52,
+            196,
+            224
+          ]
+        }
+      ],
+      "palette_size": 6,
+      "query_color_hex": "#2D75E6",
+      "query_color_label": "blue [#2D75E6]",
+      "query_color_name": "blue",
+      "query_color_rgb": [
+        45,
+        117,
+        230
+      ],
+      "rows": 3,
+      "task_variant": "color_count"
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          60.0,
+          187.0,
+          105.0,
+          277.0
+        ],
+        [
+          60.0,
+          277.0,
+          105.0,
+          367.0
+        ]
+      ],
+      "grid_point_set": [
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          82.5,
+          232.0
+        ],
+        [
+          82.5,
+          322.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "dsl_program": [
+        {
+          "entity_type": "tile_cell",
+          "op": "select",
+          "out": "cells"
+        },
+        {
+          "in": "cells",
+          "op": "filter",
+          "out": "query_cells",
+          "predicate": {
+            "color_name": "blue"
+          }
+        },
+        {
+          "coord_space": "tile_grid",
+          "coord_type": "grid_point_set",
+          "in": "query_cells",
+          "op": "project_coords",
+          "ordering": "row_major",
+          "out": "evidence"
+        },
+        {
+          "in": "query_cells",
+          "op": "count",
+          "out": "answer"
+        }
+      ],
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "tile_count_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of tiles matching the query color as an integer",
+          "cols": 3,
+          "evidence_hint": "set \"evidence\" to the row-major list of [row, col] coordinates for every tile matching the query color",
+          "json_example": "{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "query_color": "blue [#2D75E6]",
+          "rows": 3
+        },
+        "task_family_key": "rectangular_tile_board",
+        "task_family_variant_index": 2,
+        "task_key": "color_count_query",
+        "task_variant_index": 2,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "tile/count/tile_count_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:color_count_query": 5,
+          "task_family:rectangular_tile_board": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "tile_count_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of tiles matching the query color as an integer",
+              "cols": 3,
+              "evidence_hint": "set \"evidence\" to the row-major list of [row, col] coordinates for every tile matching the query color",
+              "json_example": "{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "query_color": "blue [#2D75E6]",
+              "rows": 3
+            },
+            "task_family_key": "rectangular_tile_board",
+            "task_family_variant_index": 2,
+            "task_key": "color_count_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "tile/count/tile_count_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:color_count_query": 5,
+              "task_family:rectangular_tile_board": 5
+            }
+          },
+          "prompt": "Look at the rectangular tile board with 3 rows and 3 columns. The board uses row labels on the left and column labels on the top. Determine how many board tiles have color blue [#2D75E6].\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to the row-major list of [row, col] coordinates for every tile matching the query color.\nAnswer format: set \"answer\" to the number of tiles matching the query color as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "tile_count_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of tiles matching the query color as an integer",
+              "cols": 3,
+              "evidence_hint": "set \"evidence\" to the row-major list of [row, col] coordinates for every tile matching the query color",
+              "json_example": "{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "query_color": "blue [#2D75E6]",
+              "rows": 3
+            },
+            "task_family_key": "rectangular_tile_board",
+            "task_family_variant_index": 2,
+            "task_key": "color_count_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "tile/count/tile_count_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:color_count_query": 5,
+              "task_family:rectangular_tile_board": 5
+            }
+          },
+          "prompt": "Look at the rectangular tile board with 3 rows and 3 columns. The board uses row labels on the left and column labels on the top. Determine how many board tiles have color blue [#2D75E6].\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of tiles matching the query color as an integer.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "color_count",
+      "template_id": "color_count_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "cell_0_0": {
+          "bbox": [
+            60.0,
+            97.0,
+            105.0,
+            187.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            82.5,
+            142.0
+          ]
+        },
+        "cell_0_1": {
+          "bbox": [
+            105.0,
+            97.0,
+            150.0,
+            187.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            127.5,
+            142.0
+          ]
+        },
+        "cell_0_2": {
+          "bbox": [
+            150.0,
+            97.0,
+            195.0,
+            187.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            172.5,
+            142.0
+          ]
+        },
+        "cell_1_0": {
+          "bbox": [
+            60.0,
+            187.0,
+            105.0,
+            277.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            82.5,
+            232.0
+          ]
+        },
+        "cell_1_1": {
+          "bbox": [
+            105.0,
+            187.0,
+            150.0,
+            277.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            127.5,
+            232.0
+          ]
+        },
+        "cell_1_2": {
+          "bbox": [
+            150.0,
+            187.0,
+            195.0,
+            277.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            172.5,
+            232.0
+          ]
+        },
+        "cell_2_0": {
+          "bbox": [
+            60.0,
+            277.0,
+            105.0,
+            367.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            82.5,
+            322.0
+          ]
+        },
+        "cell_2_1": {
+          "bbox": [
+            105.0,
+            277.0,
+            150.0,
+            367.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            127.5,
+            322.0
+          ]
+        },
+        "cell_2_2": {
+          "bbox": [
+            150.0,
+            277.0,
+            195.0,
+            367.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            172.5,
+            322.0
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            246,
+            246,
+            246
+          ],
+          "kind": "solid"
+        }
+      },
+      "board_origin_px": [
+        60,
+        97
+      ],
+      "board_size_px": [
+        135,
+        270
+      ],
+      "canvas_height_px": 414,
+      "canvas_width_px": 212,
+      "cols": 3,
+      "coord_space": "tile_grid",
+      "coordinate_gutters_px": {
+        "left": 37,
+        "top": 65
+      },
+      "label_style": {
+        "font_size_px": 21,
+        "stroke_width_px": 3
+      },
+      "outer_padding_px": {
+        "x": 16,
+        "y": 32
+      },
+      "placement_offset_px": {
+        "x": 7,
+        "y": 0
+      },
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "scale": 0.964047
+            },
+            "type": "downsample"
+          }
+        ],
+        "enabled": true
+      },
+      "rows": 3,
+      "tile_aspect_ratio": 1.997476,
+      "tile_height_px": 90,
+      "tile_orientation": "tall",
+      "tile_outline_width_px": 3,
+      "tile_width_px": 45,
+      "tiling_type": "rectangular_tiling"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "brown",
+            "fill_rgb": [
+              136,
+              112,
+              68
+            ],
+            "is_query_match": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "brown",
+            "fill_rgb": [
+              136,
+              112,
+              68
+            ],
+            "is_query_match": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "cyan",
+            "fill_rgb": [
+              52,
+              196,
+              224
+            ],
+            "is_query_match": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "blue",
+            "fill_rgb": [
+              45,
+              117,
+              230
+            ],
+            "is_query_match": true,
+            "row": 1
+          },
+          "entity_id": "cell_1_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "yellow",
+            "fill_rgb": [
+              212,
+              194,
+              30
+            ],
+            "is_query_match": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "purple",
+            "fill_rgb": [
+              150,
+              58,
+              202
+            ],
+            "is_query_match": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "blue",
+            "fill_rgb": [
+              45,
+              117,
+              230
+            ],
+            "is_query_match": true,
+            "row": 2
+          },
+          "entity_id": "cell_2_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_query_match": false,
+            "row": 2
+          },
+          "entity_id": "cell_2_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "cyan",
+            "fill_rgb": [
+              52,
+              196,
+              224
+            ],
+            "is_query_match": false,
+            "row": 2
+          },
+          "entity_id": "cell_2_2",
+          "entity_type": "tile_cell"
+        }
+      ],
+      "relations": {},
+      "scene_kind": "rectangular_tile_board"
+    },
+    "witness_symbolic": {
+      "ids": [
+        "cell_1_0",
+        "cell_2_0"
+      ],
+      "type": "id_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

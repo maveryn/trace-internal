@@ -1,0 +1,13 @@
+{
+  "inspection_count": 50,
+  "task_id": "task_tables_statistics_filtered_subset_label",
+  "variants": {
+    "filtered_argmax": 25,
+    "filtered_argmin": 25
+  },
+  "workbook": "tables/task_tables_statistics_filtered_subset_label/task_tables_statistics_filtered_subset_label.xlsx",
+  "workbook_sheets": {
+    "filtered_argmax": "filtered_argmax",
+    "filtered_argmin": "filtered_argmin"
+  }
+}

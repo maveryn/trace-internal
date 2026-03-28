@@ -1,0 +1,1346 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 1
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "U"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0024.png"
+  },
+  "instance_seed": 6476650310403103,
+  "prompt": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Use the chart to compare the queried pair of series across the category labels. Determine the number of categories where Anne is less than Tacy.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Use the chart to compare the queried pair of series across the category labels. Determine the number of categories where Anne is less than Tacy.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Use the chart to compare the queried pair of series across the category labels. Determine the number of categories where Anne is less than Tacy.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_charts_multiseries_pairwise_comparison_count",
+  "task_variant": "series_a_lt_b_count",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 1,
+      "category_count": 10,
+      "category_count_range": [
+        5,
+        10
+      ],
+      "category_labels": [
+        "R",
+        "W",
+        "N",
+        "L",
+        "G",
+        "S",
+        "U",
+        "Q",
+        "D",
+        "E"
+      ],
+      "comparison": "less_than",
+      "evidence_labels": [
+        "U"
+      ],
+      "left_series_label": "Anne",
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb_palette",
+      "queried_series_labels": [
+        "Anne",
+        "Tacy"
+      ],
+      "question_format": "numeric_open",
+      "right_series_label": "Tacy",
+      "scene_variant": "multi_line",
+      "scene_variant_probabilities": {
+        "grouped_bar": 0.25,
+        "grouped_horizontal_bar": 0.25,
+        "grouped_lollipop": 0.25,
+        "multi_line": 0.25
+      },
+      "series_count": 2,
+      "series_count_range": [
+        2,
+        3
+      ],
+      "series_fill_palette_rgb": [
+        [
+          154,
+          136,
+          2
+        ],
+        [
+          114,
+          20,
+          58
+        ]
+      ],
+      "series_labels": [
+        "Anne",
+        "Tacy"
+      ],
+      "series_outline_palette_rgb": [
+        [
+          85,
+          75,
+          1
+        ],
+        [
+          63,
+          11,
+          32
+        ]
+      ],
+      "target_answer": 1,
+      "target_answer_range": [
+        0,
+        8
+      ],
+      "task_variant": "series_a_lt_b_count",
+      "task_variant_probabilities": {
+        "series_a_gt_b_count": 0.5,
+        "series_a_lt_b_count": 0.5
+      },
+      "values_by_category": {
+        "D": {
+          "Anne": 13,
+          "Tacy": 12
+        },
+        "E": {
+          "Anne": 18,
+          "Tacy": 12
+        },
+        "G": {
+          "Anne": 18,
+          "Tacy": 8
+        },
+        "L": {
+          "Anne": 9,
+          "Tacy": 6
+        },
+        "N": {
+          "Anne": 16,
+          "Tacy": 3
+        },
+        "Q": {
+          "Anne": 14,
+          "Tacy": 5
+        },
+        "R": {
+          "Anne": 13,
+          "Tacy": 5
+        },
+        "S": {
+          "Anne": 12,
+          "Tacy": 4
+        },
+        "U": {
+          "Anne": 5,
+          "Tacy": 8
+        },
+        "W": {
+          "Anne": 15,
+          "Tacy": 11
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          578.3,
+          316.211,
+          596.3,
+          562.0
+        ]
+      ],
+      "label_set": [
+        "U"
+      ],
+      "pixel_point_map": {
+        "U": [
+          587.3,
+          554.0
+        ]
+      },
+      "pixel_point_set": [
+        [
+          587.3,
+          554.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "category_count": 10,
+        "category_count_range": [
+          5,
+          10
+        ],
+        "comparison": "less_than",
+        "queried_series_labels": [
+          "Anne",
+          "Tacy"
+        ],
+        "scene_variant": "multi_line",
+        "scene_variant_probabilities": {
+          "grouped_bar": 0.25,
+          "grouped_horizontal_bar": 0.25,
+          "grouped_lollipop": 0.25,
+          "multi_line": 0.25
+        },
+        "series_count": 2,
+        "series_count_range": [
+          2,
+          3
+        ],
+        "target_answer": 1,
+        "target_answer_range": [
+          0,
+          8
+        ],
+        "task_variant": "series_a_lt_b_count",
+        "task_variant_probabilities": {
+          "series_a_gt_b_count": 0.5,
+          "series_a_lt_b_count": 0.5
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "charts_multiseries_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+          "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "left_series": "Anne",
+          "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+          "right_series": "Tacy"
+        },
+        "task_family_key": "multiseries_chart_comparison",
+        "task_family_variant_index": 4,
+        "task_key": "pairwise_comparison_count_query",
+        "task_variant_index": 1,
+        "task_variant_key": "series_a_lt_b_count",
+        "task_variant_template_index": 3,
+        "template_paths": [
+          "charts/multiseries/charts_multiseries_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:pairwise_comparison_count_query": 5,
+          "task_family:multiseries_chart_comparison": 5,
+          "task_variant:series_a_lt_b_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+              "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Anne",
+              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+              "right_series": "Tacy"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 4,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 1,
+            "task_variant_key": "series_a_lt_b_count",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_lt_b_count": 5
+            }
+          },
+          "prompt": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Use the chart to compare the queried pair of series across the category labels. Determine the number of categories where Anne is less than Tacy.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+              "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Anne",
+              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+              "right_series": "Tacy"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 4,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 1,
+            "task_variant_key": "series_a_lt_b_count",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_lt_b_count": 5
+            }
+          },
+          "prompt": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Use the chart to compare the queried pair of series across the category labels. Determine the number of categories where Anne is less than Tacy.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "series_a_lt_b_count",
+      "template_id": "charts_multiseries_v1"
+    },
+    "render_map": {
+      "category_label_centers_px": {
+        "D": [
+          739.7,
+          554.0
+        ],
+        "E": [
+          815.9,
+          554.0
+        ],
+        "G": [
+          434.9,
+          554.0
+        ],
+        "L": [
+          358.7,
+          554.0
+        ],
+        "N": [
+          282.5,
+          554.0
+        ],
+        "Q": [
+          663.5,
+          554.0
+        ],
+        "R": [
+          130.1,
+          554.0
+        ],
+        "S": [
+          511.1,
+          554.0
+        ],
+        "U": [
+          587.3,
+          554.0
+        ],
+        "W": [
+          206.3,
+          554.0
+        ]
+      },
+      "image_id": "img0",
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 620,
+      "canvas_width": 1100,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "sampling_policy": "random_rgb_palette",
+        "series_fill_palette_rgb": [
+          [
+            154,
+            136,
+            2
+          ],
+          [
+            114,
+            20,
+            58
+          ]
+        ],
+        "series_outline_palette_rgb": [
+          [
+            85,
+            75,
+            1
+          ],
+          [
+            63,
+            11,
+            32
+          ]
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "multi_line",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 19,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              121.6,
+              188.842,
+              138.6,
+              562.0
+            ],
+            "category_label": "R",
+            "category_label_center_px": [
+              130.1,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              122.1,
+              188.842,
+              138.1,
+              204.842
+            ],
+            "mark_center_px": [
+              130.1,
+              196.842
+            ],
+            "mark_fill_rgb": [
+              154,
+              136,
+              2
+            ],
+            "mark_outline_rgb": [
+              85,
+              75,
+              1
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Anne",
+            "series_rank": 0,
+            "value": 13
+          },
+          "entity_id": "mark_R_Anne",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              121.6,
+              188.842,
+              138.6,
+              562.0
+            ],
+            "category_label": "R",
+            "category_label_center_px": [
+              130.1,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              122.1,
+              392.632,
+              138.1,
+              408.632
+            ],
+            "mark_center_px": [
+              130.1,
+              400.632
+            ],
+            "mark_fill_rgb": [
+              114,
+              20,
+              58
+            ],
+            "mark_outline_rgb": [
+              63,
+              11,
+              32
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Tacy",
+            "series_rank": 1,
+            "value": 5
+          },
+          "entity_id": "mark_R_Tacy",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              194.3,
+              137.895,
+              218.3,
+              562.0
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              206.3,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              198.3,
+              137.895,
+              214.3,
+              153.895
+            ],
+            "mark_center_px": [
+              206.3,
+              145.895
+            ],
+            "mark_fill_rgb": [
+              154,
+              136,
+              2
+            ],
+            "mark_outline_rgb": [
+              85,
+              75,
+              1
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Anne",
+            "series_rank": 0,
+            "value": 15
+          },
+          "entity_id": "mark_W_Anne",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              194.3,
+              137.895,
+              218.3,
+              562.0
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              206.3,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              198.3,
+              239.789,
+              214.3,
+              255.789
+            ],
+            "mark_center_px": [
+              206.3,
+              247.789
+            ],
+            "mark_fill_rgb": [
+              114,
+              20,
+              58
+            ],
+            "mark_outline_rgb": [
+              63,
+              11,
+              32
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Tacy",
+            "series_rank": 1,
+            "value": 11
+          },
+          "entity_id": "mark_W_Tacy",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              273.5,
+              112.421,
+              291.5,
+              562.0
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              274.5,
+              112.421,
+              290.5,
+              128.421
+            ],
+            "mark_center_px": [
+              282.5,
+              120.421
+            ],
+            "mark_fill_rgb": [
+              154,
+              136,
+              2
+            ],
+            "mark_outline_rgb": [
+              85,
+              75,
+              1
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Anne",
+            "series_rank": 0,
+            "value": 16
+          },
+          "entity_id": "mark_N_Anne",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              273.5,
+              112.421,
+              291.5,
+              562.0
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              274.5,
+              443.579,
+              290.5,
+              459.579
+            ],
+            "mark_center_px": [
+              282.5,
+              451.579
+            ],
+            "mark_fill_rgb": [
+              114,
+              20,
+              58
+            ],
+            "mark_outline_rgb": [
+              63,
+              11,
+              32
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Tacy",
+            "series_rank": 1,
+            "value": 3
+          },
+          "entity_id": "mark_N_Tacy",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              350.7,
+              290.737,
+              366.7,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              358.7,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              350.7,
+              290.737,
+              366.7,
+              306.737
+            ],
+            "mark_center_px": [
+              358.7,
+              298.737
+            ],
+            "mark_fill_rgb": [
+              154,
+              136,
+              2
+            ],
+            "mark_outline_rgb": [
+              85,
+              75,
+              1
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Anne",
+            "series_rank": 0,
+            "value": 9
+          },
+          "entity_id": "mark_L_Anne",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              350.7,
+              290.737,
+              366.7,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              358.7,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              350.7,
+              367.158,
+              366.7,
+              383.158
+            ],
+            "mark_center_px": [
+              358.7,
+              375.158
+            ],
+            "mark_fill_rgb": [
+              114,
+              20,
+              58
+            ],
+            "mark_outline_rgb": [
+              63,
+              11,
+              32
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Tacy",
+            "series_rank": 1,
+            "value": 6
+          },
+          "entity_id": "mark_L_Tacy",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              425.9,
+              61.474,
+              443.9,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              434.9,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              426.9,
+              61.474,
+              442.9,
+              77.474
+            ],
+            "mark_center_px": [
+              434.9,
+              69.474
+            ],
+            "mark_fill_rgb": [
+              154,
+              136,
+              2
+            ],
+            "mark_outline_rgb": [
+              85,
+              75,
+              1
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Anne",
+            "series_rank": 0,
+            "value": 18
+          },
+          "entity_id": "mark_G_Anne",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              425.9,
+              61.474,
+              443.9,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              434.9,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              426.9,
+              316.211,
+              442.9,
+              332.211
+            ],
+            "mark_center_px": [
+              434.9,
+              324.211
+            ],
+            "mark_fill_rgb": [
+              114,
+              20,
+              58
+            ],
+            "mark_outline_rgb": [
+              63,
+              11,
+              32
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Tacy",
+            "series_rank": 1,
+            "value": 8
+          },
+          "entity_id": "mark_G_Tacy",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              503.1,
+              214.316,
+              519.1,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              511.1,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              503.1,
+              214.316,
+              519.1,
+              230.316
+            ],
+            "mark_center_px": [
+              511.1,
+              222.316
+            ],
+            "mark_fill_rgb": [
+              154,
+              136,
+              2
+            ],
+            "mark_outline_rgb": [
+              85,
+              75,
+              1
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Anne",
+            "series_rank": 0,
+            "value": 12
+          },
+          "entity_id": "mark_S_Anne",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              503.1,
+              214.316,
+              519.1,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              511.1,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              503.1,
+              418.105,
+              519.1,
+              434.105
+            ],
+            "mark_center_px": [
+              511.1,
+              426.105
+            ],
+            "mark_fill_rgb": [
+              114,
+              20,
+              58
+            ],
+            "mark_outline_rgb": [
+              63,
+              11,
+              32
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Tacy",
+            "series_rank": 1,
+            "value": 4
+          },
+          "entity_id": "mark_S_Tacy",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              578.3,
+              316.211,
+              596.3,
+              562.0
+            ],
+            "category_label": "U",
+            "category_label_center_px": [
+              587.3,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              579.3,
+              392.632,
+              595.3,
+              408.632
+            ],
+            "mark_center_px": [
+              587.3,
+              400.632
+            ],
+            "mark_fill_rgb": [
+              154,
+              136,
+              2
+            ],
+            "mark_outline_rgb": [
+              85,
+              75,
+              1
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Anne",
+            "series_rank": 0,
+            "value": 5
+          },
+          "entity_id": "mark_U_Anne",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              578.3,
+              316.211,
+              596.3,
+              562.0
+            ],
+            "category_label": "U",
+            "category_label_center_px": [
+              587.3,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              579.3,
+              316.211,
+              595.3,
+              332.211
+            ],
+            "mark_center_px": [
+              587.3,
+              324.211
+            ],
+            "mark_fill_rgb": [
+              114,
+              20,
+              58
+            ],
+            "mark_outline_rgb": [
+              63,
+              11,
+              32
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Tacy",
+            "series_rank": 1,
+            "value": 8
+          },
+          "entity_id": "mark_U_Tacy",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              654.0,
+              163.368,
+              673.0,
+              563.5
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              655.5,
+              163.368,
+              671.5,
+              179.368
+            ],
+            "mark_center_px": [
+              663.5,
+              171.368
+            ],
+            "mark_fill_rgb": [
+              154,
+              136,
+              2
+            ],
+            "mark_outline_rgb": [
+              85,
+              75,
+              1
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Anne",
+            "series_rank": 0,
+            "value": 14
+          },
+          "entity_id": "mark_Q_Anne",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              654.0,
+              163.368,
+              673.0,
+              563.5
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              655.5,
+              392.632,
+              671.5,
+              408.632
+            ],
+            "mark_center_px": [
+              663.5,
+              400.632
+            ],
+            "mark_fill_rgb": [
+              114,
+              20,
+              58
+            ],
+            "mark_outline_rgb": [
+              63,
+              11,
+              32
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Tacy",
+            "series_rank": 1,
+            "value": 5
+          },
+          "entity_id": "mark_Q_Tacy",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              730.7,
+              188.842,
+              748.7,
+              562.0
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              739.7,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              731.7,
+              188.842,
+              747.7,
+              204.842
+            ],
+            "mark_center_px": [
+              739.7,
+              196.842
+            ],
+            "mark_fill_rgb": [
+              154,
+              136,
+              2
+            ],
+            "mark_outline_rgb": [
+              85,
+              75,
+              1
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Anne",
+            "series_rank": 0,
+            "value": 13
+          },
+          "entity_id": "mark_D_Anne",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              730.7,
+              188.842,
+              748.7,
+              562.0
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              739.7,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              731.7,
+              214.316,
+              747.7,
+              230.316
+            ],
+            "mark_center_px": [
+              739.7,
+              222.316
+            ],
+            "mark_fill_rgb": [
+              114,
+              20,
+              58
+            ],
+            "mark_outline_rgb": [
+              63,
+              11,
+              32
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Tacy",
+            "series_rank": 1,
+            "value": 12
+          },
+          "entity_id": "mark_D_Tacy",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              807.9,
+              61.474,
+              823.9,
+              562.0
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              815.9,
+              554.0
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              807.9,
+              61.474,
+              823.9,
+              77.474
+            ],
+            "mark_center_px": [
+              815.9,
+              69.474
+            ],
+            "mark_fill_rgb": [
+              154,
+              136,
+              2
+            ],
+            "mark_outline_rgb": [
+              85,
+              75,
+              1
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Anne",
+            "series_rank": 0,
+            "value": 18
+          },
+          "entity_id": "mark_E_Anne",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              807.9,
+              61.474,
+              823.9,
+              562.0
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              815.9,
+              554.0
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              807.9,
+              214.316,
+              823.9,
+              230.316
+            ],
+            "mark_center_px": [
+              815.9,
+              222.316
+            ],
+            "mark_fill_rgb": [
+              114,
+              20,
+              58
+            ],
+            "mark_outline_rgb": [
+              63,
+              11,
+              32
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Tacy",
+            "series_rank": 1,
+            "value": 12
+          },
+          "entity_id": "mark_E_Tacy",
+          "entity_type": "point"
+        }
+      ],
+      "relations": {
+        "comparison": "less_than",
+        "evidence_labels": [
+          "U"
+        ],
+        "queried_series_labels": [
+          "Anne",
+          "Tacy"
+        ],
+        "scene_variant": "multi_line",
+        "task_variant": "series_a_lt_b_count"
+      },
+      "scene_kind": "chart_multi_line_multiseries"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "U"
+      ],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

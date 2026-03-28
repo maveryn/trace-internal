@@ -61,6 +61,25 @@ _EXCEL_COLUMN_WIDTHS: Dict[str, float] = {
 _WRAP_COLUMNS = {"C", "D", "E", "F", "G", "H", "L", "M"}
 
 
+def _infer_task_domain(task_id: str, *, task_obj: Any | None = None) -> str:
+    """Infer one task domain for review-artifact routing."""
+
+    if task_obj is not None:
+        domain = getattr(task_obj, "domain", None)
+        if str(domain or "").strip():
+            return str(domain)
+    match = re.match(r"^task_([a-z0-9]+)_", str(task_id).strip())
+    if match:
+        return str(match.group(1))
+    return "unknown"
+
+
+def _resolve_task_review_dir(*, out_root: Path, task_id: str, task_obj: Any | None = None) -> Path:
+    """Return the canonical domain-scoped review directory for one task."""
+
+    return Path(out_root) / _infer_task_domain(str(task_id), task_obj=task_obj) / str(task_id)
+
+
 def _resolve_task_ids(raw_tasks: str) -> List[str]:
     """Resolve selected task ids from CLI input."""
     if not str(raw_tasks).strip():
@@ -743,7 +762,7 @@ def main() -> int:
 
     for task_id in task_ids:
         task = create_task(str(task_id))
-        task_dir = out_root / str(task_id)
+        task_dir = _resolve_task_review_dir(out_root=out_root, task_id=str(task_id), task_obj=task)
         task_dir.mkdir(parents=True, exist_ok=True)
 
         task_summary: Dict[str, Any] = {

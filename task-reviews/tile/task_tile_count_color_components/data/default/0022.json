@@ -1,0 +1,940 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 1
+  },
+  "evidence_gt": {
+    "type": "grid_point_set",
+    "value": [
+      [
+        1,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        2,
+        1
+      ],
+      [
+        3,
+        0
+      ],
+      [
+        3,
+        1
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "tile/task_tile_count_color_components/images/default/0022.png"
+  },
+  "instance_seed": 5968627549717042,
+  "prompt": "You are given one rectangular tile board on a 4 by 4 grid. Read rows from the left labels and columns from the top labels. Determine how many 4-neighbor connected groups the orange [#EE881A] tiles form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to the row-major list of [row, col] coordinates for every tile matching the query color.\nAnswer: set \"answer\" to the number of 4-neighbor connected components formed by the query-color tiles as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[0,1],[2,2]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given one rectangular tile board on a 4 by 4 grid. Read rows from the left labels and columns from the top labels. Determine how many 4-neighbor connected groups the orange [#EE881A] tiles form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to the row-major list of [row, col] coordinates for every tile matching the query color.\nAnswer: set \"answer\" to the number of 4-neighbor connected components formed by the query-color tiles as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[0,1],[2,2]],\"answer\":2}",
+    "answer_only": "You are given one rectangular tile board on a 4 by 4 grid. Read rows from the left labels and columns from the top labels. Determine how many 4-neighbor connected groups the orange [#EE881A] tiles form.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of 4-neighbor connected components formed by the query-color tiles as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_tile_count_color_components",
+  "task_variant": "color_components",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 1,
+      "available_component_answers": [
+        1,
+        3
+      ],
+      "cols": 4,
+      "component_sizes": [
+        5
+      ],
+      "components": [
+        {
+          "component_index": 0,
+          "coords": [
+            [
+              1,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              3,
+              0
+            ],
+            [
+              3,
+              1
+            ]
+          ],
+          "ids": [
+            "cell_1_1",
+            "cell_1_2",
+            "cell_2_1",
+            "cell_3_0",
+            "cell_3_1"
+          ]
+        }
+      ],
+      "counts_by_color_name": {
+        "blue": 7,
+        "orange": 5,
+        "yellow": 4
+      },
+      "matching_coords": [
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          1
+        ]
+      ],
+      "matching_ids": [
+        "cell_1_1",
+        "cell_1_2",
+        "cell_2_1",
+        "cell_3_0",
+        "cell_3_1"
+      ],
+      "palette": [
+        {
+          "hex": "#EE881A",
+          "label": "orange [#EE881A]",
+          "name": "orange",
+          "rgb": [
+            238,
+            136,
+            26
+          ]
+        },
+        {
+          "hex": "#D4C21E",
+          "label": "yellow [#D4C21E]",
+          "name": "yellow",
+          "rgb": [
+            212,
+            194,
+            30
+          ]
+        },
+        {
+          "hex": "#2D75E6",
+          "label": "blue [#2D75E6]",
+          "name": "blue",
+          "rgb": [
+            45,
+            117,
+            230
+          ]
+        }
+      ],
+      "palette_size": 3,
+      "query_color_hex": "#EE881A",
+      "query_color_label": "orange [#EE881A]",
+      "query_color_name": "orange",
+      "query_color_rgb": [
+        238,
+        136,
+        26
+      ],
+      "query_selection_strategy": "uniform_over_target_component_range_with_rejection",
+      "rows": 4,
+      "target_component_count": 1,
+      "target_component_count_range": [
+        1,
+        7
+      ],
+      "task_variant": "color_components"
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          179.0,
+          94.0,
+          257.0,
+          135.0
+        ],
+        [
+          257.0,
+          94.0,
+          335.0,
+          135.0
+        ],
+        [
+          179.0,
+          135.0,
+          257.0,
+          176.0
+        ],
+        [
+          101.0,
+          176.0,
+          179.0,
+          217.0
+        ],
+        [
+          179.0,
+          176.0,
+          257.0,
+          217.0
+        ]
+      ],
+      "grid_point_set": [
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          1
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          218.0,
+          114.5
+        ],
+        [
+          296.0,
+          114.5
+        ],
+        [
+          218.0,
+          155.5
+        ],
+        [
+          140.0,
+          196.5
+        ],
+        [
+          218.0,
+          196.5
+        ]
+      ]
+    },
+    "query_spec": {
+      "dsl_program": [
+        {
+          "entity_type": "tile_cell",
+          "op": "select",
+          "out": "cells"
+        },
+        {
+          "in": "cells",
+          "op": "filter",
+          "out": "query_cells",
+          "predicate": {
+            "color_name": "orange"
+          }
+        },
+        {
+          "coord_space": "tile_grid",
+          "coord_type": "grid_point_set",
+          "in": "query_cells",
+          "op": "project_coords",
+          "ordering": "row_major",
+          "out": "evidence"
+        },
+        {
+          "connectivity": "4_neighbor",
+          "in": "query_cells",
+          "op": "connected_components",
+          "out": "components"
+        },
+        {
+          "in": "components",
+          "op": "count",
+          "out": "answer"
+        }
+      ],
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "tile_count_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of 4-neighbor connected components formed by the query-color tiles as an integer",
+          "cols": 4,
+          "evidence_hint": "set \"evidence\" to the row-major list of [row, col] coordinates for every tile matching the query color",
+          "json_example": "{\"evidence\":[[0,0],[0,1],[2,2]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "query_color": "orange [#EE881A]",
+          "rows": 4
+        },
+        "task_family_key": "rectangular_tile_board",
+        "task_family_variant_index": 3,
+        "task_key": "color_component_count_query",
+        "task_variant_index": 2,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "tile/count/tile_count_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:color_component_count_query": 5,
+          "task_family:rectangular_tile_board": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "tile_count_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of 4-neighbor connected components formed by the query-color tiles as an integer",
+              "cols": 4,
+              "evidence_hint": "set \"evidence\" to the row-major list of [row, col] coordinates for every tile matching the query color",
+              "json_example": "{\"evidence\":[[0,0],[0,1],[2,2]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "query_color": "orange [#EE881A]",
+              "rows": 4
+            },
+            "task_family_key": "rectangular_tile_board",
+            "task_family_variant_index": 3,
+            "task_key": "color_component_count_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "tile/count/tile_count_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:color_component_count_query": 5,
+              "task_family:rectangular_tile_board": 5
+            }
+          },
+          "prompt": "You are given one rectangular tile board on a 4 by 4 grid. Read rows from the left labels and columns from the top labels. Determine how many 4-neighbor connected groups the orange [#EE881A] tiles form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to the row-major list of [row, col] coordinates for every tile matching the query color.\nAnswer: set \"answer\" to the number of 4-neighbor connected components formed by the query-color tiles as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[0,1],[2,2]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "tile_count_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of 4-neighbor connected components formed by the query-color tiles as an integer",
+              "cols": 4,
+              "evidence_hint": "set \"evidence\" to the row-major list of [row, col] coordinates for every tile matching the query color",
+              "json_example": "{\"evidence\":[[0,0],[0,1],[2,2]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "query_color": "orange [#EE881A]",
+              "rows": 4
+            },
+            "task_family_key": "rectangular_tile_board",
+            "task_family_variant_index": 3,
+            "task_key": "color_component_count_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "tile/count/tile_count_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:color_component_count_query": 5,
+              "task_family:rectangular_tile_board": 5
+            }
+          },
+          "prompt": "You are given one rectangular tile board on a 4 by 4 grid. Read rows from the left labels and columns from the top labels. Determine how many 4-neighbor connected groups the orange [#EE881A] tiles form.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of 4-neighbor connected components formed by the query-color tiles as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "color_components",
+      "template_id": "color_components_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "cell_0_0": {
+          "bbox": [
+            101.0,
+            53.0,
+            179.0,
+            94.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            140.0,
+            73.5
+          ]
+        },
+        "cell_0_1": {
+          "bbox": [
+            179.0,
+            53.0,
+            257.0,
+            94.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            218.0,
+            73.5
+          ]
+        },
+        "cell_0_2": {
+          "bbox": [
+            257.0,
+            53.0,
+            335.0,
+            94.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            296.0,
+            73.5
+          ]
+        },
+        "cell_0_3": {
+          "bbox": [
+            335.0,
+            53.0,
+            413.0,
+            94.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            374.0,
+            73.5
+          ]
+        },
+        "cell_1_0": {
+          "bbox": [
+            101.0,
+            94.0,
+            179.0,
+            135.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            140.0,
+            114.5
+          ]
+        },
+        "cell_1_1": {
+          "bbox": [
+            179.0,
+            94.0,
+            257.0,
+            135.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            218.0,
+            114.5
+          ]
+        },
+        "cell_1_2": {
+          "bbox": [
+            257.0,
+            94.0,
+            335.0,
+            135.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            296.0,
+            114.5
+          ]
+        },
+        "cell_1_3": {
+          "bbox": [
+            335.0,
+            94.0,
+            413.0,
+            135.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            374.0,
+            114.5
+          ]
+        },
+        "cell_2_0": {
+          "bbox": [
+            101.0,
+            135.0,
+            179.0,
+            176.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            140.0,
+            155.5
+          ]
+        },
+        "cell_2_1": {
+          "bbox": [
+            179.0,
+            135.0,
+            257.0,
+            176.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            218.0,
+            155.5
+          ]
+        },
+        "cell_2_2": {
+          "bbox": [
+            257.0,
+            135.0,
+            335.0,
+            176.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            296.0,
+            155.5
+          ]
+        },
+        "cell_2_3": {
+          "bbox": [
+            335.0,
+            135.0,
+            413.0,
+            176.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            374.0,
+            155.5
+          ]
+        },
+        "cell_3_0": {
+          "bbox": [
+            101.0,
+            176.0,
+            179.0,
+            217.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            140.0,
+            196.5
+          ]
+        },
+        "cell_3_1": {
+          "bbox": [
+            179.0,
+            176.0,
+            257.0,
+            217.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            218.0,
+            196.5
+          ]
+        },
+        "cell_3_2": {
+          "bbox": [
+            257.0,
+            176.0,
+            335.0,
+            217.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            296.0,
+            196.5
+          ]
+        },
+        "cell_3_3": {
+          "bbox": [
+            335.0,
+            176.0,
+            413.0,
+            217.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            374.0,
+            196.5
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            246,
+            246,
+            246
+          ],
+          "kind": "solid"
+        }
+      },
+      "board_origin_px": [
+        101,
+        53
+      ],
+      "board_size_px": [
+        312,
+        164
+      ],
+      "canvas_height_px": 241,
+      "canvas_width_px": 447,
+      "cols": 4,
+      "coord_space": "tile_grid",
+      "coordinate_gutters_px": {
+        "left": 56,
+        "top": 35
+      },
+      "label_style": {
+        "font_size_px": 19,
+        "stroke_width_px": 2
+      },
+      "outer_padding_px": {
+        "x": 34,
+        "y": 18
+      },
+      "placement_offset_px": {
+        "x": 11,
+        "y": 0
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "rows": 4,
+      "tile_aspect_ratio": 1.904731,
+      "tile_height_px": 41,
+      "tile_orientation": "wide",
+      "tile_outline_width_px": 2,
+      "tile_width_px": 78,
+      "tiling_type": "rectangular_tiling"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "yellow",
+            "fill_rgb": [
+              212,
+              194,
+              30
+            ],
+            "is_query_match": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "yellow",
+            "fill_rgb": [
+              212,
+              194,
+              30
+            ],
+            "is_query_match": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "blue",
+            "fill_rgb": [
+              45,
+              117,
+              230
+            ],
+            "is_query_match": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "yellow",
+            "fill_rgb": [
+              212,
+              194,
+              30
+            ],
+            "is_query_match": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "blue",
+            "fill_rgb": [
+              45,
+              117,
+              230
+            ],
+            "is_query_match": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "orange",
+            "fill_rgb": [
+              238,
+              136,
+              26
+            ],
+            "is_query_match": true,
+            "query_component_index": 0,
+            "row": 1
+          },
+          "entity_id": "cell_1_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "orange",
+            "fill_rgb": [
+              238,
+              136,
+              26
+            ],
+            "is_query_match": true,
+            "query_component_index": 0,
+            "row": 1
+          },
+          "entity_id": "cell_1_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "blue",
+            "fill_rgb": [
+              45,
+              117,
+              230
+            ],
+            "is_query_match": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "blue",
+            "fill_rgb": [
+              45,
+              117,
+              230
+            ],
+            "is_query_match": false,
+            "row": 2
+          },
+          "entity_id": "cell_2_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "orange",
+            "fill_rgb": [
+              238,
+              136,
+              26
+            ],
+            "is_query_match": true,
+            "query_component_index": 0,
+            "row": 2
+          },
+          "entity_id": "cell_2_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "blue",
+            "fill_rgb": [
+              45,
+              117,
+              230
+            ],
+            "is_query_match": false,
+            "row": 2
+          },
+          "entity_id": "cell_2_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "blue",
+            "fill_rgb": [
+              45,
+              117,
+              230
+            ],
+            "is_query_match": false,
+            "row": 2
+          },
+          "entity_id": "cell_2_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "orange",
+            "fill_rgb": [
+              238,
+              136,
+              26
+            ],
+            "is_query_match": true,
+            "query_component_index": 0,
+            "row": 3
+          },
+          "entity_id": "cell_3_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "orange",
+            "fill_rgb": [
+              238,
+              136,
+              26
+            ],
+            "is_query_match": true,
+            "query_component_index": 0,
+            "row": 3
+          },
+          "entity_id": "cell_3_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "yellow",
+            "fill_rgb": [
+              212,
+              194,
+              30
+            ],
+            "is_query_match": false,
+            "row": 3
+          },
+          "entity_id": "cell_3_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "blue",
+            "fill_rgb": [
+              45,
+              117,
+              230
+            ],
+            "is_query_match": false,
+            "row": 3
+          },
+          "entity_id": "cell_3_3",
+          "entity_type": "tile_cell"
+        }
+      ],
+      "relations": {},
+      "scene_kind": "rectangular_tile_board"
+    },
+    "witness_symbolic": {
+      "ids": [
+        "cell_1_1",
+        "cell_1_2",
+        "cell_2_1",
+        "cell_3_0",
+        "cell_3_1"
+      ],
+      "type": "id_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

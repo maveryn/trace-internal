@@ -673,6 +673,8 @@ class GraphCountingDegreeCountTask:
                     "edge_width_px": int(render_params.edge_width_px),
                     "node_border_width_px": int(render_params.node_border_width_px),
                     "label_font_size_px": int(render_params.label_font_size_px),
+                    "resolved_label_font_size_px": int(rendered_scene.resolved_label_font_size_px),
+                    "label_stroke_width_px": int(rendered_scene.resolved_label_stroke_width_px),
                     "background_meta": dict(background_meta),
                     "post_image_noise_meta": dict(post_noise_meta),
                 },

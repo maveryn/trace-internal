@@ -7,9 +7,9 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 import networkx as nx
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
-from ...shared.text_rendering import draw_text_centered, load_font
+from ...shared.text_rendering import draw_text_centered, fit_font_to_box, load_font
 from .graph_sampling import GraphCountSample
 
 
@@ -84,6 +84,8 @@ class RenderedGraphScene:
     layout_variant: str
     layout_transform_variant: str
     crossing_count: int
+    resolved_label_font_size_px: int
+    resolved_label_stroke_width_px: int
 
 
 def _resolve_panel_geometry(
@@ -394,6 +396,59 @@ def _draw_node_shape(
     return bbox
 
 
+def _node_label_box(
+    *,
+    radius: int,
+    node_shape_variant: str,
+    outline_width: int,
+) -> Tuple[float, float]:
+    """Return one conservative text-fit box inside a node glyph."""
+
+    inner_diameter = max(4.0, float((2 * int(radius)) - (2 * max(1, int(outline_width))) - 6))
+    shape = str(node_shape_variant)
+    if shape == "rounded_square":
+        scale = 0.84
+    elif shape == "hexagon":
+        scale = 0.74
+    else:
+        scale = 0.68
+    side = float(inner_diameter) * float(scale)
+    return (float(side), float(side))
+
+
+def _resolve_node_label_font(
+    draw: ImageDraw.ImageDraw,
+    *,
+    node_labels: Sequence[str],
+    render_params: GraphRenderParams,
+) -> Tuple[ImageFont.ImageFont, int]:
+    """Resolve one fitted node-label font and its stroke width.
+
+    We fit against the longest rendered label so the whole graph uses one
+    stable font size while still accommodating multi-character labels such as
+    `10` inside compact node glyphs.
+    """
+
+    sample_label = max((str(label) for label in node_labels), key=len, default="A")
+    max_width, max_height = _node_label_box(
+        radius=int(render_params.node_radius_px),
+        node_shape_variant=str(render_params.node_shape_variant),
+        outline_width=int(render_params.node_border_width_px),
+    )
+    fitted_font = fit_font_to_box(
+        draw,
+        text=str(sample_label),
+        max_width=float(max_width),
+        max_height=float(max_height),
+        bold=True,
+        min_size_px=10,
+        max_size_px=int(render_params.label_font_size_px),
+        fill_ratio=0.94,
+    )
+    stroke_width = max(1, int(round(float(getattr(fitted_font, "size", render_params.label_font_size_px)) * 0.10)))
+    return fitted_font, int(stroke_width)
+
+
 def render_graph_scene(
     *,
     graph_sample: GraphCountSample,
@@ -460,7 +515,11 @@ def render_graph_scene(
             )
         )
 
-    label_font = load_font(int(render_params.label_font_size_px), bold=True)
+    label_font, label_stroke_width = _resolve_node_label_font(
+        draw,
+        node_labels=tuple(str(label) for label in graph_sample.node_labels),
+        render_params=render_params,
+    )
     rendered_nodes: List[RenderedGraphNode] = []
     radius = int(render_params.node_radius_px)
     for node, label in zip(graph_sample.graph.nodes(), graph_sample.node_labels):
@@ -481,7 +540,7 @@ def render_graph_scene(
             font=label_font,
             fill=tuple(int(v) for v in render_params.label_text_rgb),
             stroke_fill=tuple(int(v) for v in render_params.label_stroke_rgb),
-            stroke_width=2,
+            stroke_width=int(label_stroke_width),
         )
         rendered_nodes.append(
             RenderedGraphNode(
@@ -501,6 +560,8 @@ def render_graph_scene(
         layout_variant=str(actual_layout_variant),
         layout_transform_variant=str(actual_layout_transform_variant),
         crossing_count=_count_edge_crossings(edge_segments),
+        resolved_label_font_size_px=int(getattr(label_font, "size", int(render_params.label_font_size_px))),
+        resolved_label_stroke_width_px=int(label_stroke_width),
     )
 
 

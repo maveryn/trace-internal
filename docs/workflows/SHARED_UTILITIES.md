@@ -40,7 +40,7 @@ Promote helpers when a second consumer appears.
 6. `trace/tasks/shared/prompt_variants.py`
 7. `trace/tasks/shared/output_metadata.py`
 8. `trace/tasks/shared/text_rendering.py`
-   - Canonical text/font helpers plus overlap-aware label placement (`resolve_text_label_center`) for geometry annotations.
+   - Canonical text/font helpers, compact text fitting (`fit_font_to_box`), and overlap-aware label placement (`resolve_text_label_center`) for geometry annotations and other in-figure labels.
 9. `trace/tasks/shared/mcq.py`
 10. `trace/tasks/shared/sequence.py`
    - Canonical deterministic sequence transforms (for example rotation) used by multiple tasks/domains.

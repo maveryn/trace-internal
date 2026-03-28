@@ -73,14 +73,71 @@ def resolve_scene_label_font_size_px(
     return int(base * max(1, int(scene_scale)))
 
 
-def _text_size(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.ImageFont) -> Tuple[float, float]:
+def _text_bbox(
+    draw: ImageDraw.ImageDraw,
+    text: str,
+    font: ImageFont.ImageFont,
+    *,
+    stroke_width: int = 0,
+) -> Tuple[float, float, float, float]:
+    """Return the text bounding box for one rendered string.
+
+    The returned box is relative to the draw origin and includes stroke padding
+    when requested so callers can center or fit the *rendered* text rather than
+    the unstroked glyph box.
+    """
+    try:
+        bbox = draw.textbbox((0, 0), str(text), font=font, stroke_width=max(0, int(stroke_width)))
+        return (float(bbox[0]), float(bbox[1]), float(bbox[2]), float(bbox[3]))
+    except Exception:
+        width, height = draw.textsize(str(text), font=font)
+        return (0.0, 0.0, float(width), float(height))
+
+
+def _text_size(
+    draw: ImageDraw.ImageDraw,
+    text: str,
+    font: ImageFont.ImageFont,
+    *,
+    stroke_width: int = 0,
+) -> Tuple[float, float]:
     """Return text width/height in pixels."""
     try:
-        bbox = draw.textbbox((0, 0), str(text), font=font)
+        bbox = _text_bbox(draw, str(text), font, stroke_width=max(0, int(stroke_width)))
         return float(bbox[2] - bbox[0]), float(bbox[3] - bbox[1])
     except Exception:
         width, height = draw.textsize(str(text), font=font)
         return float(width), float(height)
+
+
+def fit_font_to_box(
+    draw: ImageDraw.ImageDraw,
+    *,
+    text: str,
+    max_width: float,
+    max_height: float,
+    bold: bool = True,
+    min_size_px: int = 8,
+    max_size_px: int | None = None,
+    fill_ratio: float = 0.8,
+) -> ImageFont.ImageFont:
+    """Return the largest cached font that fits one target box.
+
+    This follows the same deterministic, downward-search pattern used in
+    Tesserae's rendering utilities so compact in-figure labels stay readable
+    even when label length or glyph shape varies (for example graph labels `A`
+    vs `10`).
+    """
+    allowed_width = max(1.0, float(max_width)) * max(0.1, float(fill_ratio))
+    allowed_height = max(1.0, float(max_height)) * max(0.1, float(fill_ratio))
+    if max_size_px is None:
+        max_size_px = int(max(int(min_size_px), round(min(float(max_width), float(max_height)) * 0.95)))
+    for size_px in range(max(int(min_size_px), int(max_size_px)), int(min_size_px) - 1, -1):
+        font = load_font(int(size_px), bold=bool(bold))
+        width, height = _text_size(draw, str(text), font)
+        if float(width) <= float(allowed_width) and float(height) <= float(allowed_height):
+            return font
+    return load_font(int(min_size_px), bold=bool(bold))
 
 
 def _normalize_direction(direction: Point) -> Point:
@@ -243,12 +300,12 @@ def draw_text_centered(
     stroke_width: int | None = None,
 ) -> None:
     """Draw text centered around a point with optional outline stroke."""
-    width, height = _text_size(draw, str(text), font)
-    center_x, center_y = float(center[0]), float(center[1])
-    tx = center_x - (0.5 * width)
-    ty = center_y - (0.5 * height)
     size_hint = int(getattr(font, "size", 14))
     outline_width = int(stroke_width) if stroke_width is not None else max(1, int(round(0.08 * float(size_hint))))
+    bbox = _text_bbox(draw, str(text), font, stroke_width=max(0, int(outline_width)))
+    center_x, center_y = float(center[0]), float(center[1])
+    tx = center_x - (0.5 * float(bbox[0] + bbox[2]))
+    ty = center_y - (0.5 * float(bbox[1] + bbox[3]))
     draw.text(
         (float(tx), float(ty)),
         str(text),

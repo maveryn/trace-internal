@@ -88,6 +88,9 @@ def test_graph_counting_degree_count_contract_matches_trace() -> None:
     assert len(trace["projected_evidence"]["pixel_bbox_set"]) == 2
     assert trace["render_spec"]["style"]["node_shape_variant"] == execution["node_shape_variant"]
     assert trace["render_spec"]["style"]["node_color_name"] == execution["node_color_name"]
+    assert int(trace["render_spec"]["style"]["resolved_label_font_size_px"]) > 0
+    assert int(trace["render_spec"]["style"]["label_stroke_width_px"]) >= 1
+    assert int(trace["render_spec"]["style"]["resolved_label_font_size_px"]) <= int(trace["render_spec"]["style"]["label_font_size_px"])
 
 
 def test_graph_counting_degree_count_prompt_example_matches_contract() -> None:
@@ -127,6 +130,24 @@ def test_graph_counting_degree_count_supports_numeric_labels_and_named_colors() 
     assert execution["node_color_name"] == "orange"
     assert trace["render_spec"]["style"]["node_shape_variant"] == "hexagon"
     assert tuple(trace["render_spec"]["style"]["node_fill_rgb"]) == tuple(named_color("orange"))
+
+
+def test_graph_counting_degree_count_fits_numeric_labels_to_node_glyphs() -> None:
+    task = GraphCountingDegreeCountTask()
+    common_params = {
+        "node_count": 10,
+        "query_degree": 1,
+        "target_count": 3,
+        "node_shape_variant": "circle",
+        "node_radius_px": 18,
+    }
+    letters = task.generate(19105, params={**common_params, "label_variant": "letters"}, max_attempts=80)
+    numbers = task.generate(19106, params={**common_params, "label_variant": "numbers"}, max_attempts=80)
+    letters_style = letters.trace_payload["render_spec"]["style"]
+    numbers_style = numbers.trace_payload["render_spec"]["style"]
+    assert int(numbers_style["resolved_label_font_size_px"]) <= int(letters_style["resolved_label_font_size_px"])
+    assert int(numbers_style["resolved_label_font_size_px"]) >= 10
+    assert int(numbers_style["label_stroke_width_px"]) >= 1
 
 
 def test_graph_counting_degree_count_balanced_sampling_defaults() -> None:

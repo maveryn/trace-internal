@@ -165,6 +165,25 @@ def geometry_label_set_output_burden(*, target_count: int, object_count: int) ->
     )
 
 
+def geometry_measurement_output_burden(*, answer_format: str, evidence_point_count: int) -> float:
+    """Normalize output burden for single-object measurement tasks."""
+
+    normalized_answer_format = str(answer_format).strip().lower()
+    answer_format_load = {
+        "integer": 0.25,
+        "number": 0.50,
+        "pi_expression": 0.70,
+    }.get(normalized_answer_format)
+    if answer_format_load is None:
+        raise ValueError(f"unsupported geometry measurement answer_format: {answer_format}")
+    evidence_load = normalize_linear(
+        float(evidence_point_count),
+        min_value=1.0,
+        max_value=5.0,
+    )
+    return clamp_unit_interval((0.65 * float(answer_format_load)) + (0.35 * float(evidence_load)))
+
+
 def geometry_counting_classification_reasoning_score(*, task_kind: str, task_variant: str) -> float:
     """Return normalized reasoning load for one geometry counting class."""
 
@@ -331,9 +350,33 @@ def build_geometry_counting_complexity(
     )
 
 
+def build_geometry_measurement_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    visual_scan: float,
+    measurement_precision: float,
+    ambiguity: float,
+    output_burden: float,
+) -> TaskComplexity:
+    """Build one normalized measurement-family complexity payload."""
+
+    weights = resolve_geometry_complexity_weights(task_group_defaults, task_id=task_id)
+    return build_geometry_task_complexity(
+        weights=weights,
+        components={
+            "visual_scan": clamp_unit_interval(float(visual_scan)),
+            "measurement_precision": clamp_unit_interval(float(measurement_precision)),
+            "ambiguity": clamp_unit_interval(float(ambiguity)),
+            "output_burden": clamp_unit_interval(float(output_burden)),
+        },
+    )
+
+
 __all__ = [
     "build_geometry_counting_complexity",
     "build_geometry_comparison_complexity",
+    "build_geometry_measurement_complexity",
     "build_geometry_task_complexity",
     "clamp_unit_interval",
     "geometry_comparison_reasoning_score",
@@ -343,6 +386,7 @@ __all__ = [
     "geometry_gap_ambiguity_score",
     "geometry_graph_point_output_burden",
     "geometry_label_set_output_burden",
+    "geometry_measurement_output_burden",
     "geometry_visual_scan_score",
     "normalize_linear",
     "resolve_geometry_complexity_weights",

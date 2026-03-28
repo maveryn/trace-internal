@@ -144,3 +144,11 @@ prompt:
       answer_hint: set "answer" to the slope value rounded to one decimal place
       json_example: '{"evidence":[2,0],"answer":-1.5}'
       json_example_answer_only: '{"answer":-1.5}'
+
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.20
+      measurement_precision: 0.50
+      ambiguity: 0.25
+      output_burden: 0.05

@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from ....core.sampling import normalize_positive_weights, weighted_choice
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import (
@@ -23,6 +23,7 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ..shared.background_defaults import POST_IMAGE_BACKGROUND_DEFAULTS
+from ..shared.complexity import build_geometry_measurement_complexity, geometry_measurement_output_burden
 from ..shared.graph_rendering import graph_paper_grid_from_frame, scale_point
 from ..shared.labeled_point_evidence import graph_point_evidence_artifacts
 from ..shared.noise_defaults import POST_IMAGE_NOISE_DEFAULTS
@@ -142,10 +143,16 @@ def _resolve_balanced_slope_tenths(
     return int(selected)
 
 
-def _complexity_score(slope_value: float) -> float:
-    """Return lightweight slope complexity in `[0, 1]`."""
-    normalized = min(1.0, abs(float(slope_value)) / 4.0)
-    return max(0.0, min(1.0, 0.35 + (0.55 * float(normalized))))
+def _measurement_complexity_components(slope_value: float) -> Dict[str, float]:
+    """Return normalized measurement complexity components for slope measurement."""
+
+    normalized_abs = min(1.0, abs(float(slope_value)) / 4.0)
+    near_horizontal = 1.0 - float(normalized_abs)
+    return {
+        "visual_scan": 0.38,
+        "measurement_precision": min(1.0, 0.34 + (0.46 * float(normalized_abs))),
+        "ambiguity": min(1.0, 0.24 + (0.30 * float(near_horizontal))),
+    }
 
 
 @register_task
@@ -474,6 +481,8 @@ class GeometrySlopeMeasureTask:
             "projected_evidence": dict(evidence["projected_evidence"]),
         }
 
+        complexity_components = _measurement_complexity_components(float(slope_value))
+
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),
             answer_gt=TypedValue(type="number", value=float(slope_value)),
@@ -481,12 +490,16 @@ class GeometrySlopeMeasureTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=TaskComplexity(
-                complexity_score=_complexity_score(float(slope_value)),
-                complexity_components={
-                    "task_variant": "line_slope",
-                    "slope_abs": abs(float(slope_value)),
-                },
+            complexity=build_geometry_measurement_complexity(
+                task_group_defaults=_TASK_GROUP_DEFAULTS,
+                task_id=self.task_id,
+                visual_scan=float(complexity_components["visual_scan"]),
+                measurement_precision=float(complexity_components["measurement_precision"]),
+                ambiguity=float(complexity_components["ambiguity"]),
+                output_burden=geometry_measurement_output_burden(
+                    answer_format="number",
+                    evidence_point_count=1,
+                ),
             ),
             task_versions=default_task_versions(),
             task_variant="line_slope",

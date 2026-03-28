@@ -229,18 +229,27 @@ class GeometryAreaMeasure2DTask(GeometryShapeMeasureBase):
             gen_defaults=gen_defaults,
         )
 
-    def _complexity_score(
+    def _measurement_complexity_components(
         self,
         *,
         variant_kind: str,
         answer_scalar: int,
         polygon_sides: int | None,
-    ) -> float:
-        """Compute area-task complexity from shape variant + answer magnitude."""
+    ) -> Dict[str, float]:
+        """Return normalized measurement complexity components for area."""
         variant = str(variant_kind)
         if polygon_sides is None:
-            side_component = 1.0 if variant == "ellipse" else 0.0
+            visual_scan = 0.50 if variant == "ellipse" else 0.30
+            precision_base = 0.85 if variant == "ellipse" else 0.45
+            ambiguity_base = 0.58 if variant == "ellipse" else 0.35
         else:
             side_component = min(1.0, (float(int(polygon_sides)) - 3.0) / 2.0)
+            visual_scan = min(1.0, 0.35 + (0.25 * side_component))
+            precision_base = min(1.0, 0.42 + (0.18 * side_component))
+            ambiguity_base = min(1.0, 0.32 + (0.20 * side_component))
         area_component = min(1.0, float(answer_scalar) / 32.0)
-        return max(0.0, min(1.0, 0.34 + (0.36 * side_component) + (0.30 * area_component)))
+        return {
+            "visual_scan": float(visual_scan),
+            "measurement_precision": min(1.0, float(precision_base) + (0.25 * area_component)),
+            "ambiguity": min(1.0, float(ambiguity_base) + (0.18 * area_component)),
+        }

@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import (
@@ -25,6 +25,7 @@ from ...shared.prompt_variants import (
 )
 from ...shared.text_rendering import resolve_scene_label_font_size_px
 from ..shared.background_defaults import POST_IMAGE_BACKGROUND_DEFAULTS
+from ..shared.complexity import build_geometry_measurement_complexity, geometry_measurement_output_burden
 from ..shared.conic_geometry import (
     CircleInstance,
     EllipseInstance,
@@ -164,6 +165,59 @@ def _answer_bounds(
     if int(resolved_min) > int(resolved_max):
         raise ValueError("answer_min must be <= answer_max")
     return int(resolved_min), int(resolved_max)
+
+
+def _measurement_complexity_components(
+    *,
+    variant_kind: str,
+    answer_scalar: int,
+    answer_max: int,
+) -> Dict[str, float]:
+    """Return normalized measurement complexity components for length measurement."""
+
+    normalized_variant = str(variant_kind)
+    variant_visual_scan = {
+        "segment": 0.25,
+        "triangle": 0.42,
+        "quadrilateral": 0.52,
+        "pentagon": 0.62,
+        "circle_radius": 0.36,
+        "circle_diameter": 0.40,
+        "ellipse_major_axis": 0.55,
+        "ellipse_minor_axis": 0.58,
+    }
+    variant_precision = {
+        "segment": 0.30,
+        "triangle": 0.42,
+        "quadrilateral": 0.50,
+        "pentagon": 0.58,
+        "circle_radius": 0.48,
+        "circle_diameter": 0.55,
+        "ellipse_major_axis": 0.68,
+        "ellipse_minor_axis": 0.72,
+    }
+    variant_ambiguity = {
+        "segment": 0.24,
+        "triangle": 0.34,
+        "quadrilateral": 0.42,
+        "pentagon": 0.50,
+        "circle_radius": 0.46,
+        "circle_diameter": 0.52,
+        "ellipse_major_axis": 0.60,
+        "ellipse_minor_axis": 0.64,
+    }
+    answer_load = min(1.0, float(answer_scalar) / float(max(1, answer_max)))
+    return {
+        "visual_scan": float(variant_visual_scan.get(normalized_variant, 0.45)),
+        "measurement_precision": min(
+            1.0,
+            float(variant_precision.get(normalized_variant, 0.50)) + (0.22 * answer_load),
+        ),
+        "ambiguity": min(
+            1.0,
+            float(variant_ambiguity.get(normalized_variant, 0.40)) + (0.14 * answer_load),
+        ),
+    }
 
 
 def _circle_radii_for_variant(
@@ -1214,31 +1268,21 @@ class GeometryLengthMeasure2DTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        complexity_variant_weight = {
-            "segment": 0.35,
-            "triangle": 0.45,
-            "quadrilateral": 0.55,
-            "pentagon": 0.65,
-            "circle_radius": 0.55,
-            "circle_diameter": 0.58,
-            "ellipse_major_axis": 0.64,
-            "ellipse_minor_axis": 0.62,
-        }
-        complexity = TaskComplexity(
-            complexity_score=max(
-                0.0,
-                min(
-                    1.0,
-                    0.24
-                    + (0.44 * float(complexity_variant_weight.get(str(variant_kind), 0.5)))
-                    + (0.32 * min(1.0, float(answer_scalar) / float(max(1, answer_max)))),
-                ),
+        complexity_components = _measurement_complexity_components(
+            variant_kind=str(variant_kind),
+            answer_scalar=int(answer_scalar),
+            answer_max=int(answer_max),
+        )
+        complexity = build_geometry_measurement_complexity(
+            task_group_defaults=_TASK_GROUP_DEFAULTS,
+            task_id=self.task_id,
+            visual_scan=float(complexity_components["visual_scan"]),
+            measurement_precision=float(complexity_components["measurement_precision"]),
+            ambiguity=float(complexity_components["ambiguity"]),
+            output_burden=geometry_measurement_output_burden(
+                answer_format="integer",
+                evidence_point_count=(len(evidence["evidence_value"]) if isinstance(evidence["evidence_value"], list) else 1),
             ),
-            complexity_components={
-                "shape_variant": str(variant_kind),
-                "answer_scalar": int(answer_scalar),
-                "polygon_sides": (int(polygon_sides) if polygon_sides is not None else None),
-            },
         )
 
         trace_payload = {

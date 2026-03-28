@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...shared.config_defaults import (
     group_default,
@@ -37,6 +37,7 @@ from ..shared.conic_geometry import (
     sample_circle_instance_on_graph_paper,
     sample_ellipse_instance_on_graph_paper,
 )
+from ..shared.complexity import build_geometry_measurement_complexity, geometry_measurement_output_burden
 from ..shared.graph_rendering import graph_paper_grid_from_frame, scale_point
 from ..shared.labeled_point_evidence import graph_point_evidence_artifacts, graph_point_set_evidence_artifacts
 from ..shared.polygon_geometry import (
@@ -129,14 +130,14 @@ class GeometryShapeMeasureBase:
         """Return scalar answer value for one circle instance."""
         raise NotImplementedError
 
-    def _complexity_score(
+    def _measurement_complexity_components(
         self,
         *,
         variant_kind: str,
         answer_scalar: int,
         polygon_sides: int | None,
-    ) -> float:
-        """Return task-specific complexity score."""
+    ) -> Dict[str, float]:
+        """Return normalized measurement complexity components."""
         raise NotImplementedError
 
     def _pi_variants(self) -> set[str]:
@@ -807,17 +808,28 @@ class GeometryShapeMeasureBase:
             "projected_evidence": dict(evidence["projected_evidence"]),
         }
 
-        complexity = TaskComplexity(
-            complexity_score=self._complexity_score(
-                variant_kind=str(variant_kind),
-                answer_scalar=int(answer_scalar),
-                polygon_sides=(int(polygon_sides) if polygon_sides is not None else None),
+        evidence_value = evidence["evidence_value"]
+        evidence_point_count = 1
+        if str(evidence["evidence_type"]) == "graph_point_set":
+            evidence_point_count = len(evidence_value) if isinstance(evidence_value, list) else 1
+        elif str(evidence["evidence_type"]) == "graph_point":
+            evidence_point_count = 1
+
+        complexity_components = self._measurement_complexity_components(
+            variant_kind=str(variant_kind),
+            answer_scalar=int(answer_scalar),
+            polygon_sides=(int(polygon_sides) if polygon_sides is not None else None),
+        )
+        complexity = build_geometry_measurement_complexity(
+            task_group_defaults=task_group_defaults,
+            task_id=self.task_id,
+            visual_scan=float(complexity_components["visual_scan"]),
+            measurement_precision=float(complexity_components["measurement_precision"]),
+            ambiguity=float(complexity_components["ambiguity"]),
+            output_burden=geometry_measurement_output_burden(
+                answer_format=str(answer_format),
+                evidence_point_count=int(evidence_point_count),
             ),
-            complexity_components={
-                "shape_variant": str(variant_kind),
-                str(self.answer_component_key): int(answer_scalar),
-                "polygon_sides": (int(polygon_sides) if polygon_sides is not None else None),
-            },
         )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),

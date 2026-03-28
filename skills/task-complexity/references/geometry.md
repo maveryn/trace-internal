@@ -25,7 +25,8 @@ output_burden: 0.05
 Measure:
 - closeness to easy canonical values,
 - number of visible labels/annotations,
-- precision burden (integer vs decimal vs `kπ`).
+- precision burden (integer vs decimal vs `kπ`),
+- evidence cardinality / answer-format burden.
 
 ### `comparison`
 ```yaml

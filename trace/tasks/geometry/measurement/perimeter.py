@@ -190,18 +190,27 @@ class GeometryPerimeterMeasure2DTask(GeometryShapeMeasureBase):
         """Return shape variants that emit π-expression answers."""
         return {"circle"}
 
-    def _complexity_score(
+    def _measurement_complexity_components(
         self,
         *,
         variant_kind: str,
         answer_scalar: int,
         polygon_sides: int | None,
-    ) -> float:
-        """Compute perimeter-task complexity from shape variant + answer magnitude."""
+    ) -> Dict[str, float]:
+        """Return normalized measurement complexity components for perimeter."""
         variant = str(variant_kind)
         if polygon_sides is None:
-            side_component = 1.0 if variant == "circle" else 0.0
+            visual_scan = 0.40 if variant == "circle" else 0.30
+            precision_base = 0.82 if variant == "circle" else 0.45
+            ambiguity_base = 0.52 if variant == "circle" else 0.34
         else:
             side_component = min(1.0, (float(int(polygon_sides)) - 3.0) / 2.0)
+            visual_scan = min(1.0, 0.35 + (0.25 * side_component))
+            precision_base = min(1.0, 0.40 + (0.16 * side_component))
+            ambiguity_base = min(1.0, 0.30 + (0.18 * side_component))
         perimeter_component = min(1.0, float(answer_scalar) / 24.0)
-        return max(0.0, min(1.0, 0.36 + (0.34 * side_component) + (0.30 * perimeter_component)))
+        return {
+            "visual_scan": float(visual_scan),
+            "measurement_precision": min(1.0, float(precision_base) + (0.28 * perimeter_component)),
+            "ambiguity": min(1.0, float(ambiguity_base) + (0.16 * perimeter_component)),
+        }

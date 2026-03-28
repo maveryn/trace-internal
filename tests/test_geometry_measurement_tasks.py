@@ -95,6 +95,14 @@ def test_angle_measure_outputs_expected_contract() -> None:
         assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
         assert trace["execution_trace"]["scene_variant"] == scene_variant
         assert trace["execution_trace"]["source_kind"] == source_kind
+        assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
+        assert set(out.complexity.complexity_components.keys()) == {
+            "visual_scan",
+            "measurement_precision",
+            "ambiguity",
+            "output_burden",
+        }
+        assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
         target_angle = int(trace["execution_trace"]["target_angle"])
         assert 30 <= int(target_angle) <= 150
         answer_value = int(out.answer_gt.value)
@@ -251,6 +259,14 @@ def test_slope_measure_outputs_expected_contract() -> None:
     assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
     assert trace["execution_trace"]["task_variant"] == "line_slope"
     assert trace["execution_trace"]["question_format"] == "numeric_open"
+    assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
+    assert set(out.complexity.complexity_components.keys()) == {
+        "visual_scan",
+        "measurement_precision",
+        "ambiguity",
+        "output_burden",
+    }
+    assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
     feasible_answers = [float(value) for value in trace["execution_trace"]["feasible_answer_values"]]
     assert feasible_answers
     assert float(out.answer_gt.value) in feasible_answers
@@ -342,6 +358,14 @@ def test_polygon_measure_tasks_match_scene_attrs() -> None:
         trace = out.trace_payload
         assert str(out.task_variant).strip()
         assert out.answer_gt.type == str(answer_type)
+        assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
+        assert set(out.complexity.complexity_components.keys()) == {
+            "visual_scan",
+            "measurement_precision",
+            "ambiguity",
+            "output_burden",
+        }
+        assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
         assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
         assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
         assert "Required labels:" not in out.prompt
@@ -429,6 +453,14 @@ def test_length_measure_variants_match_scene_and_evidence() -> None:
         assert str(out.task_variant).strip()
         assert out.answer_gt.type == "integer"
         assert 2 <= int(out.answer_gt.value) <= 20
+        assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
+        assert set(out.complexity.complexity_components.keys()) == {
+            "visual_scan",
+            "measurement_precision",
+            "ambiguity",
+            "output_burden",
+        }
+        assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
         assert out.evidence_gt.type == "graph_point_set"
         evidence_points = _assert_graph_point_set(
             out.evidence_gt.value,

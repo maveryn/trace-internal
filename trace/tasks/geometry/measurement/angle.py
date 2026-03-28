@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from ....core.sampling import normalize_positive_weights, weighted_choice
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import (
@@ -32,6 +32,7 @@ from ..shared.angle_geometry import (
     primitive_angle_pair_catalog,
     sample_primitive_angle,
 )
+from ..shared.complexity import build_geometry_measurement_complexity, geometry_measurement_output_burden
 from ..shared.graph_paper import offset_point_by_grid_vector, sample_lattice_point_with_offsets
 from ..shared.graph_rendering import graph_paper_grid_from_frame, scale_point
 from ..shared.labeled_point_evidence import graph_point_set_evidence_artifacts
@@ -94,11 +95,20 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 )
 
 
-def _complexity_score(*, source_kind: str, angle_degrees: float) -> float:
-    """Compute a lightweight complexity proxy for angle measurement."""
-    centered = 1.0 - min(1.0, abs(float(angle_degrees) - 90.0) / 90.0)
-    source_bonus = 0.18 if str(source_kind) == _INTERSECTION_SOURCE_KIND else 0.0
-    return max(0.0, min(1.0, 0.42 + (0.4 * centered) + source_bonus))
+def _measurement_complexity_components(*, source_kind: str, angle_degrees: float) -> Dict[str, float]:
+    """Return normalized measurement complexity components for angle measurement."""
+
+    normalized_source_kind = str(source_kind)
+    canonical_angles = (30.0, 45.0, 60.0, 90.0, 120.0, 135.0, 150.0)
+    nearest_canonical = min(abs(float(angle_degrees) - candidate) for candidate in canonical_angles)
+    canonical_distance = min(1.0, float(nearest_canonical) / 22.5)
+    right_angle_centering = 1.0 - min(1.0, abs(float(angle_degrees) - 90.0) / 90.0)
+    intersection_bonus = 0.22 if normalized_source_kind == _INTERSECTION_SOURCE_KIND else 0.0
+    return {
+        "visual_scan": 0.65 if normalized_source_kind == _INTERSECTION_SOURCE_KIND else 0.40,
+        "measurement_precision": min(1.0, 0.34 + (0.42 * canonical_distance) + intersection_bonus),
+        "ambiguity": min(1.0, 0.22 + (0.38 * right_angle_centering) + (0.12 * canonical_distance)),
+    }
 
 
 def _angle_question_text(*, label_a: str, label_v: str, label_b: str) -> str:
@@ -1212,13 +1222,20 @@ class GeometryAngleMeasure2DTask:
             "projected_evidence": dict(evidence["projected_evidence"]),
         }
 
-        complexity = TaskComplexity(
-            complexity_score=_complexity_score(source_kind=source_kind_value, angle_degrees=answer_value),
-            complexity_components={
-                "scene_variant": str(scene_variant_value),
-                "source_kind": str(source_kind_value),
-                "angle_degrees": int(answer_value),
-            },
+        complexity_components = _measurement_complexity_components(
+            source_kind=source_kind_value,
+            angle_degrees=answer_value,
+        )
+        complexity = build_geometry_measurement_complexity(
+            task_group_defaults=_TASK_GROUP_DEFAULTS,
+            task_id=self.task_id,
+            visual_scan=float(complexity_components["visual_scan"]),
+            measurement_precision=float(complexity_components["measurement_precision"]),
+            ambiguity=float(complexity_components["ambiguity"]),
+            output_burden=geometry_measurement_output_burden(
+                answer_format="integer",
+                evidence_point_count=3,
+            ),
         )
 
         return TaskOutput(

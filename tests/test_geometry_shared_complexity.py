@@ -6,6 +6,7 @@ from trace.core.task_group_config import get_task_group_defaults
 from trace.tasks.geometry.shared.complexity import (
     build_geometry_comparison_complexity,
     build_geometry_counting_complexity,
+    build_geometry_measurement_complexity,
 )
 
 
@@ -76,6 +77,37 @@ def test_geometry_counting_complexity_increases_with_scan_density_and_burden() -
     assert set(harder.complexity_components.keys()) == {
         "visual_scan",
         "classification_reasoning",
+        "ambiguity",
+        "output_burden",
+    }
+
+
+def test_geometry_measurement_complexity_weights_active_components() -> None:
+    defaults = get_task_group_defaults("geometry", "measurement")
+
+    easier = build_geometry_measurement_complexity(
+        task_group_defaults=defaults,
+        task_id="task_geometry_measurement_angle",
+        visual_scan=0.30,
+        measurement_precision=0.25,
+        ambiguity=0.20,
+        output_burden=0.25,
+    )
+    harder = build_geometry_measurement_complexity(
+        task_group_defaults=defaults,
+        task_id="task_geometry_measurement_angle",
+        visual_scan=0.60,
+        measurement_precision=0.80,
+        ambiguity=0.55,
+        output_burden=0.35,
+    )
+
+    assert 0.0 <= float(easier.complexity_score) <= 1.0
+    assert 0.0 <= float(harder.complexity_score) <= 1.0
+    assert float(harder.complexity_score) > float(easier.complexity_score)
+    assert set(harder.complexity_components.keys()) == {
+        "visual_scan",
+        "measurement_precision",
         "ambiguity",
         "output_burden",
     }

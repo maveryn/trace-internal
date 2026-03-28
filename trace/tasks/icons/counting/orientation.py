@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Mapping, Tuple
 
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import (
@@ -15,7 +15,7 @@ from ...shared.config_defaults import (
     required_group_defaults,
     split_generation_rendering_prompt_defaults,
 )
-from ...shared.counting_sampling import counting_complexity_score, resolve_counting_target_and_distractor_triplet
+from ...shared.counting_sampling import resolve_counting_target_and_distractor_triplet
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -30,6 +30,7 @@ from ..shared.icon_scene import (
     sort_bboxes_reading_order,
 )
 from ..shared.defaults import ICON_SHARED_DEFAULTS
+from ..shared.complexity import build_icons_counting_orientation_complexity
 from ..shared.icon_style import icon_palette_meets_distance_constraints, sample_icon_palette, sample_icon_tints
 from ..shared.icon_task_rendering import (
     icon_render_style_trace,
@@ -450,16 +451,16 @@ class IconsCountingOrientationTask:
                 "bbox_set": list(evidence_bboxes),
             },
         }
-        complexity = TaskComplexity(
-            complexity_score=counting_complexity_score(
-                object_count=int(scene_payload.object_count),
-                target_count=int(scene_payload.target_count),
-            ),
-            complexity_components={
-                "object_count": int(scene_payload.object_count),
-                "target_count": int(scene_payload.target_count),
-                "task_variant": "same_orientation",
-            },
+        complexity = build_icons_counting_orientation_complexity(
+            task_group_defaults=_TASK_GROUP_DEFAULTS,
+            task_id=self.task_id,
+            object_count=int(scene_payload.object_count),
+            target_count=int(scene_payload.target_count),
+            object_count_min=int(group_default(_GEN_DEFAULTS, "object_count_min", _DEFAULTS.object_count_min)),
+            object_count_max=int(group_default(_GEN_DEFAULTS, "object_count_max", _DEFAULTS.object_count_max)),
+            rotation_candidate_count=len(rotation_candidates),
+            scene_instances=scene_payload.scene_instances,
+            render_params=render_params,
         )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),

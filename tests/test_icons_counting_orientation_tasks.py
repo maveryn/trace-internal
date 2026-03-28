@@ -55,6 +55,14 @@ def test_icons_counting_orientation_contract_matches_scene() -> None:
     assert 8 <= len(sampled_palette) <= 12
     assert list(trace["render_spec"]["style"]["icon_noise_edit_count_range"]) == [0, 2]
     assert float(trace["render_spec"]["style"]["scene_max_overlap_fraction"]) == 0.10
+    assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
+    assert set(out.complexity.complexity_components.keys()) == {
+        "visual_scan",
+        "semantic_match",
+        "ambiguity",
+        "clutter",
+    }
+    assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
 
     base_icon_id = str(execution["base_icon_id"])
     reference_rotation = int(execution["reference_rotation_degrees"])

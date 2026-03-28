@@ -221,6 +221,95 @@ def build_icons_counting_type_complexity(
     )
 
 
+def build_icons_counting_color_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    object_count: int,
+    target_count: int,
+    object_count_min: int,
+    object_count_max: int,
+    sampled_palette_size: int,
+    min_color_distance: float,
+    scene_instances: Sequence[Mapping[str, Any]],
+    render_params: Mapping[str, Any],
+) -> TaskComplexity:
+    """Build complexity for the reference-scene color counting task."""
+
+    visual_scan = icon_visual_scan_score(
+        object_count=int(object_count),
+        object_count_min=int(object_count_min),
+        object_count_max=int(object_count_max),
+    )
+    palette_load = _normalize_linear(float(sampled_palette_size), min_value=3.0, max_value=12.0)
+    distance_difficulty = 1.0 - _normalize_linear(float(min_color_distance), min_value=40.0, max_value=60.0)
+    ambiguity = _clip01(
+        (0.55 * icon_target_density_balance(target_count=int(target_count), object_count=int(object_count)))
+        + (0.25 * palette_load)
+        + (0.20 * distance_difficulty)
+    )
+    clutter = icon_scene_clutter_score(
+        scene_instances=scene_instances,
+        scene_icon_size_min_px=int(render_params["scene_icon_size_min_px"]),
+        scene_icon_size_max_px=int(render_params["scene_icon_size_max_px"]),
+        scene_max_overlap_fraction=float(render_params["scene_max_overlap_fraction"]),
+        noise_edit_count_range=render_params["icon_noise_edit_count_range"],
+    )
+    return build_icon_task_complexity(
+        task_group_defaults=task_group_defaults,
+        task_id=str(task_id),
+        criterion_values={
+            "visual_scan": float(visual_scan),
+            "semantic_match": float(icon_semantic_match_score(queried_attribute_count=1)),
+            "ambiguity": float(ambiguity),
+            "clutter": float(clutter),
+        },
+    )
+
+
+def build_icons_counting_orientation_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    object_count: int,
+    target_count: int,
+    object_count_min: int,
+    object_count_max: int,
+    rotation_candidate_count: int,
+    scene_instances: Sequence[Mapping[str, Any]],
+    render_params: Mapping[str, Any],
+) -> TaskComplexity:
+    """Build complexity for the reference-scene orientation counting task."""
+
+    visual_scan = icon_visual_scan_score(
+        object_count=int(object_count),
+        object_count_min=int(object_count_min),
+        object_count_max=int(object_count_max),
+    )
+    rotation_load = _normalize_linear(float(rotation_candidate_count), min_value=2.0, max_value=4.0)
+    ambiguity = _clip01(
+        (0.65 * icon_target_density_balance(target_count=int(target_count), object_count=int(object_count)))
+        + (0.35 * rotation_load)
+    )
+    clutter = icon_scene_clutter_score(
+        scene_instances=scene_instances,
+        scene_icon_size_min_px=int(render_params["scene_icon_size_min_px"]),
+        scene_icon_size_max_px=int(render_params["scene_icon_size_max_px"]),
+        scene_max_overlap_fraction=float(render_params["scene_max_overlap_fraction"]),
+        noise_edit_count_range=render_params["icon_noise_edit_count_range"],
+    )
+    return build_icon_task_complexity(
+        task_group_defaults=task_group_defaults,
+        task_id=str(task_id),
+        criterion_values={
+            "visual_scan": float(visual_scan),
+            "semantic_match": float(icon_semantic_match_score(queried_attribute_count=1)),
+            "ambiguity": float(ambiguity),
+            "clutter": float(clutter),
+        },
+    )
+
+
 def build_icons_counting_attribute_binding_complexity(
     *,
     task_group_defaults: Mapping[str, Any],
@@ -266,6 +355,67 @@ def build_icons_counting_attribute_binding_complexity(
         criterion_values={
             "visual_scan": float(visual_scan),
             "semantic_match": float(icon_semantic_match_score(queried_attribute_count=3)),
+            "ambiguity": float(ambiguity),
+            "clutter": float(clutter),
+        },
+    )
+
+
+def build_icons_counting_size_relation_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    object_count: int,
+    target_count: int,
+    object_count_min: int,
+    object_count_max: int,
+    reference_nominal_size_px: int,
+    scene_nominal_sizes_px: Sequence[int],
+    size_relation_min_delta_px: int,
+    scene_size_min_px: int,
+    scene_size_max_px: int,
+    scene_instances: Sequence[Mapping[str, Any]],
+    render_params: Mapping[str, Any],
+) -> TaskComplexity:
+    """Build complexity for the icon size-relation counting task."""
+
+    visual_scan = icon_visual_scan_score(
+        object_count=int(object_count),
+        object_count_min=int(object_count_min),
+        object_count_max=int(object_count_max),
+    )
+    if scene_nominal_sizes_px:
+        avg_size_gap = sum(abs(int(size) - int(reference_nominal_size_px)) for size in scene_nominal_sizes_px) / float(
+            len(scene_nominal_sizes_px)
+        )
+    else:
+        avg_size_gap = float(size_relation_min_delta_px)
+    max_gap = max(
+        1.0,
+        float(max(int(scene_size_max_px), int(reference_nominal_size_px)) - min(int(scene_size_min_px), int(reference_nominal_size_px))),
+    )
+    size_gap_difficulty = 1.0 - _normalize_linear(
+        float(avg_size_gap),
+        min_value=float(size_relation_min_delta_px),
+        max_value=float(max_gap),
+    )
+    ambiguity = _clip01(
+        (0.55 * icon_target_density_balance(target_count=int(target_count), object_count=int(object_count)))
+        + (0.45 * size_gap_difficulty)
+    )
+    clutter = icon_scene_clutter_score(
+        scene_instances=scene_instances,
+        scene_icon_size_min_px=int(render_params["scene_icon_size_min_px"]),
+        scene_icon_size_max_px=int(render_params["scene_icon_size_max_px"]),
+        scene_max_overlap_fraction=float(render_params["scene_max_overlap_fraction"]),
+        noise_edit_count_range=render_params["icon_noise_edit_count_range"],
+    )
+    return build_icon_task_complexity(
+        task_group_defaults=task_group_defaults,
+        task_id=str(task_id),
+        criterion_values={
+            "visual_scan": float(visual_scan),
+            "semantic_match": float(icon_semantic_match_score(queried_attribute_count=1)),
             "ambiguity": float(ambiguity),
             "clutter": float(clutter),
         },
@@ -327,7 +477,10 @@ def build_icons_relation_relative_position_type_complexity(
 
 __all__ = [
     "build_icon_task_complexity",
+    "build_icons_counting_color_complexity",
     "build_icons_counting_attribute_binding_complexity",
+    "build_icons_counting_orientation_complexity",
+    "build_icons_counting_size_relation_complexity",
     "build_icons_counting_type_complexity",
     "build_icons_relation_relative_position_type_complexity",
     "icon_scene_clutter_score",

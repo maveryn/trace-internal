@@ -54,6 +54,14 @@ def test_icons_counting_size_relation_contract_matches_scene() -> None:
     assert int(execution["reference_nominal_size_px"]) == int(reference_entity["nominal_size_px"])
     assert int(reference_entity["nominal_size_px"]) >= 64
     assert int(reference_entity["nominal_size_px"]) <= 96
+    assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
+    assert set(out.complexity.complexity_components.keys()) == {
+        "visual_scan",
+        "semantic_match",
+        "ambiguity",
+        "clutter",
+    }
+    assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
     assert int(execution["object_count"]) == 7
     assert int(execution["target_count"]) == 3
     assert int(execution["distractor_count"]) == 4

@@ -42,7 +42,7 @@ Use this whenever the task lives under `domain=tables`.
 - Keep early table tasks column-centric where possible: column summary, column filtering, and direct row+column cell readout all reuse the same clear table schema before row-summary tasks are added.
 - If a table readout task broadens from one exact cell to one-or-more queried cells with simple arithmetic, rename the task/module to the broader subset concept instead of keeping a stale `cell_value` name.
 - Keep prompts explicit about what evidence region should be boxed.
-- The current statistics family splits naturally into column winner-label questions (`summary_label`), numeric column-summary questions (`summary_value`), row winner-label questions (`row_summary_label`), and numeric row-summary questions (`row_summary_value`); follow that separation for future table tasks too.
+- When row/column summary mirrors share the same answer shape and the same `bbox_set` evidence contract, prefer widening `task_variant` inside the existing statistics task instead of adding a near-duplicate sibling task id.
 
 ## Schema lessons learned
 - Row-name answers can be real visible strings; they do not need to be forced into `option_letter`.

@@ -58,18 +58,16 @@ Define how we split tasks into reusable families so each dataset slice stays com
 ## Tables direction (current)
 1. Tables follow the same split as charts: `task_group` encodes reasoning family, while table styling is treated as `scene_variant` inside the task.
 2. The active table families are `statistics`, `counting`, `readout`, and `relation`.
-3. `task_tables_statistics_summary_label` uses semantic `task_variant` values `argmax` and `argmin`.
-4. `task_tables_statistics_summary_value` uses semantic `task_variant` values `column_sum`, `column_mean`, and `column_median`.
-5. `task_tables_statistics_row_summary_label` uses semantic `task_variant` values `row_sum_argmax` and `row_sum_argmin`.
-6. `task_tables_statistics_row_summary_value` uses semantic `task_variant` values `row_sum` and `row_mean`.
-7. `task_tables_counting_value_count` uses semantic `task_variant` values `above_threshold`, `below_threshold`, and `in_interval`.
-8. `task_tables_counting_column_pair_count` uses semantic `task_variant` values `col_a_gt_col_b` and `col_a_lt_col_b`.
-9. `task_tables_readout_subset_value` uses semantic `task_variant` values `cell_lookup`, `cell_sum_two`, and `cell_difference_two_abs`.
-10. `task_tables_relation_row_compare_label` uses semantic `task_variant` values `higher_of_two_rows` and `lower_of_two_rows`.
-11. All active table tasks use `scene_variant` values `spreadsheet`, `zebra`, `ledger`, and `card_table`.
-12. Table row labels should use short visible human-style names rather than single letters when the answer is a row identity.
-13. Table tasks use one fixed prompt-facing evidence type in v1: `bbox_set`.
-14. Evidence boxes should mark the minimal supporting table region(s): one decisive numeric cell bbox for `task_tables_statistics_summary_label`, one queried-column region bbox for `task_tables_statistics_summary_value`, one winning-row region bbox for `task_tables_statistics_row_summary_label`, one queried-row region bbox for `task_tables_statistics_row_summary_value`, one ordered set of matching value-cell bboxes for `task_tables_counting_value_count`, one ordered set of compared two-column value-cell pairs for `task_tables_counting_column_pair_count`, one queried value-cell bbox or ordered queried-cell pair for `task_tables_readout_subset_value`, and one ordered pair of compared queried-column value-cell bboxes for `task_tables_relation_row_compare_label`.
+3. `task_tables_statistics_summary_label` uses semantic `task_variant` values `argmax`, `argmin`, `row_sum_argmax`, and `row_sum_argmin`.
+4. `task_tables_statistics_summary_value` uses semantic `task_variant` values `column_sum`, `column_mean`, `column_median`, `row_sum`, and `row_mean`.
+5. `task_tables_counting_value_count` uses semantic `task_variant` values `above_threshold`, `below_threshold`, and `in_interval`.
+6. `task_tables_counting_column_pair_count` uses semantic `task_variant` values `col_a_gt_col_b` and `col_a_lt_col_b`.
+7. `task_tables_readout_subset_value` uses semantic `task_variant` values `cell_lookup`, `cell_sum_two`, and `cell_difference_two_abs`.
+8. `task_tables_relation_row_compare_label` uses semantic `task_variant` values `higher_of_two_rows` and `lower_of_two_rows`.
+9. All active table tasks use `scene_variant` values `spreadsheet`, `zebra`, `ledger`, and `card_table`.
+10. Table row labels should use short visible human-style names rather than single letters when the answer is a row identity.
+11. Table tasks use one fixed prompt-facing evidence type in v1: `bbox_set`.
+12. Evidence boxes should mark the minimal supporting table region(s): one decisive numeric cell bbox or one winning-row region bbox for `task_tables_statistics_summary_label`, one queried-column region bbox or queried-row region bbox for `task_tables_statistics_summary_value`, one ordered set of matching value-cell bboxes for `task_tables_counting_value_count`, one ordered set of compared two-column value-cell pairs for `task_tables_counting_column_pair_count`, one queried value-cell bbox or ordered queried-cell pair for `task_tables_readout_subset_value`, and one ordered pair of compared queried-column value-cell bboxes for `task_tables_relation_row_compare_label`.
 
 ## Planned geometry measurement variants
 1. **Angle measurement**

@@ -4,13 +4,15 @@
 1. Domain: `tables`
 2. Task group: `statistics`
 3. Task id: `task_tables_statistics_summary_value`
-4. Objective: return a numeric summary value for one queried numeric column.
+4. Objective: return a numeric summary value for one queried column or row subset.
 
 ## 2) Scene + task contract
 1. Supported `task_variant` values:
    - `column_sum`
    - `column_mean`
    - `column_median`
+   - `row_sum`
+   - `row_mean`
 2. Supported `scene_variant` values:
    - `spreadsheet`
    - `zebra`
@@ -24,19 +26,22 @@
    - `3..5` numeric columns by default,
    - `5..10` data rows by default,
    - row labels are short visible person-style names,
-   - the query names one numeric column,
-   - the answer is the requested integer summary over that column.
+   - column variants query one numeric column,
+   - row variants query one visible row label,
+   - the answer is the requested integer summary over that column or row subset.
 6. Generation guarantees:
    - `column_sum` uses integer cell values and returns the exact column total,
    - `column_mean` is constructed so the column mean is an integer,
    - `column_median` uses an odd row count and a unique median value by construction,
-   - evidence is exactly one bbox for the supporting queried-column data region.
+   - `row_sum` uses integer cell values and returns the exact row total,
+   - `row_mean` is constructed so the row mean is an integer,
+   - evidence is exactly one bbox for the supporting queried-column data region on column variants and one bbox for the supporting queried-row region on row variants.
 
 ## 3) Prompt contract
 1. Bundle: `tables_statistics_v1`
 2. `task_family_key`: `styled_table_statistics`
-3. `task_key`: `summary_value_query`
-4. `task_variant_key`: one of `column_sum|column_mean|column_median`
+3. `task_key`: `summary_value_query` for column variants and `summary_row_value_query` for row variants
+4. `task_variant_key`: one of `column_sum|column_mean|column_median|row_sum|row_mean`
 5. Required slots:
    - task-family: `object_description`
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
@@ -45,10 +50,10 @@
    - prompt config in `configs/domains/tables/statistics.yaml`,
    - deterministic bundle selection from `prompts/tables/statistics/tables_statistics_v1.json`.
 7. Modes: `answer_only`, `answer_and_evidence`
-8. Prompt-facing answer is the exact integer summary value; prompt-facing evidence is the bbox of the supporting queried-column region.
+8. Prompt-facing answer is the exact integer summary value; prompt-facing evidence is the bbox of the supporting queried-column region on column variants or the supporting queried-row region on row variants.
 
 ## 4) Evidence + trace contract
-1. Prompt-facing evidence is one `bbox_set` containing exactly one supporting column-region bbox.
+1. Prompt-facing evidence is one `bbox_set` containing exactly one supporting column-region bbox on column variants or one supporting row-region bbox on row variants.
 2. `projected_evidence` includes:
    - `bbox_set`
 3. `scene_ir.entities` stores one entity per table cell with:
@@ -67,9 +72,10 @@
    - `task_variant`
    - `scene_variant`
    - row labels, column headers, and full numeric table values
-   - queried column
+   - queried column on column variants
+   - queried row on row variants
    - answer value
-   - supporting region kind/header
+   - supporting region kind/header or supporting region kind/row label
    - row/column count ranges
 
 ## 5) Visual policy
@@ -83,4 +89,4 @@
 2. `task_variant` and `scene_variant` are sampled independently at the policy level.
 3. Answers and evidence come from the same generated table.
 4. No semantic auto-relaxation.
-5. Review overlays rely on the supporting column-region bbox recorded in trace, not OCR from pixels.
+5. Review overlays rely on the supporting column-region bbox or supporting row-region bbox recorded in trace, not OCR from pixels.

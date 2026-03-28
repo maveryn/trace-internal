@@ -133,6 +133,7 @@ Use this checklist during implementation and refactor reviews.
 117. When a table readout task broadens from one exact cell to one-or-more queried cells with arithmetic, rename the task/module/docs to the broader subset concept and keep multi-cell `bbox_set` evidence ordered exactly as the prompt names the queried cells.
 118. For table pairwise comparison tasks whose answer is one visible row label, keep evidence as the ordered pair of compared value-cell bboxes rather than collapsing evidence to the winning cell; the loser cell is part of the proof.
 119. For table counting tasks that compare two columns row-by-row, order `bbox_set` evidence row-major over matching rows and keep the within-row bbox order aligned to the prompt's column order; do not sort by cell id or column index later.
+120. For table row/column mirror statistics tasks, prefer widening `task_variant` inside the existing summary task when the answer shape and `bbox_set` evidence contract still align; only split into separate task ids if the prompt/evidence schema materially diverges.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

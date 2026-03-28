@@ -1,4 +1,4 @@
-"""Table statistics task that returns the winning row label for one column."""
+"""Table statistics task that returns the winning row label for one summary objective."""
 
 from __future__ import annotations
 
@@ -20,8 +20,10 @@ from ...shared.prompt_variants import (
 from ..shared.table_common import (
     SUPPORTED_TABLE_SCENE_VARIANTS,
     TableDefaults,
+    build_row_summary_label_dataset_for_variant,
     build_summary_label_dataset_for_variant,
     projected_table_bbox_evidence,
+    projected_table_region_bbox_evidence,
     resolve_table_axis_variant,
     resolve_table_render_params,
     table_value_cell_id,
@@ -31,7 +33,7 @@ from ..shared.visual_defaults import load_table_background_defaults, load_table_
 
 
 TASK_ID = "task_tables_statistics_summary_label"
-_SUPPORTED_TASK_VARIANTS: Tuple[str, ...] = ("argmax", "argmin")
+_SUPPORTED_TASK_VARIANTS: Tuple[str, ...] = ("argmax", "argmin", "row_sum_argmax", "row_sum_argmin")
 
 _DEFAULTS = TableDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("tables", "statistics")
@@ -77,7 +79,7 @@ def _resolve_scene_variant(params: Mapping[str, Any], *, instance_seed: int) -> 
 
 @register_task
 class TablesStatisticsSummaryLabelTask:
-    """Return the row label with the max/min value in a queried numeric column."""
+    """Return the row label with the winning value under one supported summary objective."""
 
     task_id = TASK_ID
     domain = "tables"
@@ -87,14 +89,25 @@ class TablesStatisticsSummaryLabelTask:
         del max_attempts
         task_variant, task_variant_probabilities = _resolve_task_variant(params, instance_seed=int(instance_seed))
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
-        dataset = build_summary_label_dataset_for_variant(
-            task_variant=str(task_variant),
-            params=params,
-            instance_seed=int(instance_seed),
-            gen_defaults=_GEN_DEFAULTS,
-            defaults=_DEFAULTS,
-            task_id=self.task_id,
-        )
+        is_row_variant = str(task_variant).startswith("row_sum_")
+        if is_row_variant:
+            dataset = build_row_summary_label_dataset_for_variant(
+                task_variant=str(task_variant),
+                params=params,
+                instance_seed=int(instance_seed),
+                gen_defaults=_GEN_DEFAULTS,
+                defaults=_DEFAULTS,
+                task_id=self.task_id,
+            )
+        else:
+            dataset = build_summary_label_dataset_for_variant(
+                task_variant=str(task_variant),
+                params=params,
+                instance_seed=int(instance_seed),
+                gen_defaults=_GEN_DEFAULTS,
+                defaults=_DEFAULTS,
+                task_id=self.task_id,
+            )
 
         render_params = resolve_table_render_params(
             params,
@@ -138,10 +151,16 @@ class TablesStatisticsSummaryLabelTask:
                 "object_description_card_table",
                 "evidence_hint_argmax",
                 "evidence_hint_argmin",
+                "evidence_hint_row_sum_argmax",
+                "evidence_hint_row_sum_argmin",
                 "json_example_argmax",
                 "json_example_argmin",
+                "json_example_row_sum_argmax",
+                "json_example_row_sum_argmin",
                 "json_example_answer_only_argmax",
                 "json_example_answer_only_argmin",
+                "json_example_answer_only_row_sum_argmax",
+                "json_example_answer_only_row_sum_argmin",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -149,35 +168,45 @@ class TablesStatisticsSummaryLabelTask:
         evidence_hint = str(prompt_defaults[f"evidence_hint_{str(task_variant)}"])
         json_example = str(prompt_defaults[f"json_example_{str(task_variant)}"])
         json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(task_variant)}"])
+        task_key = "summary_row_label_query" if is_row_variant else str(prompt_defaults["task_key"])
+        prompt_slots = {
+            "object_description": str(object_description),
+            "json_output_contract": str(prompt_defaults["json_output_contract"]),
+            "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
+            "evidence_hint": str(evidence_hint),
+            "answer_hint": str(prompt_defaults["answer_hint"]),
+            "json_example": str(json_example),
+            "json_example_answer_only": str(json_example_answer_only),
+        }
+        if not is_row_variant:
+            prompt_slots["query_column"] = str(dataset["query_column"])
 
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             task_family_key=str(prompt_defaults["task_family_key"]),
-            task_key=str(prompt_defaults["task_key"]),
+            task_key=str(task_key),
             task_variant_key=str(task_variant),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(object_description),
-                "query_column": str(dataset["query_column"]),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(evidence_hint),
-                "answer_hint": str(prompt_defaults["answer_hint"]),
-                "json_example": str(json_example),
-                "json_example_answer_only": str(json_example_answer_only),
-            },
+            slots=prompt_slots,
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_row_label = str(dataset["answer_row_label"])
-        evidence_cell_id = table_value_cell_id(
-            data_row_index=int(dataset["answer_row_index"]),
-            numeric_column_index=int(dataset["query_column_index"]),
-        )
-        evidence_projection = projected_table_bbox_evidence(rendered_scene, [str(evidence_cell_id)])
+        evidence_cell_id: str | None = None
+        if is_row_variant:
+            evidence_projection = projected_table_region_bbox_evidence(
+                rendered_scene,
+                row_labels=[str(answer_row_label)],
+            )
+        else:
+            evidence_cell_id = table_value_cell_id(
+                data_row_index=int(dataset["answer_row_index"]),
+                numeric_column_index=int(dataset["query_column_index"]),
+            )
+            evidence_projection = projected_table_bbox_evidence(rendered_scene, [str(evidence_cell_id)])
         evidence_bboxes = [
             [round(float(value), 3) for value in bbox]
             for bbox in evidence_projection["bbox_set"]
@@ -200,14 +229,25 @@ class TablesStatisticsSummaryLabelTask:
             "scene_ir": {
                 "scene_kind": f"table_{str(scene_variant)}_statistics",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
-                "relations": {
-                    "task_variant": str(task_variant),
-                    "scene_variant": str(scene_variant),
-                    "query_column": str(dataset["query_column"]),
-                    "answer_row_label": str(answer_row_label),
-                    "answer_value": int(dataset["answer_value"]),
-                    "evidence_cell_id": str(evidence_cell_id),
-                },
+                "relations": (
+                    {
+                        "task_variant": str(task_variant),
+                        "scene_variant": str(scene_variant),
+                        "answer_row_label": str(answer_row_label),
+                        "answer_value": int(dataset["answer_value"]),
+                        "supporting_region_kind": "row",
+                        "supporting_row_label": str(answer_row_label),
+                    }
+                    if is_row_variant
+                    else {
+                        "task_variant": str(task_variant),
+                        "scene_variant": str(scene_variant),
+                        "query_column": str(dataset["query_column"]),
+                        "answer_row_label": str(answer_row_label),
+                        "answer_value": int(dataset["answer_value"]),
+                        "evidence_cell_id": str(evidence_cell_id),
+                    }
+                ),
             },
             "query_spec": {
                 "task_variant": str(task_variant),
@@ -215,15 +255,26 @@ class TablesStatisticsSummaryLabelTask:
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
-                "params": {
-                    "task_variant": str(task_variant),
-                    "scene_variant": str(scene_variant),
-                    "query_column": str(dataset["query_column"]),
-                    "task_variant_probabilities": dict(task_variant_probabilities),
-                    "scene_variant_probabilities": dict(scene_variant_probabilities),
-                    "row_count": int(dataset["row_count"]),
-                    "numeric_column_count": int(dataset["numeric_column_count"]),
-                },
+                "params": (
+                    {
+                        "task_variant": str(task_variant),
+                        "scene_variant": str(scene_variant),
+                        "task_variant_probabilities": dict(task_variant_probabilities),
+                        "scene_variant_probabilities": dict(scene_variant_probabilities),
+                        "row_count": int(dataset["row_count"]),
+                        "numeric_column_count": int(dataset["numeric_column_count"]),
+                    }
+                    if is_row_variant
+                    else {
+                        "task_variant": str(task_variant),
+                        "scene_variant": str(scene_variant),
+                        "query_column": str(dataset["query_column"]),
+                        "task_variant_probabilities": dict(task_variant_probabilities),
+                        "scene_variant_probabilities": dict(scene_variant_probabilities),
+                        "row_count": int(dataset["row_count"]),
+                        "numeric_column_count": int(dataset["numeric_column_count"]),
+                    }
+                ),
             },
             "render_spec": {
                 "canvas_width": int(render_params.canvas_width),
@@ -254,7 +305,6 @@ class TablesStatisticsSummaryLabelTask:
             "execution_trace": {
                 "task_variant": str(task_variant),
                 "scene_variant": str(scene_variant),
-                "query_column": str(dataset["query_column"]),
                 "answer_row_label": str(answer_row_label),
                 "answer_value": int(dataset["answer_value"]),
                 "row_labels": [str(label) for label in dataset["row_labels"]],
@@ -266,11 +316,22 @@ class TablesStatisticsSummaryLabelTask:
                 "numeric_column_count_range": list(dataset["numeric_column_count_range"]),
                 "value_range": list(dataset["value_range"]),
                 "answer_row_index": int(dataset["answer_row_index"]),
-                "query_column_index": int(dataset["query_column_index"]),
                 "task_variant_probabilities": dict(task_variant_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
-                "question_format": "row_name_open",
-                "supporting_cell_id": str(evidence_cell_id),
+                **(
+                    {
+                        "question_format": "row_summary_label",
+                        "supporting_region_kind": "row",
+                        "supporting_row_label": str(answer_row_label),
+                    }
+                    if is_row_variant
+                    else {
+                        "query_column": str(dataset["query_column"]),
+                        "query_column_index": int(dataset["query_column_index"]),
+                        "question_format": "row_name_open",
+                        "supporting_cell_id": str(evidence_cell_id),
+                    }
+                ),
             },
             "witness_symbolic": {
                 "type": "bbox_set",
@@ -281,8 +342,13 @@ class TablesStatisticsSummaryLabelTask:
             },
         }
 
+        complexity_score = (
+            float(0.2 + (0.02 * int(dataset["row_count"])) + (0.015 * int(dataset["numeric_column_count"])) + 0.03)
+            if is_row_variant
+            else float(0.18 + (0.03 * int(dataset["row_count"])) + (0.02 * int(dataset["numeric_column_count"])))
+        )
         complexity = TaskComplexity(
-            complexity_score=float(0.18 + (0.03 * int(dataset["row_count"])) + (0.02 * int(dataset["numeric_column_count"]))),
+            complexity_score=float(complexity_score),
             complexity_components={
                 "task_variant": str(task_variant),
                 "scene_variant": str(scene_variant),

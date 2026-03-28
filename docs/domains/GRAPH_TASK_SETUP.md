@@ -79,7 +79,8 @@ Define the concrete v1 setup for the first graph-domain task families.
 
 ## Evidence policy
 1. Use `label_set` when the witness unit is one or more nodes.
-2. Keep pixel-space node boxes in projected trace metadata for review overlays rather than as the primary user-facing evidence contract.
-3. For same-component queries, make the prompt explicit when the queried node itself is included in both the answer and the evidence set.
-4. For largest-component comparison queries, enforce a unique largest component by construction before exposing a single `label_set` witness set.
-5. If a future graph task needs ordered path evidence, define that as a separate graph-native label/path contract rather than forcing it into bbox-only evidence.
+2. Treat `label_set` as an unordered semantic set; canonicalize it internally for deterministic serialization, but do not imply that witness order matters unless the task explicitly asks for an ordered path/sequence.
+3. Keep pixel-space node boxes in projected trace metadata for review overlays rather than as the primary user-facing evidence contract.
+4. For same-component queries, make the prompt explicit when the queried node itself is included in both the answer and the evidence set.
+5. For largest-component comparison queries, enforce a unique largest component by construction before exposing a single `label_set` witness set.
+6. If a future graph task needs ordered path evidence, define that as a separate graph-native label/path contract rather than forcing it into `label_set` or bbox-only evidence.

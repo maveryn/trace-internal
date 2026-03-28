@@ -35,6 +35,7 @@ must include the queried node itself.
   - named node color
 
 ## Evidence contract
-- `evidence` is the sorted `label_set` of every node in the connected component containing the queried node.
+- `evidence` is the `label_set` of every node in the connected component containing the queried node.
+- The witness set is unordered semantically; the implementation only canonicalizes label order internally for deterministic serialization.
 - The queried node label is included in `evidence`.
 - `answer = len(evidence)`.

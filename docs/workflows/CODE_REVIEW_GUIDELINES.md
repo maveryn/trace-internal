@@ -150,6 +150,7 @@ Use this checklist during implementation and refactor reviews.
 133. For graph tasks that support both undirected and directed variants, review directionality as an explicit contract surface: prompt wording, trace fields, edge entities, and rendered arrowheads should all agree on whether the queried measure is `degree`, `in-degree`, or `out-degree`, and directed scenes should avoid reciprocal-edge clutter unless the task explicitly reasons about it.
 134. For graph tasks where the queried node belongs in the witness set, review that inclusion explicitly across prompt wording, answer semantics, evidence labels, and trace fields; do not rely on graph-theory convention alone to imply whether the queried node counts toward the answer.
 135. For graph tasks that expose a single “largest” connected component as evidence, review uniqueness explicitly: the sampler should reject ties for the largest component size instead of relying on label order, layout, or hidden tie-break rules to pick one witness set.
+136. For graph tasks, review `label_set` evidence as an unordered semantic set: implementations may canonicalize label order internally for determinism, but prompts/docs should not imply that witness order matters unless the task uses an ordered path-specific evidence contract.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

@@ -60,19 +60,20 @@
 8. Prompt-facing evidence uses node labels rather than pixel boxes because labels are the canonical node identities for this domain.
 
 ## 4) Evidence + trace contract
-1. Prompt-facing evidence is the ascending-label-order `label_set` of all nodes whose degree equals the queried degree.
-2. `answer_gt.value == len(evidence_gt.value)` by construction.
-3. `scene_ir.entities` stores one node entity per rendered node with:
+1. Prompt-facing evidence is the `label_set` of all nodes whose degree equals the queried degree.
+2. The witness set is unordered semantically; the implementation only canonicalizes label order internally for deterministic serialization.
+3. `answer_gt.value == len(evidence_gt.value)` by construction.
+4. `scene_ir.entities` stores one node entity per rendered node with:
    - visible label,
    - degree,
    - neighbors,
    - node center,
    - node bbox.
-4. `scene_ir.relations` stores one edge relation per graph edge and records both graph directionality and the active degree mode.
-5. `projected_evidence` includes:
+5. `scene_ir.relations` stores one edge relation per graph edge and records both graph directionality and the active degree mode.
+6. `projected_evidence` includes:
    - `label_set`
    - `bbox_set`
-6. `execution_trace` records:
+7. `execution_trace` records:
    - `task_variant`
    - `graph_directionality`
    - `degree_mode`

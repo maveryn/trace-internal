@@ -52,18 +52,19 @@
 7. Answer+evidence JSON shape: `{"evidence":["B","D","H","J"],"answer":4}`
 
 ## 4) Evidence + trace contract
-1. Prompt-facing evidence is the ascending-label-order `label_set` of every node in the unique largest connected component.
-2. `answer_gt.value == len(evidence_gt.value)` by construction.
-3. `scene_ir.entities` stores one node entity per rendered node with:
+1. Prompt-facing evidence is the `label_set` of every node in the unique largest connected component.
+2. The witness set is unordered semantically; the implementation only canonicalizes label order internally for deterministic serialization.
+3. `answer_gt.value == len(evidence_gt.value)` by construction.
+4. `scene_ir.entities` stores one node entity per rendered node with:
    - visible label,
    - connected-component id,
    - node center,
    - node bbox.
-4. `scene_ir.relations` stores one undirected edge relation per graph edge.
-5. `projected_evidence` includes:
+5. `scene_ir.relations` stores one undirected edge relation per graph edge.
+6. `projected_evidence` includes:
    - `label_set`
    - `bbox_set`
-6. `execution_trace` records:
+7. `execution_trace` records:
    - `task_variant`
    - `scene_variant`
    - `component_count`

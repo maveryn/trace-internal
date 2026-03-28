@@ -249,21 +249,21 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Graph contract: simple unweighted graph with `5..10` nodes for undirected degree queries and `5..9` nodes for directed in-/out-degree queries, labeled from `A..J` or `1..10`; the directed variants render arrowheads and reject reciprocal edge pairs for readability.
    - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`).
    - Answer type: integer count.
-   - Evidence: sorted `label_set` of the node labels whose asked degree measure equals `k`.
+   - Evidence: `label_set` of the node labels whose asked degree measure equals `k`.
 27. **Graph relation same-component count (`task_graph_relation_same_component_count`)**
    - One single-panel labeled undirected node-link graph.
    - Query: `How many nodes, including node X itself, are in the same connected component as X?`
    - Graph contract: simple disconnected unweighted graph with `5..10` nodes, `2..4` connected components, and a queried component size in `1..6`.
    - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`), plus non-semantic label/shape/color/layout-transform diversity shared with the graph domain.
    - Answer type: integer count.
-   - Evidence: sorted `label_set` of all node labels in the connected component containing the queried node, including the queried node itself.
+   - Evidence: `label_set` of all node labels in the connected component containing the queried node, including the queried node itself.
 28. **Graph comparison largest-component size (`task_graph_comparison_largest_component_size`)**
    - One single-panel labeled undirected node-link graph.
    - Query: `How many nodes are in the largest connected component?`
    - Graph contract: simple disconnected unweighted graph with `5..10` nodes, `2..4` connected components, and a unique-largest-component size in `2..6`.
    - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`), plus non-semantic label/shape/color/layout-transform diversity shared with the graph domain.
    - Answer type: integer count.
-   - Evidence: sorted `label_set` of all node labels in the unique largest connected component.
+   - Evidence: `label_set` of all node labels in the unique largest connected component.
 29. **Icons sequence missing count (`task_icons_sequence_missing_count`)**
    - One single-panel image with a horizontal row of `4..6` Scene boxes.
    - Query: how many icons should appear in the missing Scene box to continue the sequence.

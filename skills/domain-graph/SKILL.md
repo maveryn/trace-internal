@@ -25,6 +25,7 @@ Use this whenever the task lives under `domain=graph`.
 
 ## Evidence heuristics
 - Use `label_set` for node witness sets.
+- Treat `label_set` as an unordered witness set semantically; canonicalize it internally for determinism, but do not present ordering as part of the task unless the task truly depends on order.
 - Use one label answer or ordered label path only when the semantics truly require it.
 - Keep node/edge pixel geometry in trace for reviews and overlays, but do not force bbox evidence when labels already provide the natural witness contract.
 - When labels are numeric, keep evidence in ascending numeric label order rather than raw lexicographic string order.

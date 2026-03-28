@@ -44,6 +44,14 @@ def test_icons_transformation_pair_count_contract_matches_scene() -> None:
     assert int(execution["object_count"]) == 8
     assert int(execution["target_count"]) == 3
     assert int(execution["distractor_count"]) == 5
+    assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
+    assert set(out.complexity.complexity_components.keys()) == {
+        "visual_scan",
+        "rule_inference",
+        "ambiguity",
+        "clutter",
+    }
+    assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
     assert len(scene_entities) == 8
 
     reference_transform_id = str(execution["reference_transform_id"])

@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import (
@@ -16,7 +16,7 @@ from ...shared.config_defaults import (
     required_group_defaults,
     split_generation_rendering_prompt_defaults,
 )
-from ...shared.counting_sampling import counting_complexity_score, resolve_counting_target_and_distractor_triplet
+from ...shared.counting_sampling import resolve_counting_target_and_distractor_triplet
 from ...shared.labeling import LABEL_POOL_A_L, assign_shuffled_labels
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
@@ -25,6 +25,7 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ..shared.icon_assets import icon_transform_signature, resolve_icon_pool
+from ..shared.complexity import build_icons_transformation_pair_count_complexity
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.icon_pair_grid_scene import IconPairSpec, panel_geometry_to_trace, render_two_panel_icon_pair_grid_scene
 from ..shared.icon_style import sample_single_icon_tint
@@ -581,16 +582,18 @@ class IconsTransformationPairCountTask:
                 "label_set": list(scene_payload.matching_labels),
             },
         }
-        complexity = TaskComplexity(
-            complexity_score=counting_complexity_score(
-                object_count=int(scene_payload.object_count),
-                target_count=int(scene_payload.target_count),
-            ),
-            complexity_components={
-                "object_count": int(scene_payload.object_count),
-                "target_count": int(scene_payload.target_count),
-                "task_variant": "same_pair_transform",
-            },
+        complexity = build_icons_transformation_pair_count_complexity(
+            task_group_defaults=_TASK_GROUP_DEFAULTS,
+            task_id=self.task_id,
+            reference_transform_id=str(scene_payload.reference_transform_id),
+            object_count=int(scene_payload.object_count),
+            target_count=int(scene_payload.target_count),
+            object_count_min=int(group_default(_GEN_DEFAULTS, "object_count_min", _DEFAULTS.object_count_min)),
+            object_count_max=int(group_default(_GEN_DEFAULTS, "object_count_max", _DEFAULTS.object_count_max)),
+            available_transform_ids=transform_ids,
+            scene_transform_ids=scene_payload.cell_transform_ids,
+            scene_cells=scene_payload.scene_cells,
+            render_params=render_params,
         )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),

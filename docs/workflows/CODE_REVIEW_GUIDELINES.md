@@ -129,6 +129,7 @@ Use this checklist during implementation and refactor reviews.
 113. For chart complexity, keep `scene_variant_load` task-local even when the criterion name is domain-shared; do not reuse one global chart-type difficulty table across unrelated chart tasks whose scenes have different semantics or prompting contracts.
 114. For sibling icon counting tasks that share one task-group complexity policy, keep the weights in the task-group config and vary only the task-local normalized ambiguity signal tied to the distinguishing attribute (for example color separation, rotation support, or size gap); do not fork near-duplicate per-task weight constants.
 115. For icon relation tasks that stay under one shared relation complexity policy, do not fork task-local weight tables just because the visual primitive changes; keep the family weights in config and vary only the normalized spatial/ambiguity/clutter measurements that correspond to the task’s real difficulty knob (for example strip width, overlap/color contrast, or symmetry variant and cell density).
+116. For icon transformation tasks that share one family-level complexity policy, keep the transformation weights in config and vary only the task-local normalized rule/ambiguity signals tied to the actual transform difficulty (for example quarter-turn vs diagonal flip load, transform-support size, or same-family distractor share); do not reintroduce count-only proxies or per-task weight forks just because the cells render different transforms.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

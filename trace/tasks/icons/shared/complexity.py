@@ -224,6 +224,26 @@ def _flatten_mirror_scene_instances(scene_cells: Sequence[Mapping[str, Any]]) ->
     return flattened
 
 
+def _flatten_transformation_scene_instances(scene_cells: Sequence[Mapping[str, Any]]) -> Sequence[Mapping[str, Any]]:
+    """Project transformation pair cells into icon-like clutter records."""
+
+    flattened: list[Dict[str, Any]] = []
+    for cell in scene_cells:
+        flattened.append(
+            {
+                "bbox_xyxy": list(cell.get("left_bbox_xyxy", ())),
+                "noise_edits": list(cell.get("left_noise_edits", ())),
+            }
+        )
+        flattened.append(
+            {
+                "bbox_xyxy": list(cell.get("right_bbox_xyxy", ())),
+                "noise_edits": list(cell.get("right_noise_edits", ())),
+            }
+        )
+    return flattened
+
+
 def _strip_boundary_difficulty(
     *,
     scene_instances: Sequence[Mapping[str, Any]],
@@ -273,6 +293,26 @@ _MIRROR_VARIANT_DIFFICULTY: Dict[str, float] = {
     "mirror_diagonal_main": 0.70,
     "mirror_diagonal_anti": 0.70,
     "mirror_both_axes": 0.85,
+}
+
+_TRANSFORM_RULE_DIFFICULTY: Dict[str, float] = {
+    "rot90": 0.60,
+    "rot180": 0.35,
+    "rot270": 0.60,
+    "flip_h": 0.45,
+    "flip_v": 0.45,
+    "flip_diag_main": 0.75,
+    "flip_diag_anti": 0.75,
+}
+
+_TRANSFORM_FAMILY: Dict[str, str] = {
+    "rot90": "quarter_rotation",
+    "rot180": "half_rotation",
+    "rot270": "quarter_rotation",
+    "flip_h": "axial_flip",
+    "flip_v": "axial_flip",
+    "flip_diag_main": "diagonal_flip",
+    "flip_diag_anti": "diagonal_flip",
 }
 
 
@@ -776,6 +816,73 @@ def build_icons_relation_mirror_symmetry_complexity(
     )
 
 
+def build_icons_transformation_pair_count_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    reference_transform_id: str,
+    object_count: int,
+    target_count: int,
+    object_count_min: int,
+    object_count_max: int,
+    available_transform_ids: Sequence[str],
+    scene_transform_ids: Sequence[str],
+    scene_cells: Sequence[Mapping[str, Any]],
+    render_params: Mapping[str, Any],
+) -> TaskComplexity:
+    """Build complexity for the reference-pair transformation counting task."""
+
+    visual_scan = icon_visual_scan_score(
+        object_count=int(object_count),
+        object_count_min=int(object_count_min),
+        object_count_max=int(object_count_max),
+    )
+    transform_support_load = _normalize_linear(
+        float(len(tuple(str(value) for value in available_transform_ids))),
+        min_value=2.0,
+        max_value=7.0,
+    )
+    reference_rule_load = float(_TRANSFORM_RULE_DIFFICULTY.get(str(reference_transform_id), 0.50))
+    rule_inference = _clip01((0.70 * reference_rule_load) + (0.30 * transform_support_load))
+
+    distractor_transform_ids = [
+        str(transform_id)
+        for transform_id in scene_transform_ids
+        if str(transform_id) != str(reference_transform_id)
+    ]
+    reference_family = _TRANSFORM_FAMILY.get(str(reference_transform_id), str(reference_transform_id))
+    same_family_share = (
+        sum(
+            1
+            for transform_id in distractor_transform_ids
+            if _TRANSFORM_FAMILY.get(str(transform_id), str(transform_id)) == reference_family
+        )
+        / float(max(1, len(distractor_transform_ids)))
+    )
+    ambiguity = _clip01(
+        (0.45 * same_family_share)
+        + (0.35 * icon_target_density_balance(target_count=int(target_count), object_count=int(object_count)))
+        + (0.20 * transform_support_load)
+    )
+    clutter = icon_scene_clutter_score(
+        scene_instances=_flatten_transformation_scene_instances(scene_cells),
+        scene_icon_size_min_px=int(render_params["scene_icon_size_min_px"]),
+        scene_icon_size_max_px=int(render_params["scene_icon_size_max_px"]),
+        scene_max_overlap_fraction=0.05,
+        noise_edit_count_range=render_params["icon_noise_edit_count_range"],
+    )
+    return build_icon_task_complexity(
+        task_group_defaults=task_group_defaults,
+        task_id=str(task_id),
+        criterion_values={
+            "visual_scan": float(visual_scan),
+            "rule_inference": float(rule_inference),
+            "ambiguity": float(ambiguity),
+            "clutter": float(clutter),
+        },
+    )
+
+
 __all__ = [
     "build_icon_task_complexity",
     "build_icons_counting_color_complexity",
@@ -787,6 +894,7 @@ __all__ = [
     "build_icons_relation_mirror_symmetry_complexity",
     "build_icons_relation_occlusion_order_complexity",
     "build_icons_relation_relative_position_type_complexity",
+    "build_icons_transformation_pair_count_complexity",
     "icon_scene_clutter_score",
     "icon_semantic_match_score",
     "icon_target_density_balance",

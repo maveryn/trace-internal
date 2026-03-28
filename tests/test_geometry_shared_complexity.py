@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from trace.core.task_group_config import get_task_group_defaults
 from trace.tasks.geometry.shared.complexity import (
+    build_geometry_analytical_complexity,
     build_geometry_comparison_complexity,
     build_geometry_counting_complexity,
     build_geometry_measurement_complexity,
@@ -108,6 +109,37 @@ def test_geometry_measurement_complexity_weights_active_components() -> None:
     assert set(harder.complexity_components.keys()) == {
         "visual_scan",
         "measurement_precision",
+        "ambiguity",
+        "output_burden",
+    }
+
+
+def test_geometry_analytical_complexity_increases_with_variant_load() -> None:
+    defaults = get_task_group_defaults("geometry", "analytical_3d")
+
+    easier = build_geometry_analytical_complexity(
+        task_group_defaults=defaults,
+        task_id="task_geometry_analytical_3d_surface_area",
+        task_kind="surface_area",
+        task_variant="rectangular_prism_given_lwh",
+        annotation_count=3,
+        answer_format="integer",
+    )
+    harder = build_geometry_analytical_complexity(
+        task_group_defaults=defaults,
+        task_id="task_geometry_analytical_3d_surface_area",
+        task_kind="surface_area",
+        task_variant="triangular_prism_given_a_b_c_l",
+        annotation_count=4,
+        answer_format="integer",
+    )
+
+    assert 0.0 <= float(easier.complexity_score) <= 1.0
+    assert 0.0 <= float(harder.complexity_score) <= 1.0
+    assert float(harder.complexity_score) > float(easier.complexity_score)
+    assert set(harder.complexity_components.keys()) == {
+        "visual_scan",
+        "analytical_reasoning",
         "ambiguity",
         "output_burden",
     }

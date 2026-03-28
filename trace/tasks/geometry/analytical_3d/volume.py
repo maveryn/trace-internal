@@ -6,7 +6,7 @@ from typing import Any, Dict, Mapping
 
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import (
@@ -33,6 +33,7 @@ from ..shared.analytical_task import (
     resolve_task_variant,
 )
 from ..shared.background_defaults import load_geometry_background_defaults
+from ..shared.complexity import build_geometry_analytical_complexity
 from ..shared.graph_rendering import graph_paper_grid_from_frame
 from ..shared.noise_defaults import load_geometry_noise_defaults
 from ..shared.render_variation import sample_int_render_param
@@ -57,36 +58,6 @@ class GeometryAnalyticalVolume3DTask:
     task_id = "task_geometry_analytical_3d_volume"
     domain = "geometry"
     task_group = "analytical_3d"
-
-    def _complexity(
-        self,
-        *,
-        task_variant: str,
-        answer_scalar: int,
-        answer_max: int,
-    ) -> TaskComplexity:
-        """Compute complexity from variant family and answer magnitude."""
-        variant_weight = {
-            "rectangular_prism_given_lwh": 0.28,
-            "triangular_prism_given_b_h_l": 0.44,
-            "square_pyramid_given_base_height": 0.52,
-            "cylinder_given_r_h": 0.40,
-            "cone_given_r_h": 0.58,
-            "sphere_given_r": 0.46,
-        }.get(str(task_variant), 0.45)
-        magnitude = 0.0
-        if int(answer_max) > 0:
-            magnitude = min(1.0, float(answer_scalar) / float(max(1, int(answer_max))))
-        score = max(0.0, min(1.0, 0.30 + (0.54 * float(variant_weight)) + (0.16 * float(magnitude))))
-        return TaskComplexity(
-            complexity_score=float(score),
-            complexity_components={
-                "task_variant": str(task_variant),
-                "answer_scalar": int(answer_scalar),
-                "variant_component": float(variant_weight),
-                "magnitude_component": float(magnitude),
-            },
-        )
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic analytical 3D volume instance."""
@@ -301,10 +272,13 @@ class GeometryAnalyticalVolume3DTask:
         else:
             answer_gt = TypedValue(type="integer", value=int(case.answer_value))
         evidence_gt = TypedValue(type="measurement_ref_map", value=dict(case.evidence_map))
-        complexity = self._complexity(
+        complexity = build_geometry_analytical_complexity(
+            task_group_defaults=task_group_defaults if isinstance(task_group_defaults, Mapping) else {},
+            task_id=str(self.task_id),
+            task_kind="volume",
             task_variant=str(case.task_variant),
-            answer_scalar=int(case.answer_scalar),
-            answer_max=int(answer_max),
+            annotation_count=len(required_annotations),
+            answer_format=str(case.answer_type),
         )
 
         projected_point_set = [

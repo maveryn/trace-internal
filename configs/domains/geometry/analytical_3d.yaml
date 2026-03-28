@@ -94,3 +94,11 @@ prompt:
       question_text_cylinder_given_r_h: The cylinder has an annotated radius and height. What is its total surface area? Express the result in kπ form.
       question_text_cone_given_r_slant_height: The cone has an annotated radius and slant height. What is its total surface area? Express the result in kπ form.
       question_text_sphere_given_r: The sphere has an annotated radius. What is its total surface area? Express the result in kπ form.
+
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.20
+      analytical_reasoning: 0.55
+      ambiguity: 0.20
+      output_burden: 0.05

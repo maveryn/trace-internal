@@ -168,6 +168,23 @@ def geometry_label_set_output_burden(*, target_count: int, object_count: int) ->
 def geometry_measurement_output_burden(*, answer_format: str, evidence_point_count: int) -> float:
     """Normalize output burden for single-object measurement tasks."""
 
+    return geometry_answer_format_output_burden(
+        answer_format=str(answer_format),
+        evidence_count=int(evidence_point_count),
+        evidence_count_min=1,
+        evidence_count_max=5,
+    )
+
+
+def geometry_answer_format_output_burden(
+    *,
+    answer_format: str,
+    evidence_count: int,
+    evidence_count_min: int,
+    evidence_count_max: int,
+) -> float:
+    """Normalize output burden from answer-format precision plus evidence cardinality."""
+
     normalized_answer_format = str(answer_format).strip().lower()
     answer_format_load = {
         "integer": 0.25,
@@ -177,11 +194,22 @@ def geometry_measurement_output_burden(*, answer_format: str, evidence_point_cou
     if answer_format_load is None:
         raise ValueError(f"unsupported geometry measurement answer_format: {answer_format}")
     evidence_load = normalize_linear(
-        float(evidence_point_count),
-        min_value=1.0,
-        max_value=5.0,
+        float(evidence_count),
+        min_value=float(evidence_count_min),
+        max_value=float(evidence_count_max),
     )
     return clamp_unit_interval((0.65 * float(answer_format_load)) + (0.35 * float(evidence_load)))
+
+
+def geometry_analytical_output_burden(*, answer_format: str, evidence_ref_count: int) -> float:
+    """Normalize output burden for analytical geometry tasks with measurement-map evidence."""
+
+    return geometry_answer_format_output_burden(
+        answer_format=str(answer_format),
+        evidence_count=int(evidence_ref_count),
+        evidence_count_min=1,
+        evidence_count_max=4,
+    )
 
 
 def geometry_counting_classification_reasoning_score(*, task_kind: str, task_variant: str) -> float:
@@ -373,12 +401,121 @@ def build_geometry_measurement_complexity(
     )
 
 
+def geometry_analytical_reasoning_score(*, task_kind: str, task_variant: str) -> float:
+    """Return normalized reasoning load for one analytical geometry variant."""
+
+    normalized_kind = str(task_kind).strip().lower()
+    normalized_variant = str(task_variant).strip().lower()
+    score_by_kind = {
+        "volume": {
+            "rectangular_prism_given_lwh": 0.30,
+            "triangular_prism_given_b_h_l": 0.55,
+            "square_pyramid_given_base_height": 0.75,
+            "cylinder_given_r_h": 0.50,
+            "cone_given_r_h": 0.78,
+            "sphere_given_r": 0.58,
+        },
+        "surface_area": {
+            "rectangular_prism_given_lwh": 0.35,
+            "triangular_prism_given_a_b_c_l": 0.72,
+            "square_pyramid_given_base_side_slant_height": 0.70,
+            "cylinder_given_r_h": 0.52,
+            "cone_given_r_slant_height": 0.66,
+            "sphere_given_r": 0.48,
+        },
+    }
+    kind_scores = score_by_kind.get(normalized_kind)
+    if kind_scores is None or normalized_variant not in kind_scores:
+        raise ValueError(f"unsupported geometry analytical task/variant: {task_kind} / {task_variant}")
+    return float(kind_scores[normalized_variant])
+
+
+def geometry_analytical_variant_ambiguity_score(*, task_kind: str, task_variant: str) -> float:
+    """Return normalized ambiguity for one analytical geometry variant."""
+
+    normalized_kind = str(task_kind).strip().lower()
+    normalized_variant = str(task_variant).strip().lower()
+    score_by_kind = {
+        "volume": {
+            "rectangular_prism_given_lwh": 0.28,
+            "triangular_prism_given_b_h_l": 0.52,
+            "square_pyramid_given_base_height": 0.62,
+            "cylinder_given_r_h": 0.42,
+            "cone_given_r_h": 0.70,
+            "sphere_given_r": 0.46,
+        },
+        "surface_area": {
+            "rectangular_prism_given_lwh": 0.35,
+            "triangular_prism_given_a_b_c_l": 0.68,
+            "square_pyramid_given_base_side_slant_height": 0.60,
+            "cylinder_given_r_h": 0.50,
+            "cone_given_r_slant_height": 0.72,
+            "sphere_given_r": 0.44,
+        },
+    }
+    kind_scores = score_by_kind.get(normalized_kind)
+    if kind_scores is None or normalized_variant not in kind_scores:
+        raise ValueError(f"unsupported geometry analytical task/variant: {task_kind} / {task_variant}")
+    return float(kind_scores[normalized_variant])
+
+
+def build_geometry_analytical_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    task_kind: str,
+    task_variant: str,
+    annotation_count: int,
+    answer_format: str,
+) -> TaskComplexity:
+    """Build one normalized analytical-family complexity payload."""
+
+    weights = resolve_geometry_complexity_weights(task_group_defaults, task_id=task_id)
+    return build_geometry_task_complexity(
+        weights=weights,
+        components={
+            "visual_scan": normalize_linear(
+                float(annotation_count),
+                min_value=1.0,
+                max_value=4.0,
+            ),
+            "analytical_reasoning": geometry_analytical_reasoning_score(
+                task_kind=str(task_kind),
+                task_variant=str(task_variant),
+            ),
+            "ambiguity": clamp_unit_interval(
+                (0.75 * geometry_analytical_variant_ambiguity_score(
+                    task_kind=str(task_kind),
+                    task_variant=str(task_variant),
+                ))
+                + (
+                    0.25
+                    * normalize_linear(
+                        float(annotation_count),
+                        min_value=1.0,
+                        max_value=4.0,
+                    )
+                )
+            ),
+            "output_burden": geometry_analytical_output_burden(
+                answer_format=str(answer_format),
+                evidence_ref_count=int(annotation_count),
+            ),
+        },
+    )
+
+
 __all__ = [
+    "build_geometry_analytical_complexity",
     "build_geometry_counting_complexity",
     "build_geometry_comparison_complexity",
     "build_geometry_measurement_complexity",
     "build_geometry_task_complexity",
     "clamp_unit_interval",
+    "geometry_analytical_output_burden",
+    "geometry_analytical_reasoning_score",
+    "geometry_analytical_variant_ambiguity_score",
+    "geometry_answer_format_output_burden",
     "geometry_comparison_reasoning_score",
     "geometry_counting_classification_reasoning_score",
     "geometry_counting_density_balance",

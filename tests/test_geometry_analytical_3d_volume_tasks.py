@@ -67,6 +67,13 @@ def test_analytical_3d_volume_variants_match_contract() -> None:
         assert set(evidence_map.keys()) == set(execution["required_annotations"])
         assert evidence_map == execution["evidence_map"]
         assert all(str(key).strip() for key in evidence_map.keys())
+        assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
+        assert set(out.complexity.complexity_components.keys()) == {
+            "visual_scan",
+            "analytical_reasoning",
+            "ambiguity",
+            "output_burden",
+        }
         assert "volume" in str(out.prompt).lower()
         assert int(execution["answer_scalar"]) == int(_expected_volume_scalar(execution))
         question_text = str(trace["query_spec"]["prompt_variant"]["slot_values"]["question_text"]).lower()

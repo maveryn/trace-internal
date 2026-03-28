@@ -69,9 +69,11 @@ Measure:
 - number of givens/annotations,
 - number of inferential steps,
 - decomposition complexity,
-- answer precision burden.
+- answer precision burden,
+- measurement-map evidence burden.
 
 ## Notes
 - Domain-level criteria must apply to every geometry task; keep `measurement_precision`, `comparison_reasoning`, `classification_reasoning`, and `analytical_reasoning` at task-group scope rather than forcing them onto unrelated families.
 - Geometry usually wants criterion values from explicit scene/query structure, not from answer magnitude alone.
 - Keep raw givens counts, winner gaps, or derivation depth in trace if they help debug the score.
+- For analytical geometry, prefer annotation-count, formula-family, and answer-format signals over raw answer magnitude; answer size alone is usually a poor proxy for derivation difficulty.

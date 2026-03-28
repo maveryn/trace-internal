@@ -1145,7 +1145,7 @@ def test_geometry_counting_defaults_loaded() -> None:
 
 def test_geometry_analytical_3d_defaults_loaded() -> None:
     cfg = get_task_group_defaults("geometry", "analytical_3d")
-    for section in ("generation", "rendering", "prompt"):
+    for section in ("generation", "rendering", "prompt", "visual", "complexity"):
         assert isinstance(cfg.get(section), dict)
 
     generation_shared = cfg["generation"]["shared"]
@@ -1169,6 +1169,14 @@ def test_geometry_analytical_3d_defaults_loaded() -> None:
     assert int(render_shared["helper_line_width_max"]) >= int(render_shared["helper_line_width_min"])
     assert int(render_shared["label_stroke_width_min"]) >= 1
     assert int(render_shared["label_stroke_width_max"]) >= int(render_shared["label_stroke_width_min"])
+
+    complexity_shared = cfg["complexity"]["shared"]
+    assert dict(complexity_shared["criteria_weights"]) == {
+        "visual_scan": 0.20,
+        "analytical_reasoning": 0.55,
+        "ambiguity": 0.20,
+        "output_burden": 0.05,
+    }
 
     gen_defaults, render_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
         cfg,

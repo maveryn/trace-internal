@@ -52,6 +52,7 @@ class RenderedTableScene:
     entities: List[Dict[str, Any]]
     cell_traces: List[Dict[str, Any]]
     table_bbox_px: List[float]
+    numeric_table_region_bbox: List[float]
     row_region_bboxes: Dict[str, List[float]]
     column_region_bboxes: Dict[str, List[float]]
     row_label_bboxes: Dict[str, List[float]]
@@ -376,11 +377,13 @@ def render_table_scene(
         str(header): _union_bboxes(boxes)
         for header, boxes in column_region_inputs.items()
     }
+    numeric_table_region_bbox = _union_bboxes(list(column_region_bboxes.values()))
     return RenderedTableScene(
         image=image,
         entities=list(entities),
         cell_traces=list(cell_traces),
         table_bbox_px=[round(float(value), 3) for value in table_bbox],
+        numeric_table_region_bbox=list(numeric_table_region_bbox),
         row_region_bboxes=dict(row_region_bboxes),
         column_region_bboxes=dict(column_region_bboxes),
         row_label_bboxes=dict(row_label_bboxes),

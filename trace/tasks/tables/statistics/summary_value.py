@@ -1,4 +1,4 @@
-"""Table statistics task that returns a numeric summary over one column."""
+"""Table statistics task that returns a numeric summary over one supported table subset."""
 
 from __future__ import annotations
 
@@ -20,7 +20,9 @@ from ...shared.prompt_variants import (
 from ..shared.table_common import (
     SUPPORTED_TABLE_SCENE_VARIANTS,
     TableDefaults,
+    build_row_summary_value_dataset_for_variant,
     build_summary_value_dataset_for_variant,
+    build_table_summary_value_dataset_for_variant,
     projected_table_region_bbox_evidence,
     resolve_table_axis_variant,
     resolve_table_render_params,
@@ -30,7 +32,15 @@ from ..shared.visual_defaults import load_table_background_defaults, load_table_
 
 
 TASK_ID = "task_tables_statistics_summary_value"
-_SUPPORTED_TASK_VARIANTS: Tuple[str, ...] = ("column_sum", "column_mean", "column_median")
+_SUPPORTED_TASK_VARIANTS: Tuple[str, ...] = (
+    "column_sum",
+    "column_mean",
+    "column_median",
+    "row_sum",
+    "row_mean",
+    "table_sum",
+    "table_mean",
+)
 
 _DEFAULTS = TableDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("tables", "statistics")
@@ -76,7 +86,7 @@ def _resolve_scene_variant(params: Mapping[str, Any], *, instance_seed: int) -> 
 
 @register_task
 class TablesStatisticsSummaryValueTask:
-    """Return a numeric summary over one queried numeric column."""
+    """Return a numeric summary over one queried column or row subset."""
 
     task_id = TASK_ID
     domain = "tables"
@@ -86,14 +96,35 @@ class TablesStatisticsSummaryValueTask:
         del max_attempts
         task_variant, task_variant_probabilities = _resolve_task_variant(params, instance_seed=int(instance_seed))
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
-        dataset = build_summary_value_dataset_for_variant(
-            task_variant=str(task_variant),
-            params=params,
-            instance_seed=int(instance_seed),
-            gen_defaults=_GEN_DEFAULTS,
-            defaults=_DEFAULTS,
-            task_id=self.task_id,
-        )
+        is_row_variant = str(task_variant).startswith("row_")
+        is_table_variant = str(task_variant).startswith("table_")
+        if is_row_variant:
+            dataset = build_row_summary_value_dataset_for_variant(
+                task_variant=str(task_variant),
+                params=params,
+                instance_seed=int(instance_seed),
+                gen_defaults=_GEN_DEFAULTS,
+                defaults=_DEFAULTS,
+                task_id=self.task_id,
+            )
+        elif is_table_variant:
+            dataset = build_table_summary_value_dataset_for_variant(
+                task_variant=str(task_variant),
+                params=params,
+                instance_seed=int(instance_seed),
+                gen_defaults=_GEN_DEFAULTS,
+                defaults=_DEFAULTS,
+                task_id=self.task_id,
+            )
+        else:
+            dataset = build_summary_value_dataset_for_variant(
+                task_variant=str(task_variant),
+                params=params,
+                instance_seed=int(instance_seed),
+                gen_defaults=_GEN_DEFAULTS,
+                defaults=_DEFAULTS,
+                task_id=self.task_id,
+            )
 
         render_params = resolve_table_render_params(
             params,
@@ -138,12 +169,24 @@ class TablesStatisticsSummaryValueTask:
                 "evidence_hint_column_sum",
                 "evidence_hint_column_mean",
                 "evidence_hint_column_median",
+                "evidence_hint_row_sum",
+                "evidence_hint_row_mean",
+                "evidence_hint_table_sum",
+                "evidence_hint_table_mean",
                 "json_example_column_sum",
                 "json_example_column_mean",
                 "json_example_column_median",
+                "json_example_row_sum",
+                "json_example_row_mean",
+                "json_example_table_sum",
+                "json_example_table_mean",
                 "json_example_answer_only_column_sum",
                 "json_example_answer_only_column_mean",
                 "json_example_answer_only_column_median",
+                "json_example_answer_only_row_sum",
+                "json_example_answer_only_row_mean",
+                "json_example_answer_only_table_sum",
+                "json_example_answer_only_table_mean",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -151,34 +194,56 @@ class TablesStatisticsSummaryValueTask:
         evidence_hint = str(prompt_defaults[f"evidence_hint_{str(task_variant)}"])
         json_example = str(prompt_defaults[f"json_example_{str(task_variant)}"])
         json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(task_variant)}"])
+        if is_row_variant:
+            task_key = "summary_row_value_query"
+        elif is_table_variant:
+            task_key = "summary_table_value_query"
+        else:
+            task_key = str(prompt_defaults["task_key"])
+        prompt_slots = {
+            "object_description": str(object_description),
+            "json_output_contract": str(prompt_defaults["json_output_contract"]),
+            "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
+            "evidence_hint": str(evidence_hint),
+            "answer_hint": str(prompt_defaults["answer_hint"]),
+            "json_example": str(json_example),
+            "json_example_answer_only": str(json_example_answer_only),
+        }
+        if is_row_variant:
+            prompt_slots["query_row_label"] = str(dataset["query_row_label"])
+        elif not is_table_variant:
+            prompt_slots["query_column"] = str(dataset["query_column"])
 
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
             bundle_id=str(prompt_defaults["bundle_id"]),
             task_family_key=str(prompt_defaults["task_family_key"]),
-            task_key=str(prompt_defaults["task_key"]),
+            task_key=str(task_key),
             task_variant_key=str(task_variant),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(object_description),
-                "query_column": str(dataset["query_column"]),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(evidence_hint),
-                "answer_hint": str(prompt_defaults["answer_hint"]),
-                "json_example": str(json_example),
-                "json_example_answer_only": str(json_example_answer_only),
-            },
+            slots=prompt_slots,
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        query_column = str(dataset["query_column"])
-        evidence_projection = projected_table_region_bbox_evidence(
-            rendered_scene,
-            column_headers=[str(query_column)],
-        )
+        if is_row_variant:
+            query_row_label = str(dataset["query_row_label"])
+            evidence_projection = projected_table_region_bbox_evidence(
+                rendered_scene,
+                row_labels=[str(query_row_label)],
+            )
+        elif is_table_variant:
+            evidence_projection = projected_table_region_bbox_evidence(
+                rendered_scene,
+                include_numeric_table_region=True,
+            )
+        else:
+            query_column = str(dataset["query_column"])
+            evidence_projection = projected_table_region_bbox_evidence(
+                rendered_scene,
+                column_headers=[str(query_column)],
+            )
         evidence_bboxes = [
             [round(float(value), 3) for value in bbox]
             for bbox in evidence_projection["bbox_set"]
@@ -202,14 +267,35 @@ class TablesStatisticsSummaryValueTask:
             "scene_ir": {
                 "scene_kind": f"table_{str(scene_variant)}_statistics",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
-                "relations": {
-                    "task_variant": str(task_variant),
-                    "scene_variant": str(scene_variant),
-                    "query_column": str(query_column),
-                    "answer_value": int(answer_value),
-                    "supporting_region_kind": "column",
-                    "supporting_column_header": str(query_column),
-                },
+                "relations": (
+                    {
+                        "task_variant": str(task_variant),
+                        "scene_variant": str(scene_variant),
+                        "query_row_label": str(query_row_label),
+                        "answer_value": int(answer_value),
+                        "supporting_region_kind": "row",
+                        "supporting_row_label": str(query_row_label),
+                    }
+                    if is_row_variant
+                    else (
+                        {
+                            "task_variant": str(task_variant),
+                            "scene_variant": str(scene_variant),
+                            "answer_value": int(answer_value),
+                            "supporting_region_kind": "table",
+                            "supporting_table_region": "numeric_values",
+                        }
+                        if is_table_variant
+                        else {
+                        "task_variant": str(task_variant),
+                        "scene_variant": str(scene_variant),
+                        "query_column": str(query_column),
+                        "answer_value": int(answer_value),
+                        "supporting_region_kind": "column",
+                        "supporting_column_header": str(query_column),
+                        }
+                    )
+                ),
             },
             "query_spec": {
                 "task_variant": str(task_variant),
@@ -217,15 +303,39 @@ class TablesStatisticsSummaryValueTask:
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
-                "params": {
-                    "task_variant": str(task_variant),
-                    "scene_variant": str(scene_variant),
-                    "query_column": str(query_column),
-                    "task_variant_probabilities": dict(task_variant_probabilities),
-                    "scene_variant_probabilities": dict(scene_variant_probabilities),
-                    "row_count": int(dataset["row_count"]),
-                    "numeric_column_count": int(dataset["numeric_column_count"]),
-                },
+                "params": (
+                    {
+                        "task_variant": str(task_variant),
+                        "scene_variant": str(scene_variant),
+                        "query_row_label": str(query_row_label),
+                        "task_variant_probabilities": dict(task_variant_probabilities),
+                        "scene_variant_probabilities": dict(scene_variant_probabilities),
+                        "row_count": int(dataset["row_count"]),
+                        "numeric_column_count": int(dataset["numeric_column_count"]),
+                    }
+                    if is_row_variant
+                    else (
+                        {
+                            "task_variant": str(task_variant),
+                            "scene_variant": str(scene_variant),
+                            "task_variant_probabilities": dict(task_variant_probabilities),
+                            "scene_variant_probabilities": dict(scene_variant_probabilities),
+                            "row_count": int(dataset["row_count"]),
+                            "numeric_column_count": int(dataset["numeric_column_count"]),
+                            "numeric_cell_count": int(dataset["numeric_cell_count"]),
+                        }
+                        if is_table_variant
+                        else {
+                        "task_variant": str(task_variant),
+                        "scene_variant": str(scene_variant),
+                        "query_column": str(query_column),
+                        "task_variant_probabilities": dict(task_variant_probabilities),
+                        "scene_variant_probabilities": dict(scene_variant_probabilities),
+                        "row_count": int(dataset["row_count"]),
+                        "numeric_column_count": int(dataset["numeric_column_count"]),
+                        }
+                    )
+                ),
             },
             "render_spec": {
                 "canvas_width": int(render_params.canvas_width),
@@ -247,6 +357,7 @@ class TablesStatisticsSummaryValueTask:
             "render_map": {
                 "image_id": "img0",
                 "table_bbox_px": list(rendered_scene.table_bbox_px),
+                "numeric_table_region_bbox_px": list(rendered_scene.numeric_table_region_bbox),
                 "row_region_bboxes_px": dict(rendered_scene.row_region_bboxes),
                 "column_region_bboxes_px": dict(rendered_scene.column_region_bboxes),
                 "row_label_bboxes_px": dict(rendered_scene.row_label_bboxes),
@@ -256,7 +367,6 @@ class TablesStatisticsSummaryValueTask:
             "execution_trace": {
                 "task_variant": str(task_variant),
                 "scene_variant": str(scene_variant),
-                "query_column": str(query_column),
                 "answer_value": int(answer_value),
                 "row_labels": [str(label) for label in dataset["row_labels"]],
                 "column_headers": [str(header) for header in dataset["column_headers"]],
@@ -266,12 +376,34 @@ class TablesStatisticsSummaryValueTask:
                 "row_count_range": list(dataset["row_count_range"]),
                 "numeric_column_count_range": list(dataset["numeric_column_count_range"]),
                 "value_range": list(dataset["value_range"]),
-                "query_column_index": int(dataset["query_column_index"]),
                 "task_variant_probabilities": dict(task_variant_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
-                "question_format": "column_summary_value",
-                "supporting_region_kind": "column",
-                "supporting_column_header": str(query_column),
+                **(
+                    {
+                        "query_row_label": str(query_row_label),
+                        "query_row_index": int(dataset["query_row_index"]),
+                        "question_format": "row_summary_value",
+                        "supporting_region_kind": "row",
+                        "supporting_row_label": str(query_row_label),
+                    }
+                    if is_row_variant
+                    else (
+                        {
+                            "question_format": "table_summary_value",
+                            "supporting_region_kind": "table",
+                            "supporting_table_region": "numeric_values",
+                            "numeric_cell_count": int(dataset["numeric_cell_count"]),
+                        }
+                        if is_table_variant
+                        else {
+                        "query_column": str(query_column),
+                        "query_column_index": int(dataset["query_column_index"]),
+                        "question_format": "column_summary_value",
+                        "supporting_region_kind": "column",
+                        "supporting_column_header": str(query_column),
+                        }
+                    )
+                ),
             },
             "witness_symbolic": {
                 "type": "bbox_set",
@@ -282,13 +414,20 @@ class TablesStatisticsSummaryValueTask:
             },
         }
 
+        if is_row_variant:
+            complexity_score = float(0.18 + (0.02 * int(dataset["row_count"])) + (0.03 * int(dataset["numeric_column_count"])))
+        elif is_table_variant:
+            complexity_score = float(0.22 + (0.03 * int(dataset["row_count"])) + (0.03 * int(dataset["numeric_column_count"])))
+        else:
+            complexity_score = float(0.2 + (0.03 * int(dataset["row_count"])) + (0.02 * int(dataset["numeric_column_count"])))
         complexity = TaskComplexity(
-            complexity_score=float(0.2 + (0.03 * int(dataset["row_count"])) + (0.02 * int(dataset["numeric_column_count"]))),
+            complexity_score=float(complexity_score),
             complexity_components={
                 "task_variant": str(task_variant),
                 "scene_variant": str(scene_variant),
                 "row_count": int(dataset["row_count"]),
                 "numeric_column_count": int(dataset["numeric_column_count"]),
+                **({"numeric_cell_count": int(dataset["numeric_cell_count"])} if is_table_variant else {}),
             },
         )
         return TaskOutput(

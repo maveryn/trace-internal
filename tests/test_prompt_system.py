@@ -162,6 +162,9 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
         ("icons", "relation", "icons_relation_v1"),
         ("icons", "sequence", "icons_sequence_v1"),
         ("icons", "transformation", "icons_transformation_v1"),
+        ("tables", "readout", "tables_readout_v1"),
+        ("tables", "relation", "tables_relation_v1"),
+        ("tables", "temporal", "tables_temporal_v1"),
         ("tables", "statistics", "tables_statistics_v1"),
         ("tile", "count", "tile_count_v1"),
         ("tile", "pattern", "tile_pattern_v1"),
@@ -362,6 +365,116 @@ def test_charts_composition_bundle_supports_subset_value_variants() -> None:
         "query_series_label",
         "query_label_a",
         "query_label_b",
+    ]
+
+
+def test_tables_readout_bundle_supports_subset_value_variants() -> None:
+    bundle = load_prompt_bundle("tables", "readout", "tables_readout_v1")
+    assert len(bundle.task_templates["subset_value_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["cell_lookup"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["cell_sum_two"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["cell_difference_two_abs"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_family:styled_table_readout"]) == ["object_description"]
+    assert list(bundle.required_slots_by_key["task_variant:cell_lookup"]) == [
+        "query_row_label_1",
+        "query_column_1",
+    ]
+    assert list(bundle.required_slots_by_key["task_variant:cell_sum_two"]) == [
+        "query_row_label_1",
+        "query_column_1",
+        "query_row_label_2",
+        "query_column_2",
+    ]
+
+
+def test_tables_relation_bundle_supports_row_compare_variants() -> None:
+    bundle = load_prompt_bundle("tables", "relation", "tables_relation_v1")
+    assert len(bundle.task_templates["row_compare_label_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["higher_of_two_rows"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["lower_of_two_rows"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_family:styled_table_relation"]) == ["object_description"]
+    assert list(bundle.required_slots_by_key["task_variant:higher_of_two_rows"]) == [
+        "query_row_label_a",
+        "query_row_label_b",
+        "query_column",
+    ]
+
+
+def test_tables_statistics_bundle_supports_filtered_subset_variants() -> None:
+    bundle = load_prompt_bundle("tables", "statistics", "tables_statistics_v1")
+    assert len(bundle.task_templates["summary_table_value_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["table_sum"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["table_mean"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_templates["filtered_subset_value_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_templates["filtered_subset_label_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["filtered_column_sum"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["filtered_column_mean"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["filtered_argmax"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["filtered_argmin"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_variant:filtered_column_sum"]) == [
+        "query_filter_column",
+        "query_target_column",
+        "filter_condition",
+    ]
+    assert list(bundle.required_slots_by_key["task_variant:filtered_argmax"]) == [
+        "query_filter_column",
+        "query_target_column",
+        "filter_condition",
+    ]
+
+
+def test_tables_relation_bundle_supports_extremum_transfer_variants() -> None:
+    bundle = load_prompt_bundle("tables", "relation", "tables_relation_v1")
+    assert len(bundle.task_templates["extremum_transfer_value_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["argmax_transfer"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["argmin_transfer"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_variant:argmax_transfer"]) == [
+        "query_source_column",
+        "query_target_column",
+    ]
+
+
+def test_tables_ranking_bundle_supports_kth_label_variants() -> None:
+    bundle = load_prompt_bundle("tables", "ranking", "tables_ranking_v1")
+    assert len(bundle.task_templates["kth_label_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["kth_highest_in_column"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["kth_lowest_in_column"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_family:styled_table_ranking"]) == ["object_description"]
+    assert list(bundle.required_slots_by_key["task_variant:kth_highest_in_column"]) == [
+        "query_column",
+        "query_rank",
+    ]
+
+
+def test_tables_counting_bundle_supports_column_pair_variants() -> None:
+    bundle = load_prompt_bundle("tables", "counting", "tables_counting_v1")
+    assert len(bundle.task_templates["value_count_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_templates["column_pair_count_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["col_a_gt_col_b"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["col_a_lt_col_b"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_variant:col_a_gt_col_b"]) == [
+        "query_column_a",
+        "query_column_b",
+    ]
+
+
+def test_tables_temporal_bundle_supports_year_conditioned_variants() -> None:
+    bundle = load_prompt_bundle("tables", "temporal", "tables_temporal_v1")
+    assert len(bundle.task_templates["temporal_value_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["value_at_year"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["delta_between_years"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["absolute_difference_between_years"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["sum_over_year_interval"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["mean_over_year_interval"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_family:styled_table_temporal"]) == ["object_description"]
+    assert list(bundle.required_slots_by_key["task_variant:value_at_year"]) == [
+        "query_row_label",
+        "query_year",
+    ]
+    assert list(bundle.required_slots_by_key["task_variant:delta_between_years"]) == [
+        "query_row_label",
+        "query_year_start",
+        "query_year_end",
     ]
 
 

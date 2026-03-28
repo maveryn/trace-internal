@@ -124,8 +124,14 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
 8. Tables:
    - `trace/tasks/tables/statistics/summary_label.py`
    - `trace/tasks/tables/statistics/summary_value.py`
+   - `trace/tasks/tables/statistics/filtered_subset_value.py`
+   - `trace/tasks/tables/statistics/filtered_subset_label.py`
    - `trace/tasks/tables/counting/value_count.py`
-   - `trace/tasks/tables/readout/cell_value.py`
+   - `trace/tasks/tables/readout/subset_value.py`
+   - `trace/tasks/tables/relation/row_compare_label.py`
+   - `trace/tasks/tables/relation/extremum_transfer_value.py`
+   - `trace/tasks/tables/ranking/label.py`
+   - `trace/tasks/tables/temporal/value.py`
 9. Graph:
    - `trace/tasks/graph/counting/degree_count.py`
    - `trace/tasks/graph/counting/articulation_point_count.py`

@@ -166,8 +166,8 @@ Promote helpers when a second consumer appears.
    - Chart mark colors should be sampled once per instance and then reused consistently across all marks in that chart; keep the renderer wired to the resolved per-instance fill/outline colors rather than tracing one style and drawing another.
    - `visual_defaults.py` is the canonical chart-domain background/noise loader layer shared across future chart task groups.
 9. Tables: `trace/tasks/tables/shared/table_scene.py`, `table_common.py`, `visual_defaults.py`
-   - `table_scene.py` is the canonical styled-table renderer for active table tasks; it owns table cell geometry, row/column region bboxes, and the active `spreadsheet|zebra|ledger|card_table` scene variants.
-   - `table_common.py` is the shared construction layer for table tasks; it owns row/column count bounds, row-name/header sampling, summary-label/value dataset construction, counting/readout dataset construction, canonical numeric-cell id resolution, render-param resolution, and both cell- and region-level bbox evidence projection.
+   - `table_scene.py` is the canonical styled-table renderer for active table tasks; it owns table cell geometry, row/column region bboxes, the full numeric-table region bbox, and the active `spreadsheet|zebra|ledger|card_table` scene variants.
+   - `table_common.py` is the shared construction layer for table tasks; it owns row/column count bounds, row-name/header sampling, row/column/whole-table summary dataset construction, ranking/filtered-subset/relation/counting/readout dataset construction, temporal year-header sampling plus temporal dataset construction, canonical numeric-cell id resolution, render-param resolution, and both cell- and region-level bbox evidence projection.
    - `visual_defaults.py` is the canonical table-domain background/noise loader layer shared across future table task groups.
 
 ## 3) Reuse rules

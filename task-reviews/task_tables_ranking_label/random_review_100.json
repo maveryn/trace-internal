@@ -1,0 +1,466 @@
+{
+  "answer_distribution": {
+    "answer_type_counts": {
+      "string": 100
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.02,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": null,
+        "pass": null,
+        "status": "not_applicable_non_numeric_answers"
+      },
+      "min_unique_answers": {
+        "observed": 96,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": null,
+    "max_answer_count": 2,
+    "max_answer_frequency": 0.02,
+    "pass": true,
+    "sample_count": 100,
+    "top_answers": [
+      {
+        "answer_label": "Arly",
+        "count": 2
+      },
+      {
+        "answer_label": "Emil",
+        "count": 2
+      },
+      {
+        "answer_label": "Gula",
+        "count": 2
+      },
+      {
+        "answer_label": "Toni",
+        "count": 2
+      },
+      {
+        "answer_label": "Adne",
+        "count": 1
+      },
+      {
+        "answer_label": "Aret",
+        "count": 1
+      },
+      {
+        "answer_label": "Arne",
+        "count": 1
+      },
+      {
+        "answer_label": "Art",
+        "count": 1
+      },
+      {
+        "answer_label": "Asa",
+        "count": 1
+      },
+      {
+        "answer_label": "Aura",
+        "count": 1
+      },
+      {
+        "answer_label": "Azal",
+        "count": 1
+      },
+      {
+        "answer_label": "Behl",
+        "count": 1
+      },
+      {
+        "answer_label": "Behn",
+        "count": 1
+      },
+      {
+        "answer_label": "Boak",
+        "count": 1
+      },
+      {
+        "answer_label": "Boff",
+        "count": 1
+      },
+      {
+        "answer_label": "Bret",
+        "count": 1
+      },
+      {
+        "answer_label": "Bush",
+        "count": 1
+      },
+      {
+        "answer_label": "Cade",
+        "count": 1
+      },
+      {
+        "answer_label": "Ced",
+        "count": 1
+      },
+      {
+        "answer_label": "Cha",
+        "count": 1
+      },
+      {
+        "answer_label": "Chad",
+        "count": 1
+      },
+      {
+        "answer_label": "Coh",
+        "count": 1
+      },
+      {
+        "answer_label": "Dave",
+        "count": 1
+      },
+      {
+        "answer_label": "Deck",
+        "count": 1
+      },
+      {
+        "answer_label": "Dong",
+        "count": 1
+      },
+      {
+        "answer_label": "Dust",
+        "count": 1
+      },
+      {
+        "answer_label": "Edee",
+        "count": 1
+      },
+      {
+        "answer_label": "Eden",
+        "count": 1
+      },
+      {
+        "answer_label": "El",
+        "count": 1
+      },
+      {
+        "answer_label": "Erb",
+        "count": 1
+      },
+      {
+        "answer_label": "Esta",
+        "count": 1
+      },
+      {
+        "answer_label": "Etem",
+        "count": 1
+      },
+      {
+        "answer_label": "Evey",
+        "count": 1
+      },
+      {
+        "answer_label": "Fae",
+        "count": 1
+      },
+      {
+        "answer_label": "Femi",
+        "count": 1
+      },
+      {
+        "answer_label": "Gad",
+        "count": 1
+      },
+      {
+        "answer_label": "Gena",
+        "count": 1
+      },
+      {
+        "answer_label": "Gove",
+        "count": 1
+      },
+      {
+        "answer_label": "Haas",
+        "count": 1
+      },
+      {
+        "answer_label": "Hach",
+        "count": 1
+      },
+      {
+        "answer_label": "Herm",
+        "count": 1
+      },
+      {
+        "answer_label": "Ian",
+        "count": 1
+      },
+      {
+        "answer_label": "Ier",
+        "count": 1
+      },
+      {
+        "answer_label": "Jabe",
+        "count": 1
+      },
+      {
+        "answer_label": "Jami",
+        "count": 1
+      },
+      {
+        "answer_label": "Joao",
+        "count": 1
+      },
+      {
+        "answer_label": "Juli",
+        "count": 1
+      },
+      {
+        "answer_label": "Kare",
+        "count": 1
+      },
+      {
+        "answer_label": "Kirk",
+        "count": 1
+      },
+      {
+        "answer_label": "Krug",
+        "count": 1
+      },
+      {
+        "answer_label": "La",
+        "count": 1
+      },
+      {
+        "answer_label": "Lail",
+        "count": 1
+      },
+      {
+        "answer_label": "Lamp",
+        "count": 1
+      },
+      {
+        "answer_label": "Lari",
+        "count": 1
+      },
+      {
+        "answer_label": "Len",
+        "count": 1
+      },
+      {
+        "answer_label": "Lenz",
+        "count": 1
+      },
+      {
+        "answer_label": "Li",
+        "count": 1
+      },
+      {
+        "answer_label": "Liv",
+        "count": 1
+      },
+      {
+        "answer_label": "Long",
+        "count": 1
+      },
+      {
+        "answer_label": "Luba",
+        "count": 1
+      },
+      {
+        "answer_label": "Luby",
+        "count": 1
+      },
+      {
+        "answer_label": "Lucy",
+        "count": 1
+      },
+      {
+        "answer_label": "Luht",
+        "count": 1
+      },
+      {
+        "answer_label": "Luna",
+        "count": 1
+      },
+      {
+        "answer_label": "Lunt",
+        "count": 1
+      },
+      {
+        "answer_label": "Lyon",
+        "count": 1
+      },
+      {
+        "answer_label": "Mack",
+        "count": 1
+      },
+      {
+        "answer_label": "Mar",
+        "count": 1
+      },
+      {
+        "answer_label": "Maro",
+        "count": 1
+      },
+      {
+        "answer_label": "Mena",
+        "count": 1
+      },
+      {
+        "answer_label": "Mia",
+        "count": 1
+      },
+      {
+        "answer_label": "Mohl",
+        "count": 1
+      },
+      {
+        "answer_label": "Musa",
+        "count": 1
+      },
+      {
+        "answer_label": "Myca",
+        "count": 1
+      },
+      {
+        "answer_label": "Ng",
+        "count": 1
+      },
+      {
+        "answer_label": "Niki",
+        "count": 1
+      },
+      {
+        "answer_label": "Olaf",
+        "count": 1
+      },
+      {
+        "answer_label": "Oni",
+        "count": 1
+      },
+      {
+        "answer_label": "Pail",
+        "count": 1
+      },
+      {
+        "answer_label": "Prem",
+        "count": 1
+      },
+      {
+        "answer_label": "Rahm",
+        "count": 1
+      },
+      {
+        "answer_label": "Rici",
+        "count": 1
+      },
+      {
+        "answer_label": "Root",
+        "count": 1
+      },
+      {
+        "answer_label": "Rust",
+        "count": 1
+      },
+      {
+        "answer_label": "Ryle",
+        "count": 1
+      },
+      {
+        "answer_label": "Sang",
+        "count": 1
+      },
+      {
+        "answer_label": "Sell",
+        "count": 1
+      },
+      {
+        "answer_label": "Sula",
+        "count": 1
+      },
+      {
+        "answer_label": "Syd",
+        "count": 1
+      },
+      {
+        "answer_label": "Tani",
+        "count": 1
+      },
+      {
+        "answer_label": "Trip",
+        "count": 1
+      },
+      {
+        "answer_label": "Un",
+        "count": 1
+      },
+      {
+        "answer_label": "Vale",
+        "count": 1
+      },
+      {
+        "answer_label": "Vinn",
+        "count": 1
+      },
+      {
+        "answer_label": "Vola",
+        "count": 1
+      },
+      {
+        "answer_label": "Wind",
+        "count": 1
+      }
+    ],
+    "unique_answers": 96
+  },
+  "sample_count": 100,
+  "sampling_axes": {
+    "scene_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "card_table": 0.25,
+        "ledger": 0.25,
+        "spreadsheet": 0.25,
+        "zebra": 0.25
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.28,
+      "observed_counts": {
+        "card_table": 27,
+        "ledger": 17,
+        "spreadsheet": 28,
+        "zebra": 28
+      },
+      "sample_count": 100
+    },
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "kth_highest_in_column": 0.5,
+        "kth_lowest_in_column": 0.5
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.51,
+      "observed_counts": {
+        "kth_highest_in_column": 51,
+        "kth_lowest_in_column": 49
+      },
+      "sample_count": 100
+    }
+  },
+  "task_id": "task_tables_ranking_label",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {
+      "kth_highest_in_column": 0.5,
+      "kth_lowest_in_column": 0.5
+    },
+    "expected_source": "execution_trace",
+    "has_variants": true,
+    "observed_counts": {
+      "kth_highest_in_column": 51,
+      "kth_lowest_in_column": 49
+    },
+    "status": "reported"
+  }
+}

@@ -52,9 +52,15 @@ from .charts.statistics import summary_label as _task_charts_statistics_summary_
 from .charts.statistics import summary_value as _task_charts_statistics_summary_value
 from .charts.trend import structure_value as _task_charts_trend_structure_value
 from .tables.counting import value_count as _task_tables_counting_value_count
-from .tables.readout import cell_value as _task_tables_readout_cell_value
+from .tables.ranking import label as _task_tables_ranking_label
+from .tables.relation import extremum_transfer_value as _task_tables_relation_extremum_transfer_value
+from .tables.relation import row_compare_label as _task_tables_relation_row_compare_label
+from .tables.readout import subset_value as _task_tables_readout_subset_value
+from .tables.statistics import filtered_subset_value as _task_tables_statistics_filtered_subset_value
+from .tables.statistics import filtered_subset_label as _task_tables_statistics_filtered_subset_label
 from .tables.statistics import summary_label as _task_tables_statistics_summary_label
 from .tables.statistics import summary_value as _task_tables_statistics_summary_value
+from .tables.temporal import value as _task_tables_temporal_value
 from .tile import count_color_components as _task_tile_count_color_components
 from .tile import count_color_count as _task_tile_count_color_count
 from .tile import count_largest_component_size as _task_tile_count_largest_component_size

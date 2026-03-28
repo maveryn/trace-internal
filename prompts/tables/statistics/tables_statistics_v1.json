@@ -24,6 +24,41 @@
       "Use the table values to compute the requested column summary.",
       "Find the numeric summary for the named column.",
       "Read the table and report the requested column summary value."
+    ],
+    "summary_row_label_query": [
+      "Answer this question.",
+      "Determine which row label wins under the requested row-summary objective.",
+      "Use the table values to identify the correct row name after summarizing each row.",
+      "Find the row name that satisfies the requested row-summary statistic.",
+      "Read the table and name the row that matches the requested row summary."
+    ],
+    "summary_row_value_query": [
+      "Answer this question.",
+      "Determine the requested summary value for the queried row.",
+      "Use the table values to compute the requested row summary.",
+      "Find the numeric summary for the named row.",
+      "Read the table and report the requested row summary value."
+    ],
+    "summary_table_value_query": [
+      "Answer this question.",
+      "Determine the requested summary value over all numeric cells in the table.",
+      "Use the table values to compute the requested whole-table numeric summary.",
+      "Find the numeric summary across the entire numeric part of the table.",
+      "Read the table and report the requested whole-table summary value."
+    ],
+    "filtered_subset_value_query": [
+      "Answer this question.",
+      "Determine the requested target-column summary over the rows selected by the filter condition.",
+      "Use the table values to filter the rows and then aggregate the named target column.",
+      "Find the numeric summary of the target column after applying the stated row filter.",
+      "Read the table, keep the rows that satisfy the filter, and report the requested target-column summary."
+    ],
+    "filtered_subset_label_query": [
+      "Answer this question.",
+      "Determine which selected row wins under the requested target-column extremum after applying the filter condition.",
+      "Use the table values to filter the rows and then identify the winning row in the named target column.",
+      "Find the row name with the requested target-column extremum after applying the stated row filter.",
+      "Read the table, keep the rows that satisfy the filter, and report the row that wins in the target column."
     ]
   },
   "task_variant_templates": {
@@ -61,11 +96,107 @@
       "Determine the column median for {query_column}.",
       "What median value does the {query_column} column have?",
       "Compute the median of the {query_column} column."
+    ],
+    "row_sum_argmax": [
+      "Which row has the highest total across the numeric columns?",
+      "Find the row label with the largest sum across the numeric columns.",
+      "Determine which row has the maximum row total.",
+      "What row name corresponds to the highest sum over the numeric columns?",
+      "Identify the row with the greatest total across the numeric columns."
+    ],
+    "row_sum_argmin": [
+      "Which row has the lowest total across the numeric columns?",
+      "Find the row label with the smallest sum across the numeric columns.",
+      "Determine which row has the minimum row total.",
+      "What row name corresponds to the lowest sum over the numeric columns?",
+      "Identify the row with the smallest total across the numeric columns."
+    ],
+    "row_sum": [
+      "What is the sum of the numeric values in row {query_row_label}?",
+      "Find the total of all numeric values in row {query_row_label}.",
+      "Determine the row sum for {query_row_label}.",
+      "What total do you get when you add the numeric entries in row {query_row_label}?",
+      "Compute the sum of the numeric cells in row {query_row_label}."
+    ],
+    "row_mean": [
+      "What is the mean of the numeric values in row {query_row_label}?",
+      "Find the average of all numeric values in row {query_row_label}.",
+      "Determine the row mean for {query_row_label}.",
+      "What average value does row {query_row_label} have across the numeric columns?",
+      "Compute the mean of the numeric cells in row {query_row_label}."
+    ],
+    "table_sum": [
+      "What is the sum of all numeric values in the table?",
+      "Find the total of all numeric cells in the table.",
+      "Determine the sum across the full numeric table.",
+      "What total do you get when you add every numeric cell in the table?",
+      "Compute the whole-table sum over the numeric cells."
+    ],
+    "table_mean": [
+      "What is the mean of all numeric values in the table?",
+      "Find the average of all numeric cells in the table.",
+      "Determine the mean across the full numeric table.",
+      "What average value do you get over every numeric cell in the table?",
+      "Compute the whole-table mean over the numeric cells."
+    ],
+    "filtered_column_sum": [
+      "Among the rows with {filter_condition}, what is the sum of the values in the {query_target_column} column?",
+      "Filter the rows to those with {filter_condition}. What total do their {query_target_column} values have?",
+      "Using only the rows with {filter_condition}, determine the sum of the {query_target_column} column.",
+      "What is the total of the {query_target_column} values for rows whose {query_filter_column} entries satisfy {filter_condition}?",
+      "Compute the sum of {query_target_column} over the rows where {filter_condition}."
+    ],
+    "filtered_column_mean": [
+      "Among the rows with {filter_condition}, what is the mean of the values in the {query_target_column} column?",
+      "Filter the rows to those with {filter_condition}. What average do their {query_target_column} values have?",
+      "Using only the rows with {filter_condition}, determine the mean of the {query_target_column} column.",
+      "What is the average of the {query_target_column} values for rows whose {query_filter_column} entries satisfy {filter_condition}?",
+      "Compute the mean of {query_target_column} over the rows where {filter_condition}."
+    ],
+    "filtered_argmax": [
+      "Among the rows with {filter_condition}, which row has the highest value in the {query_target_column} column?",
+      "Filter the rows to those with {filter_condition}. Which row label has the largest {query_target_column} value?",
+      "Using only the rows with {filter_condition}, determine which row has the maximum value in {query_target_column}.",
+      "What row name has the highest {query_target_column} value among rows whose {query_filter_column} entries satisfy {filter_condition}?",
+      "After filtering to rows where {filter_condition}, identify the row with the maximum {query_target_column} value."
+    ],
+    "filtered_argmin": [
+      "Among the rows with {filter_condition}, which row has the lowest value in the {query_target_column} column?",
+      "Filter the rows to those with {filter_condition}. Which row label has the smallest {query_target_column} value?",
+      "Using only the rows with {filter_condition}, determine which row has the minimum value in {query_target_column}.",
+      "What row name has the lowest {query_target_column} value among rows whose {query_filter_column} entries satisfy {filter_condition}?",
+      "After filtering to rows where {filter_condition}, identify the row with the minimum {query_target_column} value."
     ]
   },
   "required_slots_by_key": {
     "task_family:styled_table_statistics": [
       "object_description"
+    ],
+    "task_variant:row_sum": [
+      "query_row_label"
+    ],
+    "task_variant:row_mean": [
+      "query_row_label"
+    ],
+    "task_variant:filtered_column_sum": [
+      "query_filter_column",
+      "query_target_column",
+      "filter_condition"
+    ],
+    "task_variant:filtered_column_mean": [
+      "query_filter_column",
+      "query_target_column",
+      "filter_condition"
+    ],
+    "task_variant:filtered_argmax": [
+      "query_filter_column",
+      "query_target_column",
+      "filter_condition"
+    ],
+    "task_variant:filtered_argmin": [
+      "query_filter_column",
+      "query_target_column",
+      "filter_condition"
     ],
     "answer_or_evidence:answer_only": [
       "json_output_contract_answer_only",

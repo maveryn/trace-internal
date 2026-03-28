@@ -11,21 +11,35 @@
     ]
   },
   "task_templates": {
-    "cell_value_query": [
+    "subset_value_query": [
       "Answer this question.",
-      "Determine the exact value in the requested table cell.",
-      "Use the table values to read the queried cell.",
-      "Find the integer value stored at the named row and column.",
-      "Read the table and report the requested cell value."
+      "Read the named table cell or cells and compute the requested result.",
+      "Use the table values to evaluate the queried cell expression.",
+      "Find the requested integer result from the named row and column entries.",
+      "Read the table and report the requested value or two-cell result."
     ]
   },
   "task_variant_templates": {
     "cell_lookup": [
-      "What value is in the cell at row {query_row_label} and column {query_column}?",
-      "Find the integer in the {query_column} column for row {query_row_label}.",
-      "Determine the value where row {query_row_label} intersects column {query_column}.",
-      "Read the cell for row {query_row_label} under the {query_column} column. What value does it show?",
-      "What integer appears at the {query_column} entry for row {query_row_label}?"
+      "What value is in the cell at row {query_row_label_1} and column {query_column_1}?",
+      "Find the integer in the {query_column_1} column for row {query_row_label_1}.",
+      "Determine the value where row {query_row_label_1} intersects column {query_column_1}.",
+      "Read the cell for row {query_row_label_1} under the {query_column_1} column. What value does it show?",
+      "What integer appears at the {query_column_1} entry for row {query_row_label_1}?"
+    ],
+    "cell_sum_two": [
+      "What is the sum of the values in the cells at row {query_row_label_1}, column {query_column_1} and row {query_row_label_2}, column {query_column_2}?",
+      "Add the value from row {query_row_label_1}, column {query_column_1} to the value from row {query_row_label_2}, column {query_column_2}. What is the result?",
+      "Find the two cell values at ({query_row_label_1}, {query_column_1}) and ({query_row_label_2}, {query_column_2}) and report their sum.",
+      "Read the cells for row {query_row_label_1} under {query_column_1} and row {query_row_label_2} under {query_column_2}. What is their total?",
+      "What total do you get by adding the {query_column_1} entry for {query_row_label_1} and the {query_column_2} entry for {query_row_label_2}?"
+    ],
+    "cell_difference_two_abs": [
+      "What is the absolute difference between the values in the cells at row {query_row_label_1}, column {query_column_1} and row {query_row_label_2}, column {query_column_2}?",
+      "Find the absolute difference between the value from row {query_row_label_1}, column {query_column_1} and the value from row {query_row_label_2}, column {query_column_2}.",
+      "Read the two cell values at ({query_row_label_1}, {query_column_1}) and ({query_row_label_2}, {query_column_2}) and report their absolute difference.",
+      "What is the non-negative difference between the {query_column_1} entry for {query_row_label_1} and the {query_column_2} entry for {query_row_label_2}?",
+      "Determine the absolute gap between the cells for row {query_row_label_1} under {query_column_1} and row {query_row_label_2} under {query_column_2}."
     ]
   },
   "required_slots_by_key": {
@@ -33,8 +47,20 @@
       "object_description"
     ],
     "task_variant:cell_lookup": [
-      "query_row_label",
-      "query_column"
+      "query_row_label_1",
+      "query_column_1"
+    ],
+    "task_variant:cell_sum_two": [
+      "query_row_label_1",
+      "query_column_1",
+      "query_row_label_2",
+      "query_column_2"
+    ],
+    "task_variant:cell_difference_two_abs": [
+      "query_row_label_1",
+      "query_column_1",
+      "query_row_label_2",
+      "query_column_2"
     ],
     "answer_or_evidence:answer_only": [
       "json_output_contract_answer_only",

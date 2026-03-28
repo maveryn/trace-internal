@@ -46,6 +46,14 @@ rendering:
     text_stroke_rgb: [255, 255, 255]
     plot_fill_rgb: [255, 255, 255]
 
+complexity:
+  task_overrides:
+    task_charts_composition_subset_value:
+      criteria_weights:
+        visual_scan: 0.35
+        reasoning_load: 0.45
+        scene_variant_load: 0.20
+
 prompt:
   shared:
     bundle_id: charts_composition_v1

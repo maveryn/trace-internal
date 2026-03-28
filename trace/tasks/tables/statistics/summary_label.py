@@ -24,6 +24,7 @@ from ..shared.table_common import (
     projected_table_bbox_evidence,
     resolve_table_axis_variant,
     resolve_table_render_params,
+    table_value_cell_id,
 )
 from ..shared.table_scene import render_table_scene
 from ..shared.visual_defaults import load_table_background_defaults, load_table_noise_defaults
@@ -172,7 +173,10 @@ class TablesStatisticsSummaryLabelTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_row_label = str(dataset["answer_row_label"])
-        evidence_cell_id = f"cell_r{int(dataset['answer_row_index']) + 1}_c{int(dataset['query_column_index']) + 1}"
+        evidence_cell_id = table_value_cell_id(
+            data_row_index=int(dataset["answer_row_index"]),
+            numeric_column_index=int(dataset["query_column_index"]),
+        )
         evidence_projection = projected_table_bbox_evidence(rendered_scene, [str(evidence_cell_id)])
         evidence_bboxes = [
             [round(float(value), 3) for value in bbox]

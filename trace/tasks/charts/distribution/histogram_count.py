@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict, Mapping, Tuple
 
 from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -18,6 +18,11 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ..shared.chart_scene import render_histogram_scene
+from ..shared.complexity import (
+    build_chart_complexity,
+    normalize_int_with_bounds,
+    resolve_chart_complexity_weights,
+)
 from ..shared.distribution_chart_common import (
     DistributionChartDefaults,
     LabeledChartDefaults,
@@ -49,6 +54,12 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 )
 POST_IMAGE_BACKGROUND_DEFAULTS = load_chart_background_defaults(task_group="distribution")
 POST_IMAGE_NOISE_DEFAULTS = load_chart_noise_defaults(task_group="distribution", apply_prob=0.0)
+_COMPLEXITY_WEIGHTS = resolve_chart_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
+_REASONING_LOAD_BY_VARIANT: Dict[str, float] = {
+    "modal_bin_count": 0.0,
+    "interval_mass": 0.55,
+    "cumulative_count_to_bin": 1.0,
+}
 
 
 def _resolve_task_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
@@ -305,12 +316,15 @@ class ChartsDistributionHistogramCountTask:
             },
         }
 
-        complexity = TaskComplexity(
-            complexity_score=float(0.24 + 0.04 * int(trace_extras["bin_count"])),
-            complexity_components={
-                "task_variant": str(task_variant),
-                "scene_variant": SCENE_VARIANT,
-                "bin_count": int(trace_extras["bin_count"]),
+        complexity = build_chart_complexity(
+            weights=_COMPLEXITY_WEIGHTS,
+            components={
+                "visual_scan": normalize_int_with_bounds(
+                    int(trace_extras["bin_count"]),
+                    trace_extras["bin_count_range"],
+                ),
+                "reasoning_load": float(_REASONING_LOAD_BY_VARIANT[str(task_variant)]),
+                "scene_variant_load": 0.55,
             },
         )
         return TaskOutput(

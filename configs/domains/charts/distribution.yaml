@@ -60,6 +60,24 @@ rendering:
     text_stroke_rgb: [255, 255, 255]
     plot_fill_rgb: [255, 255, 255]
 
+complexity:
+  task_overrides:
+    task_charts_distribution_histogram_count:
+      criteria_weights:
+        visual_scan: 0.55
+        reasoning_load: 0.45
+        scene_variant_load: 0.0
+    task_charts_distribution_boxplot_label:
+      criteria_weights:
+        visual_scan: 0.40
+        reasoning_load: 0.60
+        scene_variant_load: 0.0
+    task_charts_distribution_density_label:
+      criteria_weights:
+        visual_scan: 0.30
+        reasoning_load: 0.70
+        scene_variant_load: 0.0
+
 prompt:
   shared:
     bundle_id: charts_distribution_v1

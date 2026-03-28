@@ -9,6 +9,18 @@ from trace.core.seed import hash64
 from trace.tasks.tile.relation_min_distance import TileMinDistanceTask
 
 
+def _assert_normalized_complexity(out: object) -> None:
+    complexity = out.complexity.to_dict()
+    assert 0.0 <= float(complexity["complexity_score"]) <= 1.0
+    assert set(complexity["complexity_components"].keys()) == {
+        "reasoning_load",
+        "visual_scan",
+    }
+    assert all(
+        0.0 <= float(value) <= 1.0 for value in complexity["complexity_components"].values()
+    )
+
+
 def _extract_prompt_json_example(prompt: str) -> dict:
     marker = "Example JSON:\n"
     assert marker in str(prompt)
@@ -76,6 +88,7 @@ def test_tile_min_distance_outputs_expected_contract() -> None:
     ]
     assert min(pair_distances) == 4
     assert sum(1 for value in pair_distances if int(value) == 4) == 1
+    _assert_normalized_complexity(out)
 
 
 def test_tile_min_distance_caps_target_range_for_small_boards() -> None:
@@ -141,3 +154,39 @@ def test_tile_min_distance_review_seed_stream_stays_balanced() -> None:
 
     assert set(counts.keys()) == {2, 3, 4, 5, 6}
     assert max(counts.values()) <= 20
+
+
+def test_tile_relation_complexity_is_normalized_and_monotonic() -> None:
+    task = TileMinDistanceTask()
+    easy = task.generate(
+        9129,
+        params={
+            "rows_min": 5,
+            "rows_max": 5,
+            "cols_min": 7,
+            "cols_max": 7,
+            "target_distance_min": 2,
+            "target_distance_max": 6,
+            "_sampling_index": 0,
+        },
+        max_attempts=10,
+    )
+    hard = task.generate(
+        9129,
+        params={
+            "rows_min": 5,
+            "rows_max": 5,
+            "cols_min": 7,
+            "cols_max": 7,
+            "target_distance_min": 2,
+            "target_distance_max": 6,
+            "_sampling_index": 4,
+        },
+        max_attempts=10,
+    )
+    _assert_normalized_complexity(easy)
+    _assert_normalized_complexity(hard)
+    assert float(hard.complexity.complexity_components["reasoning_load"]) > float(
+        easy.complexity.complexity_components["reasoning_load"]
+    )
+    assert float(hard.complexity.complexity_score) > float(easy.complexity.complexity_score)

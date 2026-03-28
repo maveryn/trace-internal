@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict, Mapping, Tuple
 
 from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -18,6 +18,11 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ..shared.chart_scene import render_labeled_chart_scene
+from ..shared.complexity import (
+    build_chart_complexity,
+    normalize_int_with_bounds,
+    resolve_chart_complexity_weights,
+)
 from ..shared.labeled_chart_common import (
     LabeledChartDefaults,
     build_chart_mark_specs,
@@ -57,6 +62,21 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 )
 POST_IMAGE_BACKGROUND_DEFAULTS = load_chart_background_defaults(task_group="trend")
 POST_IMAGE_NOISE_DEFAULTS = load_chart_noise_defaults(task_group="trend", apply_prob=0.0)
+_COMPLEXITY_WEIGHTS = resolve_chart_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
+_REASONING_LOAD_BY_VARIANT: Dict[str, float] = {
+    "peak_count": 0.0,
+    "trough_count": 0.0,
+    "longest_increasing_streak": 1.0,
+    "longest_decreasing_streak": 1.0,
+}
+_SCENE_VARIANT_LOADS: Dict[str, float] = {
+    "bar": 0.0,
+    "horizontal_bar": 0.10,
+    "dot_plot": 0.20,
+    "lollipop": 0.30,
+    "line": 0.38,
+    "area": 0.46,
+}
 
 
 def _resolve_task_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
@@ -337,13 +357,15 @@ class ChartsTrendStructureValueTask:
             },
         }
 
-        complexity = TaskComplexity(
-            complexity_score=float(0.20 + 0.05 * int(trace_extras["mark_count"]) + 0.03 * len(evidence_labels)),
-            complexity_components={
-                "task_variant": str(task_variant),
-                "scene_variant": str(scene_variant),
-                "mark_count": int(trace_extras["mark_count"]),
-                "evidence_size": int(len(evidence_labels)),
+        complexity = build_chart_complexity(
+            weights=_COMPLEXITY_WEIGHTS,
+            components={
+                "visual_scan": normalize_int_with_bounds(
+                    int(trace_extras["mark_count"]),
+                    trace_extras["mark_count_range"],
+                ),
+                "reasoning_load": float(_REASONING_LOAD_BY_VARIANT[str(task_variant)]),
+                "scene_variant_load": float(_SCENE_VARIANT_LOADS[str(scene_variant)]),
             },
         )
         return TaskOutput(

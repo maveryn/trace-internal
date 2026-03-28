@@ -27,6 +27,7 @@ Use this whenever the task lives under `domain=tables`.
 - Use one cell bbox when a single numeric cell is decisive.
 - Use one row-region bbox when the witness is a whole row of numeric cells.
 - Use one column-region bbox when the witness is a whole numeric column.
+- For column-filter counting tasks, use one bbox per matching queried-column value cell in deterministic top-to-bottom row order.
 - If a task has multiple disjoint decisive regions, use multiple boxes in deterministic order rather than inventing a new evidence type.
 
 ## Design heuristics
@@ -35,6 +36,7 @@ Use this whenever the task lives under `domain=tables`.
 - Prefer short visible row labels and short metric headers so the table stays readable at moderate row/column counts.
 - When tasks aggregate over one column, keep that as a column-summary task instead of mixing row and column aggregation into one contract.
 - When tasks aggregate over one row, treat that as a separate row-summary task rather than overloading a column-summary task.
+- Keep early table tasks column-centric where possible: column summary, column filtering, and direct row+column cell readout all reuse the same clear table schema before row-summary tasks are added.
 - Keep prompts explicit about what evidence region should be boxed.
 - The current statistics family already splits naturally into row-identity questions (`summary_label`) and numeric column-summary questions (`summary_value`); follow that separation for future table tasks too.
 

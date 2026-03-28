@@ -1,3 +1,51 @@
+generation:
+  shared:
+    row_count_min: 5
+    row_count_max: 10
+    numeric_column_count_min: 3
+    numeric_column_count_max: 5
+    value_min: 1
+    value_max: 32
+    scene_variant_weights:
+      spreadsheet: 1.0
+      zebra: 1.0
+      ledger: 1.0
+      card_table: 1.0
+    balanced_task_variant_sampling: true
+    balanced_scene_variant_sampling: true
+
+rendering:
+  shared:
+    canvas_width: 940
+    canvas_height: 640
+    table_margin_left_px: 52
+    table_margin_right_px: 52
+    table_margin_top_px: 56
+    table_margin_bottom_px: 52
+    row_label_width_fraction: 0.28
+    label_font_size_px: 24
+    value_font_size_px: 22
+    border_width_px: 2
+    grid_width_px: 1
+    rounded_corner_radius_px: 18
+    cell_padding_px: 14
+    header_fill_rgb: [232, 236, 243]
+    zebra_row_fill_rgb: [247, 249, 252]
+    card_fill_rgb: [250, 250, 252]
+    border_color_rgb: [92, 98, 109]
+    grid_color_rgb: [204, 209, 218]
+    text_color_rgb: [36, 39, 45]
+    text_stroke_rgb: [255, 255, 255]
+
+prompt:
+  shared:
+    json_output_contract: Return a valid JSON object with keys "evidence" and "answer" in that order.
+    json_output_contract_answer_only: Return a valid JSON object with key "answer".
+    object_description_spreadsheet: a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row
+    object_description_zebra: a zebra-striped table with one Name column, several numeric columns, alternating row shading, and a shaded header row
+    object_description_ledger: a ledger-style table with one Name column, several numeric columns, strong horizontal rules, and minimal vertical separators
+    object_description_card_table: a card-style table with one Name column, several numeric columns, a rounded outer frame, and a shaded header row
+
 visual:
   background:
     enabled: true

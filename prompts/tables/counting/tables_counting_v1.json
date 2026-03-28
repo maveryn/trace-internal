@@ -1,0 +1,90 @@
+{
+  "bundle_id": "tables_counting_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "styled_table_counting": [
+      "The image shows {object_description}.",
+      "Use the table in the image. It shows {object_description}.",
+      "Work from the styled table shown in the image: {object_description}.",
+      "Look at the table in the image. It shows {object_description}.",
+      "You are given a table: {object_description}."
+    ]
+  },
+  "task_templates": {
+    "value_count_query": [
+      "Answer this question.",
+      "Determine how many table rows satisfy the requested value condition.",
+      "Use the table values to count the rows that match the filter.",
+      "Find the number of rows whose queried values satisfy the condition.",
+      "Read the table and count the matching rows."
+    ]
+  },
+  "task_variant_templates": {
+    "above_threshold": [
+      "How many rows have a value greater than {threshold_value} in the {query_column} column?",
+      "Count the rows whose {query_column} value is above {threshold_value}.",
+      "How many entries in the {query_column} column exceed {threshold_value}?",
+      "Determine how many rows show {query_column} greater than {threshold_value}.",
+      "Find the number of rows with {query_column} values larger than {threshold_value}."
+    ],
+    "below_threshold": [
+      "How many rows have a value less than {threshold_value} in the {query_column} column?",
+      "Count the rows whose {query_column} value is below {threshold_value}.",
+      "How many entries in the {query_column} column are under {threshold_value}?",
+      "Determine how many rows show {query_column} less than {threshold_value}.",
+      "Find the number of rows with {query_column} values smaller than {threshold_value}."
+    ],
+    "in_interval": [
+      "How many rows have a value in the inclusive interval [{interval_min}, {interval_max}] in the {query_column} column?",
+      "Count the rows whose {query_column} value falls within [{interval_min}, {interval_max}], inclusive.",
+      "How many entries in the {query_column} column lie between {interval_min} and {interval_max}, inclusive?",
+      "Determine how many rows show {query_column} within the inclusive range [{interval_min}, {interval_max}].",
+      "Find the number of rows with {query_column} values in [{interval_min}, {interval_max}], inclusive."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:styled_table_counting": [
+      "object_description"
+    ],
+    "task_variant:above_threshold": [
+      "query_column",
+      "threshold_value"
+    ],
+    "task_variant:below_threshold": [
+      "query_column",
+      "threshold_value"
+    ],
+    "task_variant:in_interval": [
+      "query_column",
+      "interval_min",
+      "interval_max"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

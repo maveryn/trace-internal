@@ -47,6 +47,14 @@ rendering:
     text_stroke_rgb: [255, 255, 255]
     plot_fill_rgb: [255, 255, 255]
 
+complexity:
+  task_overrides:
+    task_charts_multiseries_pairwise_comparison_count:
+      criteria_weights:
+        visual_scan: 0.55
+        reasoning_load: 0.10
+        scene_variant_load: 0.35
+
 prompt:
   shared:
     bundle_id: charts_multiseries_v1

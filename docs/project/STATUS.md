@@ -65,6 +65,8 @@ Date: 2026-03-27
 54. Charts now also includes `task_charts_composition_subset_value`, the first `composition` family task under `domain=charts`, with semantic `task_variant` values `stack_total_at_label|stack_segment_value|combined_share_subset`, visual `scene_variant` values `stacked_bar|stacked_horizontal_bar|pie|donut` subject to compatibility, integer answers, and ordered `integer_list` evidence over the relevant segment or slice values. Stacked scenes render one stack per category with printed segment values and a right-side legend, while pie/donut scenes render multicolor percentage compositions with a right-side legend and printed slice percentages.
 55. Tables now includes `task_tables_statistics_summary_label`, the first `statistics` family task under `domain=tables`, with semantic `task_variant` values `argmax|argmin`, visual `scene_variant` values `spreadsheet|zebra|ledger|card_table`, `string` row-name answers, and `bbox_set` evidence over the decisive numeric value cell. Tables use one leftmost `Name` column, `3..5` numeric columns, `5..10` data rows, short visible human-style row names sourced from the shared short-name manifest, and a queried numeric column whose extremum row is unique by construction.
 56. Tables now also includes `task_tables_statistics_summary_value`, a companion `statistics` task under `domain=tables`, with semantic `task_variant` values `column_sum|column_mean|column_median`, visual `scene_variant` values `spreadsheet|zebra|ledger|card_table`, integer answers, and `bbox_set` evidence over the supporting queried-column region. `column_mean` is constructed to stay integral, `column_median` uses odd row counts and a unique median by construction, and all active table statistics tasks share the same short-name row-label pool plus styled light-background table renderers.
+57. Tables now also includes `task_tables_counting_value_count`, the first `counting` task under `domain=tables`, with semantic `task_variant` values `above_threshold|below_threshold|in_interval`, visual `scene_variant` values `spreadsheet|zebra|ledger|card_table`, integer answers, and `bbox_set` evidence over the matching queried-column value cells in top-to-bottom row order. The count answer is sampled from the feasible `0..row_count` support before the queried column is constructed, `above_threshold` and `below_threshold` use strict inequalities, and `in_interval` uses an inclusive interval.
+58. Tables now also includes `task_tables_readout_cell_value`, the first `readout` task under `domain=tables`, with semantic `task_variant` value `cell_lookup`, visual `scene_variant` values `spreadsheet|zebra|ledger|card_table`, integer answers, and `bbox_set` evidence over the exact queried row/column cell. The queried row label and queried numeric column are named explicitly in the prompt and recorded in trace, while the answer cell value is set explicitly to keep direct-cell readout answer diversity healthy.
 
 ## Active tasks
 1. `task_tile_count_color_count` (`domain=tile`, `task_group=count`)
@@ -120,12 +122,14 @@ Date: 2026-03-27
 51. `task_charts_composition_subset_value` (`domain=charts`, `task_group=composition`)
 52. `task_tables_statistics_summary_label` (`domain=tables`, `task_group=statistics`)
 53. `task_tables_statistics_summary_value` (`domain=tables`, `task_group=statistics`)
+54. `task_tables_counting_value_count` (`domain=tables`, `task_group=counting`)
+55. `task_tables_readout_cell_value` (`domain=tables`, `task_group=readout`)
 
 ## Current quality baseline
 1. Tests are required to pass before finalize.
 2. Distribution QA uses `scripts/check_task_answer_distribution.py` with per-variant answer-only checks (`unique_answers >= 5`, `max_answer_frequency < 25%`) and multithreaded sample generation (`--workers`); numeric 5-bin summaries remain reported for review but are not hard pass/fail gates.
 3. Task-review tooling writes per-task artifacts under `task-reviews/<task_id>/`, including one inspection workbook named `<task_id>.xlsx` with one sheet per task variant.
-4. The current active reviewed task set (10 tile tasks + 20 geometry tasks + 11 reviewed icons tasks + 10 charts tasks + 2 table tasks) passes distribution review under the active gates.
+4. The current active reviewed task set (10 tile tasks + 20 geometry tasks + 11 reviewed icons tasks + 10 charts tasks + 4 table tasks) passes distribution review under the active gates.
 
 ## Next priorities
 1. Extend icons beyond the current counting/transformation/relation/sequence set using the curated Prism asset pipeline (`comparison` and richer relation/transformation variants are the next natural families).

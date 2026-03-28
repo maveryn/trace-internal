@@ -61,3 +61,5 @@ Current task docs:
 51. [task_charts_composition_subset_value.md](task_charts_composition_subset_value.md)
 52. [task_tables_statistics_summary_label.md](task_tables_statistics_summary_label.md)
 53. [task_tables_statistics_summary_value.md](task_tables_statistics_summary_value.md)
+54. [task_tables_counting_value_count.md](task_tables_counting_value_count.md)
+55. [task_tables_readout_cell_value.md](task_tables_readout_cell_value.md)

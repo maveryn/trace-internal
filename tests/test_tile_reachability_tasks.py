@@ -7,6 +7,18 @@ import json
 from trace.tasks.tile.reachability_region_size import TileRegionSizeTask
 
 
+def _assert_normalized_complexity(out: object) -> None:
+    complexity = out.complexity.to_dict()
+    assert 0.0 <= float(complexity["complexity_score"]) <= 1.0
+    assert set(complexity["complexity_components"].keys()) == {
+        "reasoning_load",
+        "visual_scan",
+    }
+    assert all(
+        0.0 <= float(value) <= 1.0 for value in complexity["complexity_components"].values()
+    )
+
+
 def _extract_prompt_json_example(prompt: str) -> dict:
     marker = "Example JSON:\n"
     assert marker in str(prompt)
@@ -69,6 +81,7 @@ def test_tile_region_size_outputs_expected_contract() -> None:
     start_entities = [entity for entity in reachable_entities if bool(entity["attrs"]["is_start"])]
     assert len(start_entities) == 1
     assert start_entities[0]["attrs"]["fill_rgb"] == execution["start_color_rgb"]
+    _assert_normalized_complexity(out)
 
 
 def test_tile_region_size_is_deterministic() -> None:

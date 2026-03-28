@@ -9,7 +9,7 @@ from PIL import ImageDraw
 
 from ...core.seed import spawn_rng
 from ...core.task_group_config import get_task_group_defaults
-from ...core.types import TaskComplexity, TypedValue
+from ...core.types import TypedValue
 from ...core.visual.background import make_background_canvas
 from ...core.visual.noise import apply_post_image_noise
 from ..base import TaskOutput
@@ -33,6 +33,12 @@ from ..shared.prompt_json_example import resolve_prompt_json_examples
 from .shared.grid_graph import cell_id
 from .shared.maze_sampling import sample_unique_shortest_path_maze, validate_open_path_entities
 from .shared.maze_scene import open_adjacency_by_cell
+from .shared.complexity import (
+    build_tile_complexity,
+    normalize_float_with_bounds,
+    normalize_int_with_bounds,
+    resolve_tile_complexity_weights,
+)
 from .shared.rectangular_board import (
     RectangularTileSpec,
     build_rectangular_board_render_spec,
@@ -81,6 +87,10 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 )
 POST_IMAGE_BACKGROUND_DEFAULTS = load_tile_background_defaults(task_group="path")
 POST_IMAGE_NOISE_DEFAULTS = load_tile_noise_defaults(task_group="path", apply_prob=0.0)
+_COMPLEXITY_WEIGHTS = resolve_tile_complexity_weights(
+    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, dict) else {},
+    task_id="task_tile_path_shortest_path",
+)
 
 
 def _sample_square_tile_spec(rng, *, short_side_px_min: int, short_side_px_max: int) -> RectangularTileSpec:
@@ -431,14 +441,26 @@ class TileShortestPathTask:
             "projected_evidence": dict(evidence_artifacts["projected_evidence"]),
         }
 
-        complexity_score = min(1.0, max(0.0, float(shortest_len) / float(rows * cols)))
-        complexity = TaskComplexity(
-            complexity_score=complexity_score,
-            complexity_components={
-                "rows": rows,
-                "cols": cols,
-                "path_len": shortest_len,
-                "blocked_ratio": sum(sum(1 for v in row if v) for row in blocked) / float(rows * cols),
+        blocked_ratio = sum(sum(1 for value in row if value) for row in blocked) / float(rows * cols)
+        complexity = build_tile_complexity(
+            weights=_COMPLEXITY_WEIGHTS,
+            components={
+                "visual_scan": normalize_float_with_bounds(
+                    float(blocked_ratio),
+                    (float(obstacle_prob_min), float(obstacle_prob_max)),
+                ),
+                "reasoning_load": (
+                    0.80
+                    * normalize_int_with_bounds(
+                        int(shortest_len),
+                        (int(target_shortest_len_min), int(target_shortest_len_max)),
+                    )
+                    + 0.20
+                    * normalize_float_with_bounds(
+                        float(blocked_ratio),
+                        (float(obstacle_prob_min), float(obstacle_prob_max)),
+                    )
+                ),
             },
         )
 

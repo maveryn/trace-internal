@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict, Mapping, Tuple
 
 from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -18,6 +18,11 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ..shared.chart_scene import render_labeled_chart_scene, render_stacked_chart_scene
+from ..shared.complexity import (
+    build_chart_complexity,
+    normalize_int_with_bounds,
+    resolve_chart_complexity_weights,
+)
 from ..shared.composition_chart_common import (
     CompositionChartDefaults,
     SUPPORTED_COMPOSITION_TASK_VARIANTS,
@@ -49,6 +54,31 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 )
 POST_IMAGE_BACKGROUND_DEFAULTS = load_chart_background_defaults(task_group="composition")
 POST_IMAGE_NOISE_DEFAULTS = load_chart_noise_defaults(task_group="composition", apply_prob=0.0)
+_COMPLEXITY_WEIGHTS = resolve_chart_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
+_REASONING_LOAD_BY_VARIANT: Dict[str, float] = {
+    "stack_segment_value": 0.0,
+    "stack_total_at_label": 0.45,
+    "combined_share_subset": 1.0,
+}
+_SCENE_VARIANT_LOADS: Dict[str, float] = {
+    "pie": 0.0,
+    "donut": 0.12,
+    "stacked_bar": 0.46,
+    "stacked_horizontal_bar": 0.58,
+}
+
+
+def _normalize_composition_visual_scan(dataset: Mapping[str, Any]) -> float:
+    """Normalize composition visual load from effective visible segments/slices."""
+    category_range = dataset.get("category_count_range", [0, 0])
+    series_range = dataset.get("series_count_range", [0, 0])
+    effective_category_count = max(1, int(dataset["category_count"]))
+    effective_total = int(dataset["series_count"]) * int(effective_category_count)
+    effective_bounds = [
+        int(series_range[0]) * max(1, int(category_range[0])),
+        int(series_range[1]) * max(1, int(category_range[1])),
+    ]
+    return normalize_int_with_bounds(int(effective_total), effective_bounds)
 
 
 def _resolve_task_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
@@ -414,14 +444,12 @@ class ChartsCompositionSubsetValueTask:
         else:
             trace_payload["execution_trace"]["values"] = [int(value) for value in dataset["values"]]
 
-        complexity = TaskComplexity(
-            complexity_score=float(0.22 + 0.04 * int(dataset["series_count"]) + 0.03 * max(1, int(dataset["category_count"]))),
-            complexity_components={
-                "task_variant": str(task_variant),
-                "scene_variant": str(scene_variant),
-                "series_count": int(dataset["series_count"]),
-                "category_count": int(dataset["category_count"]),
-                "evidence_length": int(len(evidence_values)),
+        complexity = build_chart_complexity(
+            weights=_COMPLEXITY_WEIGHTS,
+            components={
+                "visual_scan": _normalize_composition_visual_scan(dataset),
+                "reasoning_load": float(_REASONING_LOAD_BY_VARIANT[str(task_variant)]),
+                "scene_variant_load": float(_SCENE_VARIANT_LOADS[str(scene_variant)]),
             },
         )
         return TaskOutput(

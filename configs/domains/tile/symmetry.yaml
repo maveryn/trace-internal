@@ -6,6 +6,13 @@ generation:
       target_violation_count_min: 1
       target_violation_count_max: 10
 
+complexity:
+  task_overrides:
+    task_tile_symmetry_violation_count:
+      criteria_weights:
+        visual_scan: 0.45
+        reasoning_load: 0.55
+
 prompt:
   shared:
     bundle_id: tile_symmetry_v1

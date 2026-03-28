@@ -26,6 +26,17 @@ rendering:
       aspect_ratio_min: 1.0
       aspect_ratio_max: 1.0
 
+complexity:
+  task_overrides:
+    task_tile_path_shortest_path:
+      criteria_weights:
+        visual_scan: 0.30
+        reasoning_load: 0.70
+    task_tile_path_reachable_target_count:
+      criteria_weights:
+        visual_scan: 0.45
+        reasoning_load: 0.55
+
 prompt:
   shared:
     bundle_id: tile_path_v1

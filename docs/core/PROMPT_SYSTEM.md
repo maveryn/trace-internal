@@ -90,6 +90,8 @@ Active bundles:
    - `prompts/charts/composition/charts_composition_v1.json`
 5. Tables:
    - `prompts/tables/statistics/tables_statistics_v1.json`
+   - `prompts/tables/counting/tables_counting_v1.json`
+   - `prompts/tables/readout/tables_readout_v1.json`
 
 Active task-to-bundle mapping:
 1. Geometry comparison tasks (`task_geometry_comparison_angle|area|length|perimeter`) -> `geometry_comparison_v1`
@@ -128,3 +130,5 @@ Active task-to-bundle mapping:
    - `task_charts_composition_subset_value` -> `charts_composition_v1`
 9. Tables:
    - `task_tables_statistics_summary_label|summary_value` -> `tables_statistics_v1`
+   - `task_tables_counting_value_count` -> `tables_counting_v1`
+   - `task_tables_readout_cell_value` -> `tables_readout_v1`

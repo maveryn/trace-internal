@@ -6,13 +6,14 @@ from typing import Any, Dict
 
 from ...core.seed import spawn_rng
 from ...core.task_group_config import get_task_group_defaults
-from ...core.types import TaskComplexity, TypedValue
+from ...core.types import TypedValue
 from ..base import TaskOutput
 from ..registry import register_task
 from ..shared.bbox_projection import pixel_anchor_map_from_bboxes
 from ..shared.color_format import format_named_color_with_hex, rgb_to_hex
 from ..shared.config_defaults import (
     required_group_defaults,
+    resolve_required_int_bounds,
     split_generation_rendering_prompt_defaults,
 )
 from ..shared.output_metadata import default_task_versions
@@ -31,6 +32,11 @@ from .shared.color_board_common import (
 from .shared.named_color_board import build_color_board_scene_entities
 from .shared.tile_evidence import coordinate_set_evidence_artifacts, sort_coords_row_major
 from .shared.visual_defaults import load_tile_background_defaults, load_tile_noise_defaults
+from .shared.complexity import (
+    build_tile_complexity,
+    resolve_tile_complexity_weights,
+    normalize_int_with_bounds,
+)
 
 
 _DEFAULTS = RectangularColorBoardTaskDefaults()
@@ -41,6 +47,10 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 )
 POST_IMAGE_BACKGROUND_DEFAULTS = load_tile_background_defaults(task_group="count")
 POST_IMAGE_NOISE_DEFAULTS = load_tile_noise_defaults(task_group="count", apply_prob=0.5)
+_COMPLEXITY_WEIGHTS = resolve_tile_complexity_weights(
+    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, dict) else {},
+    task_id="task_tile_count_color_count",
+)
 
 
 @register_task
@@ -53,6 +63,33 @@ class TileColorCountTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         task_rng = spawn_rng(instance_seed, "task")
+        rows_min, rows_max = resolve_required_int_bounds(
+            params,
+            _GEN_DEFAULTS,
+            min_key="rows_min",
+            max_key="rows_max",
+            fallback_min=int(_DEFAULTS.rows_min),
+            fallback_max=int(_DEFAULTS.rows_max),
+            context=f"generation defaults for {self.task_id}",
+        )
+        cols_min, cols_max = resolve_required_int_bounds(
+            params,
+            _GEN_DEFAULTS,
+            min_key="cols_min",
+            max_key="cols_max",
+            fallback_min=int(_DEFAULTS.cols_min),
+            fallback_max=int(_DEFAULTS.cols_max),
+            context=f"generation defaults for {self.task_id}",
+        )
+        palette_size_min, palette_size_max = resolve_required_int_bounds(
+            params,
+            _GEN_DEFAULTS,
+            min_key="palette_size_min",
+            max_key="palette_size_max",
+            fallback_min=int(_DEFAULTS.palette_size_min),
+            fallback_max=int(_DEFAULTS.palette_size_max),
+            context=f"generation defaults for {self.task_id}",
+        )
         scene = build_rectangular_color_board_scene(
             instance_seed,
             task_rng=task_rng,
@@ -195,25 +232,24 @@ class TileColorCountTask:
         }
 
         board_cell_count = int(scene.rows) * int(scene.cols)
-        complexity = TaskComplexity(
-            complexity_score=min(
-                1.0,
-                max(
-                    0.0,
-                    (
-                        (float(board_cell_count) / 64.0)
-                        + (float(scene.palette_size) / 6.0)
-                        + (float(answer_value) / float(max(1, board_cell_count)))
+        min_board_cell_count = int(rows_min) * int(cols_min)
+        max_board_cell_count = int(rows_max) * int(cols_max)
+        complexity = build_tile_complexity(
+            weights=_COMPLEXITY_WEIGHTS,
+            components={
+                "visual_scan": (
+                    0.75
+                    * normalize_int_with_bounds(
+                        int(board_cell_count),
+                        (int(min_board_cell_count), int(max_board_cell_count)),
                     )
-                    / 3.0,
+                    + 0.25
+                    * normalize_int_with_bounds(
+                        int(scene.palette_size),
+                        (int(palette_size_min), int(palette_size_max)),
+                    )
                 ),
-            ),
-            complexity_components={
-                "rows": int(scene.rows),
-                "cols": int(scene.cols),
-                "palette_size": int(scene.palette_size),
-                "answer_count": int(answer_value),
-                "match_fraction": float(answer_value) / float(max(1, board_cell_count)),
+                "reasoning_load": float(answer_value) / float(max(1, board_cell_count)),
             },
         )
 

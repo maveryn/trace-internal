@@ -284,7 +284,7 @@ def test_charts_statistics_defaults_loaded() -> None:
 
 def test_charts_distribution_defaults_loaded() -> None:
     cfg = get_task_group_defaults("charts", "distribution")
-    for section in ("generation", "rendering", "prompt"):
+    for section in ("generation", "rendering", "prompt", "complexity"):
         assert isinstance(cfg.get(section), dict)
 
     generation_shared = cfg["generation"]["shared"]
@@ -363,10 +363,32 @@ def test_charts_distribution_defaults_loaded() -> None:
     assert str(density_prompt["task_key"]).strip() == "density_label_query"
     assert str(density_prompt["evidence_hint_bimodal_label"]).strip()
 
+    histogram_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_charts_distribution_histogram_count",
+    )
+    boxplot_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_charts_distribution_boxplot_label",
+    )
+    density_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_charts_distribution_density_label",
+    )
+    for complexity_defaults in (histogram_complexity, boxplot_complexity, density_complexity):
+        assert sorted(complexity_defaults["criteria_weights"].keys()) == [
+            "reasoning_load",
+            "scene_variant_load",
+            "visual_scan",
+        ]
+
 
 def test_charts_composition_defaults_loaded() -> None:
     cfg = get_task_group_defaults("charts", "composition")
-    for section in ("generation", "rendering", "prompt"):
+    for section in ("generation", "rendering", "prompt", "complexity"):
         assert isinstance(cfg.get(section), dict)
 
     generation_shared = cfg["generation"]["shared"]
@@ -412,10 +434,21 @@ def test_charts_composition_defaults_loaded() -> None:
     assert int(rendering_defaults["canvas_width"]) > 0
     assert str(prompt_defaults["bundle_id"]).strip() == "charts_composition_v1"
 
+    complexity_defaults = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_charts_composition_subset_value",
+    )
+    assert sorted(complexity_defaults["criteria_weights"].keys()) == [
+        "reasoning_load",
+        "scene_variant_load",
+        "visual_scan",
+    ]
+
 
 def test_charts_trend_defaults_loaded() -> None:
     cfg = get_task_group_defaults("charts", "trend")
-    for section in ("generation", "rendering", "prompt"):
+    for section in ("generation", "rendering", "prompt", "complexity"):
         assert isinstance(cfg.get(section), dict)
 
     generation_shared = cfg["generation"]["shared"]
@@ -461,6 +494,17 @@ def test_charts_trend_defaults_loaded() -> None:
     assert int(generation_defaults["mark_count_max"]) == 10
     assert int(rendering_defaults["canvas_width"]) > 0
     assert str(prompt_defaults["bundle_id"]).strip() == "charts_trend_v1"
+
+    complexity_defaults = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_charts_trend_structure_value",
+    )
+    assert sorted(complexity_defaults["criteria_weights"].keys()) == [
+        "reasoning_load",
+        "scene_variant_load",
+        "visual_scan",
+    ]
 
 
 def test_tables_statistics_defaults_loaded() -> None:
@@ -524,9 +568,65 @@ def test_tables_statistics_defaults_loaded() -> None:
     assert str(prompt_defaults["json_example_column_median"]).strip()
 
 
+def test_tables_counting_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("tables", "counting")
+    for section in ("generation", "rendering", "prompt"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["row_count_min"]) >= 5
+    assert int(generation_shared["row_count_max"]) == 10
+    assert sorted(generation_shared["scene_variant_weights"].keys()) == [
+        "card_table",
+        "ledger",
+        "spreadsheet",
+        "zebra",
+    ]
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "tables_counting_v1"
+    assert str(prompt_shared["task_family_key"]).strip() == "styled_table_counting"
+    assert str(prompt_shared["task_key"]).strip() == "value_count_query"
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_tables_counting_value_count",
+    )
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "above_threshold",
+        "below_threshold",
+        "in_interval",
+    ]
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip() == "tables_counting_v1"
+    assert str(prompt_defaults["evidence_hint_above_threshold"]).strip()
+    assert str(prompt_defaults["json_example_in_interval"]).strip()
+
+
+def test_tables_readout_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("tables", "readout")
+    for section in ("generation", "rendering", "prompt"):
+        assert isinstance(cfg.get(section), dict)
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "tables_readout_v1"
+    assert str(prompt_shared["task_family_key"]).strip() == "styled_table_readout"
+    assert str(prompt_shared["task_key"]).strip() == "cell_value_query"
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_tables_readout_cell_value",
+    )
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == ["cell_lookup"]
+    assert int(rendering_defaults["canvas_height"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip() == "tables_readout_v1"
+    assert str(prompt_defaults["evidence_hint_cell_lookup"]).strip()
+    assert str(prompt_defaults["json_example_cell_lookup"]).strip()
+
+
 def test_charts_multiseries_defaults_loaded() -> None:
     cfg = get_task_group_defaults("charts", "multiseries")
-    for section in ("generation", "rendering", "prompt"):
+    for section in ("generation", "rendering", "prompt", "complexity"):
         assert isinstance(cfg.get(section), dict)
 
     generation_shared = cfg["generation"]["shared"]
@@ -563,6 +663,17 @@ def test_charts_multiseries_defaults_loaded() -> None:
     assert str(prompt_shared["object_description_grouped_lollipop"]).strip()
     assert str(prompt_shared["json_example_series_a_gt_b_count"]).strip()
     assert str(prompt_shared["json_example_series_a_lt_b_count"]).strip()
+
+    complexity_defaults = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_charts_multiseries_pairwise_comparison_count",
+    )
+    assert sorted(complexity_defaults["criteria_weights"].keys()) == [
+        "reasoning_load",
+        "scene_variant_load",
+        "visual_scan",
+    ]
 
 
 def test_charts_counting_defaults_loaded() -> None:
@@ -1657,7 +1768,7 @@ def test_icons_sequence_defaults_loaded() -> None:
 
 def test_tile_path_defaults_loaded() -> None:
     cfg = get_task_group_defaults("tile", "path")
-    for section in ("generation", "rendering", "prompt", "visual"):
+    for section in ("generation", "rendering", "prompt", "visual", "complexity"):
         assert isinstance(cfg.get(section), dict)
     assert "task_tile_path_shortest_path" in cfg["generation"]["task_overrides"]
     assert "task_tile_path_reachable_target_count" in cfg["generation"]["task_overrides"]
@@ -1684,6 +1795,15 @@ def test_tile_path_defaults_loaded() -> None:
     assert str(prompt["evidence_hint"]).strip()
     assert str(prompt["json_example"]).strip()
     assert str(prompt["json_example_answer_only"]).strip()
+    shortest_path_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_tile_path_shortest_path",
+    )
+    assert dict(shortest_path_complexity["criteria_weights"]) == {
+        "visual_scan": 0.30,
+        "reasoning_load": 0.70,
+    }
 
     reachable_generation, reachable_rendering, reachable_prompt = split_generation_rendering_prompt_defaults(
         cfg,
@@ -1700,13 +1820,22 @@ def test_tile_path_defaults_loaded() -> None:
     assert str(reachable_prompt["task_key"]).strip() == "reachable_target_count_query"
     assert str(reachable_prompt["answer_hint"]).strip()
     assert str(reachable_prompt["evidence_hint"]).strip()
+    reachable_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_tile_path_reachable_target_count",
+    )
+    assert dict(reachable_complexity["criteria_weights"]) == {
+        "visual_scan": 0.45,
+        "reasoning_load": 0.55,
+    }
     assert json.loads(str(reachable_prompt["json_example"])) == {"evidence": [[0, 2], [2, 1]], "answer": 2}
     assert json.loads(str(reachable_prompt["json_example_answer_only"])) == {"answer": 2}
 
 
 def test_tile_pattern_defaults_loaded() -> None:
     cfg = get_task_group_defaults("tile", "pattern")
-    for section in ("generation", "rendering", "prompt", "visual"):
+    for section in ("generation", "rendering", "prompt", "visual", "complexity"):
         assert isinstance(cfg.get(section), dict)
 
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
@@ -1730,11 +1859,20 @@ def test_tile_pattern_defaults_loaded() -> None:
     assert cols_example == {"evidence": [[0, 1], [0, 3], [1, 1], [1, 3], [2, 1], [2, 3]], "answer": 2}
     answer_only_example = json.loads(str(prompt["json_example_answer_only"]))
     assert answer_only_example == {"answer": 2}
+    pattern_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_tile_pattern_match3_run_count",
+    )
+    assert dict(pattern_complexity["criteria_weights"]) == {
+        "visual_scan": 0.45,
+        "reasoning_load": 0.55,
+    }
 
 
 def test_tile_transition_defaults_loaded() -> None:
     cfg = get_task_group_defaults("tile", "transition")
-    for section in ("generation", "rendering", "prompt", "visual"):
+    for section in ("generation", "rendering", "prompt", "visual", "complexity"):
         assert isinstance(cfg.get(section), dict)
 
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
@@ -1753,11 +1891,20 @@ def test_tile_transition_defaults_loaded() -> None:
     assert example == {"evidence": [[0, 1], [1, 1], [2, 1]], "answer": 2}
     answer_only_example = json.loads(str(prompt["json_example_answer_only"]))
     assert answer_only_example == {"answer": 2}
+    transition_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_tile_transition_gravity_max_drop",
+    )
+    assert dict(transition_complexity["criteria_weights"]) == {
+        "visual_scan": 0.35,
+        "reasoning_load": 0.65,
+    }
 
 
 def test_tile_symmetry_defaults_loaded() -> None:
     cfg = get_task_group_defaults("tile", "symmetry")
-    for section in ("generation", "rendering", "prompt", "visual"):
+    for section in ("generation", "rendering", "prompt", "visual", "complexity"):
         assert isinstance(cfg.get(section), dict)
 
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
@@ -1776,11 +1923,20 @@ def test_tile_symmetry_defaults_loaded() -> None:
     assert str(prompt["evidence_hint"]).strip()
     assert str(prompt["json_example"]).strip()
     assert str(prompt["json_example_answer_only"]).strip()
+    symmetry_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_tile_symmetry_violation_count",
+    )
+    assert dict(symmetry_complexity["criteria_weights"]) == {
+        "visual_scan": 0.45,
+        "reasoning_load": 0.55,
+    }
 
 
 def test_tile_count_defaults_loaded() -> None:
     cfg = get_task_group_defaults("tile", "count")
-    for section in ("generation", "rendering", "prompt", "visual"):
+    for section in ("generation", "rendering", "prompt", "visual", "complexity"):
         assert isinstance(cfg.get(section), dict)
 
     generation_shared = cfg["generation"]["shared"]
@@ -1794,6 +1950,12 @@ def test_tile_count_defaults_loaded() -> None:
     assert int(rendering_shared["short_side_px_max"]) >= int(rendering_shared["short_side_px_min"])
     assert float(rendering_shared["aspect_ratio_min"]) >= 1.0
     assert float(rendering_shared["aspect_ratio_max"]) >= float(rendering_shared["aspect_ratio_min"])
+
+    complexity_shared = cfg["complexity"]["shared"]
+    assert dict(complexity_shared["criteria_weights"]) == {
+        "visual_scan": 0.50,
+        "reasoning_load": 0.50,
+    }
 
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
@@ -1810,6 +1972,11 @@ def test_tile_count_defaults_loaded() -> None:
     assert str(prompt["json_output_contract_answer_only"]).strip()
     assert str(prompt["answer_hint"]).strip()
     assert str(prompt["evidence_hint"]).strip()
+    color_count_complexity = resolve_task_group_section_defaults(cfg, "complexity", task_id="task_tile_count_color_count")
+    assert dict(color_count_complexity["criteria_weights"]) == {
+        "visual_scan": 0.60,
+        "reasoning_load": 0.40,
+    }
 
     generation_components, _rendering_components, prompt_components = split_generation_rendering_prompt_defaults(
         cfg,
@@ -1823,6 +1990,15 @@ def test_tile_count_defaults_loaded() -> None:
     assert str(prompt_components["task_key"]).strip() == "color_component_count_query"
     assert str(prompt_components["answer_hint"]).strip()
     assert str(prompt_components["evidence_hint"]).strip()
+    color_components_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_tile_count_color_components",
+    )
+    assert dict(color_components_complexity["criteria_weights"]) == {
+        "visual_scan": 0.45,
+        "reasoning_load": 0.55,
+    }
     component_example = json.loads(str(prompt_components["json_example"]))
     assert component_example == {"evidence": [[0, 0], [0, 1], [2, 2]], "answer": 2}
     component_answer_only_example = json.loads(str(prompt_components["json_example_answer_only"]))
@@ -1840,6 +2016,15 @@ def test_tile_count_defaults_loaded() -> None:
     assert str(prompt_largest["task_key"]).strip() == "largest_component_size_query"
     assert str(prompt_largest["answer_hint"]).strip()
     assert str(prompt_largest["evidence_hint"]).strip()
+    largest_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_tile_count_largest_component_size",
+    )
+    assert dict(largest_complexity["criteria_weights"]) == {
+        "visual_scan": 0.40,
+        "reasoning_load": 0.60,
+    }
     largest_example = json.loads(str(prompt_largest["json_example"]))
     assert largest_example == {"evidence": [[0, 0], [0, 1], [1, 1], [1, 2]], "answer": 4}
     largest_answer_only_example = json.loads(str(prompt_largest["json_example_answer_only"]))
@@ -1848,7 +2033,7 @@ def test_tile_count_defaults_loaded() -> None:
 
 def test_tile_reachability_defaults_loaded() -> None:
     cfg = get_task_group_defaults("tile", "reachability")
-    for section in ("generation", "rendering", "prompt", "visual"):
+    for section in ("generation", "rendering", "prompt", "visual", "complexity"):
         assert isinstance(cfg.get(section), dict)
 
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
@@ -1869,6 +2054,15 @@ def test_tile_reachability_defaults_loaded() -> None:
     assert str(prompt["task_key"]).strip() == "region_size_query"
     assert str(prompt["answer_hint"]).strip()
     assert str(prompt["evidence_hint"]).strip()
+    reachability_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_tile_reachability_region_size",
+    )
+    assert dict(reachability_complexity["criteria_weights"]) == {
+        "visual_scan": 0.45,
+        "reasoning_load": 0.55,
+    }
     example = json.loads(str(prompt["json_example"]))
     assert example == {"evidence": [[0, 0], [0, 1], [1, 1], [2, 1]], "answer": 4}
     answer_only_example = json.loads(str(prompt["json_example_answer_only"]))
@@ -1877,7 +2071,7 @@ def test_tile_reachability_defaults_loaded() -> None:
 
 def test_tile_relation_defaults_loaded() -> None:
     cfg = get_task_group_defaults("tile", "relation")
-    for section in ("generation", "rendering", "prompt", "visual"):
+    for section in ("generation", "rendering", "prompt", "visual", "complexity"):
         assert isinstance(cfg.get(section), dict)
 
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
@@ -1894,6 +2088,15 @@ def test_tile_relation_defaults_loaded() -> None:
     assert str(prompt["task_key"]).strip() == "min_distance_query"
     assert str(prompt["answer_hint"]).strip()
     assert str(prompt["evidence_hint"]).strip()
+    relation_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_tile_relation_min_distance",
+    )
+    assert dict(relation_complexity["criteria_weights"]) == {
+        "visual_scan": 0.35,
+        "reasoning_load": 0.65,
+    }
     example = json.loads(str(prompt["json_example"]))
     assert example == {"evidence": [[1, 1], [1, 2], [1, 3]], "answer": 2}
     answer_only_example = json.loads(str(prompt["json_example_answer_only"]))

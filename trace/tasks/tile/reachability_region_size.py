@@ -9,7 +9,7 @@ from PIL import ImageDraw
 
 from ...core.seed import spawn_rng
 from ...core.task_group_config import get_task_group_defaults
-from ...core.types import TaskComplexity, TypedValue
+from ...core.types import TypedValue
 from ...core.visual.background import make_background_canvas
 from ...core.visual.noise import apply_post_image_noise
 from ..base import TaskOutput
@@ -34,6 +34,12 @@ from .shared.grid_graph import (
     cell_id,
     coord_adjacency_to_cell_ids,
     open_grid_adjacency,
+)
+from .shared.complexity import (
+    build_tile_complexity,
+    normalize_float_with_bounds,
+    normalize_int_with_bounds,
+    resolve_tile_complexity_weights,
 )
 from .shared.reachability_board import sample_reachability_board
 from .shared.rectangular_board import (
@@ -85,6 +91,10 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 )
 POST_IMAGE_BACKGROUND_DEFAULTS = load_tile_background_defaults(task_group="reachability")
 POST_IMAGE_NOISE_DEFAULTS = load_tile_noise_defaults(task_group="reachability", apply_prob=0.5)
+_COMPLEXITY_WEIGHTS = resolve_tile_complexity_weights(
+    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, dict) else {},
+    task_id="task_tile_reachability_region_size",
+)
 
 
 @register_task
@@ -398,26 +408,40 @@ class TileRegionSizeTask:
 
         board_cell_count = int(rows) * int(cols)
         blocked_count = len(blocked_coords)
-        complexity = TaskComplexity(
-            complexity_score=min(
-                1.0,
-                max(
-                    0.0,
-                    (
-                        (float(board_cell_count) / 64.0)
-                        + float(realized_obstacle_fraction)
-                        + (1.0 - float(reachable_fraction))
+        min_board_cell_count = int(rows_min) * int(cols_min)
+        max_board_cell_count = int(rows_max) * int(cols_max)
+        complexity = build_tile_complexity(
+            weights=_COMPLEXITY_WEIGHTS,
+            components={
+                "visual_scan": (
+                    0.60
+                    * normalize_int_with_bounds(
+                        int(board_cell_count),
+                        (int(min_board_cell_count), int(max_board_cell_count)),
                     )
-                    / 3.0,
+                    + 0.40
+                    * normalize_float_with_bounds(
+                        float(realized_obstacle_fraction),
+                        (float(obstacle_fraction_min), float(obstacle_fraction_max)),
+                    )
                 ),
-            ),
-            complexity_components={
-                "rows": int(rows),
-                "cols": int(cols),
-                "blocked_count": int(blocked_count),
-                "region_size": int(answer_value),
-                "obstacle_fraction": float(realized_obstacle_fraction),
-                "reachable_fraction": float(reachable_fraction),
+                "reasoning_load": (
+                    0.50
+                    * normalize_float_with_bounds(
+                        1.0 - float(reachable_fraction),
+                        (1.0 - float(reachable_fraction_max), 1.0 - float(reachable_fraction_min)),
+                    )
+                    + 0.25
+                    * normalize_float_with_bounds(
+                        float(realized_obstacle_fraction),
+                        (float(obstacle_fraction_min), float(obstacle_fraction_max)),
+                    )
+                    + 0.25
+                    * normalize_int_with_bounds(
+                        int(answer_value),
+                        (1, int(answer_max)),
+                    )
+                ),
             },
         )
 

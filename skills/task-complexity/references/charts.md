@@ -16,6 +16,7 @@ scene_variant_load: 0.33
 - Keep the chart-domain vocabulary broad. These three criteria should be scorable for every chart task.
 - Let each task decide how to normalize its own raw knobs into these criteria.
 - `scene_variant_load` should be task-dependent. Do not reuse one global chart-type difficulty table across unrelated chart tasks.
+- Fixed-scene chart tasks may set `scene_variant_load` weight to `0.0` when the scene does not vary within the task; that is better than carrying a constant weighted criterion with no within-task ordering signal.
 - Use task-group or task-level weight overrides only when a chart family really shifts the relative importance of scan, reasoning, and representation load.
 
 ## Notes

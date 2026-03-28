@@ -118,7 +118,7 @@ Promote helpers when a second consumer appears.
    - For class-counting tasks with overlapping school definitions (for example isosceles vs equilateral), keep the exclusive wording in prompt/config slots instead of relying on unstated conventions.
    - For polygon class-counting tasks such as convexity, use the shared strict classifier and reject `degenerate` near-flat/self-intersecting polygons instead of inventing one task-local visual heuristic.
    - `multi_shape_scene.py` provides reusable mixed polygon/circle/ellipse rendering plus object-label placement for sibling mixed-shape geometry scenes; use it when a second task needs the same object-family mix instead of creating another task-local renderer.
-5. Tile: `trace/tasks/tile/shared/grid_graph.py`, `visual_defaults.py`, `maze_sampling.py`, `grid_layout.py`, `maze_scene.py`, `maze_rendering.py`, `tile_scene.py`, `tile_evidence.py`, `rectangular_board.py`, `tile_colors.py`, `named_color_board.py`, `reachability_board.py`, `trace/tasks/tile/shared/color_board_common.py`
+5. Tile: `trace/tasks/tile/shared/grid_graph.py`, `visual_defaults.py`, `maze_sampling.py`, `grid_layout.py`, `maze_scene.py`, `maze_rendering.py`, `tile_scene.py`, `tile_evidence.py`, `rectangular_board.py`, `tile_colors.py`, `named_color_board.py`, `reachability_board.py`, `trace/tasks/tile/shared/color_board_common.py`, `complexity.py`
    - `grid_graph.py` is the canonical 4-neighbor rectangular-tile graph helper layer (stable `cell_id`, open-grid adjacency, shortest-path adapters, and active-cell connected-components helpers).
    - `visual_defaults.py` is the canonical tile-domain background/noise loader layer shared across tile task groups.
    - `tile_scene.py` is the canonical dense-board `tile_cell` entity builder for non-maze tile tasks.
@@ -129,6 +129,7 @@ Promote helpers when a second consumer appears.
    - `reachability_board.py` is the canonical blocked-board reachability sampler for tile tasks that need one start tile plus reachable/unreachable open-cell partitions before task-specific target/path selection.
    - Concrete tile tasks live flat under `trace/tasks/tile/<task_group>_<task_name>.py`; keep reusable helpers under `trace/tasks/tile/shared/` instead of creating task-group wrapper packages for tile.
    - `color_board_common.py` now provides count-task adapters plus reusable per-color component analysis for flat tile tasks.
+   - `complexity.py` is the shared tile-domain complexity layer; it owns normalized `[0,1]` helper transforms, complexity-weight resolution, and weighted-mean `TaskComplexity` construction, while each tile task still owns its task-local raw-to-normalized difficulty mapping.
 6. Icons: `trace/tasks/icons/shared/defaults.py`, `icon_assets.py`, `icon_noise.py`, `icon_scene.py`, `icon_task_rendering.py`, `icon_style.py`, `icon_transform.py`, `icon_grid_scene.py`, `icon_sequence_scene.py`, `icon_pair_grid_scene.py`, `icon_overlap_grid_scene.py`, `icon_labeled_grid_scene.py`, `anchor_marking.py`, `complexity.py`
    - `icon_assets.py` is the canonical loader for the curated Prism icon bundle copied into `assets/icons/`; resolve pool membership through manifests rather than reconstructing SVG paths from task-local filename guesses.
    - `defaults.py` centralizes fallback defaults shared across icon task groups; keep shared panel/layout/noise defaults there instead of importing them from one task-group-named module once another icon family reuses them.
@@ -157,7 +158,7 @@ Promote helpers when a second consumer appears.
    - `visual_defaults.py` is the canonical chart-domain background/noise loader layer shared across future chart task groups.
 8. Tables: `trace/tasks/tables/shared/table_scene.py`, `table_common.py`, `visual_defaults.py`
    - `table_scene.py` is the canonical styled-table renderer for active table tasks; it owns table cell geometry, row/column region bboxes, and the active `spreadsheet|zebra|ledger|card_table` scene variants.
-   - `table_common.py` is the shared construction layer for table tasks; it owns row/column count bounds, row-name/header sampling, summary-label/value dataset construction, render-param resolution, and both cell- and region-level bbox evidence projection.
+   - `table_common.py` is the shared construction layer for table tasks; it owns row/column count bounds, row-name/header sampling, summary-label/value dataset construction, counting/readout dataset construction, canonical numeric-cell id resolution, render-param resolution, and both cell- and region-level bbox evidence projection.
    - `visual_defaults.py` is the canonical table-domain background/noise loader layer shared across future table task groups.
 
 ## 3) Reuse rules

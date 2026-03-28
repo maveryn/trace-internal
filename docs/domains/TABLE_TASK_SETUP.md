@@ -4,10 +4,12 @@ This document defines the concrete v1 tables-domain contract.
 
 ## 1) Domain shape
 1. `domain = tables`
-2. The first active task group is `statistics`.
-3. The first active statistics tasks are:
+2. The active task groups are `statistics`, `counting`, and `readout`.
+3. The current active table tasks are:
    - `task_tables_statistics_summary_label`
    - `task_tables_statistics_summary_value`
+   - `task_tables_counting_value_count`
+   - `task_tables_readout_cell_value`
 
 ## 2) Active task contracts
 1. `task_tables_statistics_summary_label`
@@ -20,6 +22,16 @@ This document defines the concrete v1 tables-domain contract.
    - `scene_variant`: `spreadsheet|zebra|ledger|card_table`
    - `answer_gt.type`: `integer`
    - `evidence_gt.type`: `bbox_set`
+3. `task_tables_counting_value_count`
+   - `task_variant`: `above_threshold|below_threshold|in_interval`
+   - `scene_variant`: `spreadsheet|zebra|ledger|card_table`
+   - `answer_gt.type`: `integer`
+   - `evidence_gt.type`: `bbox_set`
+4. `task_tables_readout_cell_value`
+   - `task_variant`: `cell_lookup`
+   - `scene_variant`: `spreadsheet|zebra|ledger|card_table`
+   - `answer_gt.type`: `integer`
+   - `evidence_gt.type`: `bbox_set`
 
 ## 3) Table semantics
 1. One table per image.
@@ -28,14 +40,18 @@ This document defines the concrete v1 tables-domain contract.
 4. Tables use `5..10` data rows by default.
 5. Summary-label tasks query one numeric column and ask which row has the highest or lowest value in that column.
 6. Summary-value tasks query one numeric column and ask for a numeric summary over that column.
-7. Row-name answers are visible row-name strings from the table, not option letters.
+7. Counting tasks query one numeric column plus a threshold/interval predicate and count matching rows.
+8. Readout tasks query one row label plus one numeric column and ask for the exact cell value.
+9. Row-name answers are visible row-name strings from the table, not option letters.
 
 ## 4) Evidence policy
 1. Tables use one fixed evidence type from the start: `bbox_set`.
 2. Table evidence boxes should mark the minimal supporting table region(s).
 3. For `task_tables_statistics_summary_label`, evidence is exactly one bbox for the decisive numeric value cell.
 4. For `task_tables_statistics_summary_value`, evidence is exactly one bbox for the supporting queried-column data region.
-5. Prompt wording should explicitly say whether the evidence is a supporting value cell or a supporting column region.
+5. For `task_tables_counting_value_count`, evidence is the ordered set of supporting queried-column value-cell bboxes in top-to-bottom row order.
+6. For `task_tables_readout_cell_value`, evidence is exactly one bbox for the queried supporting cell.
+7. Prompt wording should explicitly say whether the evidence is a supporting value cell, a set of matching value cells, or a supporting column region.
 
 ## 5) Visual policy
 1. Table scenes use light solid backgrounds only in v1.
@@ -52,10 +68,18 @@ This document defines the concrete v1 tables-domain contract.
 3. The current short-name manifest is `assets/charts/series_legend_names_random_name_2to4.txt`.
 
 ## 7) Prompt policy
-1. Prompt bundle: `tables_statistics_v1`
-2. Task family key: `styled_table_statistics`
+1. Prompt bundles:
+   - `tables_statistics_v1`
+   - `tables_counting_v1`
+   - `tables_readout_v1`
+2. Task family keys:
+   - `styled_table_statistics`
+   - `styled_table_counting`
+   - `styled_table_readout`
 3. Active task keys:
    - `summary_label_query`
    - `summary_value_query`
-4. Prompts must name the queried numeric column explicitly.
-5. Prompts must describe the evidence as the bbox of the supporting value cell or supporting column region, depending on the task.
+   - `value_count_query`
+   - `cell_value_query`
+4. Prompts must name the queried numeric column explicitly for statistics/counting tasks and the queried row+column explicitly for readout tasks.
+5. Prompts must describe the evidence as the bbox of the supporting value cell, the ordered set of matching value cells, or the supporting column region, depending on the task.

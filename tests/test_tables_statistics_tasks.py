@@ -2,18 +2,10 @@
 
 from __future__ import annotations
 
-import json
-
 from trace.core.type_registry import load_type_registry
 from trace.tasks.tables.statistics.summary_label import TablesStatisticsSummaryLabelTask
 from trace.tasks.tables.statistics.summary_value import TablesStatisticsSummaryValueTask
-
-
-def _extract_prompt_json_example(prompt: str) -> dict:
-    marker = "Example JSON:\n"
-    assert marker in str(prompt)
-    payload = str(prompt).split(marker, 1)[1].strip()
-    return json.loads(payload)
+from tests.helpers import extract_prompt_json_example
 
 
 def test_table_statistics_summary_label_variants_match_contract() -> None:
@@ -97,8 +89,8 @@ def test_table_statistics_summary_label_prompt_examples_match_selected_variant()
     }
     for index, task_variant in enumerate(expected, start=18040):
         out = task.generate(index, params={"task_variant": task_variant}, max_attempts=10)
-        answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
-        answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
+        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert answer_and_evidence == expected[task_variant]
         assert answer_only == {"answer": expected[task_variant]["answer"]}
 
@@ -188,8 +180,8 @@ def test_table_statistics_summary_value_prompt_examples_match_selected_variant()
     }
     for index, task_variant in enumerate(expected, start=18130):
         out = task.generate(index, params={"task_variant": task_variant}, max_attempts=10)
-        answer_and_evidence = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
-        answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
+        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert answer_and_evidence == expected[task_variant]
         assert answer_only == {"answer": expected[task_variant]["answer"]}
 

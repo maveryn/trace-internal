@@ -6,6 +6,13 @@ generation:
       run_length: 3
       target_qualifying_line_count_min: 1
 
+complexity:
+  task_overrides:
+    task_tile_pattern_match3_run_count:
+      criteria_weights:
+        visual_scan: 0.45
+        reasoning_load: 0.55
+
 prompt:
   shared:
     bundle_id: tile_pattern_v1

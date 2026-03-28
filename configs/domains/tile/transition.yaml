@@ -3,6 +3,13 @@ generation:
     task_tile_transition_gravity_max_drop:
       target_max_drop_min: 1
 
+complexity:
+  task_overrides:
+    task_tile_transition_gravity_max_drop:
+      criteria_weights:
+        visual_scan: 0.35
+        reasoning_load: 0.65
+
 prompt:
   shared:
     bundle_id: tile_transition_v1

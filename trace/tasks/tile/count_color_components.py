@@ -6,7 +6,7 @@ from typing import Any, Dict, List
 
 from ...core.seed import spawn_rng
 from ...core.task_group_config import get_task_group_defaults
-from ...core.types import TaskComplexity, TypedValue
+from ...core.types import TypedValue
 from ..base import TaskOutput
 from ..registry import register_task
 from ..shared.bbox_projection import pixel_anchor_map_from_bboxes
@@ -31,6 +31,12 @@ from .shared.color_board_common import (
     build_rectangular_color_board_render_spec,
     build_rectangular_color_board_scene,
 )
+from .shared.complexity import (
+    build_tile_complexity,
+    clamp_unit_interval,
+    normalize_int_with_bounds,
+    resolve_tile_complexity_weights,
+)
 from .shared.grid_graph import cell_id
 from .shared.named_color_board import build_color_board_scene_entities
 from .shared.tile_evidence import coordinate_set_evidence_artifacts
@@ -45,6 +51,10 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 )
 POST_IMAGE_BACKGROUND_DEFAULTS = load_tile_background_defaults(task_group="count")
 POST_IMAGE_NOISE_DEFAULTS = load_tile_noise_defaults(task_group="count", apply_prob=0.5)
+_COMPLEXITY_WEIGHTS = resolve_tile_complexity_weights(
+    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, dict) else {},
+    task_id="task_tile_count_color_components",
+)
 
 
 @register_task
@@ -302,26 +312,34 @@ class TileColorComponentsTask:
 
         board_cell_count = int(scene.rows) * int(scene.cols)
         matched_cell_count = int(len(matching_coords))
-        complexity = TaskComplexity(
-            complexity_score=min(
-                1.0,
-                max(
-                    0.0,
-                    (
-                        (float(board_cell_count) / 64.0)
-                        + (float(scene.palette_size) / 6.0)
-                        + (float(answer_value) / float(max(1, matched_cell_count)))
+        min_board_cell_count = int(_rows_min) * int(_cols_min)
+        max_board_cell_count = int(rows_max) * int(cols_max)
+        complexity = build_tile_complexity(
+            weights=_COMPLEXITY_WEIGHTS,
+            components={
+                "visual_scan": (
+                    0.65
+                    * normalize_int_with_bounds(
+                        int(board_cell_count),
+                        (int(min_board_cell_count), int(max_board_cell_count)),
                     )
-                    / 3.0,
+                    + 0.35
+                    * normalize_int_with_bounds(
+                        int(matched_cell_count),
+                        (1, int(max_board_cell_count)),
+                    )
                 ),
-            ),
-            complexity_components={
-                "rows": int(scene.rows),
-                "cols": int(scene.cols),
-                "palette_size": int(scene.palette_size),
-                "answer_count": int(answer_value),
-                "match_count": int(matched_cell_count),
-                "component_sizes": [int(len(component)) for component in component_coords],
+                "reasoning_load": (
+                    0.60
+                    * normalize_int_with_bounds(
+                        int(answer_value),
+                        (int(target_component_count_min), int(target_component_count_max)),
+                    )
+                    + 0.40
+                    * clamp_unit_interval(
+                        float(answer_value) / float(max(1, matched_cell_count))
+                    )
+                ),
             },
         )
 

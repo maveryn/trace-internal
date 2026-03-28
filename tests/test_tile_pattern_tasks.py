@@ -7,6 +7,18 @@ import json
 from trace.tasks.tile.pattern_match3_run_count import TileMatch3RunCountTask
 
 
+def _assert_normalized_complexity(out: object) -> None:
+    complexity = out.complexity.to_dict()
+    assert 0.0 <= float(complexity["complexity_score"]) <= 1.0
+    assert set(complexity["complexity_components"].keys()) == {
+        "reasoning_load",
+        "visual_scan",
+    }
+    assert all(
+        0.0 <= float(value) <= 1.0 for value in complexity["complexity_components"].values()
+    )
+
+
 def _extract_prompt_json_example(prompt: str) -> dict:
     marker = "Example JSON:\n"
     assert marker in str(prompt)
@@ -73,6 +85,7 @@ def test_tile_match3_run_count_rows_outputs_expected_contract() -> None:
         if bool(entity["attrs"].get("is_canonical_run_evidence"))
     ]
     assert {str(entity["entity_id"]) for entity in evidence_entities} == witness_ids
+    _assert_normalized_complexity(out)
 
 
 def test_tile_match3_run_count_cols_caps_target_range_for_small_boards() -> None:
@@ -130,3 +143,37 @@ def test_tile_match3_run_count_prompt_examples_match_variant_contract() -> None:
 
     assert rows_example == {"evidence": [[0, 1], [0, 2], [0, 3], [2, 0], [2, 1], [2, 2]], "answer": 2}
     assert cols_example == {"evidence": [[0, 1], [0, 3], [1, 1], [1, 3], [2, 1], [2, 3]], "answer": 2}
+
+
+def test_tile_pattern_complexity_is_normalized_and_monotonic() -> None:
+    task = TileMatch3RunCountTask()
+    easy = task.generate(
+        7737,
+        params={
+            "task_variant": "rows",
+            "rows_min": 5,
+            "rows_max": 5,
+            "cols_min": 5,
+            "cols_max": 5,
+            "_sampling_index": 0,
+        },
+        max_attempts=40,
+    )
+    hard = task.generate(
+        7737,
+        params={
+            "task_variant": "rows",
+            "rows_min": 5,
+            "rows_max": 5,
+            "cols_min": 5,
+            "cols_max": 5,
+            "_sampling_index": 4,
+        },
+        max_attempts=40,
+    )
+    _assert_normalized_complexity(easy)
+    _assert_normalized_complexity(hard)
+    assert float(hard.complexity.complexity_components["reasoning_load"]) > float(
+        easy.complexity.complexity_components["reasoning_load"]
+    )
+    assert float(hard.complexity.complexity_score) > float(easy.complexity.complexity_score)

@@ -8,6 +8,18 @@ from trace.tasks.tile.path_reachable_target_count import TileReachableTargetCoun
 from trace.tasks.tile.path_shortest_path import TileShortestPathTask
 
 
+def _assert_normalized_complexity(out: object) -> None:
+    complexity = out.complexity.to_dict()
+    assert 0.0 <= float(complexity["complexity_score"]) <= 1.0
+    assert set(complexity["complexity_components"].keys()) == {
+        "reasoning_load",
+        "visual_scan",
+    }
+    assert all(
+        0.0 <= float(value) <= 1.0 for value in complexity["complexity_components"].values()
+    )
+
+
 def _extract_prompt_json_example(prompt: str) -> dict:
     marker = "Example JSON:\n"
     assert marker in str(prompt)
@@ -67,6 +79,7 @@ def test_tile_shortest_path_outputs_expected_contract() -> None:
     assert len(goal_entities) == 1
     assert start_entities[0]["attrs"]["fill_rgb"] == execution["start_color_rgb"]
     assert goal_entities[0]["attrs"]["fill_rgb"] == execution["goal_color_rgb"]
+    _assert_normalized_complexity(out)
 
 
 def test_tile_shortest_path_is_deterministic() -> None:
@@ -171,6 +184,7 @@ def test_tile_reachable_target_count_outputs_expected_contract() -> None:
     assert len(reachable_target_entities) == 2
     assert len(unreachable_target_entities) == 1
     assert all(entity["attrs"]["fill_rgb"] == execution["target_color_rgb"] for entity in target_entities)
+    _assert_normalized_complexity(out)
 
 
 def test_tile_reachable_target_count_supports_zero_answer_with_empty_evidence() -> None:
@@ -226,3 +240,35 @@ def test_tile_reachable_target_count_prompt_example_matches_contract() -> None:
     assert list(example.keys()) == ["evidence", "answer"]
     assert example["evidence"] == [[0, 2], [2, 1]]
     assert int(example["answer"]) == 2
+
+
+def test_tile_path_complexity_is_normalized_and_monotonic() -> None:
+    task = TileReachableTargetCountTask()
+    easy = task.generate(
+        7781,
+        params={
+            "rows": 7,
+            "cols": 7,
+            "target_reachable_target_count_min": 0,
+            "target_reachable_target_count_max": 6,
+            "_sampling_index": 0,
+        },
+        max_attempts=200,
+    )
+    hard = task.generate(
+        7781,
+        params={
+            "rows": 7,
+            "cols": 7,
+            "target_reachable_target_count_min": 0,
+            "target_reachable_target_count_max": 6,
+            "_sampling_index": 6,
+        },
+        max_attempts=200,
+    )
+    _assert_normalized_complexity(easy)
+    _assert_normalized_complexity(hard)
+    assert float(hard.complexity.complexity_components["reasoning_load"]) > float(
+        easy.complexity.complexity_components["reasoning_load"]
+    )
+    assert float(hard.complexity.complexity_score) > float(easy.complexity.complexity_score)

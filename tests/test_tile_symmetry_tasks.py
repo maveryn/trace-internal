@@ -7,6 +7,18 @@ import json
 from trace.tasks.tile.symmetry_violation_count import TileSymmetryViolationCountTask
 
 
+def _assert_normalized_complexity(out: object) -> None:
+    complexity = out.complexity.to_dict()
+    assert 0.0 <= float(complexity["complexity_score"]) <= 1.0
+    assert set(complexity["complexity_components"].keys()) == {
+        "reasoning_load",
+        "visual_scan",
+    }
+    assert all(
+        0.0 <= float(value) <= 1.0 for value in complexity["complexity_components"].values()
+    )
+
+
 def _extract_prompt_json_example(prompt: str) -> dict:
     marker = "Example JSON:\n"
     assert marker in str(prompt)
@@ -64,6 +76,7 @@ def test_tile_symmetry_outputs_expected_contract() -> None:
     ]
     assert len(violating_entities) == len(evidence_coords)
     assert all(bool(entity["attrs"]["is_counted_side"]) for entity in violating_entities)
+    _assert_normalized_complexity(out)
 
 
 def test_tile_symmetry_is_deterministic() -> None:
@@ -95,3 +108,37 @@ def test_tile_symmetry_prompt_example_matches_contract() -> None:
     assert list(example.keys()) == ["evidence", "answer"]
     assert example["evidence"] == [[0, 2], [1, 2]]
     assert int(example["answer"]) == 2
+
+
+def test_tile_symmetry_complexity_is_normalized_and_monotonic() -> None:
+    task = TileSymmetryViolationCountTask()
+    easy = task.generate(
+        8841,
+        params={
+            "task_variant": "vertical",
+            "rows_min": 5,
+            "rows_max": 5,
+            "cols_min": 5,
+            "cols_max": 5,
+            "_sampling_index": 0,
+        },
+        max_attempts=80,
+    )
+    hard = task.generate(
+        8841,
+        params={
+            "task_variant": "vertical",
+            "rows_min": 5,
+            "rows_max": 5,
+            "cols_min": 5,
+            "cols_max": 5,
+            "_sampling_index": 9,
+        },
+        max_attempts=80,
+    )
+    _assert_normalized_complexity(easy)
+    _assert_normalized_complexity(hard)
+    assert float(hard.complexity.complexity_components["reasoning_load"]) > float(
+        easy.complexity.complexity_components["reasoning_load"]
+    )
+    assert float(hard.complexity.complexity_score) > float(easy.complexity.complexity_score)

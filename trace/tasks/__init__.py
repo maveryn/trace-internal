@@ -42,6 +42,8 @@ from .charts.readout import subset_value as _task_charts_readout_subset_value
 from .charts.statistics import summary_label as _task_charts_statistics_summary_label
 from .charts.statistics import summary_value as _task_charts_statistics_summary_value
 from .charts.trend import structure_value as _task_charts_trend_structure_value
+from .tables.counting import value_count as _task_tables_counting_value_count
+from .tables.readout import cell_value as _task_tables_readout_cell_value
 from .tables.statistics import summary_label as _task_tables_statistics_summary_label
 from .tables.statistics import summary_value as _task_tables_statistics_summary_value
 from .tile import count_color_components as _task_tile_count_color_components

@@ -17,6 +17,19 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     return json.loads(payload)
 
 
+def _assert_normalized_complexity(out: object) -> None:
+    complexity = out.complexity.to_dict()
+    assert 0.0 <= float(complexity["complexity_score"]) <= 1.0
+    assert set(complexity["complexity_components"].keys()) == {
+        "reasoning_load",
+        "scene_variant_load",
+        "visual_scan",
+    }
+    assert all(
+        0.0 <= float(value) <= 1.0 for value in complexity["complexity_components"].values()
+    )
+
+
 def test_chart_composition_variants_match_contract() -> None:
     task = ChartsCompositionSubsetValueTask()
     cases = (
@@ -136,6 +149,35 @@ def test_chart_composition_task_is_deterministic() -> None:
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
+
+
+def test_chart_composition_complexity_is_normalized_and_monotonic() -> None:
+    task = ChartsCompositionSubsetValueTask()
+    easy = task.generate(
+        17061,
+        params={
+            "task_variant": "stack_segment_value",
+            "scene_variant": "stacked_bar",
+            "category_count_min": 4,
+            "category_count_max": 4,
+            "series_count_min": 3,
+            "series_count_max": 3,
+        },
+        max_attempts=10,
+    )
+    hard = task.generate(
+        17061,
+        params={
+            "task_variant": "combined_share_subset",
+            "scene_variant": "donut",
+            "series_count_min": 5,
+            "series_count_max": 5,
+        },
+        max_attempts=10,
+    )
+    _assert_normalized_complexity(easy)
+    _assert_normalized_complexity(hard)
+    assert float(hard.complexity.complexity_score) > float(easy.complexity.complexity_score)
 
 
 def test_chart_composition_registers_integer_list_evidence() -> None:

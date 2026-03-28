@@ -16,6 +16,19 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     return json.loads(payload)
 
 
+def _assert_normalized_complexity(out: object) -> None:
+    complexity = out.complexity.to_dict()
+    assert 0.0 <= float(complexity["complexity_score"]) <= 1.0
+    assert set(complexity["complexity_components"].keys()) == {
+        "reasoning_load",
+        "scene_variant_load",
+        "visual_scan",
+    }
+    assert all(
+        0.0 <= float(value) <= 1.0 for value in complexity["complexity_components"].values()
+    )
+
+
 def _step_signs(values: list[int]) -> list[int]:
     return [1 if int(right) > int(left) else -1 for left, right in zip(values[:-1], values[1:])]
 
@@ -168,6 +181,23 @@ def test_chart_trend_task_is_deterministic() -> None:
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
+
+
+def test_chart_trend_complexity_is_normalized_and_monotonic() -> None:
+    task = ChartsTrendStructureValueTask()
+    easy = task.generate(
+        16062,
+        params={"task_variant": "peak_count", "scene_variant": "bar", "mark_count": 6},
+        max_attempts=10,
+    )
+    hard = task.generate(
+        16062,
+        params={"task_variant": "longest_increasing_streak", "scene_variant": "area", "mark_count": 10},
+        max_attempts=10,
+    )
+    _assert_normalized_complexity(easy)
+    _assert_normalized_complexity(hard)
+    assert float(hard.complexity.complexity_score) > float(easy.complexity.complexity_score)
 
 
 def test_chart_trend_supports_zero_turning_point_answers() -> None:

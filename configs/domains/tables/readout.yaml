@@ -1,0 +1,17 @@
+generation:
+  task_overrides:
+    task_tables_readout_cell_value:
+      task_variant_weights:
+        cell_lookup: 1.0
+
+prompt:
+  shared:
+    bundle_id: tables_readout_v1
+    task_family_key: styled_table_readout
+    task_key: cell_value_query
+    answer_hint: set "answer" to the exact integer value from the queried cell
+  task_overrides:
+    task_tables_readout_cell_value:
+      evidence_hint_cell_lookup: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the queried supporting cell
+      json_example_cell_lookup: '{"evidence":[[260,180,372,236]],"answer":17}'
+      json_example_answer_only_cell_lookup: '{"answer":17}'

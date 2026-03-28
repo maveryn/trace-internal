@@ -7,6 +7,13 @@ generation:
       reachable_fraction_max: 0.85
       answer_max: 12
 
+complexity:
+  task_overrides:
+    task_tile_reachability_region_size:
+      criteria_weights:
+        visual_scan: 0.45
+        reasoning_load: 0.55
+
 prompt:
   shared:
     bundle_id: tile_reachability_v1

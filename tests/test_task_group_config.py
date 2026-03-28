@@ -804,7 +804,7 @@ def test_charts_readout_defaults_loaded() -> None:
 
 def test_geometry_analytical_defaults_loaded() -> None:
     cfg = get_task_group_defaults("geometry", "analytical_2d")
-    for section in ("generation", "rendering", "prompt"):
+    for section in ("generation", "rendering", "prompt", "visual", "complexity"):
         assert isinstance(cfg.get(section), dict)
 
     generation_shared = cfg["generation"]["shared"]
@@ -842,6 +842,14 @@ def test_geometry_analytical_defaults_loaded() -> None:
     assert {"solid_cool", "solid_offwhite", "solid_warm"}.issubset(set(visual_background["styles"].keys()))
     assert float(visual_background["weights"]["graph_paper"]) == 0.0
     assert float(visual_background["weights"]["solid_offwhite"]) > 0.0
+
+    complexity_shared = cfg["complexity"]["shared"]
+    assert dict(complexity_shared["criteria_weights"]) == {
+        "visual_scan": 0.20,
+        "analytical_reasoning": 0.55,
+        "ambiguity": 0.20,
+        "output_burden": 0.05,
+    }
 
     prompt_generation, prompt_rendering, prompt_defaults = split_generation_rendering_prompt_defaults(
         cfg,

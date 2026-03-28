@@ -10,7 +10,7 @@ from PIL import ImageDraw
 
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
@@ -33,6 +33,7 @@ from ..shared.analytical_2d_scene import (
 )
 from ..shared.analytical_task import required_prompt_text, resolve_answer_bounds, resolve_task_variant
 from ..shared.background_defaults import load_geometry_background_defaults
+from ..shared.complexity import build_geometry_analytical_complexity
 from ..shared.graph_rendering import graph_paper_grid_from_frame
 from ..shared.noise_defaults import load_geometry_noise_defaults
 from ..shared.render_variation import sample_int_render_param
@@ -431,29 +432,6 @@ class GeometryAnalyticalPerimeter2DTask:
     domain = "geometry"
     task_group = "analytical_2d"
 
-    def _complexity(self, *, task_variant: str, answer_scalar: int, answer_max: int) -> TaskComplexity:
-        """Compute one lightweight complexity score for the sampled perimeter case."""
-        variant_weight = {
-            "right_triangle_leg_hypotenuse": 0.42,
-            "rectangle_side_diagonal": 0.40,
-            "rhombus_diagonals": 0.50,
-            "isosceles_trapezoid_bases_height": 0.56,
-            "inscribed_square_diameter": 0.62,
-        }.get(str(task_variant), 0.5)
-        magnitude = 0.0
-        if int(answer_max) > 0:
-            magnitude = min(1.0, float(answer_scalar) / float(max(1, int(answer_max) * 10)))
-        score = max(0.0, min(1.0, 0.32 + (0.52 * float(variant_weight)) + (0.16 * float(magnitude))))
-        return TaskComplexity(
-            complexity_score=float(score),
-            complexity_components={
-                "task_variant": str(task_variant),
-                "answer_scalar": int(answer_scalar),
-                "variant_component": float(variant_weight),
-                "magnitude_component": float(magnitude),
-            },
-        )
-
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic analytical 2D perimeter instance."""
         task_group_defaults = get_task_group_defaults(self.domain, self.task_group)
@@ -650,10 +628,13 @@ class GeometryAnalyticalPerimeter2DTask:
 
         answer_gt = TypedValue(type="number", value=float(case.answer_value))
         evidence_gt = TypedValue(type="measurement_ref_map", value=dict(case.evidence_map))
-        complexity = self._complexity(
+        complexity = build_geometry_analytical_complexity(
+            task_group_defaults=task_group_defaults if isinstance(task_group_defaults, Mapping) else {},
+            task_id=str(self.task_id),
+            task_kind="perimeter",
             task_variant=str(case.task_variant),
-            answer_scalar=int(case.answer_scalar),
-            answer_max=int(answer_max),
+            annotation_count=len(case.evidence_roles),
+            answer_format="number",
         )
         projected_point_set = [
             [float(case.annotation_centers[label][0]), float(case.annotation_centers[label][1])]

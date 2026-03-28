@@ -138,6 +138,7 @@ Use this checklist during implementation and refactor reviews.
 122. When a difficulty criterion has no within-task variation for a task family, prefer a zero weight at that scope over carrying a non-zero constant criterion that shifts every instance equally without improving within-task ordering.
 123. When a domain currently uses one stable presentation contract (for example tile boards), do not add a representation-load criterion just to mirror another domain; keep only criteria with real within-task ordering signal.
 124. When a domain grows multiple task groups that share the same non-task-specific generation/rendering defaults, promote those shared defaults into `configs/domains/<domain>/base.yaml` instead of copying the same values into each task-group YAML.
+125. For analytical tasks with multiple semantic variant axes (for example `shape_variant` plus `reasoning_mode`), keep one shared analytical family weighting policy and fold the extra axis into the normalized `analytical_reasoning`/`ambiguity` measurements; do not reintroduce separate task-local scalar formulas just because one sibling task has an extra variant dimension.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

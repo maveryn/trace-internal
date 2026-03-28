@@ -143,3 +143,36 @@ def test_geometry_analytical_complexity_increases_with_variant_load() -> None:
         "ambiguity",
         "output_burden",
     }
+
+
+def test_geometry_analytical_complexity_increases_with_derived_mode() -> None:
+    defaults = get_task_group_defaults("geometry", "analytical_2d")
+
+    easier = build_geometry_analytical_complexity(
+        task_group_defaults=defaults,
+        task_id="task_geometry_analytical_2d_area",
+        task_kind="area",
+        task_variant="rectangle",
+        annotation_count=2,
+        answer_format="integer",
+        reasoning_mode="explicit",
+    )
+    harder = build_geometry_analytical_complexity(
+        task_group_defaults=defaults,
+        task_id="task_geometry_analytical_2d_area",
+        task_kind="area",
+        task_variant="rectangle",
+        annotation_count=2,
+        answer_format="integer",
+        reasoning_mode="derived",
+    )
+
+    assert 0.0 <= float(easier.complexity_score) <= 1.0
+    assert 0.0 <= float(harder.complexity_score) <= 1.0
+    assert float(harder.complexity_score) > float(easier.complexity_score)
+    assert set(harder.complexity_components.keys()) == {
+        "visual_scan",
+        "analytical_reasoning",
+        "ambiguity",
+        "output_burden",
+    }

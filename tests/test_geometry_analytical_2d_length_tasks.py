@@ -34,6 +34,13 @@ def test_analytical_length_variants_match_contract() -> None:
         assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
         assert set(out.evidence_gt.value.keys()) == set(execution["required_annotations"])
         assert out.evidence_gt.value == execution["evidence_map"]
+        assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
+        assert set(out.complexity.complexity_components.keys()) == {
+            "visual_scan",
+            "analytical_reasoning",
+            "ambiguity",
+            "output_burden",
+        }
         assert execution["answer_value"] == out.answer_gt.value
         assert abs(float(execution["answer_value"]) - round(float(execution["raw_answer_value"]), 1)) <= 1e-9
         assert str(execution["target_annotation"]).strip()

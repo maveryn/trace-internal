@@ -184,3 +184,11 @@ prompt:
       question_text_rectangle_triangle_union: The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?
       question_text_l_shape_cutout: The shaded figure is an L-shaped region formed from a rectangle with one corner removed. What is the area of the shaded region in square units?
       question_text_step_rectangles_union: The shaded figure is a step-shaped union of two rectangles. What is the area of the shaded region in square units?
+
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.20
+      analytical_reasoning: 0.55
+      ambiguity: 0.20
+      output_burden: 0.05

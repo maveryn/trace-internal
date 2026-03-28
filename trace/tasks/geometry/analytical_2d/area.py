@@ -11,7 +11,7 @@ from PIL import ImageDraw
 
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import (
@@ -39,6 +39,7 @@ from ..shared.annotation_values import (
     build_role_value_evidence,
     format_annotation_value,
 )
+from ..shared.complexity import build_geometry_analytical_complexity
 from ..shared.conic_geometry import (
     conic_render_anchor,
     draw_circle_outline,
@@ -2682,41 +2683,6 @@ class GeometryAnalyticalArea2DTask:
     domain = "geometry"
     task_group = "analytical_2d"
 
-    def _complexity(
-        self,
-        *,
-        shape_variant: str,
-        reasoning_mode: str,
-        answer_scalar: int,
-        answer_max: int,
-    ) -> TaskComplexity:
-        """Compute task complexity from shape family, mode, and answer magnitude."""
-        shape_weight = {
-            "rectangle": 0.20,
-            "triangle": 0.30,
-            "parallelogram": 0.40,
-            "trapezoid": 0.52,
-            "rhombus": 0.58,
-            "circle": 0.46,
-            "ellipse": 0.62,
-        }.get(str(shape_variant), 0.50)
-        mode_weight = 0.0 if str(reasoning_mode) == "explicit" else 0.28
-        magnitude = 0.0
-        if int(answer_max) > 0:
-            magnitude = min(1.0, float(answer_scalar) / float(max(1, int(answer_max))))
-        score = max(0.0, min(1.0, 0.26 + (0.42 * float(shape_weight)) + (0.22 * float(mode_weight)) + (0.10 * float(magnitude))))
-        return TaskComplexity(
-            complexity_score=float(score),
-            complexity_components={
-                "shape_variant": str(shape_variant),
-                "reasoning_mode": str(reasoning_mode),
-                "answer_scalar": int(answer_scalar),
-                "shape_component": float(shape_weight),
-                "mode_component": float(mode_weight),
-                "magnitude_component": float(magnitude),
-            },
-        )
-
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one deterministic analytical area instance."""
         task_group_defaults = get_task_group_defaults(self.domain, self.task_group)
@@ -2923,11 +2889,14 @@ class GeometryAnalyticalArea2DTask:
         else:
             answer_gt = TypedValue(type="integer", value=int(case.answer_value))
         evidence_gt = TypedValue(type="measurement_ref_map", value=dict(evidence_map))
-        complexity = self._complexity(
-            shape_variant=str(case.shape_variant),
+        complexity = build_geometry_analytical_complexity(
+            task_group_defaults=task_group_defaults if isinstance(task_group_defaults, Mapping) else {},
+            task_id=str(self.task_id),
+            task_kind="area",
+            task_variant=str(case.shape_variant),
+            annotation_count=len(required_annotations),
+            answer_format=str(case.answer_type),
             reasoning_mode=str(case.reasoning_mode),
-            answer_scalar=int(case.answer_scalar),
-            answer_max=int(answer_max),
         )
 
         annotation_centers_by_token = {

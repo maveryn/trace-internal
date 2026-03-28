@@ -423,6 +423,37 @@ def geometry_analytical_reasoning_score(*, task_kind: str, task_variant: str) ->
             "cone_given_r_slant_height": 0.66,
             "sphere_given_r": 0.48,
         },
+        "area": {
+            "rectangle": 0.30,
+            "triangle": 0.38,
+            "parallelogram": 0.50,
+            "trapezoid": 0.62,
+            "rhombus": 0.66,
+            "circle": 0.52,
+            "ellipse": 0.72,
+        },
+        "length": {
+            "triangle_altitude_side": 0.48,
+            "rectangle_diagonal_side": 0.44,
+            "rhombus_diagonal_side": 0.58,
+            "isosceles_trapezoid_leg": 0.66,
+            "inscribed_square_side": 0.72,
+            "circle_chord_length": 0.78,
+        },
+        "perimeter": {
+            "right_triangle_leg_hypotenuse": 0.50,
+            "rectangle_side_diagonal": 0.46,
+            "rhombus_diagonals": 0.62,
+            "isosceles_trapezoid_bases_height": 0.70,
+            "inscribed_square_diameter": 0.74,
+        },
+        "composite_area": {
+            "rectangle_inner_cutout": 0.60,
+            "rectangle_triangle_cutout": 0.68,
+            "rectangle_triangle_union": 0.64,
+            "l_shape_cutout": 0.76,
+            "step_rectangles_union": 0.72,
+        },
     }
     kind_scores = score_by_kind.get(normalized_kind)
     if kind_scores is None or normalized_variant not in kind_scores:
@@ -452,6 +483,37 @@ def geometry_analytical_variant_ambiguity_score(*, task_kind: str, task_variant:
             "cone_given_r_slant_height": 0.72,
             "sphere_given_r": 0.44,
         },
+        "area": {
+            "rectangle": 0.28,
+            "triangle": 0.34,
+            "parallelogram": 0.48,
+            "trapezoid": 0.62,
+            "rhombus": 0.68,
+            "circle": 0.42,
+            "ellipse": 0.72,
+        },
+        "length": {
+            "triangle_altitude_side": 0.40,
+            "rectangle_diagonal_side": 0.36,
+            "rhombus_diagonal_side": 0.50,
+            "isosceles_trapezoid_leg": 0.58,
+            "inscribed_square_side": 0.62,
+            "circle_chord_length": 0.72,
+        },
+        "perimeter": {
+            "right_triangle_leg_hypotenuse": 0.42,
+            "rectangle_side_diagonal": 0.40,
+            "rhombus_diagonals": 0.54,
+            "isosceles_trapezoid_bases_height": 0.64,
+            "inscribed_square_diameter": 0.66,
+        },
+        "composite_area": {
+            "rectangle_inner_cutout": 0.52,
+            "rectangle_triangle_cutout": 0.60,
+            "rectangle_triangle_union": 0.56,
+            "l_shape_cutout": 0.70,
+            "step_rectangles_union": 0.66,
+        },
     }
     kind_scores = score_by_kind.get(normalized_kind)
     if kind_scores is None or normalized_variant not in kind_scores:
@@ -467,35 +529,48 @@ def build_geometry_analytical_complexity(
     task_variant: str,
     annotation_count: int,
     answer_format: str,
+    reasoning_mode: str | None = None,
 ) -> TaskComplexity:
     """Build one normalized analytical-family complexity payload."""
 
     weights = resolve_geometry_complexity_weights(task_group_defaults, task_id=task_id)
+    normalized_mode = str(reasoning_mode).strip().lower() if reasoning_mode is not None else ""
+    mode_reasoning = 0.0 if not normalized_mode else {
+        "explicit": 0.0,
+        "derived": 0.22,
+    }.get(normalized_mode)
+    if reasoning_mode is not None and mode_reasoning is None:
+        raise ValueError(f"unsupported geometry analytical reasoning_mode: {reasoning_mode}")
+    mode_ambiguity = 0.0 if not normalized_mode else {
+        "explicit": 0.0,
+        "derived": 0.18,
+    }.get(normalized_mode)
+    if reasoning_mode is not None and mode_ambiguity is None:
+        raise ValueError(f"unsupported geometry analytical reasoning_mode: {reasoning_mode}")
+
+    visual_scan = normalize_linear(
+        float(annotation_count),
+        min_value=1.0,
+        max_value=4.0,
+    )
     return build_geometry_task_complexity(
         weights=weights,
         components={
-            "visual_scan": normalize_linear(
-                float(annotation_count),
-                min_value=1.0,
-                max_value=4.0,
-            ),
-            "analytical_reasoning": geometry_analytical_reasoning_score(
-                task_kind=str(task_kind),
-                task_variant=str(task_variant),
+            "visual_scan": visual_scan,
+            "analytical_reasoning": clamp_unit_interval(
+                geometry_analytical_reasoning_score(
+                    task_kind=str(task_kind),
+                    task_variant=str(task_variant),
+                )
+                + float(mode_reasoning)
             ),
             "ambiguity": clamp_unit_interval(
-                (0.75 * geometry_analytical_variant_ambiguity_score(
+                (0.65 * geometry_analytical_variant_ambiguity_score(
                     task_kind=str(task_kind),
                     task_variant=str(task_variant),
                 ))
-                + (
-                    0.25
-                    * normalize_linear(
-                        float(annotation_count),
-                        min_value=1.0,
-                        max_value=4.0,
-                    )
-                )
+                + (0.15 * float(visual_scan))
+                + (0.20 * float(mode_ambiguity))
             ),
             "output_burden": geometry_analytical_output_burden(
                 answer_format=str(answer_format),

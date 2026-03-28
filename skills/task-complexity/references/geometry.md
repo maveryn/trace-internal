@@ -71,6 +71,7 @@ Measure:
 - decomposition complexity,
 - answer precision burden,
 - measurement-map evidence burden.
+- when applicable, additional semantic variant axes such as explicit-vs-derived reasoning mode should raise `analytical_reasoning` / `ambiguity` inside the same family criteria rather than creating a second weighting scheme.
 
 ## Notes
 - Domain-level criteria must apply to every geometry task; keep `measurement_precision`, `comparison_reasoning`, `classification_reasoning`, and `analytical_reasoning` at task-group scope rather than forcing them onto unrelated families.

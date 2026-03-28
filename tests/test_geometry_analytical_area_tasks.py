@@ -60,6 +60,13 @@ def test_analytical_area_variants_match_contract() -> None:
         evidence_map = dict(out.evidence_gt.value)
         assert set(evidence_map.keys()) == set(execution["evidence_ids"])
         assert evidence_map == execution["evidence_map"]
+        assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
+        assert set(out.complexity.complexity_components.keys()) == {
+            "visual_scan",
+            "analytical_reasoning",
+            "ambiguity",
+            "output_burden",
+        }
         for annotation, payload in evidence_map.items():
             assert str(annotation).strip()
             assert isinstance(payload, (int, float, str))

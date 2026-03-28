@@ -33,6 +33,13 @@ def test_analytical_composite_area_variants_match_contract() -> None:
         assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
         assert set(out.evidence_gt.value.keys()) == set(execution["required_annotations"])
         assert out.evidence_gt.value == execution["evidence_map"]
+        assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
+        assert set(out.complexity.complexity_components.keys()) == {
+            "visual_scan",
+            "analytical_reasoning",
+            "ambiguity",
+            "output_burden",
+        }
         assert execution["answer_value"] == out.answer_gt.value
         assert execution["target_quantity"] == "area"
         assert execution["scene_kind"] == "composite_region"

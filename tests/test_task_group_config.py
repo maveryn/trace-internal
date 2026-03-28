@@ -762,6 +762,57 @@ def test_tables_temporal_defaults_loaded() -> None:
     assert str(prompt_defaults["json_example_mean_over_year_interval"]).strip()
 
 
+def test_puzzles_arithmetic_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("puzzles", "arithmetic")
+    for section in ("generation", "rendering", "prompt", "complexity"):
+        assert isinstance(cfg.get(section), dict)
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "puzzles_arithmetic_v1"
+    assert str(prompt_shared["task_family_key"]).strip() == "arithmetic_unknown_slot_puzzle"
+    assert str(prompt_shared["task_key"]).strip() == "equation_value_query"
+    assert str(prompt_shared["object_description_equation_strip"]).strip()
+    assert str(prompt_shared["answer_hint"]).strip()
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_puzzles_arithmetic_equation_value",
+    )
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "operand_unknown",
+        "result_unknown",
+    ]
+    assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
+        "equation_card",
+        "equation_outline",
+        "equation_strip",
+    ]
+    assert int(generation_defaults["answer_min"]) >= 1
+    assert int(generation_defaults["answer_max"]) == 24
+    assert int(generation_defaults["operand_count_min"]) == 2
+    assert int(generation_defaults["operand_count_max"]) == 5
+    assert int(generation_defaults["operand_value_min"]) == 1
+    assert int(generation_defaults["operand_value_max"]) == 12
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert int(rendering_defaults["slot_width_px"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip() == "puzzles_arithmetic_v1"
+    assert str(prompt_defaults["evidence_hint_result_unknown"]).strip()
+    assert str(prompt_defaults["evidence_hint_operand_unknown"]).strip()
+    assert str(prompt_defaults["json_example_result_unknown"]).strip()
+    assert str(prompt_defaults["json_example_answer_only_operand_unknown"]).strip()
+
+    arithmetic_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_puzzles_arithmetic_equation_value",
+    )
+    assert arithmetic_complexity["criteria_weights"] == {
+        "visual_scan": pytest.approx(0.34),
+        "reasoning_load": pytest.approx(0.33),
+        "scene_variant_load": pytest.approx(0.33),
+    }
+
+
 def test_charts_multiseries_defaults_loaded() -> None:
     cfg = get_task_group_defaults("charts", "multiseries")
     for section in ("generation", "rendering", "prompt", "complexity"):

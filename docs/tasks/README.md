@@ -69,3 +69,4 @@ Current task docs:
 59. [task_tables_relation_extremum_transfer_value.md](task_tables_relation_extremum_transfer_value.md)
 60. [task_tables_ranking_label.md](task_tables_ranking_label.md)
 61. [task_tables_temporal_value.md](task_tables_temporal_value.md)
+62. [task_puzzles_arithmetic_equation_value.md](task_puzzles_arithmetic_equation_value.md)

@@ -1,0 +1,1 @@
+"""Puzzle arithmetic task modules."""

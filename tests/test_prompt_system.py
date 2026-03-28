@@ -164,6 +164,7 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
         ("tables", "relation", "tables_relation_v1"),
         ("tables", "temporal", "tables_temporal_v1"),
         ("tables", "statistics", "tables_statistics_v1"),
+        ("puzzles", "arithmetic", "puzzles_arithmetic_v1"),
         ("tile", "count", "tile_count_v1"),
         ("tile", "pattern", "tile_pattern_v1"),
         ("tile", "relation", "tile_relation_v1"),
@@ -418,6 +419,16 @@ def test_tables_temporal_bundle_supports_year_conditioned_variants() -> None:
         "query_row_label",
         "query_year_start",
         "query_year_end",
+    ]
+
+
+def test_puzzles_arithmetic_bundle_supports_unknown_slot_variants() -> None:
+    bundle = load_prompt_bundle("puzzles", "arithmetic", "puzzles_arithmetic_v1")
+    assert len(bundle.task_templates["equation_value_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["result_unknown"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["operand_unknown"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_family:arithmetic_unknown_slot_puzzle"]) == [
+        "object_description",
     ]
 
 

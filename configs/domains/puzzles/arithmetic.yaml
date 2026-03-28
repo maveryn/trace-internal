@@ -1,0 +1,64 @@
+generation:
+  task_overrides:
+    task_puzzles_arithmetic_equation_value:
+      answer_min: 1
+      answer_max: 24
+      operand_count_min: 2
+      operand_count_max: 5
+      operand_value_min: 1
+      operand_value_max: 12
+      max_visible_value: 32
+      balanced_task_variant_sampling: true
+      balanced_scene_variant_sampling: true
+      task_variant_weights:
+        result_unknown: 1.0
+        operand_unknown: 1.0
+      scene_variant_weights:
+        equation_strip: 1.0
+        equation_card: 1.0
+        equation_outline: 1.0
+
+rendering:
+  task_overrides:
+    task_puzzles_arithmetic_equation_value:
+      canvas_width: 960
+      canvas_height: 540
+      scene_margin_left_px: 72
+      scene_margin_right_px: 72
+      scene_margin_top_px: 72
+      scene_margin_bottom_px: 72
+      slot_width_px: 120
+      slot_height_px: 96
+      token_gap_px: 26
+      row_gap_px: 72
+      slot_corner_radius_px: 18
+      border_width_px: 3
+      panel_padding_px: 28
+      panel_corner_radius_px: 28
+      value_font_size_px: 46
+      operator_font_size_px: 54
+      slot_fill_rgb: [252, 252, 255]
+      unknown_slot_fill_rgb: [242, 246, 255]
+      panel_fill_rgb: [248, 249, 252]
+      border_color_rgb: [86, 94, 108]
+      text_color_rgb: [30, 34, 40]
+      text_stroke_rgb: [255, 255, 255]
+      accent_color_rgb: [54, 102, 180]
+
+prompt:
+  shared:
+    bundle_id: puzzles_arithmetic_v1
+    task_family_key: arithmetic_unknown_slot_puzzle
+    task_key: equation_value_query
+    answer_hint: set "answer" to the exact integer that belongs in the question-mark slot
+    object_description_equation_strip: a clean arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right
+    object_description_equation_card: a card-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right
+    object_description_equation_outline: an outline-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right
+  task_overrides:
+    task_puzzles_arithmetic_equation_value:
+      evidence_hint_result_unknown: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark result slot
+      evidence_hint_operand_unknown: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark operand slot
+      json_example_result_unknown: '{"evidence":[[680,180,800,276]],"answer":14}'
+      json_example_operand_unknown: '{"evidence":[[120,180,240,276]],"answer":5}'
+      json_example_answer_only_result_unknown: '{"answer":14}'
+      json_example_answer_only_operand_unknown: '{"answer":5}'

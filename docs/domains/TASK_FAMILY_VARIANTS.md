@@ -73,6 +73,14 @@ Define how we split tasks into reusable families so each dataset slice stays com
 15. Table tasks use one fixed prompt-facing evidence type in v1: `bbox_set`.
 16. Evidence boxes should mark the minimal supporting table region(s): one decisive numeric cell bbox or one winning-row region bbox for `task_tables_statistics_summary_label`, one queried-column region bbox, queried-row region bbox, or full numeric-table region bbox for `task_tables_statistics_summary_value`, one ordered set of filter/target value-cell pairs for `task_tables_statistics_filtered_subset_value`, one ordered set of filter/target value-cell pairs for `task_tables_statistics_filtered_subset_label`, one ordered set of matching value-cell bboxes or compared two-column value-cell pairs for `task_tables_counting_value_count`, one queried value-cell bbox or ordered queried-cell pair for `task_tables_readout_subset_value`, one ordered pair of compared queried-column value-cell bboxes for `task_tables_relation_row_compare_label`, one ordered pair `[source extremum cell, target value cell]` for `task_tables_relation_extremum_transfer_value`, one queried-column region bbox for `task_tables_ranking_label`, and one ordered set of queried year-cell bboxes for `task_tables_temporal_value`.
 
+## Puzzles direction (current)
+1. Puzzles use `task_group` for hidden-rule reasoning families such as `arithmetic`, `logic`, `spatial`, and `topology`; avoid splitting families by one-off visual templates when the reasoning contract is still the same.
+2. Early arithmetic puzzle tasks should favor explicit unknown slots so evidence can stay local and visually obvious.
+3. `task_puzzles_arithmetic_equation_value` uses semantic `task_variant` values `result_unknown` and `operand_unknown`.
+4. `task_puzzles_arithmetic_equation_value` uses visual `scene_variant` values `equation_strip`, `equation_card`, and `equation_outline`.
+5. The active arithmetic scene grammar uses one flat equation row with `2..5` left-side operand boxes, operators sampled from `+`, `-`, and `×`, one right-side result box, and the `?` randomly placed on either side according to `task_variant`.
+6. Prompt-facing arithmetic evidence should stay as one-box `bbox_set` grounding on the queried unknown slot; do not widen to explanatory multi-box evidence unless a later family truly needs ordered witnesses.
+
 ## Planned geometry measurement variants
 1. **Angle measurement**
    - One angle per image.

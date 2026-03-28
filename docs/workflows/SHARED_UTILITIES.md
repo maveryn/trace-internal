@@ -158,6 +158,11 @@ Promote helpers when a second consumer appears.
    - `table_scene.py` is the canonical styled-table renderer for active table tasks; it owns table cell geometry, row/column region bboxes, the full numeric-table region bbox, and the active `spreadsheet|zebra|ledger|card_table` scene variants.
    - `table_common.py` is the shared construction layer for table tasks; it owns row/column count bounds, row-name/header sampling, row/column/whole-table summary dataset construction, ranking/filtered-subset/relation/counting/readout dataset construction, temporal year-header sampling plus temporal dataset construction, canonical numeric-cell id resolution, render-param resolution, and both cell- and region-level bbox evidence projection.
    - `visual_defaults.py` is the canonical table-domain background/noise loader layer shared across future table task groups.
+9. Puzzles: `trace/tasks/puzzles/shared/arithmetic_scene.py`, `arithmetic_common.py`, `complexity.py`, `visual_defaults.py`
+   - `arithmetic_scene.py` is the canonical boxed-slot arithmetic puzzle renderer for active puzzle tasks; it owns slot/operator layout, scene chrome variants, slot bbox tracing, and the `equation_strip|equation_card|equation_outline` scene variants.
+   - `arithmetic_common.py` is the shared arithmetic-puzzle construction layer; it owns answer/value bounds, task/scene variant resolution, arithmetic dataset construction, render-param resolution, and unknown-slot bbox evidence projection.
+   - `complexity.py` is the shared puzzle-domain complexity layer; it owns the normalized `[0,1]` scoring helpers, complexity-weight resolution, and weighted-mean `TaskComplexity` construction.
+   - `visual_defaults.py` is the canonical puzzle-domain background/noise loader layer shared across future puzzle task groups.
 
 ## 3) Reuse rules
 1. Do not duplicate deterministic utilities.

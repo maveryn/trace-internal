@@ -139,6 +139,9 @@ Use this checklist during implementation and refactor reviews.
 123. When adding whole-table numeric summaries for tables, prefer widening `task_tables_statistics_summary_value` with a full numeric-table region bbox witness instead of minting a new task id if the answer type stays `integer` and the prompt/evidence contract still matches the existing summary-value family.
 124. When a new table counting variant still answers with one integer row count and uses deterministic `bbox_set` witnesses over matching rows, prefer widening `task_tables_counting_value_count` instead of splitting out a sibling counting task id just because the predicate changes from one-column filtering to row-wise two-column comparison.
 125. When table task refactors merge or widen existing task families, update `skills/domain-tables/SKILL.md` and `skills/task-complexity/references/tables.md` in the same change; do not leave reusable guidance recommending retired task splits or stale complexity vocabularies.
+126. When activating the first task in a new domain, update the registry, prompt-system inventory, system-architecture inventory, domain setup/readme docs, shared-utilities inventory, and the domain complexity reference in the same patch; do not leave the new domain discoverable only through `STATUS.md`.
+127. For early puzzle arithmetic tasks with a one-box unknown-slot witness, prefer widening structural variety inside the same task (for example operand count, operator mix, unknown side) instead of splitting that contract into multiple near-duplicate mini-puzzle variants.
+128. When a puzzle-family refactor retires old `task_variant` names, remove those retired keys from task docs, prompt/config examples, and behavior tests in the same patch; do not leave stale variant vocabularies alongside the active one-box evidence contract.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

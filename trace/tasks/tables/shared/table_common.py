@@ -56,6 +56,41 @@ class TableDefaults:
     balanced_scene_variant_sampling: bool = True
 
 
+def table_value_cell_id(*, data_row_index: int, numeric_column_index: int) -> str:
+    """Return the rendered cell id for one numeric-value table cell."""
+
+    return f"cell_r{int(data_row_index) + 1}_c{int(numeric_column_index) + 1}"
+
+
+def _build_values_by_row(
+    *,
+    row_labels: Sequence[str],
+    column_headers: Sequence[str],
+    rng,
+    value_min: int,
+    value_max: int,
+    query_column: str | None = None,
+    query_values_by_row: Mapping[str, int] | None = None,
+) -> Dict[str, Dict[str, int]]:
+    """Populate one deterministic numeric table, optionally fixing one queried column."""
+
+    if (query_column is None) != (query_values_by_row is None):
+        raise ValueError("query_column and query_values_by_row must be provided together")
+
+    values_by_row: Dict[str, Dict[str, int]] = {}
+    for row_label in row_labels:
+        resolved_row_label = str(row_label)
+        row_values: Dict[str, int] = {}
+        for header in column_headers:
+            resolved_header = str(header)
+            if query_values_by_row is not None and resolved_header == str(query_column):
+                row_values[resolved_header] = int(query_values_by_row[resolved_row_label])
+            else:
+                row_values[resolved_header] = int(rng.randint(int(value_min), int(value_max)))
+        values_by_row[resolved_row_label] = dict(row_values)
+    return values_by_row
+
+
 def _resolve_base_table_schema(
     *,
     params: Mapping[str, Any],
@@ -371,15 +406,15 @@ def build_summary_label_dataset_for_variant(
     for row_label, value in zip(remaining_rows, remaining_values):
         query_values_by_row[str(row_label)] = int(value)
 
-    values_by_row: Dict[str, Dict[str, int]] = {}
-    for row_label in row_labels:
-        row_values: Dict[str, int] = {}
-        for header in column_headers:
-            if str(header) == str(query_column):
-                row_values[str(header)] = int(query_values_by_row[str(row_label)])
-            else:
-                row_values[str(header)] = int(rng.randint(int(value_min), int(value_max)))
-        values_by_row[str(row_label)] = dict(row_values)
+    values_by_row = _build_values_by_row(
+        row_labels=row_labels,
+        column_headers=column_headers,
+        rng=rng,
+        value_min=int(value_min),
+        value_max=int(value_max),
+        query_column=str(query_column),
+        query_values_by_row=query_values_by_row,
+    )
 
     answer_value = int(values_by_row[str(answer_row_label)][str(query_column)])
     return {
@@ -475,15 +510,19 @@ def build_summary_value_dataset_for_variant(
         rng.shuffle(query_values)
         answer_value = int(target_median)
 
-    values_by_row: Dict[str, Dict[str, int]] = {}
-    for row_index, row_label in enumerate(row_labels):
-        row_values: Dict[str, int] = {}
-        for header in column_headers:
-            if str(header) == str(query_column):
-                row_values[str(header)] = int(query_values[int(row_index)])
-            else:
-                row_values[str(header)] = int(rng.randint(int(value_min), int(value_max)))
-        values_by_row[str(row_label)] = dict(row_values)
+    query_values_by_row = {
+        str(row_label): int(query_values[int(row_index)])
+        for row_index, row_label in enumerate(row_labels)
+    }
+    values_by_row = _build_values_by_row(
+        row_labels=row_labels,
+        column_headers=column_headers,
+        rng=rng,
+        value_min=int(value_min),
+        value_max=int(value_max),
+        query_column=str(query_column),
+        query_values_by_row=query_values_by_row,
+    )
 
     return {
         "row_count": int(row_count),
@@ -497,6 +536,222 @@ def build_summary_value_dataset_for_variant(
         "values_by_row": dict(values_by_row),
         "answer_value": int(answer_value),
         "query_column_index": int(query_col_index),
+    }
+
+
+def build_counting_value_dataset_for_variant(
+    *,
+    task_variant: str,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    gen_defaults: Mapping[str, Any],
+    defaults: TableDefaults,
+    task_id: str,
+) -> Dict[str, Any]:
+    """Construct one deterministic table dataset for column-filter counting queries."""
+
+    supported_variants = {"above_threshold", "below_threshold", "in_interval"}
+    if str(task_variant) not in supported_variants:
+        raise ValueError(f"unsupported table counting variant: {task_variant}")
+
+    base = _resolve_base_table_schema(
+        params=params,
+        instance_seed=int(instance_seed),
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        task_id=task_id,
+    )
+    rng = base["rng"]
+    row_count = int(base["row_count"])
+    numeric_column_count = int(base["numeric_column_count"])
+    row_labels = list(base["row_labels"])
+    column_headers = list(base["column_headers"])
+    query_col_index = int(base["query_column_index"])
+    query_column = str(base["query_column"])
+    value_min = int(base["value_min"])
+    value_max = int(base["value_max"])
+    target_count = int(resolve_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}:target_count",
+    )) % int(row_count + 1)
+
+    def _sample_values(*, count: int, low: int, high: int) -> List[int]:
+        if int(count) <= 0:
+            return []
+        if int(low) > int(high):
+            raise ValueError("invalid bounded sampling range")
+        return [int(rng.randint(int(low), int(high))) for _ in range(int(count))]
+
+    metadata: Dict[str, Any] = {}
+    if str(task_variant) == "above_threshold":
+        if int(target_count) == int(row_count):
+            threshold_value = int(value_min - 1)
+            query_values = _sample_values(count=int(row_count), low=int(value_min), high=int(value_max))
+        elif int(target_count) == 0:
+            threshold_value = int(value_max)
+            query_values = _sample_values(count=int(row_count), low=int(value_min), high=int(value_max))
+        else:
+            threshold_value = int(rng.randint(int(value_min), int(value_max - 1)))
+            query_values = [
+                *_sample_values(count=int(target_count), low=int(threshold_value + 1), high=int(value_max)),
+                *_sample_values(count=int(row_count - target_count), low=int(value_min), high=int(threshold_value)),
+            ]
+        rng.shuffle(query_values)
+        metadata["threshold_value"] = int(threshold_value)
+
+        def _matches(value: int) -> bool:
+            return int(value) > int(threshold_value)
+
+    elif str(task_variant) == "below_threshold":
+        if int(target_count) == int(row_count):
+            threshold_value = int(value_max + 1)
+            query_values = _sample_values(count=int(row_count), low=int(value_min), high=int(value_max))
+        elif int(target_count) == 0:
+            threshold_value = int(value_min)
+            query_values = _sample_values(count=int(row_count), low=int(value_min), high=int(value_max))
+        else:
+            threshold_value = int(rng.randint(int(value_min + 1), int(value_max)))
+            query_values = [
+                *_sample_values(count=int(target_count), low=int(value_min), high=int(threshold_value - 1)),
+                *_sample_values(count=int(row_count - target_count), low=int(threshold_value), high=int(value_max)),
+            ]
+        rng.shuffle(query_values)
+        metadata["threshold_value"] = int(threshold_value)
+
+        def _matches(value: int) -> bool:
+            return int(value) < int(threshold_value)
+
+    else:
+        if int(target_count) == int(row_count):
+            interval_min = int(value_min)
+            interval_max = int(value_max)
+            query_values = _sample_values(count=int(row_count), low=int(value_min), high=int(value_max))
+        else:
+            while True:
+                interval_min = int(rng.randint(int(value_min), int(value_max)))
+                interval_max = int(rng.randint(int(interval_min), int(value_max)))
+                inside_values = list(range(int(interval_min), int(interval_max) + 1))
+                outside_values = [
+                    int(value)
+                    for value in range(int(value_min), int(value_max) + 1)
+                    if int(value) < int(interval_min) or int(value) > int(interval_max)
+                ]
+                if int(target_count) == 0 and outside_values:
+                    query_values = [int(outside_values[int(rng.randint(0, len(outside_values) - 1))]) for _ in range(int(row_count))]
+                    break
+                if int(target_count) > 0 and inside_values and outside_values:
+                    query_values = [
+                        *[
+                            int(inside_values[int(rng.randint(0, len(inside_values) - 1))])
+                            for _ in range(int(target_count))
+                        ],
+                        *[
+                            int(outside_values[int(rng.randint(0, len(outside_values) - 1))])
+                            for _ in range(int(row_count - target_count))
+                        ],
+                    ]
+                    break
+        rng.shuffle(query_values)
+        metadata["interval_min"] = int(interval_min)
+        metadata["interval_max"] = int(interval_max)
+
+        def _matches(value: int) -> bool:
+            return int(interval_min) <= int(value) <= int(interval_max)
+
+    query_values_by_row = {
+        str(row_label): int(query_values[int(row_index)])
+        for row_index, row_label in enumerate(row_labels)
+    }
+    values_by_row = _build_values_by_row(
+        row_labels=row_labels,
+        column_headers=column_headers,
+        rng=rng,
+        value_min=int(value_min),
+        value_max=int(value_max),
+        query_column=str(query_column),
+        query_values_by_row=query_values_by_row,
+    )
+    matching_row_indices = [
+        int(row_index)
+        for row_index, row_label in enumerate(row_labels)
+        if _matches(int(values_by_row[str(row_label)][str(query_column)]))
+    ]
+    matching_row_labels = [str(row_labels[int(row_index)]) for row_index in matching_row_indices]
+    return {
+        "row_count": int(row_count),
+        "numeric_column_count": int(numeric_column_count),
+        "row_count_range": list(base["row_count_range"]),
+        "numeric_column_count_range": list(base["numeric_column_count_range"]),
+        "value_range": list(base["value_range"]),
+        "row_labels": [str(label) for label in row_labels],
+        "column_headers": [str(header) for header in column_headers],
+        "query_column": str(query_column),
+        "values_by_row": dict(values_by_row),
+        "answer_value": int(len(matching_row_indices)),
+        "query_column_index": int(query_col_index),
+        "matching_row_indices": [int(row_index) for row_index in matching_row_indices],
+        "matching_row_labels": [str(label) for label in matching_row_labels],
+        **metadata,
+    }
+
+
+def build_readout_cell_dataset(
+    *,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    gen_defaults: Mapping[str, Any],
+    defaults: TableDefaults,
+    task_id: str,
+) -> Dict[str, Any]:
+    """Construct one deterministic table dataset for exact cell-value lookup."""
+
+    base = _resolve_base_table_schema(
+        params=params,
+        instance_seed=int(instance_seed),
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        task_id=task_id,
+    )
+    rng = base["rng"]
+    row_count = int(base["row_count"])
+    numeric_column_count = int(base["numeric_column_count"])
+    row_labels = list(base["row_labels"])
+    column_headers = list(base["column_headers"])
+    query_col_index = int(base["query_column_index"])
+    query_column = str(base["query_column"])
+    value_min = int(base["value_min"])
+    value_max = int(base["value_max"])
+    query_row_index = int(resolve_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}:query_row",
+    )) % int(row_count)
+    query_row_label = str(row_labels[int(query_row_index)])
+    answer_value = int(rng.randint(int(value_min), int(value_max)))
+
+    values_by_row = _build_values_by_row(
+        row_labels=row_labels,
+        column_headers=column_headers,
+        rng=rng,
+        value_min=int(value_min),
+        value_max=int(value_max),
+    )
+    values_by_row[str(query_row_label)][str(query_column)] = int(answer_value)
+    return {
+        "row_count": int(row_count),
+        "numeric_column_count": int(numeric_column_count),
+        "row_count_range": list(base["row_count_range"]),
+        "numeric_column_count_range": list(base["numeric_column_count_range"]),
+        "value_range": list(base["value_range"]),
+        "row_labels": [str(label) for label in row_labels],
+        "column_headers": [str(header) for header in column_headers],
+        "query_row_label": str(query_row_label),
+        "query_row_index": int(query_row_index),
+        "query_column": str(query_column),
+        "query_column_index": int(query_col_index),
+        "values_by_row": dict(values_by_row),
+        "answer_value": int(answer_value),
     }
 
 
@@ -557,6 +812,8 @@ def projected_table_region_bbox_evidence(
 __all__ = [
     "SUPPORTED_TABLE_SCENE_VARIANTS",
     "TableDefaults",
+    "build_counting_value_dataset_for_variant",
+    "build_readout_cell_dataset",
     "build_summary_label_dataset_for_variant",
     "build_summary_value_dataset_for_variant",
     "projected_table_bbox_evidence",
@@ -567,4 +824,5 @@ __all__ = [
     "resolve_table_render_params",
     "sample_numeric_column_headers",
     "sample_table_row_labels",
+    "table_value_cell_id",
 ]

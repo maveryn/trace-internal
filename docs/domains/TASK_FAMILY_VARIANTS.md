@@ -57,13 +57,15 @@ Define how we split tasks into reusable families so each dataset slice stays com
 
 ## Tables direction (current)
 1. Tables follow the same split as charts: `task_group` encodes reasoning family, while table styling is treated as `scene_variant` inside the task.
-2. The first active table family is `statistics`.
+2. The active table families are `statistics`, `counting`, and `readout`.
 3. `task_tables_statistics_summary_label` uses semantic `task_variant` values `argmax` and `argmin`.
 4. `task_tables_statistics_summary_value` uses semantic `task_variant` values `column_sum`, `column_mean`, and `column_median`.
-5. Both active table statistics tasks use `scene_variant` values `spreadsheet`, `zebra`, `ledger`, and `card_table`.
+5. `task_tables_counting_value_count` uses semantic `task_variant` values `above_threshold`, `below_threshold`, and `in_interval`.
+6. `task_tables_readout_cell_value` uses semantic `task_variant` value `cell_lookup`.
+7. All active table tasks use `scene_variant` values `spreadsheet`, `zebra`, `ledger`, and `card_table`.
 6. Table row labels should use short visible human-style names rather than single letters when the answer is a row identity.
 7. Table tasks use one fixed prompt-facing evidence type in v1: `bbox_set`.
-8. Evidence boxes should mark the minimal supporting table region(s): one decisive numeric cell bbox for `task_tables_statistics_summary_label`, and one queried-column region bbox for `task_tables_statistics_summary_value`.
+8. Evidence boxes should mark the minimal supporting table region(s): one decisive numeric cell bbox for `task_tables_statistics_summary_label`, one queried-column region bbox for `task_tables_statistics_summary_value`, one ordered set of matching value-cell bboxes for `task_tables_counting_value_count`, and one queried value-cell bbox for `task_tables_readout_cell_value`.
 
 ## Planned geometry measurement variants
 1. **Angle measurement**

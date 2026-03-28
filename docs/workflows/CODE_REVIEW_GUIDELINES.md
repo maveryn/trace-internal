@@ -128,6 +128,8 @@ Use this checklist during implementation and refactor reviews.
 112. Once a domain starts migrating tasks to config-weighted complexity criteria, promote weight resolution and weighted-score construction into one domain-shared helper immediately; do not copy criterion validation and weight normalization into each migrated task module.
 113. For chart complexity, keep `scene_variant_load` task-local even when the criterion name is domain-shared; do not reuse one global chart-type difficulty table across unrelated chart tasks whose scenes have different semantics or prompting contracts.
 114. When a difficulty criterion has no within-task variation for a task family, prefer a zero weight at that scope over carrying a non-zero constant criterion that shifts every instance equally without improving within-task ordering.
+115. When a domain currently uses one stable presentation contract (for example tile boards), do not add a representation-load criterion just to mirror another domain; keep only criteria with real within-task ordering signal.
+116. When a domain grows multiple task groups that share the same non-task-specific generation/rendering defaults, promote those shared defaults into `configs/domains/<domain>/base.yaml` instead of copying the same values into each task-group YAML.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

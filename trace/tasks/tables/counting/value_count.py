@@ -1,4 +1,4 @@
-"""Table statistics task that returns the winning row label for one column."""
+"""Table counting task that counts rows matching one queried column-value predicate."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ from ...shared.prompt_variants import (
 from ..shared.table_common import (
     SUPPORTED_TABLE_SCENE_VARIANTS,
     TableDefaults,
-    build_summary_label_dataset_for_variant,
+    build_counting_value_dataset_for_variant,
     projected_table_bbox_evidence,
     resolve_table_axis_variant,
     resolve_table_render_params,
@@ -30,21 +30,21 @@ from ..shared.table_scene import render_table_scene
 from ..shared.visual_defaults import load_table_background_defaults, load_table_noise_defaults
 
 
-TASK_ID = "task_tables_statistics_summary_label"
-_SUPPORTED_TASK_VARIANTS: Tuple[str, ...] = ("argmax", "argmin")
+TASK_ID = "task_tables_counting_value_count"
+_SUPPORTED_TASK_VARIANTS: Tuple[str, ...] = ("above_threshold", "below_threshold", "in_interval")
 
 _DEFAULTS = TableDefaults()
-_TASK_GROUP_DEFAULTS = get_task_group_defaults("tables", "statistics")
+_TASK_GROUP_DEFAULTS = get_task_group_defaults("tables", "counting")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
     _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, Mapping) else {},
     task_id=TASK_ID,
 )
-POST_IMAGE_BACKGROUND_DEFAULTS = load_table_background_defaults(task_group="statistics")
-POST_IMAGE_NOISE_DEFAULTS = load_table_noise_defaults(task_group="statistics", apply_prob=0.0)
+POST_IMAGE_BACKGROUND_DEFAULTS = load_table_background_defaults(task_group="counting")
+POST_IMAGE_NOISE_DEFAULTS = load_table_noise_defaults(task_group="counting", apply_prob=0.0)
 
 
 def _resolve_task_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
-    """Resolve the semantic table-summary variant."""
+    """Resolve the semantic table-counting variant."""
 
     return resolve_table_axis_variant(
         params=params,
@@ -76,18 +76,18 @@ def _resolve_scene_variant(params: Mapping[str, Any], *, instance_seed: int) -> 
 
 
 @register_task
-class TablesStatisticsSummaryLabelTask:
-    """Return the row label with the max/min value in a queried numeric column."""
+class TablesCountingValueCountTask:
+    """Count table rows whose queried numeric-column values satisfy one predicate."""
 
     task_id = TASK_ID
     domain = "tables"
-    task_group = "statistics"
+    task_group = "counting"
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         del max_attempts
         task_variant, task_variant_probabilities = _resolve_task_variant(params, instance_seed=int(instance_seed))
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
-        dataset = build_summary_label_dataset_for_variant(
+        dataset = build_counting_value_dataset_for_variant(
             task_variant=str(task_variant),
             params=params,
             instance_seed=int(instance_seed),
@@ -136,12 +136,15 @@ class TablesStatisticsSummaryLabelTask:
                 "object_description_zebra",
                 "object_description_ledger",
                 "object_description_card_table",
-                "evidence_hint_argmax",
-                "evidence_hint_argmin",
-                "json_example_argmax",
-                "json_example_argmin",
-                "json_example_answer_only_argmax",
-                "json_example_answer_only_argmin",
+                "evidence_hint_above_threshold",
+                "evidence_hint_below_threshold",
+                "evidence_hint_in_interval",
+                "json_example_above_threshold",
+                "json_example_below_threshold",
+                "json_example_in_interval",
+                "json_example_answer_only_above_threshold",
+                "json_example_answer_only_below_threshold",
+                "json_example_answer_only_in_interval",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -149,6 +152,12 @@ class TablesStatisticsSummaryLabelTask:
         evidence_hint = str(prompt_defaults[f"evidence_hint_{str(task_variant)}"])
         json_example = str(prompt_defaults[f"json_example_{str(task_variant)}"])
         json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(task_variant)}"])
+        variant_slots = {"query_column": str(dataset["query_column"])}
+        if str(task_variant) in {"above_threshold", "below_threshold"}:
+            variant_slots["threshold_value"] = int(dataset["threshold_value"])
+        else:
+            variant_slots["interval_min"] = int(dataset["interval_min"])
+            variant_slots["interval_max"] = int(dataset["interval_max"])
 
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
@@ -160,29 +169,32 @@ class TablesStatisticsSummaryLabelTask:
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
                 "object_description": str(object_description),
-                "query_column": str(dataset["query_column"]),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "evidence_hint": str(evidence_hint),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
                 "json_example": str(json_example),
                 "json_example_answer_only": str(json_example_answer_only),
+                **variant_slots,
             },
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        answer_row_label = str(dataset["answer_row_label"])
-        evidence_cell_id = table_value_cell_id(
-            data_row_index=int(dataset["answer_row_index"]),
-            numeric_column_index=int(dataset["query_column_index"]),
-        )
-        evidence_projection = projected_table_bbox_evidence(rendered_scene, [str(evidence_cell_id)])
+        supporting_cell_ids = [
+            table_value_cell_id(
+                data_row_index=int(row_index),
+                numeric_column_index=int(dataset["query_column_index"]),
+            )
+            for row_index in dataset["matching_row_indices"]
+        ]
+        evidence_projection = projected_table_bbox_evidence(rendered_scene, supporting_cell_ids)
         evidence_bboxes = [
             [round(float(value), 3) for value in bbox]
             for bbox in evidence_projection["bbox_set"]
         ]
-        answer_gt = TypedValue(type="string", value=str(answer_row_label))
+        answer_value = int(dataset["answer_value"])
+        answer_gt = TypedValue(type="integer", value=int(answer_value))
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
 
         values_by_row = {
@@ -198,15 +210,22 @@ class TablesStatisticsSummaryLabelTask:
         }
         trace_payload = {
             "scene_ir": {
-                "scene_kind": f"table_{str(scene_variant)}_statistics",
+                "scene_kind": f"table_{str(scene_variant)}_counting",
                 "entities": [dict(entity) for entity in rendered_scene.entities],
                 "relations": {
                     "task_variant": str(task_variant),
                     "scene_variant": str(scene_variant),
                     "query_column": str(dataset["query_column"]),
-                    "answer_row_label": str(answer_row_label),
-                    "answer_value": int(dataset["answer_value"]),
-                    "evidence_cell_id": str(evidence_cell_id),
+                    "answer_value": int(answer_value),
+                    "supporting_cell_ids": [str(cell_id) for cell_id in supporting_cell_ids],
+                    **(
+                        {"threshold_value": int(dataset["threshold_value"])}
+                        if str(task_variant) in {"above_threshold", "below_threshold"}
+                        else {
+                            "interval_min": int(dataset["interval_min"]),
+                            "interval_max": int(dataset["interval_max"]),
+                        }
+                    ),
                 },
             },
             "query_spec": {
@@ -223,6 +242,14 @@ class TablesStatisticsSummaryLabelTask:
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "row_count": int(dataset["row_count"]),
                     "numeric_column_count": int(dataset["numeric_column_count"]),
+                    **(
+                        {"threshold_value": int(dataset["threshold_value"])}
+                        if str(task_variant) in {"above_threshold", "below_threshold"}
+                        else {
+                            "interval_min": int(dataset["interval_min"]),
+                            "interval_max": int(dataset["interval_max"]),
+                        }
+                    ),
                 },
             },
             "render_spec": {
@@ -255,8 +282,7 @@ class TablesStatisticsSummaryLabelTask:
                 "task_variant": str(task_variant),
                 "scene_variant": str(scene_variant),
                 "query_column": str(dataset["query_column"]),
-                "answer_row_label": str(answer_row_label),
-                "answer_value": int(dataset["answer_value"]),
+                "answer_value": int(answer_value),
                 "row_labels": [str(label) for label in dataset["row_labels"]],
                 "column_headers": [str(header) for header in dataset["column_headers"]],
                 "values_by_row": dict(values_by_row),
@@ -265,12 +291,21 @@ class TablesStatisticsSummaryLabelTask:
                 "row_count_range": list(dataset["row_count_range"]),
                 "numeric_column_count_range": list(dataset["numeric_column_count_range"]),
                 "value_range": list(dataset["value_range"]),
-                "answer_row_index": int(dataset["answer_row_index"]),
                 "query_column_index": int(dataset["query_column_index"]),
+                "matching_row_indices": [int(row_index) for row_index in dataset["matching_row_indices"]],
+                "matching_row_labels": [str(label) for label in dataset["matching_row_labels"]],
                 "task_variant_probabilities": dict(task_variant_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
-                "question_format": "row_name_open",
-                "supporting_cell_id": str(evidence_cell_id),
+                "question_format": "column_filter_count",
+                "supporting_cell_ids": [str(cell_id) for cell_id in supporting_cell_ids],
+                **(
+                    {"threshold_value": int(dataset["threshold_value"])}
+                    if str(task_variant) in {"above_threshold", "below_threshold"}
+                    else {
+                        "interval_min": int(dataset["interval_min"]),
+                        "interval_max": int(dataset["interval_max"]),
+                    }
+                ),
             },
             "witness_symbolic": {
                 "type": "bbox_set",
@@ -281,8 +316,14 @@ class TablesStatisticsSummaryLabelTask:
             },
         }
 
+        variant_bonus = 0.04 if str(task_variant) == "in_interval" else 0.01
         complexity = TaskComplexity(
-            complexity_score=float(0.18 + (0.03 * int(dataset["row_count"])) + (0.02 * int(dataset["numeric_column_count"]))),
+            complexity_score=float(
+                0.14
+                + (0.025 * int(dataset["row_count"]))
+                + (0.015 * int(dataset["numeric_column_count"]))
+                + float(variant_bonus)
+            ),
             complexity_components={
                 "task_variant": str(task_variant),
                 "scene_variant": str(scene_variant),
@@ -304,4 +345,4 @@ class TablesStatisticsSummaryLabelTask:
         )
 
 
-__all__ = ["TablesStatisticsSummaryLabelTask"]
+__all__ = ["TablesCountingValueCountTask"]

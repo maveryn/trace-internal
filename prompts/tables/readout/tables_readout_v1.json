@@ -1,0 +1,67 @@
+{
+  "bundle_id": "tables_readout_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "styled_table_readout": [
+      "The image shows {object_description}.",
+      "Use the table in the image. It shows {object_description}.",
+      "Work from the styled table shown in the image: {object_description}.",
+      "Look at the table in the image. It shows {object_description}.",
+      "You are given a table: {object_description}."
+    ]
+  },
+  "task_templates": {
+    "cell_value_query": [
+      "Answer this question.",
+      "Determine the exact value in the requested table cell.",
+      "Use the table values to read the queried cell.",
+      "Find the integer value stored at the named row and column.",
+      "Read the table and report the requested cell value."
+    ]
+  },
+  "task_variant_templates": {
+    "cell_lookup": [
+      "What value is in the cell at row {query_row_label} and column {query_column}?",
+      "Find the integer in the {query_column} column for row {query_row_label}.",
+      "Determine the value where row {query_row_label} intersects column {query_column}.",
+      "Read the cell for row {query_row_label} under the {query_column} column. What value does it show?",
+      "What integer appears at the {query_column} entry for row {query_row_label}?"
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:styled_table_readout": [
+      "object_description"
+    ],
+    "task_variant:cell_lookup": [
+      "query_row_label",
+      "query_column"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

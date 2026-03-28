@@ -14,6 +14,8 @@ Use this before writing code for a new task or before changing a task's contract
 4. `docs/project/STATUS.md`
 
 If the task is domain-specific, also open:
+- `skills/domain-charts/SKILL.md`
+- `skills/domain-tables/SKILL.md`
 - `skills/domain-tile/SKILL.md`
 - `skills/domain-geometry/SKILL.md`
 

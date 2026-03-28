@@ -19,6 +19,7 @@ SUPPORTED_LABEL_VARIANTS: Tuple[str, ...] = ("letters", "numbers")
 SUPPORTED_DEGREE_TASK_VARIANTS: Tuple[str, ...] = ("degree_count", "in_degree_count", "out_degree_count")
 SUPPORTED_ARTICULATION_TASK_VARIANTS: Tuple[str, ...] = ("articulation_point_count",)
 SUPPORTED_COMPONENT_TASK_VARIANTS: Tuple[str, ...] = ("same_component_count",)
+SUPPORTED_REACHABLE_TASK_VARIANTS: Tuple[str, ...] = ("reachable_count",)
 SUPPORTED_CYCLE_TASK_VARIANTS: Tuple[str, ...] = ("unique_cycle_size",)
 SUPPORTED_COMPONENT_COMPARISON_TASK_VARIANTS: Tuple[str, ...] = ("largest_component_size",)
 SUPPORTED_PATH_TASK_VARIANTS: Tuple[str, ...] = ("shortest_path_length", "directed_shortest_path_length")
@@ -66,6 +67,18 @@ class GraphComponentSample(GraphTopologySample):
     component_sizes: Tuple[int, ...]
     component_count: int
     target_component_size: int
+
+
+@dataclass(frozen=True)
+class GraphReachableSample(GraphTopologySample):
+    """Trace-ready directed graph sample for reachable-count tasks."""
+
+    query_label: str
+    target_labels: Tuple[str, ...]
+    target_reachable_count: int
+    unreachable_labels: Tuple[str, ...]
+    reachable_edge_count: int
+    unreachable_edge_count: int
 
 
 @dataclass(frozen=True)
@@ -685,6 +698,28 @@ def feasible_node_counts_for_component_query(
     """Return node counts that can realize one disconnected component query."""
 
     minimum = max(int(node_count_min), int(target_component_size) + int(component_count) - 1)
+    maximum = int(node_count_max)
+    if int(minimum) > int(maximum):
+        return ()
+    return tuple(range(int(minimum), int(maximum) + 1))
+
+
+def feasible_node_counts_for_reachable_count(
+    *,
+    target_reachable_count: int,
+    node_count_min: int,
+    node_count_max: int,
+) -> Tuple[int, ...]:
+    """Return node counts that can realize one directed reachable-count query.
+
+    The queried source node is included in the count, and at least one node
+    remains unreachable so the scene never collapses to a fully reachable graph.
+    """
+
+    target_count = int(target_reachable_count)
+    if int(target_count) < 1:
+        return ()
+    minimum = max(int(node_count_min), 5, int(target_count) + 1)
     maximum = int(node_count_max)
     if int(minimum) > int(maximum):
         return ()
@@ -1337,6 +1372,141 @@ def sample_component_count_graph(
     )
 
 
+def sample_reachable_count_graph(
+    rng: random.Random,
+    *,
+    node_count: int,
+    target_reachable_count: int,
+    topology_profile: str,
+    label_variant: str,
+) -> GraphReachableSample:
+    """Construct one directed graph with an exact reachable-count witness set.
+
+    The queried source node is included in the answer/evidence set. Generation
+    preserves at least one unreachable node by construction and verifies the
+    final directed successor adjacency before returning.
+    """
+
+    node_count_int = int(node_count)
+    target_count_int = int(target_reachable_count)
+    feasible_node_support = feasible_node_counts_for_reachable_count(
+        target_reachable_count=int(target_count_int),
+        node_count_min=int(node_count_int),
+        node_count_max=int(node_count_int),
+    )
+    if int(node_count_int) not in feasible_node_support:
+        raise ValueError("node_count is outside feasible support for the requested reachable-count query")
+
+    graph = nx.DiGraph()
+    graph.add_nodes_from(range(int(node_count_int)))
+    source_node = 0
+    reachable_nodes = tuple(range(int(target_count_int)))
+    unreachable_nodes = tuple(range(int(target_count_int), int(node_count_int)))
+    profile = str(topology_profile)
+
+    for node in reachable_nodes[1:]:
+        parent = _choose_attachment_parent(
+            rng,
+            graph=graph.subgraph(reachable_nodes[: int(node)]).copy(),
+            topology_profile=profile,
+        )
+        graph.add_edge(int(parent), int(node))
+
+    if unreachable_nodes:
+        for offset, node in enumerate(unreachable_nodes):
+            if int(offset) == 0:
+                target = int(rng.choice(reachable_nodes))
+                graph.add_edge(int(node), int(target))
+                continue
+            existing_unreachable = tuple(int(value) for value in unreachable_nodes[: int(offset)])
+            target_pool = tuple(int(value) for value in (*reachable_nodes, *existing_unreachable))
+            target = int(rng.choice(target_pool))
+            if int(target) in reachable_nodes:
+                graph.add_edge(int(node), int(target))
+            else:
+                if bool(rng.randrange(2)):
+                    graph.add_edge(int(target), int(node))
+                else:
+                    graph.add_edge(int(node), int(target))
+
+    candidate_edges = [
+        (int(left), int(right))
+        for left, right in nx.non_edges(graph)
+        if not graph.has_edge(int(right), int(left))
+        and not (int(left) in reachable_nodes and int(right) in unreachable_nodes)
+    ]
+    rng.shuffle(candidate_edges)
+    if profile == "hub_heavy":
+        extra_edge_budget = min(4, len(candidate_edges))
+    elif profile == "balanced":
+        extra_edge_budget = min(3, len(candidate_edges))
+    else:
+        extra_edge_budget = min(2, len(candidate_edges))
+
+    for left, right in candidate_edges:
+        if int(extra_edge_budget) <= 0:
+            break
+        graph.add_edge(int(left), int(right))
+        successors = _digraph_successor_adjacency_by_node(graph)
+        dist_start, _ = bfs_dist_count_by_adjacency(successors, start=int(source_node))
+        reachable_after = {int(node) for node in dist_start.keys()}
+        if reachable_after != {int(node) for node in reachable_nodes}:
+            graph.remove_edge(int(left), int(right))
+            continue
+        extra_edge_budget -= 1
+
+    topology_sample, label_by_node = _build_labeled_graph_topology_sample(
+        rng,
+        graph=graph,
+        directed=True,
+        topology_profile=profile,
+        label_variant=str(label_variant),
+    )
+    successors_by_label = {
+        str(key): tuple(str(value) for value in values)
+        for key, values in topology_sample.successors_by_label.items()
+    }
+    dist_start, _ = bfs_dist_count_by_adjacency(successors_by_label, start=str(label_by_node[int(source_node)]))
+    target_labels = tuple(
+        sorted((str(label) for label in dist_start.keys()), key=graph_label_sort_key)
+    )
+    if int(len(target_labels)) != int(target_count_int):
+        raise ValueError("reachable-count sampler failed to preserve the requested reachable set")
+    unreachable_labels = tuple(
+        sorted(
+            (str(label_by_node[int(node)]) for node in unreachable_nodes if str(label_by_node[int(node)]) not in set(target_labels)),
+            key=graph_label_sort_key,
+        )
+    )
+    reachable_edge_count = sum(
+        1
+        for left, right in graph.edges()
+        if int(left) in reachable_nodes and int(right) in reachable_nodes
+    )
+    unreachable_edge_count = int(graph.number_of_edges()) - int(reachable_edge_count)
+    return GraphReachableSample(
+        graph=topology_sample.graph,
+        directed=True,
+        node_labels=tuple(str(label) for label in topology_sample.node_labels),
+        edge_labels=tuple((str(left), str(right)) for left, right in topology_sample.edge_labels),
+        degrees_by_label={str(key): int(value) for key, value in topology_sample.degrees_by_label.items()},
+        in_degrees_by_label={str(key): int(value) for key, value in topology_sample.in_degrees_by_label.items()},
+        out_degrees_by_label={str(key): int(value) for key, value in topology_sample.out_degrees_by_label.items()},
+        adjacency_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.adjacency_by_label.items()},
+        successors_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.successors_by_label.items()},
+        predecessors_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.predecessors_by_label.items()},
+        edge_count=int(topology_sample.edge_count),
+        topology_profile=str(topology_sample.topology_profile),
+        label_variant=str(topology_sample.label_variant),
+        query_label=str(label_by_node[int(source_node)]),
+        target_labels=tuple(str(label) for label in target_labels),
+        target_reachable_count=int(target_count_int),
+        unreachable_labels=tuple(str(label) for label in unreachable_labels),
+        reachable_edge_count=int(reachable_edge_count),
+        unreachable_edge_count=int(unreachable_edge_count),
+    )
+
+
 def sample_largest_component_size_graph(
     rng: random.Random,
     *,
@@ -1598,6 +1768,7 @@ __all__ = [
     "GraphComponentSample",
     "GraphCountSample",
     "GraphLargestComponentSample",
+    "GraphReachableSample",
     "GraphShortestPathSample",
     "GraphTopologySample",
     "GraphUniqueCycleSample",
@@ -1609,11 +1780,13 @@ __all__ = [
     "SUPPORTED_DEGREE_TASK_VARIANTS",
     "SUPPORTED_LAYOUT_VARIANTS",
     "SUPPORTED_LABEL_VARIANTS",
+    "SUPPORTED_REACHABLE_TASK_VARIANTS",
     "SUPPORTED_PATH_TASK_VARIANTS",
     "SUPPORTED_TOPOLOGY_PROFILES",
     "feasible_node_counts_for_articulation_point_count",
     "feasible_node_counts_for_component_query",
     "feasible_node_counts_for_degree_count",
+    "feasible_node_counts_for_reachable_count",
     "feasible_node_counts_for_shortest_path_length",
     "feasible_node_counts_for_unique_cycle_size",
     "feasible_node_counts_for_unique_largest_component",
@@ -1624,6 +1797,7 @@ __all__ = [
     "sample_component_count_graph",
     "sample_degree_count_graph",
     "sample_largest_component_size_graph",
+    "sample_reachable_count_graph",
     "sample_shortest_path_length_graph",
     "sample_unique_cycle_graph",
 ]

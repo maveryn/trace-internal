@@ -18,6 +18,13 @@
       "Answer this question: {question_text}",
       "Determine the answer: {question_text}"
     ],
+    "reachable_count_query": [
+      "{question_text}",
+      "Question: {question_text}",
+      "Task: {question_text}",
+      "Answer this question: {question_text}",
+      "Determine the answer: {question_text}"
+    ],
     "unique_cycle_size_query": [
       "{question_text}",
       "Question: {question_text}",
@@ -31,6 +38,9 @@
       "object_description"
     ],
     "task:same_component_count_query": [
+      "question_text"
+    ],
+    "task:reachable_count_query": [
       "question_text"
     ],
     "task:unique_cycle_size_query": [

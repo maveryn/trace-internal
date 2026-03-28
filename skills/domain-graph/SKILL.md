@@ -59,6 +59,7 @@ Use this whenever the task lives under `domain=graph`.
 - `path`
   - `task_graph_path_shortest_path_length`
 - `relation`
+  - `task_graph_relation_reachable_count`
   - `task_graph_relation_same_component_count`
   - `task_graph_relation_unique_cycle_size`
 

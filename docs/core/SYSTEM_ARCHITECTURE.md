@@ -137,6 +137,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/graph/counting/articulation_point_count.py`
    - `trace/tasks/graph/comparison/largest_component_size.py`
    - `trace/tasks/graph/path/shortest_path_length.py`
+   - `trace/tasks/graph/relation/reachable_count.py`
    - `trace/tasks/graph/relation/same_component_count.py`
    - `trace/tasks/graph/relation/unique_cycle_size.py`
 

@@ -15,6 +15,7 @@ Define the concrete v1 setup for the current graph-domain task families.
    - `task_graph_counting_articulation_point_count`
    - `task_graph_comparison_largest_component_size`
    - `task_graph_path_shortest_path_length`
+   - `task_graph_relation_reachable_count`
    - `task_graph_relation_same_component_count`
    - `task_graph_relation_unique_cycle_size`
 
@@ -81,6 +82,14 @@ Define the concrete v1 setup for the current graph-domain task families.
    - default node-count support: `5..10` for undirected, `5..9` for directed
    - default shortest-path-length support: `1..5`
    - prompt/evidence contract: evidence is the ordered node-label path from source to goal, includes both queried endpoints, and answer equals `len(path) - 1`
+7. `task_graph_relation_reachable_count`
+   - ask:
+     - `How many nodes, including node X itself, are reachable from X by following the direction of the arrows?`
+   - answer type: `integer`
+   - evidence type: `label_set`
+   - default node-count support: `5..9`
+   - default reachable-count support: `1..7`
+   - prompt/evidence contract: the queried node itself is included in both the answer and the evidence set, traversal follows edge direction, and generation preserves at least one unreachable node
 
 ## Variation axes
 1. `task_variant`
@@ -93,6 +102,7 @@ Define the concrete v1 setup for the current graph-domain task families.
    - `largest_component_size`
    - `shortest_path_length`
    - `directed_shortest_path_length`
+   - `reachable_count`
 2. `topology_profile`
    - `balanced`
    - `low_degree`

@@ -49,6 +49,13 @@ generation:
     balanced_layout_transform_variant_sampling: true
     balanced_node_color_name_sampling: true
   task_overrides:
+    task_graph_relation_reachable_count:
+      task_variant_weights:
+        reachable_count: 1.0
+      node_count_min: 5
+      directed_node_count_max: 9
+      target_reachable_count_min: 1
+      target_reachable_count_max: 7
     task_graph_relation_unique_cycle_size:
       task_variant_weights:
         unique_cycle_size: 1.0
@@ -89,12 +96,20 @@ prompt:
     json_output_contract: Return a valid JSON object with keys "evidence" and "answer" in that order.
     json_output_contract_answer_only: Return a valid JSON object with key "answer".
     object_description: a labeled undirected graph
+    object_description_directed: a labeled directed graph
     question_text_same_component_count: How many nodes, including node {query_label} itself, are in the same connected component as {query_label}?
     evidence_hint: set "evidence" to an array containing the labels of all nodes in the connected component containing the asked node, including the asked node itself
     answer_hint: set "answer" to the count of those nodes as an integer
     json_example: '{"evidence":["B","F","H"],"answer":3}'
     json_example_answer_only: '{"answer":3}'
   task_overrides:
+    task_graph_relation_reachable_count:
+      task_key: reachable_count_query
+      question_text_reachable_count: How many nodes, including node {query_label} itself, are reachable from {query_label} by following the direction of the arrows?
+      evidence_hint_reachable_count: set "evidence" to an array containing the labels of all nodes reachable from {query_label}, including {query_label} itself
+      answer_hint: set "answer" to the count of those nodes as an integer
+      json_example: '{"evidence":["B","D","H"],"answer":3}'
+      json_example_answer_only: '{"answer":3}'
     task_graph_relation_unique_cycle_size:
       task_key: unique_cycle_size_query
       object_description: a labeled undirected graph that contains exactly one cycle

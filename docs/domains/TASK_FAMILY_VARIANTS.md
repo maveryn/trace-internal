@@ -291,6 +291,13 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`), plus non-semantic label/shape/color/layout-transform diversity shared with the graph domain.
    - Answer type: integer count.
    - Evidence: ordered `label_path` of all node labels on the unique shortest path from the queried source node to the queried goal node, including both endpoints.
+32. **Graph relation reachable count (`task_graph_relation_reachable_count`)**
+   - One single-panel labeled directed node-link graph.
+   - Query: `How many nodes, including node X itself, are reachable from X by following the direction of the arrows?`
+   - Graph contract: simple directed graph with `5..9` nodes, reachable-count support `1..7`, at least one unreachable node, and traversal semantics defined only by directed successor adjacency.
+   - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`), plus non-semantic label/shape/color/layout-transform diversity shared with the graph domain.
+   - Answer type: integer count.
+   - Evidence: unordered `label_set` of all node labels reachable from the queried source node, including the queried node itself.
 31. **Icons sequence missing count (`task_icons_sequence_missing_count`)**
    - One single-panel image with a horizontal row of `4..6` Scene boxes.
    - Query: how many icons should appear in the missing Scene box to continue the sequence.

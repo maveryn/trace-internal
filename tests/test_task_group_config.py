@@ -1835,6 +1835,7 @@ def test_graph_relation_defaults_loaded() -> None:
     assert str(prompt_shared["task_family_key"]).strip() == "single_graph_relation"
     assert str(prompt_shared["task_key"]).strip() == "same_component_count_query"
     assert str(prompt_shared["object_description"]).strip()
+    assert str(prompt_shared["object_description_directed"]).strip()
     assert str(prompt_shared["question_text_same_component_count"]).strip()
     assert str(prompt_shared["evidence_hint"]).strip()
     assert str(prompt_shared["answer_hint"]).strip()
@@ -1866,6 +1867,24 @@ def test_graph_relation_defaults_loaded() -> None:
     assert str(prompt_defaults["task_family_key"]).strip() == "single_graph_relation"
     assert str(prompt_defaults["task_key"]).strip() == "same_component_count_query"
     assert str(prompt_defaults["question_text_same_component_count"]).strip()
+
+    reachable_generation_defaults, reachable_rendering_defaults, reachable_prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_graph_relation_reachable_count",
+    )
+    assert "reachable_count" in reachable_generation_defaults["task_variant_weights"]
+    assert int(reachable_generation_defaults["node_count_min"]) == 5
+    assert int(reachable_generation_defaults["directed_node_count_max"]) == 9
+    assert int(reachable_generation_defaults["target_reachable_count_min"]) == 1
+    assert int(reachable_generation_defaults["target_reachable_count_max"]) == 7
+    assert int(reachable_rendering_defaults["canvas_width"]) > 0
+    assert int(reachable_rendering_defaults["node_radius_min_px"]) > 0
+    assert str(reachable_prompt_defaults["bundle_id"]).strip() == "graph_relation_v1"
+    assert str(reachable_prompt_defaults["task_family_key"]).strip() == "single_graph_relation"
+    assert str(reachable_prompt_defaults["task_key"]).strip() == "reachable_count_query"
+    assert str(reachable_prompt_defaults["object_description_directed"]).strip()
+    assert str(reachable_prompt_defaults["question_text_reachable_count"]).strip()
+    assert str(reachable_prompt_defaults["evidence_hint_reachable_count"]).strip()
 
     cycle_generation_defaults, cycle_rendering_defaults, cycle_prompt_defaults = split_generation_rendering_prompt_defaults(
         cfg,

@@ -53,6 +53,14 @@ def test_icons_sequence_missing_count_contract_matches_scene() -> None:
     assert int(execution["missing_cell_index"]) == 2
     assert int(execution["step_delta"]) == 1
     assert execution["full_sequence_counts"] == [2, 3, 4, 5, 6]
+    assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
+    assert set(out.complexity.complexity_components.keys()) == {
+        "visual_scan",
+        "rule_inference",
+        "ambiguity",
+        "clutter",
+    }
+    assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
     assert len(cell_entities) == 5
     assert len(icon_entities) == 16
     assert 112 <= int(execution["cell_box_width_px"]) <= 160

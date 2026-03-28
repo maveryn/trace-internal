@@ -883,6 +883,74 @@ def build_icons_transformation_pair_count_complexity(
     )
 
 
+def build_icons_sequence_missing_count_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    sequence_length: int,
+    sequence_length_min: int,
+    sequence_length_max: int,
+    target_count: int,
+    target_count_max: int,
+    missing_cell_index: int,
+    step_delta: int,
+    scene_icon_instances: Sequence[Mapping[str, Any]],
+    render_params: Mapping[str, Any],
+) -> TaskComplexity:
+    """Build complexity for the icon sequence missing-count task."""
+
+    sequence_length_load = _normalize_linear(
+        float(sequence_length),
+        min_value=float(sequence_length_min),
+        max_value=float(sequence_length_max),
+    )
+    max_visible_icons = max(1.0, float(max(0, int(sequence_length_max) - 1) * int(target_count_max)))
+    visible_icon_load = _normalize_linear(
+        float(len(scene_icon_instances)),
+        min_value=0.0,
+        max_value=float(max_visible_icons),
+    )
+    visual_scan = _clip01((0.40 * sequence_length_load) + (0.60 * visible_icon_load))
+
+    support_edge_distance = float(min(int(missing_cell_index), int(sequence_length) - 1 - int(missing_cell_index)))
+    interior_position_load = _clip01(
+        support_edge_distance
+        / float(max(1, int(sequence_length_max) // 2))
+    )
+    step_difficulty = 1.0 - _normalize_linear(float(abs(int(step_delta))), min_value=1.0, max_value=3.0)
+    target_midrange_load = _clip01(
+        1.0 - abs((2.0 * float(target_count) / float(max(1, int(target_count_max)))) - 1.0)
+    )
+
+    rule_inference = _clip01(
+        (0.35 * sequence_length_load)
+        + (0.35 * interior_position_load)
+        + (0.30 * step_difficulty)
+    )
+    ambiguity = _clip01(
+        (0.45 * step_difficulty)
+        + (0.30 * interior_position_load)
+        + (0.25 * target_midrange_load)
+    )
+    clutter = icon_scene_clutter_score(
+        scene_instances=scene_icon_instances,
+        scene_icon_size_min_px=int(render_params["scene_icon_size_min_px"]),
+        scene_icon_size_max_px=int(render_params["scene_icon_size_max_px"]),
+        scene_max_overlap_fraction=float(render_params["scene_max_overlap_fraction"]),
+        noise_edit_count_range=render_params["icon_noise_edit_count_range"],
+    )
+    return build_icon_task_complexity(
+        task_group_defaults=task_group_defaults,
+        task_id=str(task_id),
+        criterion_values={
+            "visual_scan": float(visual_scan),
+            "rule_inference": float(rule_inference),
+            "ambiguity": float(ambiguity),
+            "clutter": float(clutter),
+        },
+    )
+
+
 __all__ = [
     "build_icon_task_complexity",
     "build_icons_counting_color_complexity",
@@ -894,6 +962,7 @@ __all__ = [
     "build_icons_relation_mirror_symmetry_complexity",
     "build_icons_relation_occlusion_order_complexity",
     "build_icons_relation_relative_position_type_complexity",
+    "build_icons_sequence_missing_count_complexity",
     "build_icons_transformation_pair_count_complexity",
     "icon_scene_clutter_score",
     "icon_semantic_match_score",

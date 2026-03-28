@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import (
@@ -16,7 +16,6 @@ from ...shared.config_defaults import (
     required_group_defaults,
     split_generation_rendering_prompt_defaults,
 )
-from ...shared.counting_sampling import counting_complexity_score
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
@@ -27,6 +26,7 @@ from ...shared.prompt_variants import (
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.icon_assets import resolve_icon_pool
 from ..shared.icon_scene import single_panel_geometry_to_trace, sort_bboxes_reading_order
+from ..shared.complexity import build_icons_sequence_missing_count_complexity
 from ..shared.icon_sequence_scene import (
     IconSequenceCellSpec,
     render_icon_sequence_scene,
@@ -672,16 +672,18 @@ class IconsSequenceMissingCountTask:
                 "bbox_set": list(evidence_bboxes),
             },
         }
-        complexity = TaskComplexity(
-            complexity_score=counting_complexity_score(
-                object_count=int(scene_payload.sequence_length),
-                target_count=int(scene_payload.target_count),
-            ),
-            complexity_components={
-                "sequence_length": int(scene_payload.sequence_length),
-                "target_count": int(scene_payload.target_count),
-                "step_abs": int(abs(scene_payload.step_delta)),
-            },
+        complexity = build_icons_sequence_missing_count_complexity(
+            task_group_defaults=_TASK_GROUP_DEFAULTS,
+            task_id=self.task_id,
+            sequence_length=int(scene_payload.sequence_length),
+            sequence_length_min=int(group_default(_GEN_DEFAULTS, "sequence_length_min", _DEFAULTS.sequence_length_min)),
+            sequence_length_max=int(group_default(_GEN_DEFAULTS, "sequence_length_max", _DEFAULTS.sequence_length_max)),
+            target_count=int(scene_payload.target_count),
+            target_count_max=int(group_default(_GEN_DEFAULTS, "target_count_max", _DEFAULTS.target_count_max)),
+            missing_cell_index=int(scene_payload.missing_cell_index),
+            step_delta=int(scene_payload.step_delta),
+            scene_icon_instances=scene_payload.scene_icon_instances,
+            render_params=render_params,
         )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),

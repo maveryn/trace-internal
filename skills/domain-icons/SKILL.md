@@ -53,6 +53,7 @@ Use this whenever the task lives under `domain=icons`.
   - `task_icons_transformation_pair_count`
 - `sequence`
   - `task_icons_sequence_missing_count`
+  - `task_icons_sequence_rotation_violation`
 
 ## Layout and evidence heuristics
 - Free-placed scene-icon tasks usually want:
@@ -80,6 +81,7 @@ Use this whenever the task lives under `domain=icons`.
   - treat each symmetry type as an exact rendered-image signature,
   - reject accidental extra-axis symmetries.
 - For row/cell sequence tasks, derive the canvas from sampled cell geometry rather than stretching cells into one fixed canvas.
+- For rotation-bearing icon sequence tasks, use `non_symmetry.txt`, label visible cells directly in the row, and keep user-facing evidence on the violating/missing cell bbox rather than adding a separate option strip.
 
 ## Shared helpers to prefer
 - `trace/tasks/icons/shared/icon_assets.py`

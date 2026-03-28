@@ -252,6 +252,138 @@ def resolve_icon_render_params(
     }
 
 
+def resolve_icon_sequence_render_params(
+    *,
+    params: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+    fallback_defaults: Any,
+) -> Dict[str, Any]:
+    """Resolve shared render params for icon sequence-row tasks."""
+
+    render_params = resolve_icon_render_params(
+        params=params,
+        render_defaults=render_defaults,
+        fallback_defaults=fallback_defaults,
+    )
+    render_params["cell_padding_px"] = int(
+        params.get(
+            "cell_padding_px",
+            group_default(render_defaults, "cell_padding_px", getattr(fallback_defaults, "cell_padding_px", 0)),
+        )
+    )
+    render_params["cell_icon_padding_px"] = int(
+        params.get(
+            "cell_icon_padding_px",
+            group_default(
+                render_defaults,
+                "cell_icon_padding_px",
+                getattr(fallback_defaults, "cell_icon_padding_px", 0),
+            ),
+        )
+    )
+    render_params["cell_corner_radius_px"] = int(
+        params.get(
+            "cell_corner_radius_px",
+            group_default(
+                render_defaults,
+                "cell_corner_radius_px",
+                getattr(fallback_defaults, "cell_corner_radius_px", 0),
+            ),
+        )
+    )
+    render_params["cell_box_width_min_px"] = int(
+        params.get(
+            "cell_box_width_min_px",
+            group_default(
+                render_defaults,
+                "cell_box_width_min_px",
+                getattr(fallback_defaults, "cell_box_width_min_px", 0),
+            ),
+        )
+    )
+    render_params["cell_box_width_max_px"] = int(
+        params.get(
+            "cell_box_width_max_px",
+            group_default(
+                render_defaults,
+                "cell_box_width_max_px",
+                getattr(fallback_defaults, "cell_box_width_max_px", 0),
+            ),
+        )
+    )
+    render_params["cell_box_height_min_px"] = int(
+        params.get(
+            "cell_box_height_min_px",
+            group_default(
+                render_defaults,
+                "cell_box_height_min_px",
+                getattr(fallback_defaults, "cell_box_height_min_px", 0),
+            ),
+        )
+    )
+    render_params["cell_box_height_max_px"] = int(
+        params.get(
+            "cell_box_height_max_px",
+            group_default(
+                render_defaults,
+                "cell_box_height_max_px",
+                getattr(fallback_defaults, "cell_box_height_max_px", 0),
+            ),
+        )
+    )
+    render_params["cell_border_rgb"] = tuple(
+        params.get(
+            "cell_border_rgb",
+            group_default(
+                render_defaults,
+                "cell_border_rgb",
+                getattr(fallback_defaults, "cell_border_rgb", (218, 223, 233)),
+            ),
+        )
+    )
+    render_params["cell_label_font_size_px"] = int(
+        params.get(
+            "cell_label_font_size_px",
+            group_default(
+                render_defaults,
+                "cell_label_font_size_px",
+                getattr(fallback_defaults, "cell_label_font_size_px", 0),
+            ),
+        )
+    )
+    render_params["cell_label_color_rgb"] = tuple(
+        params.get(
+            "cell_label_color_rgb",
+            group_default(
+                render_defaults,
+                "cell_label_color_rgb",
+                getattr(fallback_defaults, "cell_label_color_rgb", getattr(fallback_defaults, "header_text_rgb", (70, 78, 96))),
+            ),
+        )
+    )
+    render_params["missing_mark_font_size_px"] = int(
+        params.get(
+            "missing_mark_font_size_px",
+            group_default(
+                render_defaults,
+                "missing_mark_font_size_px",
+                getattr(fallback_defaults, "missing_mark_font_size_px", 0),
+            ),
+        )
+    )
+    render_params["missing_mark_color_rgb"] = tuple(
+        params.get(
+            "missing_mark_color_rgb",
+            group_default(
+                render_defaults,
+                "missing_mark_color_rgb",
+                getattr(fallback_defaults, "missing_mark_color_rgb", getattr(fallback_defaults, "header_text_rgb", (70, 78, 96))),
+            ),
+        )
+    )
+    return render_params
+
+
 def icon_render_style_trace(
     *,
     render_params: Mapping[str, Any],
@@ -317,5 +449,6 @@ def sample_icon_instance_noise(
 __all__ = [
     "icon_render_style_trace",
     "resolve_icon_render_params",
+    "resolve_icon_sequence_render_params",
     "sample_icon_instance_noise",
 ]

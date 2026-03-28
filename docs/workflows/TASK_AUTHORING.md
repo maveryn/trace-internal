@@ -190,6 +190,7 @@ Prompt wording rule:
 - when the task-family stem already establishes the image/diagram context, keep the task-layer line focused on the question itself instead of repeating phrases like `from the image` or `from the diagram`.
 - when graph-paper geometry must stay strictly inside the plotted grid, compute scene-capacity bounds against the visible interior cells (not just the raw sampled `graph_cells` target) before locking target answers or placements.
 - when an icon task's rule is fully visible inside one scene panel, prefer a single-panel layout over a decorative reference+scene layout so scene capacity stays focused on the actual reasoning target.
+- when an icon sequence task asks for a violating or missing position, prefer visible in-scene cell labels plus one-box `bbox_set` evidence over a separate option strip; the row itself should ground both the answer and the evidence target.
 
 Use `--mode inspection` when only visual/prompt inspection is needed and distribution checks should be skipped.
 

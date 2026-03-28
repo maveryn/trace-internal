@@ -215,6 +215,9 @@ def test_icons_sequence_bundle_supports_missing_count_query() -> None:
     bundle = load_prompt_bundle("icons", "sequence", "icons_sequence_v1")
     assert len(bundle.task_templates["missing_count_query"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["task:missing_count_query"]) == ["question_text"]
+    assert len(bundle.task_templates["rotation_violation_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task:rotation_violation_query"]) == ["question_text"]
+    assert "sequence_rotation_violation" in bundle.task_family_templates
 
 
 def test_tile_reachability_bundle_supports_region_size_query() -> None:

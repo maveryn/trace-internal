@@ -11,6 +11,14 @@ generation:
     task_icons_sequence_missing_count:
       pool_manifest: all_icons.txt
       rotation_candidates_degrees: [0, 90, 180, 270]
+    task_icons_sequence_rotation_violation:
+      sequence_length_min: 5
+      sequence_length_max: 7
+      answer_index_min: 1
+      answer_index_max: 7
+      pool_manifest: non_symmetry.txt
+      rotation_candidates_degrees: [0, 90, 180, 270]
+      step_candidates_degrees: [90, 270]
 
 rendering:
   shared:
@@ -53,8 +61,18 @@ rendering:
     cell_icon_padding_px: 8
     cell_corner_radius_px: 12
     cell_border_rgb: [218, 223, 233]
+    cell_label_font_size_px: 22
+    cell_label_color_rgb: [52, 60, 77]
     missing_mark_font_size_px: 56
     missing_mark_color_rgb: [84, 96, 118]
+  task_overrides:
+    task_icons_sequence_rotation_violation:
+      scene_icon_size_min_px: 48
+      scene_icon_size_max_px: 72
+      cell_box_width_min_px: 96
+      cell_box_width_max_px: 136
+      cell_box_height_min_px: 96
+      cell_box_height_max_px: 136
 
 prompt:
   shared:
@@ -69,6 +87,15 @@ prompt:
       answer_hint: set "answer" to the missing count as an integer
       json_example: '{"evidence":[[540,126,654,458]],"answer":5}'
       json_example_answer_only: '{"answer":5}'
+    task_icons_sequence_rotation_violation:
+      task_family_key: sequence_rotation_violation
+      task_key: rotation_violation_query
+      object_description: a horizontal row of numbered Scene boxes, each containing one icon
+      question_text: Which numbered box breaks the rotation sequence?
+      evidence_hint: set "evidence" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the violating Scene box
+      answer_hint: set "answer" to the violating box index as an integer
+      json_example: '{"evidence":[[540,126,654,458]],"answer":4}'
+      json_example_answer_only: '{"answer":4}'
 
 complexity:
   shared:

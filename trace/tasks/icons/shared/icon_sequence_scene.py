@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Sequence, Tuple
+from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
@@ -31,6 +31,7 @@ class IconSequenceCellSpec:
 
     icon_instances: Tuple[IconInstanceSpec, ...] = ()
     is_missing: bool = False
+    cell_label_text: str | None = None
 
 
 @dataclass(frozen=True)
@@ -39,6 +40,7 @@ class RenderedSequenceCell:
 
     cell_index: int
     cell_bbox_xyxy: BBox
+    cell_label_text: str | None
     is_missing: bool
     icon_instances: Tuple[RenderedIconInstance, ...]
 
@@ -50,6 +52,62 @@ class RenderedIconSequenceScene:
     image: Image.Image
     layout: SingleIconPanelLayout
     scene_cells: Tuple[RenderedSequenceCell, ...]
+
+
+def resolve_sequence_canvas_size(
+    *,
+    sequence_length: int,
+    cell_box_width_px: int,
+    cell_box_height_px: int,
+    render_params: Mapping[str, Any],
+) -> Tuple[int, int]:
+    """Derive a canvas size that fits the sampled row cell geometry."""
+
+    cell_padding_px = int(render_params["cell_padding_px"])
+    panel_padding_px = int(render_params["panel_padding_px"])
+    outer_margin_px = int(render_params["outer_margin_px"])
+    title_font_size_px = int(render_params["panel_title_font_size_px"])
+    title_band_height = max(40, int(round(float(title_font_size_px) * 1.8)))
+
+    content_width = int(sequence_length) * int(int(cell_box_width_px) + (2 * cell_padding_px))
+    content_height = int(int(cell_box_height_px) + (2 * cell_padding_px))
+    panel_width = int(content_width + (2 * panel_padding_px))
+    panel_height = int(content_height + title_band_height + panel_padding_px + (panel_padding_px // 2))
+    canvas_width = int(panel_width + (2 * outer_margin_px))
+    canvas_height = int(panel_height + (2 * outer_margin_px))
+    return canvas_width, canvas_height
+
+
+def serialize_rendered_sequence_icon_instance(
+    instance: RenderedIconInstance,
+    *,
+    entity_kind: str,
+    cell_index: int | None = None,
+    cell_bbox_xyxy: Sequence[int] | None = None,
+    cell_label_text: str | None = None,
+) -> Dict[str, Any]:
+    """Serialize one rendered sequence icon instance into a trace-ready mapping."""
+
+    payload: Dict[str, Any] = {
+        "entity_kind": str(entity_kind),
+        "instance_id": str(instance.instance_id),
+        "icon_id": str(instance.icon_id),
+        "panel": str(instance.panel),
+        "bbox_xyxy": [int(value) for value in instance.bbox_xyxy],
+        "nominal_size_px": int(instance.nominal_size_px),
+        "rotation_degrees": int(instance.rotation_degrees),
+        "mirror_x": bool(instance.mirror_x),
+        "tint_rgb": [int(value) for value in instance.tint_rgb],
+        "noise_edits": [dict(edit) for edit in instance.noise_edits],
+        "noise_seed": None if instance.noise_seed is None else int(instance.noise_seed),
+    }
+    if cell_index is not None:
+        payload["cell_index"] = int(cell_index)
+    if cell_bbox_xyxy is not None:
+        payload["cell_bbox_xyxy"] = [int(value) for value in cell_bbox_xyxy]
+    if cell_label_text is not None:
+        payload["cell_label_text"] = str(cell_label_text)
+    return payload
 
 
 def render_icon_sequence_scene(
@@ -78,6 +136,8 @@ def render_icon_sequence_scene(
     title_color_rgb: Tuple[int, int, int],
     cell_border_rgb: Tuple[int, int, int],
     missing_mark_color_rgb: Tuple[int, int, int],
+    cell_label_font_size_px: int = 0,
+    cell_label_color_rgb: Tuple[int, int, int] | None = None,
     scene_title: str = "Sequence",
 ) -> RenderedIconSequenceScene:
     """Render one single-panel horizontal sequence of scene cells."""
@@ -112,6 +172,8 @@ def render_icon_sequence_scene(
     )
     draw = ImageDraw.Draw(image)
     missing_font = load_font(int(missing_mark_font_size_px), bold=True)
+    label_font_size = max(0, int(cell_label_font_size_px))
+    label_font = load_font(int(label_font_size), bold=True) if label_font_size > 0 else None
     min_size = max(16, int(scene_icon_size_min_px))
     max_size = max(min_size, int(scene_icon_size_max_px))
     max_overlap_fraction = max(0.0, min(1.0, float(scene_max_overlap_fraction)))
@@ -129,11 +191,38 @@ def render_icon_sequence_scene(
             width=2,
             fill=tuple(int(v) for v in panel_fill_rgb),
         )
+        label_text = None if cell_spec.cell_label_text is None else str(cell_spec.cell_label_text).strip()
+        label_band_height = 0
+        if label_font is not None and label_text:
+            label_band_height = max(24, int(round(float(label_font_size) * 1.5)))
+            draw_text_centered(
+                draw,
+                text=str(label_text),
+                center=(
+                    0.5 * float(cell_bbox[0] + cell_bbox[2]),
+                    float(cell_bbox[1]) + (0.5 * float(label_band_height)),
+                ),
+                font=label_font,
+                fill=tuple(int(v) for v in (cell_label_color_rgb or missing_mark_color_rgb)),
+                stroke_fill=tuple(int(v) for v in panel_fill_rgb),
+                stroke_width=2,
+            )
+        icon_content_bbox = (
+            int(cell_bbox[0] + inner_padding),
+            int(cell_bbox[1] + label_band_height + inner_padding),
+            int(cell_bbox[2] - inner_padding),
+            int(cell_bbox[3] - inner_padding),
+        )
+        if int(icon_content_bbox[1]) >= int(icon_content_bbox[3]):
+            raise ValueError("sequence cell is too short for label and icon content")
         if bool(cell_spec.is_missing):
             draw_text_centered(
                 draw,
                 text="?",
-                center=(0.5 * float(cell_bbox[0] + cell_bbox[2]), 0.5 * float(cell_bbox[1] + cell_bbox[3])),
+                center=(
+                    0.5 * float(icon_content_bbox[0] + icon_content_bbox[2]),
+                    0.5 * float(icon_content_bbox[1] + icon_content_bbox[3]),
+                ),
                 font=missing_font,
                 fill=tuple(int(v) for v in missing_mark_color_rgb),
                 stroke_fill=tuple(int(v) for v in panel_fill_rgb),
@@ -143,18 +232,13 @@ def render_icon_sequence_scene(
                 RenderedSequenceCell(
                     cell_index=int(cell_index),
                     cell_bbox_xyxy=tuple(int(v) for v in cell_bbox),
+                    cell_label_text=label_text,
                     is_missing=True,
                     icon_instances=(),
                 )
             )
             continue
 
-        icon_content_bbox = (
-            int(cell_bbox[0] + inner_padding),
-            int(cell_bbox[1] + inner_padding),
-            int(cell_bbox[2] - inner_padding),
-            int(cell_bbox[3] - inner_padding),
-        )
         content_w = max(1, int(icon_content_bbox[2] - icon_content_bbox[0]))
         content_h = max(1, int(icon_content_bbox[3] - icon_content_bbox[1]))
         current_max_size = min(int(max_size), int(content_w), int(content_h))
@@ -223,6 +307,7 @@ def render_icon_sequence_scene(
             RenderedSequenceCell(
                 cell_index=int(cell_index),
                 cell_bbox_xyxy=tuple(int(v) for v in cell_bbox),
+                cell_label_text=label_text,
                 is_missing=False,
                 icon_instances=tuple(rendered_instances),
             )
@@ -240,4 +325,6 @@ __all__ = [
     "RenderedIconSequenceScene",
     "RenderedSequenceCell",
     "render_icon_sequence_scene",
+    "resolve_sequence_canvas_size",
+    "serialize_rendered_sequence_icon_instance",
 ]

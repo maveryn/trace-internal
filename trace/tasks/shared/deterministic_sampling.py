@@ -26,3 +26,15 @@ def resolve_selection_index(
     if explicit_index is not None:
         return abs(int(explicit_index))
     return abs(int(hash64(int(instance_seed), str(namespace), 0)))
+
+
+def uniform_probability_map(values: list[int] | tuple[int, ...], *, selected: int | None = None) -> dict[str, float]:
+    """Return a deterministic uniform probability map over a finite integer support."""
+
+    support = tuple(int(value) for value in values)
+    if not support:
+        return {}
+    if selected is not None:
+        return {str(int(selected)): 1.0}
+    probability = 1.0 / float(len(support))
+    return {str(int(value)): float(probability) for value in support}

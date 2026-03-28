@@ -951,6 +951,64 @@ def build_icons_sequence_missing_count_complexity(
     )
 
 
+def build_icons_sequence_rotation_violation_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    sequence_length: int,
+    sequence_length_min: int,
+    sequence_length_max: int,
+    violation_cell_index: int,
+    violation_rotation_difference_degrees: int,
+    scene_icon_instances: Sequence[Mapping[str, Any]],
+    render_params: Mapping[str, Any],
+) -> TaskComplexity:
+    """Build complexity for the icon sequence rotation-violation task."""
+
+    sequence_length_load = _normalize_linear(
+        float(sequence_length),
+        min_value=float(sequence_length_min),
+        max_value=float(sequence_length_max),
+    )
+    edge_distance = float(min(int(violation_cell_index), int(sequence_length) - 1 - int(violation_cell_index)))
+    interior_position_load = _clip01(
+        edge_distance / float(max(1, int(sequence_length_max) // 2))
+    )
+    visual_scan = float(sequence_length_load)
+
+    subtle_violation_load = 1.0 - _normalize_linear(
+        float(violation_rotation_difference_degrees),
+        min_value=90.0,
+        max_value=180.0,
+    )
+    rule_inference = _clip01(
+        (0.55 * sequence_length_load)
+        + (0.45 * interior_position_load)
+    )
+    ambiguity = _clip01(
+        (0.50 * subtle_violation_load)
+        + (0.35 * interior_position_load)
+        + (0.15 * sequence_length_load)
+    )
+    clutter = icon_scene_clutter_score(
+        scene_instances=scene_icon_instances,
+        scene_icon_size_min_px=int(render_params["scene_icon_size_min_px"]),
+        scene_icon_size_max_px=int(render_params["scene_icon_size_max_px"]),
+        scene_max_overlap_fraction=float(render_params["scene_max_overlap_fraction"]),
+        noise_edit_count_range=render_params["icon_noise_edit_count_range"],
+    )
+    return build_icon_task_complexity(
+        task_group_defaults=task_group_defaults,
+        task_id=str(task_id),
+        criterion_values={
+            "visual_scan": float(visual_scan),
+            "rule_inference": float(rule_inference),
+            "ambiguity": float(ambiguity),
+            "clutter": float(clutter),
+        },
+    )
+
+
 __all__ = [
     "build_icon_task_complexity",
     "build_icons_counting_color_complexity",
@@ -963,6 +1021,7 @@ __all__ = [
     "build_icons_relation_occlusion_order_complexity",
     "build_icons_relation_relative_position_type_complexity",
     "build_icons_sequence_missing_count_complexity",
+    "build_icons_sequence_rotation_violation_complexity",
     "build_icons_transformation_pair_count_complexity",
     "icon_scene_clutter_score",
     "icon_semantic_match_score",

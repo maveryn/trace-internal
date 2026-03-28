@@ -1738,6 +1738,7 @@ def test_icons_sequence_defaults_loaded() -> None:
     assert int(generation_shared["step_abs_max"]) == 3
     assert bool(generation_shared["balanced_sampling"]) is True
     assert "task_icons_sequence_missing_count" in cfg["generation"]["task_overrides"]
+    assert "task_icons_sequence_rotation_violation" in cfg["generation"]["task_overrides"]
 
     render_shared = cfg["rendering"]["shared"]
     assert int(render_shared["scene_icon_size_min_px"]) == 24
@@ -1749,6 +1750,7 @@ def test_icons_sequence_defaults_loaded() -> None:
     assert int(render_shared["cell_box_width_max_px"]) == 160
     assert int(render_shared["cell_box_height_min_px"]) == 96
     assert int(render_shared["cell_box_height_max_px"]) == 144
+    assert int(render_shared["cell_label_font_size_px"]) > 0
     assert int(render_shared["missing_mark_font_size_px"]) > 0
 
     prompt_shared = cfg["prompt"]["shared"]
@@ -1772,6 +1774,23 @@ def test_icons_sequence_defaults_loaded() -> None:
     assert str(prompt["answer_hint"]).strip()
     assert str(prompt["json_example"]).strip()
     assert str(prompt["json_example_answer_only"]).strip()
+
+    generation, rendering, prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_icons_sequence_rotation_violation",
+    )
+    assert str(generation["pool_manifest"]).strip() == "non_symmetry.txt"
+    assert list(generation["rotation_candidates_degrees"]) == [0, 90, 180, 270]
+    assert list(generation["step_candidates_degrees"]) == [90, 270]
+    assert int(generation["sequence_length_min"]) == 5
+    assert int(generation["sequence_length_max"]) == 7
+    assert int(rendering["scene_icon_size_min_px"]) == 48
+    assert int(rendering["scene_icon_size_max_px"]) == 72
+    assert int(rendering["cell_box_width_min_px"]) == 96
+    assert int(rendering["cell_box_width_max_px"]) == 136
+    assert str(prompt["task_family_key"]).strip() == "sequence_rotation_violation"
+    assert str(prompt["task_key"]).strip() == "rotation_violation_query"
+    assert str(prompt["question_text"]).strip()
 
 
 def test_tile_path_defaults_loaded() -> None:

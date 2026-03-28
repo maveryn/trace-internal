@@ -16,7 +16,7 @@ from ...shared.config_defaults import (
     required_group_defaults,
     split_generation_rendering_prompt_defaults,
 )
-from ...shared.deterministic_sampling import resolve_selection_index
+from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -30,11 +30,13 @@ from ..shared.complexity import build_icons_sequence_missing_count_complexity
 from ..shared.icon_sequence_scene import (
     IconSequenceCellSpec,
     render_icon_sequence_scene,
+    resolve_sequence_canvas_size,
+    serialize_rendered_sequence_icon_instance,
 )
 from ..shared.icon_style import sample_single_icon_tint
 from ..shared.icon_task_rendering import (
     icon_render_style_trace,
-    resolve_icon_render_params,
+    resolve_icon_sequence_render_params,
     sample_icon_instance_noise,
 )
 from ..shared.icon_scene import IconInstanceSpec
@@ -131,19 +133,6 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
     task_id="task_icons_sequence_missing_count",
 )
 
-
-def _uniform_probability_map(values: Sequence[int], *, selected: int | None = None) -> Dict[str, float]:
-    """Return one deterministic probability mapping over a finite integer support."""
-
-    support = tuple(int(value) for value in values)
-    if not support:
-        return {}
-    if selected is not None:
-        return {str(int(selected)): 1.0}
-    probability = 1.0 / float(len(support))
-    return {str(int(value)): float(probability) for value in support}
-
-
 def _rotation_candidates(params: Mapping[str, Any]) -> Tuple[int, ...]:
     """Resolve the supported icon rotations."""
 
@@ -185,23 +174,23 @@ def _resolve_sequence_spec(*, instance_seed: int, params: Mapping[str, Any]) -> 
     explicit_target = params.get("target_count")
     if explicit_target is None:
         target_count = int(target_support[int(base_index % len(target_support))])
-        target_probabilities = _uniform_probability_map(target_support)
+        target_probabilities = uniform_probability_map(target_support)
     else:
         target_count = int(explicit_target)
         if target_count not in target_support:
             raise ValueError("explicit target_count is outside configured support")
-        target_probabilities = _uniform_probability_map(target_support, selected=int(target_count))
+        target_probabilities = uniform_probability_map(target_support, selected=int(target_count))
 
     explicit_length = params.get("sequence_length")
     if explicit_length is None:
         length_index = int((base_index // max(1, len(target_support))) % len(length_support))
         sequence_length = int(length_support[length_index])
-        length_probabilities = _uniform_probability_map(length_support)
+        length_probabilities = uniform_probability_map(length_support)
     else:
         sequence_length = int(explicit_length)
         if sequence_length not in length_support:
             raise ValueError("explicit sequence_length is outside configured support")
-        length_probabilities = _uniform_probability_map(length_support, selected=int(sequence_length))
+        length_probabilities = uniform_probability_map(length_support, selected=int(sequence_length))
 
     explicit_missing = params.get("missing_cell_index")
     explicit_step = params.get("step_delta")
@@ -233,54 +222,6 @@ def _resolve_sequence_spec(*, instance_seed: int, params: Mapping[str, Any]) -> 
         sequence_length_probabilities=dict(length_probabilities),
         target_count_probabilities=dict(target_probabilities),
     )
-
-
-def _serialize_rendered_instance(instance: Any, *, entity_kind: str, cell_index: int | None = None, cell_bbox_xyxy: Sequence[int] | None = None) -> Dict[str, Any]:
-    """Serialize one rendered icon instance into a trace-ready mapping."""
-
-    payload: Dict[str, Any] = {
-        "entity_kind": str(entity_kind),
-        "instance_id": str(instance.instance_id),
-        "icon_id": str(instance.icon_id),
-        "panel": str(instance.panel),
-        "bbox_xyxy": list(instance.bbox_xyxy),
-        "nominal_size_px": int(instance.nominal_size_px),
-        "rotation_degrees": int(instance.rotation_degrees),
-        "mirror_x": bool(instance.mirror_x),
-        "tint_rgb": list(instance.tint_rgb),
-        "noise_edits": [dict(edit) for edit in instance.noise_edits],
-        "noise_seed": None if instance.noise_seed is None else int(instance.noise_seed),
-    }
-    if cell_index is not None:
-        payload["cell_index"] = int(cell_index)
-    if cell_bbox_xyxy is not None:
-        payload["cell_bbox_xyxy"] = [int(value) for value in cell_bbox_xyxy]
-    return payload
-
-
-def _resolve_sequence_canvas_size(
-    *,
-    sequence_length: int,
-    cell_box_width_px: int,
-    cell_box_height_px: int,
-    render_params: Mapping[str, Any],
-) -> Tuple[int, int]:
-    """Derive a canvas size that fits the sampled row cell geometry."""
-
-    cell_padding_px = int(render_params["cell_padding_px"])
-    panel_padding_px = int(render_params["panel_padding_px"])
-    outer_margin_px = int(render_params["outer_margin_px"])
-    title_font_size_px = int(render_params["panel_title_font_size_px"])
-    title_band_height = max(40, int(round(float(title_font_size_px) * 1.8)))
-
-    content_width = int(sequence_length) * int(int(cell_box_width_px) + (2 * cell_padding_px))
-    content_height = int(int(cell_box_height_px) + (2 * cell_padding_px))
-    panel_width = int(content_width + (2 * panel_padding_px))
-    panel_height = int(content_height + title_band_height + panel_padding_px + (panel_padding_px // 2))
-    canvas_width = int(panel_width + (2 * outer_margin_px))
-    canvas_height = int(panel_height + (2 * outer_margin_px))
-    return canvas_width, canvas_height
-
 
 def _sample_scene(
     rng,
@@ -322,7 +263,7 @@ def _sample_scene(
             int(render_params["cell_box_height_max_px"]),
         )
     )
-    canvas_width, canvas_height = _resolve_sequence_canvas_size(
+    canvas_width, canvas_height = resolve_sequence_canvas_size(
         sequence_length=int(sequence_spec.sequence_length),
         cell_box_width_px=int(cell_box_width_px),
         cell_box_height_px=int(cell_box_height_px),
@@ -405,7 +346,7 @@ def _sample_scene(
         )
         for instance in rendered_cell.icon_instances:
             scene_icon_instances.append(
-                _serialize_rendered_instance(
+                serialize_rendered_sequence_icon_instance(
                     instance,
                     entity_kind="scene_icon",
                     cell_index=int(rendered_cell.cell_index),
@@ -446,64 +387,10 @@ class IconsSequenceMissingCountTask:
 
         scene_rng = spawn_rng(int(instance_seed), "scene")
         sequence_spec = _resolve_sequence_spec(instance_seed=int(instance_seed), params=params)
-        render_params = resolve_icon_render_params(
+        render_params = resolve_icon_sequence_render_params(
             params=params,
             render_defaults=_RENDER_DEFAULTS,
             fallback_defaults=_DEFAULTS,
-        )
-        render_params["cell_padding_px"] = int(
-            params.get("cell_padding_px", group_default(_RENDER_DEFAULTS, "cell_padding_px", _DEFAULTS.cell_padding_px))
-        )
-        render_params["cell_icon_padding_px"] = int(
-            params.get(
-                "cell_icon_padding_px",
-                group_default(_RENDER_DEFAULTS, "cell_icon_padding_px", _DEFAULTS.cell_icon_padding_px),
-            )
-        )
-        render_params["cell_corner_radius_px"] = int(
-            params.get(
-                "cell_corner_radius_px",
-                group_default(_RENDER_DEFAULTS, "cell_corner_radius_px", _DEFAULTS.cell_corner_radius_px),
-            )
-        )
-        render_params["cell_box_width_min_px"] = int(
-            params.get(
-                "cell_box_width_min_px",
-                group_default(_RENDER_DEFAULTS, "cell_box_width_min_px", _DEFAULTS.cell_box_width_min_px),
-            )
-        )
-        render_params["cell_box_width_max_px"] = int(
-            params.get(
-                "cell_box_width_max_px",
-                group_default(_RENDER_DEFAULTS, "cell_box_width_max_px", _DEFAULTS.cell_box_width_max_px),
-            )
-        )
-        render_params["cell_box_height_min_px"] = int(
-            params.get(
-                "cell_box_height_min_px",
-                group_default(_RENDER_DEFAULTS, "cell_box_height_min_px", _DEFAULTS.cell_box_height_min_px),
-            )
-        )
-        render_params["cell_box_height_max_px"] = int(
-            params.get(
-                "cell_box_height_max_px",
-                group_default(_RENDER_DEFAULTS, "cell_box_height_max_px", _DEFAULTS.cell_box_height_max_px),
-            )
-        )
-        render_params["cell_border_rgb"] = tuple(
-            params.get("cell_border_rgb", group_default(_RENDER_DEFAULTS, "cell_border_rgb", _DEFAULTS.cell_border_rgb))
-        )
-        render_params["missing_mark_font_size_px"] = int(
-            params.get(
-                "missing_mark_font_size_px",
-                group_default(_RENDER_DEFAULTS, "missing_mark_font_size_px", _DEFAULTS.missing_mark_font_size_px),
-            )
-        )
-        render_params["missing_mark_color_rgb"] = tuple(
-            params.get(
-                "missing_mark_color_rgb",
-                group_default(_RENDER_DEFAULTS, "missing_mark_color_rgb", _DEFAULTS.missing_mark_color_rgb),
-            )
         )
         if int(render_params["cell_box_width_min_px"]) > int(render_params["cell_box_width_max_px"]):
             raise ValueError("cell_box_width_min_px must be <= cell_box_width_max_px")

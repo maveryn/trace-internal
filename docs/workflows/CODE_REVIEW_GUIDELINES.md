@@ -139,6 +139,7 @@ Use this checklist during implementation and refactor reviews.
 123. When a domain currently uses one stable presentation contract (for example tile boards), do not add a representation-load criterion just to mirror another domain; keep only criteria with real within-task ordering signal.
 124. When a domain grows multiple task groups that share the same non-task-specific generation/rendering defaults, promote those shared defaults into `configs/domains/<domain>/base.yaml` instead of copying the same values into each task-group YAML.
 125. For analytical tasks with multiple semantic variant axes (for example `shape_variant` plus `reasoning_mode`), keep one shared analytical family weighting policy and fold the extra axis into the normalized `analytical_reasoning`/`ambiguity` measurements; do not reintroduce separate task-local scalar formulas just because one sibling task has an extra variant dimension.
+126. For icon sequence tasks that ask for a position/index rather than a count, label the visible cells directly in the scene and keep user-facing evidence on the violating/missing cell bbox; do not add a separate option strip when the row itself already grounds the answer.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

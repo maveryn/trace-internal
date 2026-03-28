@@ -8,10 +8,24 @@
       "Look at the image with {object_description}.",
       "Use the image containing {object_description}.",
       "Work from the image with {object_description}."
+    ],
+    "sequence_rotation_violation": [
+      "You are given an image with {object_description}.",
+      "The image shows {object_description}.",
+      "Look at the image with {object_description}.",
+      "Use the image containing {object_description}.",
+      "Work from the image with {object_description}."
     ]
   },
   "task_templates": {
     "missing_count_query": [
+      "{question_text}",
+      "Question: {question_text}",
+      "Task: {question_text}",
+      "Answer this question: {question_text}",
+      "Determine the answer: {question_text}"
+    ],
+    "rotation_violation_query": [
       "{question_text}",
       "Question: {question_text}",
       "Task: {question_text}",
@@ -23,7 +37,13 @@
     "task_family:sequence_missing_count": [
       "object_description"
     ],
+    "task_family:sequence_rotation_violation": [
+      "object_description"
+    ],
     "task:missing_count_query": [
+      "question_text"
+    ],
+    "task:rotation_violation_query": [
       "question_text"
     ],
     "answer_or_evidence:answer_only": [

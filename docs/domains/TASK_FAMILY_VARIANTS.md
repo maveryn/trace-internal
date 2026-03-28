@@ -242,6 +242,14 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Visual rule: all visible Scene icons keep one shared icon type and tint, may vary by rotation, use the smaller `24..40` px size band, stay within `20%` pairwise overlap inside each box, and each instance samples one row box width/height with the final canvas fit to that row geometry.
    - Answer type: integer count.
    - Evidence: one-box `bbox_set` for the missing Scene box in final image coordinates.
+27. **Icons sequence rotation violation (`task_icons_sequence_rotation_violation`)**
+   - One single-panel image with a horizontal row of `5..7` numbered Scene boxes, each containing exactly one icon.
+   - Query: which numbered box breaks the rotation sequence.
+   - Sequence rule: the clean row follows one constant step over rotations `{0, 90, 180, 270}` using step support `{90, 270}`, and exactly one box is corrupted away from that rule.
+   - Visual rule: all Scene icons keep one shared icon type and tint from the curated asymmetric icon subset, use the larger `48..72` px size band, and each instance samples its own row box width/height with the final canvas fit to that row geometry.
+   - Answer type: integer box index.
+   - Evidence: one-box `bbox_set` for the violating Scene box in final image coordinates.
+   - Ambiguity rule: reject any row where more than one box index could plausibly be the unique violation under the supported constant-step hypotheses.
 
 ## Future polygon variants (deferred)
 1. Polygon diameter measurement.

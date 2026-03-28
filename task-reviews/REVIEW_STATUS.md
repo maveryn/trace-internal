@@ -34,5 +34,6 @@ Update this table after each review run.
 | task_icons_relation_between_two_anchors_count | task_icons_relation_between_two_anchors_count | alright_for_now | distribution pass |
 | task_icons_relation_mirror_symmetry | task_icons_relation_mirror_symmetry | needs_refresh | focused validation pass; 5-variant distribution refresh pending |
 | task_icons_sequence_missing_count | task_icons_sequence_missing_count | alright_for_now | distribution pass |
+| task_icons_sequence_rotation_violation |  | needs_review | task implemented; full review pending |
 | task_icons_transformation_pair_count | task_icons_transformation_pair_count | alright_for_now | distribution pass |
 | task_tile_path_shortest_path |  |  |  |

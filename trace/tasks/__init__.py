@@ -31,6 +31,7 @@ from .icons.relation import mirror_symmetry as _task_icons_relation_mirror_symme
 from .icons.relation import occlusion_order as _task_icons_relation_occlusion_order
 from .icons.relation import relative_position_type as _task_icons_relation_relative_position_type
 from .icons.sequence import missing_count as _task_icons_sequence_missing_count
+from .icons.sequence import rotation_violation as _task_icons_sequence_rotation_violation
 from .icons.transformation import pair_count as _task_icons_transformation_pair_count
 from .charts.composition import subset_value as _task_charts_composition_subset_value
 from .charts.counting import value_count as _task_charts_counting_value_count

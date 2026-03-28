@@ -193,7 +193,7 @@ def _draw_balance_token(
 
     cx, cy = float(center[0]), float(center[1])
     token = str(text)
-    font_scale = 0.72 if token == "=" else 0.38
+    font_scale = 0.72 if token == "=" else 0.28
     token_bbox = _draw_centered_text(
         draw,
         text=token,
@@ -204,7 +204,7 @@ def _draw_balance_token(
         stroke_width=max(1, int(stroke_width)),
     )
     left, top, right, bottom = [float(value) for value in token_bbox]
-    min_width = float(max(28.0 if token == "=" else 18.0, 0.4 * float(width_px)))
+    min_width = float(max(28.0, 0.4 * float(width_px))) if token == "=" else 0.0
     if float(right - left) < float(min_width):
         pad = 0.5 * (float(min_width) - float(right - left))
         left -= float(pad)

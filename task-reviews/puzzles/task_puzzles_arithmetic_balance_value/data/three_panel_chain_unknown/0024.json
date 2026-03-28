@@ -7,9 +7,9 @@
     "type": "bbox_set",
     "value": [
       [
-        602.0,
+        620.0,
         524.0,
-        714.0,
+        732.0,
         636.0
       ]
     ]
@@ -19,9 +19,9 @@
     "path": "puzzles/task_puzzles_arithmetic_balance_value/images/three_panel_chain_unknown/0024.png"
   },
   "instance_seed": 5994827552010798,
-  "prompt": "Look at the equality puzzle in the image: a card-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box. Read the equality puzzle and determine the number that completes the query row. Use all three equality panels to determine the question-mark query value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box.\nAnswer requirement: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[574,508,686,620]],\"answer\":5}",
+  "prompt": "Look at the equality puzzle in the image: a card-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box. Read the equality puzzle and determine the number that completes the query row. Use all three equality panels to determine the question-mark query value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box.\nAnswer requirement: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[610,508,722,620]],\"answer\":5}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the equality puzzle in the image: a card-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box. Read the equality puzzle and determine the number that completes the query row. Use all three equality panels to determine the question-mark query value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box.\nAnswer requirement: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[574,508,686,620]],\"answer\":5}",
+    "answer_and_evidence": "Look at the equality puzzle in the image: a card-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box. Read the equality puzzle and determine the number that completes the query row. Use all three equality panels to determine the question-mark query value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box.\nAnswer requirement: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[610,508,722,620]],\"answer\":5}",
     "answer_only": "Look at the equality puzzle in the image: a card-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box. Read the equality puzzle and determine the number that completes the query row. Use all three equality panels to determine the question-mark query value.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"answer\":5}"
   },
   "task": "task_puzzles_arithmetic_balance_value",
@@ -153,9 +153,9 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          602.0,
+          620.0,
           524.0,
-          714.0,
+          732.0,
           636.0
         ]
       ]
@@ -197,7 +197,7 @@
         "slot_values": {
           "answer_hint": "set \"answer\" to the exact integer value requested by the puzzle",
           "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box",
-          "json_example": "{\"evidence\":[[574,508,686,620]],\"answer\":5}",
+          "json_example": "{\"evidence\":[[610,508,722,620]],\"answer\":5}",
           "json_example_answer_only": "{\"answer\":5}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -230,7 +230,7 @@
             "slot_values": {
               "answer_hint": "set \"answer\" to the exact integer value requested by the puzzle",
               "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box",
-              "json_example": "{\"evidence\":[[574,508,686,620]],\"answer\":5}",
+              "json_example": "{\"evidence\":[[610,508,722,620]],\"answer\":5}",
               "json_example_answer_only": "{\"answer\":5}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -252,7 +252,7 @@
               "task_variant:three_panel_chain_unknown": 5
             }
           },
-          "prompt": "Look at the equality puzzle in the image: a card-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box. Read the equality puzzle and determine the number that completes the query row. Use all three equality panels to determine the question-mark query value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box.\nAnswer requirement: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[574,508,686,620]],\"answer\":5}"
+          "prompt": "Look at the equality puzzle in the image: a card-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box. Read the equality puzzle and determine the number that completes the query row. Use all three equality panels to determine the question-mark query value.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box.\nAnswer requirement: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[610,508,722,620]],\"answer\":5}"
         },
         "answer_only": {
           "metadata": {
@@ -263,7 +263,7 @@
             "slot_values": {
               "answer_hint": "set \"answer\" to the exact integer value requested by the puzzle",
               "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box",
-              "json_example": "{\"evidence\":[[574,508,686,620]],\"answer\":5}",
+              "json_example": "{\"evidence\":[[610,508,722,620]],\"answer\":5}",
               "json_example_answer_only": "{\"answer\":5}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -294,69 +294,69 @@
     "render_map": {
       "box_bboxes_px": {
         "panel_0_left_0": [
-          212.0,
+          182.0,
           84.0,
-          308.0,
+          278.0,
           180.0
         ],
         "panel_0_left_1": [
-          326.0,
+          308.0,
           84.0,
-          422.0,
+          404.0,
           180.0
         ],
         "panel_0_right_0": [
-          602.0,
+          620.0,
           84.0,
-          698.0,
+          716.0,
           180.0
         ],
         "panel_1_left_0": [
-          212.0,
+          182.0,
           234.0,
-          308.0,
+          278.0,
           330.0
         ],
         "panel_1_left_1": [
-          326.0,
+          308.0,
           234.0,
-          422.0,
+          404.0,
           330.0
         ],
         "panel_1_right_0": [
-          602.0,
+          620.0,
           234.0,
-          698.0,
+          716.0,
           330.0
         ],
         "panel_2_left_0": [
-          212.0,
+          182.0,
           384.0,
-          308.0,
+          278.0,
           480.0
         ],
         "panel_2_left_1": [
-          326.0,
+          308.0,
           384.0,
-          422.0,
+          404.0,
           480.0
         ],
         "panel_2_right_0": [
-          602.0,
+          620.0,
           384.0,
-          698.0,
+          716.0,
           480.0
         ],
         "query_answer_box": [
-          602.0,
+          620.0,
           524.0,
-          714.0,
+          732.0,
           636.0
         ],
         "query_object_box": [
-          310.0,
+          292.0,
           524.0,
-          422.0,
+          404.0,
           636.0
         ]
       },
@@ -427,9 +427,9 @@
             "value": null
           },
           "bbox_px": [
-            212.0,
+            182.0,
             84.0,
-            308.0,
+            278.0,
             180.0
           ],
           "entity_id": "panel_0_left_0",
@@ -443,10 +443,10 @@
             "side": "left"
           },
           "bbox_px": [
-            299.0,
-            118.0,
-            335.0,
-            146.0
+            279.0,
+            120.5,
+            307.0,
+            143.5
           ],
           "entity_id": "balance_plus_0_left_0",
           "entity_type": "puzzle_balance_operator"
@@ -462,9 +462,9 @@
             "value": null
           },
           "bbox_px": [
-            326.0,
+            308.0,
             84.0,
-            422.0,
+            404.0,
             180.0
           ],
           "entity_id": "panel_0_left_1",
@@ -481,9 +481,9 @@
             "value": null
           },
           "bbox_px": [
-            602.0,
+            620.0,
             84.0,
-            698.0,
+            716.0,
             180.0
           ],
           "entity_id": "panel_0_right_0",
@@ -508,9 +508,9 @@
             "panel_index": 0
           },
           "bbox_px": [
-            212.0,
+            182.0,
             84.0,
-            698.0,
+            716.0,
             180.0
           ],
           "entity_id": "balance_panel_0",
@@ -527,9 +527,9 @@
             "value": null
           },
           "bbox_px": [
-            212.0,
+            182.0,
             234.0,
-            308.0,
+            278.0,
             330.0
           ],
           "entity_id": "panel_1_left_0",
@@ -543,10 +543,10 @@
             "side": "left"
           },
           "bbox_px": [
-            299.0,
-            268.0,
-            335.0,
-            296.0
+            279.0,
+            270.5,
+            307.0,
+            293.5
           ],
           "entity_id": "balance_plus_1_left_0",
           "entity_type": "puzzle_balance_operator"
@@ -562,9 +562,9 @@
             "value": null
           },
           "bbox_px": [
-            326.0,
+            308.0,
             234.0,
-            422.0,
+            404.0,
             330.0
           ],
           "entity_id": "panel_1_left_1",
@@ -581,9 +581,9 @@
             "value": 4
           },
           "bbox_px": [
-            602.0,
+            620.0,
             234.0,
-            698.0,
+            716.0,
             330.0
           ],
           "entity_id": "panel_1_right_0",
@@ -608,9 +608,9 @@
             "panel_index": 1
           },
           "bbox_px": [
-            212.0,
+            182.0,
             234.0,
-            698.0,
+            716.0,
             330.0
           ],
           "entity_id": "balance_panel_1",
@@ -627,9 +627,9 @@
             "value": null
           },
           "bbox_px": [
-            212.0,
+            182.0,
             384.0,
-            308.0,
+            278.0,
             480.0
           ],
           "entity_id": "panel_2_left_0",
@@ -643,10 +643,10 @@
             "side": "left"
           },
           "bbox_px": [
-            299.0,
-            418.0,
-            335.0,
-            446.0
+            279.0,
+            420.5,
+            307.0,
+            443.5
           ],
           "entity_id": "balance_plus_2_left_0",
           "entity_type": "puzzle_balance_operator"
@@ -662,9 +662,9 @@
             "value": null
           },
           "bbox_px": [
-            326.0,
+            308.0,
             384.0,
-            422.0,
+            404.0,
             480.0
           ],
           "entity_id": "panel_2_left_1",
@@ -681,9 +681,9 @@
             "value": 10
           },
           "bbox_px": [
-            602.0,
+            620.0,
             384.0,
-            698.0,
+            716.0,
             480.0
           ],
           "entity_id": "panel_2_right_0",
@@ -708,9 +708,9 @@
             "panel_index": 2
           },
           "bbox_px": [
-            212.0,
+            182.0,
             384.0,
-            698.0,
+            716.0,
             480.0
           ],
           "entity_id": "balance_panel_2",
@@ -728,9 +728,9 @@
             "value": null
           },
           "bbox_px": [
-            310.0,
+            292.0,
             524.0,
-            422.0,
+            404.0,
             636.0
           ],
           "entity_id": "query_object_box",
@@ -763,9 +763,9 @@
             "value": null
           },
           "bbox_px": [
-            602.0,
+            620.0,
             524.0,
-            714.0,
+            732.0,
             636.0
           ],
           "entity_id": "query_answer_box",
@@ -786,9 +786,9 @@
       "type": "bbox_set",
       "value": [
         [
-          602.0,
+          620.0,
           524.0,
-          714.0,
+          732.0,
           636.0
         ]
       ]

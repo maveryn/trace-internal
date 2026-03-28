@@ -400,21 +400,37 @@ def test_puzzle_arithmetic_balance_value_contract_matches_query_answer_box() -> 
                 for panel in execution["panel_specs"]
             )
             assert len(plus_entities) == int(expected_plus_count)
+            for entity in plus_entities:
+                attrs = entity["attrs"]
+                panel_index = int(attrs["panel_index"])
+                side = str(attrs["side"])
+                after_item_index = int(attrs["after_item_index"])
+                plus_bbox = [float(value) for value in entity["bbox_px"]]
+                left_box_bbox = [
+                    float(value)
+                    for value in render_map["box_bboxes_px"][f"panel_{panel_index}_{side}_{after_item_index}"]
+                ]
+                right_box_bbox = [
+                    float(value)
+                    for value in render_map["box_bboxes_px"][f"panel_{panel_index}_{side}_{after_item_index + 1}"]
+                ]
+                assert plus_bbox[0] >= left_box_bbox[2]
+                assert plus_bbox[2] <= right_box_bbox[0]
 
 
 def test_puzzle_arithmetic_balance_prompt_examples_match_selected_variants() -> None:
     task = PuzzlesArithmeticBalanceValueTask()
     expected = {
         "sum_pair_unknown": (
-            {"evidence": [[574, 508, 686, 620]], "answer": 7},
+            {"evidence": [[610, 508, 722, 620]], "answer": 7},
             {"answer": 7},
         ),
         "two_panel_chain_unknown": (
-            {"evidence": [[574, 508, 686, 620]], "answer": 8},
+            {"evidence": [[610, 508, 722, 620]], "answer": 8},
             {"answer": 8},
         ),
         "three_panel_chain_unknown": (
-            {"evidence": [[574, 508, 686, 620]], "answer": 5},
+            {"evidence": [[610, 508, 722, 620]], "answer": 5},
             {"answer": 5},
         ),
     }

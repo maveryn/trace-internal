@@ -69,8 +69,8 @@ class PuzzleBalanceDefaults:
     scene_margin_bottom_px: int = 64
     item_box_width_px: int = 96
     item_box_height_px: int = 96
-    item_gap_px: int = 18
-    scale_side_gap_px: int = 42
+    item_gap_px: int = 30
+    scale_side_gap_px: int = 60
     panel_gap_px: int = 54
     query_gap_px: int = 44
     query_box_width_px: int = 112

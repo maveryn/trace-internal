@@ -10,7 +10,7 @@ from PIL import ImageDraw
 
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.comparison_sampling import (
@@ -38,6 +38,7 @@ from ...shared.text_rendering import (
     resolve_text_label_center,
 )
 from ..shared.background_defaults import POST_IMAGE_BACKGROUND_DEFAULTS
+from ..shared.complexity import build_geometry_comparison_complexity
 from ..shared.graph_rendering import graph_paper_grid_from_frame, scale_point
 from ..shared.labeled_point_evidence import graph_point_set_evidence_artifacts
 from ..shared.length_geometry import integer_length_vectors
@@ -59,7 +60,6 @@ from .shared import (
     COMPARISON_ANSWER_LABEL_POOL,
     COMPARISON_QUERY_TYPES,
     apply_balanced_comparison_axes,
-    comparison_complexity_score,
     graph_units_to_pixel,
     resolve_comparison_object_count,
     resolve_comparison_query_type,
@@ -833,16 +833,16 @@ class GeometryComparisonLengthTask:
             "projected_evidence": dict(evidence["projected_evidence"]),
         }
 
-        complexity = TaskComplexity(
-            complexity_score=comparison_complexity_score(
-                object_count=int(object_count),
-                gap_normalized=float(scene_payload.winner_metrics.gap_normalized),
-            ),
-            complexity_components={
-                "object_count": int(object_count),
-                "gap_normalized": float(scene_payload.winner_metrics.gap_normalized),
-                "query_type": str(query_type),
-            },
+        complexity = build_geometry_comparison_complexity(
+            task_group_defaults=_TASK_GROUP_DEFAULTS,
+            task_id=self.task_id,
+            object_count=int(object_count),
+            object_count_min=int(_GEN_DEFAULTS["object_count_min"]),
+            object_count_max=int(_GEN_DEFAULTS["object_count_max"]),
+            gap_normalized=float(scene_payload.winner_metrics.gap_normalized),
+            min_normalized_gap=float(_GEN_DEFAULTS["min_normalized_gap"]),
+            comparison_kind="length",
+            evidence_point_count=2,
         )
         return TaskOutput(
             prompt=str(prompt_artifacts.prompt),

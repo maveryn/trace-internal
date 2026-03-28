@@ -2,22 +2,14 @@
 
 ## Recommended criteria vocabulary
 - `visual_scan`
-- `measurement_precision`
-- `comparison_reasoning`
-- `classification_reasoning`
-- `analytical_reasoning`
 - `ambiguity`
 - `output_burden`
 
 ## Domain fallback weights
 ```yaml
-visual_scan: 0.20
-measurement_precision: 0.20
-comparison_reasoning: 0.15
-classification_reasoning: 0.15
-analytical_reasoning: 0.20
-ambiguity: 0.10
-output_burden: 0.00
+visual_scan: 0.40
+ambiguity: 0.35
+output_burden: 0.25
 ```
 
 ## Task-group overrides
@@ -46,7 +38,8 @@ output_burden: 0.05
 Measure:
 - object count,
 - winner gap / runner-up closeness,
-- scene crowding.
+- direct-vs-derived quantity load,
+- graph-point evidence burden (`2` / `3` / `4` points).
 
 ### `counting`
 ```yaml
@@ -76,5 +69,6 @@ Measure:
 - answer precision burden.
 
 ## Notes
+- Domain-level criteria must apply to every geometry task; keep `measurement_precision`, `comparison_reasoning`, `classification_reasoning`, and `analytical_reasoning` at task-group scope rather than forcing them onto unrelated families.
 - Geometry usually wants criterion values from explicit scene/query structure, not from answer magnitude alone.
 - Keep raw givens counts, winner gaps, or derivation depth in trace if they help debug the score.

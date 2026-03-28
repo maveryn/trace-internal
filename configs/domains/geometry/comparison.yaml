@@ -104,3 +104,11 @@ prompt:
       question_text_smallest: Which labeled segment is the shortest?
       evidence_hint: 'set "evidence" to an array of exactly two graph-paper points for the winning segment endpoints'
       answer_hint: 'set "answer" to the single-letter label of the correct segment'
+
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.25
+      comparison_reasoning: 0.35
+      ambiguity: 0.35
+      output_burden: 0.05

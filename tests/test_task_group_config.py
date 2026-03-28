@@ -863,7 +863,7 @@ def test_geometry_analytical_defaults_loaded() -> None:
 
 def test_geometry_comparison_defaults_loaded() -> None:
     cfg = get_task_group_defaults("geometry", "comparison")
-    for section in ("generation", "rendering", "prompt"):
+    for section in ("generation", "rendering", "prompt", "complexity"):
         assert isinstance(cfg.get(section), dict)
 
     generation_shared = cfg["generation"]["shared"]
@@ -892,6 +892,14 @@ def test_geometry_comparison_defaults_loaded() -> None:
     assert str(prompt_shared["bundle_id"]).strip()
     assert str(prompt_shared["task_family_key"]).strip()
     assert str(prompt_shared["task_key"]).strip()
+
+    complexity_shared = cfg["complexity"]["shared"]
+    assert dict(complexity_shared["criteria_weights"]) == {
+        "visual_scan": 0.25,
+        "comparison_reasoning": 0.35,
+        "ambiguity": 0.35,
+        "output_burden": 0.05,
+    }
 
     angle_generation, angle_rendering, angle_prompt = split_generation_rendering_prompt_defaults(
         cfg,

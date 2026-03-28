@@ -37,6 +37,14 @@ def test_geometry_comparison_area_contract_matches_scene() -> None:
         assert execution["question_format"] == "label_choice_no_text_options"
         assert float(execution["winner_gap_normalized"]) >= 0.2 - 1e-9
         assert float(execution["winner_gap_abs"]) >= 6.0 - 1e-9
+        assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
+        assert set(out.complexity.complexity_components.keys()) == {
+            "visual_scan",
+            "comparison_reasoning",
+            "ambiguity",
+            "output_burden",
+        }
+        assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
         assert len(execution["object_labels"]) == 6
         assert len(set(execution["object_labels"])) == 6
         assert "option" not in out.prompt.lower()

@@ -67,3 +67,4 @@ Current task docs:
 57. [task_tables_counting_column_pair_count.md](task_tables_counting_column_pair_count.md)
 58. [task_tables_statistics_filtered_subset_value.md](task_tables_statistics_filtered_subset_value.md)
 59. [task_tables_relation_extremum_transfer_value.md](task_tables_relation_extremum_transfer_value.md)
+60. [task_tables_ranking_label.md](task_tables_ranking_label.md)

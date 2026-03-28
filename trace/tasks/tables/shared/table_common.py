@@ -591,6 +591,103 @@ def build_summary_label_dataset_for_variant(
     }
 
 
+def build_ranking_label_dataset_for_variant(
+    *,
+    task_variant: str,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    gen_defaults: Mapping[str, Any],
+    defaults: TableDefaults,
+    task_id: str,
+) -> Dict[str, Any]:
+    """Construct one deterministic table dataset for kth-order row-label ranking queries."""
+
+    if str(task_variant) not in {"kth_highest_in_column", "kth_lowest_in_column"}:
+        raise ValueError(f"unsupported table ranking-label variant: {task_variant}")
+
+    base = _resolve_base_table_schema(
+        params=params,
+        instance_seed=int(instance_seed),
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        task_id=task_id,
+    )
+    rng = base["rng"]
+    row_count = int(base["row_count"])
+    numeric_column_count = int(base["numeric_column_count"])
+    row_labels = list(base["row_labels"])
+    column_headers = list(base["column_headers"])
+    query_col_index = int(base["query_column_index"])
+    query_column = str(base["query_column"])
+    value_min = int(base["value_min"])
+    value_max = int(base["value_max"])
+
+    if int(row_count) < 3:
+        raise ValueError("table ranking tasks require at least three rows")
+    if int(value_max) - int(value_min) + 1 < int(row_count):
+        raise ValueError("table ranking tasks require enough value range for unique ordered ranks")
+
+    allowed_ranks = [int(rank) for rank in range(2, min(4, int(row_count) - 1) + 1)]
+    rank_k = int(
+        allowed_ranks[
+            int(
+                resolve_selection_index(
+                    params=params,
+                    instance_seed=int(instance_seed),
+                    namespace=f"{task_id}:query_rank",
+                )
+            )
+            % len(allowed_ranks)
+        ]
+    )
+
+    unique_query_values = list(rng.sample(range(int(value_min), int(value_max) + 1), int(row_count)))
+    rng.shuffle(unique_query_values)
+    query_values_by_row = {
+        str(row_label): int(unique_query_values[int(row_index)])
+        for row_index, row_label in enumerate(row_labels)
+    }
+    values_by_row = _build_values_by_row(
+        row_labels=row_labels,
+        column_headers=column_headers,
+        rng=rng,
+        value_min=int(value_min),
+        value_max=int(value_max),
+        query_column=str(query_column),
+        query_values_by_row=query_values_by_row,
+    )
+
+    sorted_rows = sorted(
+        (
+            {
+                "row_label": str(row_label),
+                "row_index": int(row_index),
+                "value": int(values_by_row[str(row_label)][str(query_column)]),
+            }
+            for row_index, row_label in enumerate(row_labels)
+        ),
+        key=lambda item: int(item["value"]),
+        reverse=(str(task_variant) == "kth_highest_in_column"),
+    )
+    answer_row = dict(sorted_rows[int(rank_k) - 1])
+    return {
+        "row_count": int(row_count),
+        "numeric_column_count": int(numeric_column_count),
+        "row_count_range": list(base["row_count_range"]),
+        "numeric_column_count_range": list(base["numeric_column_count_range"]),
+        "value_range": list(base["value_range"]),
+        "row_labels": [str(label) for label in row_labels],
+        "column_headers": [str(header) for header in column_headers],
+        "query_column": str(query_column),
+        "query_column_index": int(query_col_index),
+        "query_rank": int(rank_k),
+        "values_by_row": dict(values_by_row),
+        "answer_row_label": str(answer_row["row_label"]),
+        "answer_row_index": int(answer_row["row_index"]),
+        "answer_value": int(answer_row["value"]),
+    }
+
+
 def build_relation_row_compare_label_dataset_for_variant(
     *,
     task_variant: str,
@@ -1571,6 +1668,7 @@ __all__ = [
     "TableDefaults",
     "build_counting_column_pair_dataset_for_variant",
     "build_counting_value_dataset_for_variant",
+    "build_ranking_label_dataset_for_variant",
     "build_relation_extremum_transfer_value_dataset_for_variant",
     "build_relation_row_compare_label_dataset_for_variant",
     "build_readout_subset_dataset_for_variant",

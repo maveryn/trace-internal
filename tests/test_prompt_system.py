@@ -365,6 +365,18 @@ def test_tables_relation_bundle_supports_extremum_transfer_variants() -> None:
     ]
 
 
+def test_tables_ranking_bundle_supports_kth_label_variants() -> None:
+    bundle = load_prompt_bundle("tables", "ranking", "tables_ranking_v1")
+    assert len(bundle.task_templates["kth_label_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["kth_highest_in_column"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["kth_lowest_in_column"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_family:styled_table_ranking"]) == ["object_description"]
+    assert list(bundle.required_slots_by_key["task_variant:kth_highest_in_column"]) == [
+        "query_column",
+        "query_rank",
+    ]
+
+
 def test_tables_counting_bundle_supports_column_pair_variants() -> None:
     bundle = load_prompt_bundle("tables", "counting", "tables_counting_v1")
     assert len(bundle.task_templates["column_pair_count_query"]) == REQUIRED_PROMPT_VARIANTS

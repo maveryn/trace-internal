@@ -701,6 +701,30 @@ def test_tables_relation_defaults_loaded() -> None:
     assert str(prompt_defaults["json_example_argmin_transfer"]).strip()
 
 
+def test_tables_ranking_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("tables", "ranking")
+    for section in ("generation", "rendering", "prompt"):
+        assert isinstance(cfg.get(section), dict)
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "tables_ranking_v1"
+    assert str(prompt_shared["task_family_key"]).strip() == "styled_table_ranking"
+    assert str(prompt_shared["task_key"]).strip() == "kth_label_query"
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_tables_ranking_label",
+    )
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "kth_highest_in_column",
+        "kth_lowest_in_column",
+    ]
+    assert int(rendering_defaults["canvas_height"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip() == "tables_ranking_v1"
+    assert str(prompt_defaults["evidence_hint_kth_highest_in_column"]).strip()
+    assert str(prompt_defaults["json_example_kth_lowest_in_column"]).strip()
+
+
 def test_charts_multiseries_defaults_loaded() -> None:
     cfg = get_task_group_defaults("charts", "multiseries")
     for section in ("generation", "rendering", "prompt", "complexity"):

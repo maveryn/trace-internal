@@ -34,6 +34,7 @@ Use this whenever the task lives under `domain=tables`.
 - For counting tasks that compare two columns row-by-row, keep evidence row-major and preserve prompt column order within each matching row's bbox pair.
 - For filtered table aggregation tasks, keep evidence as ordered `[filter cell, target cell]` bbox pairs for each selected row instead of inventing a special filter witness type.
 - For extremum-transfer tasks, keep evidence as exactly two boxes ordered `[source extremum cell, transferred target cell]`.
+- For table ranking tasks beyond plain argmax/argmin, use the queried-column region bbox when the witness is the column-wide ordering, not a single decisive cell.
 
 ## Design heuristics
 - Treat table style as presentation only. `spreadsheet`, `zebra`, `ledger`, and `card_table` should not change the reasoning contract.

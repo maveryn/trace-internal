@@ -10,7 +10,7 @@ import networkx as nx
 from PIL import Image, ImageDraw, ImageFont
 
 from ...shared.text_rendering import draw_text_centered, fit_font_to_box, load_font
-from .graph_sampling import GraphCountSample
+from .graph_sampling import GraphTopologySample
 
 
 Point = Tuple[int, int]
@@ -523,7 +523,7 @@ def _resolve_node_label_font(
 
 def render_graph_scene(
     *,
-    graph_sample: GraphCountSample,
+    graph_sample: GraphTopologySample,
     layout_variant: str,
     layout_transform_variant: str,
     render_params: GraphRenderParams,

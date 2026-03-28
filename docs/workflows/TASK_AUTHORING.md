@@ -197,6 +197,7 @@ Prompt wording rule:
 - for labeled node-link graph tasks, keep node labels as the prompt-facing identity/evidence contract and treat layout as a non-semantic scene variation; answers should come from adjacency/topology rather than whichever node happened to render in a certain position.
 - for graph tasks with added visual diversity, vary whole-image style axes such as label format, node glyph, named node color, or global layout transform only when they remain non-semantic for the task; if a future task queries one of those axes, promote it from style noise to an explicit task contract.
 - if a graph task supports both undirected and directed variants, make directionality explicit in both prompt wording and trace metadata (`degree` vs `in-degree` vs `out-degree`) and render directed edges with arrowheads; do not rely on the image alone to disambiguate the semantic contract.
+- if a graph task includes the queried node itself in the answer/evidence set (for example same-component queries), say that explicitly in the prompt and evidence hint rather than leaving “including the queried node” implicit.
 - when a task renders text inside compact glyphs or cells, fit the font against the available box instead of assuming one fixed font size will work for every label variant; multi-character labels and alternate glyph shapes should stay readable without overflowing the witness object.
 
 Use `--mode inspection` when only visual/prompt inspection is needed and distribution checks should be skipped.

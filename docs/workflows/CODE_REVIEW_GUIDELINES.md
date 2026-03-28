@@ -148,6 +148,7 @@ Use this checklist during implementation and refactor reviews.
 131. For graph tasks with non-semantic visual diversity, review whole-image style axes explicitly: label format, node glyph, named node color, and global layout transforms may vary for readability/diversity, but they must not create hidden categories or change how evidence labels are ordered or interpreted.
 132. For tasks that render text inside compact glyphs or cells, review the fitted text box rather than only the nominal font size: multi-character labels and alternate glyph shapes should still fit inside the witness object with a stroke that remains readable after rendering, not just in the default one-character case.
 133. For graph tasks that support both undirected and directed variants, review directionality as an explicit contract surface: prompt wording, trace fields, edge entities, and rendered arrowheads should all agree on whether the queried measure is `degree`, `in-degree`, or `out-degree`, and directed scenes should avoid reciprocal-edge clutter unless the task explicitly reasons about it.
+134. For graph tasks where the queried node belongs in the witness set, review that inclusion explicitly across prompt wording, answer semantics, evidence labels, and trace fields; do not rely on graph-theory convention alone to imply whether the queried node counts toward the answer.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

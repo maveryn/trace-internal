@@ -1617,6 +1617,93 @@ def test_graph_counting_defaults_loaded() -> None:
     assert str(prompt_defaults["question_text_out_degree_count"]).strip()
 
 
+def test_graph_relation_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("graph", "relation")
+    for section in ("generation", "rendering", "prompt", "visual", "complexity"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["node_count_min"]) == 5
+    assert int(generation_shared["node_count_max"]) == 10
+    assert int(generation_shared["component_count_min"]) == 2
+    assert int(generation_shared["component_count_max"]) == 4
+    assert int(generation_shared["target_component_size_min"]) == 1
+    assert int(generation_shared["target_component_size_max"]) == 6
+    assert set(generation_shared["topology_profile_weights"].keys()) == {"balanced", "hub_heavy", "low_degree"}
+    assert set(generation_shared["label_variant_weights"].keys()) == {"letters", "numbers"}
+    assert set(generation_shared["layout_variant_weights"].keys()) == {"circular", "shell", "spring"}
+    assert set(generation_shared["node_shape_variant_weights"].keys()) == {"circle", "rounded_square", "hexagon"}
+    assert set(generation_shared["layout_transform_variant_weights"].keys()) == {
+        "identity",
+        "rotate_90",
+        "rotate_180",
+        "rotate_270",
+        "mirror_left_right",
+        "mirror_up_down",
+    }
+    assert set(generation_shared["node_color_name_weights"].keys()) == {
+        "red",
+        "blue",
+        "green",
+        "yellow",
+        "orange",
+        "purple",
+        "brown",
+        "cyan",
+        "magenta",
+        "maroon",
+    }
+    assert bool(generation_shared["balanced_topology_profile_sampling"]) is True
+    assert bool(generation_shared["balanced_label_variant_sampling"]) is True
+    assert bool(generation_shared["balanced_layout_variant_sampling"]) is True
+    assert bool(generation_shared["balanced_node_shape_variant_sampling"]) is True
+    assert bool(generation_shared["balanced_layout_transform_variant_sampling"]) is True
+    assert bool(generation_shared["balanced_node_color_name_sampling"]) is True
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_width"]) > 0
+    assert int(render_shared["canvas_height"]) > 0
+    assert int(render_shared["node_radius_min_px"]) > 0
+    assert int(render_shared["node_radius_max_px"]) >= int(render_shared["node_radius_min_px"])
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "graph_relation_v1"
+    assert str(prompt_shared["task_family_key"]).strip() == "single_graph_relation"
+    assert str(prompt_shared["task_key"]).strip() == "same_component_count_query"
+    assert str(prompt_shared["object_description"]).strip()
+    assert str(prompt_shared["question_text_same_component_count"]).strip()
+    assert str(prompt_shared["evidence_hint"]).strip()
+    assert str(prompt_shared["answer_hint"]).strip()
+    assert str(prompt_shared["json_example"]).strip()
+    assert str(prompt_shared["json_example_answer_only"]).strip()
+
+    complexity_shared = cfg["complexity"]["shared"]
+    assert dict(complexity_shared["criteria_weights"]) == {
+        "topology_reasoning": 0.45,
+        "visual_scan": 0.25,
+        "ambiguity": 0.20,
+        "clutter": 0.10,
+    }
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_graph_relation_same_component_count",
+    )
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == ["same_component_count"]
+    assert int(generation_defaults["node_count_min"]) == 5
+    assert int(generation_defaults["node_count_max"]) == 10
+    assert int(generation_defaults["component_count_min"]) == 2
+    assert int(generation_defaults["component_count_max"]) == 4
+    assert int(generation_defaults["target_component_size_min"]) == 1
+    assert int(generation_defaults["target_component_size_max"]) == 6
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert int(rendering_defaults["node_radius_min_px"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip() == "graph_relation_v1"
+    assert str(prompt_defaults["task_family_key"]).strip() == "single_graph_relation"
+    assert str(prompt_defaults["task_key"]).strip() == "same_component_count_query"
+    assert str(prompt_defaults["question_text_same_component_count"]).strip()
+
+
 def test_icons_transformation_defaults_loaded() -> None:
     cfg = get_task_group_defaults("icons", "transformation")
     for section in ("generation", "rendering", "prompt", "visual", "complexity"):

@@ -49,10 +49,13 @@ Use this whenever the task lives under `domain=graph`.
 ## Current graph coverage
 - `counting`
   - `task_graph_counting_degree_count`
+- `relation`
+  - `task_graph_relation_same_component_count`
 
 ## Shared helpers to prefer
 - `trace/tasks/graph/shared/graph_sampling.py`
 - `trace/tasks/graph/shared/graph_scene.py`
+- `trace/tasks/graph/shared/task_support.py`
 - `trace/tasks/graph/shared/visual_defaults.py`
 - `trace/tasks/graph/shared/complexity.py`
 

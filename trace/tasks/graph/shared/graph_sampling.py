@@ -16,12 +16,13 @@ SUPPORTED_LAYOUT_VARIANTS: Tuple[str, ...] = ("circular", "shell", "spring")
 SUPPORTED_TOPOLOGY_PROFILES: Tuple[str, ...] = ("balanced", "low_degree", "hub_heavy")
 SUPPORTED_LABEL_VARIANTS: Tuple[str, ...] = ("letters", "numbers")
 SUPPORTED_DEGREE_TASK_VARIANTS: Tuple[str, ...] = ("degree_count", "in_degree_count", "out_degree_count")
+SUPPORTED_COMPONENT_TASK_VARIANTS: Tuple[str, ...] = ("same_component_count",)
 LABEL_POOL_1_12: Tuple[str, ...] = tuple(str(value) for value in range(1, 13))
 
 
 @dataclass(frozen=True)
-class GraphCountSample:
-    """Trace-ready simple graph sample for graph counting tasks."""
+class GraphTopologySample:
+    """Trace-ready labeled graph topology shared across graph tasks."""
 
     graph: nx.Graph | nx.DiGraph
     directed: bool
@@ -33,15 +34,33 @@ class GraphCountSample:
     adjacency_by_label: Dict[str, Tuple[str, ...]]
     successors_by_label: Dict[str, Tuple[str, ...]]
     predecessors_by_label: Dict[str, Tuple[str, ...]]
+    edge_count: int
+    topology_profile: str
+    label_variant: str
+
+
+@dataclass(frozen=True)
+class GraphCountSample(GraphTopologySample):
+    """Trace-ready simple graph sample for graph counting tasks."""
+
     target_labels: Tuple[str, ...]
     degree_sequence: Tuple[int, ...]
     in_degree_sequence: Tuple[int, ...]
     out_degree_sequence: Tuple[int, ...]
     query_degree: int
     degree_mode: str
-    edge_count: int
-    topology_profile: str
-    label_variant: str
+
+
+@dataclass(frozen=True)
+class GraphComponentSample(GraphTopologySample):
+    """Trace-ready disconnected graph sample for component-relation tasks."""
+
+    query_label: str
+    target_labels: Tuple[str, ...]
+    components_by_label: Tuple[Tuple[str, ...], ...]
+    component_sizes: Tuple[int, ...]
+    component_count: int
+    target_component_size: int
 
 
 def graph_label_sort_key(label: str) -> Tuple[int, int | str]:
@@ -283,6 +302,105 @@ def _find_graph_with_degree_count(
     return None
 
 
+def _label_pool_for_variant(label_variant: str) -> Tuple[str, ...]:
+    """Return the configured node-label pool for one graph label variant."""
+
+    if str(label_variant) == "numbers":
+        return LABEL_POOL_1_12
+    return LABEL_POOL_A_L
+
+
+def _build_labeled_graph_topology_sample(
+    rng: random.Random,
+    *,
+    graph: nx.Graph | nx.DiGraph,
+    directed: bool,
+    topology_profile: str,
+    label_variant: str,
+) -> Tuple[GraphTopologySample, Dict[int, str]]:
+    """Attach prompt-facing labels and sorted adjacency metadata to one graph."""
+
+    node_order = tuple(int(node) for node in graph.nodes())
+    labels = assign_shuffled_labels(
+        rng,
+        object_count=int(graph.number_of_nodes()),
+        label_pool=_label_pool_for_variant(str(label_variant)),
+    )
+    label_by_node = {int(node): str(label) for node, label in zip(node_order, labels)}
+
+    if bool(directed):
+        labeled_edges = sorted(
+            (
+                (str(label_by_node[int(left)]), str(label_by_node[int(right)]))
+                for left, right in graph.edges()
+            ),
+            key=lambda pair: (graph_label_sort_key(pair[0]), graph_label_sort_key(pair[1])),
+        )
+        in_degrees_by_label = {str(label_by_node[int(node)]): int(degree) for node, degree in graph.in_degree()}
+        out_degrees_by_label = {str(label_by_node[int(node)]): int(degree) for node, degree in graph.out_degree()}
+        adjacency_by_label = {
+            str(label_by_node[int(node)]): tuple(
+                sorted(
+                    (
+                        {
+                            *[str(label_by_node[int(neighbor)]) for neighbor in graph.predecessors(int(node))],
+                            *[str(label_by_node[int(neighbor)]) for neighbor in graph.successors(int(node))],
+                        }
+                    ),
+                    key=graph_label_sort_key,
+                )
+            )
+            for node in node_order
+        }
+        successors_by_label = {
+            str(label_by_node[int(node)]): tuple(
+                sorted((str(label_by_node[int(neighbor)]) for neighbor in graph.successors(int(node))), key=graph_label_sort_key)
+            )
+            for node in node_order
+        }
+        predecessors_by_label = {
+            str(label_by_node[int(node)]): tuple(
+                sorted((str(label_by_node[int(neighbor)]) for neighbor in graph.predecessors(int(node))), key=graph_label_sort_key)
+            )
+            for node in node_order
+        }
+    else:
+        labeled_edges = sorted(
+            (
+                tuple(sorted((str(label_by_node[int(left)]), str(label_by_node[int(right)])), key=graph_label_sort_key))
+                for left, right in graph.edges()
+            ),
+            key=lambda pair: (graph_label_sort_key(pair[0]), graph_label_sort_key(pair[1])),
+        )
+        in_degrees_by_label = {str(label_by_node[int(node)]): int(degree) for node, degree in graph.degree()}
+        out_degrees_by_label = {str(label_by_node[int(node)]): int(degree) for node, degree in graph.degree()}
+        adjacency_by_label = {
+            str(label_by_node[int(node)]): tuple(
+                sorted((str(label_by_node[int(neighbor)]) for neighbor in graph.neighbors(int(node))), key=graph_label_sort_key)
+            )
+            for node in node_order
+        }
+        successors_by_label = dict(adjacency_by_label)
+        predecessors_by_label = dict(adjacency_by_label)
+
+    topology = GraphTopologySample(
+        graph=graph,
+        directed=bool(directed),
+        node_labels=tuple(str(label_by_node[int(node)]) for node in node_order),
+        edge_labels=tuple((str(left), str(right)) for left, right in labeled_edges),
+        degrees_by_label={str(key): int(value) for key, value in in_degrees_by_label.items()},
+        in_degrees_by_label={str(key): int(value) for key, value in in_degrees_by_label.items()},
+        out_degrees_by_label={str(key): int(value) for key, value in out_degrees_by_label.items()},
+        adjacency_by_label={str(key): tuple(str(value) for value in values) for key, values in adjacency_by_label.items()},
+        successors_by_label={str(key): tuple(str(value) for value in values) for key, values in successors_by_label.items()},
+        predecessors_by_label={str(key): tuple(str(value) for value in values) for key, values in predecessors_by_label.items()},
+        edge_count=int(graph.number_of_edges()),
+        topology_profile=str(topology_profile),
+        label_variant=str(label_variant),
+    )
+    return topology, label_by_node
+
+
 def _has_reciprocal_edges(graph: nx.DiGraph) -> bool:
     """Return whether one directed graph contains any reciprocal edge pair."""
 
@@ -446,110 +564,249 @@ def sample_degree_count_graph(
         in_degree_sequence = tuple(int(value) for value in degree_sequence)
         out_degree_sequence = tuple(int(value) for value in degree_sequence)
 
-    node_order = tuple(int(node) for node in graph.nodes())
-    if str(label_variant) == "numbers":
-        label_pool = LABEL_POOL_1_12
-    else:
-        label_pool = LABEL_POOL_A_L
-    labels = assign_shuffled_labels(rng, object_count=int(node_count), label_pool=label_pool)
-    label_by_node = {int(node): str(label) for node, label in zip(node_order, labels)}
-
-    if directionality == "directed":
-        labeled_edges = sorted(
-            (
-                (str(label_by_node[int(left)]), str(label_by_node[int(right)]))
-                for left, right in graph.edges()
-            ),
-            key=lambda pair: (graph_label_sort_key(pair[0]), graph_label_sort_key(pair[1])),
-        )
-        in_degrees_by_label = {str(label_by_node[int(node)]): int(degree) for node, degree in graph.in_degree()}
-        out_degrees_by_label = {str(label_by_node[int(node)]): int(degree) for node, degree in graph.out_degree()}
-        adjacency_by_label = {
-            str(label_by_node[int(node)]): tuple(
-                sorted(
-                    (
-                        {
-                            *[str(label_by_node[int(neighbor)]) for neighbor in graph.predecessors(int(node))],
-                            *[str(label_by_node[int(neighbor)]) for neighbor in graph.successors(int(node))],
-                        }
-                    ),
-                    key=graph_label_sort_key,
-                )
-            )
-            for node in node_order
-        }
-        successors_by_label = {
-            str(label_by_node[int(node)]): tuple(
-                sorted((str(label_by_node[int(neighbor)]) for neighbor in graph.successors(int(node))), key=graph_label_sort_key)
-            )
-            for node in node_order
-        }
-        predecessors_by_label = {
-            str(label_by_node[int(node)]): tuple(
-                sorted((str(label_by_node[int(neighbor)]) for neighbor in graph.predecessors(int(node))), key=graph_label_sort_key)
-            )
-            for node in node_order
-        }
-    else:
-        labeled_edges = sorted(
-            (
-                tuple(sorted((str(label_by_node[int(left)]), str(label_by_node[int(right)]))))
-                for left, right in graph.edges()
-            ),
-            key=lambda pair: (graph_label_sort_key(pair[0]), graph_label_sort_key(pair[1])),
-        )
-        in_degrees_by_label = {str(label_by_node[int(node)]): int(degree) for node, degree in graph.degree()}
-        out_degrees_by_label = {str(label_by_node[int(node)]): int(degree) for node, degree in graph.degree()}
-        adjacency_by_label = {
-            str(label_by_node[int(node)]): tuple(
-                sorted((str(label_by_node[int(neighbor)]) for neighbor in graph.neighbors(int(node))), key=graph_label_sort_key)
-            )
-            for node in node_order
-        }
-        successors_by_label = dict(adjacency_by_label)
-        predecessors_by_label = dict(adjacency_by_label)
+    topology_sample, _label_by_node = _build_labeled_graph_topology_sample(
+        rng,
+        graph=graph,
+        directed=bool(directionality == "directed"),
+        topology_profile=str(topology_profile),
+        label_variant=str(label_variant),
+    )
     if degree_mode == "in_degree":
-        degrees_by_label = {str(key): int(value) for key, value in in_degrees_by_label.items()}
+        degrees_by_label = {str(key): int(value) for key, value in topology_sample.in_degrees_by_label.items()}
     elif degree_mode == "out_degree":
-        degrees_by_label = {str(key): int(value) for key, value in out_degrees_by_label.items()}
+        degrees_by_label = {str(key): int(value) for key, value in topology_sample.out_degrees_by_label.items()}
     else:
-        degrees_by_label = {str(key): int(value) for key, value in in_degrees_by_label.items()}
+        degrees_by_label = {str(key): int(value) for key, value in topology_sample.in_degrees_by_label.items()}
     target_labels = tuple(
         sorted((label for label, degree in degrees_by_label.items() if int(degree) == int(query_degree)), key=graph_label_sort_key)
     )
     return GraphCountSample(
-        graph=graph,
-        directed=bool(directionality == "directed"),
-        node_labels=tuple(str(label_by_node[int(node)]) for node in node_order),
-        edge_labels=tuple((str(left), str(right)) for left, right in labeled_edges),
+        graph=topology_sample.graph,
+        directed=bool(topology_sample.directed),
+        node_labels=tuple(str(label) for label in topology_sample.node_labels),
+        edge_labels=tuple((str(left), str(right)) for left, right in topology_sample.edge_labels),
         degrees_by_label={str(key): int(value) for key, value in degrees_by_label.items()},
-        in_degrees_by_label={str(key): int(value) for key, value in in_degrees_by_label.items()},
-        out_degrees_by_label={str(key): int(value) for key, value in out_degrees_by_label.items()},
-        adjacency_by_label={str(key): tuple(str(value) for value in values) for key, values in adjacency_by_label.items()},
-        successors_by_label={str(key): tuple(str(value) for value in values) for key, values in successors_by_label.items()},
-        predecessors_by_label={str(key): tuple(str(value) for value in values) for key, values in predecessors_by_label.items()},
+        in_degrees_by_label={str(key): int(value) for key, value in topology_sample.in_degrees_by_label.items()},
+        out_degrees_by_label={str(key): int(value) for key, value in topology_sample.out_degrees_by_label.items()},
+        adjacency_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.adjacency_by_label.items()},
+        successors_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.successors_by_label.items()},
+        predecessors_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.predecessors_by_label.items()},
+        edge_count=int(topology_sample.edge_count),
+        topology_profile=str(topology_sample.topology_profile),
+        label_variant=str(topology_sample.label_variant),
         target_labels=tuple(str(label) for label in target_labels),
         degree_sequence=tuple(int(value) for value in degree_sequence),
         in_degree_sequence=tuple(int(value) for value in in_degree_sequence),
         out_degree_sequence=tuple(int(value) for value in out_degree_sequence),
         query_degree=int(query_degree),
         degree_mode=str(degree_mode),
-        edge_count=int(graph.number_of_edges()),
+    )
+
+
+def feasible_node_counts_for_component_query(
+    *,
+    target_component_size: int,
+    component_count: int,
+    node_count_min: int,
+    node_count_max: int,
+) -> Tuple[int, ...]:
+    """Return node counts that can realize one disconnected component query."""
+
+    minimum = max(int(node_count_min), int(target_component_size) + int(component_count) - 1)
+    maximum = int(node_count_max)
+    if int(minimum) > int(maximum):
+        return ()
+    return tuple(range(int(minimum), int(maximum) + 1))
+
+
+def _random_positive_composition(
+    rng: random.Random,
+    *,
+    total: int,
+    parts: int,
+) -> Tuple[int, ...]:
+    """Split ``total`` into ``parts`` positive integers."""
+
+    if int(parts) <= 0:
+        if int(total) != 0:
+            raise ValueError("cannot split a non-zero total into zero parts")
+        return ()
+    if int(total) < int(parts):
+        raise ValueError("positive composition requires total >= parts")
+    remaining = int(total) - int(parts)
+    buckets = [1] * int(parts)
+    for _ in range(int(remaining)):
+        buckets[int(rng.randrange(int(parts)))] += 1
+    rng.shuffle(buckets)
+    return tuple(int(value) for value in buckets)
+
+
+def _random_tree_graph(rng: random.Random, *, size: int) -> nx.Graph:
+    """Return one deterministic connected tree with ``size`` nodes."""
+
+    graph = nx.Graph()
+    graph.add_nodes_from(range(int(size)))
+    for node in range(1, int(size)):
+        graph.add_edge(int(node), int(rng.randrange(int(node))))
+    return graph
+
+
+def _add_random_non_edges(
+    graph: nx.Graph,
+    rng: random.Random,
+    *,
+    extra_edges: int,
+) -> None:
+    """Add up to ``extra_edges`` random non-edges to one simple graph."""
+
+    non_edges = list(nx.non_edges(graph))
+    rng.shuffle(non_edges)
+    for left, right in non_edges[: max(0, int(extra_edges))]:
+        graph.add_edge(int(left), int(right))
+
+
+def _sample_connected_component_graph(
+    rng: random.Random,
+    *,
+    size: int,
+    topology_profile: str,
+) -> nx.Graph:
+    """Return one connected component graph matching the requested profile."""
+
+    node_count = int(size)
+    if int(node_count) <= 0:
+        raise ValueError("component size must be positive")
+    if int(node_count) == 1:
+        graph = nx.Graph()
+        graph.add_node(0)
+        return graph
+
+    profile = str(topology_profile)
+    if profile == "hub_heavy":
+        graph = nx.star_graph(int(node_count) - 1)
+        max_extra = max(0, min(int(node_count - 2), ((int(node_count) - 1) * (int(node_count) - 2)) // 2))
+        _add_random_non_edges(graph, rng, extra_edges=int(rng.randint(0, max_extra if max_extra > 0 else 0)))
+        return graph
+
+    graph = _random_tree_graph(rng, size=int(node_count))
+    if profile == "low_degree":
+        max_extra = 1 if int(node_count) >= 4 else 0
+    else:
+        complete_edges = (int(node_count) * (int(node_count) - 1)) // 2
+        max_extra = max(0, min(complete_edges - (int(node_count) - 1), int(node_count // 2) + 1))
+    _add_random_non_edges(graph, rng, extra_edges=int(rng.randint(0, max_extra if max_extra > 0 else 0)))
+    return graph
+
+
+def sample_component_count_graph(
+    rng: random.Random,
+    *,
+    node_count: int,
+    target_component_size: int,
+    component_count: int,
+    topology_profile: str,
+    label_variant: str,
+) -> GraphComponentSample:
+    """Construct one disconnected undirected graph for same-component queries."""
+
+    node_count_int = int(node_count)
+    target_size_int = int(target_component_size)
+    component_count_int = int(component_count)
+    feasible_node_support = feasible_node_counts_for_component_query(
+        target_component_size=int(target_size_int),
+        component_count=int(component_count_int),
+        node_count_min=int(target_size_int + component_count_int - 1),
+        node_count_max=int(node_count_int),
+    )
+    if int(node_count_int) not in feasible_node_support:
+        raise ValueError("node_count is outside feasible support for the requested component query")
+
+    target_component_index = int(rng.randrange(int(component_count_int)))
+    remaining_nodes = int(node_count_int - target_size_int)
+    other_sizes = list(
+        _random_positive_composition(
+            rng,
+            total=int(remaining_nodes),
+            parts=int(component_count_int - 1),
+        )
+    )
+    component_sizes = []
+    for component_index in range(int(component_count_int)):
+        if int(component_index) == int(target_component_index):
+            component_sizes.append(int(target_size_int))
+        else:
+            component_sizes.append(int(other_sizes.pop()))
+
+    graph = nx.Graph()
+    component_nodes: list[Tuple[int, ...]] = []
+    node_offset = 0
+    for size in component_sizes:
+        component_graph = _sample_connected_component_graph(
+            rng,
+            size=int(size),
+            topology_profile=str(topology_profile),
+        )
+        mapping = {int(node): int(node + node_offset) for node in component_graph.nodes()}
+        component_graph = nx.relabel_nodes(component_graph, mapping, copy=True)
+        graph.add_nodes_from(component_graph.nodes())
+        graph.add_edges_from(component_graph.edges())
+        ordered_nodes = tuple(sorted((int(node) for node in component_graph.nodes())))
+        component_nodes.append(ordered_nodes)
+        node_offset += int(size)
+
+    topology_sample, label_by_node = _build_labeled_graph_topology_sample(
+        rng,
+        graph=graph,
+        directed=False,
         topology_profile=str(topology_profile),
         label_variant=str(label_variant),
+    )
+    target_nodes = tuple(int(node) for node in component_nodes[int(target_component_index)])
+    query_node = int(rng.choice(target_nodes))
+    component_labels = [
+        tuple(sorted((str(label_by_node[int(node)]) for node in nodes), key=graph_label_sort_key))
+        for nodes in component_nodes
+    ]
+    component_labels = sorted(component_labels, key=lambda labels: graph_label_sort_key(labels[0]) if labels else (0, ""))
+    target_labels = tuple(sorted((str(label_by_node[int(node)]) for node in target_nodes), key=graph_label_sort_key))
+    return GraphComponentSample(
+        graph=topology_sample.graph,
+        directed=False,
+        node_labels=tuple(str(label) for label in topology_sample.node_labels),
+        edge_labels=tuple((str(left), str(right)) for left, right in topology_sample.edge_labels),
+        degrees_by_label={str(key): int(value) for key, value in topology_sample.degrees_by_label.items()},
+        in_degrees_by_label={str(key): int(value) for key, value in topology_sample.in_degrees_by_label.items()},
+        out_degrees_by_label={str(key): int(value) for key, value in topology_sample.out_degrees_by_label.items()},
+        adjacency_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.adjacency_by_label.items()},
+        successors_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.successors_by_label.items()},
+        predecessors_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.predecessors_by_label.items()},
+        edge_count=int(topology_sample.edge_count),
+        topology_profile=str(topology_sample.topology_profile),
+        label_variant=str(topology_sample.label_variant),
+        query_label=str(label_by_node[int(query_node)]),
+        target_labels=tuple(str(label) for label in target_labels),
+        components_by_label=tuple(tuple(str(label) for label in labels) for labels in component_labels),
+        component_sizes=tuple(int(len(labels)) for labels in component_labels),
+        component_count=int(component_count_int),
+        target_component_size=int(target_size_int),
     )
 
 
 __all__ = [
+    "GraphComponentSample",
     "GraphCountSample",
+    "GraphTopologySample",
     "LABEL_POOL_1_12",
+    "SUPPORTED_COMPONENT_TASK_VARIANTS",
     "SUPPORTED_DEGREE_TASK_VARIANTS",
     "SUPPORTED_LAYOUT_VARIANTS",
     "SUPPORTED_LABEL_VARIANTS",
     "SUPPORTED_TOPOLOGY_PROFILES",
+    "feasible_node_counts_for_component_query",
     "feasible_node_counts_for_degree_count",
     "graph_degree_mode_for_task_variant",
     "graph_directionality_for_task_variant",
     "graph_label_sort_key",
+    "sample_component_count_graph",
     "sample_degree_count_graph",
 ]

@@ -246,6 +246,13 @@ def test_graph_counting_bundle_supports_degree_count_query() -> None:
     assert list(bundle.required_slots_by_key["task:degree_count_query"]) == ["question_text"]
 
 
+def test_graph_relation_bundle_supports_same_component_count_query() -> None:
+    bundle = load_prompt_bundle("graph", "relation", "graph_relation_v1")
+    assert "single_graph_relation" in bundle.task_family_templates
+    assert len(bundle.task_templates["same_component_count_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task:same_component_count_query"]) == ["question_text"]
+
+
 def test_tile_reachability_bundle_supports_region_size_query() -> None:
     bundle = load_prompt_bundle("tile", "reachability", "tile_reachability_v1")
     assert len(bundle.task_templates["region_size_query"]) == REQUIRED_PROMPT_VARIANTS

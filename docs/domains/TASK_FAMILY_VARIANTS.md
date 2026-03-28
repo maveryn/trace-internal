@@ -250,14 +250,21 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`).
    - Answer type: integer count.
    - Evidence: sorted `label_set` of the node labels whose asked degree measure equals `k`.
-26. **Icons sequence missing count (`task_icons_sequence_missing_count`)**
+27. **Graph relation same-component count (`task_graph_relation_same_component_count`)**
+   - One single-panel labeled undirected node-link graph.
+   - Query: `How many nodes, including node X itself, are in the same connected component as X?`
+   - Graph contract: simple disconnected unweighted graph with `5..10` nodes, `2..4` connected components, and a queried component size in `1..6`.
+   - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`), plus non-semantic label/shape/color/layout-transform diversity shared with the graph domain.
+   - Answer type: integer count.
+   - Evidence: sorted `label_set` of all node labels in the connected component containing the queried node, including the queried node itself.
+28. **Icons sequence missing count (`task_icons_sequence_missing_count`)**
    - One single-panel image with a horizontal row of `4..6` Scene boxes.
    - Query: how many icons should appear in the missing Scene box to continue the sequence.
    - Sequence rule: visible box counts follow one arithmetic progression with hidden answer support `0..10` and integer step `±1..±3`.
    - Visual rule: all visible Scene icons keep one shared icon type and tint, may vary by rotation, use the smaller `24..40` px size band, stay within `20%` pairwise overlap inside each box, and each instance samples one row box width/height with the final canvas fit to that row geometry.
    - Answer type: integer count.
    - Evidence: one-box `bbox_set` for the missing Scene box in final image coordinates.
-27. **Icons sequence rotation violation (`task_icons_sequence_rotation_violation`)**
+29. **Icons sequence rotation violation (`task_icons_sequence_rotation_violation`)**
    - One single-panel image with a horizontal row of `5..7` numbered Scene boxes, each containing exactly one icon.
    - Query: which numbered box breaks the rotation sequence.
    - Sequence rule: the clean row follows one constant step over rotations `{0, 90, 180, 270}` using step support `{90, 270}`, and exactly one box is corrupted away from that rule.
@@ -265,7 +272,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Answer type: integer box index.
    - Evidence: one-box `bbox_set` for the violating Scene box in final image coordinates.
    - Ambiguity rule: reject any row where more than one box index could plausibly be the unique violation under the supported constant-step hypotheses.
-28. **Icons pattern grid rotation violation (`task_icons_pattern_grid_rotation_violation`)**
+30. **Icons pattern grid rotation violation (`task_icons_pattern_grid_rotation_violation`)**
    - One single-panel image with a numbered `3 x 3` grid of Scene boxes, each containing exactly one icon.
    - Query: which numbered box breaks the 2D rotation pattern.
    - Pattern rule: the clean grid follows one row/column offset rule `rotation[row, col] = base + row * row_step + col * col_step (mod 360)` using rotations `{0, 90, 180, 270}` and row/column step supports `{90, 180, 270}`.
@@ -273,7 +280,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Answer type: integer box index.
    - Evidence: one-box `bbox_set` for the violating grid box in final image coordinates.
    - Ambiguity rule: reject any grid where more than one box index could plausibly be the unique violation under the supported row/column rule hypotheses.
-29. **Icons pattern grid size violation (`task_icons_pattern_grid_size_violation`)**
+31. **Icons pattern grid size violation (`task_icons_pattern_grid_size_violation`)**
    - One single-panel image with a numbered `3 x 3` grid of Scene boxes, each containing exactly one icon.
    - Query: which numbered box breaks the 2D size pattern.
    - Pattern rule: the clean grid follows one row/column size-level rule `level[row, col] = base + row * row_step + col * col_step` using symbolic levels `{1,2,3,4,5}` and step supports `{-1,0,1}` with the all-zero step pair disallowed.
@@ -281,7 +288,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Answer type: integer box index.
    - Evidence: one-box `bbox_set` for the violating grid box in final image coordinates.
    - Ambiguity rule: reject any grid where more than one box index could plausibly be the unique violation under the supported row/column size-rule hypotheses.
-30. **Icons counting singleton type (`task_icons_counting_singleton_type`)**
+32. **Icons counting singleton type (`task_icons_counting_singleton_type`)**
    - One single-panel image with `6..15` randomly placed Scene icons.
    - Query: how many icons have a type that appears exactly once in the image.
    - Frequency rule: counting is over icon type only; colors and rotations may vary per icon, but repeated `icon_id` values define the repeated groups and singleton `icon_id` values define the counted witnesses.

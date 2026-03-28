@@ -119,9 +119,10 @@ Promote helpers when a second consumer appears.
    - For class-counting tasks with overlapping school definitions (for example isosceles vs equilateral), keep the exclusive wording in prompt/config slots instead of relying on unstated conventions.
    - For polygon class-counting tasks such as convexity, use the shared strict classifier and reject `degenerate` near-flat/self-intersecting polygons instead of inventing one task-local visual heuristic.
    - `multi_shape_scene.py` provides reusable mixed polygon/circle/ellipse rendering plus object-label placement for sibling mixed-shape geometry scenes; use it when a second task needs the same object-family mix instead of creating another task-local renderer.
-5. Graph: `trace/tasks/graph/shared/graph_sampling.py`, `graph_scene.py`, `style.py`, `visual_defaults.py`, `complexity.py`
+5. Graph: `trace/tasks/graph/shared/graph_sampling.py`, `graph_scene.py`, `task_support.py`, `style.py`, `visual_defaults.py`, `complexity.py`
    - `graph_sampling.py` is the canonical simple-graph topology sampler for graph-domain tasks; keep degree-support feasibility probes and labeled simple-graph construction there instead of cloning rejection loops per task.
    - `graph_scene.py` is the canonical labeled node-link graph renderer for graph-domain tasks; keep node/edge pixel geometry, panel chrome, and layout fallback logic there instead of task-local drawing.
+   - `task_support.py` is the canonical graph-task support layer for balanced style-axis resolution and shared graph render-parameter defaults; if a second graph task needs the same node-shape / named-color / layout-transform plumbing, promote it there instead of copying task-local resolution code.
    - `style.py` is the canonical graph-domain visual-theme helper; keep named-color graph palettes and other non-semantic whole-image graph styling there instead of re-deriving per-task RGB themes.
    - `visual_defaults.py` is the canonical graph-domain background/noise loader layer shared across future graph task groups.
    - `complexity.py` is the shared graph-domain complexity layer; it owns normalized `[0,1]` score construction, config-weight resolution, and weighted-mean `TaskComplexity` construction, while graph tasks still own their task-local raw-to-normalized difficulty measurements.

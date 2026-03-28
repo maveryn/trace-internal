@@ -41,3 +41,4 @@ Update this table after each review run.
 | task_icons_transformation_pair_count | task_icons_transformation_pair_count | alright_for_now | distribution pass |
 | task_tile_path_shortest_path |  |  |  |
 | task_graph_counting_degree_count | task_graph_counting_degree_count | alright_for_now | distribution pass (degree/in-degree/out-degree variants) |
+| task_graph_relation_same_component_count | task_graph_relation_same_component_count | alright_for_now | distribution pass |

@@ -28,6 +28,20 @@ Measure:
 - closeness of near-miss node degrees,
 - readability pressure from crossings, tight layouts, or small nodes.
 
+### `relation`
+```yaml
+topology_reasoning: 0.45
+visual_scan: 0.25
+ambiguity: 0.20
+clutter: 0.10
+```
+
+Measure:
+- connected-component count and visible graph size,
+- how much topology tracing the query requires beyond a local neighborhood,
+- whether other components have the same or nearly the same size as the queried component,
+- readability pressure from crossings, tight layouts, or small nodes.
+
 ## Notes
 - Keep graph-domain criteria broad at domain scope; `topology_reasoning` belongs at task-group scope unless every graph family needs it.
 - Do not let layout choice define difficulty directly unless the task truly depends on layout semantics; layout should usually feed `clutter` or `ambiguity`, not replace topology reasoning.

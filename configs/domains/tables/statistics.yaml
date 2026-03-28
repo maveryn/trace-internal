@@ -19,6 +19,10 @@ generation:
       task_variant_weights:
         filtered_column_sum: 1.0
         filtered_column_mean: 1.0
+    task_tables_statistics_filtered_subset_label:
+      task_variant_weights:
+        filtered_argmax: 1.0
+        filtered_argmin: 1.0
 prompt:
   shared:
     bundle_id: tables_statistics_v1
@@ -72,3 +76,12 @@ prompt:
       json_example_filtered_column_mean: '{"evidence":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],"answer":14}'
       json_example_answer_only_filtered_column_sum: '{"answer":27}'
       json_example_answer_only_filtered_column_mean: '{"answer":14}'
+    task_tables_statistics_filtered_subset_label:
+      task_key: filtered_subset_label_query
+      answer_hint: set "answer" to the exact row-name string from the filtered rows
+      evidence_hint_filtered_argmax: set "evidence" to an array containing the ordered supporting cell pairs [filter cell, target cell] for each selected row in top-to-bottom row order
+      evidence_hint_filtered_argmin: set "evidence" to an array containing the ordered supporting cell pairs [filter cell, target cell] for each selected row in top-to-bottom row order
+      json_example_filtered_argmax: '{"evidence":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],"answer":"Ava"}'
+      json_example_filtered_argmin: '{"evidence":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],"answer":"Milo"}'
+      json_example_answer_only_filtered_argmax: '{"answer":"Ava"}'
+      json_example_answer_only_filtered_argmin: '{"answer":"Milo"}'

@@ -349,9 +349,17 @@ def test_tables_statistics_bundle_supports_filtered_subset_variants() -> None:
     assert len(bundle.task_variant_templates["table_sum"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_variant_templates["table_mean"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_templates["filtered_subset_value_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_templates["filtered_subset_label_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_variant_templates["filtered_column_sum"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_variant_templates["filtered_column_mean"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["filtered_argmax"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["filtered_argmin"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["task_variant:filtered_column_sum"]) == [
+        "query_filter_column",
+        "query_target_column",
+        "filter_condition",
+    ]
+    assert list(bundle.required_slots_by_key["task_variant:filtered_argmax"]) == [
         "query_filter_column",
         "query_target_column",
         "filter_condition",

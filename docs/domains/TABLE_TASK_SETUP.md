@@ -9,6 +9,7 @@ This document defines the concrete v1 tables-domain contract.
    - `task_tables_statistics_summary_label`
    - `task_tables_statistics_summary_value`
    - `task_tables_statistics_filtered_subset_value`
+   - `task_tables_statistics_filtered_subset_label`
    - `task_tables_counting_value_count`
    - `task_tables_readout_subset_value`
    - `task_tables_relation_row_compare_label`
@@ -32,32 +33,37 @@ This document defines the concrete v1 tables-domain contract.
    - `scene_variant`: `spreadsheet|zebra|ledger|card_table`
    - `answer_gt.type`: `integer`
    - `evidence_gt.type`: `bbox_set`
-4. `task_tables_counting_value_count`
+4. `task_tables_statistics_filtered_subset_label`
+   - `task_variant`: `filtered_argmax|filtered_argmin`
+   - `scene_variant`: `spreadsheet|zebra|ledger|card_table`
+   - `answer_gt.type`: `string`
+   - `evidence_gt.type`: `bbox_set`
+5. `task_tables_counting_value_count`
    - `task_variant`: `above_threshold|below_threshold|in_interval|col_a_gt_col_b|col_a_lt_col_b`
    - `scene_variant`: `spreadsheet|zebra|ledger|card_table`
    - `answer_gt.type`: `integer`
    - `evidence_gt.type`: `bbox_set`
-5. `task_tables_readout_subset_value`
+6. `task_tables_readout_subset_value`
    - `task_variant`: `cell_lookup|cell_sum_two|cell_difference_two_abs`
    - `scene_variant`: `spreadsheet|zebra|ledger|card_table`
    - `answer_gt.type`: `integer`
    - `evidence_gt.type`: `bbox_set`
-6. `task_tables_relation_row_compare_label`
+7. `task_tables_relation_row_compare_label`
    - `task_variant`: `higher_of_two_rows|lower_of_two_rows`
    - `scene_variant`: `spreadsheet|zebra|ledger|card_table`
    - `answer_gt.type`: `string`
    - `evidence_gt.type`: `bbox_set`
-7. `task_tables_relation_extremum_transfer_value`
+8. `task_tables_relation_extremum_transfer_value`
    - `task_variant`: `argmax_transfer|argmin_transfer`
    - `scene_variant`: `spreadsheet|zebra|ledger|card_table`
    - `answer_gt.type`: `integer`
    - `evidence_gt.type`: `bbox_set`
-8. `task_tables_ranking_label`
+9. `task_tables_ranking_label`
    - `task_variant`: `kth_highest_in_column|kth_lowest_in_column`
    - `scene_variant`: `spreadsheet|zebra|ledger|card_table`
    - `answer_gt.type`: `string`
    - `evidence_gt.type`: `bbox_set`
-9. `task_tables_temporal_value`
+10. `task_tables_temporal_value`
    - `task_variant`: `value_at_year|delta_between_years|absolute_difference_between_years|sum_over_year_interval|mean_over_year_interval`
    - `scene_variant`: `spreadsheet|zebra|ledger|card_table`
    - `answer_gt.type`: `integer`
@@ -70,13 +76,14 @@ This document defines the concrete v1 tables-domain contract.
 4. Tables use `5..10` data rows by default.
 5. Summary-label tasks query either one numeric column (`argmax|argmin`) or the row totals across numeric columns (`row_sum_argmax|row_sum_argmin`) and ask which row wins.
 6. Summary-value tasks query either one numeric column (`column_*`), one visible row label (`row_*`), or the full numeric table (`table_*`) and ask for the requested integer summary over that subset.
-7. Filtered-subset statistics tasks query one filter column plus one distinct target column and aggregate the target values over only the rows that satisfy the filter condition.
-8. Counting tasks either query one numeric column plus a threshold/interval predicate or query two visible numeric columns with a strict row-wise comparison, and count matching rows.
-9. Readout tasks query one visible cell or an ordered pair of visible cells and ask for an exact integer readout, sum, or absolute difference.
-10. Relation tasks either compare two visible row labels in one numeric column or transfer from the extremum row of one source column to another target-column value in that same row.
-11. Ranking tasks query one numeric column plus an internal rank `k` (currently `2..4`) and ask which row is the kth highest or kth lowest in that column.
-12. Temporal tasks use the same single-table layout, but the numeric columns are year headers in chronological order rather than metric headers and the prompt always names one visible row plus one year or year interval.
-13. Row-name answers are visible row-name strings from the table, not option letters.
+7. Filtered-subset statistics value tasks query one filter column plus one distinct target column and aggregate the target values over only the rows that satisfy the filter condition.
+8. Filtered-subset statistics label tasks query one filter column plus one distinct target column, keep only the rows that satisfy the filter condition, and ask which remaining row has the requested target-column extremum.
+9. Counting tasks either query one numeric column plus a threshold/interval predicate or query two visible numeric columns with a strict row-wise comparison, and count matching rows.
+10. Readout tasks query one visible cell or an ordered pair of visible cells and ask for an exact integer readout, sum, or absolute difference.
+11. Relation tasks either compare two visible row labels in one numeric column or transfer from the extremum row of one source column to another target-column value in that same row.
+12. Ranking tasks query one numeric column plus an internal rank `k` (currently `2..4`) and ask which row is the kth highest or kth lowest in that column.
+13. Temporal tasks use the same single-table layout, but the numeric columns are year headers in chronological order rather than metric headers and the prompt always names one visible row plus one year or year interval.
+14. Row-name answers are visible row-name strings from the table, not option letters.
 
 ## 4) Evidence policy
 1. Tables use one fixed evidence type from the start: `bbox_set`.
@@ -84,13 +91,14 @@ This document defines the concrete v1 tables-domain contract.
 3. For `task_tables_statistics_summary_label`, column variants use exactly one bbox for the decisive numeric value cell and row-summary variants use exactly one bbox for the supporting winning-row data region.
 4. For `task_tables_statistics_summary_value`, column variants use exactly one bbox for the supporting queried-column data region, row variants use exactly one bbox for the supporting queried-row data region, and table variants use exactly one bbox for the supporting full numeric-table region.
 5. For `task_tables_statistics_filtered_subset_value`, evidence is the ordered set of `[filter cell, target cell]` value-cell pairs for every selected row, in top-to-bottom row order.
-6. For `task_tables_counting_value_count`, single-column variants use the ordered set of supporting queried-column value-cell bboxes in top-to-bottom row order, while pairwise variants use the ordered set of compared queried-column value-cell pairs for every matching row in top-to-bottom row order and prompt column order within each row.
-7. For `task_tables_readout_subset_value`, evidence is one queried value-cell bbox for `cell_lookup` and an ordered pair of queried value-cell bboxes for the two-cell arithmetic variants.
-8. For `task_tables_relation_row_compare_label`, evidence is the ordered pair of compared queried-column value-cell bboxes.
-9. For `task_tables_relation_extremum_transfer_value`, evidence is the ordered pair `[source extremum cell, transferred target cell]`.
-10. For `task_tables_ranking_label`, evidence is exactly one bbox for the supporting queried-column region because the ranking witness depends on the ordered values across the full column.
-11. For `task_tables_temporal_value`, `value_at_year` uses exactly one queried year-cell bbox, the two-year variants use exactly two queried year-cell bboxes ordered as `[start year, end year]`, and the interval variants use the ordered queried year-cell bboxes from the start year through the end year.
-12. Prompt wording should explicitly say whether the evidence is a supporting value cell, a set of matching value cells, a supporting row region, a supporting column region, a full numeric-table region, or an ordered queried-cell pair.
+6. For `task_tables_statistics_filtered_subset_label`, evidence is the ordered set of `[filter cell, target cell]` value-cell pairs for every selected row, in top-to-bottom row order.
+7. For `task_tables_counting_value_count`, single-column variants use the ordered set of supporting queried-column value-cell bboxes in top-to-bottom row order, while pairwise variants use the ordered set of compared queried-column value-cell pairs for every matching row in top-to-bottom row order and prompt column order within each row.
+8. For `task_tables_readout_subset_value`, evidence is one queried value-cell bbox for `cell_lookup` and an ordered pair of queried value-cell bboxes for the two-cell arithmetic variants.
+9. For `task_tables_relation_row_compare_label`, evidence is the ordered pair of compared queried-column value-cell bboxes.
+10. For `task_tables_relation_extremum_transfer_value`, evidence is the ordered pair `[source extremum cell, transferred target cell]`.
+11. For `task_tables_ranking_label`, evidence is exactly one bbox for the supporting queried-column region because the ranking witness depends on the ordered values across the full column.
+12. For `task_tables_temporal_value`, `value_at_year` uses exactly one queried year-cell bbox, the two-year variants use exactly two queried year-cell bboxes ordered as `[start year, end year]`, and the interval variants use the ordered queried year-cell bboxes from the start year through the end year.
+13. Prompt wording should explicitly say whether the evidence is a supporting value cell, a set of matching value cells, a supporting row region, a supporting column region, a full numeric-table region, or an ordered queried-cell pair.
 
 ## 5) Visual policy
 1. Table scenes use light solid backgrounds only in v1.
@@ -128,6 +136,7 @@ This document defines the concrete v1 tables-domain contract.
    - `summary_row_value_query`
    - `summary_table_value_query`
    - `filtered_subset_value_query`
+   - `filtered_subset_label_query`
    - `value_count_query`
    - `column_pair_count_query`
    - `subset_value_query`

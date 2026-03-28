@@ -1,4 +1,4 @@
-"""Table statistics task that aggregates one target column over a filtered row subset."""
+"""Table statistics task that returns the winning row label within a filtered row subset."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ from ...shared.prompt_variants import (
 from ..shared.table_common import (
     SUPPORTED_TABLE_SCENE_VARIANTS,
     TableDefaults,
-    build_statistics_filtered_subset_dataset_for_variant,
+    build_statistics_filtered_subset_label_dataset_for_variant,
     projected_table_bbox_evidence,
     render_table_filter_condition,
     resolve_table_axis_variant,
@@ -30,8 +30,8 @@ from ..shared.table_scene import render_table_scene
 from ..shared.visual_defaults import load_table_background_defaults, load_table_noise_defaults
 
 
-TASK_ID = "task_tables_statistics_filtered_subset_value"
-_SUPPORTED_TASK_VARIANTS: Tuple[str, ...] = ("filtered_column_sum", "filtered_column_mean")
+TASK_ID = "task_tables_statistics_filtered_subset_label"
+_SUPPORTED_TASK_VARIANTS: Tuple[str, ...] = ("filtered_argmax", "filtered_argmin")
 
 _DEFAULTS = TableDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("tables", "statistics")
@@ -44,7 +44,7 @@ POST_IMAGE_NOISE_DEFAULTS = load_table_noise_defaults(task_group="statistics", a
 
 
 def _resolve_task_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
-    """Resolve the semantic filtered-summary variant."""
+    """Resolve the semantic filtered-label variant."""
 
     return resolve_table_axis_variant(
         params=params,
@@ -74,9 +74,10 @@ def _resolve_scene_variant(params: Mapping[str, Any], *, instance_seed: int) -> 
         axis_namespace="scene_variant",
     )
 
+
 @register_task
-class TablesStatisticsFilteredSubsetValueTask:
-    """Aggregate one numeric column over the rows selected by another column filter."""
+class TablesStatisticsFilteredSubsetLabelTask:
+    """Return the row label with the requested extremum inside a filtered row subset."""
 
     task_id = TASK_ID
     domain = "tables"
@@ -86,7 +87,7 @@ class TablesStatisticsFilteredSubsetValueTask:
         del max_attempts
         task_variant, task_variant_probabilities = _resolve_task_variant(params, instance_seed=int(instance_seed))
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
-        dataset = build_statistics_filtered_subset_dataset_for_variant(
+        dataset = build_statistics_filtered_subset_label_dataset_for_variant(
             task_variant=str(task_variant),
             params=params,
             instance_seed=int(instance_seed),
@@ -135,12 +136,12 @@ class TablesStatisticsFilteredSubsetValueTask:
                 "object_description_zebra",
                 "object_description_ledger",
                 "object_description_card_table",
-                "evidence_hint_filtered_column_sum",
-                "evidence_hint_filtered_column_mean",
-                "json_example_filtered_column_sum",
-                "json_example_filtered_column_mean",
-                "json_example_answer_only_filtered_column_sum",
-                "json_example_answer_only_filtered_column_mean",
+                "evidence_hint_filtered_argmax",
+                "evidence_hint_filtered_argmin",
+                "json_example_filtered_argmax",
+                "json_example_filtered_argmin",
+                "json_example_answer_only_filtered_argmax",
+                "json_example_answer_only_filtered_argmin",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -180,8 +181,8 @@ class TablesStatisticsFilteredSubsetValueTask:
             [round(float(value), 3) for value in bbox]
             for bbox in evidence_projection["bbox_set"]
         ]
-        answer_value = int(dataset["answer_value"])
-        answer_gt = TypedValue(type="integer", value=int(answer_value))
+        answer_row_label = str(dataset["answer_row_label"])
+        answer_gt = TypedValue(type="string", value=str(answer_row_label))
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
 
         values_by_row = {
@@ -205,7 +206,9 @@ class TablesStatisticsFilteredSubsetValueTask:
                     "filter_variant": str(dataset["filter_variant"]),
                     "filter_column": str(dataset["filter_column"]),
                     "target_column": str(dataset["target_column"]),
-                    "answer_value": int(answer_value),
+                    "answer_row_label": str(answer_row_label),
+                    "answer_row_index": int(dataset["answer_row_index"]),
+                    "answer_value": int(dataset["answer_value"]),
                     "selected_row_labels": [str(label) for label in dataset["selected_row_labels"]],
                     "supporting_cell_ids": [str(cell_id) for cell_id in supporting_cell_ids],
                     **(
@@ -270,7 +273,9 @@ class TablesStatisticsFilteredSubsetValueTask:
                 "filter_column_index": int(dataset["filter_column_index"]),
                 "target_column": str(dataset["target_column"]),
                 "target_column_index": int(dataset["target_column_index"]),
-                "answer_value": int(answer_value),
+                "answer_row_label": str(answer_row_label),
+                "answer_row_index": int(dataset["answer_row_index"]),
+                "answer_value": int(dataset["answer_value"]),
                 "row_labels": [str(label) for label in dataset["row_labels"]],
                 "column_headers": [str(header) for header in dataset["column_headers"]],
                 "values_by_row": dict(values_by_row),
@@ -283,7 +288,7 @@ class TablesStatisticsFilteredSubsetValueTask:
                 "selected_row_labels": [str(label) for label in dataset["selected_row_labels"]],
                 "task_variant_probabilities": dict(task_variant_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
-                "question_format": "filtered_subset_value",
+                "question_format": "filtered_subset_label",
                 "supporting_cell_ids": [str(cell_id) for cell_id in supporting_cell_ids],
                 **(
                     {"threshold_value": int(dataset["threshold_value"])}
@@ -306,10 +311,10 @@ class TablesStatisticsFilteredSubsetValueTask:
         filter_bonus = 0.03 if str(dataset["filter_variant"]) == "in_interval" else 0.01
         complexity = TaskComplexity(
             complexity_score=float(
-                0.2
+                0.23
                 + (0.025 * int(dataset["row_count"]))
                 + (0.02 * int(dataset["numeric_column_count"]))
-                + (0.05 if str(task_variant) == "filtered_column_mean" else 0.03)
+                + 0.06
                 + float(filter_bonus)
             ),
             complexity_components={
@@ -335,4 +340,4 @@ class TablesStatisticsFilteredSubsetValueTask:
         )
 
 
-__all__ = ["TablesStatisticsFilteredSubsetValueTask"]
+__all__ = ["TablesStatisticsFilteredSubsetLabelTask"]

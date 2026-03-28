@@ -52,6 +52,13 @@
       "Use the table values to filter the rows and then aggregate the named target column.",
       "Find the numeric summary of the target column after applying the stated row filter.",
       "Read the table, keep the rows that satisfy the filter, and report the requested target-column summary."
+    ],
+    "filtered_subset_label_query": [
+      "Answer this question.",
+      "Determine which selected row wins under the requested target-column extremum after applying the filter condition.",
+      "Use the table values to filter the rows and then identify the winning row in the named target column.",
+      "Find the row name with the requested target-column extremum after applying the stated row filter.",
+      "Read the table, keep the rows that satisfy the filter, and report the row that wins in the target column."
     ]
   },
   "task_variant_templates": {
@@ -145,6 +152,20 @@
       "Using only the rows with {filter_condition}, determine the mean of the {query_target_column} column.",
       "What is the average of the {query_target_column} values for rows whose {query_filter_column} entries satisfy {filter_condition}?",
       "Compute the mean of {query_target_column} over the rows where {filter_condition}."
+    ],
+    "filtered_argmax": [
+      "Among the rows with {filter_condition}, which row has the highest value in the {query_target_column} column?",
+      "Filter the rows to those with {filter_condition}. Which row label has the largest {query_target_column} value?",
+      "Using only the rows with {filter_condition}, determine which row has the maximum value in {query_target_column}.",
+      "What row name has the highest {query_target_column} value among rows whose {query_filter_column} entries satisfy {filter_condition}?",
+      "After filtering to rows where {filter_condition}, identify the row with the maximum {query_target_column} value."
+    ],
+    "filtered_argmin": [
+      "Among the rows with {filter_condition}, which row has the lowest value in the {query_target_column} column?",
+      "Filter the rows to those with {filter_condition}. Which row label has the smallest {query_target_column} value?",
+      "Using only the rows with {filter_condition}, determine which row has the minimum value in {query_target_column}.",
+      "What row name has the lowest {query_target_column} value among rows whose {query_filter_column} entries satisfy {filter_condition}?",
+      "After filtering to rows where {filter_condition}, identify the row with the minimum {query_target_column} value."
     ]
   },
   "required_slots_by_key": {
@@ -163,6 +184,16 @@
       "filter_condition"
     ],
     "task_variant:filtered_column_mean": [
+      "query_filter_column",
+      "query_target_column",
+      "filter_condition"
+    ],
+    "task_variant:filtered_argmax": [
+      "query_filter_column",
+      "query_target_column",
+      "filter_condition"
+    ],
+    "task_variant:filtered_argmin": [
       "query_filter_column",
       "query_target_column",
       "filter_condition"

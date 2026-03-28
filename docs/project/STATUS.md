@@ -139,7 +139,7 @@ Date: 2026-03-28
 1. Tests are required to pass before finalize.
 2. Distribution QA uses `scripts/check_task_answer_distribution.py` with per-variant answer-only checks (`unique_answers >= 5`, `max_answer_frequency < 25%`) and multithreaded sample generation (`--workers`); numeric 5-bin summaries remain reported for review but are not hard pass/fail gates.
 3. Task-review tooling writes per-task artifacts under `task-reviews/<task_id>/`, including one inspection workbook named `<task_id>.xlsx` with one sheet per task variant.
-4. The current active reviewed task set (10 tile tasks + 20 geometry tasks + 11 reviewed icons tasks + 10 charts tasks + 9 table tasks) passes distribution review under the active gates.
+4. The current active reviewed task set (10 tile tasks + 20 geometry tasks + 11 reviewed icons tasks + 10 charts tasks + 10 table tasks) passes distribution review under the active gates.
 
 ## Next priorities
 1. Extend icons beyond the current counting/transformation/relation/sequence set using the curated Prism asset pipeline (`comparison` and richer relation/transformation variants are the next natural families).

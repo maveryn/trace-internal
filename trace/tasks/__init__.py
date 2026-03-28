@@ -48,6 +48,7 @@ from .tables.relation import extremum_transfer_value as _task_tables_relation_ex
 from .tables.relation import row_compare_label as _task_tables_relation_row_compare_label
 from .tables.readout import subset_value as _task_tables_readout_subset_value
 from .tables.statistics import filtered_subset_value as _task_tables_statistics_filtered_subset_value
+from .tables.statistics import filtered_subset_label as _task_tables_statistics_filtered_subset_label
 from .tables.statistics import summary_label as _task_tables_statistics_summary_label
 from .tables.statistics import summary_value as _task_tables_statistics_summary_value
 from .tables.temporal import value as _task_tables_temporal_value

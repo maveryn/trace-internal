@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from trace.core.type_registry import load_type_registry
+from trace.tasks.tables.statistics.filtered_subset_label import TablesStatisticsFilteredSubsetLabelTask
 from trace.tasks.tables.statistics.filtered_subset_value import TablesStatisticsFilteredSubsetValueTask
 from trace.tasks.tables.statistics.summary_label import TablesStatisticsSummaryLabelTask
 from trace.tasks.tables.statistics.summary_value import TablesStatisticsSummaryValueTask
@@ -363,6 +364,125 @@ def test_table_statistics_filtered_subset_value_task_is_deterministic() -> None:
     params = {"task_variant": "filtered_column_mean", "scene_variant": "spreadsheet"}
     out_a = task.generate(18260, params=params, max_attempts=10)
     out_b = task.generate(18260, params=params, max_attempts=10)
+
+    assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
+    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
+    assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
+    assert out_a.prompt == out_b.prompt
+    assert out_a.image.tobytes() == out_b.image.tobytes()
+
+
+def test_table_statistics_filtered_subset_label_variants_match_contract() -> None:
+    task = TablesStatisticsFilteredSubsetLabelTask()
+    cases = (
+        ("filtered_argmax", "spreadsheet"),
+        ("filtered_argmin", "zebra"),
+        ("filtered_argmax", "ledger"),
+        ("filtered_argmin", "card_table"),
+    )
+    for seed, (task_variant, scene_variant) in enumerate(cases, start=18290):
+        out = task.generate(seed, params={"task_variant": task_variant, "scene_variant": scene_variant}, max_attempts=10)
+        trace = out.trace_payload
+        execution = trace["execution_trace"]
+        render = trace["render_spec"]
+
+        row_labels = [str(label) for label in execution["row_labels"]]
+        values_by_row = {
+            str(row_label): {
+                str(header): int(value)
+                for header, value in row_values.items()
+            }
+            for row_label, row_values in execution["values_by_row"].items()
+        }
+        filter_column = str(execution["filter_column"])
+        target_column = str(execution["target_column"])
+        selected_row_indices = [int(value) for value in execution["selected_row_indices"]]
+        evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
+        expected_cell_ids = [str(cell_id) for cell_id in execution["supporting_cell_ids"]]
+        answer_row_label = str(out.answer_gt.value)
+
+        assert str(out.task_variant) == str(task_variant)
+        assert out.answer_gt.type == "string"
+        assert out.evidence_gt.type == "bbox_set"
+        assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+        assert str(execution["scene_variant"]) == str(scene_variant)
+        assert str(render["scene_variant"]) == str(scene_variant)
+        assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
+        assert 5 <= int(execution["row_count"]) <= 10
+        assert 3 <= int(execution["numeric_column_count"]) <= 5
+        assert filter_column != target_column
+        assert len(selected_row_indices) >= 2
+        assert len(evidence_bboxes) == (2 * len(selected_row_indices)) == len(expected_cell_ids)
+        assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
+        assert str(answer_row_label) in set(row_labels)
+
+        filter_values = [int(values_by_row[str(row_label)][filter_column]) for row_label in row_labels]
+        if str(execution["filter_variant"]) == "above_threshold":
+            threshold_value = int(execution["threshold_value"])
+            expected_row_indices = [
+                int(index) for index, value in enumerate(filter_values) if int(value) > int(threshold_value)
+            ]
+        elif str(execution["filter_variant"]) == "below_threshold":
+            threshold_value = int(execution["threshold_value"])
+            expected_row_indices = [
+                int(index) for index, value in enumerate(filter_values) if int(value) < int(threshold_value)
+            ]
+        else:
+            interval_min = int(execution["interval_min"])
+            interval_max = int(execution["interval_max"])
+            expected_row_indices = [
+                int(index)
+                for index, value in enumerate(filter_values)
+                if int(interval_min) <= int(value) <= int(interval_max)
+            ]
+        assert selected_row_indices == expected_row_indices
+        assert [str(row_labels[int(index)]) for index in selected_row_indices] == [
+            str(label) for label in execution["selected_row_labels"]
+        ]
+
+        target_values_by_label = {
+            str(row_labels[int(index)]): int(values_by_row[str(row_labels[int(index)])][target_column])
+            for index in selected_row_indices
+        }
+        if str(task_variant) == "filtered_argmax":
+            assert int(target_values_by_label[str(answer_row_label)]) == max(target_values_by_label.values())
+        else:
+            assert int(target_values_by_label[str(answer_row_label)]) == min(target_values_by_label.values())
+        assert len(set(int(value) for value in target_values_by_label.values())) == len(target_values_by_label)
+
+        expected_bboxes = [
+            [float(value) for value in trace["render_map"]["cell_bboxes_px"][str(cell_id)]]
+            for cell_id in expected_cell_ids
+        ]
+        assert evidence_bboxes == expected_bboxes
+
+
+def test_table_statistics_filtered_subset_label_prompt_examples_match_selected_variant() -> None:
+    task = TablesStatisticsFilteredSubsetLabelTask()
+    expected = {
+        "filtered_argmax": {
+            "evidence": [[260, 180, 372, 236], [374, 180, 486, 236], [260, 236, 372, 292], [374, 236, 486, 292]],
+            "answer": "Ava",
+        },
+        "filtered_argmin": {
+            "evidence": [[260, 180, 372, 236], [374, 180, 486, 236], [260, 236, 372, 292], [374, 236, 486, 292]],
+            "answer": "Milo",
+        },
+    }
+    for index, task_variant in enumerate(expected, start=18330):
+        out = task.generate(index, params={"task_variant": task_variant}, max_attempts=10)
+        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
+        assert answer_and_evidence == expected[task_variant]
+        assert answer_only == {"answer": expected[task_variant]["answer"]}
+
+
+def test_table_statistics_filtered_subset_label_task_is_deterministic() -> None:
+    task = TablesStatisticsFilteredSubsetLabelTask()
+    params = {"task_variant": "filtered_argmax", "scene_variant": "spreadsheet"}
+    out_a = task.generate(18360, params=params, max_attempts=10)
+    out_b = task.generate(18360, params=params, max_attempts=10)
 
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
     assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()

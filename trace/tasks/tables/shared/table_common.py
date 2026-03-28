@@ -1471,6 +1471,181 @@ def build_statistics_filtered_subset_dataset_for_variant(
     }
 
 
+def build_statistics_filtered_subset_label_dataset_for_variant(
+    *,
+    task_variant: str,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    gen_defaults: Mapping[str, Any],
+    defaults: TableDefaults,
+    task_id: str,
+) -> Dict[str, Any]:
+    """Construct one deterministic table dataset for filtered winner-row label queries."""
+
+    if str(task_variant) not in {"filtered_argmax", "filtered_argmin"}:
+        raise ValueError(f"unsupported filtered table statistics label variant: {task_variant}")
+
+    base = _resolve_base_table_schema(
+        params=params,
+        instance_seed=int(instance_seed),
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        task_id=task_id,
+    )
+    rng = base["rng"]
+    row_count = int(base["row_count"])
+    numeric_column_count = int(base["numeric_column_count"])
+    row_labels = list(base["row_labels"])
+    column_headers = list(base["column_headers"])
+    filter_column_index = int(base["query_column_index"])
+    filter_column = str(base["query_column"])
+    target_column_index, target_column = _resolve_distinct_secondary_numeric_column(
+        column_headers=column_headers,
+        numeric_column_count=int(numeric_column_count),
+        primary_column_index=int(filter_column_index),
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}:target_column",
+    )
+    value_min = int(base["value_min"])
+    value_max = int(base["value_max"])
+
+    if int(row_count) < 2:
+        raise ValueError("filtered subset label tasks require at least two rows")
+    target_count = int(
+        resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}:selected_row_count",
+        )
+    ) % int(row_count - 1) + 2
+    supported_filter_variants = ("above_threshold", "below_threshold", "in_interval")
+    filter_variant = str(
+        supported_filter_variants[
+            int(
+                resolve_selection_index(
+                    params=params,
+                    instance_seed=int(instance_seed),
+                    namespace=f"{task_id}:filter_variant",
+                )
+            )
+            % len(supported_filter_variants)
+        ]
+    )
+    filter_query = _build_column_filter_query_values(
+        filter_variant=str(filter_variant),
+        row_count=int(row_count),
+        target_count=int(target_count),
+        value_min=int(value_min),
+        value_max=int(value_max),
+        rng=rng,
+    )
+
+    query_values_by_row = {
+        str(row_label): int(filter_query["query_values"][int(row_index)])
+        for row_index, row_label in enumerate(row_labels)
+    }
+    values_by_row = _build_values_by_row(
+        row_labels=row_labels,
+        column_headers=column_headers,
+        rng=rng,
+        value_min=int(value_min),
+        value_max=int(value_max),
+        query_column=str(filter_column),
+        query_values_by_row=query_values_by_row,
+    )
+
+    selected_row_indices = [int(row_index) for row_index in filter_query["matching_row_indices"]]
+    selected_row_labels = [str(row_labels[int(row_index)]) for row_index in selected_row_indices]
+    selected_count = int(len(selected_row_indices))
+    if int(selected_count) < 2:
+        raise ValueError("filtered subset label tasks require at least two selected rows")
+    if int(value_max) - int(value_min) + 1 < int(selected_count):
+        raise ValueError("filtered subset label tasks require enough value range for a unique selected-row extremum")
+
+    answer_offset = int(
+        resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}:answer_row",
+        )
+    ) % int(selected_count)
+    answer_row_index = int(selected_row_indices[int(answer_offset)])
+    answer_row_label = str(row_labels[int(answer_row_index)])
+
+    unique_target_values = list(rng.sample(range(int(value_min), int(value_max) + 1), int(selected_count)))
+    winning_target_value = (
+        max(unique_target_values) if str(task_variant) == "filtered_argmax" else min(unique_target_values)
+    )
+    remaining_target_values = [int(value) for value in unique_target_values if int(value) != int(winning_target_value)]
+    rng.shuffle(remaining_target_values)
+
+    target_values_by_row: Dict[str, int] = {str(answer_row_label): int(winning_target_value)}
+    remaining_rows = [str(label) for label in selected_row_labels if str(label) != str(answer_row_label)]
+    for row_label, value in zip(remaining_rows, remaining_target_values):
+        target_values_by_row[str(row_label)] = int(value)
+
+    for row_index in selected_row_indices:
+        row_label = str(row_labels[int(row_index)])
+        values_by_row[str(row_label)][str(target_column)] = int(target_values_by_row[str(row_label)])
+
+    supporting_cell_ids: List[str] = []
+    for row_index in selected_row_indices:
+        supporting_cell_ids.append(
+            table_value_cell_id(
+                data_row_index=int(row_index),
+                numeric_column_index=int(filter_column_index),
+            )
+        )
+        supporting_cell_ids.append(
+            table_value_cell_id(
+                data_row_index=int(row_index),
+                numeric_column_index=int(target_column_index),
+            )
+        )
+
+    return {
+        "row_count": int(row_count),
+        "numeric_column_count": int(numeric_column_count),
+        "row_count_range": list(base["row_count_range"]),
+        "numeric_column_count_range": list(base["numeric_column_count_range"]),
+        "value_range": list(base["value_range"]),
+        "row_labels": [str(label) for label in row_labels],
+        "column_headers": [str(header) for header in column_headers],
+        "filter_variant": str(filter_variant),
+        "filter_column": str(filter_column),
+        "filter_column_index": int(filter_column_index),
+        "target_column": str(target_column),
+        "target_column_index": int(target_column_index),
+        "values_by_row": dict(values_by_row),
+        "selected_row_indices": [int(row_index) for row_index in selected_row_indices],
+        "selected_row_labels": [str(label) for label in selected_row_labels],
+        "supporting_cell_ids": [str(cell_id) for cell_id in supporting_cell_ids],
+        "answer_row_label": str(answer_row_label),
+        "answer_row_index": int(answer_row_index),
+        "answer_value": int(winning_target_value),
+        **{
+            str(key): (int(value) if isinstance(value, int) else value)
+            for key, value in filter_query.items()
+            if str(key) not in {"query_values", "matching_row_indices"}
+        },
+    }
+
+
+def render_table_filter_condition(dataset: Mapping[str, Any]) -> str:
+    """Render one concise human-readable filter condition phrase."""
+
+    filter_variant = str(dataset["filter_variant"])
+    if filter_variant == "above_threshold":
+        return f"values in {str(dataset['filter_column'])} greater than {int(dataset['threshold_value'])}"
+    if filter_variant == "below_threshold":
+        return f"values in {str(dataset['filter_column'])} less than {int(dataset['threshold_value'])}"
+    return (
+        f"values in {str(dataset['filter_column'])} from {int(dataset['interval_min'])} "
+        f"to {int(dataset['interval_max'])} inclusive"
+    )
+
+
 def build_relation_extremum_transfer_value_dataset_for_variant(
     *,
     task_variant: str,
@@ -1951,6 +2126,7 @@ __all__ = [
     "build_relation_extremum_transfer_value_dataset_for_variant",
     "build_relation_row_compare_label_dataset_for_variant",
     "build_readout_subset_dataset_for_variant",
+    "build_statistics_filtered_subset_label_dataset_for_variant",
     "build_temporal_value_dataset_for_variant",
     "build_row_summary_label_dataset_for_variant",
     "build_row_summary_value_dataset_for_variant",
@@ -1960,6 +2136,7 @@ __all__ = [
     "build_summary_value_dataset_for_variant",
     "projected_table_bbox_evidence",
     "projected_table_region_bbox_evidence",
+    "render_table_filter_condition",
     "resolve_numeric_column_count_bounds",
     "resolve_row_count_bounds",
     "resolve_table_axis_variant",

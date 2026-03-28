@@ -588,6 +588,20 @@ def test_tables_statistics_defaults_loaded() -> None:
     assert str(prompt_defaults["evidence_hint_filtered_column_sum"]).strip()
     assert str(prompt_defaults["json_example_filtered_column_mean"]).strip()
 
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_tables_statistics_filtered_subset_label",
+    )
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "filtered_argmax",
+        "filtered_argmin",
+    ]
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip() == "tables_statistics_v1"
+    assert str(prompt_defaults["task_key"]).strip() == "filtered_subset_label_query"
+    assert str(prompt_defaults["evidence_hint_filtered_argmax"]).strip()
+    assert str(prompt_defaults["json_example_filtered_argmin"]).strip()
+
 
 def test_tables_counting_defaults_loaded() -> None:
     cfg = get_task_group_defaults("tables", "counting")

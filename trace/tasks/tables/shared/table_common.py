@@ -27,6 +27,8 @@ _DEFAULT_HEADER_POOL: Tuple[str, ...] = (
     "Time",
     "Wins",
 )
+_TEMPORAL_YEAR_MIN: int = 2018
+_TEMPORAL_YEAR_MAX: int = 2026
 
 
 @dataclass(frozen=True)
@@ -444,6 +446,24 @@ def sample_numeric_column_headers(
     candidates = list(_DEFAULT_HEADER_POOL)
     rng.shuffle(candidates)
     return tuple(str(value) for value in candidates[: int(count)])
+
+
+def sample_temporal_year_headers(
+    *,
+    count: int,
+    instance_seed: int,
+    namespace: str = "tables.temporal_year_headers",
+) -> Tuple[str, ...]:
+    """Sample one contiguous tuple of visible year headers."""
+
+    if int(count) <= 0:
+        raise ValueError("temporal year-header count must be positive")
+    feasible_start_max = int(_TEMPORAL_YEAR_MAX) - int(count) + 1
+    if int(feasible_start_max) < int(_TEMPORAL_YEAR_MIN):
+        raise ValueError("temporal year-header count exceeds the supported year span")
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    start_year = int(rng.randint(int(_TEMPORAL_YEAR_MIN), int(feasible_start_max)))
+    return tuple(str(int(start_year) + int(offset)) for offset in range(int(count)))
 
 
 def resolve_table_render_params(
@@ -1683,6 +1703,185 @@ def build_readout_subset_dataset_for_variant(
     }
 
 
+def build_temporal_value_dataset_for_variant(
+    *,
+    task_variant: str,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    gen_defaults: Mapping[str, Any],
+    defaults: TableDefaults,
+    task_id: str,
+) -> Dict[str, Any]:
+    """Construct one deterministic year-column table dataset for temporal queries."""
+
+    supported_variants = {
+        "value_at_year",
+        "delta_between_years",
+        "absolute_difference_between_years",
+        "sum_over_year_interval",
+        "mean_over_year_interval",
+    }
+    if str(task_variant) not in supported_variants:
+        raise ValueError(f"unsupported table temporal variant: {task_variant}")
+
+    base = _resolve_base_table_schema(
+        params=params,
+        instance_seed=int(instance_seed),
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        task_id=task_id,
+    )
+    rng = base["rng"]
+    row_count = int(base["row_count"])
+    numeric_column_count = int(base["numeric_column_count"])
+    row_labels = list(base["row_labels"])
+    column_headers = list(
+        sample_temporal_year_headers(
+            count=int(numeric_column_count),
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}.temporal_headers",
+        )
+    )
+    value_min = int(base["value_min"])
+    value_max = int(base["value_max"])
+
+    values_by_row = _build_values_by_row(
+        row_labels=row_labels,
+        column_headers=column_headers,
+        rng=rng,
+        value_min=int(value_min),
+        value_max=int(value_max),
+    )
+
+    query_row_index = int(
+        resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}:query_row",
+        )
+    ) % int(row_count)
+    query_row_label = str(row_labels[int(query_row_index)])
+    query_cells: List[Dict[str, Any]] = []
+
+    def _append_query_cell(*, column_index: int, value: int) -> None:
+        column_header = str(column_headers[int(column_index)])
+        values_by_row[str(query_row_label)][str(column_header)] = int(value)
+        query_cells.append(
+            {
+                "row_label": str(query_row_label),
+                "row_index": int(query_row_index),
+                "column": str(column_header),
+                "column_index": int(column_index),
+                "cell_id": table_value_cell_id(
+                    data_row_index=int(query_row_index),
+                    numeric_column_index=int(column_index),
+                ),
+                "value": int(value),
+            }
+        )
+
+    if str(task_variant) == "value_at_year":
+        query_year_index = int(
+            resolve_selection_index(
+                params=params,
+                instance_seed=int(instance_seed),
+                namespace=f"{task_id}:query_year",
+            )
+        ) % int(numeric_column_count)
+        query_value = int(rng.randint(int(value_min), int(value_max)))
+        _append_query_cell(column_index=int(query_year_index), value=int(query_value))
+        answer_value = int(query_value)
+
+    elif str(task_variant) in {"delta_between_years", "absolute_difference_between_years"}:
+        if int(numeric_column_count) < 2:
+            raise ValueError("temporal pairwise variants require at least two year columns")
+        first_index = int(
+            resolve_selection_index(
+                params=params,
+                instance_seed=int(instance_seed),
+                namespace=f"{task_id}:query_year_a",
+            )
+        ) % int(numeric_column_count)
+        second_index = int(
+            resolve_selection_index(
+                params=params,
+                instance_seed=int(instance_seed),
+                namespace=f"{task_id}:query_year_b",
+            )
+        ) % int(numeric_column_count - 1)
+        if int(second_index) >= int(first_index):
+            second_index += 1
+        start_index, end_index = sorted((int(first_index), int(second_index)))
+        if int(value_max) - int(value_min) + 1 < 2:
+            raise ValueError("temporal change variants require at least two distinct values")
+        start_value, end_value = [
+            int(value) for value in rng.sample(range(int(value_min), int(value_max) + 1), 2)
+        ]
+        _append_query_cell(column_index=int(start_index), value=int(start_value))
+        _append_query_cell(column_index=int(end_index), value=int(end_value))
+        delta_value = int(end_value) - int(start_value)
+        answer_value = int(delta_value) if str(task_variant) == "delta_between_years" else int(abs(delta_value))
+
+    else:
+        if int(numeric_column_count) < 2:
+            raise ValueError("temporal interval variants require at least two year columns")
+        interval_len = 2 + (
+            int(
+                resolve_selection_index(
+                    params=params,
+                    instance_seed=int(instance_seed),
+                    namespace=f"{task_id}:interval_length",
+                )
+            )
+            % int(numeric_column_count - 1)
+        )
+        start_index = int(
+            resolve_selection_index(
+                params=params,
+                instance_seed=int(instance_seed),
+                namespace=f"{task_id}:interval_start",
+            )
+        ) % int(numeric_column_count - interval_len + 1)
+        end_index = int(start_index + interval_len - 1)
+        if str(task_variant) == "mean_over_year_interval":
+            target_mean = int(rng.randint(int(value_min), int(value_max)))
+            interval_values = _sample_values_with_total(
+                count=int(interval_len),
+                target_total=int(target_mean * interval_len),
+                min_value=int(value_min),
+                max_value=int(value_max),
+                rng=rng,
+            )
+            answer_value = int(target_mean)
+        else:
+            interval_values = [
+                int(rng.randint(int(value_min), int(value_max)))
+                for _ in range(int(interval_len))
+            ]
+            answer_value = int(sum(int(value) for value in interval_values))
+        for offset, cell_value in enumerate(interval_values):
+            _append_query_cell(column_index=int(start_index + offset), value=int(cell_value))
+
+    query_years = [str(cell["column"]) for cell in query_cells]
+    return {
+        "row_count": int(row_count),
+        "numeric_column_count": int(numeric_column_count),
+        "row_count_range": list(base["row_count_range"]),
+        "numeric_column_count_range": list(base["numeric_column_count_range"]),
+        "value_range": list(base["value_range"]),
+        "row_labels": [str(label) for label in row_labels],
+        "column_headers": [str(header) for header in column_headers],
+        "values_by_row": dict(values_by_row),
+        "query_row_label": str(query_row_label),
+        "query_row_index": int(query_row_index),
+        "query_cells": [dict(cell) for cell in query_cells],
+        "query_years": list(query_years),
+        "query_year_start": str(query_years[0]),
+        "query_year_end": str(query_years[-1]),
+        "answer_value": int(answer_value),
+    }
+
+
 def projected_table_bbox_evidence(
     rendered_scene,
     cell_ids: Sequence[str],
@@ -1752,6 +1951,7 @@ __all__ = [
     "build_relation_extremum_transfer_value_dataset_for_variant",
     "build_relation_row_compare_label_dataset_for_variant",
     "build_readout_subset_dataset_for_variant",
+    "build_temporal_value_dataset_for_variant",
     "build_row_summary_label_dataset_for_variant",
     "build_row_summary_value_dataset_for_variant",
     "build_statistics_filtered_subset_dataset_for_variant",
@@ -1766,5 +1966,6 @@ __all__ = [
     "resolve_table_render_params",
     "sample_numeric_column_headers",
     "sample_table_row_labels",
+    "sample_temporal_year_headers",
     "table_value_cell_id",
 ]

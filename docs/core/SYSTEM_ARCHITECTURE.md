@@ -126,6 +126,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/tables/relation/row_compare_label.py`
    - `trace/tasks/tables/relation/extremum_transfer_value.py`
    - `trace/tasks/tables/ranking/label.py`
+   - `trace/tasks/tables/temporal/value.py`
 
 ## 5) Architecture invariants
 1. Determinism from config + seeds + versions.

@@ -94,6 +94,7 @@ Active bundles:
    - `prompts/tables/readout/tables_readout_v1.json`
    - `prompts/tables/relation/tables_relation_v1.json`
    - `prompts/tables/ranking/tables_ranking_v1.json`
+   - `prompts/tables/temporal/tables_temporal_v1.json`
 
 Active task-to-bundle mapping:
 1. Geometry comparison tasks (`task_geometry_comparison_angle|area|length|perimeter`) -> `geometry_comparison_v1`
@@ -136,3 +137,4 @@ Active task-to-bundle mapping:
    - `task_tables_readout_subset_value` -> `tables_readout_v1`
    - `task_tables_relation_row_compare_label|extremum_transfer_value` -> `tables_relation_v1`
    - `task_tables_ranking_label` -> `tables_ranking_v1`
+   - `task_tables_temporal_value` -> `tables_temporal_v1`

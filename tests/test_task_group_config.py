@@ -719,6 +719,35 @@ def test_tables_ranking_defaults_loaded() -> None:
     assert str(prompt_defaults["json_example_kth_lowest_in_column"]).strip()
 
 
+def test_tables_temporal_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("tables", "temporal")
+    for section in ("generation", "rendering", "prompt"):
+        assert isinstance(cfg.get(section), dict)
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "tables_temporal_v1"
+    assert str(prompt_shared["task_family_key"]).strip() == "styled_table_temporal"
+    assert str(prompt_shared["task_key"]).strip() == "temporal_value_query"
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_tables_temporal_value",
+    )
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "absolute_difference_between_years",
+        "delta_between_years",
+        "mean_over_year_interval",
+        "sum_over_year_interval",
+        "value_at_year",
+    ]
+    assert int(rendering_defaults["canvas_height"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip() == "tables_temporal_v1"
+    assert str(prompt_defaults["evidence_hint_value_at_year"]).strip()
+    assert str(prompt_defaults["evidence_hint_delta_between_years"]).strip()
+    assert str(prompt_defaults["evidence_hint_sum_over_year_interval"]).strip()
+    assert str(prompt_defaults["json_example_mean_over_year_interval"]).strip()
+
+
 def test_charts_multiseries_defaults_loaded() -> None:
     cfg = get_task_group_defaults("charts", "multiseries")
     for section in ("generation", "rendering", "prompt", "complexity"):

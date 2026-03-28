@@ -57,7 +57,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
 
 ## Tables direction (current)
 1. Tables follow the same split as charts: `task_group` encodes reasoning family, while table styling is treated as `scene_variant` inside the task.
-2. The active table families are `statistics`, `counting`, `readout`, `relation`, and `ranking`.
+2. The active table families are `statistics`, `counting`, `readout`, `relation`, `ranking`, and `temporal`.
 3. `task_tables_statistics_summary_label` uses semantic `task_variant` values `argmax`, `argmin`, `row_sum_argmax`, and `row_sum_argmin`.
 4. `task_tables_statistics_summary_value` uses semantic `task_variant` values `column_sum`, `column_mean`, `column_median`, `row_sum`, `row_mean`, `table_sum`, and `table_mean`.
 5. `task_tables_statistics_filtered_subset_value` uses semantic `task_variant` values `filtered_column_sum` and `filtered_column_mean`, while an internal filter subtype chooses `above_threshold|below_threshold|in_interval`.
@@ -66,10 +66,11 @@ Define how we split tasks into reusable families so each dataset slice stays com
 8. `task_tables_relation_row_compare_label` uses semantic `task_variant` values `higher_of_two_rows` and `lower_of_two_rows`.
 9. `task_tables_relation_extremum_transfer_value` uses semantic `task_variant` values `argmax_transfer` and `argmin_transfer`.
 10. `task_tables_ranking_label` uses semantic `task_variant` values `kth_highest_in_column` and `kth_lowest_in_column`, with an internal queried rank `k` currently sampled from `2..4`.
-11. All active table tasks use `scene_variant` values `spreadsheet`, `zebra`, `ledger`, and `card_table`.
-12. Table row labels should use short visible human-style names rather than single letters when the answer is a row identity.
-13. Table tasks use one fixed prompt-facing evidence type in v1: `bbox_set`.
-14. Evidence boxes should mark the minimal supporting table region(s): one decisive numeric cell bbox or one winning-row region bbox for `task_tables_statistics_summary_label`, one queried-column region bbox, queried-row region bbox, or full numeric-table region bbox for `task_tables_statistics_summary_value`, one ordered set of filter/target value-cell pairs for `task_tables_statistics_filtered_subset_value`, one ordered set of matching value-cell bboxes or compared two-column value-cell pairs for `task_tables_counting_value_count`, one queried value-cell bbox or ordered queried-cell pair for `task_tables_readout_subset_value`, one ordered pair of compared queried-column value-cell bboxes for `task_tables_relation_row_compare_label`, one ordered pair `[source extremum cell, target value cell]` for `task_tables_relation_extremum_transfer_value`, and one queried-column region bbox for `task_tables_ranking_label`.
+11. `task_tables_temporal_value` uses semantic `task_variant` values `value_at_year`, `delta_between_years`, `absolute_difference_between_years`, `sum_over_year_interval`, and `mean_over_year_interval`.
+12. All active table tasks use `scene_variant` values `spreadsheet`, `zebra`, `ledger`, and `card_table`.
+13. Table row labels should use short visible human-style names rather than single letters when the answer is a row identity.
+14. Table tasks use one fixed prompt-facing evidence type in v1: `bbox_set`.
+15. Evidence boxes should mark the minimal supporting table region(s): one decisive numeric cell bbox or one winning-row region bbox for `task_tables_statistics_summary_label`, one queried-column region bbox, queried-row region bbox, or full numeric-table region bbox for `task_tables_statistics_summary_value`, one ordered set of filter/target value-cell pairs for `task_tables_statistics_filtered_subset_value`, one ordered set of matching value-cell bboxes or compared two-column value-cell pairs for `task_tables_counting_value_count`, one queried value-cell bbox or ordered queried-cell pair for `task_tables_readout_subset_value`, one ordered pair of compared queried-column value-cell bboxes for `task_tables_relation_row_compare_label`, one ordered pair `[source extremum cell, target value cell]` for `task_tables_relation_extremum_transfer_value`, one queried-column region bbox for `task_tables_ranking_label`, and one ordered set of queried year-cell bboxes for `task_tables_temporal_value`.
 
 ## Planned geometry measurement variants
 1. **Angle measurement**

@@ -71,6 +71,7 @@ Date: 2026-03-28
 61. Tables now also includes `task_tables_statistics_filtered_subset_value`, a filtered-aggregation `statistics` task under `domain=tables`, with semantic `task_variant` values `filtered_column_sum|filtered_column_mean`, visual `scene_variant` values `spreadsheet|zebra|ledger|card_table`, integer answers, and `bbox_set` evidence over the ordered `[filter cell, target cell]` pairs for every selected row. It keeps one filter column and one distinct target column, samples an internal filter subtype (`above_threshold|below_threshold|in_interval`), and then aggregates the target column only over the selected rows.
 62. Tables now also includes `task_tables_relation_extremum_transfer_value`, a second `relation` task under `domain=tables`, with semantic `task_variant` values `argmax_transfer|argmin_transfer`, visual `scene_variant` values `spreadsheet|zebra|ledger|card_table`, integer answers, and `bbox_set` evidence over the ordered pair `[source extremum cell, transferred target value cell]`. The source and target columns are always distinct, the source-column extremum row is unique by construction, and the prompt explicitly asks for the target value from that winning row.
 63. Tables now also includes `task_tables_ranking_label`, the first `ranking` task under `domain=tables`, with semantic `task_variant` values `kth_highest_in_column|kth_lowest_in_column`, visual `scene_variant` values `spreadsheet|zebra|ledger|card_table`, string row-label answers, and `bbox_set` evidence over the supporting queried-column region. The queried rank `k` is sampled internally from `2..4`, the queried column values are unique by construction, and the prompt explicitly asks for the kth highest or kth lowest row in that column.
+64. Tables now also includes `task_tables_temporal_value`, the first `temporal` task under `domain=tables`, with semantic `task_variant` values `value_at_year|delta_between_years|absolute_difference_between_years|sum_over_year_interval|mean_over_year_interval`, visual `scene_variant` values `spreadsheet|zebra|ledger|card_table`, integer answers, and `bbox_set` evidence over the ordered queried year-cell witnesses. The numeric columns are chronological year headers instead of generic metrics, the prompt always names one visible row plus one year or year interval, the two-year variants preserve `[start year, end year]` evidence order, and the interval-mean variant is constructed to stay integral.
 
 ## Active tasks
 1. `task_tile_count_color_count` (`domain=tile`, `task_group=count`)
@@ -132,6 +133,7 @@ Date: 2026-03-28
 57. `task_tables_relation_row_compare_label` (`domain=tables`, `task_group=relation`)
 58. `task_tables_relation_extremum_transfer_value` (`domain=tables`, `task_group=relation`)
 59. `task_tables_ranking_label` (`domain=tables`, `task_group=ranking`)
+60. `task_tables_temporal_value` (`domain=tables`, `task_group=temporal`)
 
 ## Current quality baseline
 1. Tests are required to pass before finalize.

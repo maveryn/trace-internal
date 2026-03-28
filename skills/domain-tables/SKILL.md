@@ -20,6 +20,7 @@ Use this whenever the task lives under `domain=tables`.
 - Table construction/config helpers currently live under `trace/tasks/tables/shared/table_common.py`.
 - Table-domain background/noise defaults currently live under `trace/tasks/tables/shared/visual_defaults.py`.
 - Reuse the shared short-name manifest through `trace/tasks/shared/name_assets.py` whenever visible person-style row labels are needed.
+- If a table task needs time-series semantics, keep the same table renderer and introduce chronological year headers in `trace/tasks/tables/shared/table_common.py` rather than creating a new visual table style.
 
 ## Evidence rules
 - Tables should use one stable prompt-facing evidence type: `bbox_set`.

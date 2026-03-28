@@ -1,4 +1,4 @@
-"""Shared dataset, config, and evidence helpers for arithmetic puzzle tasks."""
+"""Shared config and evidence helpers for arithmetic puzzle tasks."""
 
 from __future__ import annotations
 
@@ -167,7 +167,7 @@ def adjust_render_params_for_equation_rows(
     return replace(render_params, canvas_width=int(required_width))
 
 
-def _resolve_answer_bounds(
+def resolve_arithmetic_answer_bounds(
     params: Mapping[str, Any],
     *,
     gen_defaults: Mapping[str, Any],
@@ -318,7 +318,7 @@ def build_arithmetic_equation_dataset_for_variant(
         raise ValueError(f"unsupported arithmetic puzzle variant: {task_variant}")
 
     rng = spawn_rng(int(instance_seed), f"{task_id}.dataset")
-    answer_min, answer_max = _resolve_answer_bounds(
+    answer_min, answer_max = resolve_arithmetic_answer_bounds(
         params,
         gen_defaults=gen_defaults,
         defaults=defaults,
@@ -417,14 +417,17 @@ def build_arithmetic_equation_dataset_for_variant(
     }
 
 
-def projected_puzzle_bbox_evidence(rendered_scene, slot_ids: Sequence[str]) -> Dict[str, Any]:
-    """Project ordered puzzle slot ids into prompt-facing `bbox_set` evidence."""
+def projected_puzzle_bbox_evidence(
+    bbox_map: Mapping[str, Sequence[float]],
+    item_ids: Sequence[str],
+) -> Dict[str, Any]:
+    """Project ordered puzzle item ids into prompt-facing `bbox_set` evidence."""
 
     return {
         "bbox_set": [
-            list(rendered_scene.slot_bbox_map[str(slot_id)])
-            for slot_id in [str(item) for item in slot_ids]
-            if str(slot_id) in rendered_scene.slot_bbox_map
+            list(bbox_map[str(item_id)])
+            for item_id in [str(item) for item in item_ids]
+            if str(item_id) in bbox_map
         ]
     }
 
@@ -435,6 +438,7 @@ __all__ = [
     "adjust_render_params_for_equation_rows",
     "build_arithmetic_equation_dataset_for_variant",
     "projected_puzzle_bbox_evidence",
+    "resolve_arithmetic_answer_bounds",
     "resolve_arithmetic_render_params",
     "resolve_puzzle_axis_variant",
 ]

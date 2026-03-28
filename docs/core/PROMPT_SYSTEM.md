@@ -141,4 +141,4 @@ Active task-to-bundle mapping:
    - `task_tables_ranking_label` -> `tables_ranking_v1`
    - `task_tables_temporal_value` -> `tables_temporal_v1`
 10. Puzzles:
-   - `task_puzzles_arithmetic_equation_value` -> `puzzles_arithmetic_v1`
+   - `task_puzzles_arithmetic_equation_value|task_puzzles_arithmetic_balance_value` -> `puzzles_arithmetic_v1`

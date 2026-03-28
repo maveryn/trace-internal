@@ -187,7 +187,7 @@ class PuzzlesArithmeticEquationValueTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         query_slot_id = str(dataset["query_slot_id"])
-        evidence_projection = projected_puzzle_bbox_evidence(rendered_scene, [str(query_slot_id)])
+        evidence_projection = projected_puzzle_bbox_evidence(rendered_scene.slot_bbox_map, [str(query_slot_id)])
         evidence_bboxes = [
             [round(float(value), 3) for value in bbox]
             for bbox in evidence_projection["bbox_set"]

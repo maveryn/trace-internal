@@ -52,6 +52,7 @@ Use this whenever the task lives under `domain=puzzles`.
 - The first arithmetic puzzle tasks should center on explicit unknown slots rather than free-form expression comparison.
 - Good early arithmetic variants are those like “what number should replace the question mark?” or “what is the value of the box?” where one queried bbox grounds the answer.
 - For a clean first arithmetic contract, prefer one flat equation row with `2..5` boxed operands on the left, one boxed result on the right, and the `?` allowed in either an operand box or the result box.
+- For early balance-style arithmetic tasks, prefer `2..3` equality panels plus one dedicated highlighted query box; keep the solver structure in the panels, but keep prompt-facing evidence on the local query box.
 - When an arithmetic unknown-slot family starts feeling too tiny, increase structural variety inside that same one-box contract first: vary operand count, operator mix, and whether the unknown is on the left or right before inventing a new task id.
 - Avoid early arithmetic tasks like “largest possible number” or broad expression ranking unless the evidence contract is already well-defined and locally grounded.
 

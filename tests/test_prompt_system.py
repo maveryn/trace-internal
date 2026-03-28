@@ -432,6 +432,17 @@ def test_puzzles_arithmetic_bundle_supports_unknown_slot_variants() -> None:
     ]
 
 
+def test_puzzles_arithmetic_bundle_supports_balance_variants() -> None:
+    bundle = load_prompt_bundle("puzzles", "arithmetic", "puzzles_arithmetic_v1")
+    assert len(bundle.task_templates["balance_value_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["sum_pair_unknown"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["two_panel_chain_unknown"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["three_panel_chain_unknown"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_family:arithmetic_balance_query_puzzle"]) == [
+        "object_description",
+    ]
+
+
 def test_geometry_task_templates_avoid_awkward_comma_question_prefixes() -> None:
     bundle_coords = (
         ("geometry", "measurement", "geometry_measurement_v1", "measurement_query"),

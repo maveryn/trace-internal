@@ -70,3 +70,4 @@ Current task docs:
 60. [task_tables_ranking_label.md](task_tables_ranking_label.md)
 61. [task_tables_temporal_value.md](task_tables_temporal_value.md)
 62. [task_puzzles_arithmetic_equation_value.md](task_puzzles_arithmetic_equation_value.md)
+63. [task_puzzles_arithmetic_balance_value.md](task_puzzles_arithmetic_balance_value.md)

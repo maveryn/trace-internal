@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from trace.tasks.puzzles.arithmetic.balance_value import PuzzlesArithmeticBalanceValueTask
 from trace.tasks.puzzles.arithmetic.equation_value import PuzzlesArithmeticEquationValueTask
 from tests.helpers import extract_prompt_json_example
 
@@ -24,6 +25,12 @@ def _evaluate_expression(operand_values: list[int], operator_symbols: list[str])
         else:
             total -= int(term_value)
     return int(total)
+
+
+def _resolve_balance_item_value(item: dict[str, object], *, object_values: dict[str, int]) -> int:
+    if str(item.get("kind")) == "number":
+        return int(item["value"])
+    return int(object_values[str(item["object_type"])])
 
 
 def test_puzzle_arithmetic_equation_value_contract_matches_unknown_slot() -> None:
@@ -170,6 +177,111 @@ def test_puzzle_arithmetic_slot_count_varies_with_seed() -> None:
             slot_counts.add(int(out.trace_payload["execution_trace"]["slot_count"]))
         assert all(3 <= int(slot_count) <= 6 for slot_count in slot_counts)
         assert len(slot_counts) >= 2
+
+
+def test_puzzle_arithmetic_balance_value_contract_matches_query_box() -> None:
+    task = PuzzlesArithmeticBalanceValueTask()
+    task_variants = (
+        "sum_pair_unknown",
+        "two_panel_chain_unknown",
+        "three_panel_chain_unknown",
+    )
+    scene_variants = (
+        "balance_strip",
+        "balance_card",
+        "balance_outline",
+    )
+
+    for variant_index, task_variant in enumerate(task_variants):
+        for scene_index, scene_variant in enumerate(scene_variants):
+            seed = 23260 + (variant_index * 20) + scene_index
+            out = task.generate(
+                seed,
+                params={"task_variant": task_variant, "scene_variant": scene_variant},
+                max_attempts=10,
+            )
+            trace = out.trace_payload
+            execution = trace["execution_trace"]
+            render = trace["render_spec"]
+            render_map = trace["render_map"]
+            solver = execution["solver_trace"]
+            evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
+
+            assert str(out.task_variant) == str(task_variant)
+            assert out.answer_gt.type == "integer"
+            assert out.evidence_gt.type == "bbox_set"
+            assert len(evidence_bboxes) == 1
+            assert sorted(out.prompt_variants.keys()) == ["answer_and_evidence", "answer_only"]
+            assert str(execution["scene_variant"]) == str(scene_variant)
+            assert str(render["scene_variant"]) == str(scene_variant)
+            assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
+            assert list(execution["panel_count_range"]) == [2, 3]
+            assert list(execution["total_box_count_range"]) == [7, 10]
+            assert 2 <= int(execution["panel_count"]) <= 3
+            assert 7 <= int(execution["total_box_count"]) <= 10
+            assert str(execution["question_format"]) == "query_box_balance"
+            assert int(execution["answer_value"]) == int(out.answer_gt.value)
+            assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
+            assert [str(box_id) for box_id in execution["supporting_box_ids"]] == [str(execution["query_box_id"])]
+
+            expected_bbox = [
+                float(value)
+                for value in render_map["box_bboxes_px"][str(execution["query_box_id"])]
+            ]
+            assert evidence_bboxes[0] == expected_bbox
+            assert all(float(bbox[0]) >= 0.0 for bbox in render_map["box_bboxes_px"].values())
+            assert all(float(bbox[2]) <= float(render["canvas_width"]) for bbox in render_map["box_bboxes_px"].values())
+
+            object_values = {str(key): int(value) for key, value in solver["object_values"].items()}
+            for panel in execution["panel_specs"]:
+                left_total = sum(
+                    _resolve_balance_item_value(item, object_values=object_values)
+                    for item in panel["left_items"]
+                )
+                right_total = sum(
+                    _resolve_balance_item_value(item, object_values=object_values)
+                    for item in panel["right_items"]
+                )
+                assert int(left_total) == int(right_total)
+            assert int(out.answer_gt.value) == int(object_values[str(execution["query_object_type"])])
+
+
+def test_puzzle_arithmetic_balance_prompt_examples_match_selected_variants() -> None:
+    task = PuzzlesArithmeticBalanceValueTask()
+    expected = {
+        "sum_pair_unknown": (
+            {"evidence": [[456, 508, 568, 620]], "answer": 7},
+            {"answer": 7},
+        ),
+        "two_panel_chain_unknown": (
+            {"evidence": [[456, 508, 568, 620]], "answer": 8},
+            {"answer": 8},
+        ),
+        "three_panel_chain_unknown": (
+            {"evidence": [[456, 508, 568, 620]], "answer": 5},
+            {"answer": 5},
+        ),
+    }
+    for index, (task_variant, (expected_answer_and_evidence, expected_answer_only)) in enumerate(expected.items(), start=23310):
+        out = task.generate(index, params={"task_variant": task_variant}, max_attempts=10)
+        answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+        answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
+        assert answer_and_evidence == expected_answer_and_evidence
+        assert answer_only == expected_answer_only
+
+
+def test_puzzle_arithmetic_balance_value_task_is_deterministic() -> None:
+    task = PuzzlesArithmeticBalanceValueTask()
+    params = {"task_variant": "three_panel_chain_unknown", "scene_variant": "balance_card"}
+    out_a = task.generate(23360, params=params, max_attempts=10)
+    out_b = task.generate(23360, params=params, max_attempts=10)
+
+    assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
+    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
+    assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
+    assert out_a.prompt == out_b.prompt
+    assert out_a.image.tobytes() == out_b.image.tobytes()
 
 
 def test_puzzle_arithmetic_long_rows_fit_within_canvas() -> None:

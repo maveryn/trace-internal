@@ -78,8 +78,11 @@ Define how we split tasks into reusable families so each dataset slice stays com
 2. Early arithmetic puzzle tasks should favor explicit unknown slots so evidence can stay local and visually obvious.
 3. `task_puzzles_arithmetic_equation_value` uses semantic `task_variant` values `result_unknown` and `operand_unknown`.
 4. `task_puzzles_arithmetic_equation_value` uses visual `scene_variant` values `equation_strip`, `equation_card`, and `equation_outline`.
-5. The active arithmetic scene grammar uses one flat equation row with `2..5` left-side operand boxes, operators sampled from `+`, `-`, and `×`, one right-side result box, and the `?` randomly placed on either side according to `task_variant`.
-6. Prompt-facing arithmetic evidence should stay as one-box `bbox_set` grounding on the queried unknown slot; do not widen to explanatory multi-box evidence unless a later family truly needs ordered witnesses.
+5. `task_puzzles_arithmetic_balance_value` uses semantic `task_variant` values `sum_pair_unknown`, `two_panel_chain_unknown`, and `three_panel_chain_unknown`.
+6. `task_puzzles_arithmetic_balance_value` uses visual `scene_variant` values `balance_strip`, `balance_card`, and `balance_outline`.
+7. The active equation-scene grammar uses one flat equation row with `2..5` left-side operand boxes, operators sampled from `+`, `-`, and `×`, one right-side result box, and the `?` randomly placed on either side according to `task_variant`.
+8. The active balance-scene grammar uses `2..3` stacked balance panels with boxed symbols and numbers plus one highlighted query box below the panels.
+9. Prompt-facing arithmetic evidence should stay as one-box `bbox_set` grounding on the queried unknown slot or highlighted query box; do not widen to explanatory multi-box evidence unless a later family truly needs ordered witnesses.
 
 ## Planned geometry measurement variants
 1. **Angle measurement**

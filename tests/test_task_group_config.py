@@ -769,15 +769,15 @@ def test_puzzles_arithmetic_defaults_loaded() -> None:
 
     prompt_shared = cfg["prompt"]["shared"]
     assert str(prompt_shared["bundle_id"]).strip() == "puzzles_arithmetic_v1"
-    assert str(prompt_shared["task_family_key"]).strip() == "arithmetic_unknown_slot_puzzle"
-    assert str(prompt_shared["task_key"]).strip() == "equation_value_query"
-    assert str(prompt_shared["object_description_equation_strip"]).strip()
     assert str(prompt_shared["answer_hint"]).strip()
 
     generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
         cfg,
         task_id="task_puzzles_arithmetic_equation_value",
     )
+    assert str(prompt_defaults["task_family_key"]).strip() == "arithmetic_unknown_slot_puzzle"
+    assert str(prompt_defaults["task_key"]).strip() == "equation_value_query"
+    assert str(prompt_defaults["object_description_equation_strip"]).strip()
     assert sorted(generation_defaults["task_variant_weights"].keys()) == [
         "operand_unknown",
         "result_unknown",
@@ -811,6 +811,34 @@ def test_puzzles_arithmetic_defaults_loaded() -> None:
         "reasoning_load": pytest.approx(0.33),
         "scene_variant_load": pytest.approx(0.33),
     }
+
+    balance_generation, balance_rendering, balance_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_puzzles_arithmetic_balance_value",
+    )
+    assert str(balance_prompt["task_family_key"]).strip() == "arithmetic_balance_query_puzzle"
+    assert str(balance_prompt["task_key"]).strip() == "balance_value_query"
+    assert str(balance_prompt["object_description_balance_strip"]).strip()
+    assert sorted(balance_generation["task_variant_weights"].keys()) == [
+        "sum_pair_unknown",
+        "three_panel_chain_unknown",
+        "two_panel_chain_unknown",
+    ]
+    assert sorted(balance_generation["scene_variant_weights"].keys()) == [
+        "balance_card",
+        "balance_outline",
+        "balance_strip",
+    ]
+    assert int(balance_generation["answer_min"]) >= 1
+    assert int(balance_generation["answer_max"]) == 24
+    assert int(balance_generation["object_value_min"]) == 1
+    assert int(balance_generation["object_value_max"]) == 12
+    assert int(balance_rendering["canvas_width"]) > 0
+    assert int(balance_rendering["query_box_width_px"]) > 0
+    assert str(balance_prompt["evidence_hint_sum_pair_unknown"]).strip()
+    assert str(balance_prompt["evidence_hint_three_panel_chain_unknown"]).strip()
+    assert str(balance_prompt["json_example_two_panel_chain_unknown"]).strip()
+    assert str(balance_prompt["json_example_answer_only_sum_pair_unknown"]).strip()
 
 
 def test_charts_multiseries_defaults_loaded() -> None:

@@ -83,9 +83,9 @@ Define how we split tasks into reusable families so each dataset slice stays com
 7. `task_puzzles_arithmetic_grid_value` uses semantic `task_variant` values `sum_rule_missing`, `difference_rule_missing`, and `product_rule_missing`.
 8. `task_puzzles_arithmetic_grid_value` uses visual `scene_variant` values `grid_strip`, `grid_card`, and `grid_outline`.
 9. The active equation-scene grammar uses one flat equation row with `2..5` left-side operand boxes, operators sampled from `+`, `-`, and `×`, one right-side result box, and the `?` randomly placed on either side according to `task_variant`.
-10. The active balance-scene grammar uses `2..3` stacked equality panels with boxed symbols and numbers plus one highlighted query box below the panels.
+10. The active balance-scene grammar uses `2..3` stacked equality panels with boxed symbols and numbers, explicit `+` and `=` signs, and a final query row shaped like `symbol = ?`.
 11. The active arithmetic-grid grammar uses `3..5` rows, exactly `3` columns, no headers, and a repeated hidden row rule `a op b = c` with one explicit `?` cell.
-12. Prompt-facing arithmetic evidence should stay as one-box `bbox_set` grounding on the queried unknown slot, highlighted query box, or question-mark grid cell; do not widen to explanatory multi-box evidence unless a later family truly needs ordered witnesses.
+12. Prompt-facing arithmetic evidence should stay as one-box `bbox_set` grounding on the queried unknown slot, final question-mark query box, or question-mark grid cell; do not widen to explanatory multi-box evidence unless a later family truly needs ordered witnesses.
 
 ## Planned geometry measurement variants
 1. **Angle measurement**

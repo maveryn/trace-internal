@@ -179,29 +179,32 @@ def _draw_centered_text(
     ]
 
 
-def _draw_balance_icon(
+def _draw_balance_token(
     draw: ImageDraw.ImageDraw,
     *,
+    text: str,
     center: Tuple[float, float],
     width_px: float,
     height_px: float,
     color_rgb: Sequence[int],
     stroke_width: int,
 ) -> List[float]:
-    """Draw a centered explicit equality token between the two item groups."""
+    """Draw one centered arithmetic token and return its drawn bbox."""
 
     cx, cy = float(center[0]), float(center[1])
-    equal_bbox = _draw_centered_text(
+    token = str(text)
+    font_scale = 0.72 if token == "=" else 0.38
+    token_bbox = _draw_centered_text(
         draw,
-        text="=",
+        text=token,
         center=(float(cx), float(cy)),
-        font=load_font(max(18, int(0.72 * float(height_px))), bold=True),
+        font=load_font(max(18, int(font_scale * float(height_px))), bold=True),
         fill=color_rgb,
         stroke_fill=(255, 255, 255),
         stroke_width=max(1, int(stroke_width)),
     )
-    left, top, right, bottom = [float(value) for value in equal_bbox]
-    min_width = float(max(28.0, 0.4 * float(width_px)))
+    left, top, right, bottom = [float(value) for value in token_bbox]
+    min_width = float(max(28.0 if token == "=" else 18.0, 0.4 * float(width_px)))
     if float(right - left) < float(min_width):
         pad = 0.5 * (float(min_width) - float(right - left))
         left -= float(pad)
@@ -222,7 +225,7 @@ def render_puzzle_balance_scene(
     query_spec: Mapping[str, Any],
     render_params: PuzzleBalanceRenderParams,
 ) -> RenderedPuzzleBalanceScene:
-    """Render one equality-panel arithmetic scene with a highlighted query box."""
+    """Render one equality-panel arithmetic scene with an explicit query row."""
 
     selected_variant = str(scene_variant)
     if selected_variant not in set(SUPPORTED_PUZZLE_BALANCE_SCENE_VARIANTS):
@@ -256,7 +259,9 @@ def render_puzzle_balance_scene(
     max_left_width = max(left_widths) if left_widths else 0.0
     max_right_width = max(right_widths) if right_widths else 0.0
 
-    content_width = float(max_left_width + scale_side_gap + scale_width + scale_side_gap + max_right_width)
+    panel_content_width = float(max_left_width + scale_side_gap + scale_width + scale_side_gap + max_right_width)
+    query_row_width = float(query_box_width + scale_side_gap + scale_width + scale_side_gap + query_box_width)
+    content_width = float(max(panel_content_width, query_row_width))
     content_height = float(
         len(panels) * box_height
         + max(0, len(panels) - 1) * panel_gap
@@ -367,10 +372,36 @@ def render_puzzle_balance_scene(
                         },
                     }
                 )
+                if int(item_index) < len(items) - 1:
+                    plus_center_x = float(current_x + box_width + (0.5 * item_gap))
+                    plus_bbox = _draw_balance_token(
+                        draw,
+                        text="+",
+                        center=(plus_center_x, row_center_y),
+                        width_px=item_gap,
+                        height_px=box_height,
+                        color_rgb=render_params.border_color_rgb,
+                        stroke_width=max(1, int(render_params.border_width_px)),
+                    )
+                    scene_union_boxes.append(list(plus_bbox))
+                    entities.append(
+                        {
+                            "entity_id": f"balance_plus_{int(panel_index)}_{str(side_name)}_{int(item_index)}",
+                            "entity_type": "puzzle_balance_operator",
+                            "bbox_px": list(plus_bbox),
+                            "attrs": {
+                                "panel_index": int(panel_index),
+                                "side": str(side_name),
+                                "operator_symbol": "+",
+                                "after_item_index": int(item_index),
+                            },
+                        }
+                    )
                 current_x += float(box_width + item_gap)
 
-        equal_bbox = _draw_balance_icon(
+        equal_bbox = _draw_balance_token(
             draw,
+            text="=",
             center=(center_x, row_center_y),
             width_px=scale_width,
             height_px=scale_height,
@@ -408,43 +439,43 @@ def render_puzzle_balance_scene(
         )
         current_y += float(box_height + panel_gap)
 
+    query_object_box_id = str(query_spec["query_object_box_id"])
     query_box_id = str(query_spec["query_box_id"])
     query_object_type = str(query_spec["object_type"])
-    query_left = float(center_x - 0.5 * query_box_width)
+    query_row_left = float(center_x - (0.5 * query_row_width))
     query_top = float(current_y - panel_gap + query_gap)
-    query_bbox = (
-        float(query_left),
+    query_object_bbox = (
+        float(query_row_left),
         float(query_top),
-        float(query_left + query_box_width),
+        float(query_row_left + query_box_width),
         float(query_top + query_box_height),
     )
-    query_outline_rgb = render_params.accent_color_rgb
-    query_fill_rgb = render_params.query_box_fill_rgb if selected_variant != "balance_outline" else (255, 255, 255)
+    query_object_fill_rgb = render_params.box_fill_rgb if selected_variant != "balance_outline" else (255, 255, 255)
     _rounded_rect(
         draw,
-        query_bbox,
+        query_object_bbox,
         radius=int(render_params.slot_corner_radius_px),
-        fill=query_fill_rgb,
-        outline=query_outline_rgb,
-        width=int(render_params.border_width_px + 1),
+        fill=query_object_fill_rgb,
+        outline=render_params.border_color_rgb,
+        width=int(render_params.border_width_px),
     )
     query_color_rgb = _OBJECT_COLOR_BY_TYPE.get(query_object_type, render_params.accent_color_rgb)
     _draw_shape_icon(
         draw,
-        bbox=query_bbox,
+        bbox=query_object_bbox,
         object_type=query_object_type,
         fill_rgb=query_color_rgb,
         outline_rgb=render_params.border_color_rgb,
         width=max(1, int(render_params.border_width_px)),
     )
-    query_bbox_list = [round(float(value), 3) for value in query_bbox]
-    box_bbox_map[str(query_box_id)] = list(query_bbox_list)
-    scene_union_boxes.append(list(query_bbox_list))
+    query_object_bbox_list = [round(float(value), 3) for value in query_object_bbox]
+    box_bbox_map[str(query_object_box_id)] = list(query_object_bbox_list)
+    scene_union_boxes.append(list(query_object_bbox_list))
     entities.append(
         {
-            "entity_id": str(query_box_id),
+            "entity_id": str(query_object_box_id),
             "entity_type": "puzzle_balance_box",
-            "bbox_px": list(query_bbox_list),
+            "bbox_px": list(query_object_bbox_list),
             "attrs": {
                 "panel_index": None,
                 "side": "query",
@@ -452,6 +483,78 @@ def render_puzzle_balance_scene(
                 "kind": "object",
                 "object_type": str(query_object_type),
                 "value": None,
+                "query_role": "object",
+                "is_query_box": False,
+            },
+        }
+    )
+    query_equals_center_x = float(query_row_left + query_box_width + scale_side_gap + (0.5 * scale_width))
+    query_center_y = float(query_top + (0.5 * query_box_height))
+    query_equal_bbox = _draw_balance_token(
+        draw,
+        text="=",
+        center=(query_equals_center_x, query_center_y),
+        width_px=scale_width,
+        height_px=scale_height,
+        color_rgb=render_params.border_color_rgb,
+        stroke_width=max(2, int(render_params.border_width_px)),
+    )
+    scene_union_boxes.append(list(query_equal_bbox))
+    entities.append(
+        {
+            "entity_id": "balance_equals_query",
+            "entity_type": "puzzle_balance_equals",
+            "bbox_px": list(query_equal_bbox),
+            "attrs": {
+                "panel_index": None,
+                "text": "=",
+                "side": "query",
+            },
+        }
+    )
+    query_answer_left = float(query_row_left + query_box_width + scale_side_gap + scale_width + scale_side_gap)
+    query_answer_bbox = (
+        float(query_answer_left),
+        float(query_top),
+        float(query_answer_left + query_box_width),
+        float(query_top + query_box_height),
+    )
+    query_outline_rgb = render_params.accent_color_rgb
+    query_fill_rgb = render_params.query_box_fill_rgb if selected_variant != "balance_outline" else (255, 255, 255)
+    _rounded_rect(
+        draw,
+        query_answer_bbox,
+        radius=int(render_params.slot_corner_radius_px),
+        fill=query_fill_rgb,
+        outline=query_outline_rgb,
+        width=int(render_params.border_width_px + 1),
+    )
+    query_answer_text_bbox = _draw_centered_text(
+        draw,
+        text="?",
+        center=(0.5 * (query_answer_bbox[0] + query_answer_bbox[2]), 0.5 * (query_answer_bbox[1] + query_answer_bbox[3])),
+        font=value_font,
+        fill=render_params.text_color_rgb,
+        stroke_fill=render_params.text_stroke_rgb,
+        stroke_width=1,
+    )
+    query_answer_bbox_list = [round(float(value), 3) for value in query_answer_bbox]
+    box_bbox_map[str(query_box_id)] = list(query_answer_bbox_list)
+    scene_union_boxes.append(list(query_answer_bbox_list))
+    scene_union_boxes.append(list(query_answer_text_bbox))
+    entities.append(
+        {
+            "entity_id": str(query_box_id),
+            "entity_type": "puzzle_balance_box",
+            "bbox_px": list(query_answer_bbox_list),
+            "attrs": {
+                "panel_index": None,
+                "side": "query",
+                "item_index": 1,
+                "kind": "unknown",
+                "object_type": None,
+                "value": None,
+                "query_role": "answer",
                 "is_query_box": True,
             },
         }

@@ -318,7 +318,7 @@ def test_puzzle_arithmetic_grid_row_count_and_hidden_position_vary_with_seed() -
     assert len(query_positions) >= 3
 
 
-def test_puzzle_arithmetic_balance_value_contract_matches_query_box() -> None:
+def test_puzzle_arithmetic_balance_value_contract_matches_query_answer_box() -> None:
     task = PuzzlesArithmeticBalanceValueTask()
     task_variants = (
         "sum_pair_unknown",
@@ -355,10 +355,10 @@ def test_puzzle_arithmetic_balance_value_contract_matches_query_box() -> None:
             assert str(render["scene_variant"]) == str(scene_variant)
             assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
             assert list(execution["panel_count_range"]) == [2, 3]
-            assert list(execution["total_box_count_range"]) == [7, 10]
+            assert list(execution["total_box_count_range"]) == [8, 11]
             assert 2 <= int(execution["panel_count"]) <= 3
-            assert 7 <= int(execution["total_box_count"]) <= 10
-            assert str(execution["question_format"]) == "query_box_balance"
+            assert 8 <= int(execution["total_box_count"]) <= 11
+            assert str(execution["question_format"]) == "query_answer_box_balance"
             assert int(execution["answer_value"]) == int(out.answer_gt.value)
             assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
             assert [str(box_id) for box_id in execution["supporting_box_ids"]] == [str(execution["query_box_id"])]
@@ -383,27 +383,38 @@ def test_puzzle_arithmetic_balance_value_contract_matches_query_box() -> None:
                 )
                 assert int(left_total) == int(right_total)
             assert int(out.answer_gt.value) == int(object_values[str(execution["query_object_type"])])
+            assert str(execution["query_object_box_id"]) in render_map["box_bboxes_px"]
             equal_entities = [
                 entity
                 for entity in trace["scene_ir"]["entities"]
                 if str(entity.get("entity_type")) == "puzzle_balance_equals"
             ]
-            assert len(equal_entities) == int(execution["panel_count"])
+            assert len(equal_entities) == int(execution["panel_count"]) + 1
+            plus_entities = [
+                entity
+                for entity in trace["scene_ir"]["entities"]
+                if str(entity.get("entity_type")) == "puzzle_balance_operator"
+            ]
+            expected_plus_count = sum(
+                max(0, len(panel["left_items"]) - 1) + max(0, len(panel["right_items"]) - 1)
+                for panel in execution["panel_specs"]
+            )
+            assert len(plus_entities) == int(expected_plus_count)
 
 
 def test_puzzle_arithmetic_balance_prompt_examples_match_selected_variants() -> None:
     task = PuzzlesArithmeticBalanceValueTask()
     expected = {
         "sum_pair_unknown": (
-            {"evidence": [[456, 508, 568, 620]], "answer": 7},
+            {"evidence": [[574, 508, 686, 620]], "answer": 7},
             {"answer": 7},
         ),
         "two_panel_chain_unknown": (
-            {"evidence": [[456, 508, 568, 620]], "answer": 8},
+            {"evidence": [[574, 508, 686, 620]], "answer": 8},
             {"answer": 8},
         ),
         "three_panel_chain_unknown": (
-            {"evidence": [[456, 508, 568, 620]], "answer": 5},
+            {"evidence": [[574, 508, 686, 620]], "answer": 5},
             {"answer": 5},
         ),
     }

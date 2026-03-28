@@ -1,4 +1,4 @@
-"""Puzzle arithmetic task that solves a highlighted symbol from equality panels."""
+"""Puzzle arithmetic task that solves an explicit query row from equality panels."""
 
 from __future__ import annotations
 
@@ -212,7 +212,7 @@ def _build_balance_dataset(
     defaults: PuzzleBalanceDefaults,
     task_id: str,
 ) -> Dict[str, Any]:
-    """Construct one deterministic balance-puzzle dataset with one queried object box."""
+    """Construct one deterministic balance-puzzle dataset with an explicit query row."""
 
     selected_variant = str(task_variant)
     if selected_variant not in set(_SUPPORTED_TASK_VARIANTS):
@@ -370,22 +370,25 @@ def _build_balance_dataset(
     if panel_specs is None or object_values is None or query_object_type is None or answer_value is None:
         raise ValueError(f"{task_id} could not construct a valid equality puzzle for variant={selected_variant}")
 
-    total_box_count = int(sum(len(panel["left_items"]) + len(panel["right_items"]) for panel in panel_specs) + 1)
-    query_box_id = "query_box"
+    total_box_count = int(sum(len(panel["left_items"]) + len(panel["right_items"]) for panel in panel_specs) + 2)
+    query_box_id = "query_answer_box"
+    query_object_box_id = "query_object_box"
     return {
         "task_variant": str(selected_variant),
         "panel_specs": list(panel_specs),
         "query_spec": {
+            "query_object_box_id": str(query_object_box_id),
             "query_box_id": str(query_box_id),
             "object_type": str(query_object_type),
         },
         "answer_value": int(answer_value),
         "query_box_id": str(query_box_id),
+        "query_object_box_id": str(query_object_box_id),
         "query_object_type": str(query_object_type),
         "panel_count": int(len(panel_specs)),
         "panel_count_range": [2, 3],
         "total_box_count": int(total_box_count),
-        "total_box_count_range": [7, 10],
+        "total_box_count_range": [8, 11],
         "answer_range": [int(answer_min), int(answer_max)],
         "max_visible_value": int(max_visible_value),
         "solver_trace": {
@@ -398,7 +401,7 @@ def _build_balance_dataset(
 
 @register_task
 class PuzzlesArithmeticBalanceValueTask:
-    """Return the integer value of the highlighted query symbol in one equality puzzle."""
+    """Return the integer that fills the explicit query row in one equality puzzle."""
 
     task_id = TASK_ID
     domain = "puzzles"
@@ -512,6 +515,7 @@ class PuzzlesArithmeticBalanceValueTask:
                     "scene_variant": str(scene_variant),
                     "answer_value": int(answer_value),
                     "query_box_id": str(query_box_id),
+                    "query_object_box_id": str(dataset["query_object_box_id"]),
                     "query_object_type": str(dataset["query_object_type"]),
                 },
             },
@@ -555,6 +559,7 @@ class PuzzlesArithmeticBalanceValueTask:
                 "scene_variant": str(scene_variant),
                 "answer_value": int(answer_value),
                 "query_box_id": str(query_box_id),
+                "query_object_box_id": str(dataset["query_object_box_id"]),
                 "query_object_type": str(dataset["query_object_type"]),
                 "panel_specs": list(dataset["panel_specs"]),
                 "solver_trace": dict(dataset["solver_trace"]),
@@ -567,7 +572,7 @@ class PuzzlesArithmeticBalanceValueTask:
                 "task_variant_probabilities": dict(task_variant_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
                 "supporting_box_ids": [str(query_box_id)],
-                "question_format": "query_box_balance",
+                "question_format": "query_answer_box_balance",
             },
             "witness_symbolic": {
                 "type": "bbox_set",

@@ -151,15 +151,15 @@ prompt:
     task_puzzles_arithmetic_balance_value:
       task_family_key: arithmetic_balance_query_puzzle
       task_key: balance_value_query
-      object_description_balance_strip: an arithmetic equality puzzle with stacked panels of boxed symbols and numbers separated by an explicit equals sign, plus one highlighted query box below the panels
-      object_description_balance_card: a card-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers separated by an explicit equals sign, plus one highlighted query box below the panels
-      object_description_balance_outline: an outline-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers separated by an explicit equals sign, plus one highlighted query box below the panels
-      evidence_hint_sum_pair_unknown: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the highlighted query box
-      evidence_hint_two_panel_chain_unknown: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the highlighted query box
-      evidence_hint_three_panel_chain_unknown: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the highlighted query box
-      json_example_sum_pair_unknown: '{"evidence":[[456,508,568,620]],"answer":7}'
-      json_example_two_panel_chain_unknown: '{"evidence":[[456,508,568,620]],"answer":8}'
-      json_example_three_panel_chain_unknown: '{"evidence":[[456,508,568,620]],"answer":5}'
+      object_description_balance_strip: an arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box
+      object_description_balance_card: a card-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box
+      object_description_balance_outline: an outline-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box
+      evidence_hint_sum_pair_unknown: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box
+      evidence_hint_two_panel_chain_unknown: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box
+      evidence_hint_three_panel_chain_unknown: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box
+      json_example_sum_pair_unknown: '{"evidence":[[574,508,686,620]],"answer":7}'
+      json_example_two_panel_chain_unknown: '{"evidence":[[574,508,686,620]],"answer":8}'
+      json_example_three_panel_chain_unknown: '{"evidence":[[574,508,686,620]],"answer":5}'
       json_example_answer_only_sum_pair_unknown: '{"answer":7}'
       json_example_answer_only_two_panel_chain_unknown: '{"answer":8}'
       json_example_answer_only_three_panel_chain_unknown: '{"answer":5}'

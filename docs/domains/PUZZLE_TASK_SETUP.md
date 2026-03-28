@@ -57,17 +57,18 @@ Capture the active v1 contract for the `puzzles` domain.
    - `answer_gt.type = integer`
 4. Evidence contract:
    - `evidence_gt.type = bbox_set`
-   - exactly one bbox for the highlighted query box
+   - exactly one bbox for the question-mark query box
 5. Scene contract:
    - one arithmetic equality puzzle per image,
    - `2..3` stacked equality panels with boxed symbols and/or boxed integers,
-   - one highlighted query box below the panels,
-   - every variant keeps the queried symbol local to that highlighted query box,
-   - the answer is the integer value of the highlighted query symbol.
+   - explicit plus signs appear between multiple items on the same side of a panel,
+   - one final query row below the panels has the form `symbol = ?`,
+   - every variant keeps the queried symbol local to that final query row,
+   - the answer is the integer value that replaces the question mark.
 6. Trace contract:
-   - `scene_ir.entities` includes `puzzle_balance_box`, `puzzle_balance_equals`, and `puzzle_balance_panel` entities,
+   - `scene_ir.entities` includes `puzzle_balance_box`, `puzzle_balance_operator`, `puzzle_balance_equals`, and `puzzle_balance_panel` entities,
    - `render_map.box_bboxes_px` stores each panel/query box bbox keyed by box id,
-   - `execution_trace` stores `panel_specs`, `solver_trace`, `query_box_id`, `query_object_type`, `panel_count`, `panel_count_range`, `total_box_count`, and `total_box_count_range`,
+   - `execution_trace` stores `panel_specs`, `solver_trace`, `query_box_id`, `query_object_box_id`, `query_object_type`, `panel_count`, `panel_count_range`, `total_box_count`, and `total_box_count_range`,
    - prompt-facing evidence is projected from `query_box_id`, not inferred from pixels.
 
 ## `task_puzzles_arithmetic_grid_value`
@@ -117,7 +118,7 @@ Capture the active v1 contract for the `puzzles` domain.
    - task-family: `object_description`
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
    - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
-6. Prompt-facing evidence wording should always make the one-box contract explicit: the returned bbox is the highlighted query box.
+6. Prompt-facing evidence wording should always make the one-box contract explicit: the returned bbox is the final question-mark query box.
 
 ## Prompt contract for `task_puzzles_arithmetic_grid_value`
 1. Bundle: `puzzles_arithmetic_v1`
@@ -133,7 +134,7 @@ Capture the active v1 contract for the `puzzles` domain.
 ## Visual policy
 1. Puzzles use the same light solid background baseline as the other clean synthetic domains.
 2. Arithmetic scene variants vary panel chrome and outline treatment, not the semantic layouts of the equation row, equality panels, or arithmetic grids.
-3. The equation unknown slot, equality query box, and arithmetic-grid question-mark cell should stay visually salient relative to the other boxes.
+3. The equation unknown slot, equality query answer box, and arithmetic-grid question-mark cell should stay visually salient relative to the other boxes.
 
 ## Determinism + review
 1. Deterministic generation/rendering from `instance_seed`.

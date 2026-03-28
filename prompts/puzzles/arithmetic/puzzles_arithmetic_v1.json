@@ -14,7 +14,7 @@
       "Look at the equality puzzle in the image: {object_description}.",
       "You are given {object_description}.",
       "Work from the equality-style arithmetic puzzle shown in the image: {object_description}.",
-      "Use the stacked equality panels in the image: {object_description}."
+      "Use the stacked equality panels and query row in the image: {object_description}."
     ],
     "arithmetic_grid_unknown_puzzle": [
       "The image shows {object_description}.",
@@ -33,11 +33,11 @@
       "Work from the shown arithmetic expression to find the missing number."
     ],
     "balance_value_query": [
-      "Use the equality panels to determine the value of the highlighted query symbol.",
-      "Solve the equality puzzle and report the integer value of the highlighted query box.",
-      "Infer the value represented by the symbol in the highlighted query box.",
-      "Work from the shown equalities to find the value of the highlighted symbol.",
-      "Read the equality puzzle and determine the number that matches the highlighted query box."
+      "Use the equality panels to determine what number replaces the question mark in the query row.",
+      "Solve the equality puzzle and report the integer value that belongs in the question-mark query box.",
+      "Infer the missing number in the final query row.",
+      "Work from the shown equalities to find the number that fills the question-mark box.",
+      "Read the equality puzzle and determine the number that completes the query row."
     ],
     "grid_value_query": [
       "Use the repeated row rule to determine the missing number.",
@@ -63,25 +63,25 @@
       "What integer completes the left side of the equation when placed in the question-mark box?"
     ],
     "sum_pair_unknown": [
-      "What is the value of the symbol in the highlighted query box?",
-      "Determine the value represented by the highlighted query symbol.",
-      "Which integer matches the highlighted query box?",
-      "Use the shown equalities to solve the highlighted query symbol.",
-      "What number belongs to the symbol in the highlighted query box?"
+      "What number should replace the question mark?",
+      "Determine the integer that belongs in the question-mark query box.",
+      "Which number completes the final query row?",
+      "Use the shown equalities to solve the question-mark box.",
+      "What integer belongs in the question-mark query box?"
     ],
     "two_panel_chain_unknown": [
-      "What is the value of the symbol in the highlighted query box?",
-      "Use the two equality panels to determine the highlighted query value.",
-      "Determine the integer represented by the highlighted query symbol.",
-      "Solve the equality chain and report the highlighted query value.",
-      "What number matches the highlighted query box?"
+      "What number should replace the question mark?",
+      "Use the two equality panels to determine the question-mark query value.",
+      "Determine the integer that completes the final query row.",
+      "Solve the equality chain and report the missing question-mark value.",
+      "What number belongs in the question-mark query box?"
     ],
     "three_panel_chain_unknown": [
-      "What is the value of the symbol in the highlighted query box?",
-      "Use all three equality panels to determine the highlighted query value.",
-      "Determine the integer represented by the highlighted query symbol.",
-      "Solve the full equality chain and report the highlighted query value.",
-      "What number matches the highlighted query box?"
+      "What number should replace the question mark?",
+      "Use all three equality panels to determine the question-mark query value.",
+      "Determine the integer that completes the final query row.",
+      "Solve the full equality chain and report the missing question-mark value.",
+      "What number belongs in the question-mark query box?"
     ],
     "sum_rule_missing": [
       "What number should replace the question mark?",

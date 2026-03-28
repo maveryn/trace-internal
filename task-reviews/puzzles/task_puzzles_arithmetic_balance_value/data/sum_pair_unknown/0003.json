@@ -7,9 +7,9 @@
     "type": "bbox_set",
     "value": [
       [
-        456.0,
+        602.0,
         449.0,
-        568.0,
+        714.0,
         561.0
       ]
     ]
@@ -19,10 +19,10 @@
     "path": "puzzles/task_puzzles_arithmetic_balance_value/images/sum_pair_unknown/0003.png"
   },
   "instance_seed": 5562732806326131,
-  "prompt": "Use the stacked equality panels in the image: an arithmetic equality puzzle with stacked panels of boxed symbols and numbers separated by an explicit equals sign, plus one highlighted query box below the panels. Read the equality puzzle and determine the number that matches the highlighted query box. Use the shown equalities to solve the highlighted query symbol.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the highlighted query box.\nAnswer field: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[456,508,568,620]],\"answer\":7}",
+  "prompt": "Use the stacked equality panels and query row in the image: an arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box. Read the equality puzzle and determine the number that completes the query row. Use the shown equalities to solve the question-mark box.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box.\nAnswer field: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[574,508,686,620]],\"answer\":7}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the stacked equality panels in the image: an arithmetic equality puzzle with stacked panels of boxed symbols and numbers separated by an explicit equals sign, plus one highlighted query box below the panels. Read the equality puzzle and determine the number that matches the highlighted query box. Use the shown equalities to solve the highlighted query symbol.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the highlighted query box.\nAnswer field: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[456,508,568,620]],\"answer\":7}",
-    "answer_only": "Use the stacked equality panels in the image: an arithmetic equality puzzle with stacked panels of boxed symbols and numbers separated by an explicit equals sign, plus one highlighted query box below the panels. Read the equality puzzle and determine the number that matches the highlighted query box. Use the shown equalities to solve the highlighted query symbol.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"answer\":7}"
+    "answer_and_evidence": "Use the stacked equality panels and query row in the image: an arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box. Read the equality puzzle and determine the number that completes the query row. Use the shown equalities to solve the question-mark box.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box.\nAnswer field: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[574,508,686,620]],\"answer\":7}",
+    "answer_only": "Use the stacked equality panels and query row in the image: an arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box. Read the equality puzzle and determine the number that completes the query row. Use the shown equalities to solve the question-mark box.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"answer\":7}"
   },
   "task": "task_puzzles_arithmetic_balance_value",
   "task_variant": "sum_pair_unknown",
@@ -91,9 +91,10 @@
           ]
         }
       ],
-      "query_box_id": "query_box",
+      "query_box_id": "query_answer_box",
+      "query_object_box_id": "query_object_box",
       "query_object_type": "circle",
-      "question_format": "query_box_balance",
+      "question_format": "query_answer_box_balance",
       "scene_variant": "balance_strip",
       "scene_variant_probabilities": {
         "balance_card": 0.3333333333333333,
@@ -109,7 +110,7 @@
         "query_object_type": "circle"
       },
       "supporting_box_ids": [
-        "query_box"
+        "query_answer_box"
       ],
       "task_variant": "sum_pair_unknown",
       "task_variant_probabilities": {
@@ -117,18 +118,18 @@
         "three_panel_chain_unknown": 0.0,
         "two_panel_chain_unknown": 0.0
       },
-      "total_box_count": 7,
+      "total_box_count": 8,
       "total_box_count_range": [
-        7,
-        10
+        8,
+        11
       ]
     },
     "projected_evidence": {
       "bbox_set": [
         [
-          456.0,
+          602.0,
           449.0,
-          568.0,
+          714.0,
           561.0
         ]
       ]
@@ -156,10 +157,10 @@
           "three_panel_chain_unknown": 0.0,
           "two_panel_chain_unknown": 0.0
         },
-        "total_box_count": 7,
+        "total_box_count": 8,
         "total_box_count_range": [
-          7,
-          10
+          8,
+          11
         ]
       },
       "prompt_variant": {
@@ -169,12 +170,12 @@
         "schema_version": "v1",
         "slot_values": {
           "answer_hint": "set \"answer\" to the exact integer value requested by the puzzle",
-          "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the highlighted query box",
-          "json_example": "{\"evidence\":[[456,508,568,620]],\"answer\":7}",
+          "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box",
+          "json_example": "{\"evidence\":[[574,508,686,620]],\"answer\":7}",
           "json_example_answer_only": "{\"answer\":7}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "an arithmetic equality puzzle with stacked panels of boxed symbols and numbers separated by an explicit equals sign, plus one highlighted query box below the panels"
+          "object_description": "an arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box"
         },
         "task_family_key": "arithmetic_balance_query_puzzle",
         "task_family_variant_index": 4,
@@ -202,12 +203,12 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the exact integer value requested by the puzzle",
-              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the highlighted query box",
-              "json_example": "{\"evidence\":[[456,508,568,620]],\"answer\":7}",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box",
+              "json_example": "{\"evidence\":[[574,508,686,620]],\"answer\":7}",
               "json_example_answer_only": "{\"answer\":7}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "an arithmetic equality puzzle with stacked panels of boxed symbols and numbers separated by an explicit equals sign, plus one highlighted query box below the panels"
+              "object_description": "an arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box"
             },
             "task_family_key": "arithmetic_balance_query_puzzle",
             "task_family_variant_index": 4,
@@ -225,7 +226,7 @@
               "task_variant:sum_pair_unknown": 5
             }
           },
-          "prompt": "Use the stacked equality panels in the image: an arithmetic equality puzzle with stacked panels of boxed symbols and numbers separated by an explicit equals sign, plus one highlighted query box below the panels. Read the equality puzzle and determine the number that matches the highlighted query box. Use the shown equalities to solve the highlighted query symbol.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the highlighted query box.\nAnswer field: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[456,508,568,620]],\"answer\":7}"
+          "prompt": "Use the stacked equality panels and query row in the image: an arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box. Read the equality puzzle and determine the number that completes the query row. Use the shown equalities to solve the question-mark box.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box.\nAnswer field: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[574,508,686,620]],\"answer\":7}"
         },
         "answer_only": {
           "metadata": {
@@ -235,12 +236,12 @@
             "schema_version": "v1",
             "slot_values": {
               "answer_hint": "set \"answer\" to the exact integer value requested by the puzzle",
-              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the highlighted query box",
-              "json_example": "{\"evidence\":[[456,508,568,620]],\"answer\":7}",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box",
+              "json_example": "{\"evidence\":[[574,508,686,620]],\"answer\":7}",
               "json_example_answer_only": "{\"answer\":7}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "an arithmetic equality puzzle with stacked panels of boxed symbols and numbers separated by an explicit equals sign, plus one highlighted query box below the panels"
+              "object_description": "an arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box"
             },
             "task_family_key": "arithmetic_balance_query_puzzle",
             "task_family_variant_index": 4,
@@ -258,7 +259,7 @@
               "task_variant:sum_pair_unknown": 5
             }
           },
-          "prompt": "Use the stacked equality panels in the image: an arithmetic equality puzzle with stacked panels of boxed symbols and numbers separated by an explicit equals sign, plus one highlighted query box below the panels. Read the equality puzzle and determine the number that matches the highlighted query box. Use the shown equalities to solve the highlighted query symbol.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"answer\":7}"
+          "prompt": "Use the stacked equality panels and query row in the image: an arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box. Read the equality puzzle and determine the number that completes the query row. Use the shown equalities to solve the question-mark box.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"answer\":7}"
         }
       },
       "task_variant": "sum_pair_unknown",
@@ -302,10 +303,16 @@
           698.0,
           405.0
         ],
-        "query_box": [
-          456.0,
+        "query_answer_box": [
+          602.0,
           449.0,
-          568.0,
+          714.0,
+          561.0
+        ],
+        "query_object_box": [
+          310.0,
+          449.0,
+          422.0,
           561.0
         ]
       },
@@ -313,7 +320,7 @@
       "scene_bbox_px": [
         212.0,
         159.0,
-        698.0,
+        714.0,
         561.0
       ]
     },
@@ -355,7 +362,7 @@
       "scene_bbox_px": [
         212.0,
         159.0,
-        698.0,
+        714.0,
         561.0
       ],
       "scene_variant": "balance_strip",
@@ -383,6 +390,22 @@
           ],
           "entity_id": "panel_0_left_0",
           "entity_type": "puzzle_balance_box"
+        },
+        {
+          "attrs": {
+            "after_item_index": 0,
+            "operator_symbol": "+",
+            "panel_index": 0,
+            "side": "left"
+          },
+          "bbox_px": [
+            299.0,
+            193.0,
+            335.0,
+            221.0
+          ],
+          "entity_id": "balance_plus_0_left_0",
+          "entity_type": "puzzle_balance_operator"
         },
         {
           "attrs": {
@@ -470,6 +493,22 @@
         },
         {
           "attrs": {
+            "after_item_index": 0,
+            "operator_symbol": "+",
+            "panel_index": 1,
+            "side": "left"
+          },
+          "bbox_px": [
+            299.0,
+            343.0,
+            335.0,
+            371.0
+          ],
+          "entity_id": "balance_plus_1_left_0",
+          "entity_type": "puzzle_balance_operator"
+        },
+        {
+          "attrs": {
             "is_query_box": false,
             "item_index": 1,
             "kind": "object",
@@ -535,27 +574,64 @@
         },
         {
           "attrs": {
-            "is_query_box": true,
+            "is_query_box": false,
             "item_index": 0,
             "kind": "object",
             "object_type": "circle",
             "panel_index": null,
+            "query_role": "object",
             "side": "query",
             "value": null
           },
           "bbox_px": [
-            456.0,
+            310.0,
             449.0,
-            568.0,
+            422.0,
             561.0
           ],
-          "entity_id": "query_box",
+          "entity_id": "query_object_box",
+          "entity_type": "puzzle_balance_box"
+        },
+        {
+          "attrs": {
+            "panel_index": null,
+            "side": "query",
+            "text": "="
+          },
+          "bbox_px": [
+            482.5,
+            487.0,
+            541.5,
+            523.0
+          ],
+          "entity_id": "balance_equals_query",
+          "entity_type": "puzzle_balance_equals"
+        },
+        {
+          "attrs": {
+            "is_query_box": true,
+            "item_index": 1,
+            "kind": "unknown",
+            "object_type": null,
+            "panel_index": null,
+            "query_role": "answer",
+            "side": "query",
+            "value": null
+          },
+          "bbox_px": [
+            602.0,
+            449.0,
+            714.0,
+            561.0
+          ],
+          "entity_id": "query_answer_box",
           "entity_type": "puzzle_balance_box"
         }
       ],
       "relations": {
         "answer_value": 1,
-        "query_box_id": "query_box",
+        "query_box_id": "query_answer_box",
+        "query_object_box_id": "query_object_box",
         "query_object_type": "circle",
         "scene_variant": "balance_strip",
         "task_variant": "sum_pair_unknown"
@@ -566,9 +642,9 @@
       "type": "bbox_set",
       "value": [
         [
-          456.0,
+          602.0,
           449.0,
-          568.0,
+          714.0,
           561.0
         ]
       ]

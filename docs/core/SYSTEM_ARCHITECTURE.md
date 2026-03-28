@@ -101,6 +101,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/icons/counting/attribute_binding.py`
    - `trace/tasks/icons/counting/size_relation.py`
    - `trace/tasks/icons/pattern/grid_rotation_violation.py`
+   - `trace/tasks/icons/pattern/grid_size_violation.py`
    - `trace/tasks/icons/relation/relative_position_type.py`
    - `trace/tasks/icons/relation/between_two_anchors_count.py`
    - `trace/tasks/icons/relation/mirror_symmetry.py`

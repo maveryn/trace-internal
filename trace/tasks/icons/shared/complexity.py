@@ -1095,6 +1095,85 @@ def build_icons_pattern_grid_rotation_violation_complexity(
     )
 
 
+def build_icons_pattern_grid_size_violation_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    grid_rows: int,
+    grid_cols: int,
+    row_step_levels: int,
+    col_step_levels: int,
+    distinct_expected_size_level_count: int,
+    plausible_rule_count: int,
+    total_rule_support: int,
+    violation_cell_index: int,
+    violation_level_delta: int,
+    violation_nominal_size_gap_px: int,
+    max_violation_nominal_size_gap_px: int,
+    scene_icon_instances: Sequence[Mapping[str, Any]],
+    render_params: Mapping[str, Any],
+) -> TaskComplexity:
+    """Build complexity for the 2D icon grid size-violation pattern task."""
+
+    cell_count = max(1, int(grid_rows) * int(grid_cols))
+    visual_scan = _normalize_linear(
+        float(cell_count),
+        min_value=4.0,
+        max_value=9.0,
+    )
+    distinct_size_load = _normalize_linear(
+        float(distinct_expected_size_level_count),
+        min_value=2.0,
+        max_value=5.0,
+    )
+    multi_axis_load = 1.0 if int(row_step_levels) != 0 and int(col_step_levels) != 0 else 0.55
+    rule_inference = _clip01((0.65 * distinct_size_load) + (0.35 * multi_axis_load))
+
+    subtle_level_load = 1.0 - _normalize_linear(
+        float(violation_level_delta),
+        min_value=1.0,
+        max_value=4.0,
+    )
+    subtle_pixel_load = 1.0 - _normalize_linear(
+        float(violation_nominal_size_gap_px),
+        min_value=float(render_params.get("size_level_gap_px", 8)),
+        max_value=float(max(1, int(max_violation_nominal_size_gap_px))),
+    )
+    interior_position_load = _grid_center_position_load(
+        cell_index=int(violation_cell_index),
+        grid_rows=int(grid_rows),
+        grid_cols=int(grid_cols),
+    )
+    plausible_rule_load = _normalize_linear(
+        float(plausible_rule_count),
+        min_value=1.0,
+        max_value=float(max(1, int(total_rule_support))),
+    )
+    ambiguity = _clip01(
+        (0.30 * subtle_level_load)
+        + (0.20 * subtle_pixel_load)
+        + (0.30 * interior_position_load)
+        + (0.20 * plausible_rule_load)
+    )
+    clutter = icon_scene_clutter_score(
+        scene_instances=scene_icon_instances,
+        scene_icon_size_min_px=int(render_params["scene_icon_size_min_px"]),
+        scene_icon_size_max_px=int(render_params["scene_icon_size_max_px"]),
+        scene_max_overlap_fraction=float(render_params["scene_max_overlap_fraction"]),
+        noise_edit_count_range=render_params["icon_noise_edit_count_range"],
+    )
+    return build_icon_task_complexity(
+        task_group_defaults=task_group_defaults,
+        task_id=str(task_id),
+        criterion_values={
+            "visual_scan": float(visual_scan),
+            "rule_inference": float(rule_inference),
+            "ambiguity": float(ambiguity),
+            "clutter": float(clutter),
+        },
+    )
+
+
 __all__ = [
     "build_icon_task_complexity",
     "build_icons_counting_color_complexity",
@@ -1103,6 +1182,7 @@ __all__ = [
     "build_icons_counting_size_relation_complexity",
     "build_icons_counting_type_complexity",
     "build_icons_pattern_grid_rotation_violation_complexity",
+    "build_icons_pattern_grid_size_violation_complexity",
     "build_icons_relation_between_two_anchors_count_complexity",
     "build_icons_relation_mirror_symmetry_complexity",
     "build_icons_relation_occlusion_order_complexity",

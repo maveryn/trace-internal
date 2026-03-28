@@ -258,6 +258,14 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Answer type: integer box index.
    - Evidence: one-box `bbox_set` for the violating grid box in final image coordinates.
    - Ambiguity rule: reject any grid where more than one box index could plausibly be the unique violation under the supported row/column rule hypotheses.
+29. **Icons pattern grid size violation (`task_icons_pattern_grid_size_violation`)**
+   - One single-panel image with a numbered `3 x 3` grid of Scene boxes, each containing exactly one icon.
+   - Query: which numbered box breaks the 2D size pattern.
+   - Pattern rule: the clean grid follows one row/column size-level rule `level[row, col] = base + row * row_step + col * col_step` using symbolic levels `{1,2,3,4,5}` and step supports `{-1,0,1}` with the all-zero step pair disallowed.
+   - Visual rule: all Scene icons keep one shared icon type, one shared tint, and one shared rotation from the curated Prism icon pool; only nominal size changes across the grid, and per-instance pixel sizes are derived from the symbolic size ladder after sampled cell geometry is fixed.
+   - Answer type: integer box index.
+   - Evidence: one-box `bbox_set` for the violating grid box in final image coordinates.
+   - Ambiguity rule: reject any grid where more than one box index could plausibly be the unique violation under the supported row/column size-rule hypotheses.
 
 ## Future polygon variants (deferred)
 1. Polygon diameter measurement.

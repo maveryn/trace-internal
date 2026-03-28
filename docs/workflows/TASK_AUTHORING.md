@@ -106,6 +106,7 @@ Use this as the implementation checklist for new or modified tasks.
 35. For icon mirror-symmetry tasks, define one explicit rendered-image symmetry signature per variant (for example vertical-only, horizontal-only, main-diagonal-only, anti-diagonal-only, or vertical+horizontal only), keep the Reference and Scene cell boxes square so diagonal checks are well-defined, use even icon counts across both matching and non-matching cells, and reject any accidental extra-axis symmetries instead of treating them as acceptable matches.
 36. For icon tasks whose queried predicate depends on orientation, mirror symmetry, or transform identity, use `assets/icons/non_symmetry.txt` via the shared manifest loader instead of the full curated pool; tasks where symmetry is irrelevant (for example type/color/size/spatial-only tasks) may continue using `all_icons.txt`.
 37. For 2D icon pattern-violation tasks, prefer a numbered single-panel grid over an option strip, keep the answer on the violating cell index, keep user-facing evidence on the violating cell bbox, and reject any instance where another supported rule hypothesis would make a different violating cell plausible.
+38. For 2D icon size-pattern tasks, define the clean rule over symbolic size levels first and only map those levels to pixel sizes after sampled cell geometry is known; this keeps uniqueness checks stable instead of making them depend on whichever raw pixel ladder happened to fit the cell.
 
 ## 4) Config/defaults rules
 1. Precedence: `domain -> task_group -> task/params`.

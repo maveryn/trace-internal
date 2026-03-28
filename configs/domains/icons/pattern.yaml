@@ -11,6 +11,13 @@ generation:
       rotation_candidates_degrees: [0, 90, 180, 270]
       row_step_candidates_degrees: [90, 180, 270]
       col_step_candidates_degrees: [90, 180, 270]
+    task_icons_pattern_grid_size_violation:
+      pool_manifest: all_icons.txt
+      size_levels: [1, 2, 3, 4, 5]
+      base_level_candidates: [1, 2, 3, 4, 5]
+      row_step_candidates: [-1, 0, 1]
+      col_step_candidates: [-1, 0, 1]
+      shared_rotation_candidates_degrees: [0, 90, 180, 270]
 
 rendering:
   shared:
@@ -58,6 +65,16 @@ rendering:
     scene_content_side_padding_px: 10
     scene_content_bottom_padding_px: 10
     scene_content_top_offset_px: 40
+  task_overrides:
+    task_icons_pattern_grid_size_violation:
+      scene_icon_size_min_px: 34
+      scene_icon_size_max_px: 82
+      cell_box_width_min_px: 116
+      cell_box_width_max_px: 152
+      cell_box_height_min_px: 116
+      cell_box_height_max_px: 152
+      size_level_gap_px: 8
+      icon_noise_edit_count_range: [0, 1]
 
 prompt:
   shared:
@@ -68,6 +85,14 @@ prompt:
     task_icons_pattern_grid_rotation_violation:
       object_description: a 3 by 3 grid of numbered boxes, each containing one icon
       question_text: Which numbered box breaks the 2D rotation pattern?
+      evidence_hint: set "evidence" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the violating grid box
+      answer_hint: set "answer" to the violating box index as an integer
+      json_example: '{"evidence":[[540,126,654,458]],"answer":5}'
+      json_example_answer_only: '{"answer":5}'
+    task_icons_pattern_grid_size_violation:
+      task_key: grid_size_violation_query
+      object_description: a 3 by 3 grid of numbered boxes, each containing one icon
+      question_text: Which numbered box breaks the 2D size pattern?
       evidence_hint: set "evidence" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the violating grid box
       answer_hint: set "answer" to the violating box index as an integer
       json_example: '{"evidence":[[540,126,654,458]],"answer":5}'

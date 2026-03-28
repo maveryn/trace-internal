@@ -124,10 +124,11 @@ clutter: 0.10
 
 Use for:
 - `task_icons_pattern_grid_rotation_violation`
+- `task_icons_pattern_grid_size_violation`
 
 What to measure:
 - grid size / visible cell inventory,
-- rule richness (for example how many distinct rotations appear and whether row/column steps differ),
+- rule richness (for example how many distinct rotations or size levels appear and whether both row/column axes matter),
 - violating-cell ambiguity,
 - per-cell readability.
 

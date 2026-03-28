@@ -1813,6 +1813,7 @@ def test_icons_pattern_defaults_loaded() -> None:
     assert int(generation_shared["answer_index_max"]) == 9
     assert bool(generation_shared["balanced_sampling"]) is True
     assert "task_icons_pattern_grid_rotation_violation" in cfg["generation"]["task_overrides"]
+    assert "task_icons_pattern_grid_size_violation" in cfg["generation"]["task_overrides"]
 
     render_shared = cfg["rendering"]["shared"]
     assert int(render_shared["scene_icon_size_min_px"]) == 48
@@ -1848,6 +1849,27 @@ def test_icons_pattern_defaults_loaded() -> None:
     assert str(prompt["answer_hint"]).strip()
     assert str(prompt["json_example"]).strip()
     assert str(prompt["json_example_answer_only"]).strip()
+
+    generation, rendering, prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_icons_pattern_grid_size_violation",
+    )
+    assert str(generation["pool_manifest"]).strip() == "all_icons.txt"
+    assert list(generation["size_levels"]) == [1, 2, 3, 4, 5]
+    assert list(generation["base_level_candidates"]) == [1, 2, 3, 4, 5]
+    assert list(generation["row_step_candidates"]) == [-1, 0, 1]
+    assert list(generation["col_step_candidates"]) == [-1, 0, 1]
+    assert list(generation["shared_rotation_candidates_degrees"]) == [0, 90, 180, 270]
+    assert int(rendering["scene_icon_size_min_px"]) == 34
+    assert int(rendering["scene_icon_size_max_px"]) == 82
+    assert int(rendering["cell_box_width_min_px"]) == 116
+    assert int(rendering["cell_box_width_max_px"]) == 152
+    assert int(rendering["cell_box_height_min_px"]) == 116
+    assert int(rendering["cell_box_height_max_px"]) == 152
+    assert int(rendering["size_level_gap_px"]) == 8
+    assert list(rendering["icon_noise_edit_count_range"]) == [0, 1]
+    assert str(prompt["task_key"]).strip() == "grid_size_violation_query"
+    assert str(prompt["question_text"]).strip()
 
 
 def test_tile_path_defaults_loaded() -> None:

@@ -69,6 +69,7 @@ Date: 2026-03-27
 58. Tables now also includes `task_tables_counting_value_count`, the first `counting` task under `domain=tables`, with semantic `task_variant` values `above_threshold|below_threshold|in_interval`, visual `scene_variant` values `spreadsheet|zebra|ledger|card_table`, integer answers, and `bbox_set` evidence over the matching queried-column value cells in top-to-bottom row order. The count answer is sampled from the feasible `0..row_count` support before the queried column is constructed, `above_threshold` and `below_threshold` use strict inequalities, and `in_interval` uses an inclusive interval.
 59. Tables now also includes `task_tables_readout_cell_value`, the first `readout` task under `domain=tables`, with semantic `task_variant` value `cell_lookup`, visual `scene_variant` values `spreadsheet|zebra|ledger|card_table`, integer answers, and `bbox_set` evidence over the exact queried row/column cell. The queried row label and queried numeric column are named explicitly in the prompt and recorded in trace, while the answer cell value is set explicitly to keep direct-cell readout answer diversity healthy.
 60. Icons pattern now includes `task_icons_pattern_grid_rotation_violation`, a single-panel numbered `3 x 3` grid task with integer index answers and one-box `bbox_set` evidence; every cell contains the same asymmetric icon type and tint, the clean grid follows one row/column rotation-offset rule over `{0, 90, 180, 270}`, and generation corrupts exactly one cell while rejecting any grid where another supported rule hypothesis would make a different violating index plausible.
+61. Icons pattern now also includes `task_icons_pattern_grid_size_violation`, a single-panel numbered `3 x 3` grid task with integer index answers and one-box `bbox_set` evidence; every cell contains the same icon type, tint, and rotation, the clean grid follows one row/column symbolic size-level rule over `{1,2,3,4,5}` with step support `{-1,0,1}`, and generation corrupts exactly one cell while rejecting any grid where another supported rule hypothesis would make a different violating index plausible. The rendered pixel sizes are derived only after sampled cell geometry is fixed, so the task reasons over stable symbolic size levels rather than whichever raw size ladder happened to fit that instance.
 
 ## Active tasks
 1. `task_tile_count_color_count` (`domain=tile`, `task_group=count`)
@@ -128,12 +129,13 @@ Date: 2026-03-27
 55. `task_tables_counting_value_count` (`domain=tables`, `task_group=counting`)
 56. `task_tables_readout_cell_value` (`domain=tables`, `task_group=readout`)
 57. `task_icons_pattern_grid_rotation_violation` (`domain=icons`, `task_group=pattern`)
+58. `task_icons_pattern_grid_size_violation` (`domain=icons`, `task_group=pattern`)
 
 ## Current quality baseline
 1. Tests are required to pass before finalize.
 2. Distribution QA uses `scripts/check_task_answer_distribution.py` with per-variant answer-only checks (`unique_answers >= 5`, `max_answer_frequency < 25%`) and multithreaded sample generation (`--workers`); numeric 5-bin summaries remain reported for review but are not hard pass/fail gates.
 3. Task-review tooling writes per-task artifacts under `task-reviews/<task_id>/`, including one inspection workbook named `<task_id>.xlsx` with one sheet per task variant.
-4. The current active reviewed task set (10 tile tasks + 20 geometry tasks + 12 reviewed icons tasks + 10 charts tasks + 4 table tasks) passes distribution review under the active gates.
+4. The current active reviewed task set (10 tile tasks + 20 geometry tasks + 13 reviewed icons tasks + 10 charts tasks + 4 table tasks) passes distribution review under the active gates.
 
 ## Next priorities
 1. Extend icons beyond the current counting/transformation/relation/sequence/pattern set using the curated Prism asset pipeline (`comparison` and richer pattern/transformation variants are the next natural families).

@@ -129,6 +129,6 @@ Active task-to-bundle mapping:
    - `task_charts_trend_structure_value` -> `charts_trend_v1`
    - `task_charts_composition_subset_value` -> `charts_composition_v1`
 9. Tables:
-   - `task_tables_statistics_summary_label|summary_value` -> `tables_statistics_v1`
+   - `task_tables_statistics_summary_label|summary_value|row_summary_value` -> `tables_statistics_v1`
    - `task_tables_counting_value_count` -> `tables_counting_v1`
    - `task_tables_readout_cell_value` -> `tables_readout_v1`

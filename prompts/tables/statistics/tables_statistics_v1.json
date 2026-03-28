@@ -24,6 +24,13 @@
       "Use the table values to compute the requested column summary.",
       "Find the numeric summary for the named column.",
       "Read the table and report the requested column summary value."
+    ],
+    "summary_row_value_query": [
+      "Answer this question.",
+      "Determine the requested summary value for the queried row.",
+      "Use the table values to compute the requested row summary.",
+      "Find the numeric summary for the named row.",
+      "Read the table and report the requested row summary value."
     ]
   },
   "task_variant_templates": {
@@ -61,11 +68,31 @@
       "Determine the column median for {query_column}.",
       "What median value does the {query_column} column have?",
       "Compute the median of the {query_column} column."
+    ],
+    "row_sum": [
+      "What is the sum of the numeric values in row {query_row_label}?",
+      "Find the total of all numeric values in row {query_row_label}.",
+      "Determine the row sum for {query_row_label}.",
+      "What total do you get when you add the numeric entries in row {query_row_label}?",
+      "Compute the sum of the numeric cells in row {query_row_label}."
+    ],
+    "row_mean": [
+      "What is the mean of the numeric values in row {query_row_label}?",
+      "Find the average of all numeric values in row {query_row_label}.",
+      "Determine the row mean for {query_row_label}.",
+      "What average value does row {query_row_label} have across the numeric columns?",
+      "Compute the mean of the numeric cells in row {query_row_label}."
     ]
   },
   "required_slots_by_key": {
     "task_family:styled_table_statistics": [
       "object_description"
+    ],
+    "task_variant:row_sum": [
+      "query_row_label"
+    ],
+    "task_variant:row_mean": [
+      "query_row_label"
     ],
     "answer_or_evidence:answer_only": [
       "json_output_contract_answer_only",

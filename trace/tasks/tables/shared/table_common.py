@@ -91,6 +91,23 @@ def _build_values_by_row(
     return values_by_row
 
 
+def _sample_values_with_total(*, count: int, target_total: int, min_value: int, max_value: int, rng) -> List[int]:
+    """Sample `count` bounded integers whose sum equals `target_total`."""
+
+    values: List[int] = []
+    remaining_total = int(target_total)
+    for index in range(int(count)):
+        slots_left = int(count) - int(index) - 1
+        min_here = max(int(min_value), int(remaining_total - (slots_left * int(max_value))))
+        max_here = min(int(max_value), int(remaining_total - (slots_left * int(min_value))))
+        if int(min_here) > int(max_here):
+            raise ValueError("failed to construct bounded values for requested total")
+        values.append(int(rng.randint(int(min_here), int(max_here))))
+        remaining_total -= int(values[-1])
+    rng.shuffle(values)
+    return [int(value) for value in values]
+
+
 def _resolve_base_table_schema(
     *,
     params: Mapping[str, Any],
@@ -466,20 +483,6 @@ def build_summary_value_dataset_for_variant(
     value_min = int(base["value_min"])
     value_max = int(base["value_max"])
 
-    def _sample_values_with_total(*, count: int, target_total: int, min_value: int, max_value: int) -> List[int]:
-        values: List[int] = []
-        remaining_total = int(target_total)
-        for index in range(int(count)):
-            slots_left = int(count) - int(index) - 1
-            min_here = max(int(min_value), int(remaining_total - (slots_left * int(max_value))))
-            max_here = min(int(max_value), int(remaining_total - (slots_left * int(min_value))))
-            if int(min_here) > int(max_here):
-                raise ValueError("failed to construct bounded column values for requested total")
-            values.append(int(rng.randint(int(min_here), int(max_here))))
-            remaining_total -= int(values[-1])
-        rng.shuffle(values)
-        return [int(value) for value in values]
-
     if str(task_variant) == "column_sum":
         target_sum = int(rng.randint(int(row_count * value_min), int(row_count * value_max)))
         query_values = _sample_values_with_total(
@@ -487,6 +490,7 @@ def build_summary_value_dataset_for_variant(
             target_total=int(target_sum),
             min_value=int(value_min),
             max_value=int(value_max),
+            rng=rng,
         )
         answer_value = int(target_sum)
     elif str(task_variant) == "column_mean":
@@ -496,6 +500,7 @@ def build_summary_value_dataset_for_variant(
             target_total=int(row_count * target_mean),
             min_value=int(value_min),
             max_value=int(value_max),
+            rng=rng,
         )
         answer_value = int(target_mean)
     else:
@@ -536,6 +541,90 @@ def build_summary_value_dataset_for_variant(
         "values_by_row": dict(values_by_row),
         "answer_value": int(answer_value),
         "query_column_index": int(query_col_index),
+    }
+
+
+def build_row_summary_value_dataset_for_variant(
+    *,
+    task_variant: str,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    gen_defaults: Mapping[str, Any],
+    defaults: TableDefaults,
+    task_id: str,
+) -> Dict[str, Any]:
+    """Construct one deterministic table dataset for row-summary numeric queries."""
+
+    if str(task_variant) not in {"row_sum", "row_mean"}:
+        raise ValueError(f"unsupported table row-summary variant: {task_variant}")
+
+    base = _resolve_base_table_schema(
+        params=params,
+        instance_seed=int(instance_seed),
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        task_id=task_id,
+    )
+    rng = base["rng"]
+    row_count = int(base["row_count"])
+    numeric_column_count = int(base["numeric_column_count"])
+    row_labels = list(base["row_labels"])
+    column_headers = list(base["column_headers"])
+    value_min = int(base["value_min"])
+    value_max = int(base["value_max"])
+    query_row_index = int(
+        resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}:query_row",
+        )
+    ) % int(row_count)
+    query_row_label = str(row_labels[int(query_row_index)])
+
+    if str(task_variant) == "row_sum":
+        target_sum = int(rng.randint(int(numeric_column_count * value_min), int(numeric_column_count * value_max)))
+        query_row_values = _sample_values_with_total(
+            count=int(numeric_column_count),
+            target_total=int(target_sum),
+            min_value=int(value_min),
+            max_value=int(value_max),
+            rng=rng,
+        )
+        answer_value = int(target_sum)
+    else:
+        target_mean = int(rng.randint(int(value_min), int(value_max)))
+        query_row_values = _sample_values_with_total(
+            count=int(numeric_column_count),
+            target_total=int(numeric_column_count * target_mean),
+            min_value=int(value_min),
+            max_value=int(value_max),
+            rng=rng,
+        )
+        answer_value = int(target_mean)
+
+    values_by_row = _build_values_by_row(
+        row_labels=row_labels,
+        column_headers=column_headers,
+        rng=rng,
+        value_min=int(value_min),
+        value_max=int(value_max),
+    )
+    values_by_row[str(query_row_label)] = {
+        str(header): int(query_row_values[int(column_index)])
+        for column_index, header in enumerate(column_headers)
+    }
+    return {
+        "row_count": int(row_count),
+        "numeric_column_count": int(numeric_column_count),
+        "row_count_range": list(base["row_count_range"]),
+        "numeric_column_count_range": list(base["numeric_column_count_range"]),
+        "value_range": list(base["value_range"]),
+        "row_labels": [str(label) for label in row_labels],
+        "column_headers": [str(header) for header in column_headers],
+        "query_row_label": str(query_row_label),
+        "query_row_index": int(query_row_index),
+        "values_by_row": dict(values_by_row),
+        "answer_value": int(answer_value),
     }
 
 
@@ -814,6 +903,7 @@ __all__ = [
     "TableDefaults",
     "build_counting_value_dataset_for_variant",
     "build_readout_cell_dataset",
+    "build_row_summary_value_dataset_for_variant",
     "build_summary_label_dataset_for_variant",
     "build_summary_value_dataset_for_variant",
     "projected_table_bbox_evidence",

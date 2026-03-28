@@ -1,0 +1,359 @@
+{
+  "answer_distribution": {
+    "answer_type_counts": {
+      "integer": 100
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.06,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": 0.62,
+        "pass": null,
+        "status": "reported_not_gated_numeric_answers"
+      },
+      "min_unique_answers": {
+        "observed": 61,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": {
+      "bin_count": 5,
+      "bins": [
+        {
+          "bin_id": 0,
+          "count": 62,
+          "label": "[2, 32.6)"
+        },
+        {
+          "bin_id": 1,
+          "count": 13,
+          "label": "[32.6, 63.2)"
+        },
+        {
+          "bin_id": 2,
+          "count": 15,
+          "label": "[63.2, 93.8)"
+        },
+        {
+          "bin_id": 3,
+          "count": 6,
+          "label": "[93.8, 124.4)"
+        },
+        {
+          "bin_id": 4,
+          "count": 4,
+          "label": "[124.4, 155]"
+        }
+      ],
+      "max_bin_count": 62,
+      "max_bin_frequency": 0.62,
+      "range_max": 155.0,
+      "range_min": 2.0
+    },
+    "max_answer_count": 6,
+    "max_answer_frequency": 0.06,
+    "pass": true,
+    "sample_count": 100,
+    "top_answers": [
+      {
+        "answer_label": "6",
+        "count": 6
+      },
+      {
+        "answer_label": "14",
+        "count": 5
+      },
+      {
+        "answer_label": "29",
+        "count": 5
+      },
+      {
+        "answer_label": "24",
+        "count": 4
+      },
+      {
+        "answer_label": "31",
+        "count": 4
+      },
+      {
+        "answer_label": "12",
+        "count": 3
+      },
+      {
+        "answer_label": "23",
+        "count": 3
+      },
+      {
+        "answer_label": "3",
+        "count": 3
+      },
+      {
+        "answer_label": "32",
+        "count": 3
+      },
+      {
+        "answer_label": "11",
+        "count": 2
+      },
+      {
+        "answer_label": "13",
+        "count": 2
+      },
+      {
+        "answer_label": "17",
+        "count": 2
+      },
+      {
+        "answer_label": "18",
+        "count": 2
+      },
+      {
+        "answer_label": "2",
+        "count": 2
+      },
+      {
+        "answer_label": "21",
+        "count": 2
+      },
+      {
+        "answer_label": "28",
+        "count": 2
+      },
+      {
+        "answer_label": "5",
+        "count": 2
+      },
+      {
+        "answer_label": "58",
+        "count": 2
+      },
+      {
+        "answer_label": "77",
+        "count": 2
+      },
+      {
+        "answer_label": "8",
+        "count": 2
+      },
+      {
+        "answer_label": "9",
+        "count": 2
+      },
+      {
+        "answer_label": "108",
+        "count": 1
+      },
+      {
+        "answer_label": "109",
+        "count": 1
+      },
+      {
+        "answer_label": "117",
+        "count": 1
+      },
+      {
+        "answer_label": "121",
+        "count": 1
+      },
+      {
+        "answer_label": "125",
+        "count": 1
+      },
+      {
+        "answer_label": "133",
+        "count": 1
+      },
+      {
+        "answer_label": "136",
+        "count": 1
+      },
+      {
+        "answer_label": "155",
+        "count": 1
+      },
+      {
+        "answer_label": "16",
+        "count": 1
+      },
+      {
+        "answer_label": "25",
+        "count": 1
+      },
+      {
+        "answer_label": "27",
+        "count": 1
+      },
+      {
+        "answer_label": "30",
+        "count": 1
+      },
+      {
+        "answer_label": "35",
+        "count": 1
+      },
+      {
+        "answer_label": "37",
+        "count": 1
+      },
+      {
+        "answer_label": "4",
+        "count": 1
+      },
+      {
+        "answer_label": "41",
+        "count": 1
+      },
+      {
+        "answer_label": "42",
+        "count": 1
+      },
+      {
+        "answer_label": "44",
+        "count": 1
+      },
+      {
+        "answer_label": "45",
+        "count": 1
+      },
+      {
+        "answer_label": "48",
+        "count": 1
+      },
+      {
+        "answer_label": "50",
+        "count": 1
+      },
+      {
+        "answer_label": "52",
+        "count": 1
+      },
+      {
+        "answer_label": "53",
+        "count": 1
+      },
+      {
+        "answer_label": "62",
+        "count": 1
+      },
+      {
+        "answer_label": "64",
+        "count": 1
+      },
+      {
+        "answer_label": "69",
+        "count": 1
+      },
+      {
+        "answer_label": "7",
+        "count": 1
+      },
+      {
+        "answer_label": "71",
+        "count": 1
+      },
+      {
+        "answer_label": "72",
+        "count": 1
+      },
+      {
+        "answer_label": "74",
+        "count": 1
+      },
+      {
+        "answer_label": "75",
+        "count": 1
+      },
+      {
+        "answer_label": "79",
+        "count": 1
+      },
+      {
+        "answer_label": "80",
+        "count": 1
+      },
+      {
+        "answer_label": "81",
+        "count": 1
+      },
+      {
+        "answer_label": "82",
+        "count": 1
+      },
+      {
+        "answer_label": "85",
+        "count": 1
+      },
+      {
+        "answer_label": "87",
+        "count": 1
+      },
+      {
+        "answer_label": "92",
+        "count": 1
+      },
+      {
+        "answer_label": "95",
+        "count": 1
+      },
+      {
+        "answer_label": "99",
+        "count": 1
+      }
+    ],
+    "unique_answers": 61
+  },
+  "sample_count": 100,
+  "sampling_axes": {
+    "scene_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "card_table": 0.25,
+        "ledger": 0.25,
+        "spreadsheet": 0.25,
+        "zebra": 0.25
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.32,
+      "observed_counts": {
+        "card_table": 18,
+        "ledger": 31,
+        "spreadsheet": 32,
+        "zebra": 19
+      },
+      "sample_count": 100
+    },
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "row_mean": 0.5,
+        "row_sum": 0.5
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.53,
+      "observed_counts": {
+        "row_mean": 53,
+        "row_sum": 47
+      },
+      "sample_count": 100
+    }
+  },
+  "task_id": "task_tables_statistics_row_summary_value",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {
+      "row_mean": 0.5,
+      "row_sum": 0.5
+    },
+    "expected_source": "execution_trace",
+    "has_variants": true,
+    "observed_counts": {
+      "row_mean": 53,
+      "row_sum": 47
+    },
+    "status": "reported"
+  }
+}

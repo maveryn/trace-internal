@@ -32,6 +32,8 @@ Use this whenever the task lives under `domain=tables`.
 - For table readout tasks that query multiple cells, keep bbox evidence in the same order the cells are named in the prompt and record that ordered query-cell metadata in trace.
 - For pairwise table comparison tasks, keep evidence as the ordered pair of compared value-cell bboxes rather than only the winning cell so the comparison witness remains explicit.
 - For counting tasks that compare two columns row-by-row, keep evidence row-major and preserve prompt column order within each matching row's bbox pair.
+- For filtered table aggregation tasks, keep evidence as ordered `[filter cell, target cell]` bbox pairs for each selected row instead of inventing a special filter witness type.
+- For extremum-transfer tasks, keep evidence as exactly two boxes ordered `[source extremum cell, transferred target cell]`.
 
 ## Design heuristics
 - Treat table style as presentation only. `spreadsheet`, `zebra`, `ledger`, and `card_table` should not change the reasoning contract.
@@ -43,6 +45,7 @@ Use this whenever the task lives under `domain=tables`.
 - If a table readout task broadens from one exact cell to one-or-more queried cells with simple arithmetic, rename the task/module to the broader subset concept instead of keeping a stale `cell_value` name.
 - Keep prompts explicit about what evidence region should be boxed.
 - When row/column summary mirrors share the same answer shape and the same `bbox_set` evidence contract, prefer widening `task_variant` inside the existing statistics task instead of adding a near-duplicate sibling task id.
+- When a table task combines selection and aggregation, keep one semantic axis in `task_variant` and let simpler internal subtypes (for example filter condition flavor) vary inside the task if that avoids exploding the task count without changing the evidence contract.
 
 ## Schema lessons learned
 - Row-name answers can be real visible strings; they do not need to be forced into `option_letter`.

@@ -342,6 +342,29 @@ def test_tables_relation_bundle_supports_row_compare_variants() -> None:
     ]
 
 
+def test_tables_statistics_bundle_supports_filtered_subset_variants() -> None:
+    bundle = load_prompt_bundle("tables", "statistics", "tables_statistics_v1")
+    assert len(bundle.task_templates["filtered_subset_value_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["filtered_column_sum"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["filtered_column_mean"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_variant:filtered_column_sum"]) == [
+        "query_filter_column",
+        "query_target_column",
+        "filter_condition",
+    ]
+
+
+def test_tables_relation_bundle_supports_extremum_transfer_variants() -> None:
+    bundle = load_prompt_bundle("tables", "relation", "tables_relation_v1")
+    assert len(bundle.task_templates["extremum_transfer_value_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["argmax_transfer"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["argmin_transfer"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_variant:argmax_transfer"]) == [
+        "query_source_column",
+        "query_target_column",
+    ]
+
+
 def test_tables_counting_bundle_supports_column_pair_variants() -> None:
     bundle = load_prompt_bundle("tables", "counting", "tables_counting_v1")
     assert len(bundle.task_templates["column_pair_count_query"]) == REQUIRED_PROMPT_VARIANTS

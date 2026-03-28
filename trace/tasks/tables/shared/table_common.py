@@ -176,6 +176,146 @@ def _resolve_base_table_schema(
     }
 
 
+def _resolve_distinct_secondary_numeric_column(
+    *,
+    column_headers: Sequence[str],
+    numeric_column_count: int,
+    primary_column_index: int,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+) -> Tuple[int, str]:
+    """Resolve one numeric column distinct from the primary queried column."""
+
+    if int(numeric_column_count) < 2:
+        raise ValueError("task requires at least two numeric columns")
+    second_index = int(
+        resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=str(namespace),
+        )
+    ) % int(numeric_column_count - 1)
+    if int(second_index) >= int(primary_column_index):
+        second_index += 1
+    return int(second_index), str(column_headers[int(second_index)])
+
+
+def _build_column_filter_query_values(
+    *,
+    filter_variant: str,
+    row_count: int,
+    target_count: int,
+    value_min: int,
+    value_max: int,
+    rng,
+) -> Dict[str, Any]:
+    """Construct one queried-column value list with a controlled matching-count filter."""
+
+    supported_variants = {"above_threshold", "below_threshold", "in_interval"}
+    if str(filter_variant) not in supported_variants:
+        raise ValueError(f"unsupported table column-filter variant: {filter_variant}")
+    if not (0 <= int(target_count) <= int(row_count)):
+        raise ValueError("target_count must lie within the row-count support")
+
+    def _sample_values(*, count: int, low: int, high: int) -> List[int]:
+        if int(count) <= 0:
+            return []
+        if int(low) > int(high):
+            raise ValueError("invalid bounded sampling range")
+        return [int(rng.randint(int(low), int(high))) for _ in range(int(count))]
+
+    metadata: Dict[str, Any] = {"filter_variant": str(filter_variant)}
+    if str(filter_variant) == "above_threshold":
+        if int(target_count) == int(row_count):
+            threshold_value = int(value_min - 1)
+            query_values = _sample_values(count=int(row_count), low=int(value_min), high=int(value_max))
+        elif int(target_count) == 0:
+            threshold_value = int(value_max)
+            query_values = _sample_values(count=int(row_count), low=int(value_min), high=int(value_max))
+        else:
+            threshold_value = int(rng.randint(int(value_min), int(value_max - 1)))
+            query_values = [
+                *_sample_values(count=int(target_count), low=int(threshold_value + 1), high=int(value_max)),
+                *_sample_values(count=int(row_count - target_count), low=int(value_min), high=int(threshold_value)),
+            ]
+        rng.shuffle(query_values)
+        metadata["threshold_value"] = int(threshold_value)
+
+        def _matches(value: int) -> bool:
+            return int(value) > int(threshold_value)
+
+    elif str(filter_variant) == "below_threshold":
+        if int(target_count) == int(row_count):
+            threshold_value = int(value_max + 1)
+            query_values = _sample_values(count=int(row_count), low=int(value_min), high=int(value_max))
+        elif int(target_count) == 0:
+            threshold_value = int(value_min)
+            query_values = _sample_values(count=int(row_count), low=int(value_min), high=int(value_max))
+        else:
+            threshold_value = int(rng.randint(int(value_min + 1), int(value_max)))
+            query_values = [
+                *_sample_values(count=int(target_count), low=int(value_min), high=int(threshold_value - 1)),
+                *_sample_values(count=int(row_count - target_count), low=int(threshold_value), high=int(value_max)),
+            ]
+        rng.shuffle(query_values)
+        metadata["threshold_value"] = int(threshold_value)
+
+        def _matches(value: int) -> bool:
+            return int(value) < int(threshold_value)
+
+    else:
+        if int(target_count) == int(row_count):
+            interval_min = int(value_min)
+            interval_max = int(value_max)
+            query_values = _sample_values(count=int(row_count), low=int(value_min), high=int(value_max))
+        else:
+            while True:
+                interval_min = int(rng.randint(int(value_min), int(value_max)))
+                interval_max = int(rng.randint(int(interval_min), int(value_max)))
+                inside_values = list(range(int(interval_min), int(interval_max) + 1))
+                outside_values = [
+                    int(value)
+                    for value in range(int(value_min), int(value_max) + 1)
+                    if int(value) < int(interval_min) or int(value) > int(interval_max)
+                ]
+                if int(target_count) == 0 and outside_values:
+                    query_values = [
+                        int(outside_values[int(rng.randint(0, len(outside_values) - 1))])
+                        for _ in range(int(row_count))
+                    ]
+                    break
+                if int(target_count) > 0 and inside_values and outside_values:
+                    query_values = [
+                        *[
+                            int(inside_values[int(rng.randint(0, len(inside_values) - 1))])
+                            for _ in range(int(target_count))
+                        ],
+                        *[
+                            int(outside_values[int(rng.randint(0, len(outside_values) - 1))])
+                            for _ in range(int(row_count - target_count))
+                        ],
+                    ]
+                    break
+        rng.shuffle(query_values)
+        metadata["interval_min"] = int(interval_min)
+        metadata["interval_max"] = int(interval_max)
+
+        def _matches(value: int) -> bool:
+            return int(interval_min) <= int(value) <= int(interval_max)
+
+    matching_row_indices = [
+        int(row_index)
+        for row_index, value in enumerate(query_values)
+        if _matches(int(value))
+    ]
+    return {
+        "query_values": [int(value) for value in query_values],
+        "matching_row_indices": [int(row_index) for row_index in matching_row_indices],
+        **metadata,
+    }
+
+
 def resolve_table_axis_variant(
     *,
     params: Mapping[str, Any],
@@ -843,88 +983,15 @@ def build_counting_value_dataset_for_variant(
         namespace=f"{task_id}:target_count",
     )) % int(row_count + 1)
 
-    def _sample_values(*, count: int, low: int, high: int) -> List[int]:
-        if int(count) <= 0:
-            return []
-        if int(low) > int(high):
-            raise ValueError("invalid bounded sampling range")
-        return [int(rng.randint(int(low), int(high))) for _ in range(int(count))]
-
-    metadata: Dict[str, Any] = {}
-    if str(task_variant) == "above_threshold":
-        if int(target_count) == int(row_count):
-            threshold_value = int(value_min - 1)
-            query_values = _sample_values(count=int(row_count), low=int(value_min), high=int(value_max))
-        elif int(target_count) == 0:
-            threshold_value = int(value_max)
-            query_values = _sample_values(count=int(row_count), low=int(value_min), high=int(value_max))
-        else:
-            threshold_value = int(rng.randint(int(value_min), int(value_max - 1)))
-            query_values = [
-                *_sample_values(count=int(target_count), low=int(threshold_value + 1), high=int(value_max)),
-                *_sample_values(count=int(row_count - target_count), low=int(value_min), high=int(threshold_value)),
-            ]
-        rng.shuffle(query_values)
-        metadata["threshold_value"] = int(threshold_value)
-
-        def _matches(value: int) -> bool:
-            return int(value) > int(threshold_value)
-
-    elif str(task_variant) == "below_threshold":
-        if int(target_count) == int(row_count):
-            threshold_value = int(value_max + 1)
-            query_values = _sample_values(count=int(row_count), low=int(value_min), high=int(value_max))
-        elif int(target_count) == 0:
-            threshold_value = int(value_min)
-            query_values = _sample_values(count=int(row_count), low=int(value_min), high=int(value_max))
-        else:
-            threshold_value = int(rng.randint(int(value_min + 1), int(value_max)))
-            query_values = [
-                *_sample_values(count=int(target_count), low=int(value_min), high=int(threshold_value - 1)),
-                *_sample_values(count=int(row_count - target_count), low=int(threshold_value), high=int(value_max)),
-            ]
-        rng.shuffle(query_values)
-        metadata["threshold_value"] = int(threshold_value)
-
-        def _matches(value: int) -> bool:
-            return int(value) < int(threshold_value)
-
-    else:
-        if int(target_count) == int(row_count):
-            interval_min = int(value_min)
-            interval_max = int(value_max)
-            query_values = _sample_values(count=int(row_count), low=int(value_min), high=int(value_max))
-        else:
-            while True:
-                interval_min = int(rng.randint(int(value_min), int(value_max)))
-                interval_max = int(rng.randint(int(interval_min), int(value_max)))
-                inside_values = list(range(int(interval_min), int(interval_max) + 1))
-                outside_values = [
-                    int(value)
-                    for value in range(int(value_min), int(value_max) + 1)
-                    if int(value) < int(interval_min) or int(value) > int(interval_max)
-                ]
-                if int(target_count) == 0 and outside_values:
-                    query_values = [int(outside_values[int(rng.randint(0, len(outside_values) - 1))]) for _ in range(int(row_count))]
-                    break
-                if int(target_count) > 0 and inside_values and outside_values:
-                    query_values = [
-                        *[
-                            int(inside_values[int(rng.randint(0, len(inside_values) - 1))])
-                            for _ in range(int(target_count))
-                        ],
-                        *[
-                            int(outside_values[int(rng.randint(0, len(outside_values) - 1))])
-                            for _ in range(int(row_count - target_count))
-                        ],
-                    ]
-                    break
-        rng.shuffle(query_values)
-        metadata["interval_min"] = int(interval_min)
-        metadata["interval_max"] = int(interval_max)
-
-        def _matches(value: int) -> bool:
-            return int(interval_min) <= int(value) <= int(interval_max)
+    filter_query = _build_column_filter_query_values(
+        filter_variant=str(task_variant),
+        row_count=int(row_count),
+        target_count=int(target_count),
+        value_min=int(value_min),
+        value_max=int(value_max),
+        rng=rng,
+    )
+    query_values = [int(value) for value in filter_query["query_values"]]
 
     query_values_by_row = {
         str(row_label): int(query_values[int(row_index)])
@@ -939,11 +1006,7 @@ def build_counting_value_dataset_for_variant(
         query_column=str(query_column),
         query_values_by_row=query_values_by_row,
     )
-    matching_row_indices = [
-        int(row_index)
-        for row_index, row_label in enumerate(row_labels)
-        if _matches(int(values_by_row[str(row_label)][str(query_column)]))
-    ]
+    matching_row_indices = [int(row_index) for row_index in filter_query["matching_row_indices"]]
     matching_row_labels = [str(row_labels[int(row_index)]) for row_index in matching_row_indices]
     return {
         "row_count": int(row_count),
@@ -959,7 +1022,11 @@ def build_counting_value_dataset_for_variant(
         "query_column_index": int(query_col_index),
         "matching_row_indices": [int(row_index) for row_index in matching_row_indices],
         "matching_row_labels": [str(label) for label in matching_row_labels],
-        **metadata,
+        **{
+            str(key): (int(value) if isinstance(value, int) else value)
+            for key, value in filter_query.items()
+            if str(key) not in {"query_values", "matching_row_indices"}
+        },
     }
 
 
@@ -992,19 +1059,14 @@ def build_counting_column_pair_dataset_for_variant(
     column_headers = list(base["column_headers"])
     query_col_a_index = int(base["query_column_index"])
     query_col_a = str(base["query_column"])
-    if int(numeric_column_count) < 2:
-        raise ValueError("table column-pair counting tasks require at least two numeric columns")
-    second_index = int(
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{task_id}:query_column_b",
-        )
-    ) % int(numeric_column_count - 1)
-    if int(second_index) >= int(query_col_a_index):
-        second_index += 1
-    query_col_b_index = int(second_index)
-    query_col_b = str(column_headers[int(query_col_b_index)])
+    query_col_b_index, query_col_b = _resolve_distinct_secondary_numeric_column(
+        column_headers=column_headers,
+        numeric_column_count=int(numeric_column_count),
+        primary_column_index=int(query_col_a_index),
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}:query_column_b",
+    )
     value_min = int(base["value_min"])
     value_max = int(base["value_max"])
     target_count = int(
@@ -1060,6 +1122,265 @@ def build_counting_column_pair_dataset_for_variant(
         "answer_value": int(target_count),
         "matching_row_indices": [int(row_index) for row_index in matching_row_indices],
         "matching_row_labels": [str(label) for label in matching_row_labels],
+    }
+
+
+def build_statistics_filtered_subset_dataset_for_variant(
+    *,
+    task_variant: str,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    gen_defaults: Mapping[str, Any],
+    defaults: TableDefaults,
+    task_id: str,
+) -> Dict[str, Any]:
+    """Construct one deterministic table dataset for filtered column aggregation queries."""
+
+    if str(task_variant) not in {"filtered_column_sum", "filtered_column_mean"}:
+        raise ValueError(f"unsupported filtered table statistics variant: {task_variant}")
+
+    base = _resolve_base_table_schema(
+        params=params,
+        instance_seed=int(instance_seed),
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        task_id=task_id,
+    )
+    rng = base["rng"]
+    row_count = int(base["row_count"])
+    numeric_column_count = int(base["numeric_column_count"])
+    row_labels = list(base["row_labels"])
+    column_headers = list(base["column_headers"])
+    filter_column_index = int(base["query_column_index"])
+    filter_column = str(base["query_column"])
+    target_column_index, target_column = _resolve_distinct_secondary_numeric_column(
+        column_headers=column_headers,
+        numeric_column_count=int(numeric_column_count),
+        primary_column_index=int(filter_column_index),
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}:target_column",
+    )
+    value_min = int(base["value_min"])
+    value_max = int(base["value_max"])
+
+    if int(row_count) < 2:
+        raise ValueError("filtered subset tasks require at least two rows")
+    target_count = int(
+        resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}:selected_row_count",
+        )
+    ) % int(row_count - 1) + 1
+    supported_filter_variants = ("above_threshold", "below_threshold", "in_interval")
+    filter_variant = str(
+        supported_filter_variants[
+            int(
+                resolve_selection_index(
+                    params=params,
+                    instance_seed=int(instance_seed),
+                    namespace=f"{task_id}:filter_variant",
+                )
+            )
+            % len(supported_filter_variants)
+        ]
+    )
+    filter_query = _build_column_filter_query_values(
+        filter_variant=str(filter_variant),
+        row_count=int(row_count),
+        target_count=int(target_count),
+        value_min=int(value_min),
+        value_max=int(value_max),
+        rng=rng,
+    )
+
+    query_values_by_row = {
+        str(row_label): int(filter_query["query_values"][int(row_index)])
+        for row_index, row_label in enumerate(row_labels)
+    }
+    values_by_row = _build_values_by_row(
+        row_labels=row_labels,
+        column_headers=column_headers,
+        rng=rng,
+        value_min=int(value_min),
+        value_max=int(value_max),
+        query_column=str(filter_column),
+        query_values_by_row=query_values_by_row,
+    )
+
+    selected_row_indices = [int(row_index) for row_index in filter_query["matching_row_indices"]]
+    selected_row_labels = [str(row_labels[int(row_index)]) for row_index in selected_row_indices]
+    selected_count = int(len(selected_row_indices))
+    if int(selected_count) <= 0:
+        raise ValueError("filtered subset tasks require at least one selected row")
+    if str(task_variant) == "filtered_column_sum":
+        target_total = int(rng.randint(int(selected_count * value_min), int(selected_count * value_max)))
+        target_values = _sample_values_with_total(
+            count=int(selected_count),
+            target_total=int(target_total),
+            min_value=int(value_min),
+            max_value=int(value_max),
+            rng=rng,
+        )
+        answer_value = int(target_total)
+    else:
+        target_mean = int(rng.randint(int(value_min), int(value_max)))
+        target_values = _sample_values_with_total(
+            count=int(selected_count),
+            target_total=int(selected_count * target_mean),
+            min_value=int(value_min),
+            max_value=int(value_max),
+            rng=rng,
+        )
+        answer_value = int(target_mean)
+
+    for offset, row_index in enumerate(selected_row_indices):
+        row_label = str(row_labels[int(row_index)])
+        values_by_row[str(row_label)][str(target_column)] = int(target_values[int(offset)])
+
+    supporting_cell_ids: List[str] = []
+    for row_index in selected_row_indices:
+        supporting_cell_ids.append(
+            table_value_cell_id(
+                data_row_index=int(row_index),
+                numeric_column_index=int(filter_column_index),
+            )
+        )
+        supporting_cell_ids.append(
+            table_value_cell_id(
+                data_row_index=int(row_index),
+                numeric_column_index=int(target_column_index),
+            )
+        )
+
+    return {
+        "row_count": int(row_count),
+        "numeric_column_count": int(numeric_column_count),
+        "row_count_range": list(base["row_count_range"]),
+        "numeric_column_count_range": list(base["numeric_column_count_range"]),
+        "value_range": list(base["value_range"]),
+        "row_labels": [str(label) for label in row_labels],
+        "column_headers": [str(header) for header in column_headers],
+        "filter_variant": str(filter_variant),
+        "filter_column": str(filter_column),
+        "filter_column_index": int(filter_column_index),
+        "target_column": str(target_column),
+        "target_column_index": int(target_column_index),
+        "values_by_row": dict(values_by_row),
+        "selected_row_indices": [int(row_index) for row_index in selected_row_indices],
+        "selected_row_labels": [str(label) for label in selected_row_labels],
+        "supporting_cell_ids": [str(cell_id) for cell_id in supporting_cell_ids],
+        "answer_value": int(answer_value),
+        **{
+            str(key): (int(value) if isinstance(value, int) else value)
+            for key, value in filter_query.items()
+            if str(key) not in {"query_values", "matching_row_indices"}
+        },
+    }
+
+
+def build_relation_extremum_transfer_value_dataset_for_variant(
+    *,
+    task_variant: str,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    gen_defaults: Mapping[str, Any],
+    defaults: TableDefaults,
+    task_id: str,
+) -> Dict[str, Any]:
+    """Construct one deterministic table dataset for extremum-transfer value queries."""
+
+    if str(task_variant) not in {"argmax_transfer", "argmin_transfer"}:
+        raise ValueError(f"unsupported extremum-transfer table relation variant: {task_variant}")
+
+    base = _resolve_base_table_schema(
+        params=params,
+        instance_seed=int(instance_seed),
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        task_id=task_id,
+    )
+    rng = base["rng"]
+    row_count = int(base["row_count"])
+    numeric_column_count = int(base["numeric_column_count"])
+    row_labels = list(base["row_labels"])
+    column_headers = list(base["column_headers"])
+    source_column_index = int(base["query_column_index"])
+    source_column = str(base["query_column"])
+    target_column_index, target_column = _resolve_distinct_secondary_numeric_column(
+        column_headers=column_headers,
+        numeric_column_count=int(numeric_column_count),
+        primary_column_index=int(source_column_index),
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{task_id}:target_column",
+    )
+    value_min = int(base["value_min"])
+    value_max = int(base["value_max"])
+    answer_row_index = int(
+        resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}:answer_row",
+        )
+    ) % int(row_count)
+    answer_row_label = str(row_labels[int(answer_row_index)])
+
+    if int(value_max) - int(value_min) + 1 < int(row_count):
+        raise ValueError("extremum transfer tasks require enough value range for a unique source extremum")
+    unique_source_values = list(rng.sample(range(int(value_min), int(value_max) + 1), int(row_count)))
+    winning_source_value = (
+        max(unique_source_values) if str(task_variant) == "argmax_transfer" else min(unique_source_values)
+    )
+    remaining_source_values = [
+        int(value) for value in unique_source_values if int(value) != int(winning_source_value)
+    ]
+    rng.shuffle(remaining_source_values)
+
+    source_values_by_row: Dict[str, int] = {str(answer_row_label): int(winning_source_value)}
+    remaining_rows = [str(label) for label in row_labels if str(label) != str(answer_row_label)]
+    for row_label, value in zip(remaining_rows, remaining_source_values):
+        source_values_by_row[str(row_label)] = int(value)
+
+    values_by_row = _build_values_by_row(
+        row_labels=row_labels,
+        column_headers=column_headers,
+        rng=rng,
+        value_min=int(value_min),
+        value_max=int(value_max),
+        query_column=str(source_column),
+        query_values_by_row=source_values_by_row,
+    )
+    answer_value = int(rng.randint(int(value_min), int(value_max)))
+    values_by_row[str(answer_row_label)][str(target_column)] = int(answer_value)
+
+    source_cell_id = table_value_cell_id(
+        data_row_index=int(answer_row_index),
+        numeric_column_index=int(source_column_index),
+    )
+    target_cell_id = table_value_cell_id(
+        data_row_index=int(answer_row_index),
+        numeric_column_index=int(target_column_index),
+    )
+    return {
+        "row_count": int(row_count),
+        "numeric_column_count": int(numeric_column_count),
+        "row_count_range": list(base["row_count_range"]),
+        "numeric_column_count_range": list(base["numeric_column_count_range"]),
+        "value_range": list(base["value_range"]),
+        "row_labels": [str(label) for label in row_labels],
+        "column_headers": [str(header) for header in column_headers],
+        "source_column": str(source_column),
+        "source_column_index": int(source_column_index),
+        "target_column": str(target_column),
+        "target_column_index": int(target_column_index),
+        "values_by_row": dict(values_by_row),
+        "answer_row_label": str(answer_row_label),
+        "answer_row_index": int(answer_row_index),
+        "source_value": int(winning_source_value),
+        "answer_value": int(answer_value),
+        "supporting_cell_ids": [str(source_cell_id), str(target_cell_id)],
     }
 
 
@@ -1250,10 +1571,12 @@ __all__ = [
     "TableDefaults",
     "build_counting_column_pair_dataset_for_variant",
     "build_counting_value_dataset_for_variant",
+    "build_relation_extremum_transfer_value_dataset_for_variant",
     "build_relation_row_compare_label_dataset_for_variant",
     "build_readout_subset_dataset_for_variant",
     "build_row_summary_label_dataset_for_variant",
     "build_row_summary_value_dataset_for_variant",
+    "build_statistics_filtered_subset_dataset_for_variant",
     "build_summary_label_dataset_for_variant",
     "build_summary_value_dataset_for_variant",
     "projected_table_bbox_evidence",

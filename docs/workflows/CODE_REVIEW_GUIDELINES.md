@@ -134,6 +134,7 @@ Use this checklist during implementation and refactor reviews.
 118. For table pairwise comparison tasks whose answer is one visible row label, keep evidence as the ordered pair of compared value-cell bboxes rather than collapsing evidence to the winning cell; the loser cell is part of the proof.
 119. For table counting tasks that compare two columns row-by-row, order `bbox_set` evidence row-major over matching rows and keep the within-row bbox order aligned to the prompt's column order; do not sort by cell id or column index later.
 120. For table row/column mirror statistics tasks, prefer widening `task_variant` inside the existing summary task when the answer shape and `bbox_set` evidence contract still align; only split into separate task ids if the prompt/evidence schema materially diverges.
+121. For table tasks that first select rows and then aggregate or transfer another value, keep prompt-facing evidence as the minimal ordered cell witnesses for each selected row or winning row (for example `[filter cell, target cell]` or `[source extremum cell, target cell]`) instead of widening to whole-row boxes or inventing a new evidence type.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

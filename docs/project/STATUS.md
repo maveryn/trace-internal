@@ -69,6 +69,8 @@ Date: 2026-03-28
 58. Tables now also includes `task_tables_readout_subset_value`, the active `readout` task under `domain=tables`, with semantic `task_variant` values `cell_lookup|cell_sum_two|cell_difference_two_abs`, visual `scene_variant` values `spreadsheet|zebra|ledger|card_table`, integer answers, and `bbox_set` evidence over the exact queried supporting cell or ordered queried-cell pair. The queried row labels and numeric columns are named explicitly in the prompt and recorded in trace, while the queried cell values are set explicitly to keep direct-cell and two-cell arithmetic readout answer diversity healthy.
 59. Tables now also includes `task_tables_relation_row_compare_label`, the first `relation` task under `domain=tables`, with semantic `task_variant` values `higher_of_two_rows|lower_of_two_rows`, visual `scene_variant` values `spreadsheet|zebra|ledger|card_table`, string row-label answers, and `bbox_set` evidence over the ordered pair of compared queried-column value cells. The two queried row labels and one queried numeric column are named explicitly in the prompt and recorded in trace, and the compared values are always distinct so the winning row label is unique by construction.
 60. Tables now also includes `task_tables_counting_column_pair_count`, a second `counting` task under `domain=tables`, with semantic `task_variant` values `col_a_gt_col_b|col_a_lt_col_b`, visual `scene_variant` values `spreadsheet|zebra|ledger|card_table`, integer answers, and `bbox_set` evidence over the ordered compared-cell pairs for every matching row. The two queried numeric columns are named explicitly in the prompt and recorded in trace, the queried columns are always distinct, and each counted row uses a strict inequality so the matching set is unambiguous by construction.
+61. Tables now also includes `task_tables_statistics_filtered_subset_value`, a filtered-aggregation `statistics` task under `domain=tables`, with semantic `task_variant` values `filtered_column_sum|filtered_column_mean`, visual `scene_variant` values `spreadsheet|zebra|ledger|card_table`, integer answers, and `bbox_set` evidence over the ordered `[filter cell, target cell]` pairs for every selected row. It keeps one filter column and one distinct target column, samples an internal filter subtype (`above_threshold|below_threshold|in_interval`), and then aggregates the target column only over the selected rows.
+62. Tables now also includes `task_tables_relation_extremum_transfer_value`, a second `relation` task under `domain=tables`, with semantic `task_variant` values `argmax_transfer|argmin_transfer`, visual `scene_variant` values `spreadsheet|zebra|ledger|card_table`, integer answers, and `bbox_set` evidence over the ordered pair `[source extremum cell, transferred target value cell]`. The source and target columns are always distinct, the source-column extremum row is unique by construction, and the prompt explicitly asks for the target value from that winning row.
 
 ## Active tasks
 1. `task_tile_count_color_count` (`domain=tile`, `task_group=count`)
@@ -124,16 +126,18 @@ Date: 2026-03-28
 51. `task_charts_composition_subset_value` (`domain=charts`, `task_group=composition`)
 52. `task_tables_statistics_summary_label` (`domain=tables`, `task_group=statistics`)
 53. `task_tables_statistics_summary_value` (`domain=tables`, `task_group=statistics`)
-54. `task_tables_counting_value_count` (`domain=tables`, `task_group=counting`)
-55. `task_tables_counting_column_pair_count` (`domain=tables`, `task_group=counting`)
-56. `task_tables_readout_subset_value` (`domain=tables`, `task_group=readout`)
-57. `task_tables_relation_row_compare_label` (`domain=tables`, `task_group=relation`)
+54. `task_tables_statistics_filtered_subset_value` (`domain=tables`, `task_group=statistics`)
+55. `task_tables_counting_value_count` (`domain=tables`, `task_group=counting`)
+56. `task_tables_counting_column_pair_count` (`domain=tables`, `task_group=counting`)
+57. `task_tables_readout_subset_value` (`domain=tables`, `task_group=readout`)
+58. `task_tables_relation_row_compare_label` (`domain=tables`, `task_group=relation`)
+59. `task_tables_relation_extremum_transfer_value` (`domain=tables`, `task_group=relation`)
 
 ## Current quality baseline
 1. Tests are required to pass before finalize.
 2. Distribution QA uses `scripts/check_task_answer_distribution.py` with per-variant answer-only checks (`unique_answers >= 5`, `max_answer_frequency < 25%`) and multithreaded sample generation (`--workers`); numeric 5-bin summaries remain reported for review but are not hard pass/fail gates.
 3. Task-review tooling writes per-task artifacts under `task-reviews/<task_id>/`, including one inspection workbook named `<task_id>.xlsx` with one sheet per task variant.
-4. The current active reviewed task set (10 tile tasks + 20 geometry tasks + 11 reviewed icons tasks + 10 charts tasks + 6 table tasks) passes distribution review under the active gates.
+4. The current active reviewed task set (10 tile tasks + 20 geometry tasks + 11 reviewed icons tasks + 10 charts tasks + 8 table tasks) passes distribution review under the active gates.
 
 ## Next priorities
 1. Extend icons beyond the current counting/transformation/relation/sequence set using the curated Prism asset pipeline (`comparison` and richer relation/transformation variants are the next natural families).

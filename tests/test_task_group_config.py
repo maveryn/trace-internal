@@ -570,6 +570,20 @@ def test_tables_statistics_defaults_loaded() -> None:
     assert str(prompt_defaults["evidence_hint_row_sum"]).strip()
     assert str(prompt_defaults["json_example_row_mean"]).strip()
 
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_tables_statistics_filtered_subset_value",
+    )
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "filtered_column_mean",
+        "filtered_column_sum",
+    ]
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip() == "tables_statistics_v1"
+    assert str(prompt_defaults["task_key"]).strip() == "filtered_subset_value_query"
+    assert str(prompt_defaults["evidence_hint_filtered_column_sum"]).strip()
+    assert str(prompt_defaults["json_example_filtered_column_mean"]).strip()
+
 
 def test_tables_counting_defaults_loaded() -> None:
     cfg = get_task_group_defaults("tables", "counting")
@@ -671,6 +685,20 @@ def test_tables_relation_defaults_loaded() -> None:
     assert str(prompt_defaults["evidence_hint_higher_of_two_rows"]).strip()
     assert str(prompt_defaults["evidence_hint_lower_of_two_rows"]).strip()
     assert str(prompt_defaults["json_example_higher_of_two_rows"]).strip()
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_tables_relation_extremum_transfer_value",
+    )
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "argmax_transfer",
+        "argmin_transfer",
+    ]
+    assert int(rendering_defaults["canvas_height"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip() == "tables_relation_v1"
+    assert str(prompt_defaults["task_key"]).strip() == "extremum_transfer_value_query"
+    assert str(prompt_defaults["evidence_hint_argmax_transfer"]).strip()
+    assert str(prompt_defaults["json_example_argmin_transfer"]).strip()
 
 
 def test_charts_multiseries_defaults_loaded() -> None:

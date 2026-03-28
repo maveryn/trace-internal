@@ -38,6 +38,13 @@
       "Use the table values to compute the requested row summary.",
       "Find the numeric summary for the named row.",
       "Read the table and report the requested row summary value."
+    ],
+    "filtered_subset_value_query": [
+      "Answer this question.",
+      "Determine the requested target-column summary over the rows selected by the filter condition.",
+      "Use the table values to filter the rows and then aggregate the named target column.",
+      "Find the numeric summary of the target column after applying the stated row filter.",
+      "Read the table, keep the rows that satisfy the filter, and report the requested target-column summary."
     ]
   },
   "task_variant_templates": {
@@ -103,6 +110,20 @@
       "Determine the row mean for {query_row_label}.",
       "What average value does row {query_row_label} have across the numeric columns?",
       "Compute the mean of the numeric cells in row {query_row_label}."
+    ],
+    "filtered_column_sum": [
+      "Among the rows with {filter_condition}, what is the sum of the values in the {query_target_column} column?",
+      "Filter the rows to those with {filter_condition}. What total do their {query_target_column} values have?",
+      "Using only the rows with {filter_condition}, determine the sum of the {query_target_column} column.",
+      "What is the total of the {query_target_column} values for rows whose {query_filter_column} entries satisfy {filter_condition}?",
+      "Compute the sum of {query_target_column} over the rows where {filter_condition}."
+    ],
+    "filtered_column_mean": [
+      "Among the rows with {filter_condition}, what is the mean of the values in the {query_target_column} column?",
+      "Filter the rows to those with {filter_condition}. What average do their {query_target_column} values have?",
+      "Using only the rows with {filter_condition}, determine the mean of the {query_target_column} column.",
+      "What is the average of the {query_target_column} values for rows whose {query_filter_column} entries satisfy {filter_condition}?",
+      "Compute the mean of {query_target_column} over the rows where {filter_condition}."
     ]
   },
   "required_slots_by_key": {
@@ -114,6 +135,16 @@
     ],
     "task_variant:row_mean": [
       "query_row_label"
+    ],
+    "task_variant:filtered_column_sum": [
+      "query_filter_column",
+      "query_target_column",
+      "filter_condition"
+    ],
+    "task_variant:filtered_column_mean": [
+      "query_filter_column",
+      "query_target_column",
+      "filter_condition"
     ],
     "answer_or_evidence:answer_only": [
       "json_output_contract_answer_only",

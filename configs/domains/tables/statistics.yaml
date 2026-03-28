@@ -13,6 +13,10 @@ generation:
         column_median: 1.0
         row_sum: 1.0
         row_mean: 1.0
+    task_tables_statistics_filtered_subset_value:
+      task_variant_weights:
+        filtered_column_sum: 1.0
+        filtered_column_mean: 1.0
 prompt:
   shared:
     bundle_id: tables_statistics_v1
@@ -51,3 +55,12 @@ prompt:
       json_example_answer_only_column_median: '{"answer":13}'
       json_example_answer_only_row_sum: '{"answer":62}'
       json_example_answer_only_row_mean: '{"answer":15}'
+    task_tables_statistics_filtered_subset_value:
+      task_key: filtered_subset_value_query
+      answer_hint: set "answer" to the exact integer filtered summary value
+      evidence_hint_filtered_column_sum: set "evidence" to an array containing the ordered supporting cell pairs [filter cell, target cell] for each selected row in top-to-bottom row order
+      evidence_hint_filtered_column_mean: set "evidence" to an array containing the ordered supporting cell pairs [filter cell, target cell] for each selected row in top-to-bottom row order
+      json_example_filtered_column_sum: '{"evidence":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],"answer":27}'
+      json_example_filtered_column_mean: '{"evidence":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],"answer":14}'
+      json_example_answer_only_filtered_column_sum: '{"answer":27}'
+      json_example_answer_only_filtered_column_mean: '{"answer":14}'

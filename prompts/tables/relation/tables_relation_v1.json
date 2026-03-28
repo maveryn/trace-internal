@@ -17,6 +17,13 @@
       "Use the table values to decide which named row wins the comparison.",
       "Find which of the two specified rows has the requested value relation in the named column.",
       "Read the table and report which named row satisfies the requested comparison."
+    ],
+    "extremum_transfer_value_query": [
+      "Answer this question.",
+      "Find the row that wins the requested source-column extremum, then read the requested target-column value from that same row.",
+      "Use the source column to identify the winning row and transfer to the named target column.",
+      "Determine the source-column extremum row and report its value in the requested target column.",
+      "Read the table, identify the extremum row, and return the corresponding target-column value."
     ]
   },
   "task_variant_templates": {
@@ -33,6 +40,20 @@
       "Which row, {query_row_label_a} or {query_row_label_b}, has the smaller value in the {query_column} column?",
       "Compare the {query_column} entries for rows {query_row_label_a} and {query_row_label_b}. Which row has the lower value?",
       "In the {query_column} column, which row is smaller: {query_row_label_a} or {query_row_label_b}?"
+    ],
+    "argmax_transfer": [
+      "What is the {query_target_column} value for the row with the highest value in the {query_source_column} column?",
+      "Find the row with the maximum {query_source_column} entry. What is its {query_target_column} value?",
+      "Determine the {query_target_column} value from the row whose {query_source_column} value is largest.",
+      "Which value appears in {query_target_column} for the row that has the highest {query_source_column} value?",
+      "Look for the maximum {query_source_column} row and report its {query_target_column} value."
+    ],
+    "argmin_transfer": [
+      "What is the {query_target_column} value for the row with the lowest value in the {query_source_column} column?",
+      "Find the row with the minimum {query_source_column} entry. What is its {query_target_column} value?",
+      "Determine the {query_target_column} value from the row whose {query_source_column} value is smallest.",
+      "Which value appears in {query_target_column} for the row that has the lowest {query_source_column} value?",
+      "Look for the minimum {query_source_column} row and report its {query_target_column} value."
     ]
   },
   "required_slots_by_key": {
@@ -48,6 +69,14 @@
       "query_row_label_a",
       "query_row_label_b",
       "query_column"
+    ],
+    "task_variant:argmax_transfer": [
+      "query_source_column",
+      "query_target_column"
+    ],
+    "task_variant:argmin_transfer": [
+      "query_source_column",
+      "query_target_column"
     ],
     "answer_or_evidence:answer_only": [
       "json_output_contract_answer_only",

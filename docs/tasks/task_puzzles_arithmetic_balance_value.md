@@ -23,6 +23,7 @@
    - each panel shows boxed symbols and/or boxed integers on a left side and a right side,
    - explicit plus signs appear between multiple boxed items on the same side,
    - an explicit equals sign appears between the two sides of each panel,
+   - panel row spacing may use small deterministic jitter while keeping the local `box -> + -> box -> =` gaps visually near-uniform,
    - one final query row appears below the panels in the form `symbol = ?`,
    - the query-row symbol always matches one symbol that already appears in the equality panels,
    - numeric boxes always contain visible positive integers,
@@ -69,6 +70,8 @@
    - `query_box_id`
    - `query_object_box_id`
    - `query_object_type`
+   - `panel_relation_gap_offsets_px`
+   - `relation_gap_jitter_range_px`
    - `supporting_box_ids`
    - `panel_count`
    - `panel_count_range`

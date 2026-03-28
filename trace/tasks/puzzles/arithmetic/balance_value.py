@@ -69,8 +69,10 @@ class PuzzleBalanceDefaults:
     scene_margin_bottom_px: int = 64
     item_box_width_px: int = 96
     item_box_height_px: int = 96
-    item_gap_px: int = 30
-    scale_side_gap_px: int = 60
+    item_gap_px: int = 56
+    scale_side_gap_px: int = 14
+    relation_gap_jitter_min_px: int = -2
+    relation_gap_jitter_max_px: int = 2
     panel_gap_px: int = 54
     query_gap_px: int = 44
     query_box_width_px: int = 112
@@ -152,6 +154,8 @@ def _resolve_balance_render_params(
         item_box_height_px=int(params.get("item_box_height_px", group_default(render_defaults, "item_box_height_px", int(defaults.item_box_height_px)))),
         item_gap_px=int(params.get("item_gap_px", group_default(render_defaults, "item_gap_px", int(defaults.item_gap_px)))),
         scale_side_gap_px=int(params.get("scale_side_gap_px", group_default(render_defaults, "scale_side_gap_px", int(defaults.scale_side_gap_px)))),
+        relation_gap_jitter_min_px=int(params.get("relation_gap_jitter_min_px", group_default(render_defaults, "relation_gap_jitter_min_px", int(defaults.relation_gap_jitter_min_px)))),
+        relation_gap_jitter_max_px=int(params.get("relation_gap_jitter_max_px", group_default(render_defaults, "relation_gap_jitter_max_px", int(defaults.relation_gap_jitter_max_px)))),
         panel_gap_px=int(params.get("panel_gap_px", group_default(render_defaults, "panel_gap_px", int(defaults.panel_gap_px)))),
         query_gap_px=int(params.get("query_gap_px", group_default(render_defaults, "query_gap_px", int(defaults.query_gap_px)))),
         query_box_width_px=int(params.get("query_box_width_px", group_default(render_defaults, "query_box_width_px", int(defaults.query_box_width_px)))),
@@ -425,6 +429,20 @@ class PuzzlesArithmeticBalanceValueTask:
             render_defaults=_RENDER_DEFAULTS,
             defaults=_DEFAULTS,
         )
+        jitter_min = int(render_params.relation_gap_jitter_min_px)
+        jitter_max = int(render_params.relation_gap_jitter_max_px)
+        if int(jitter_min) > int(jitter_max):
+            raise ValueError("relation_gap_jitter_min_px must be <= relation_gap_jitter_max_px")
+        layout_rng = spawn_rng(int(instance_seed), f"{self.task_id}.layout")
+        panel_relation_gap_offsets = [
+            int(layout_rng.randint(int(jitter_min), int(jitter_max)))
+            for _ in dataset["panel_specs"]
+        ]
+        panel_specs_for_render = []
+        for panel_spec, relation_gap_offset in zip(dataset["panel_specs"], panel_relation_gap_offsets):
+            panel_copy = dict(panel_spec)
+            panel_copy["relation_gap_offset_px"] = int(relation_gap_offset)
+            panel_specs_for_render.append(panel_copy)
         background, background_meta = make_background_canvas(
             canvas_width=int(render_params.canvas_width),
             canvas_height=int(render_params.canvas_height),
@@ -435,7 +453,7 @@ class PuzzlesArithmeticBalanceValueTask:
         rendered_scene = render_puzzle_balance_scene(
             background,
             scene_variant=str(scene_variant),
-            panel_specs=list(dataset["panel_specs"]),
+            panel_specs=list(panel_specs_for_render),
             query_spec=dict(dataset["query_spec"]),
             render_params=render_params,
         )
@@ -535,6 +553,7 @@ class PuzzlesArithmeticBalanceValueTask:
                     "total_box_count": int(dataset["total_box_count"]),
                     "total_box_count_range": list(dataset["total_box_count_range"]),
                     "answer_range": list(dataset["answer_range"]),
+                    "relation_gap_jitter_range_px": [int(jitter_min), int(jitter_max)],
                 },
             },
             "render_spec": {
@@ -562,6 +581,7 @@ class PuzzlesArithmeticBalanceValueTask:
                 "query_object_box_id": str(dataset["query_object_box_id"]),
                 "query_object_type": str(dataset["query_object_type"]),
                 "panel_specs": list(dataset["panel_specs"]),
+                "panel_relation_gap_offsets_px": list(panel_relation_gap_offsets),
                 "solver_trace": dict(dataset["solver_trace"]),
                 "panel_count": int(dataset["panel_count"]),
                 "panel_count_range": list(dataset["panel_count_range"]),
@@ -569,6 +589,7 @@ class PuzzlesArithmeticBalanceValueTask:
                 "total_box_count_range": list(dataset["total_box_count_range"]),
                 "answer_range": list(dataset["answer_range"]),
                 "max_visible_value": int(dataset["max_visible_value"]),
+                "relation_gap_jitter_range_px": [int(jitter_min), int(jitter_max)],
                 "task_variant_probabilities": dict(task_variant_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
                 "supporting_box_ids": [str(query_box_id)],

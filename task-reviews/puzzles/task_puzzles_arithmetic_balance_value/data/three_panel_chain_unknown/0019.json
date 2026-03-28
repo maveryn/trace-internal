@@ -7,9 +7,9 @@
     "type": "bbox_set",
     "value": [
       [
-        620.0,
+        555.5,
         524.0,
-        732.0,
+        667.5,
         636.0
       ]
     ]
@@ -19,9 +19,9 @@
     "path": "puzzles/task_puzzles_arithmetic_balance_value/images/three_panel_chain_unknown/0019.png"
   },
   "instance_seed": 5121357463932844,
-  "prompt": "Look at the equality puzzle in the image: a card-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box. Read the equality puzzle and determine the number that completes the query row. What number belongs in the question-mark query box?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box.\nAnswer rule: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[610,508,722,620]],\"answer\":5}",
+  "prompt": "Look at the equality puzzle in the image: a card-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box. Read the equality puzzle and determine the number that completes the query row. What number belongs in the question-mark query box?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box.\nAnswer rule: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[556,524,668,636]],\"answer\":5}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the equality puzzle in the image: a card-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box. Read the equality puzzle and determine the number that completes the query row. What number belongs in the question-mark query box?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box.\nAnswer rule: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[610,508,722,620]],\"answer\":5}",
+    "answer_and_evidence": "Look at the equality puzzle in the image: a card-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box. Read the equality puzzle and determine the number that completes the query row. What number belongs in the question-mark query box?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box.\nAnswer rule: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[556,524,668,636]],\"answer\":5}",
     "answer_only": "Look at the equality puzzle in the image: a card-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box. Read the equality puzzle and determine the number that completes the query row. What number belongs in the question-mark query box?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"answer\":5}"
   },
   "task": "task_puzzles_arithmetic_balance_value",
@@ -38,6 +38,11 @@
       "panel_count_range": [
         2,
         3
+      ],
+      "panel_relation_gap_offsets_px": [
+        -2,
+        0,
+        0
       ],
       "panel_specs": [
         {
@@ -120,6 +125,10 @@
       "query_object_box_id": "query_object_box",
       "query_object_type": "circle",
       "question_format": "query_answer_box_balance",
+      "relation_gap_jitter_range_px": [
+        -2,
+        2
+      ],
       "scene_variant": "balance_card",
       "scene_variant_probabilities": {
         "balance_card": 0.3333333333333333,
@@ -153,9 +162,9 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          620.0,
+          555.5,
           524.0,
-          732.0,
+          667.5,
           636.0
         ]
       ]
@@ -170,6 +179,10 @@
         "panel_count_range": [
           2,
           3
+        ],
+        "relation_gap_jitter_range_px": [
+          -2,
+          2
         ],
         "scene_variant": "balance_card",
         "scene_variant_probabilities": {
@@ -197,7 +210,7 @@
         "slot_values": {
           "answer_hint": "set \"answer\" to the exact integer value requested by the puzzle",
           "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box",
-          "json_example": "{\"evidence\":[[610,508,722,620]],\"answer\":5}",
+          "json_example": "{\"evidence\":[[556,524,668,636]],\"answer\":5}",
           "json_example_answer_only": "{\"answer\":5}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -230,7 +243,7 @@
             "slot_values": {
               "answer_hint": "set \"answer\" to the exact integer value requested by the puzzle",
               "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box",
-              "json_example": "{\"evidence\":[[610,508,722,620]],\"answer\":5}",
+              "json_example": "{\"evidence\":[[556,524,668,636]],\"answer\":5}",
               "json_example_answer_only": "{\"answer\":5}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -252,7 +265,7 @@
               "task_variant:three_panel_chain_unknown": 5
             }
           },
-          "prompt": "Look at the equality puzzle in the image: a card-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box. Read the equality puzzle and determine the number that completes the query row. What number belongs in the question-mark query box?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box.\nAnswer rule: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[610,508,722,620]],\"answer\":5}"
+          "prompt": "Look at the equality puzzle in the image: a card-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box. Read the equality puzzle and determine the number that completes the query row. What number belongs in the question-mark query box?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box.\nAnswer rule: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[556,524,668,636]],\"answer\":5}"
         },
         "answer_only": {
           "metadata": {
@@ -263,7 +276,7 @@
             "slot_values": {
               "answer_hint": "set \"answer\" to the exact integer value requested by the puzzle",
               "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box",
-              "json_example": "{\"evidence\":[[610,508,722,620]],\"answer\":5}",
+              "json_example": "{\"evidence\":[[556,524,668,636]],\"answer\":5}",
               "json_example_answer_only": "{\"answer\":5}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -294,69 +307,69 @@
     "render_map": {
       "box_bboxes_px": {
         "panel_0_left_0": [
-          182.0,
+          226.5,
           84.0,
-          278.0,
+          322.5,
           180.0
         ],
         "panel_0_left_1": [
-          308.0,
+          374.5,
           84.0,
-          404.0,
+          470.5,
           180.0
         ],
         "panel_0_right_0": [
-          620.0,
+          553.5,
           84.0,
-          716.0,
+          649.5,
           180.0
         ],
         "panel_1_left_0": [
-          182.0,
+          220.5,
           234.0,
-          278.0,
+          316.5,
           330.0
         ],
         "panel_1_left_1": [
-          308.0,
+          372.5,
           234.0,
-          404.0,
+          468.5,
           330.0
         ],
         "panel_1_right_0": [
-          620.0,
+          555.5,
           234.0,
-          716.0,
+          651.5,
           330.0
         ],
         "panel_2_left_0": [
-          182.0,
+          220.5,
           384.0,
-          278.0,
+          316.5,
           480.0
         ],
         "panel_2_left_1": [
-          308.0,
+          372.5,
           384.0,
-          404.0,
+          468.5,
           480.0
         ],
         "panel_2_right_0": [
-          620.0,
+          555.5,
           384.0,
-          716.0,
+          651.5,
           480.0
         ],
         "query_answer_box": [
-          620.0,
+          555.5,
           524.0,
-          732.0,
+          667.5,
           636.0
         ],
         "query_object_box": [
-          292.0,
+          356.5,
           524.0,
-          404.0,
+          468.5,
           636.0
         ]
       },
@@ -427,9 +440,9 @@
             "value": null
           },
           "bbox_px": [
-            182.0,
+            226.5,
             84.0,
-            278.0,
+            322.5,
             180.0
           ],
           "entity_id": "panel_0_left_0",
@@ -440,12 +453,13 @@
             "after_item_index": 0,
             "operator_symbol": "+",
             "panel_index": 0,
+            "relation_gap_offset_px": -2,
             "side": "left"
           },
           "bbox_px": [
-            279.0,
+            334.5,
             120.5,
-            307.0,
+            362.5,
             143.5
           ],
           "entity_id": "balance_plus_0_left_0",
@@ -462,9 +476,9 @@
             "value": null
           },
           "bbox_px": [
-            308.0,
+            374.5,
             84.0,
-            404.0,
+            470.5,
             180.0
           ],
           "entity_id": "panel_0_left_1",
@@ -481,9 +495,9 @@
             "value": null
           },
           "bbox_px": [
-            620.0,
+            553.5,
             84.0,
-            716.0,
+            649.5,
             180.0
           ],
           "entity_id": "panel_0_right_0",
@@ -505,12 +519,13 @@
         },
         {
           "attrs": {
-            "panel_index": 0
+            "panel_index": 0,
+            "relation_gap_offset_px": -2
           },
           "bbox_px": [
-            182.0,
+            226.5,
             84.0,
-            716.0,
+            649.5,
             180.0
           ],
           "entity_id": "balance_panel_0",
@@ -527,9 +542,9 @@
             "value": null
           },
           "bbox_px": [
-            182.0,
+            220.5,
             234.0,
-            278.0,
+            316.5,
             330.0
           ],
           "entity_id": "panel_1_left_0",
@@ -540,12 +555,13 @@
             "after_item_index": 0,
             "operator_symbol": "+",
             "panel_index": 1,
+            "relation_gap_offset_px": 0,
             "side": "left"
           },
           "bbox_px": [
-            279.0,
+            330.5,
             270.5,
-            307.0,
+            358.5,
             293.5
           ],
           "entity_id": "balance_plus_1_left_0",
@@ -562,9 +578,9 @@
             "value": null
           },
           "bbox_px": [
-            308.0,
+            372.5,
             234.0,
-            404.0,
+            468.5,
             330.0
           ],
           "entity_id": "panel_1_left_1",
@@ -581,9 +597,9 @@
             "value": 20
           },
           "bbox_px": [
-            620.0,
+            555.5,
             234.0,
-            716.0,
+            651.5,
             330.0
           ],
           "entity_id": "panel_1_right_0",
@@ -605,12 +621,13 @@
         },
         {
           "attrs": {
-            "panel_index": 1
+            "panel_index": 1,
+            "relation_gap_offset_px": 0
           },
           "bbox_px": [
-            182.0,
+            220.5,
             234.0,
-            716.0,
+            651.5,
             330.0
           ],
           "entity_id": "balance_panel_1",
@@ -627,9 +644,9 @@
             "value": null
           },
           "bbox_px": [
-            182.0,
+            220.5,
             384.0,
-            278.0,
+            316.5,
             480.0
           ],
           "entity_id": "panel_2_left_0",
@@ -640,12 +657,13 @@
             "after_item_index": 0,
             "operator_symbol": "+",
             "panel_index": 2,
+            "relation_gap_offset_px": 0,
             "side": "left"
           },
           "bbox_px": [
-            279.0,
+            330.5,
             420.5,
-            307.0,
+            358.5,
             443.5
           ],
           "entity_id": "balance_plus_2_left_0",
@@ -662,9 +680,9 @@
             "value": null
           },
           "bbox_px": [
-            308.0,
+            372.5,
             384.0,
-            404.0,
+            468.5,
             480.0
           ],
           "entity_id": "panel_2_left_1",
@@ -681,9 +699,9 @@
             "value": 18
           },
           "bbox_px": [
-            620.0,
+            555.5,
             384.0,
-            716.0,
+            651.5,
             480.0
           ],
           "entity_id": "panel_2_right_0",
@@ -705,12 +723,13 @@
         },
         {
           "attrs": {
-            "panel_index": 2
+            "panel_index": 2,
+            "relation_gap_offset_px": 0
           },
           "bbox_px": [
-            182.0,
+            220.5,
             384.0,
-            716.0,
+            651.5,
             480.0
           ],
           "entity_id": "balance_panel_2",
@@ -728,9 +747,9 @@
             "value": null
           },
           "bbox_px": [
-            292.0,
+            356.5,
             524.0,
-            404.0,
+            468.5,
             636.0
           ],
           "entity_id": "query_object_box",
@@ -763,9 +782,9 @@
             "value": null
           },
           "bbox_px": [
-            620.0,
+            555.5,
             524.0,
-            732.0,
+            667.5,
             636.0
           ],
           "entity_id": "query_answer_box",
@@ -786,9 +805,9 @@
       "type": "bbox_set",
       "value": [
         [
-          620.0,
+          555.5,
           524.0,
-          732.0,
+          667.5,
           636.0
         ]
       ]

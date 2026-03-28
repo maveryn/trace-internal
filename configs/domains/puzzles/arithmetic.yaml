@@ -88,8 +88,10 @@ rendering:
       scene_margin_bottom_px: 64
       item_box_width_px: 96
       item_box_height_px: 96
-      item_gap_px: 30
-      scale_side_gap_px: 60
+      item_gap_px: 56
+      scale_side_gap_px: 14
+      relation_gap_jitter_min_px: -2
+      relation_gap_jitter_max_px: 2
       panel_gap_px: 54
       query_gap_px: 44
       query_box_width_px: 112
@@ -157,9 +159,9 @@ prompt:
       evidence_hint_sum_pair_unknown: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box
       evidence_hint_two_panel_chain_unknown: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box
       evidence_hint_three_panel_chain_unknown: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box
-      json_example_sum_pair_unknown: '{"evidence":[[610,508,722,620]],"answer":7}'
-      json_example_two_panel_chain_unknown: '{"evidence":[[610,508,722,620]],"answer":8}'
-      json_example_three_panel_chain_unknown: '{"evidence":[[610,508,722,620]],"answer":5}'
+      json_example_sum_pair_unknown: '{"evidence":[[556,449,668,561]],"answer":7}'
+      json_example_two_panel_chain_unknown: '{"evidence":[[556,449,668,561]],"answer":8}'
+      json_example_three_panel_chain_unknown: '{"evidence":[[556,524,668,636]],"answer":5}'
       json_example_answer_only_sum_pair_unknown: '{"answer":7}'
       json_example_answer_only_two_panel_chain_unknown: '{"answer":8}'
       json_example_answer_only_three_panel_chain_unknown: '{"answer":5}'

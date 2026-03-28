@@ -62,13 +62,14 @@ Capture the active v1 contract for the `puzzles` domain.
    - one arithmetic equality puzzle per image,
    - `2..3` stacked equality panels with boxed symbols and/or boxed integers,
    - explicit plus signs appear between multiple items on the same side of a panel,
+   - panel rows may use small deterministic spacing jitter while keeping the local operator/equality spacing visually balanced,
    - one final query row below the panels has the form `symbol = ?`,
    - every variant keeps the queried symbol local to that final query row,
    - the answer is the integer value that replaces the question mark.
 6. Trace contract:
    - `scene_ir.entities` includes `puzzle_balance_box`, `puzzle_balance_operator`, `puzzle_balance_equals`, and `puzzle_balance_panel` entities,
    - `render_map.box_bboxes_px` stores each panel/query box bbox keyed by box id,
-   - `execution_trace` stores `panel_specs`, `solver_trace`, `query_box_id`, `query_object_box_id`, `query_object_type`, `panel_count`, `panel_count_range`, `total_box_count`, and `total_box_count_range`,
+   - `execution_trace` stores `panel_specs`, `solver_trace`, `query_box_id`, `query_object_box_id`, `query_object_type`, `panel_count`, `panel_count_range`, `total_box_count`, `total_box_count_range`, `panel_relation_gap_offsets_px`, and `relation_gap_jitter_range_px`,
    - prompt-facing evidence is projected from `query_box_id`, not inferred from pixels.
 
 ## `task_puzzles_arithmetic_grid_value`

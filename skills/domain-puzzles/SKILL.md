@@ -52,7 +52,7 @@ Use this whenever the task lives under `domain=puzzles`.
 - The first arithmetic puzzle tasks should center on explicit unknown slots rather than free-form expression comparison.
 - Good early arithmetic variants are those like “what number should replace the question mark?” or “what is the value of the box?” where one queried bbox grounds the answer.
 - For a clean first arithmetic contract, prefer one flat equation row with `2..5` boxed operands on the left, one boxed result on the right, and the `?` allowed in either an operand box or the result box.
-- For early balance-style arithmetic tasks, prefer `2..3` explicit equality panels with visible `+` and `=` signs plus a final query row rendered like `symbol = ?`; project evidence from the `?` box rather than from the symbol box.
+- For early balance-style arithmetic tasks, prefer `2..3` explicit equality panels with visible `+` and `=` signs plus a final query row rendered like `symbol = ?`; project evidence from the `?` box rather than from the symbol box, and if the row spacing looks too rigid, add only small seeded jitter while keeping the local gaps readable and near-uniform.
 - For early arithmetic grid tasks, prefer `3..5` rows with exactly `3` columns and no headers so at least two complete example rows remain after hiding the `?` cell.
 - When a puzzle grid repeats a hidden arithmetic row rule, require the complete visible rows to support exactly one operator family; do not accept rows that also fit multiple rule types.
 - When an arithmetic unknown-slot family starts feeling too tiny, increase structural variety inside that same one-box contract first: vary operand count, operator mix, and whether the unknown is on the left or right before inventing a new task id.

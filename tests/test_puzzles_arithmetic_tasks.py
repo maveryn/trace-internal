@@ -370,6 +370,9 @@ def test_puzzle_arithmetic_balance_value_contract_matches_query_answer_box() -> 
             assert evidence_bboxes[0] == expected_bbox
             assert all(float(bbox[0]) >= 0.0 for bbox in render_map["box_bboxes_px"].values())
             assert all(float(bbox[2]) <= float(render["canvas_width"]) for bbox in render_map["box_bboxes_px"].values())
+            assert list(execution["relation_gap_jitter_range_px"]) == [-2, 2]
+            assert len(execution["panel_relation_gap_offsets_px"]) == int(execution["panel_count"])
+            assert all(-2 <= int(offset) <= 2 for offset in execution["panel_relation_gap_offsets_px"])
 
             object_values = {str(key): int(value) for key, value in solver["object_values"].items()}
             for panel in execution["panel_specs"]:
@@ -422,15 +425,15 @@ def test_puzzle_arithmetic_balance_prompt_examples_match_selected_variants() -> 
     task = PuzzlesArithmeticBalanceValueTask()
     expected = {
         "sum_pair_unknown": (
-            {"evidence": [[610, 508, 722, 620]], "answer": 7},
+            {"evidence": [[556, 449, 668, 561]], "answer": 7},
             {"answer": 7},
         ),
         "two_panel_chain_unknown": (
-            {"evidence": [[610, 508, 722, 620]], "answer": 8},
+            {"evidence": [[556, 449, 668, 561]], "answer": 8},
             {"answer": 8},
         ),
         "three_panel_chain_unknown": (
-            {"evidence": [[610, 508, 722, 620]], "answer": 5},
+            {"evidence": [[556, 524, 668, 636]], "answer": 5},
             {"answer": 5},
         ),
     }

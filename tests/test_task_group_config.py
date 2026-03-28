@@ -276,7 +276,7 @@ def test_charts_statistics_defaults_loaded() -> None:
 
 def test_charts_distribution_defaults_loaded() -> None:
     cfg = get_task_group_defaults("charts", "distribution")
-    for section in ("generation", "rendering", "prompt"):
+    for section in ("generation", "rendering", "prompt", "complexity"):
         assert isinstance(cfg.get(section), dict)
 
     generation_shared = cfg["generation"]["shared"]
@@ -355,10 +355,32 @@ def test_charts_distribution_defaults_loaded() -> None:
     assert str(density_prompt["task_key"]).strip() == "density_label_query"
     assert str(density_prompt["evidence_hint_bimodal_label"]).strip()
 
+    histogram_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_charts_distribution_histogram_count",
+    )
+    boxplot_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_charts_distribution_boxplot_label",
+    )
+    density_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_charts_distribution_density_label",
+    )
+    for complexity_defaults in (histogram_complexity, boxplot_complexity, density_complexity):
+        assert sorted(complexity_defaults["criteria_weights"].keys()) == [
+            "reasoning_load",
+            "scene_variant_load",
+            "visual_scan",
+        ]
+
 
 def test_charts_composition_defaults_loaded() -> None:
     cfg = get_task_group_defaults("charts", "composition")
-    for section in ("generation", "rendering", "prompt"):
+    for section in ("generation", "rendering", "prompt", "complexity"):
         assert isinstance(cfg.get(section), dict)
 
     generation_shared = cfg["generation"]["shared"]
@@ -404,10 +426,21 @@ def test_charts_composition_defaults_loaded() -> None:
     assert int(rendering_defaults["canvas_width"]) > 0
     assert str(prompt_defaults["bundle_id"]).strip() == "charts_composition_v1"
 
+    complexity_defaults = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_charts_composition_subset_value",
+    )
+    assert sorted(complexity_defaults["criteria_weights"].keys()) == [
+        "reasoning_load",
+        "scene_variant_load",
+        "visual_scan",
+    ]
+
 
 def test_charts_trend_defaults_loaded() -> None:
     cfg = get_task_group_defaults("charts", "trend")
-    for section in ("generation", "rendering", "prompt"):
+    for section in ("generation", "rendering", "prompt", "complexity"):
         assert isinstance(cfg.get(section), dict)
 
     generation_shared = cfg["generation"]["shared"]
@@ -453,6 +486,17 @@ def test_charts_trend_defaults_loaded() -> None:
     assert int(generation_defaults["mark_count_max"]) == 10
     assert int(rendering_defaults["canvas_width"]) > 0
     assert str(prompt_defaults["bundle_id"]).strip() == "charts_trend_v1"
+
+    complexity_defaults = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_charts_trend_structure_value",
+    )
+    assert sorted(complexity_defaults["criteria_weights"].keys()) == [
+        "reasoning_load",
+        "scene_variant_load",
+        "visual_scan",
+    ]
 
 
 def test_tables_statistics_defaults_loaded() -> None:
@@ -518,7 +562,7 @@ def test_tables_statistics_defaults_loaded() -> None:
 
 def test_charts_multiseries_defaults_loaded() -> None:
     cfg = get_task_group_defaults("charts", "multiseries")
-    for section in ("generation", "rendering", "prompt"):
+    for section in ("generation", "rendering", "prompt", "complexity"):
         assert isinstance(cfg.get(section), dict)
 
     generation_shared = cfg["generation"]["shared"]
@@ -555,6 +599,17 @@ def test_charts_multiseries_defaults_loaded() -> None:
     assert str(prompt_shared["object_description_grouped_lollipop"]).strip()
     assert str(prompt_shared["json_example_series_a_gt_b_count"]).strip()
     assert str(prompt_shared["json_example_series_a_lt_b_count"]).strip()
+
+    complexity_defaults = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_charts_multiseries_pairwise_comparison_count",
+    )
+    assert sorted(complexity_defaults["criteria_weights"].keys()) == [
+        "reasoning_load",
+        "scene_variant_load",
+        "visual_scan",
+    ]
 
 
 def test_charts_counting_defaults_loaded() -> None:

@@ -38,6 +38,7 @@ Use this whenever the task lives under `domain=charts`.
 - Use target-first or compatibility-aware internal sampling when chart/task combinations have uneven answer support.
 - Favor explicit visible labels and printed values over requiring pixel-only estimation from geometry.
 - For chart complexity, keep the criterion vocabulary broad (`visual_scan`, `reasoning_load`, `scene_variant_load` works well), but keep `scene_variant_load` task-local rather than reusing one global chart-type difficulty table.
+- If a chart task supports only one scene type, it is fine for that task to zero out `scene_variant_load` weight rather than pretending a constant scene-load term adds useful within-task ordering.
 
 ## Chart-type lessons learned
 - `pie` and `donut` are composition-style scenes, not generic drop-ins for every chart task.

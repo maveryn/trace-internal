@@ -16,6 +16,19 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     return json.loads(payload)
 
 
+def _assert_normalized_complexity(out: object) -> None:
+    complexity = out.complexity.to_dict()
+    assert 0.0 <= float(complexity["complexity_score"]) <= 1.0
+    assert set(complexity["complexity_components"].keys()) == {
+        "reasoning_load",
+        "scene_variant_load",
+        "visual_scan",
+    }
+    assert all(
+        0.0 <= float(value) <= 1.0 for value in complexity["complexity_components"].values()
+    )
+
+
 def test_chart_multiseries_pairwise_comparison_count_matches_contract() -> None:
     task = ChartsMultiseriesPairwiseComparisonCountTask()
     cases = (
@@ -123,6 +136,37 @@ def test_chart_multiseries_task_is_deterministic() -> None:
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
+
+
+def test_chart_multiseries_complexity_is_normalized_and_monotonic() -> None:
+    task = ChartsMultiseriesPairwiseComparisonCountTask()
+    easy = task.generate(
+        11055,
+        params={
+            "task_variant": "series_a_gt_b_count",
+            "scene_variant": "grouped_bar",
+            "category_count_min": 5,
+            "category_count_max": 5,
+            "series_count_min": 2,
+            "series_count_max": 2,
+        },
+        max_attempts=10,
+    )
+    hard = task.generate(
+        11055,
+        params={
+            "task_variant": "series_a_gt_b_count",
+            "scene_variant": "multi_line",
+            "category_count_min": 10,
+            "category_count_max": 10,
+            "series_count_min": 3,
+            "series_count_max": 3,
+        },
+        max_attempts=10,
+    )
+    _assert_normalized_complexity(easy)
+    _assert_normalized_complexity(hard)
+    assert float(hard.complexity.complexity_score) > float(easy.complexity.complexity_score)
 
 
 def test_chart_multiseries_supports_explicit_category_and_series_counts() -> None:

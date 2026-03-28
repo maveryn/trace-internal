@@ -127,6 +127,7 @@ Use this checklist during implementation and refactor reviews.
 111. Domain-level complexity criteria must be scorable for every task in the domain, and task-group criteria must be scorable for every task in that family; if a criterion does not meet that bar, move it down a scope instead of forcing irrelevant zeroes or fake values.
 112. Once a domain starts migrating tasks to config-weighted complexity criteria, promote weight resolution and weighted-score construction into one domain-shared helper immediately; do not copy criterion validation and weight normalization into each migrated task module.
 113. For chart complexity, keep `scene_variant_load` task-local even when the criterion name is domain-shared; do not reuse one global chart-type difficulty table across unrelated chart tasks whose scenes have different semantics or prompting contracts.
+114. When a difficulty criterion has no within-task variation for a task family, prefer a zero weight at that scope over carrying a non-zero constant criterion that shifts every instance equally without improving within-task ordering.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

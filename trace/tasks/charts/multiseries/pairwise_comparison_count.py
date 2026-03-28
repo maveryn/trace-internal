@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict, Mapping, Tuple
 
 from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
@@ -18,6 +18,11 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ..shared.chart_scene import render_multiseries_chart_scene
+from ..shared.complexity import (
+    build_chart_complexity,
+    normalize_int_with_bounds,
+    resolve_chart_complexity_weights,
+)
 from ..shared.labeled_chart_common import resolve_chart_axis_variant, resolve_chart_render_params_for_task
 from ..shared.multiseries_chart_common import (
     MultiseriesChartDefaults,
@@ -47,6 +52,29 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 )
 POST_IMAGE_BACKGROUND_DEFAULTS = load_chart_background_defaults(task_group="multiseries")
 POST_IMAGE_NOISE_DEFAULTS = load_chart_noise_defaults(task_group="multiseries", apply_prob=0.0)
+_COMPLEXITY_WEIGHTS = resolve_chart_complexity_weights(_TASK_GROUP_DEFAULTS, task_id=TASK_ID)
+_REASONING_LOAD_BY_VARIANT: Dict[str, float] = {
+    "series_a_gt_b_count": 0.0,
+    "series_a_lt_b_count": 0.0,
+}
+_SCENE_VARIANT_LOADS: Dict[str, float] = {
+    "grouped_bar": 0.0,
+    "grouped_horizontal_bar": 0.18,
+    "grouped_lollipop": 0.55,
+    "multi_line": 1.0,
+}
+
+
+def _normalize_multiseries_visual_scan(trace_extras: Mapping[str, Any]) -> float:
+    """Normalize multiseries visual load from the total plotted mark count."""
+    category_range = trace_extras.get("category_count_range", [0, 0])
+    series_range = trace_extras.get("series_count_range", [0, 0])
+    total_marks = int(trace_extras["category_count"]) * int(trace_extras["series_count"])
+    total_bounds = [
+        int(category_range[0]) * int(series_range[0]),
+        int(category_range[1]) * int(series_range[1]),
+    ]
+    return normalize_int_with_bounds(int(total_marks), total_bounds)
 
 
 def _resolve_task_variant(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[str, Dict[str, float]]:
@@ -312,19 +340,12 @@ class ChartsMultiseriesPairwiseComparisonCountTask:
             },
         }
 
-        complexity = TaskComplexity(
-            complexity_score=float(
-                0.28
-                + 0.03 * int(trace_extras["category_count"])
-                + 0.05 * int(trace_extras["series_count"])
-                + 0.02 * len(evidence_labels)
-            ),
-            complexity_components={
-                "task_variant": str(task_variant),
-                "scene_variant": str(scene_variant),
-                "category_count": int(trace_extras["category_count"]),
-                "series_count": int(trace_extras["series_count"]),
-                "evidence_size": int(len(evidence_labels)),
+        complexity = build_chart_complexity(
+            weights=_COMPLEXITY_WEIGHTS,
+            components={
+                "visual_scan": _normalize_multiseries_visual_scan(trace_extras),
+                "reasoning_load": float(_REASONING_LOAD_BY_VARIANT[str(task_variant)]),
+                "scene_variant_load": float(_SCENE_VARIANT_LOADS[str(scene_variant)]),
             },
         )
         return TaskOutput(

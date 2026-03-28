@@ -16,6 +16,15 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     return json.loads(payload)
 
 
+def _assert_normalized_complexity(out: object, *, expected_keys: set[str]) -> None:
+    complexity = out.complexity.to_dict()
+    assert 0.0 <= float(complexity["complexity_score"]) <= 1.0
+    assert set(complexity["complexity_components"].keys()) == set(expected_keys)
+    assert all(
+        0.0 <= float(value) <= 1.0 for value in complexity["complexity_components"].values()
+    )
+
+
 def test_chart_distribution_histogram_variants_match_contract() -> None:
     task = ChartsDistributionHistogramCountTask()
     for seed, task_variant in enumerate(("modal_bin_count", "interval_mass", "cumulative_count_to_bin"), start=11010):
@@ -100,6 +109,23 @@ def test_chart_distribution_histogram_task_is_deterministic() -> None:
     assert out_a.image.tobytes() == out_b.image.tobytes()
 
 
+def test_chart_distribution_histogram_complexity_is_normalized_and_monotonic() -> None:
+    task = ChartsDistributionHistogramCountTask()
+    easy = task.generate(
+        11061,
+        params={"task_variant": "modal_bin_count", "bin_count_min": 4, "bin_count_max": 4},
+        max_attempts=10,
+    )
+    hard = task.generate(
+        11061,
+        params={"task_variant": "cumulative_count_to_bin", "bin_count_min": 7, "bin_count_max": 7},
+        max_attempts=10,
+    )
+    _assert_normalized_complexity(easy, expected_keys={"visual_scan", "reasoning_load"})
+    _assert_normalized_complexity(hard, expected_keys={"visual_scan", "reasoning_load"})
+    assert float(hard.complexity.complexity_score) > float(easy.complexity.complexity_score)
+
+
 def test_chart_distribution_boxplot_variants_match_contract() -> None:
     task = ChartsDistributionBoxplotLabelTask()
     for seed, task_variant in enumerate(("highest_median", "largest_iqr", "smallest_iqr"), start=11110):
@@ -162,6 +188,15 @@ def test_chart_distribution_boxplot_task_is_deterministic() -> None:
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
+
+
+def test_chart_distribution_boxplot_complexity_is_normalized_and_monotonic() -> None:
+    task = ChartsDistributionBoxplotLabelTask()
+    easy = task.generate(11161, params={"task_variant": "highest_median"}, max_attempts=10)
+    hard = task.generate(11161, params={"task_variant": "largest_iqr"}, max_attempts=10)
+    _assert_normalized_complexity(easy, expected_keys={"visual_scan", "reasoning_load"})
+    _assert_normalized_complexity(hard, expected_keys={"visual_scan", "reasoning_load"})
+    assert float(hard.complexity.complexity_score) > float(easy.complexity.complexity_score)
 
 
 def test_chart_distribution_density_variants_match_contract() -> None:
@@ -232,3 +267,12 @@ def test_chart_distribution_density_task_is_deterministic() -> None:
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
+
+
+def test_chart_distribution_density_complexity_is_normalized_and_monotonic() -> None:
+    task = ChartsDistributionDensityLabelTask()
+    easy = task.generate(11261, params={"task_variant": "highest_mode"}, max_attempts=10)
+    hard = task.generate(11261, params={"task_variant": "bimodal_label"}, max_attempts=10)
+    _assert_normalized_complexity(easy, expected_keys={"visual_scan", "reasoning_load"})
+    _assert_normalized_complexity(hard, expected_keys={"visual_scan", "reasoning_load"})
+    assert float(hard.complexity.complexity_score) > float(easy.complexity.complexity_score)

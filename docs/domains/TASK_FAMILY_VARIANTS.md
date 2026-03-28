@@ -246,7 +246,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
 26. **Graph counting degree count (`task_graph_counting_degree_count`)**
    - One single-panel labeled node-link graph.
    - Query variants: `How many nodes have degree k?`, `How many nodes have in-degree k?`, and `How many nodes have out-degree k?`
-   - Graph contract: simple unweighted graph with `5..10` nodes labeled from `A..J` or `1..10`; the directed variants render arrowheads and reject reciprocal edge pairs for readability.
+   - Graph contract: simple unweighted graph with `5..10` nodes for undirected degree queries and `5..9` nodes for directed in-/out-degree queries, labeled from `A..J` or `1..10`; the directed variants render arrowheads and reject reciprocal edge pairs for readability.
    - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`).
    - Answer type: integer count.
    - Evidence: sorted `label_set` of the node labels whose asked degree measure equals `k`.

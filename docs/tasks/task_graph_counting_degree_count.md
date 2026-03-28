@@ -18,7 +18,8 @@
    - no multi-edges,
    - directed variants also reject reciprocal edge pairs so arrowheads stay readable,
    - visible node labels use one whole-image label format (`A..J` or `1..10`),
-   - node count sampled from `5..10`.
+   - undirected variant node count sampled from `5..10`,
+   - directed variants node count sampled from `5..9`.
 6. Query contract:
    - `degree_count`: ask for one queried degree `k` in an undirected graph,
    - `in_degree_count`: ask for one queried in-degree `k` in a directed graph,

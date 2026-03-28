@@ -194,6 +194,17 @@ def test_graph_counting_degree_count_directed_variants_use_in_out_degree_semanti
         assert all(int(queried[str(label)]) == 1 for label in out.evidence_gt.value)
 
 
+def test_graph_counting_degree_count_directed_variants_cap_node_count_at_nine() -> None:
+    task = GraphCountingDegreeCountTask()
+    for variant in ("in_degree_count", "out_degree_count"):
+        out = task.generate(
+            19109 if variant == "in_degree_count" else 19110,
+            params={"task_variant": variant},
+            max_attempts=120,
+        )
+        assert 5 <= int(out.trace_payload["execution_trace"]["node_count"]) <= 9
+
+
 def test_graph_counting_degree_count_balanced_sampling_defaults() -> None:
     task = GraphCountingDegreeCountTask()
     task_variants: Counter[str] = Counter()
@@ -221,7 +232,10 @@ def test_graph_counting_degree_count_balanced_sampling_defaults() -> None:
         node_shape_variants[str(execution["node_shape_variant"])] += 1
         layout_transform_variants[str(execution["layout_transform_variant"])] += 1
         node_colors[str(execution["node_color_name"])] += 1
-        assert 5 <= int(execution["node_count"]) <= 10
+        if str(execution["graph_directionality"]) == "directed":
+            assert 5 <= int(execution["node_count"]) <= 9
+        else:
+            assert 5 <= int(execution["node_count"]) <= 10
         assert 0 <= int(execution["query_degree"]) <= 4
         assert 0 <= int(execution["target_count"]) <= 5
     assert set(task_variants.keys()) == {"degree_count", "in_degree_count", "out_degree_count"}

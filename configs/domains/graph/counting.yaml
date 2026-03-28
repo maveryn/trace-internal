@@ -7,6 +7,7 @@ generation:
     balanced_task_variant_sampling: true
     node_count_min: 5
     node_count_max: 10
+    directed_node_count_max: 9
     query_degree_min: 0
     query_degree_max: 4
     target_count_min: 0

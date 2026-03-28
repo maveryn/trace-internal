@@ -1599,6 +1599,7 @@ def test_graph_counting_defaults_loaded() -> None:
     ]
     assert int(generation_defaults["node_count_min"]) == 5
     assert int(generation_defaults["node_count_max"]) == 10
+    assert int(generation_defaults["directed_node_count_max"]) == 9
     assert int(generation_defaults["query_degree_min"]) == 0
     assert int(generation_defaults["query_degree_max"]) == 4
     assert int(generation_defaults["directed_degree_sequence_max_degree"]) == 4

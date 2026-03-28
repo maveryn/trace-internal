@@ -13,7 +13,7 @@ Define the concrete v1 setup for the first graph-domain task family.
 ## Scene contract
 1. Use one simple unweighted node-link graph per image.
 2. Keep node labels visible and canonical; v1 uses labels from `A..J`.
-3. Node count support for the first task is `5..10`.
+3. Node count support for the first task is `5..10` for undirected degree queries and `5..9` for directed in-/out-degree queries.
 4. No self-loops or multi-edges.
 5. Directed variants also reject reciprocal edge pairs by default so arrowheads remain readable.
 6. Layout is visual variation only; the task semantics come from adjacency.

@@ -57,6 +57,7 @@ class _TaskDefaults:
 
     node_count_min: int = 5
     node_count_max: int = 10
+    directed_node_count_max: int = 9
     query_degree_min: int = 0
     query_degree_max: int = 4
     target_count_min: int = 0
@@ -185,7 +186,9 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     degree_mode = str(graph_degree_mode_for_task_variant(str(task_variant)))
 
     node_count_min = int(params.get("node_count_min", group_default(_GEN_DEFAULTS, "node_count_min", _DEFAULTS.node_count_min)))
-    node_count_max = int(params.get("node_count_max", group_default(_GEN_DEFAULTS, "node_count_max", _DEFAULTS.node_count_max)))
+    node_count_max_key = "directed_node_count_max" if str(graph_directionality) == "directed" else "node_count_max"
+    node_count_max_fallback = _DEFAULTS.directed_node_count_max if str(graph_directionality) == "directed" else _DEFAULTS.node_count_max
+    node_count_max = int(params.get(node_count_max_key, group_default(_GEN_DEFAULTS, node_count_max_key, node_count_max_fallback)))
     query_degree_min = int(
         params.get("query_degree_min", group_default(_GEN_DEFAULTS, "query_degree_min", _DEFAULTS.query_degree_min))
     )
@@ -218,35 +221,62 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
             namespace=f"{TASK_ID}:query_support",
         )
     )
+
+    feasible_pairs = []
+    feasible_node_support_by_pair: Dict[Tuple[int, int], Tuple[int, ...]] = {}
+    for supported_degree in degree_support:
+        for supported_target in target_support:
+            feasible_nodes = feasible_node_counts_for_degree_count(
+                task_variant=str(task_variant),
+                query_degree=int(supported_degree),
+                target_count=int(supported_target),
+                node_count_min=int(node_count_min),
+                node_count_max=int(node_count_max),
+                max_degree=int(max_degree),
+            )
+            if feasible_nodes:
+                pair = (int(supported_degree), int(supported_target))
+                feasible_pairs.append(pair)
+                feasible_node_support_by_pair[pair] = tuple(int(value) for value in feasible_nodes)
+    if not feasible_pairs:
+        raise ValueError("no feasible graph degree-count support exists for the configured task variant")
+
     explicit_target = params.get("target_count")
+    explicit_query_degree = params.get("query_degree")
     if explicit_target is not None:
         target_count = int(explicit_target)
+        if target_count not in target_support:
+            raise ValueError("target_count is outside configured support")
     else:
-        target_count = int(target_support[int(selection_index % len(target_support))])
-    if target_count not in target_support:
-        raise ValueError("target_count is outside configured support")
-
-    explicit_query_degree = params.get("query_degree")
-    degree_index = int(selection_index // len(target_support))
+        target_count = None
     if explicit_query_degree is not None:
         query_degree = int(explicit_query_degree)
+        if query_degree not in degree_support:
+            raise ValueError("query_degree is outside configured support")
     else:
-        query_degree = int(degree_support[int(degree_index % len(degree_support))])
-    if query_degree not in degree_support:
-        raise ValueError("query_degree is outside configured support")
+        query_degree = None
 
-    feasible_node_support = feasible_node_counts_for_degree_count(
-        task_variant=str(task_variant),
-        query_degree=int(query_degree),
-        target_count=int(target_count),
-        node_count_min=int(node_count_min),
-        node_count_max=int(node_count_max),
-        max_degree=int(max_degree),
-    )
-    if not feasible_node_support:
+    filtered_pairs = [
+        pair
+        for pair in feasible_pairs
+        if (query_degree is None or int(pair[0]) == int(query_degree))
+        and (target_count is None or int(pair[1]) == int(target_count))
+    ]
+    if not filtered_pairs:
         raise ValueError("no feasible node counts exist for the configured graph degree-count support")
+
+    if query_degree is None and target_count is None:
+        query_degree, target_count = filtered_pairs[int(selection_index % len(filtered_pairs))]
+    elif query_degree is None:
+        degree_candidates = tuple(sorted({int(pair[0]) for pair in filtered_pairs}))
+        query_degree = int(degree_candidates[int(selection_index % len(degree_candidates))])
+    elif target_count is None:
+        target_candidates = tuple(sorted({int(pair[1]) for pair in filtered_pairs}))
+        target_count = int(target_candidates[int(selection_index % len(target_candidates))])
+
+    feasible_node_support = feasible_node_support_by_pair[(int(query_degree), int(target_count))]
     explicit_node_count = params.get("node_count")
-    node_index = int(degree_index // len(degree_support))
+    node_index = int(selection_index // max(1, len(filtered_pairs)))
     if explicit_node_count is not None:
         node_count = int(explicit_node_count)
     else:
@@ -342,10 +372,16 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
             )
         ),
         query_degree_probabilities=dict(
-            uniform_probability_map(tuple(int(value) for value in degree_support), selected=int(query_degree) if explicit_query_degree is not None else None)
+            uniform_probability_map(
+                tuple(sorted({int(pair[0]) for pair in filtered_pairs})),
+                selected=int(query_degree) if explicit_query_degree is not None else None,
+            )
         ),
         target_count_probabilities=dict(
-            uniform_probability_map(tuple(int(value) for value in target_support), selected=int(target_count) if explicit_target is not None else None)
+            uniform_probability_map(
+                tuple(sorted({int(pair[1]) for pair in filtered_pairs})),
+                selected=int(target_count) if explicit_target is not None else None,
+            )
         ),
         topology_profile_probabilities=dict(topology_probabilities),
         layout_variant_probabilities=dict(layout_probabilities),
@@ -484,7 +520,7 @@ def _build_complexity(
     directionality_bonus = 1.0 if str(query.graph_directionality) == "directed" else 0.0
 
     components = {
-        "visual_scan": (0.6 * normalize_int_with_bounds(int(node_count), (_DEFAULTS.node_count_min, _DEFAULTS.node_count_max)))
+        "visual_scan": (0.6 * normalize_int_with_bounds(int(node_count), (_DEFAULTS.node_count_min, _DEFAULTS.directed_node_count_max if str(query.graph_directionality) == "directed" else _DEFAULTS.node_count_max)))
         + (0.3 * normalize_float_with_bounds(float(edge_density), (0.0, 1.0)))
         + (0.1 * float(directionality_bonus)),
         "topology_reasoning": (0.7 * normalize_int_with_bounds(int(query.query_degree), degree_support))

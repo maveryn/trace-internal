@@ -1,0 +1,959 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 3
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        772,
+        256,
+        821,
+        292
+      ],
+      [
+        548,
+        324,
+        621,
+        376
+      ],
+      [
+        624,
+        443,
+        663,
+        471
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_relation_relative_position_type/images/right_of_anchor/0008.png"
+  },
+  "instance_seed": 5702105624846689,
+  "prompt": "Use the image containing a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor. Question: How many icons in the Scene panel have the same icon type as the Reference icon and are to the right of the Anchor icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[438,162,498,222],[602,302,670,370]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the image containing a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor. Question: How many icons in the Scene panel have the same icon type as the Reference icon and are to the right of the Anchor icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[438,162,498,222],[602,302,670,370]],\"answer\":2}",
+    "answer_only": "Use the image containing a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor. Question: How many icons in the Scene panel have the same icon type as the Reference icon and are to the right of the Anchor icon?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_icons_relation_relative_position_type",
+  "task_variant": "right_of_anchor",
+  "trace_payload": {
+    "execution_trace": {
+      "anchor_icon_id": "gi-delapouite-submarine",
+      "different_type_distractor_count": 5,
+      "different_type_nonspatial_distractor_count": 2,
+      "different_type_spatial_distractor_count": 3,
+      "distractor_count": 6,
+      "distractor_count_probabilities": {
+        "10": 0.14285714285714285,
+        "4": 0.14285714285714285,
+        "5": 0.14285714285714285,
+        "6": 0.14285714285714285,
+        "7": 0.14285714285714285,
+        "8": 0.14285714285714285,
+        "9": 0.14285714285714285
+      },
+      "distractor_margin_over_target": 1,
+      "matching_scene_indices": [
+        1,
+        5,
+        6
+      ],
+      "object_count": 9,
+      "object_count_probabilities": {
+        "10": 0.14285714285714285,
+        "11": 0.14285714285714285,
+        "12": 0.14285714285714285,
+        "13": 0.14285714285714285,
+        "7": 0.14285714285714285,
+        "8": 0.14285714285714285,
+        "9": 0.14285714285714285
+      },
+      "question_format": "count_matching_scene_icons_by_reference_and_anchor_relation",
+      "reference_icon_id": "gi-lorc-metal-bar",
+      "same_type_distractor_count": 1,
+      "same_type_nonspatial_distractor_count": 1,
+      "scene_icon_ids": [
+        "gi-lorc-parrot-head",
+        "gi-lorc-metal-bar",
+        "gi-delapouite-saxophone",
+        "gi-lorc-metal-bar",
+        "tabler-poo",
+        "gi-lorc-metal-bar",
+        "gi-lorc-metal-bar",
+        "tabler-battery-automotive",
+        "gi-delapouite-towel"
+      ],
+      "scene_variant": "reference_scene_anchor",
+      "spatial_relation": "right_of_anchor",
+      "target_count": 3,
+      "target_count_probabilities": {
+        "0": 0.16666666666666666,
+        "1": 0.16666666666666666,
+        "2": 0.16666666666666666,
+        "3": 0.16666666666666666,
+        "4": 0.16666666666666666,
+        "5": 0.16666666666666666
+      },
+      "task_variant": "right_of_anchor",
+      "variant_probabilities": {
+        "above_anchor": 0.25,
+        "below_anchor": 0.25,
+        "left_of_anchor": 0.25,
+        "right_of_anchor": 0.25
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          772,
+          256,
+          821,
+          292
+        ],
+        [
+          548,
+          324,
+          621,
+          376
+        ],
+        [
+          624,
+          443,
+          663,
+          471
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "anchor_gap_px_directional": 8,
+        "distractor_count": 6,
+        "distractor_count_probabilities": {
+          "10": 0.14285714285714285,
+          "4": 0.14285714285714285,
+          "5": 0.14285714285714285,
+          "6": 0.14285714285714285,
+          "7": 0.14285714285714285,
+          "8": 0.14285714285714285,
+          "9": 0.14285714285714285
+        },
+        "distractor_margin_over_target": 1,
+        "object_count": 9,
+        "object_count_probabilities": {
+          "10": 0.14285714285714285,
+          "11": 0.14285714285714285,
+          "12": 0.14285714285714285,
+          "13": 0.14285714285714285,
+          "7": 0.14285714285714285,
+          "8": 0.14285714285714285,
+          "9": 0.14285714285714285
+        },
+        "pool_manifest": "all_icons.txt",
+        "same_type_distractor_opposite_fraction_min": 0.75,
+        "target_count": 3,
+        "target_count_probabilities": {
+          "0": 0.16666666666666666,
+          "1": 0.16666666666666666,
+          "2": 0.16666666666666666,
+          "3": 0.16666666666666666,
+          "4": 0.16666666666666666,
+          "5": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "icons_relation_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+          "json_example": "{\"evidence\":[[438,162,498,222],[602,302,670,370]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor",
+          "question_text": "How many icons in the Scene panel have the same icon type as the Reference icon and are to the right of the Anchor icon?"
+        },
+        "task_family_key": "reference_scene_anchor_relation",
+        "task_family_variant_index": 3,
+        "task_key": "relation_query",
+        "task_variant_index": 1,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/relation/icons_relation_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:relation_query": 5,
+          "task_family:reference_scene_anchor_relation": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "icons_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[438,162,498,222],[602,302,670,370]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor",
+              "question_text": "How many icons in the Scene panel have the same icon type as the Reference icon and are to the right of the Anchor icon?"
+            },
+            "task_family_key": "reference_scene_anchor_relation",
+            "task_family_variant_index": 3,
+            "task_key": "relation_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/relation/icons_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:relation_query": 5,
+              "task_family:reference_scene_anchor_relation": 5
+            }
+          },
+          "prompt": "Use the image containing a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor. Question: How many icons in the Scene panel have the same icon type as the Reference icon and are to the right of the Anchor icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[438,162,498,222],[602,302,670,370]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "icons_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[438,162,498,222],[602,302,670,370]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor",
+              "question_text": "How many icons in the Scene panel have the same icon type as the Reference icon and are to the right of the Anchor icon?"
+            },
+            "task_family_key": "reference_scene_anchor_relation",
+            "task_family_variant_index": 3,
+            "task_key": "relation_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/relation/icons_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:relation_query": 5,
+              "task_family:reference_scene_anchor_relation": 5
+            }
+          },
+          "prompt": "Use the image containing a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor. Question: How many icons in the Scene panel have the same icon type as the Reference icon and are to the right of the Anchor icon?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "right_of_anchor",
+      "template_id": "icons_relation_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "anchor_icon": {
+          "bbox_xyxy": [
+            483,
+            455,
+            531,
+            477
+          ],
+          "highlight_bbox_xyxy": [
+            473,
+            445,
+            541,
+            487
+          ],
+          "icon_id": "gi-delapouite-submarine",
+          "instance_id": "anchor_icon",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 86.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "alpha": 0.066087
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 2703718792815407,
+          "panel": "scene",
+          "role": "anchor",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            32,
+            67,
+            169
+          ]
+        },
+        "matching_scene_boxes": [
+          [
+            772,
+            256,
+            821,
+            292
+          ],
+          [
+            548,
+            324,
+            621,
+            376
+          ],
+          [
+            624,
+            443,
+            663,
+            471
+          ]
+        ],
+        "reference_icon": {
+          "bbox_xyxy": [
+            85,
+            243,
+            211,
+            333
+          ],
+          "icon_id": "gi-lorc-metal-bar",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 4162098046666075,
+          "panel": "reference",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            202,
+            118,
+            32
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        960,
+        544
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          960,
+          544
+        ],
+        "reference_content_xyxy": [
+          44,
+          77,
+          252,
+          500
+        ],
+        "reference_panel_xyxy": [
+          24,
+          24,
+          272,
+          520
+        ],
+        "scene_content_xyxy": [
+          316,
+          77,
+          916,
+          500
+        ],
+        "scene_panel_xyxy": [
+          296,
+          24,
+          936,
+          520
+        ]
+      },
+      "style": {
+        "anchor_gap_px_directional": 8,
+        "anchor_highlight_padding_px": 10,
+        "anchor_highlight_radius_px": 14,
+        "anchor_label_color_rgb": [
+          57,
+          87,
+          145
+        ],
+        "anchor_label_font_size_px": 20,
+        "anchor_opposite_area_ratio_min": 0.25,
+        "anchor_outline_rgb": [
+          74,
+          113,
+          188
+        ],
+        "anchor_target_area_ratio_max": 0.65,
+        "anchor_target_area_ratio_min": 0.35,
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "palette_size_max": 12,
+        "palette_size_min": 8,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "same_type_distractor_opposite_fraction_min": 0.75,
+        "sampled_palette_rgb": [
+          [
+            150,
+            75,
+            138
+          ],
+          [
+            164,
+            217,
+            75
+          ],
+          [
+            148,
+            144,
+            76
+          ],
+          [
+            196,
+            32,
+            51
+          ],
+          [
+            62,
+            220,
+            192
+          ],
+          [
+            32,
+            67,
+            169
+          ],
+          [
+            148,
+            38,
+            209
+          ],
+          [
+            202,
+            118,
+            32
+          ]
+        ],
+        "scene_max_overlap_fraction": 0.05,
+        "scene_placement_max_attempts": 120,
+        "scene_size_shrink_factor": 0.9,
+        "scene_size_shrink_rounds": 6
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_xyxy": [
+            85,
+            243,
+            211,
+            333
+          ],
+          "icon_id": "gi-lorc-metal-bar",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 4162098046666075,
+          "panel": "reference",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            202,
+            118,
+            32
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            483,
+            455,
+            531,
+            477
+          ],
+          "highlight_bbox_xyxy": [
+            473,
+            445,
+            541,
+            487
+          ],
+          "icon_id": "gi-delapouite-submarine",
+          "instance_id": "anchor_icon",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 86.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "alpha": 0.066087
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 2703718792815407,
+          "panel": "scene",
+          "role": "anchor",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            32,
+            67,
+            169
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            443,
+            386,
+            505,
+            448
+          ],
+          "icon_id": "gi-lorc-parrot-head",
+          "index": 0,
+          "instance_id": "scene_icon_0",
+          "is_match": false,
+          "is_same_type": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 85.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 2349348247223000,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": false,
+          "tint_rgb": [
+            202,
+            118,
+            32
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            548,
+            324,
+            621,
+            376
+          ],
+          "icon_id": "gi-lorc-metal-bar",
+          "index": 1,
+          "instance_id": "scene_icon_1",
+          "is_match": true,
+          "is_same_type": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.055054
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "scale": 0.889499
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 7498101613412696,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": true,
+          "tint_rgb": [
+            148,
+            144,
+            76
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            656,
+            212,
+            704,
+            268
+          ],
+          "icon_id": "gi-delapouite-saxophone",
+          "index": 2,
+          "instance_id": "scene_icon_2",
+          "is_match": false,
+          "is_same_type": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.514478
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "alpha": 0.055042
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 8989796288880311,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": true,
+          "tint_rgb": [
+            62,
+            220,
+            192
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            470,
+            330,
+            518,
+            365
+          ],
+          "icon_id": "gi-lorc-metal-bar",
+          "index": 3,
+          "instance_id": "scene_icon_3",
+          "is_match": false,
+          "is_same_type": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.943618
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "radius": 0.527789
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 4744835718480249,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": false,
+          "tint_rgb": [
+            32,
+            67,
+            169
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            585,
+            280,
+            632,
+            327
+          ],
+          "icon_id": "tabler-poo",
+          "index": 4,
+          "instance_id": "scene_icon_4",
+          "is_match": false,
+          "is_same_type": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 3362645285046063,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": true,
+          "tint_rgb": [
+            148,
+            38,
+            209
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            624,
+            443,
+            663,
+            471
+          ],
+          "icon_id": "gi-lorc-metal-bar",
+          "index": 5,
+          "instance_id": "scene_icon_5",
+          "is_match": true,
+          "is_same_type": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 77.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 7552897681004859,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": true,
+          "tint_rgb": [
+            32,
+            67,
+            169
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            772,
+            256,
+            821,
+            292
+          ],
+          "icon_id": "gi-lorc-metal-bar",
+          "index": 6,
+          "instance_id": "scene_icon_6",
+          "is_match": true,
+          "is_same_type": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.905775
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 118955018402264,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": true,
+          "tint_rgb": [
+            62,
+            220,
+            192
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            338,
+            127,
+            406,
+            188
+          ],
+          "icon_id": "tabler-battery-automotive",
+          "index": 7,
+          "instance_id": "scene_icon_7",
+          "is_match": false,
+          "is_same_type": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.875515
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "quality": 86.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 975333722603175,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": false,
+          "tint_rgb": [
+            62,
+            220,
+            192
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            767,
+            311,
+            826,
+            372
+          ],
+          "icon_id": "gi-delapouite-towel",
+          "index": 8,
+          "instance_id": "scene_icon_8",
+          "is_match": false,
+          "is_same_type": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.041887
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 4355779630584815,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": true,
+          "tint_rgb": [
+            32,
+            67,
+            169
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            960,
+            544
+          ],
+          "reference_content_xyxy": [
+            44,
+            77,
+            252,
+            500
+          ],
+          "reference_panel_xyxy": [
+            24,
+            24,
+            272,
+            520
+          ],
+          "scene_content_xyxy": [
+            316,
+            77,
+            916,
+            500
+          ],
+          "scene_panel_xyxy": [
+            296,
+            24,
+            936,
+            520
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "anchor_icon_id": "gi-delapouite-submarine",
+        "counting_target": "same_icon_type_and_directional_relation_to_anchor",
+        "different_type_nonspatial_distractor_count": 2,
+        "different_type_spatial_distractor_count": 3,
+        "matching_scene_indices": [
+          1,
+          5,
+          6
+        ],
+        "reference_icon_id": "gi-lorc-metal-bar",
+        "same_type_nonspatial_distractor_count": 1,
+        "spatial_relation": "right_of_anchor"
+      },
+      "scene_kind": "icons_reference_anchor_relation_type"
+    },
+    "witness_symbolic": {
+      "anchor_icon_id": "gi-delapouite-submarine",
+      "matching_scene_indices": [
+        1,
+        5,
+        6
+      ],
+      "reference_icon_id": "gi-lorc-metal-bar",
+      "spatial_relation": "right_of_anchor"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

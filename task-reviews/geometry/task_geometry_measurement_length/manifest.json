@@ -1,0 +1,25 @@
+{
+  "inspection_count": 200,
+  "task_id": "task_geometry_measurement_length",
+  "variants": {
+    "circle_diameter": 25,
+    "circle_radius": 25,
+    "ellipse_major_axis": 25,
+    "ellipse_minor_axis": 25,
+    "pentagon": 25,
+    "quadrilateral": 25,
+    "segment": 25,
+    "triangle": 25
+  },
+  "workbook": "geometry/task_geometry_measurement_length/task_geometry_measurement_length.xlsx",
+  "workbook_sheets": {
+    "circle_diameter": "circle_diameter",
+    "circle_radius": "circle_radius",
+    "ellipse_major_axis": "ellipse_major_axis",
+    "ellipse_minor_axis": "ellipse_minor_axis",
+    "pentagon": "pentagon",
+    "quadrilateral": "quadrilateral",
+    "segment": "segment",
+    "triangle": "triangle"
+  }
+}

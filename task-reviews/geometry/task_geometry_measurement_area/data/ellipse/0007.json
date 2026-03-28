@@ -1,0 +1,430 @@
+{
+  "answer_gt": {
+    "type": "pi_expression",
+    "value": "28\u03c0"
+  },
+  "evidence_gt": {
+    "type": "graph_point",
+    "value": [
+      -3,
+      -1
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_measurement_area/images/ellipse/0007.png"
+  },
+  "instance_seed": 4458255671929823,
+  "prompt": "Use the graph-paper diagram showing an ellipse. Determine the answer: What is the area of the ellipse in square units? Express the answer in the form k\u03c0.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to one graph-paper point [x, y] for the ellipse center.\nAnswer rule: set \"answer\" to the measurement value in the form k\u03c0 (for example 12\u03c0).\nExample JSON:\n{\"evidence\":[[0,0]],\"answer\":\"6\u03c0\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the graph-paper diagram showing an ellipse. Determine the answer: What is the area of the ellipse in square units? Express the answer in the form k\u03c0.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to one graph-paper point [x, y] for the ellipse center.\nAnswer rule: set \"answer\" to the measurement value in the form k\u03c0 (for example 12\u03c0).\nExample JSON:\n{\"evidence\":[[0,0]],\"answer\":\"6\u03c0\"}",
+    "answer_only": "Use the graph-paper diagram showing an ellipse. Determine the answer: What is the area of the ellipse in square units? Express the answer in the form k\u03c0.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the measurement value in the form k\u03c0 (for example 12\u03c0).\nExample JSON:\n{\"answer\":\"12\u03c0\"}"
+  },
+  "task": "task_geometry_measurement_area",
+  "task_variant": "ellipse",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_format": "pi_expression",
+      "answer_scalar": 28,
+      "ellipse_area_pi_coefficient": 28,
+      "ellipse_semi_axis_x_units": 4,
+      "ellipse_semi_axis_y_units": 7,
+      "required_evidence_labels": [
+        "center"
+      ],
+      "required_graph_cells": 10,
+      "shape_variant": "ellipse",
+      "variant_probabilities": {
+        "ellipse": 0.3333333333333333,
+        "quadrilateral": 0.3333333333333333,
+        "triangle": 0.3333333333333333
+      }
+    },
+    "projected_evidence": {
+      "grid_point_map": {
+        "center": [
+          -3,
+          -1
+        ]
+      },
+      "grid_point_path": [
+        [
+          -3,
+          -1
+        ]
+      ],
+      "grid_point_set": [
+        [
+          -3,
+          -1
+        ]
+      ],
+      "pixel_point_map": {
+        "center": [
+          213.0,
+          337.0
+        ]
+      },
+      "pixel_point_path": [
+        [
+          213.0,
+          337.0
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          213.0,
+          337.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 96,
+        "answer_min": 8,
+        "required_graph_cells": 10,
+        "shape_variant": "ellipse",
+        "supported_shape_variants": [
+          "triangle",
+          "quadrilateral",
+          "ellipse"
+        ],
+        "variant_probabilities": {
+          "ellipse": 0.3333333333333333,
+          "quadrilateral": 0.3333333333333333,
+          "triangle": 0.3333333333333333
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "geometry_measurement_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the measurement value in the form k\u03c0 (for example 12\u03c0)",
+          "evidence_hint": "set \"evidence\" to one graph-paper point [x, y] for the ellipse center",
+          "json_example": "{\"evidence\":[[0,0]],\"answer\":\"6\u03c0\"}",
+          "json_example_answer_only": "{\"answer\":\"12\u03c0\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "an ellipse",
+          "question_text": "What is the area of the ellipse in square units? Express the answer in the form k\u03c0."
+        },
+        "task_family_key": "measurement_single_object",
+        "task_family_variant_index": 3,
+        "task_key": "measurement_query",
+        "task_variant_index": 4,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/measurement/geometry_measurement_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:measurement_query": 5,
+          "task_family:measurement_single_object": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_measurement_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the measurement value in the form k\u03c0 (for example 12\u03c0)",
+              "evidence_hint": "set \"evidence\" to one graph-paper point [x, y] for the ellipse center",
+              "json_example": "{\"evidence\":[[0,0]],\"answer\":\"6\u03c0\"}",
+              "json_example_answer_only": "{\"answer\":\"12\u03c0\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an ellipse",
+              "question_text": "What is the area of the ellipse in square units? Express the answer in the form k\u03c0."
+            },
+            "task_family_key": "measurement_single_object",
+            "task_family_variant_index": 3,
+            "task_key": "measurement_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/measurement/geometry_measurement_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:measurement_query": 5,
+              "task_family:measurement_single_object": 5
+            }
+          },
+          "prompt": "Use the graph-paper diagram showing an ellipse. Determine the answer: What is the area of the ellipse in square units? Express the answer in the form k\u03c0.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to one graph-paper point [x, y] for the ellipse center.\nAnswer rule: set \"answer\" to the measurement value in the form k\u03c0 (for example 12\u03c0).\nExample JSON:\n{\"evidence\":[[0,0]],\"answer\":\"6\u03c0\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "geometry_measurement_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the measurement value in the form k\u03c0 (for example 12\u03c0)",
+              "evidence_hint": "set \"evidence\" to one graph-paper point [x, y] for the ellipse center",
+              "json_example": "{\"evidence\":[[0,0]],\"answer\":\"6\u03c0\"}",
+              "json_example_answer_only": "{\"answer\":\"12\u03c0\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an ellipse",
+              "question_text": "What is the area of the ellipse in square units? Express the answer in the form k\u03c0."
+            },
+            "task_family_key": "measurement_single_object",
+            "task_family_variant_index": 3,
+            "task_key": "measurement_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/measurement/geometry_measurement_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:measurement_query": 5,
+              "task_family:measurement_single_object": 5
+            }
+          },
+          "prompt": "Use the graph-paper diagram showing an ellipse. Determine the answer: What is the area of the ellipse in square units? Express the answer in the form k\u03c0.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the measurement value in the form k\u03c0 (for example 12\u03c0).\nExample JSON:\n{\"answer\":\"12\u03c0\"}"
+        }
+      },
+      "task_variant": "ellipse",
+      "template_id": "geometry_2d_area_measure_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "target_1": {
+          "bbox": [
+            89.0,
+            120.0,
+            337.0,
+            554.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            213.0,
+            337.0
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "graph_paper",
+        "style_spec": {
+          "axis_arrow_size": 10,
+          "axis_arrows_enabled": true,
+          "axis_color": [
+            188,
+            193,
+            200
+          ],
+          "axis_darken_range": [
+            32,
+            48
+          ],
+          "axis_enabled": true,
+          "axis_line_width": 2,
+          "axis_scale_label_max_abs": 0,
+          "axis_scale_labels_enabled": true,
+          "base_color": [
+            255,
+            255,
+            255
+          ],
+          "base_color_jitter": [
+            0,
+            0
+          ],
+          "center_point_color": [
+            179,
+            184,
+            191
+          ],
+          "center_point_darken_extra_range": [
+            8,
+            14
+          ],
+          "center_point_enabled": true,
+          "center_point_radius": 2,
+          "color_variation_applied": true,
+          "color_variation_enabled": true,
+          "color_variation_sampled": {
+            "axis_darken": 34,
+            "base_color_delta": 0,
+            "center_point_darken_extra": 9,
+            "line_color_delta": -2,
+            "major_line_darken": 9,
+            "origin_label_darken_extra": 6
+          },
+          "kind": "grid",
+          "line_color": [
+            222,
+            227,
+            234
+          ],
+          "line_color_jitter": [
+            -5,
+            5
+          ],
+          "line_width": 1,
+          "major_every": 0,
+          "major_line_color": [
+            213,
+            218,
+            225
+          ],
+          "major_line_darken_range": [
+            6,
+            14
+          ],
+          "major_line_width": 1,
+          "origin_label_color": [
+            182,
+            187,
+            194
+          ],
+          "origin_label_darken_extra_range": [
+            6,
+            12
+          ],
+          "origin_label_enabled": false,
+          "origin_label_text": "0",
+          "outer_margin_px": 16,
+          "scene_supersample_scale": 3,
+          "spacing": 31,
+          "supersample_scale": 1
+        }
+      },
+      "canvas_size": 612,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 18,
+        "full_cells_y": 18,
+        "origin_pixel": [
+          306,
+          306
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 31,
+        "target_cells_x": 20,
+        "target_cells_y": 20,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 18,
+        "full_cells_y": 18,
+        "partial_edge_cells": true,
+        "spacing_px": 31,
+        "target_cells_x": 20,
+        "target_cells_y": 20
+      },
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "radius": 0.169339
+            },
+            "type": "blur"
+          }
+        ],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          19,
+          47,
+          97
+        ],
+        "label_stroke_color": [
+          255,
+          254,
+          253
+        ],
+        "line_color": [
+          19,
+          47,
+          97
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "area_pi_coefficient": 28,
+            "center": [
+              213.0,
+              337.0
+            ],
+            "semi_axis_x_units": 4,
+            "semi_axis_y_units": 7
+          },
+          "entity_id": "ellipse_1",
+          "entity_type": "ellipse"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            306,
+            306
+          ],
+          "spacing_px": 31,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_2d_area_measurement"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "center"
+      ],
+      "type": "ellipse_center_point"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

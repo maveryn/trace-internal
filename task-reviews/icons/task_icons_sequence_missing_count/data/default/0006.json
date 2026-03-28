@@ -1,0 +1,1242 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 0
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        54,
+        87,
+        175,
+        231
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_sequence_missing_count/images/default/0006.png"
+  },
+  "instance_seed": 3562678998543617,
+  "prompt": "Look at the image with a horizontal row of Scene boxes, where one box is missing and marked with a question mark. Task: How many icons should be in the missing box to continue the sequence?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the missing Scene box.\nAnswer field: set \"answer\" to the missing count as an integer.\nExample JSON:\n{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the image with a horizontal row of Scene boxes, where one box is missing and marked with a question mark. Task: How many icons should be in the missing box to continue the sequence?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the missing Scene box.\nAnswer field: set \"answer\" to the missing count as an integer.\nExample JSON:\n{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+    "answer_only": "Look at the image with a horizontal row of Scene boxes, where one box is missing and marked with a question mark. Task: How many icons should be in the missing box to continue the sequence?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the missing count as an integer.\nExample JSON:\n{\"answer\":5}"
+  },
+  "task": "task_icons_sequence_missing_count",
+  "task_variant": "arithmetic_progression",
+  "trace_payload": {
+    "execution_trace": {
+      "cell_box_height_px": 144,
+      "cell_box_width_px": 121,
+      "full_sequence_counts": [
+        0,
+        2,
+        4,
+        6,
+        8
+      ],
+      "missing_cell_index": 0,
+      "question_format": "infer_missing_sequence_count",
+      "scene_rotations_degrees_by_cell": [
+        [],
+        [
+          0,
+          180
+        ],
+        [
+          270,
+          180,
+          270,
+          0
+        ],
+        [
+          90,
+          270,
+          270,
+          180,
+          270,
+          90
+        ],
+        [
+          0,
+          270,
+          0,
+          180,
+          90,
+          270,
+          90,
+          0
+        ]
+      ],
+      "scene_variant": "single_panel_sequence_row",
+      "sequence_icon_id": "gi-delapouite-shinto-shrine",
+      "sequence_length": 5,
+      "sequence_length_probabilities": {
+        "4": 0.3333333333333333,
+        "5": 0.3333333333333333,
+        "6": 0.3333333333333333
+      },
+      "step_delta": 2,
+      "target_count": 0,
+      "target_count_probabilities": {
+        "0": 0.09090909090909091,
+        "1": 0.09090909090909091,
+        "10": 0.09090909090909091,
+        "2": 0.09090909090909091,
+        "3": 0.09090909090909091,
+        "4": 0.09090909090909091,
+        "5": 0.09090909090909091,
+        "6": 0.09090909090909091,
+        "7": 0.09090909090909091,
+        "8": 0.09090909090909091,
+        "9": 0.09090909090909091
+      },
+      "task_variant": "arithmetic_progression"
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          54,
+          87,
+          175,
+          231
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "cell_box_height_px": 144,
+        "cell_box_width_px": 121,
+        "missing_cell_index": 0,
+        "pool_manifest": "all_icons.txt",
+        "rotation_candidates_degrees": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "sequence_length": 5,
+        "sequence_length_probabilities": {
+          "4": 0.3333333333333333,
+          "5": 0.3333333333333333,
+          "6": 0.3333333333333333
+        },
+        "step_delta": 2,
+        "target_count": 0,
+        "target_count_probabilities": {
+          "0": 0.09090909090909091,
+          "1": 0.09090909090909091,
+          "10": 0.09090909090909091,
+          "2": 0.09090909090909091,
+          "3": 0.09090909090909091,
+          "4": 0.09090909090909091,
+          "5": 0.09090909090909091,
+          "6": 0.09090909090909091,
+          "7": 0.09090909090909091,
+          "8": 0.09090909090909091,
+          "9": 0.09090909090909091
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "icons_sequence_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the missing count as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the missing Scene box",
+          "json_example": "{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+          "json_example_answer_only": "{\"answer\":5}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a horizontal row of Scene boxes, where one box is missing and marked with a question mark",
+          "question_text": "How many icons should be in the missing box to continue the sequence?"
+        },
+        "task_family_key": "sequence_missing_count",
+        "task_family_variant_index": 2,
+        "task_key": "missing_count_query",
+        "task_variant_index": 2,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/sequence/icons_sequence_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:missing_count_query": 5,
+          "task_family:sequence_missing_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "icons_sequence_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the missing count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the missing Scene box",
+              "json_example": "{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+              "json_example_answer_only": "{\"answer\":5}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a horizontal row of Scene boxes, where one box is missing and marked with a question mark",
+              "question_text": "How many icons should be in the missing box to continue the sequence?"
+            },
+            "task_family_key": "sequence_missing_count",
+            "task_family_variant_index": 2,
+            "task_key": "missing_count_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/sequence/icons_sequence_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:missing_count_query": 5,
+              "task_family:sequence_missing_count": 5
+            }
+          },
+          "prompt": "Look at the image with a horizontal row of Scene boxes, where one box is missing and marked with a question mark. Task: How many icons should be in the missing box to continue the sequence?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the missing Scene box.\nAnswer field: set \"answer\" to the missing count as an integer.\nExample JSON:\n{\"evidence\":[[540,126,654,458]],\"answer\":5}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "icons_sequence_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the missing count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the missing Scene box",
+              "json_example": "{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+              "json_example_answer_only": "{\"answer\":5}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a horizontal row of Scene boxes, where one box is missing and marked with a question mark",
+              "question_text": "How many icons should be in the missing box to continue the sequence?"
+            },
+            "task_family_key": "sequence_missing_count",
+            "task_family_variant_index": 2,
+            "task_key": "missing_count_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/sequence/icons_sequence_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:missing_count_query": 5,
+              "task_family:sequence_missing_count": 5
+            }
+          },
+          "prompt": "Look at the image with a horizontal row of Scene boxes, where one box is missing and marked with a question mark. Task: How many icons should be in the missing box to continue the sequence?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the missing count as an integer.\nExample JSON:\n{\"answer\":5}"
+        }
+      },
+      "task_variant": "arithmetic_progression",
+      "template_id": "icons_sequence_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "missing_cell_bbox": [
+          54,
+          87,
+          175,
+          231
+        ]
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        793,
+        285
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          793,
+          285
+        ],
+        "scene_content_xyxy": [
+          44,
+          77,
+          749,
+          241
+        ],
+        "scene_panel_xyxy": [
+          24,
+          24,
+          769,
+          261
+        ]
+      },
+      "style": {
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "cell_box_height_range_px": [
+          96,
+          144
+        ],
+        "cell_box_width_range_px": [
+          112,
+          160
+        ],
+        "cell_corner_radius_px": 12,
+        "cell_icon_padding_px": 8,
+        "cell_padding_px": 10,
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "missing_mark_color_rgb": [
+          84,
+          96,
+          118
+        ],
+        "missing_mark_font_size_px": 56,
+        "palette_size_max": 1,
+        "palette_size_min": 1,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "reference_icon_size_max_px": 0,
+        "reference_icon_size_min_px": 0,
+        "reference_icon_size_px": 0,
+        "sampled_cell_box_size_px": [
+          121,
+          144
+        ],
+        "sampled_palette_rgb": [
+          [
+            149,
+            38,
+            99
+          ]
+        ],
+        "scene_icon_size_max_px": 40,
+        "scene_icon_size_min_px": 24,
+        "scene_max_overlap_fraction": 0.2,
+        "scene_placement_max_attempts": 160,
+        "scene_size_shrink_factor": 0.9,
+        "scene_size_shrink_rounds": 6
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "cell_bbox_xyxy": [
+            54,
+            87,
+            175,
+            231
+          ],
+          "cell_index": 0,
+          "entity_kind": "sequence_cell",
+          "is_missing": true,
+          "panel": "scene",
+          "rendered_icon_count": 0,
+          "target_icon_count": 0
+        },
+        {
+          "cell_bbox_xyxy": [
+            195,
+            87,
+            316,
+            231
+          ],
+          "cell_index": 1,
+          "entity_kind": "sequence_cell",
+          "is_missing": false,
+          "panel": "scene",
+          "rendered_icon_count": 2,
+          "target_icon_count": 2
+        },
+        {
+          "cell_bbox_xyxy": [
+            336,
+            87,
+            457,
+            231
+          ],
+          "cell_index": 2,
+          "entity_kind": "sequence_cell",
+          "is_missing": false,
+          "panel": "scene",
+          "rendered_icon_count": 4,
+          "target_icon_count": 4
+        },
+        {
+          "cell_bbox_xyxy": [
+            477,
+            87,
+            598,
+            231
+          ],
+          "cell_index": 3,
+          "entity_kind": "sequence_cell",
+          "is_missing": false,
+          "panel": "scene",
+          "rendered_icon_count": 6,
+          "target_icon_count": 6
+        },
+        {
+          "cell_bbox_xyxy": [
+            618,
+            87,
+            739,
+            231
+          ],
+          "cell_index": 4,
+          "entity_kind": "sequence_cell",
+          "is_missing": false,
+          "panel": "scene",
+          "rendered_icon_count": 8,
+          "target_icon_count": 8
+        },
+        {
+          "bbox_xyxy": [
+            213,
+            165,
+            249,
+            199
+          ],
+          "cell_bbox_xyxy": [
+            195,
+            87,
+            316,
+            231
+          ],
+          "cell_index": 1,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-shinto-shrine",
+          "instance_id": "scene_cell_1_icon_0",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.076229
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "quality": 75.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 429695877104351,
+          "nominal_size_px": 38,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            149,
+            38,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            241,
+            126,
+            279,
+            162
+          ],
+          "cell_bbox_xyxy": [
+            195,
+            87,
+            316,
+            231
+          ],
+          "cell_index": 1,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-shinto-shrine",
+          "instance_id": "scene_cell_1_icon_1",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.872354
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "alpha": 0.079918
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 2799838850959484,
+          "nominal_size_px": 40,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            149,
+            38,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            401,
+            148,
+            437,
+            186
+          ],
+          "cell_bbox_xyxy": [
+            336,
+            87,
+            457,
+            231
+          ],
+          "cell_index": 2,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-shinto-shrine",
+          "instance_id": "scene_cell_2_icon_0",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 78.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 3782296582959708,
+          "nominal_size_px": 40,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            149,
+            38,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            359,
+            129,
+            384,
+            152
+          ],
+          "cell_bbox_xyxy": [
+            336,
+            87,
+            457,
+            231
+          ],
+          "cell_index": 2,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-shinto-shrine",
+          "instance_id": "scene_cell_2_icon_1",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.239006
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "quality": 87.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 8583030252596349,
+          "nominal_size_px": 25,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            149,
+            38,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            391,
+            183,
+            413,
+            207
+          ],
+          "cell_bbox_xyxy": [
+            336,
+            87,
+            457,
+            231
+          ],
+          "cell_index": 2,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-shinto-shrine",
+          "instance_id": "scene_cell_2_icon_2",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.035396
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "quality": 75.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 1268576078585706,
+          "nominal_size_px": 24,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            149,
+            38,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            361,
+            154,
+            389,
+            182
+          ],
+          "cell_bbox_xyxy": [
+            336,
+            87,
+            457,
+            231
+          ],
+          "cell_index": 2,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-shinto-shrine",
+          "instance_id": "scene_cell_2_icon_3",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.897581
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "alpha": 0.053785
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 1443820803128503,
+          "nominal_size_px": 30,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            149,
+            38,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            519,
+            165,
+            541,
+            189
+          ],
+          "cell_bbox_xyxy": [
+            477,
+            87,
+            598,
+            231
+          ],
+          "cell_index": 3,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-shinto-shrine",
+          "instance_id": "scene_cell_3_icon_0",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.419198
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "alpha": 0.03533
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 385268442480583,
+          "nominal_size_px": 24,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            149,
+            38,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            542,
+            188,
+            571,
+            218
+          ],
+          "cell_bbox_xyxy": [
+            477,
+            87,
+            598,
+            231
+          ],
+          "cell_index": 3,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-shinto-shrine",
+          "instance_id": "scene_cell_3_icon_1",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.94083
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 5138338010742308,
+          "nominal_size_px": 32,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            149,
+            38,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            559,
+            149,
+            587,
+            177
+          ],
+          "cell_bbox_xyxy": [
+            477,
+            87,
+            598,
+            231
+          ],
+          "cell_index": 3,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-shinto-shrine",
+          "instance_id": "scene_cell_3_icon_2",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.938279
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 1015820661444172,
+          "nominal_size_px": 30,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            149,
+            38,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            486,
+            167,
+            523,
+            202
+          ],
+          "cell_bbox_xyxy": [
+            477,
+            87,
+            598,
+            231
+          ],
+          "cell_index": 3,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-shinto-shrine",
+          "instance_id": "scene_cell_3_icon_3",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 70.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "alpha": 0.055033
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 5475796210088120,
+          "nominal_size_px": 39,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            149,
+            38,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            514,
+            124,
+            542,
+            153
+          ],
+          "cell_bbox_xyxy": [
+            477,
+            87,
+            598,
+            231
+          ],
+          "cell_index": 3,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-shinto-shrine",
+          "instance_id": "scene_cell_3_icon_4",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 2742550589017201,
+          "nominal_size_px": 31,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            149,
+            38,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            529,
+            96,
+            563,
+            132
+          ],
+          "cell_bbox_xyxy": [
+            477,
+            87,
+            598,
+            231
+          ],
+          "cell_index": 3,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-shinto-shrine",
+          "instance_id": "scene_cell_3_icon_5",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 1772957473542132,
+          "nominal_size_px": 38,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            149,
+            38,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            645,
+            178,
+            674,
+            206
+          ],
+          "cell_bbox_xyxy": [
+            618,
+            87,
+            739,
+            231
+          ],
+          "cell_index": 4,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-shinto-shrine",
+          "instance_id": "scene_cell_4_icon_0",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 1600825608330618,
+          "nominal_size_px": 31,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            149,
+            38,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            686,
+            121,
+            713,
+            150
+          ],
+          "cell_bbox_xyxy": [
+            618,
+            87,
+            739,
+            231
+          ],
+          "cell_index": 4,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-shinto-shrine",
+          "instance_id": "scene_cell_4_icon_1",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 4311265181051025,
+          "nominal_size_px": 29,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            149,
+            38,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            635,
+            96,
+            669,
+            128
+          ],
+          "cell_bbox_xyxy": [
+            618,
+            87,
+            739,
+            231
+          ],
+          "cell_index": 4,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-shinto-shrine",
+          "instance_id": "scene_cell_4_icon_2",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 1995762969070818,
+          "nominal_size_px": 36,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            149,
+            38,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            701,
+            168,
+            731,
+            197
+          ],
+          "cell_bbox_xyxy": [
+            618,
+            87,
+            739,
+            231
+          ],
+          "cell_index": 4,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-shinto-shrine",
+          "instance_id": "scene_cell_4_icon_3",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.585027
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "scale": 0.926388
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 2475716063781990,
+          "nominal_size_px": 32,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            149,
+            38,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            648,
+            118,
+            682,
+            154
+          ],
+          "cell_bbox_xyxy": [
+            618,
+            87,
+            739,
+            231
+          ],
+          "cell_index": 4,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-shinto-shrine",
+          "instance_id": "scene_cell_4_icon_4",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 3072745293202041,
+          "nominal_size_px": 38,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            149,
+            38,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            671,
+            184,
+            700,
+            214
+          ],
+          "cell_bbox_xyxy": [
+            618,
+            87,
+            739,
+            231
+          ],
+          "cell_index": 4,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-shinto-shrine",
+          "instance_id": "scene_cell_4_icon_5",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 6267753485794108,
+          "nominal_size_px": 32,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            149,
+            38,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            629,
+            168,
+            651,
+            192
+          ],
+          "cell_bbox_xyxy": [
+            618,
+            87,
+            739,
+            231
+          ],
+          "cell_index": 4,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-shinto-shrine",
+          "instance_id": "scene_cell_4_icon_6",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.353816
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 3282114911041081,
+          "nominal_size_px": 24,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            149,
+            38,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            681,
+            102,
+            708,
+            127
+          ],
+          "cell_bbox_xyxy": [
+            618,
+            87,
+            739,
+            231
+          ],
+          "cell_index": 4,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-shinto-shrine",
+          "instance_id": "scene_cell_4_icon_7",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.075558
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "radius": 0.22565
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 4801578232331648,
+          "nominal_size_px": 27,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            149,
+            38,
+            99
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            793,
+            285
+          ],
+          "scene_content_xyxy": [
+            44,
+            77,
+            749,
+            241
+          ],
+          "scene_panel_xyxy": [
+            24,
+            24,
+            769,
+            261
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "full_sequence_counts": [
+          0,
+          2,
+          4,
+          6,
+          8
+        ],
+        "missing_cell_index": 0,
+        "sequence_icon_id": "gi-delapouite-shinto-shrine",
+        "sequence_rule": "arithmetic_progression",
+        "step_delta": 2
+      },
+      "scene_kind": "icons_sequence_missing_count"
+    },
+    "witness_symbolic": {
+      "full_sequence_counts": [
+        0,
+        2,
+        4,
+        6,
+        8
+      ],
+      "missing_cell_index": 0,
+      "sequence_rule": "arithmetic_progression",
+      "step_delta": 2
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

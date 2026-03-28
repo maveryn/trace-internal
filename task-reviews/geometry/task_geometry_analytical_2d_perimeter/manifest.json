@@ -1,0 +1,19 @@
+{
+  "inspection_count": 125,
+  "task_id": "task_geometry_analytical_2d_perimeter",
+  "variants": {
+    "inscribed_square_diameter": 25,
+    "isosceles_trapezoid_bases_height": 25,
+    "rectangle_side_diagonal": 25,
+    "rhombus_diagonals": 25,
+    "right_triangle_leg_hypotenuse": 25
+  },
+  "workbook": "geometry/task_geometry_analytical_2d_perimeter/task_geometry_analytical_2d_perimeter.xlsx",
+  "workbook_sheets": {
+    "inscribed_square_diameter": "inscribed_square_diameter",
+    "isosceles_trapezoid_bases_height": "isosceles_trapezoid_bases_heigh",
+    "rectangle_side_diagonal": "rectangle_side_diagonal",
+    "rhombus_diagonals": "rhombus_diagonals",
+    "right_triangle_leg_hypotenuse": "right_triangle_leg_hypotenuse"
+  }
+}

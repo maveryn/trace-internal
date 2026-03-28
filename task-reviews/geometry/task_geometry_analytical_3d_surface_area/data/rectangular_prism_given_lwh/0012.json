@@ -1,0 +1,484 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 6508
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "BC": 16,
+      "BE": 38,
+      "CD": 49
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_3d_surface_area/images/rectangular_prism_given_lwh/0012.png"
+  },
+  "instance_seed": 522615586611426,
+  "prompt": "The image shows an annotated 3D solid. The rectangular prism has annotated length, width, and height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, CD, BE.\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"BC\":2,\"CD\":3,\"BE\":4},\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows an annotated 3D solid. The rectangular prism has annotated length, width, and height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, CD, BE.\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"BC\":2,\"CD\":3,\"BE\":4},\"answer\":8}",
+    "answer_only": "The image shows an annotated 3D solid. The rectangular prism has annotated length, width, and height. What is its total surface area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_geometry_analytical_3d_surface_area",
+  "task_variant": "rectangular_prism_given_lwh",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 200000,
+      "answer_min": 8,
+      "answer_scalar": 6508,
+      "answer_type": "integer",
+      "answer_value": 6508,
+      "evidence_map": {
+        "BC": 16,
+        "BE": 38,
+        "CD": 49
+      },
+      "evidence_role_tokens": {
+        "h": "BE",
+        "l": "BC",
+        "w": "CD"
+      },
+      "evidence_role_values": {
+        "h": 38,
+        "l": 16,
+        "w": 49
+      },
+      "evidence_roles": [
+        "l",
+        "w",
+        "h"
+      ],
+      "formula_expression": "SA = 2 * (l*w + l*h + w*h)",
+      "required_annotations": [
+        "BC",
+        "CD",
+        "BE"
+      ],
+      "task_variant": "rectangular_prism_given_lwh",
+      "variant_probabilities": {
+        "cone_given_r_slant_height": 0.16666666666666666,
+        "cylinder_given_r_h": 0.16666666666666666,
+        "rectangular_prism_given_lwh": 0.16666666666666666,
+        "sphere_given_r": 0.16666666666666666,
+        "square_pyramid_given_base_side_slant_height": 0.16666666666666666,
+        "triangular_prism_given_a_b_c_l": 0.16666666666666666
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "h": "BE",
+        "l": "BC",
+        "w": "CD"
+      },
+      "id_set": [
+        "BC",
+        "CD",
+        "BE"
+      ],
+      "measurement_ref_map": {
+        "BC": 16,
+        "BE": 38,
+        "CD": 49
+      },
+      "pixel_annotation_centers": {
+        "BC": [
+          563.448406688868,
+          462.9721155347923
+        ],
+        "BE": [
+          539.0162739234042,
+          218.18439716312056
+        ],
+        "CD": [
+          426.4321327654637,
+          570.2902958127253
+        ]
+      },
+      "pixel_point_set": [
+        [
+          563.448406688868,
+          462.9721155347923
+        ],
+        [
+          426.4321327654637,
+          570.2902958127253
+        ],
+        [
+          539.0162739234042,
+          218.18439716312056
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 200000,
+        "answer_min": 8,
+        "task_variant": "rectangular_prism_given_lwh",
+        "variant_probabilities": {
+          "cone_given_r_slant_height": 0.16666666666666666,
+          "cylinder_given_r_h": 0.16666666666666666,
+          "rectangular_prism_given_lwh": 0.16666666666666666,
+          "sphere_given_r": 0.16666666666666666,
+          "square_pyramid_given_base_side_slant_height": 0.16666666666666666,
+          "triangular_prism_given_a_b_c_l": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "geometry_analytical_surface_area_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the value as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, CD, BE",
+          "json_example": "{\"evidence\":{\"BC\":2,\"CD\":3,\"BE\":4},\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "an annotated 3D solid",
+          "question_text": "The rectangular prism has annotated length, width, and height. What is its total surface area in square units?"
+        },
+        "task_family_key": "analytical_single_solid",
+        "task_family_variant_index": 1,
+        "task_key": "analytical_surface_area_query",
+        "task_variant_index": 0,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_3d/geometry_analytical_surface_area_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_surface_area_query": 5,
+          "task_family:analytical_single_solid": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_analytical_surface_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, CD, BE",
+              "json_example": "{\"evidence\":{\"BC\":2,\"CD\":3,\"BE\":4},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an annotated 3D solid",
+              "question_text": "The rectangular prism has annotated length, width, and height. What is its total surface area in square units?"
+            },
+            "task_family_key": "analytical_single_solid",
+            "task_family_variant_index": 1,
+            "task_key": "analytical_surface_area_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_3d/geometry_analytical_surface_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_surface_area_query": 5,
+              "task_family:analytical_single_solid": 5
+            }
+          },
+          "prompt": "The image shows an annotated 3D solid. The rectangular prism has annotated length, width, and height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, CD, BE.\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"BC\":2,\"CD\":3,\"BE\":4},\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_analytical_surface_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, CD, BE",
+              "json_example": "{\"evidence\":{\"BC\":2,\"CD\":3,\"BE\":4},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an annotated 3D solid",
+              "question_text": "The rectangular prism has annotated length, width, and height. What is its total surface area in square units?"
+            },
+            "task_family_key": "analytical_single_solid",
+            "task_family_variant_index": 1,
+            "task_key": "analytical_surface_area_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_3d/geometry_analytical_surface_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_surface_area_query": 5,
+              "task_family:analytical_single_solid": 5
+            }
+          },
+          "prompt": "The image shows an annotated 3D solid. The rectangular prism has annotated length, width, and height. What is its total surface area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "rectangular_prism_given_lwh",
+      "template_id": "geometry_analytical_surface_area_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "BC": [
+          563.448406688868,
+          462.9721155347923
+        ],
+        "BE": [
+          539.0162739234042,
+          218.18439716312056
+        ],
+        "CD": [
+          426.4321327654637,
+          570.2902958127253
+        ]
+      },
+      "annotation_labels": {
+        "h": "BE",
+        "l": "BC",
+        "w": "CD"
+      },
+      "coord_space": "pixel",
+      "entity_id": "solid_1",
+      "instance_anchor": {
+        "coord_space": "pixel",
+        "point": [
+          374.0,
+          374.0
+        ],
+        "polyline": [
+          [
+            511.01627392340424,
+            400.36879432624113
+          ],
+          [
+            643.8805395460993,
+            477.07801418439715
+          ],
+          [
+            236.98372607659573,
+            712.0
+          ],
+          [
+            104.11946045390073,
+            635.2907801418439
+          ],
+          [
+            511.01627392340424,
+            36.0
+          ],
+          [
+            643.8805395460993,
+            112.70921985815602
+          ],
+          [
+            236.98372607659573,
+            347.63120567375887
+          ],
+          [
+            104.11946045390073,
+            270.92198581560285
+          ]
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_warm",
+        "style_spec": {
+          "color": [
+            252,
+            249,
+            245
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 748,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 4,
+        "full_cells_y": 4,
+        "origin_pixel": [
+          374,
+          374
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 125,
+        "target_cells_x": 6,
+        "target_cells_y": 6,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 4,
+        "full_cells_y": 4,
+        "partial_edge_cells": true,
+        "spacing_px": 125,
+        "target_cells_x": 6,
+        "target_cells_y": 6
+      },
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "alpha": 0.031017
+            },
+            "type": "noise"
+          }
+        ],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          47,
+          151,
+          56
+        ],
+        "label_stroke_color": [
+          250,
+          248,
+          248
+        ],
+        "line_color": [
+          47,
+          151,
+          56
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "height_units": 38,
+            "length_units": 16,
+            "points": {
+              "A": [
+                511.01627392340424,
+                400.36879432624113
+              ],
+              "B": [
+                643.8805395460993,
+                477.07801418439715
+              ],
+              "C": [
+                236.98372607659573,
+                712.0
+              ],
+              "D": [
+                104.11946045390073,
+                635.2907801418439
+              ],
+              "E": [
+                511.01627392340424,
+                36.0
+              ],
+              "F": [
+                643.8805395460993,
+                112.70921985815602
+              ],
+              "G": [
+                236.98372607659573,
+                347.63120567375887
+              ],
+              "H": [
+                104.11946045390073,
+                270.92198581560285
+              ]
+            },
+            "surface_area_square_units": 6508,
+            "task_variant": "rectangular_prism_given_lwh",
+            "width_units": 49
+          },
+          "entity_id": "solid_1",
+          "entity_type": "rectangular_prism"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            374,
+            374
+          ],
+          "spacing_px": 125,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_3d_analytical_surface_area"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "BC",
+        "CD",
+        "BE"
+      ],
+      "annotation_labels": {
+        "h": "BE",
+        "l": "BC",
+        "w": "CD"
+      },
+      "annotation_values": {
+        "BC": 16,
+        "BE": 38,
+        "CD": 49
+      },
+      "formula_expression": "SA = 2 * (l*w + l*h + w*h)",
+      "measurement_ref_map": {
+        "BC": 16,
+        "BE": 38,
+        "CD": 49
+      },
+      "task_variant": "rectangular_prism_given_lwh",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

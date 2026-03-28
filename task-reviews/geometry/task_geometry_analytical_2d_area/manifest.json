@@ -1,0 +1,37 @@
+{
+  "inspection_count": 350,
+  "task_id": "task_geometry_analytical_2d_area",
+  "variants": {
+    "circle_derived": 25,
+    "circle_explicit": 25,
+    "ellipse_derived": 25,
+    "ellipse_explicit": 25,
+    "parallelogram_derived": 25,
+    "parallelogram_explicit": 25,
+    "rectangle_derived": 25,
+    "rectangle_explicit": 25,
+    "rhombus_derived": 25,
+    "rhombus_explicit": 25,
+    "trapezoid_derived": 25,
+    "trapezoid_explicit": 25,
+    "triangle_derived": 25,
+    "triangle_explicit": 25
+  },
+  "workbook": "geometry/task_geometry_analytical_2d_area/task_geometry_analytical_2d_area.xlsx",
+  "workbook_sheets": {
+    "circle_derived": "circle_derived",
+    "circle_explicit": "circle_explicit",
+    "ellipse_derived": "ellipse_derived",
+    "ellipse_explicit": "ellipse_explicit",
+    "parallelogram_derived": "parallelogram_derived",
+    "parallelogram_explicit": "parallelogram_explicit",
+    "rectangle_derived": "rectangle_derived",
+    "rectangle_explicit": "rectangle_explicit",
+    "rhombus_derived": "rhombus_derived",
+    "rhombus_explicit": "rhombus_explicit",
+    "trapezoid_derived": "trapezoid_derived",
+    "trapezoid_explicit": "trapezoid_explicit",
+    "triangle_derived": "triangle_derived",
+    "triangle_explicit": "triangle_explicit"
+  }
+}

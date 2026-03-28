@@ -1,0 +1,537 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 1
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "B"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_counting_quadrilateral/images/square/0017.png"
+  },
+  "instance_seed": 1577507385363288,
+  "prompt": "Work from the image showing several labeled quadrilaterals. Determine the answer: How many labeled quadrilaterals are squares?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a sorted JSON array of the labels of all quadrilaterals that match the requested type.\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\"],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the image showing several labeled quadrilaterals. Determine the answer: How many labeled quadrilaterals are squares?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a sorted JSON array of the labels of all quadrilaterals that match the requested type.\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\"],\"answer\":2}",
+    "answer_only": "Work from the image showing several labeled quadrilaterals. Determine the answer: How many labeled quadrilaterals are squares?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_geometry_counting_quadrilateral",
+  "task_variant": "square",
+  "trace_payload": {
+    "execution_trace": {
+      "class_by_label": {
+        "A": {
+          "quadrilateral_kind": "rectangle_non_square"
+        },
+        "B": {
+          "quadrilateral_kind": "square"
+        },
+        "C": {
+          "quadrilateral_kind": "parallelogram_only"
+        },
+        "D": {
+          "quadrilateral_kind": "rectangle_non_square"
+        },
+        "E": {
+          "quadrilateral_kind": "rhombus_non_square"
+        }
+      },
+      "counting_class": "square",
+      "matching_labels": [
+        "B"
+      ],
+      "object_count": 5,
+      "object_count_probabilities": {
+        "5": 0.3333333333333333,
+        "6": 0.3333333333333333,
+        "7": 0.3333333333333333
+      },
+      "object_labels": [
+        "A",
+        "B",
+        "D",
+        "C",
+        "E"
+      ],
+      "question_format": "count_matching_labeled_objects",
+      "scene_variant": "square",
+      "target_count": 1,
+      "target_count_probabilities": {
+        "1": 0.16666666666666666,
+        "2": 0.16666666666666666,
+        "3": 0.16666666666666666,
+        "4": 0.16666666666666666,
+        "5": 0.16666666666666666,
+        "6": 0.16666666666666666
+      },
+      "task_variant": "square"
+    },
+    "projected_evidence": {
+      "label_set": [
+        "B"
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "object_count": 5,
+        "object_count_probabilities": {
+          "5": 0.3333333333333333,
+          "6": 0.3333333333333333,
+          "7": 0.3333333333333333
+        },
+        "target_count": 1,
+        "target_count_probabilities": {
+          "1": 0.16666666666666666,
+          "2": 0.16666666666666666,
+          "3": 0.16666666666666666,
+          "4": 0.16666666666666666,
+          "5": 0.16666666666666666,
+          "6": 0.16666666666666666
+        },
+        "task_variant": "square",
+        "variant_probabilities": {
+          "parallelogram_only": 0.25,
+          "rectangle_non_square": 0.25,
+          "rhombus_non_square": 0.25,
+          "square": 0.25
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "geometry_counting_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all quadrilaterals that match the requested type",
+          "json_example": "{\"evidence\":[\"B\",\"E\"],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "several labeled quadrilaterals",
+          "question_text": "How many labeled quadrilaterals are squares?"
+        },
+        "task_family_key": "counting_scene",
+        "task_family_variant_index": 4,
+        "task_key": "counting_query",
+        "task_variant_index": 4,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/counting/geometry_counting_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:counting_query": 5,
+          "task_family:counting_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all quadrilaterals that match the requested type",
+              "json_example": "{\"evidence\":[\"B\",\"E\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled quadrilaterals",
+              "question_text": "How many labeled quadrilaterals are squares?"
+            },
+            "task_family_key": "counting_scene",
+            "task_family_variant_index": 4,
+            "task_key": "counting_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/counting/geometry_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:counting_query": 5,
+              "task_family:counting_scene": 5
+            }
+          },
+          "prompt": "Work from the image showing several labeled quadrilaterals. Determine the answer: How many labeled quadrilaterals are squares?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a sorted JSON array of the labels of all quadrilaterals that match the requested type.\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\"],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all quadrilaterals that match the requested type",
+              "json_example": "{\"evidence\":[\"B\",\"E\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled quadrilaterals",
+              "question_text": "How many labeled quadrilaterals are squares?"
+            },
+            "task_family_key": "counting_scene",
+            "task_family_variant_index": 4,
+            "task_key": "counting_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/counting/geometry_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:counting_query": 5,
+              "task_family:counting_scene": 5
+            }
+          },
+          "prompt": "Work from the image showing several labeled quadrilaterals. Determine the answer: How many labeled quadrilaterals are squares?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "square",
+      "template_id": "geometry_counting_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching": {
+          "matching_labels": [
+            "B"
+          ],
+          "task_variant": "square"
+        }
+      },
+      "image_id": "img0",
+      "object_label_centers": {
+        "A": [
+          333.4024034147814,
+          98.36017178737431
+        ],
+        "B": [
+          513.5250600671893,
+          146.8846998706224
+        ],
+        "C": [
+          312.5209440053765,
+          412.94704629268796
+        ],
+        "D": [
+          475.2856568544186,
+          441.5921616066984
+        ],
+        "E": [
+          37.0288936770003,
+          123.20483881115622
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_offwhite",
+        "style_spec": {
+          "color": [
+            252,
+            252,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 527,
+      "coord_space": "pixel",
+      "layout_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 26,
+        "full_cells_y": 26,
+        "origin_pixel": [
+          263,
+          263
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 18,
+        "target_cells_x": 30,
+        "target_cells_y": 30,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "alpha": 0.032355
+            },
+            "type": "noise"
+          }
+        ],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          97,
+          27,
+          107
+        ],
+        "label_stroke_color": [
+          252,
+          254,
+          248
+        ],
+        "line_color": [
+          97,
+          27,
+          107
+        ]
+      },
+      "text_style": {
+        "font_size_px": 78,
+        "stroke_width_px": 3
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "angles_degrees": [
+              90.0,
+              90.0,
+              90.0,
+              90.0
+            ],
+            "label": "A",
+            "quadrilateral_kind": "rectangle_non_square",
+            "side_lengths": [
+              5.723470184780764,
+              4.268456995945591,
+              5.723470184780764,
+              4.268456995945591
+            ],
+            "vertices": [
+              [
+                283.4887683369731,
+                193.41611296351033
+              ],
+              [
+                386.5112316630269,
+                193.41611296351033
+              ],
+              [
+                386.5112316630269,
+                116.58388703648967
+              ],
+              [
+                283.4887683369731,
+                116.58388703648967
+              ]
+            ]
+          },
+          "entity_id": "quadrilateral_A",
+          "entity_type": "quadrilateral"
+        },
+        {
+          "attrs": {
+            "angles_degrees": [
+              90.0,
+              90.0,
+              90.0,
+              90.0
+            ],
+            "label": "B",
+            "quadrilateral_kind": "square",
+            "side_lengths": [
+              3.355320923430624,
+              3.355320923430624,
+              3.355320923430624,
+              3.355320923430624
+            ],
+            "vertices": [
+              [
+                430.8021116891244,
+                185.1978883108756
+              ],
+              [
+                491.1978883108756,
+                185.1978883108756
+              ],
+              [
+                491.1978883108756,
+                124.80211168912439
+              ],
+              [
+                430.8021116891244,
+                124.80211168912439
+              ]
+            ]
+          },
+          "entity_id": "quadrilateral_B",
+          "entity_type": "quadrilateral"
+        },
+        {
+          "attrs": {
+            "angles_degrees": [
+              90.0,
+              90.0,
+              90.0,
+              90.0
+            ],
+            "label": "D",
+            "quadrilateral_kind": "rectangle_non_square",
+            "side_lengths": [
+              4.763959016794447,
+              5.596203885232429,
+              4.763959016794447,
+              5.596203885232429
+            ],
+            "vertices": [
+              [
+                418.12436884884994,
+                421.3658349670918
+              ],
+              [
+                503.87563115115006,
+                421.3658349670918
+              ],
+              [
+                503.87563115115006,
+                320.63416503290813
+              ],
+              [
+                418.12436884884994,
+                320.63416503290813
+              ]
+            ]
+          },
+          "entity_id": "quadrilateral_D",
+          "entity_type": "quadrilateral"
+        },
+        {
+          "attrs": {
+            "angles_degrees": [
+              72.86260677544443,
+              107.13739322455557,
+              72.86260677544443,
+              107.13739322455557
+            ],
+            "label": "C",
+            "quadrilateral_kind": "parallelogram_only",
+            "side_lengths": [
+              4.78718170180013,
+              6.00097504158145,
+              4.78718170180013,
+              6.00097504158145
+            ],
+            "vertices": [
+              [
+                204.0009203891334,
+                422.6108349110567
+              ],
+              [
+                290.17019102153574,
+                422.6108349110567
+              ],
+              [
+                321.9990796108666,
+                319.3891650889433
+              ],
+              [
+                235.82980897846426,
+                319.3891650889433
+              ]
+            ]
+          },
+          "entity_id": "quadrilateral_C",
+          "entity_type": "quadrilateral"
+        },
+        {
+          "attrs": {
+            "angles_degrees": [
+              103.33853882660453,
+              76.66146117339547,
+              103.33853882660453,
+              76.66146117339547
+            ],
+            "label": "E",
+            "quadrilateral_kind": "rhombus_non_square",
+            "side_lengths": [
+              2.726473315285524,
+              2.726473315285524,
+              2.726473315285524,
+              2.726473315285524
+            ],
+            "vertices": [
+              [
+                65.0,
+                124.56274949719446
+              ],
+              [
+                103.49777351034487,
+                155.0
+              ],
+              [
+                65.0,
+                185.4372505028055
+              ],
+              [
+                26.50222648965513,
+                155.0
+              ]
+            ]
+          },
+          "entity_id": "quadrilateral_E",
+          "entity_type": "quadrilateral"
+        }
+      ],
+      "relations": {
+        "counting_target": "quadrilateral_class",
+        "matching_labels": [
+          "B"
+        ],
+        "task_variant": "square"
+      },
+      "scene_kind": "geometry_2d_quadrilateral_counting"
+    },
+    "witness_symbolic": {
+      "counting_class": "square",
+      "matching_labels": [
+        "B"
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

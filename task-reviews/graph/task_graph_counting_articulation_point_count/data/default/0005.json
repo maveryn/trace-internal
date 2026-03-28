@@ -1,0 +1,1120 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 7
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "A",
+      "B",
+      "D",
+      "F",
+      "G",
+      "H",
+      "I"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "graph/task_graph_counting_articulation_point_count/images/default/0005.png"
+  },
+  "instance_seed": 4622748365384939,
+  "prompt": "Look at the image with a labeled undirected graph. Question: How many nodes are articulation points?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the labels of all articulation-point nodes.\nAnswer format: set \"answer\" to the count of articulation-point nodes as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"H\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the image with a labeled undirected graph. Question: How many nodes are articulation points?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the labels of all articulation-point nodes.\nAnswer format: set \"answer\" to the count of articulation-point nodes as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"H\"],\"answer\":3}",
+    "answer_only": "Look at the image with a labeled undirected graph. Question: How many nodes are articulation points?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the count of articulation-point nodes as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_graph_counting_articulation_point_count",
+  "task_variant": "articulation_point_count",
+  "trace_payload": {
+    "execution_trace": {
+      "adjacency_by_label": {
+        "A": [
+          "C",
+          "D",
+          "H"
+        ],
+        "B": [
+          "E",
+          "F"
+        ],
+        "C": [
+          "A",
+          "D"
+        ],
+        "D": [
+          "A",
+          "C",
+          "G"
+        ],
+        "E": [
+          "B"
+        ],
+        "F": [
+          "B",
+          "I"
+        ],
+        "G": [
+          "D",
+          "J"
+        ],
+        "H": [
+          "A",
+          "I"
+        ],
+        "I": [
+          "F",
+          "H"
+        ],
+        "J": [
+          "G"
+        ]
+      },
+      "crossing_count": 0,
+      "degrees_by_label": {
+        "A": 3,
+        "B": 2,
+        "C": 2,
+        "D": 3,
+        "E": 1,
+        "F": 2,
+        "G": 2,
+        "H": 2,
+        "I": 2,
+        "J": 1
+      },
+      "edge_count": 10,
+      "graph_directionality": "undirected",
+      "label_variant": "letters",
+      "layout_transform_variant": "mirror_up_down",
+      "layout_variant_requested": "circular",
+      "layout_variant_used": "circular",
+      "matching_labels": [
+        "A",
+        "B",
+        "D",
+        "F",
+        "G",
+        "H",
+        "I"
+      ],
+      "node_color_name": "yellow",
+      "node_count": 10,
+      "node_shape_variant": "hexagon",
+      "question_format": "count_articulation_points",
+      "scene_variant": "circular",
+      "target_count": 7,
+      "task_variant": "articulation_point_count",
+      "topology_profile": "hub_heavy"
+    },
+    "projected_evidence": {
+      "label_set": [
+        "A",
+        "B",
+        "D",
+        "F",
+        "G",
+        "H",
+        "I"
+      ],
+      "pixel_bbox_set": [
+        [
+          56,
+          318,
+          92,
+          354
+        ],
+        [
+          704,
+          175,
+          740,
+          211
+        ],
+        [
+          124,
+          460,
+          160,
+          496
+        ],
+        [
+          525,
+          87,
+          561,
+          123
+        ],
+        [
+          303,
+          548,
+          339,
+          584
+        ],
+        [
+          124,
+          175,
+          160,
+          211
+        ],
+        [
+          303,
+          87,
+          339,
+          123
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          74,
+          336
+        ],
+        [
+          722,
+          193
+        ],
+        [
+          142,
+          478
+        ],
+        [
+          543,
+          105
+        ],
+        [
+          321,
+          566
+        ],
+        [
+          142,
+          193
+        ],
+        [
+          321,
+          105
+        ]
+      ],
+      "type": "label_set"
+    },
+    "query_spec": {
+      "params": {
+        "edge_count": 10,
+        "graph_directionality": "undirected",
+        "label_variant": "letters",
+        "label_variant_probabilities": {
+          "letters": 0.5,
+          "numbers": 0.5
+        },
+        "layout_transform_variant": "mirror_up_down",
+        "layout_transform_variant_probabilities": {
+          "identity": 0.16666666666666666,
+          "mirror_left_right": 0.16666666666666666,
+          "mirror_up_down": 0.16666666666666666,
+          "rotate_180": 0.16666666666666666,
+          "rotate_270": 0.16666666666666666,
+          "rotate_90": 0.16666666666666666
+        },
+        "layout_variant": "circular",
+        "layout_variant_probabilities": {
+          "circular": 0.3333333333333333,
+          "shell": 0.3333333333333333,
+          "spring": 0.3333333333333333
+        },
+        "node_color_name": "yellow",
+        "node_color_name_probabilities": {
+          "blue": 0.1,
+          "brown": 0.1,
+          "cyan": 0.1,
+          "green": 0.1,
+          "magenta": 0.1,
+          "maroon": 0.1,
+          "orange": 0.1,
+          "purple": 0.1,
+          "red": 0.1,
+          "yellow": 0.1
+        },
+        "node_count": 10,
+        "node_count_probabilities": {
+          "10": 0.5,
+          "9": 0.5
+        },
+        "node_shape_variant": "hexagon",
+        "node_shape_variant_probabilities": {
+          "circle": 0.3333333333333333,
+          "hexagon": 0.3333333333333333,
+          "rounded_square": 0.3333333333333333
+        },
+        "target_count": 7,
+        "target_count_probabilities": {
+          "0": 0.1111111111111111,
+          "1": 0.1111111111111111,
+          "2": 0.1111111111111111,
+          "3": 0.1111111111111111,
+          "4": 0.1111111111111111,
+          "5": 0.1111111111111111,
+          "6": 0.1111111111111111,
+          "7": 0.1111111111111111,
+          "8": 0.1111111111111111
+        },
+        "task_variant_probabilities": {
+          "articulation_point_count": 1.0
+        },
+        "topology_profile": "hub_heavy",
+        "topology_profile_probabilities": {
+          "balanced": 0.3333333333333333,
+          "hub_heavy": 0.3333333333333333,
+          "low_degree": 0.3333333333333333
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "graph_counting_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count of articulation-point nodes as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the labels of all articulation-point nodes",
+          "json_example": "{\"evidence\":[\"B\",\"E\",\"H\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a labeled undirected graph",
+          "question_text": "How many nodes are articulation points?"
+        },
+        "task_family_key": "single_graph_counting",
+        "task_family_variant_index": 2,
+        "task_key": "articulation_point_count_query",
+        "task_variant_index": 1,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "graph/counting/graph_counting_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:articulation_point_count_query": 5,
+          "task_family:single_graph_counting": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "graph_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count of articulation-point nodes as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the labels of all articulation-point nodes",
+              "json_example": "{\"evidence\":[\"B\",\"E\",\"H\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled undirected graph",
+              "question_text": "How many nodes are articulation points?"
+            },
+            "task_family_key": "single_graph_counting",
+            "task_family_variant_index": 2,
+            "task_key": "articulation_point_count_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "graph/counting/graph_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:articulation_point_count_query": 5,
+              "task_family:single_graph_counting": 5
+            }
+          },
+          "prompt": "Look at the image with a labeled undirected graph. Question: How many nodes are articulation points?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the labels of all articulation-point nodes.\nAnswer format: set \"answer\" to the count of articulation-point nodes as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"H\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "graph_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count of articulation-point nodes as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the labels of all articulation-point nodes",
+              "json_example": "{\"evidence\":[\"B\",\"E\",\"H\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled undirected graph",
+              "question_text": "How many nodes are articulation points?"
+            },
+            "task_family_key": "single_graph_counting",
+            "task_family_variant_index": 2,
+            "task_key": "articulation_point_count_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "graph/counting/graph_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:articulation_point_count_query": 5,
+              "task_family:single_graph_counting": 5
+            }
+          },
+          "prompt": "Look at the image with a labeled undirected graph. Question: How many nodes are articulation points?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the count of articulation-point nodes as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "articulation_point_count",
+      "template_id": "graph_counting_v1"
+    },
+    "render_map": {
+      "anchors": {},
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        864,
+        640
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          864,
+          640
+        ],
+        "scene_content_xyxy": [
+          52,
+          83,
+          812,
+          588
+        ],
+        "scene_panel_xyxy": [
+          28,
+          28,
+          836,
+          612
+        ],
+        "title_band_xyxy": [
+          28,
+          28,
+          836,
+          71
+        ]
+      },
+      "style": {
+        "arrow_length_px": 12,
+        "arrow_width_px": 7,
+        "background_color_rgb": [
+          254,
+          253,
+          248
+        ],
+        "background_meta": {
+          "available_styles": [
+            "solid_light"
+          ],
+          "enabled": true,
+          "selected_style": "solid_light",
+          "style_spec": {
+            "color": [
+              248,
+              248,
+              248
+            ],
+            "kind": "solid"
+          }
+        },
+        "edge_color_rgb": [
+          153,
+          140,
+          22
+        ],
+        "edge_width_px": 4,
+        "label_font_size_px": 20,
+        "label_stroke_rgb": [
+          255,
+          255,
+          255
+        ],
+        "label_stroke_width_px": 2,
+        "label_text_rgb": [
+          49,
+          45,
+          7
+        ],
+        "node_border_rgb": [
+          123,
+          113,
+          17
+        ],
+        "node_border_width_px": 2,
+        "node_color_name": "yellow",
+        "node_fill_rgb": [
+          212,
+          194,
+          30
+        ],
+        "node_radius_px": 18,
+        "node_shape_variant": "hexagon",
+        "panel_border_rgb": [
+          243,
+          238,
+          192
+        ],
+        "panel_fill_rgb": [
+          252,
+          251,
+          242
+        ],
+        "post_image_noise_meta": {
+          "applied": false,
+          "apply_prob": 0.0,
+          "edit_count_range": [
+            1,
+            2
+          ],
+          "edit_types": [
+            "blur",
+            "downsample",
+            "jpeg",
+            "noise"
+          ],
+          "edits": [],
+          "enabled": false
+        },
+        "resolved_label_font_size_px": 20,
+        "title_color_rgb": [
+          98,
+          89,
+          14
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_xyxy": [
+            772,
+            318,
+            808,
+            354
+          ],
+          "center_px": [
+            790,
+            336
+          ],
+          "degree": 1,
+          "entity_id": "node_E",
+          "entity_kind": "graph_node",
+          "is_articulation_point": false,
+          "label": "E",
+          "neighbors": [
+            "B"
+          ],
+          "predecessors": [
+            "B"
+          ],
+          "successors": [
+            "B"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            704,
+            175,
+            740,
+            211
+          ],
+          "center_px": [
+            722,
+            193
+          ],
+          "degree": 2,
+          "entity_id": "node_B",
+          "entity_kind": "graph_node",
+          "is_articulation_point": true,
+          "label": "B",
+          "neighbors": [
+            "E",
+            "F"
+          ],
+          "predecessors": [
+            "E",
+            "F"
+          ],
+          "successors": [
+            "E",
+            "F"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            525,
+            87,
+            561,
+            123
+          ],
+          "center_px": [
+            543,
+            105
+          ],
+          "degree": 2,
+          "entity_id": "node_F",
+          "entity_kind": "graph_node",
+          "is_articulation_point": true,
+          "label": "F",
+          "neighbors": [
+            "B",
+            "I"
+          ],
+          "predecessors": [
+            "B",
+            "I"
+          ],
+          "successors": [
+            "B",
+            "I"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            303,
+            87,
+            339,
+            123
+          ],
+          "center_px": [
+            321,
+            105
+          ],
+          "degree": 2,
+          "entity_id": "node_I",
+          "entity_kind": "graph_node",
+          "is_articulation_point": true,
+          "label": "I",
+          "neighbors": [
+            "F",
+            "H"
+          ],
+          "predecessors": [
+            "F",
+            "H"
+          ],
+          "successors": [
+            "F",
+            "H"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            124,
+            175,
+            160,
+            211
+          ],
+          "center_px": [
+            142,
+            193
+          ],
+          "degree": 2,
+          "entity_id": "node_H",
+          "entity_kind": "graph_node",
+          "is_articulation_point": true,
+          "label": "H",
+          "neighbors": [
+            "A",
+            "I"
+          ],
+          "predecessors": [
+            "A",
+            "I"
+          ],
+          "successors": [
+            "A",
+            "I"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            56,
+            318,
+            92,
+            354
+          ],
+          "center_px": [
+            74,
+            336
+          ],
+          "degree": 3,
+          "entity_id": "node_A",
+          "entity_kind": "graph_node",
+          "is_articulation_point": true,
+          "label": "A",
+          "neighbors": [
+            "C",
+            "D",
+            "H"
+          ],
+          "predecessors": [
+            "C",
+            "D",
+            "H"
+          ],
+          "successors": [
+            "C",
+            "D",
+            "H"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            124,
+            460,
+            160,
+            496
+          ],
+          "center_px": [
+            142,
+            478
+          ],
+          "degree": 3,
+          "entity_id": "node_D",
+          "entity_kind": "graph_node",
+          "is_articulation_point": true,
+          "label": "D",
+          "neighbors": [
+            "A",
+            "C",
+            "G"
+          ],
+          "predecessors": [
+            "A",
+            "C",
+            "G"
+          ],
+          "successors": [
+            "A",
+            "C",
+            "G"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            303,
+            548,
+            339,
+            584
+          ],
+          "center_px": [
+            321,
+            566
+          ],
+          "degree": 2,
+          "entity_id": "node_G",
+          "entity_kind": "graph_node",
+          "is_articulation_point": true,
+          "label": "G",
+          "neighbors": [
+            "D",
+            "J"
+          ],
+          "predecessors": [
+            "D",
+            "J"
+          ],
+          "successors": [
+            "D",
+            "J"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            525,
+            548,
+            561,
+            584
+          ],
+          "center_px": [
+            543,
+            566
+          ],
+          "degree": 1,
+          "entity_id": "node_J",
+          "entity_kind": "graph_node",
+          "is_articulation_point": false,
+          "label": "J",
+          "neighbors": [
+            "G"
+          ],
+          "predecessors": [
+            "G"
+          ],
+          "successors": [
+            "G"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            704,
+            460,
+            740,
+            496
+          ],
+          "center_px": [
+            722,
+            478
+          ],
+          "degree": 2,
+          "entity_id": "node_C",
+          "entity_kind": "graph_node",
+          "is_articulation_point": false,
+          "label": "C",
+          "neighbors": [
+            "A",
+            "D"
+          ],
+          "predecessors": [
+            "A",
+            "D"
+          ],
+          "successors": [
+            "A",
+            "D"
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_A_C",
+          "entity_kind": "graph_edge",
+          "node_u_label": "A",
+          "node_v_label": "C",
+          "segment_px": [
+            [
+              92,
+              340
+            ],
+            [
+              704,
+              474
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_A_D",
+          "entity_kind": "graph_edge",
+          "node_u_label": "A",
+          "node_v_label": "D",
+          "segment_px": [
+            [
+              82,
+              352
+            ],
+            [
+              134,
+              462
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_A_H",
+          "entity_kind": "graph_edge",
+          "node_u_label": "A",
+          "node_v_label": "H",
+          "segment_px": [
+            [
+              82,
+              320
+            ],
+            [
+              134,
+              209
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_B_E",
+          "entity_kind": "graph_edge",
+          "node_u_label": "B",
+          "node_v_label": "E",
+          "segment_px": [
+            [
+              730,
+              209
+            ],
+            [
+              782,
+              320
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_B_F",
+          "entity_kind": "graph_edge",
+          "node_u_label": "B",
+          "node_v_label": "F",
+          "segment_px": [
+            [
+              706,
+              185
+            ],
+            [
+              559,
+              113
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_C_D",
+          "entity_kind": "graph_edge",
+          "node_u_label": "C",
+          "node_v_label": "D",
+          "segment_px": [
+            [
+              704,
+              478
+            ],
+            [
+              160,
+              478
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_D_G",
+          "entity_kind": "graph_edge",
+          "node_u_label": "D",
+          "node_v_label": "G",
+          "segment_px": [
+            [
+              158,
+              486
+            ],
+            [
+              305,
+              558
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_F_I",
+          "entity_kind": "graph_edge",
+          "node_u_label": "F",
+          "node_v_label": "I",
+          "segment_px": [
+            [
+              525,
+              105
+            ],
+            [
+              339,
+              105
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_G_J",
+          "entity_kind": "graph_edge",
+          "node_u_label": "G",
+          "node_v_label": "J",
+          "segment_px": [
+            [
+              339,
+              566
+            ],
+            [
+              525,
+              566
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_H_I",
+          "entity_kind": "graph_edge",
+          "node_u_label": "H",
+          "node_v_label": "I",
+          "segment_px": [
+            [
+              158,
+              185
+            ],
+            [
+              305,
+              113
+            ]
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            864,
+            640
+          ],
+          "scene_content_xyxy": [
+            52,
+            83,
+            812,
+            588
+          ],
+          "scene_panel_xyxy": [
+            28,
+            28,
+            836,
+            612
+          ],
+          "title_band_xyxy": [
+            28,
+            28,
+            836,
+            71
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "adjacency_by_label": {
+          "A": [
+            "C",
+            "D",
+            "H"
+          ],
+          "B": [
+            "E",
+            "F"
+          ],
+          "C": [
+            "A",
+            "D"
+          ],
+          "D": [
+            "A",
+            "C",
+            "G"
+          ],
+          "E": [
+            "B"
+          ],
+          "F": [
+            "B",
+            "I"
+          ],
+          "G": [
+            "D",
+            "J"
+          ],
+          "H": [
+            "A",
+            "I"
+          ],
+          "I": [
+            "F",
+            "H"
+          ],
+          "J": [
+            "G"
+          ]
+        },
+        "counting_rule": "node_is_articulation_point",
+        "degrees_by_label": {
+          "A": 3,
+          "B": 2,
+          "C": 2,
+          "D": 3,
+          "E": 1,
+          "F": 2,
+          "G": 2,
+          "H": 2,
+          "I": 2,
+          "J": 1
+        },
+        "edge_labels": [
+          [
+            "A",
+            "C"
+          ],
+          [
+            "A",
+            "D"
+          ],
+          [
+            "A",
+            "H"
+          ],
+          [
+            "B",
+            "E"
+          ],
+          [
+            "B",
+            "F"
+          ],
+          [
+            "C",
+            "D"
+          ],
+          [
+            "D",
+            "G"
+          ],
+          [
+            "F",
+            "I"
+          ],
+          [
+            "G",
+            "J"
+          ],
+          [
+            "H",
+            "I"
+          ]
+        ],
+        "graph_directionality": "undirected",
+        "matching_labels": [
+          "A",
+          "B",
+          "D",
+          "F",
+          "G",
+          "H",
+          "I"
+        ]
+      },
+      "scene_kind": "graph_articulation_point_counting"
+    },
+    "witness_symbolic": {
+      "label_set": [
+        "A",
+        "B",
+        "D",
+        "F",
+        "G",
+        "H",
+        "I"
+      ],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

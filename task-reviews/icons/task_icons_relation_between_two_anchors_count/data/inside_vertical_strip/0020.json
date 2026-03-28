@@ -1,0 +1,734 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 0
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": []
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_relation_between_two_anchors_count/images/inside_vertical_strip/0020.png"
+  },
+  "instance_seed": 983940791712754,
+  "prompt": "Look at the image with a Scene panel of icons where two icons are marked as Anchor A and Anchor B. Determine the answer: How many icons have centers in the vertical strip between Anchor A and Anchor B?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[312,180,372,240],[540,286,612,358]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the image with a Scene panel of icons where two icons are marked as Anchor A and Anchor B. Determine the answer: How many icons have centers in the vertical strip between Anchor A and Anchor B?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[312,180,372,240],[540,286,612,358]],\"answer\":2}",
+    "answer_only": "Look at the image with a Scene panel of icons where two icons are marked as Anchor A and Anchor B. Determine the answer: How many icons have centers in the vertical strip between Anchor A and Anchor B?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_icons_relation_between_two_anchors_count",
+  "task_variant": "inside_vertical_strip",
+  "trace_payload": {
+    "execution_trace": {
+      "anchor_a_center_xy": [
+        202.5,
+        190.5
+      ],
+      "anchor_b_center_xy": [
+        717.5,
+        190.5
+      ],
+      "anchor_icon_id": "gi-lorc-magnifying-glass",
+      "anchor_rotation_degrees": 0,
+      "anchor_tint_rgb": [
+        172,
+        190,
+        60
+      ],
+      "distractor_count": 3,
+      "distractor_count_probabilities": {
+        "1": 0.1,
+        "10": 0.1,
+        "2": 0.1,
+        "3": 0.1,
+        "4": 0.1,
+        "5": 0.1,
+        "6": 0.1,
+        "7": 0.1,
+        "8": 0.1,
+        "9": 0.1
+      },
+      "distractor_margin_over_target": 0,
+      "matching_scene_indices": [],
+      "object_count": 3,
+      "object_count_probabilities": {
+        "1": 0.1,
+        "10": 0.1,
+        "2": 0.1,
+        "3": 0.1,
+        "4": 0.1,
+        "5": 0.1,
+        "6": 0.1,
+        "7": 0.1,
+        "8": 0.1,
+        "9": 0.1
+      },
+      "question_format": "count_scene_icon_centers_in_strip_between_two_anchors",
+      "scene_icon_ids": [
+        "tabler-brand-tumblr",
+        "gi-lorc-trilobite",
+        "gi-delapouite-evil-love"
+      ],
+      "scene_rotations_degrees": [
+        270,
+        180,
+        0
+      ],
+      "scene_tints_rgb": [
+        [
+          195,
+          56,
+          206
+        ],
+        [
+          65,
+          84,
+          24
+        ],
+        [
+          65,
+          84,
+          24
+        ]
+      ],
+      "scene_variant": "scene_two_anchors_strip",
+      "strip_boundary_margin_px": 14,
+      "target_count": 0,
+      "target_count_probabilities": {
+        "0": 0.16666666666666666,
+        "1": 0.16666666666666666,
+        "2": 0.16666666666666666,
+        "3": 0.16666666666666666,
+        "4": 0.16666666666666666,
+        "5": 0.16666666666666666
+      },
+      "task_variant": "inside_vertical_strip",
+      "variant_probabilities": {
+        "inside_horizontal_strip": 0.5,
+        "inside_vertical_strip": 0.5
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": []
+    },
+    "query_spec": {
+      "params": {
+        "distractor_count": 3,
+        "distractor_count_probabilities": {
+          "1": 0.1,
+          "10": 0.1,
+          "2": 0.1,
+          "3": 0.1,
+          "4": 0.1,
+          "5": 0.1,
+          "6": 0.1,
+          "7": 0.1,
+          "8": 0.1,
+          "9": 0.1
+        },
+        "distractor_margin_over_target": 0,
+        "object_count": 3,
+        "object_count_probabilities": {
+          "1": 0.1,
+          "10": 0.1,
+          "2": 0.1,
+          "3": 0.1,
+          "4": 0.1,
+          "5": 0.1,
+          "6": 0.1,
+          "7": 0.1,
+          "8": 0.1,
+          "9": 0.1
+        },
+        "pool_manifest": "all_icons.txt",
+        "rotation_candidates_degrees": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "strip_boundary_margin_px": 14,
+        "strip_outside_ratio_min": 0.12,
+        "strip_span_ratio_max": 0.6,
+        "strip_span_ratio_min": 0.32,
+        "target_count": 0,
+        "target_count_probabilities": {
+          "0": 0.16666666666666666,
+          "1": 0.16666666666666666,
+          "2": 0.16666666666666666,
+          "3": 0.16666666666666666,
+          "4": 0.16666666666666666,
+          "5": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "icons_relation_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+          "json_example": "{\"evidence\":[[312,180,372,240],[540,286,612,358]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Scene panel of icons where two icons are marked as Anchor A and Anchor B",
+          "question_text": "How many icons have centers in the vertical strip between Anchor A and Anchor B?"
+        },
+        "task_family_key": "scene_two_anchor_relation",
+        "task_family_variant_index": 2,
+        "task_key": "relation_query",
+        "task_variant_index": 4,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/relation/icons_relation_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:relation_query": 5,
+          "task_family:scene_two_anchor_relation": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "icons_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[312,180,372,240],[540,286,612,358]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Scene panel of icons where two icons are marked as Anchor A and Anchor B",
+              "question_text": "How many icons have centers in the vertical strip between Anchor A and Anchor B?"
+            },
+            "task_family_key": "scene_two_anchor_relation",
+            "task_family_variant_index": 2,
+            "task_key": "relation_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/relation/icons_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:relation_query": 5,
+              "task_family:scene_two_anchor_relation": 5
+            }
+          },
+          "prompt": "Look at the image with a Scene panel of icons where two icons are marked as Anchor A and Anchor B. Determine the answer: How many icons have centers in the vertical strip between Anchor A and Anchor B?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[312,180,372,240],[540,286,612,358]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "icons_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[312,180,372,240],[540,286,612,358]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Scene panel of icons where two icons are marked as Anchor A and Anchor B",
+              "question_text": "How many icons have centers in the vertical strip between Anchor A and Anchor B?"
+            },
+            "task_family_key": "scene_two_anchor_relation",
+            "task_family_variant_index": 2,
+            "task_key": "relation_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/relation/icons_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:relation_query": 5,
+              "task_family:scene_two_anchor_relation": 5
+            }
+          },
+          "prompt": "Look at the image with a Scene panel of icons where two icons are marked as Anchor A and Anchor B. Determine the answer: How many icons have centers in the vertical strip between Anchor A and Anchor B?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "inside_vertical_strip",
+      "template_id": "icons_relation_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "anchor_a": {
+          "bbox_xyxy": [
+            172,
+            160,
+            233,
+            221
+          ],
+          "center_xy": [
+            202.5,
+            190.5
+          ],
+          "entity_kind": "anchor_icon",
+          "highlight_bbox_xyxy": [
+            162,
+            150,
+            243,
+            231
+          ],
+          "icon_id": "gi-lorc-magnifying-glass",
+          "instance_id": "anchor_a",
+          "label": "A",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 1781652020668405,
+          "nominal_size_px": 66,
+          "panel": "scene",
+          "role": "anchor_a",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            172,
+            190,
+            60
+          ]
+        },
+        "anchor_b": {
+          "bbox_xyxy": [
+            687,
+            160,
+            748,
+            221
+          ],
+          "center_xy": [
+            717.5,
+            190.5
+          ],
+          "entity_kind": "anchor_icon",
+          "highlight_bbox_xyxy": [
+            677,
+            150,
+            758,
+            231
+          ],
+          "icon_id": "gi-lorc-magnifying-glass",
+          "instance_id": "anchor_b",
+          "label": "B",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 7339201043749179,
+          "nominal_size_px": 66,
+          "panel": "scene",
+          "role": "anchor_b",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            172,
+            190,
+            60
+          ]
+        },
+        "matching_scene_boxes": []
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        960,
+        544
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          960,
+          544
+        ],
+        "scene_content_xyxy": [
+          44,
+          77,
+          916,
+          500
+        ],
+        "scene_panel_xyxy": [
+          24,
+          24,
+          936,
+          520
+        ]
+      },
+      "style": {
+        "anchor_highlight_padding_px": 10,
+        "anchor_highlight_radius_px": 14,
+        "anchor_label_color_rgb": [
+          57,
+          87,
+          145
+        ],
+        "anchor_label_font_size_px": 20,
+        "anchor_outline_rgb": [
+          74,
+          113,
+          188
+        ],
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "palette_size_max": 12,
+        "palette_size_min": 8,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "reference_icon_size_max_px": 0,
+        "reference_icon_size_min_px": 0,
+        "reference_icon_size_px": 136,
+        "sampled_palette_rgb": [
+          [
+            53,
+            215,
+            129
+          ],
+          [
+            205,
+            110,
+            96
+          ],
+          [
+            172,
+            190,
+            60
+          ],
+          [
+            43,
+            69,
+            196
+          ],
+          [
+            195,
+            56,
+            206
+          ],
+          [
+            65,
+            84,
+            24
+          ],
+          [
+            160,
+            140,
+            214
+          ],
+          [
+            138,
+            31,
+            95
+          ]
+        ],
+        "scene_icon_size_max_px": 96,
+        "scene_icon_size_min_px": 40,
+        "scene_max_overlap_fraction": 0.08,
+        "scene_placement_max_attempts": 120,
+        "scene_size_shrink_factor": 0.9,
+        "scene_size_shrink_rounds": 6,
+        "strip_boundary_margin_px": 14,
+        "strip_outside_ratio_min": 0.12,
+        "strip_span_ratio_max": 0.6,
+        "strip_span_ratio_min": 0.32
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_xyxy": [
+            172,
+            160,
+            233,
+            221
+          ],
+          "center_xy": [
+            202.5,
+            190.5
+          ],
+          "entity_kind": "anchor_icon",
+          "highlight_bbox_xyxy": [
+            162,
+            150,
+            243,
+            231
+          ],
+          "icon_id": "gi-lorc-magnifying-glass",
+          "instance_id": "anchor_a",
+          "label": "A",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 1781652020668405,
+          "nominal_size_px": 66,
+          "panel": "scene",
+          "role": "anchor_a",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            172,
+            190,
+            60
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            687,
+            160,
+            748,
+            221
+          ],
+          "center_xy": [
+            717.5,
+            190.5
+          ],
+          "entity_kind": "anchor_icon",
+          "highlight_bbox_xyxy": [
+            677,
+            150,
+            758,
+            231
+          ],
+          "icon_id": "gi-lorc-magnifying-glass",
+          "instance_id": "anchor_b",
+          "label": "B",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 7339201043749179,
+          "nominal_size_px": 66,
+          "panel": "scene",
+          "role": "anchor_b",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            172,
+            190,
+            60
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            830,
+            106,
+            880,
+            140
+          ],
+          "center_in_strip": false,
+          "center_xy": [
+            855.0,
+            123.0
+          ],
+          "entity_kind": "scene_icon",
+          "icon_id": "tabler-brand-tumblr",
+          "instance_id": "scene_icon_0",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.061753
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "scale": 0.917531
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 5815122293157888,
+          "nominal_size_px": 58,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            195,
+            56,
+            206
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            61,
+            131,
+            134,
+            204
+          ],
+          "center_in_strip": false,
+          "center_xy": [
+            97.5,
+            167.5
+          ],
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-lorc-trilobite",
+          "instance_id": "scene_icon_1",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 1099648715905887,
+          "nominal_size_px": 79,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            65,
+            84,
+            24
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            743,
+            442,
+            794,
+            496
+          ],
+          "center_in_strip": false,
+          "center_xy": [
+            768.5,
+            469.0
+          ],
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-evil-love",
+          "instance_id": "scene_icon_2",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.933998
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 4221318534541811,
+          "nominal_size_px": 61,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            65,
+            84,
+            24
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            960,
+            544
+          ],
+          "scene_content_xyxy": [
+            44,
+            77,
+            916,
+            500
+          ],
+          "scene_panel_xyxy": [
+            24,
+            24,
+            936,
+            520
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "anchor_icon_id": "gi-lorc-magnifying-glass",
+        "counting_target": "candidate_icon_centers_in_strip_between_two_anchors",
+        "matching_scene_indices": [],
+        "strip_boundary_margin_px": 14,
+        "task_variant": "inside_vertical_strip"
+      },
+      "scene_kind": "icons_two_anchor_strip_relation"
+    },
+    "witness_symbolic": {
+      "anchor_a_center_xy": [
+        202.5,
+        190.5
+      ],
+      "anchor_b_center_xy": [
+        717.5,
+        190.5
+      ],
+      "matching_scene_indices": [],
+      "strip_boundary_margin_px": 14,
+      "task_variant": "inside_vertical_strip"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

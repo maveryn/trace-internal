@@ -1,0 +1,1550 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 6
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "C",
+      "D",
+      "E",
+      "F",
+      "H",
+      "I"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_transformation_pair_count/images/default/0016.png"
+  },
+  "instance_seed": 3324832487594935,
+  "prompt": "The image shows a Reference pair on the left and a labeled Scene grid of icon pairs on the right. Task: How many labeled Scene cells show the same transformation as the Reference pair?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows a Reference pair on the left and a labeled Scene grid of icon pairs on the right. Task: How many labeled Scene cells show the same transformation as the Reference pair?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+    "answer_only": "The image shows a Reference pair on the left and a labeled Scene grid of icon pairs on the right. Task: How many labeled Scene cells show the same transformation as the Reference pair?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_icons_transformation_pair_count",
+  "task_variant": "same_pair_transform",
+  "trace_payload": {
+    "execution_trace": {
+      "cell_icon_ids": [
+        "gi-skoll-pocket-watch",
+        "gi-lorc-double-quaver",
+        "gi-lorc-microchip",
+        "gi-delapouite-full-wood-bucket",
+        "hero-lock-open",
+        "gi-lorc-wolf-trap",
+        "gi-delapouite-temporary-shield",
+        "gi-delapouite-sewing-string",
+        "gi-skoll-jeep",
+        "tabler-brand-tumblr"
+      ],
+      "cell_labels": [
+        "J",
+        "H",
+        "E",
+        "D",
+        "C",
+        "B",
+        "G",
+        "A",
+        "F",
+        "I"
+      ],
+      "cell_transform_ids": [
+        "rot270",
+        "flip_v",
+        "flip_v",
+        "flip_v",
+        "flip_v",
+        "rot180",
+        "flip_diag_main",
+        "flip_diag_anti",
+        "flip_v",
+        "flip_v"
+      ],
+      "distractor_count": 4,
+      "distractor_count_probabilities": {
+        "1": 0.16666666666666666,
+        "2": 0.16666666666666666,
+        "3": 0.16666666666666666,
+        "4": 0.16666666666666666,
+        "5": 0.16666666666666666,
+        "6": 0.16666666666666666
+      },
+      "matching_cell_labels": [
+        "C",
+        "D",
+        "E",
+        "F",
+        "H",
+        "I"
+      ],
+      "object_count": 10,
+      "object_count_probabilities": {
+        "10": 0.16666666666666666,
+        "11": 0.16666666666666666,
+        "12": 0.16666666666666666,
+        "7": 0.16666666666666666,
+        "8": 0.16666666666666666,
+        "9": 0.16666666666666666
+      },
+      "question_format": "count_scene_cells_matching_reference_transform",
+      "reference_icon_id": "gi-delapouite-paint-roller",
+      "reference_transform_id": "flip_v",
+      "scene_variant": "reference_pair_grid",
+      "target_count": 6,
+      "target_count_probabilities": {
+        "0": 0.14285714285714285,
+        "1": 0.14285714285714285,
+        "2": 0.14285714285714285,
+        "3": 0.14285714285714285,
+        "4": 0.14285714285714285,
+        "5": 0.14285714285714285,
+        "6": 0.14285714285714285
+      },
+      "task_variant": "same_pair_transform"
+    },
+    "projected_evidence": {
+      "label_set": [
+        "C",
+        "D",
+        "E",
+        "F",
+        "H",
+        "I"
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "distractor_count": 4,
+        "distractor_count_probabilities": {
+          "1": 0.16666666666666666,
+          "2": 0.16666666666666666,
+          "3": 0.16666666666666666,
+          "4": 0.16666666666666666,
+          "5": 0.16666666666666666,
+          "6": 0.16666666666666666
+        },
+        "object_count": 10,
+        "object_count_probabilities": {
+          "10": 0.16666666666666666,
+          "11": 0.16666666666666666,
+          "12": 0.16666666666666666,
+          "7": 0.16666666666666666,
+          "8": 0.16666666666666666,
+          "9": 0.16666666666666666
+        },
+        "pool_manifest": "non_symmetry.txt",
+        "target_count": 6,
+        "target_count_probabilities": {
+          "0": 0.14285714285714285,
+          "1": 0.14285714285714285,
+          "2": 0.14285714285714285,
+          "3": 0.14285714285714285,
+          "4": 0.14285714285714285,
+          "5": 0.14285714285714285,
+          "6": 0.14285714285714285
+        },
+        "transform_check_size_px": 72,
+        "transform_ids": [
+          "rot90",
+          "rot180",
+          "rot270",
+          "flip_h",
+          "flip_v",
+          "flip_diag_main",
+          "flip_diag_anti"
+        ]
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "icons_transformation_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+          "json_example": "{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Reference pair on the left and a labeled Scene grid of icon pairs on the right",
+          "question_text": "How many labeled Scene cells show the same transformation as the Reference pair?"
+        },
+        "task_family_key": "reference_pair_grid_transformation",
+        "task_family_variant_index": 1,
+        "task_key": "transformation_query",
+        "task_variant_index": 2,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/transformation/icons_transformation_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:transformation_query": 5,
+          "task_family:reference_pair_grid_transformation": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "icons_transformation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+              "json_example": "{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference pair on the left and a labeled Scene grid of icon pairs on the right",
+              "question_text": "How many labeled Scene cells show the same transformation as the Reference pair?"
+            },
+            "task_family_key": "reference_pair_grid_transformation",
+            "task_family_variant_index": 1,
+            "task_key": "transformation_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/transformation/icons_transformation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:transformation_query": 5,
+              "task_family:reference_pair_grid_transformation": 5
+            }
+          },
+          "prompt": "The image shows a Reference pair on the left and a labeled Scene grid of icon pairs on the right. Task: How many labeled Scene cells show the same transformation as the Reference pair?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "icons_transformation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+              "json_example": "{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference pair on the left and a labeled Scene grid of icon pairs on the right",
+              "question_text": "How many labeled Scene cells show the same transformation as the Reference pair?"
+            },
+            "task_family_key": "reference_pair_grid_transformation",
+            "task_family_variant_index": 1,
+            "task_key": "transformation_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/transformation/icons_transformation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:transformation_query": 5,
+              "task_family:reference_pair_grid_transformation": 5
+            }
+          },
+          "prompt": "The image shows a Reference pair on the left and a labeled Scene grid of icon pairs on the right. Task: How many labeled Scene cells show the same transformation as the Reference pair?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "same_pair_transform",
+      "template_id": "icons_transformation_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching_cell_labels": [
+          "C",
+          "D",
+          "E",
+          "F",
+          "H",
+          "I"
+        ],
+        "reference_pair": {
+          "icon_id": "gi-delapouite-paint-roller",
+          "left_bbox_xyxy": [
+            61,
+            285,
+            142,
+            387
+          ],
+          "left_noise_edits": [],
+          "left_noise_seed": 4570528113768412,
+          "panel": "reference",
+          "right_bbox_xyxy": [
+            201,
+            285,
+            282,
+            387
+          ],
+          "right_noise_edits": [
+            {
+              "params": {
+                "scale": 0.944023
+              },
+              "type": "downsample"
+            }
+          ],
+          "right_noise_seed": 2886876076908166,
+          "tint_rgb": [
+            62,
+            178,
+            157
+          ],
+          "transform_id": "flip_v"
+        },
+        "scene_cells": [
+          {
+            "cell_bbox_xyxy": [
+              374,
+              87,
+              528,
+              240
+            ],
+            "icon_id": "gi-skoll-pocket-watch",
+            "index": 0,
+            "is_match": false,
+            "label": "J",
+            "left_bbox_xyxy": [
+              400,
+              157,
+              432,
+              197
+            ],
+            "left_noise_edits": [],
+            "left_noise_seed": 2326150310521018,
+            "panel": "scene",
+            "right_bbox_xyxy": [
+              462,
+              161,
+              502,
+              193
+            ],
+            "right_noise_edits": [
+              {
+                "params": {
+                  "radius": 0.330229
+                },
+                "type": "blur"
+              }
+            ],
+            "right_noise_seed": 5930779273213580,
+            "tint_rgb": [
+              62,
+              178,
+              157
+            ],
+            "transform_id": "rot270"
+          },
+          {
+            "cell_bbox_xyxy": [
+              548,
+              87,
+              702,
+              240
+            ],
+            "icon_id": "gi-lorc-double-quaver",
+            "index": 1,
+            "is_match": true,
+            "label": "H",
+            "left_bbox_xyxy": [
+              575,
+              158,
+              610,
+              196
+            ],
+            "left_noise_edits": [
+              {
+                "params": {
+                  "quality": 75.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "left_noise_seed": 8583711889479211,
+            "panel": "scene",
+            "right_bbox_xyxy": [
+              640,
+              158,
+              675,
+              196
+            ],
+            "right_noise_edits": [
+              {
+                "params": {
+                  "quality": 82.0
+                },
+                "type": "jpeg"
+              },
+              {
+                "params": {
+                  "scale": 0.932398
+                },
+                "type": "downsample"
+              }
+            ],
+            "right_noise_seed": 1177098981930198,
+            "tint_rgb": [
+              62,
+              178,
+              157
+            ],
+            "transform_id": "flip_v"
+          },
+          {
+            "cell_bbox_xyxy": [
+              722,
+              87,
+              876,
+              240
+            ],
+            "icon_id": "gi-lorc-microchip",
+            "index": 2,
+            "is_match": true,
+            "label": "E",
+            "left_bbox_xyxy": [
+              744,
+              159,
+              784,
+              195
+            ],
+            "left_noise_edits": [
+              {
+                "params": {
+                  "radius": 0.242034
+                },
+                "type": "blur"
+              },
+              {
+                "params": {
+                  "alpha": 0.072839
+                },
+                "type": "noise"
+              }
+            ],
+            "left_noise_seed": 5035999586246149,
+            "panel": "scene",
+            "right_bbox_xyxy": [
+              814,
+              159,
+              854,
+              195
+            ],
+            "right_noise_edits": [],
+            "right_noise_seed": 438778717830605,
+            "tint_rgb": [
+              62,
+              178,
+              157
+            ],
+            "transform_id": "flip_v"
+          },
+          {
+            "cell_bbox_xyxy": [
+              896,
+              87,
+              1050,
+              240
+            ],
+            "icon_id": "gi-delapouite-full-wood-bucket",
+            "index": 3,
+            "is_match": true,
+            "label": "D",
+            "left_bbox_xyxy": [
+              932,
+              162,
+              958,
+              192
+            ],
+            "left_noise_edits": [
+              {
+                "params": {
+                  "radius": 0.237167
+                },
+                "type": "blur"
+              }
+            ],
+            "left_noise_seed": 4182108796812060,
+            "panel": "scene",
+            "right_bbox_xyxy": [
+              988,
+              162,
+              1014,
+              192
+            ],
+            "right_noise_edits": [
+              {
+                "params": {
+                  "alpha": 0.037031
+                },
+                "type": "noise"
+              }
+            ],
+            "right_noise_seed": 1220390611765940,
+            "tint_rgb": [
+              62,
+              178,
+              157
+            ],
+            "transform_id": "flip_v"
+          },
+          {
+            "cell_bbox_xyxy": [
+              374,
+              260,
+              528,
+              413
+            ],
+            "icon_id": "hero-lock-open",
+            "index": 4,
+            "is_match": true,
+            "label": "C",
+            "left_bbox_xyxy": [
+              396,
+              331,
+              436,
+              369
+            ],
+            "left_noise_edits": [
+              {
+                "params": {
+                  "quality": 80.0
+                },
+                "type": "jpeg"
+              },
+              {
+                "params": {
+                  "alpha": 0.041406
+                },
+                "type": "noise"
+              }
+            ],
+            "left_noise_seed": 3796599498438212,
+            "panel": "scene",
+            "right_bbox_xyxy": [
+              466,
+              331,
+              506,
+              369
+            ],
+            "right_noise_edits": [
+              {
+                "params": {
+                  "alpha": 0.038647
+                },
+                "type": "noise"
+              }
+            ],
+            "right_noise_seed": 3402737030253667,
+            "tint_rgb": [
+              62,
+              178,
+              157
+            ],
+            "transform_id": "flip_v"
+          },
+          {
+            "cell_bbox_xyxy": [
+              548,
+              260,
+              702,
+              413
+            ],
+            "icon_id": "gi-lorc-wolf-trap",
+            "index": 5,
+            "is_match": false,
+            "label": "B",
+            "left_bbox_xyxy": [
+              570,
+              337,
+              610,
+              363
+            ],
+            "left_noise_edits": [],
+            "left_noise_seed": 7945896957822416,
+            "panel": "scene",
+            "right_bbox_xyxy": [
+              640,
+              337,
+              680,
+              363
+            ],
+            "right_noise_edits": [
+              {
+                "params": {
+                  "quality": 86.0
+                },
+                "type": "jpeg"
+              },
+              {
+                "params": {
+                  "scale": 0.926262
+                },
+                "type": "downsample"
+              }
+            ],
+            "right_noise_seed": 7024985260232678,
+            "tint_rgb": [
+              62,
+              178,
+              157
+            ],
+            "transform_id": "rot180"
+          },
+          {
+            "cell_bbox_xyxy": [
+              722,
+              260,
+              876,
+              413
+            ],
+            "icon_id": "gi-delapouite-temporary-shield",
+            "index": 6,
+            "is_match": false,
+            "label": "G",
+            "left_bbox_xyxy": [
+              745,
+              330,
+              783,
+              370
+            ],
+            "left_noise_edits": [],
+            "left_noise_seed": 1291738064577199,
+            "panel": "scene",
+            "right_bbox_xyxy": [
+              813,
+              331,
+              853,
+              369
+            ],
+            "right_noise_edits": [
+              {
+                "params": {
+                  "radius": 0.36879
+                },
+                "type": "blur"
+              }
+            ],
+            "right_noise_seed": 4539639322451572,
+            "tint_rgb": [
+              62,
+              178,
+              157
+            ],
+            "transform_id": "flip_diag_main"
+          },
+          {
+            "cell_bbox_xyxy": [
+              896,
+              260,
+              1050,
+              413
+            ],
+            "icon_id": "gi-delapouite-sewing-string",
+            "index": 7,
+            "is_match": false,
+            "label": "A",
+            "left_bbox_xyxy": [
+              920,
+              331,
+              958,
+              368
+            ],
+            "left_noise_edits": [
+              {
+                "params": {
+                  "quality": 73.0
+                },
+                "type": "jpeg"
+              },
+              {
+                "params": {
+                  "alpha": 0.031024
+                },
+                "type": "noise"
+              }
+            ],
+            "left_noise_seed": 2579698352179897,
+            "panel": "scene",
+            "right_bbox_xyxy": [
+              988,
+              331,
+              1025,
+              369
+            ],
+            "right_noise_edits": [
+              {
+                "params": {
+                  "alpha": 0.045412
+                },
+                "type": "noise"
+              },
+              {
+                "params": {
+                  "scale": 0.872755
+                },
+                "type": "downsample"
+              }
+            ],
+            "right_noise_seed": 3428927222330022,
+            "tint_rgb": [
+              62,
+              178,
+              157
+            ],
+            "transform_id": "flip_diag_anti"
+          },
+          {
+            "cell_bbox_xyxy": [
+              374,
+              433,
+              528,
+              586
+            ],
+            "icon_id": "gi-skoll-jeep",
+            "index": 8,
+            "is_match": true,
+            "label": "F",
+            "left_bbox_xyxy": [
+              398,
+              509,
+              436,
+              537
+            ],
+            "left_noise_edits": [
+              {
+                "params": {
+                  "quality": 78.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "left_noise_seed": 1570540636740218,
+            "panel": "scene",
+            "right_bbox_xyxy": [
+              466,
+              509,
+              504,
+              537
+            ],
+            "right_noise_edits": [],
+            "right_noise_seed": 3682676866394457,
+            "tint_rgb": [
+              62,
+              178,
+              157
+            ],
+            "transform_id": "flip_v"
+          },
+          {
+            "cell_bbox_xyxy": [
+              548,
+              433,
+              702,
+              586
+            ],
+            "icon_id": "tabler-brand-tumblr",
+            "index": 9,
+            "is_match": true,
+            "label": "I",
+            "left_bbox_xyxy": [
+              584,
+              505,
+              610,
+              541
+            ],
+            "left_noise_edits": [
+              {
+                "params": {
+                  "scale": 0.881887
+                },
+                "type": "downsample"
+              },
+              {
+                "params": {
+                  "quality": 88.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "left_noise_seed": 2097322845242183,
+            "panel": "scene",
+            "right_bbox_xyxy": [
+              640,
+              505,
+              666,
+              541
+            ],
+            "right_noise_edits": [
+              {
+                "params": {
+                  "alpha": 0.05562
+                },
+                "type": "noise"
+              },
+              {
+                "params": {
+                  "scale": 0.923803
+                },
+                "type": "downsample"
+              }
+            ],
+            "right_noise_seed": 198092902644306,
+            "tint_rgb": [
+              62,
+              178,
+              157
+            ],
+            "transform_id": "flip_v"
+          }
+        ]
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        1104,
+        640
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          1104,
+          640
+        ],
+        "reference_content_xyxy": [
+          44,
+          77,
+          300,
+          596
+        ],
+        "reference_panel_xyxy": [
+          24,
+          24,
+          320,
+          616
+        ],
+        "scene_content_xyxy": [
+          364,
+          77,
+          1060,
+          596
+        ],
+        "scene_panel_xyxy": [
+          344,
+          24,
+          1080,
+          616
+        ]
+      },
+      "style": {
+        "arrow_color_rgb": [
+          84,
+          96,
+          118
+        ],
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "cell_border_rgb": [
+          218,
+          223,
+          233
+        ],
+        "cell_label_color_rgb": [
+          52,
+          60,
+          77
+        ],
+        "cell_label_font_size_px": 22,
+        "cell_padding_px": 10,
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "pair_arrow_stroke_px": 4,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "sampled_palette_rgb": [
+          [
+            62,
+            178,
+            157
+          ]
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "icon_id": "gi-delapouite-paint-roller",
+          "left_bbox_xyxy": [
+            61,
+            285,
+            142,
+            387
+          ],
+          "left_noise_edits": [],
+          "left_noise_seed": 4570528113768412,
+          "panel": "reference",
+          "right_bbox_xyxy": [
+            201,
+            285,
+            282,
+            387
+          ],
+          "right_noise_edits": [
+            {
+              "params": {
+                "scale": 0.944023
+              },
+              "type": "downsample"
+            }
+          ],
+          "right_noise_seed": 2886876076908166,
+          "tint_rgb": [
+            62,
+            178,
+            157
+          ],
+          "transform_id": "flip_v"
+        },
+        {
+          "cell_bbox_xyxy": [
+            374,
+            87,
+            528,
+            240
+          ],
+          "icon_id": "gi-skoll-pocket-watch",
+          "index": 0,
+          "is_match": false,
+          "label": "J",
+          "left_bbox_xyxy": [
+            400,
+            157,
+            432,
+            197
+          ],
+          "left_noise_edits": [],
+          "left_noise_seed": 2326150310521018,
+          "panel": "scene",
+          "right_bbox_xyxy": [
+            462,
+            161,
+            502,
+            193
+          ],
+          "right_noise_edits": [
+            {
+              "params": {
+                "radius": 0.330229
+              },
+              "type": "blur"
+            }
+          ],
+          "right_noise_seed": 5930779273213580,
+          "tint_rgb": [
+            62,
+            178,
+            157
+          ],
+          "transform_id": "rot270"
+        },
+        {
+          "cell_bbox_xyxy": [
+            548,
+            87,
+            702,
+            240
+          ],
+          "icon_id": "gi-lorc-double-quaver",
+          "index": 1,
+          "is_match": true,
+          "label": "H",
+          "left_bbox_xyxy": [
+            575,
+            158,
+            610,
+            196
+          ],
+          "left_noise_edits": [
+            {
+              "params": {
+                "quality": 75.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "left_noise_seed": 8583711889479211,
+          "panel": "scene",
+          "right_bbox_xyxy": [
+            640,
+            158,
+            675,
+            196
+          ],
+          "right_noise_edits": [
+            {
+              "params": {
+                "quality": 82.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "scale": 0.932398
+              },
+              "type": "downsample"
+            }
+          ],
+          "right_noise_seed": 1177098981930198,
+          "tint_rgb": [
+            62,
+            178,
+            157
+          ],
+          "transform_id": "flip_v"
+        },
+        {
+          "cell_bbox_xyxy": [
+            722,
+            87,
+            876,
+            240
+          ],
+          "icon_id": "gi-lorc-microchip",
+          "index": 2,
+          "is_match": true,
+          "label": "E",
+          "left_bbox_xyxy": [
+            744,
+            159,
+            784,
+            195
+          ],
+          "left_noise_edits": [
+            {
+              "params": {
+                "radius": 0.242034
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "alpha": 0.072839
+              },
+              "type": "noise"
+            }
+          ],
+          "left_noise_seed": 5035999586246149,
+          "panel": "scene",
+          "right_bbox_xyxy": [
+            814,
+            159,
+            854,
+            195
+          ],
+          "right_noise_edits": [],
+          "right_noise_seed": 438778717830605,
+          "tint_rgb": [
+            62,
+            178,
+            157
+          ],
+          "transform_id": "flip_v"
+        },
+        {
+          "cell_bbox_xyxy": [
+            896,
+            87,
+            1050,
+            240
+          ],
+          "icon_id": "gi-delapouite-full-wood-bucket",
+          "index": 3,
+          "is_match": true,
+          "label": "D",
+          "left_bbox_xyxy": [
+            932,
+            162,
+            958,
+            192
+          ],
+          "left_noise_edits": [
+            {
+              "params": {
+                "radius": 0.237167
+              },
+              "type": "blur"
+            }
+          ],
+          "left_noise_seed": 4182108796812060,
+          "panel": "scene",
+          "right_bbox_xyxy": [
+            988,
+            162,
+            1014,
+            192
+          ],
+          "right_noise_edits": [
+            {
+              "params": {
+                "alpha": 0.037031
+              },
+              "type": "noise"
+            }
+          ],
+          "right_noise_seed": 1220390611765940,
+          "tint_rgb": [
+            62,
+            178,
+            157
+          ],
+          "transform_id": "flip_v"
+        },
+        {
+          "cell_bbox_xyxy": [
+            374,
+            260,
+            528,
+            413
+          ],
+          "icon_id": "hero-lock-open",
+          "index": 4,
+          "is_match": true,
+          "label": "C",
+          "left_bbox_xyxy": [
+            396,
+            331,
+            436,
+            369
+          ],
+          "left_noise_edits": [
+            {
+              "params": {
+                "quality": 80.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "alpha": 0.041406
+              },
+              "type": "noise"
+            }
+          ],
+          "left_noise_seed": 3796599498438212,
+          "panel": "scene",
+          "right_bbox_xyxy": [
+            466,
+            331,
+            506,
+            369
+          ],
+          "right_noise_edits": [
+            {
+              "params": {
+                "alpha": 0.038647
+              },
+              "type": "noise"
+            }
+          ],
+          "right_noise_seed": 3402737030253667,
+          "tint_rgb": [
+            62,
+            178,
+            157
+          ],
+          "transform_id": "flip_v"
+        },
+        {
+          "cell_bbox_xyxy": [
+            548,
+            260,
+            702,
+            413
+          ],
+          "icon_id": "gi-lorc-wolf-trap",
+          "index": 5,
+          "is_match": false,
+          "label": "B",
+          "left_bbox_xyxy": [
+            570,
+            337,
+            610,
+            363
+          ],
+          "left_noise_edits": [],
+          "left_noise_seed": 7945896957822416,
+          "panel": "scene",
+          "right_bbox_xyxy": [
+            640,
+            337,
+            680,
+            363
+          ],
+          "right_noise_edits": [
+            {
+              "params": {
+                "quality": 86.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "scale": 0.926262
+              },
+              "type": "downsample"
+            }
+          ],
+          "right_noise_seed": 7024985260232678,
+          "tint_rgb": [
+            62,
+            178,
+            157
+          ],
+          "transform_id": "rot180"
+        },
+        {
+          "cell_bbox_xyxy": [
+            722,
+            260,
+            876,
+            413
+          ],
+          "icon_id": "gi-delapouite-temporary-shield",
+          "index": 6,
+          "is_match": false,
+          "label": "G",
+          "left_bbox_xyxy": [
+            745,
+            330,
+            783,
+            370
+          ],
+          "left_noise_edits": [],
+          "left_noise_seed": 1291738064577199,
+          "panel": "scene",
+          "right_bbox_xyxy": [
+            813,
+            331,
+            853,
+            369
+          ],
+          "right_noise_edits": [
+            {
+              "params": {
+                "radius": 0.36879
+              },
+              "type": "blur"
+            }
+          ],
+          "right_noise_seed": 4539639322451572,
+          "tint_rgb": [
+            62,
+            178,
+            157
+          ],
+          "transform_id": "flip_diag_main"
+        },
+        {
+          "cell_bbox_xyxy": [
+            896,
+            260,
+            1050,
+            413
+          ],
+          "icon_id": "gi-delapouite-sewing-string",
+          "index": 7,
+          "is_match": false,
+          "label": "A",
+          "left_bbox_xyxy": [
+            920,
+            331,
+            958,
+            368
+          ],
+          "left_noise_edits": [
+            {
+              "params": {
+                "quality": 73.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "alpha": 0.031024
+              },
+              "type": "noise"
+            }
+          ],
+          "left_noise_seed": 2579698352179897,
+          "panel": "scene",
+          "right_bbox_xyxy": [
+            988,
+            331,
+            1025,
+            369
+          ],
+          "right_noise_edits": [
+            {
+              "params": {
+                "alpha": 0.045412
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "scale": 0.872755
+              },
+              "type": "downsample"
+            }
+          ],
+          "right_noise_seed": 3428927222330022,
+          "tint_rgb": [
+            62,
+            178,
+            157
+          ],
+          "transform_id": "flip_diag_anti"
+        },
+        {
+          "cell_bbox_xyxy": [
+            374,
+            433,
+            528,
+            586
+          ],
+          "icon_id": "gi-skoll-jeep",
+          "index": 8,
+          "is_match": true,
+          "label": "F",
+          "left_bbox_xyxy": [
+            398,
+            509,
+            436,
+            537
+          ],
+          "left_noise_edits": [
+            {
+              "params": {
+                "quality": 78.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "left_noise_seed": 1570540636740218,
+          "panel": "scene",
+          "right_bbox_xyxy": [
+            466,
+            509,
+            504,
+            537
+          ],
+          "right_noise_edits": [],
+          "right_noise_seed": 3682676866394457,
+          "tint_rgb": [
+            62,
+            178,
+            157
+          ],
+          "transform_id": "flip_v"
+        },
+        {
+          "cell_bbox_xyxy": [
+            548,
+            433,
+            702,
+            586
+          ],
+          "icon_id": "tabler-brand-tumblr",
+          "index": 9,
+          "is_match": true,
+          "label": "I",
+          "left_bbox_xyxy": [
+            584,
+            505,
+            610,
+            541
+          ],
+          "left_noise_edits": [
+            {
+              "params": {
+                "scale": 0.881887
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "quality": 88.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "left_noise_seed": 2097322845242183,
+          "panel": "scene",
+          "right_bbox_xyxy": [
+            640,
+            505,
+            666,
+            541
+          ],
+          "right_noise_edits": [
+            {
+              "params": {
+                "alpha": 0.05562
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "scale": 0.923803
+              },
+              "type": "downsample"
+            }
+          ],
+          "right_noise_seed": 198092902644306,
+          "tint_rgb": [
+            62,
+            178,
+            157
+          ],
+          "transform_id": "flip_v"
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            1104,
+            640
+          ],
+          "reference_content_xyxy": [
+            44,
+            77,
+            300,
+            596
+          ],
+          "reference_panel_xyxy": [
+            24,
+            24,
+            320,
+            616
+          ],
+          "scene_content_xyxy": [
+            364,
+            77,
+            1060,
+            596
+          ],
+          "scene_panel_xyxy": [
+            344,
+            24,
+            1080,
+            616
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "counting_target": "same_pair_transform_as_reference",
+        "matching_cell_labels": [
+          "C",
+          "D",
+          "E",
+          "F",
+          "H",
+          "I"
+        ],
+        "reference_transform_id": "flip_v"
+      },
+      "scene_kind": "icons_reference_pair_transformation_count"
+    },
+    "witness_symbolic": {
+      "matching_cell_labels": [
+        "C",
+        "D",
+        "E",
+        "F",
+        "H",
+        "I"
+      ],
+      "reference_transform_id": "flip_v"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

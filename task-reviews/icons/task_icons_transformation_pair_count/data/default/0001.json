@@ -1,0 +1,1257 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 5
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "B",
+      "D",
+      "E",
+      "F",
+      "G"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_transformation_pair_count/images/default/0001.png"
+  },
+  "instance_seed": 6404008682451611,
+  "prompt": "Look at the image with a Reference pair on the left and a labeled Scene grid of icon pairs on the right. Determine the answer: How many labeled Scene cells show the same transformation as the Reference pair?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the image with a Reference pair on the left and a labeled Scene grid of icon pairs on the right. Determine the answer: How many labeled Scene cells show the same transformation as the Reference pair?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+    "answer_only": "Look at the image with a Reference pair on the left and a labeled Scene grid of icon pairs on the right. Determine the answer: How many labeled Scene cells show the same transformation as the Reference pair?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_icons_transformation_pair_count",
+  "task_variant": "same_pair_transform",
+  "trace_payload": {
+    "execution_trace": {
+      "cell_icon_ids": [
+        "gi-lorc-boxing-glove",
+        "gi-aussiesim-card-7-hearts",
+        "gi-lorc-star-prominences",
+        "gi-lorc-cloudy-fork",
+        "gi-delapouite-caduceus",
+        "gi-skoll-open-chest",
+        "gi-lorc-guillotine"
+      ],
+      "cell_labels": [
+        "B",
+        "D",
+        "C",
+        "G",
+        "E",
+        "A",
+        "F"
+      ],
+      "cell_transform_ids": [
+        "rot270",
+        "rot270",
+        "rot180",
+        "rot270",
+        "rot270",
+        "flip_diag_anti",
+        "rot270"
+      ],
+      "distractor_count": 2,
+      "distractor_count_probabilities": {
+        "1": 0.16666666666666666,
+        "2": 0.16666666666666666,
+        "3": 0.16666666666666666,
+        "4": 0.16666666666666666,
+        "5": 0.16666666666666666,
+        "6": 0.16666666666666666
+      },
+      "matching_cell_labels": [
+        "B",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "object_count": 7,
+      "object_count_probabilities": {
+        "10": 0.16666666666666666,
+        "11": 0.16666666666666666,
+        "6": 0.16666666666666666,
+        "7": 0.16666666666666666,
+        "8": 0.16666666666666666,
+        "9": 0.16666666666666666
+      },
+      "question_format": "count_scene_cells_matching_reference_transform",
+      "reference_icon_id": "gi-delapouite-chicken-oven",
+      "reference_transform_id": "rot270",
+      "scene_variant": "reference_pair_grid",
+      "target_count": 5,
+      "target_count_probabilities": {
+        "0": 0.14285714285714285,
+        "1": 0.14285714285714285,
+        "2": 0.14285714285714285,
+        "3": 0.14285714285714285,
+        "4": 0.14285714285714285,
+        "5": 0.14285714285714285,
+        "6": 0.14285714285714285
+      },
+      "task_variant": "same_pair_transform"
+    },
+    "projected_evidence": {
+      "label_set": [
+        "B",
+        "D",
+        "E",
+        "F",
+        "G"
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "distractor_count": 2,
+        "distractor_count_probabilities": {
+          "1": 0.16666666666666666,
+          "2": 0.16666666666666666,
+          "3": 0.16666666666666666,
+          "4": 0.16666666666666666,
+          "5": 0.16666666666666666,
+          "6": 0.16666666666666666
+        },
+        "object_count": 7,
+        "object_count_probabilities": {
+          "10": 0.16666666666666666,
+          "11": 0.16666666666666666,
+          "6": 0.16666666666666666,
+          "7": 0.16666666666666666,
+          "8": 0.16666666666666666,
+          "9": 0.16666666666666666
+        },
+        "pool_manifest": "non_symmetry.txt",
+        "target_count": 5,
+        "target_count_probabilities": {
+          "0": 0.14285714285714285,
+          "1": 0.14285714285714285,
+          "2": 0.14285714285714285,
+          "3": 0.14285714285714285,
+          "4": 0.14285714285714285,
+          "5": 0.14285714285714285,
+          "6": 0.14285714285714285
+        },
+        "transform_check_size_px": 72,
+        "transform_ids": [
+          "rot90",
+          "rot180",
+          "rot270",
+          "flip_h",
+          "flip_v",
+          "flip_diag_main",
+          "flip_diag_anti"
+        ]
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "icons_transformation_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+          "json_example": "{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Reference pair on the left and a labeled Scene grid of icon pairs on the right",
+          "question_text": "How many labeled Scene cells show the same transformation as the Reference pair?"
+        },
+        "task_family_key": "reference_pair_grid_transformation",
+        "task_family_variant_index": 2,
+        "task_key": "transformation_query",
+        "task_variant_index": 4,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/transformation/icons_transformation_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:transformation_query": 5,
+          "task_family:reference_pair_grid_transformation": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "icons_transformation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+              "json_example": "{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference pair on the left and a labeled Scene grid of icon pairs on the right",
+              "question_text": "How many labeled Scene cells show the same transformation as the Reference pair?"
+            },
+            "task_family_key": "reference_pair_grid_transformation",
+            "task_family_variant_index": 2,
+            "task_key": "transformation_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/transformation/icons_transformation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:transformation_query": 5,
+              "task_family:reference_pair_grid_transformation": 5
+            }
+          },
+          "prompt": "Look at the image with a Reference pair on the left and a labeled Scene grid of icon pairs on the right. Determine the answer: How many labeled Scene cells show the same transformation as the Reference pair?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "icons_transformation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+              "json_example": "{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference pair on the left and a labeled Scene grid of icon pairs on the right",
+              "question_text": "How many labeled Scene cells show the same transformation as the Reference pair?"
+            },
+            "task_family_key": "reference_pair_grid_transformation",
+            "task_family_variant_index": 2,
+            "task_key": "transformation_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/transformation/icons_transformation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:transformation_query": 5,
+              "task_family:reference_pair_grid_transformation": 5
+            }
+          },
+          "prompt": "Look at the image with a Reference pair on the left and a labeled Scene grid of icon pairs on the right. Determine the answer: How many labeled Scene cells show the same transformation as the Reference pair?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "same_pair_transform",
+      "template_id": "icons_transformation_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching_cell_labels": [
+          "B",
+          "D",
+          "E",
+          "F",
+          "G"
+        ],
+        "reference_pair": {
+          "icon_id": "gi-delapouite-chicken-oven",
+          "left_bbox_xyxy": [
+            46,
+            290,
+            146,
+            382
+          ],
+          "left_noise_edits": [
+            {
+              "params": {
+                "quality": 80.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "radius": 0.559789
+              },
+              "type": "blur"
+            }
+          ],
+          "left_noise_seed": 4210173775543766,
+          "panel": "reference",
+          "right_bbox_xyxy": [
+            205,
+            286,
+            297,
+            386
+          ],
+          "right_noise_edits": [
+            {
+              "params": {
+                "alpha": 0.038433
+              },
+              "type": "noise"
+            }
+          ],
+          "right_noise_seed": 4439502162606685,
+          "tint_rgb": [
+            161,
+            82,
+            26
+          ],
+          "transform_id": "rot270"
+        },
+        "scene_cells": [
+          {
+            "cell_bbox_xyxy": [
+              374,
+              87,
+              528,
+              326
+            ],
+            "icon_id": "gi-lorc-boxing-glove",
+            "index": 0,
+            "is_match": true,
+            "label": "B",
+            "left_bbox_xyxy": [
+              397,
+              201,
+              437,
+              238
+            ],
+            "left_noise_edits": [
+              {
+                "params": {
+                  "scale": 0.895361
+                },
+                "type": "downsample"
+              },
+              {
+                "params": {
+                  "radius": 0.34982
+                },
+                "type": "blur"
+              }
+            ],
+            "left_noise_seed": 533485991514176,
+            "panel": "scene",
+            "right_bbox_xyxy": [
+              467,
+              200,
+              504,
+              240
+            ],
+            "right_noise_edits": [],
+            "right_noise_seed": 3191547921076157,
+            "tint_rgb": [
+              161,
+              82,
+              26
+            ],
+            "transform_id": "rot270"
+          },
+          {
+            "cell_bbox_xyxy": [
+              548,
+              87,
+              702,
+              326
+            ],
+            "icon_id": "gi-aussiesim-card-7-hearts",
+            "index": 1,
+            "is_match": true,
+            "label": "D",
+            "left_bbox_xyxy": [
+              577,
+              201,
+              605,
+              239
+            ],
+            "left_noise_edits": [
+              {
+                "params": {
+                  "radius": 0.416038
+                },
+                "type": "blur"
+              },
+              {
+                "params": {
+                  "quality": 73.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "left_noise_seed": 3096357837832119,
+            "panel": "scene",
+            "right_bbox_xyxy": [
+              635,
+              206,
+              673,
+              234
+            ],
+            "right_noise_edits": [],
+            "right_noise_seed": 4813307560256544,
+            "tint_rgb": [
+              161,
+              82,
+              26
+            ],
+            "transform_id": "rot270"
+          },
+          {
+            "cell_bbox_xyxy": [
+              722,
+              87,
+              876,
+              326
+            ],
+            "icon_id": "gi-lorc-star-prominences",
+            "index": 2,
+            "is_match": false,
+            "label": "C",
+            "left_bbox_xyxy": [
+              744,
+              200,
+              784,
+              240
+            ],
+            "left_noise_edits": [
+              {
+                "params": {
+                  "scale": 0.922957
+                },
+                "type": "downsample"
+              }
+            ],
+            "left_noise_seed": 3758202397252217,
+            "panel": "scene",
+            "right_bbox_xyxy": [
+              814,
+              200,
+              854,
+              240
+            ],
+            "right_noise_edits": [
+              {
+                "params": {
+                  "alpha": 0.070939
+                },
+                "type": "noise"
+              }
+            ],
+            "right_noise_seed": 4141346292534353,
+            "tint_rgb": [
+              161,
+              82,
+              26
+            ],
+            "transform_id": "rot180"
+          },
+          {
+            "cell_bbox_xyxy": [
+              896,
+              87,
+              1050,
+              326
+            ],
+            "icon_id": "gi-lorc-cloudy-fork",
+            "index": 3,
+            "is_match": true,
+            "label": "G",
+            "left_bbox_xyxy": [
+              923,
+              200,
+              953,
+              240
+            ],
+            "left_noise_edits": [
+              {
+                "params": {
+                  "scale": 0.872546
+                },
+                "type": "downsample"
+              },
+              {
+                "params": {
+                  "quality": 89.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "left_noise_seed": 8627142198668111,
+            "panel": "scene",
+            "right_bbox_xyxy": [
+              983,
+              205,
+              1023,
+              235
+            ],
+            "right_noise_edits": [
+              {
+                "params": {
+                  "radius": 0.501878
+                },
+                "type": "blur"
+              },
+              {
+                "params": {
+                  "alpha": 0.075057
+                },
+                "type": "noise"
+              }
+            ],
+            "right_noise_seed": 7323306085546101,
+            "tint_rgb": [
+              161,
+              82,
+              26
+            ],
+            "transform_id": "rot270"
+          },
+          {
+            "cell_bbox_xyxy": [
+              374,
+              346,
+              528,
+              586
+            ],
+            "icon_id": "gi-delapouite-caduceus",
+            "index": 4,
+            "is_match": true,
+            "label": "E",
+            "left_bbox_xyxy": [
+              396,
+              460,
+              436,
+              500
+            ],
+            "left_noise_edits": [
+              {
+                "params": {
+                  "alpha": 0.064979
+                },
+                "type": "noise"
+              }
+            ],
+            "left_noise_seed": 6991367804620855,
+            "panel": "scene",
+            "right_bbox_xyxy": [
+              466,
+              460,
+              506,
+              500
+            ],
+            "right_noise_edits": [
+              {
+                "params": {
+                  "radius": 0.362477
+                },
+                "type": "blur"
+              },
+              {
+                "params": {
+                  "alpha": 0.065775
+                },
+                "type": "noise"
+              }
+            ],
+            "right_noise_seed": 1958333552013088,
+            "tint_rgb": [
+              161,
+              82,
+              26
+            ],
+            "transform_id": "rot270"
+          },
+          {
+            "cell_bbox_xyxy": [
+              548,
+              346,
+              702,
+              586
+            ],
+            "icon_id": "gi-skoll-open-chest",
+            "index": 5,
+            "is_match": false,
+            "label": "A",
+            "left_bbox_xyxy": [
+              573,
+              461,
+              609,
+              499
+            ],
+            "left_noise_edits": [],
+            "left_noise_seed": 6609928960214730,
+            "panel": "scene",
+            "right_bbox_xyxy": [
+              639,
+              462,
+              677,
+              498
+            ],
+            "right_noise_edits": [
+              {
+                "params": {
+                  "alpha": 0.05088
+                },
+                "type": "noise"
+              },
+              {
+                "params": {
+                  "quality": 78.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "right_noise_seed": 3548959964803447,
+            "tint_rgb": [
+              161,
+              82,
+              26
+            ],
+            "transform_id": "flip_diag_anti"
+          },
+          {
+            "cell_bbox_xyxy": [
+              722,
+              346,
+              876,
+              586
+            ],
+            "icon_id": "gi-lorc-guillotine",
+            "index": 6,
+            "is_match": true,
+            "label": "F",
+            "left_bbox_xyxy": [
+              752,
+              461,
+              777,
+              499
+            ],
+            "left_noise_edits": [],
+            "left_noise_seed": 8699207739890994,
+            "panel": "scene",
+            "right_bbox_xyxy": [
+              807,
+              467,
+              845,
+              492
+            ],
+            "right_noise_edits": [
+              {
+                "params": {
+                  "quality": 87.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "right_noise_seed": 2829067185562990,
+            "tint_rgb": [
+              161,
+              82,
+              26
+            ],
+            "transform_id": "rot270"
+          }
+        ]
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        1104,
+        640
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          1104,
+          640
+        ],
+        "reference_content_xyxy": [
+          44,
+          77,
+          300,
+          596
+        ],
+        "reference_panel_xyxy": [
+          24,
+          24,
+          320,
+          616
+        ],
+        "scene_content_xyxy": [
+          364,
+          77,
+          1060,
+          596
+        ],
+        "scene_panel_xyxy": [
+          344,
+          24,
+          1080,
+          616
+        ]
+      },
+      "style": {
+        "arrow_color_rgb": [
+          84,
+          96,
+          118
+        ],
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "cell_border_rgb": [
+          218,
+          223,
+          233
+        ],
+        "cell_label_color_rgb": [
+          52,
+          60,
+          77
+        ],
+        "cell_label_font_size_px": 22,
+        "cell_padding_px": 10,
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "pair_arrow_stroke_px": 4,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "sampled_palette_rgb": [
+          [
+            161,
+            82,
+            26
+          ]
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "icon_id": "gi-delapouite-chicken-oven",
+          "left_bbox_xyxy": [
+            46,
+            290,
+            146,
+            382
+          ],
+          "left_noise_edits": [
+            {
+              "params": {
+                "quality": 80.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "radius": 0.559789
+              },
+              "type": "blur"
+            }
+          ],
+          "left_noise_seed": 4210173775543766,
+          "panel": "reference",
+          "right_bbox_xyxy": [
+            205,
+            286,
+            297,
+            386
+          ],
+          "right_noise_edits": [
+            {
+              "params": {
+                "alpha": 0.038433
+              },
+              "type": "noise"
+            }
+          ],
+          "right_noise_seed": 4439502162606685,
+          "tint_rgb": [
+            161,
+            82,
+            26
+          ],
+          "transform_id": "rot270"
+        },
+        {
+          "cell_bbox_xyxy": [
+            374,
+            87,
+            528,
+            326
+          ],
+          "icon_id": "gi-lorc-boxing-glove",
+          "index": 0,
+          "is_match": true,
+          "label": "B",
+          "left_bbox_xyxy": [
+            397,
+            201,
+            437,
+            238
+          ],
+          "left_noise_edits": [
+            {
+              "params": {
+                "scale": 0.895361
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "radius": 0.34982
+              },
+              "type": "blur"
+            }
+          ],
+          "left_noise_seed": 533485991514176,
+          "panel": "scene",
+          "right_bbox_xyxy": [
+            467,
+            200,
+            504,
+            240
+          ],
+          "right_noise_edits": [],
+          "right_noise_seed": 3191547921076157,
+          "tint_rgb": [
+            161,
+            82,
+            26
+          ],
+          "transform_id": "rot270"
+        },
+        {
+          "cell_bbox_xyxy": [
+            548,
+            87,
+            702,
+            326
+          ],
+          "icon_id": "gi-aussiesim-card-7-hearts",
+          "index": 1,
+          "is_match": true,
+          "label": "D",
+          "left_bbox_xyxy": [
+            577,
+            201,
+            605,
+            239
+          ],
+          "left_noise_edits": [
+            {
+              "params": {
+                "radius": 0.416038
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "quality": 73.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "left_noise_seed": 3096357837832119,
+          "panel": "scene",
+          "right_bbox_xyxy": [
+            635,
+            206,
+            673,
+            234
+          ],
+          "right_noise_edits": [],
+          "right_noise_seed": 4813307560256544,
+          "tint_rgb": [
+            161,
+            82,
+            26
+          ],
+          "transform_id": "rot270"
+        },
+        {
+          "cell_bbox_xyxy": [
+            722,
+            87,
+            876,
+            326
+          ],
+          "icon_id": "gi-lorc-star-prominences",
+          "index": 2,
+          "is_match": false,
+          "label": "C",
+          "left_bbox_xyxy": [
+            744,
+            200,
+            784,
+            240
+          ],
+          "left_noise_edits": [
+            {
+              "params": {
+                "scale": 0.922957
+              },
+              "type": "downsample"
+            }
+          ],
+          "left_noise_seed": 3758202397252217,
+          "panel": "scene",
+          "right_bbox_xyxy": [
+            814,
+            200,
+            854,
+            240
+          ],
+          "right_noise_edits": [
+            {
+              "params": {
+                "alpha": 0.070939
+              },
+              "type": "noise"
+            }
+          ],
+          "right_noise_seed": 4141346292534353,
+          "tint_rgb": [
+            161,
+            82,
+            26
+          ],
+          "transform_id": "rot180"
+        },
+        {
+          "cell_bbox_xyxy": [
+            896,
+            87,
+            1050,
+            326
+          ],
+          "icon_id": "gi-lorc-cloudy-fork",
+          "index": 3,
+          "is_match": true,
+          "label": "G",
+          "left_bbox_xyxy": [
+            923,
+            200,
+            953,
+            240
+          ],
+          "left_noise_edits": [
+            {
+              "params": {
+                "scale": 0.872546
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "quality": 89.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "left_noise_seed": 8627142198668111,
+          "panel": "scene",
+          "right_bbox_xyxy": [
+            983,
+            205,
+            1023,
+            235
+          ],
+          "right_noise_edits": [
+            {
+              "params": {
+                "radius": 0.501878
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "alpha": 0.075057
+              },
+              "type": "noise"
+            }
+          ],
+          "right_noise_seed": 7323306085546101,
+          "tint_rgb": [
+            161,
+            82,
+            26
+          ],
+          "transform_id": "rot270"
+        },
+        {
+          "cell_bbox_xyxy": [
+            374,
+            346,
+            528,
+            586
+          ],
+          "icon_id": "gi-delapouite-caduceus",
+          "index": 4,
+          "is_match": true,
+          "label": "E",
+          "left_bbox_xyxy": [
+            396,
+            460,
+            436,
+            500
+          ],
+          "left_noise_edits": [
+            {
+              "params": {
+                "alpha": 0.064979
+              },
+              "type": "noise"
+            }
+          ],
+          "left_noise_seed": 6991367804620855,
+          "panel": "scene",
+          "right_bbox_xyxy": [
+            466,
+            460,
+            506,
+            500
+          ],
+          "right_noise_edits": [
+            {
+              "params": {
+                "radius": 0.362477
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "alpha": 0.065775
+              },
+              "type": "noise"
+            }
+          ],
+          "right_noise_seed": 1958333552013088,
+          "tint_rgb": [
+            161,
+            82,
+            26
+          ],
+          "transform_id": "rot270"
+        },
+        {
+          "cell_bbox_xyxy": [
+            548,
+            346,
+            702,
+            586
+          ],
+          "icon_id": "gi-skoll-open-chest",
+          "index": 5,
+          "is_match": false,
+          "label": "A",
+          "left_bbox_xyxy": [
+            573,
+            461,
+            609,
+            499
+          ],
+          "left_noise_edits": [],
+          "left_noise_seed": 6609928960214730,
+          "panel": "scene",
+          "right_bbox_xyxy": [
+            639,
+            462,
+            677,
+            498
+          ],
+          "right_noise_edits": [
+            {
+              "params": {
+                "alpha": 0.05088
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "quality": 78.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "right_noise_seed": 3548959964803447,
+          "tint_rgb": [
+            161,
+            82,
+            26
+          ],
+          "transform_id": "flip_diag_anti"
+        },
+        {
+          "cell_bbox_xyxy": [
+            722,
+            346,
+            876,
+            586
+          ],
+          "icon_id": "gi-lorc-guillotine",
+          "index": 6,
+          "is_match": true,
+          "label": "F",
+          "left_bbox_xyxy": [
+            752,
+            461,
+            777,
+            499
+          ],
+          "left_noise_edits": [],
+          "left_noise_seed": 8699207739890994,
+          "panel": "scene",
+          "right_bbox_xyxy": [
+            807,
+            467,
+            845,
+            492
+          ],
+          "right_noise_edits": [
+            {
+              "params": {
+                "quality": 87.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "right_noise_seed": 2829067185562990,
+          "tint_rgb": [
+            161,
+            82,
+            26
+          ],
+          "transform_id": "rot270"
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            1104,
+            640
+          ],
+          "reference_content_xyxy": [
+            44,
+            77,
+            300,
+            596
+          ],
+          "reference_panel_xyxy": [
+            24,
+            24,
+            320,
+            616
+          ],
+          "scene_content_xyxy": [
+            364,
+            77,
+            1060,
+            596
+          ],
+          "scene_panel_xyxy": [
+            344,
+            24,
+            1080,
+            616
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "counting_target": "same_pair_transform_as_reference",
+        "matching_cell_labels": [
+          "B",
+          "D",
+          "E",
+          "F",
+          "G"
+        ],
+        "reference_transform_id": "rot270"
+      },
+      "scene_kind": "icons_reference_pair_transformation_count"
+    },
+    "witness_symbolic": {
+      "matching_cell_labels": [
+        "B",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "reference_transform_id": "rot270"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

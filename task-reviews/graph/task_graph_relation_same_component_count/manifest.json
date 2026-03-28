@@ -1,0 +1,11 @@
+{
+  "inspection_count": 5,
+  "task_id": "task_graph_relation_same_component_count",
+  "variants": {
+    "": 5
+  },
+  "workbook": "graph/task_graph_relation_same_component_count/task_graph_relation_same_component_count.xlsx",
+  "workbook_sheets": {
+    "same_component_count": "same_component_count"
+  }
+}

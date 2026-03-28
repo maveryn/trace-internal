@@ -1,0 +1,1103 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 1
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "2"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "graph/task_graph_relation_reachable_count/images/default/0005.png"
+  },
+  "instance_seed": 5001203339987227,
+  "prompt": "The image shows a labeled directed graph. Determine the answer: How many nodes, including node 2 itself, are reachable from 2 by following the direction of the arrows?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the labels of all nodes reachable from 2, including 2 itself.\nAnswer field: set \"answer\" to the count of those nodes as an integer.\nExample JSON:\n{\"evidence\":[\"2\",\"5\",\"8\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows a labeled directed graph. Determine the answer: How many nodes, including node 2 itself, are reachable from 2 by following the direction of the arrows?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the labels of all nodes reachable from 2, including 2 itself.\nAnswer field: set \"answer\" to the count of those nodes as an integer.\nExample JSON:\n{\"evidence\":[\"2\",\"5\",\"8\"],\"answer\":3}",
+    "answer_only": "The image shows a labeled directed graph. Determine the answer: How many nodes, including node 2 itself, are reachable from 2 by following the direction of the arrows?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the count of those nodes as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_graph_relation_reachable_count",
+  "task_variant": "reachable_count",
+  "trace_payload": {
+    "execution_trace": {
+      "crossing_count": 8,
+      "edge_count": 11,
+      "graph_directionality": "directed",
+      "label_variant": "numbers",
+      "layout_transform_variant": "identity",
+      "layout_variant_requested": "circular",
+      "layout_variant_used": "circular",
+      "matching_labels": [
+        "2"
+      ],
+      "node_color_name": "maroon",
+      "node_count": 9,
+      "node_shape_variant": "rounded_square",
+      "predecessors_by_label": {
+        "1": [
+          "5"
+        ],
+        "2": [
+          "3",
+          "6",
+          "8"
+        ],
+        "3": [
+          "8"
+        ],
+        "4": [
+          "1",
+          "9"
+        ],
+        "5": [
+          "7",
+          "9"
+        ],
+        "6": [],
+        "7": [],
+        "8": [
+          "1"
+        ],
+        "9": [
+          "7"
+        ]
+      },
+      "query_label": "2",
+      "question_format": "count_reachable_nodes_including_query",
+      "reachable_edge_count": 0,
+      "scene_variant": "circular",
+      "successors_by_label": {
+        "1": [
+          "4",
+          "8"
+        ],
+        "2": [],
+        "3": [
+          "2"
+        ],
+        "4": [],
+        "5": [
+          "1"
+        ],
+        "6": [
+          "2"
+        ],
+        "7": [
+          "5",
+          "9"
+        ],
+        "8": [
+          "2",
+          "3"
+        ],
+        "9": [
+          "4",
+          "5"
+        ]
+      },
+      "target_reachable_count": 1,
+      "task_variant": "reachable_count",
+      "topology_profile": "balanced",
+      "unreachable_edge_count": 11,
+      "unreachable_labels": [
+        "1",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
+    },
+    "projected_evidence": {
+      "label_set": [
+        "2"
+      ],
+      "pixel_bbox_set": [
+        [
+          766,
+          315,
+          808,
+          357
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          787,
+          336
+        ]
+      ],
+      "type": "label_set"
+    },
+    "query_spec": {
+      "params": {
+        "edge_count": 11,
+        "graph_directionality": "directed",
+        "label_variant": "numbers",
+        "label_variant_probabilities": {
+          "letters": 0.5,
+          "numbers": 0.5
+        },
+        "layout_transform_variant": "identity",
+        "layout_transform_variant_probabilities": {
+          "identity": 0.16666666666666666,
+          "mirror_left_right": 0.16666666666666666,
+          "mirror_up_down": 0.16666666666666666,
+          "rotate_180": 0.16666666666666666,
+          "rotate_270": 0.16666666666666666,
+          "rotate_90": 0.16666666666666666
+        },
+        "layout_variant": "circular",
+        "layout_variant_probabilities": {
+          "circular": 0.3333333333333333,
+          "shell": 0.3333333333333333,
+          "spring": 0.3333333333333333
+        },
+        "node_color_name": "maroon",
+        "node_color_name_probabilities": {
+          "blue": 0.1,
+          "brown": 0.1,
+          "cyan": 0.1,
+          "green": 0.1,
+          "magenta": 0.1,
+          "maroon": 0.1,
+          "orange": 0.1,
+          "purple": 0.1,
+          "red": 0.1,
+          "yellow": 0.1
+        },
+        "node_count": 9,
+        "node_count_probabilities": {
+          "5": 0.2,
+          "6": 0.2,
+          "7": 0.2,
+          "8": 0.2,
+          "9": 0.2
+        },
+        "node_shape_variant": "rounded_square",
+        "node_shape_variant_probabilities": {
+          "circle": 0.3333333333333333,
+          "hexagon": 0.3333333333333333,
+          "rounded_square": 0.3333333333333333
+        },
+        "query_label": "2",
+        "target_reachable_count": 1,
+        "target_reachable_count_probabilities": {
+          "1": 0.14285714285714285,
+          "2": 0.14285714285714285,
+          "3": 0.14285714285714285,
+          "4": 0.14285714285714285,
+          "5": 0.14285714285714285,
+          "6": 0.14285714285714285,
+          "7": 0.14285714285714285
+        },
+        "task_variant_probabilities": {
+          "reachable_count": 1.0
+        },
+        "topology_profile": "balanced",
+        "topology_profile_probabilities": {
+          "balanced": 0.3333333333333333,
+          "hub_heavy": 0.3333333333333333,
+          "low_degree": 0.3333333333333333
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "graph_relation_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count of those nodes as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the labels of all nodes reachable from 2, including 2 itself",
+          "json_example": "{\"evidence\":[\"2\",\"5\",\"8\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a labeled directed graph",
+          "question_text": "How many nodes, including node 2 itself, are reachable from 2 by following the direction of the arrows?"
+        },
+        "task_family_key": "single_graph_relation",
+        "task_family_variant_index": 1,
+        "task_key": "reachable_count_query",
+        "task_variant_index": 4,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "graph/relation/graph_relation_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:reachable_count_query": 5,
+          "task_family:single_graph_relation": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "graph_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count of those nodes as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the labels of all nodes reachable from 2, including 2 itself",
+              "json_example": "{\"evidence\":[\"2\",\"5\",\"8\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled directed graph",
+              "question_text": "How many nodes, including node 2 itself, are reachable from 2 by following the direction of the arrows?"
+            },
+            "task_family_key": "single_graph_relation",
+            "task_family_variant_index": 1,
+            "task_key": "reachable_count_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "graph/relation/graph_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:reachable_count_query": 5,
+              "task_family:single_graph_relation": 5
+            }
+          },
+          "prompt": "The image shows a labeled directed graph. Determine the answer: How many nodes, including node 2 itself, are reachable from 2 by following the direction of the arrows?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the labels of all nodes reachable from 2, including 2 itself.\nAnswer field: set \"answer\" to the count of those nodes as an integer.\nExample JSON:\n{\"evidence\":[\"2\",\"5\",\"8\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "graph_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count of those nodes as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the labels of all nodes reachable from 2, including 2 itself",
+              "json_example": "{\"evidence\":[\"2\",\"5\",\"8\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled directed graph",
+              "question_text": "How many nodes, including node 2 itself, are reachable from 2 by following the direction of the arrows?"
+            },
+            "task_family_key": "single_graph_relation",
+            "task_family_variant_index": 1,
+            "task_key": "reachable_count_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "graph/relation/graph_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:reachable_count_query": 5,
+              "task_family:single_graph_relation": 5
+            }
+          },
+          "prompt": "The image shows a labeled directed graph. Determine the answer: How many nodes, including node 2 itself, are reachable from 2 by following the direction of the arrows?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the count of those nodes as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "reachable_count",
+      "template_id": "graph_relation_v1"
+    },
+    "render_map": {
+      "anchors": {},
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        864,
+        640
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          864,
+          640
+        ],
+        "scene_content_xyxy": [
+          52,
+          83,
+          812,
+          588
+        ],
+        "scene_panel_xyxy": [
+          28,
+          28,
+          836,
+          612
+        ],
+        "title_band_xyxy": [
+          28,
+          28,
+          836,
+          71
+        ]
+      },
+      "style": {
+        "arrow_length_px": 12,
+        "arrow_width_px": 7,
+        "background_color_rgb": [
+          252,
+          249,
+          249
+        ],
+        "background_meta": {
+          "available_styles": [
+            "solid_light"
+          ],
+          "enabled": true,
+          "selected_style": "solid_light",
+          "style_spec": {
+            "color": [
+              248,
+              248,
+              248
+            ],
+            "kind": "solid"
+          }
+        },
+        "edge_color_rgb": [
+          108,
+          39,
+          49
+        ],
+        "edge_width_px": 4,
+        "label_font_size_px": 20,
+        "label_stroke_rgb": [
+          87,
+          31,
+          39
+        ],
+        "label_stroke_width_px": 2,
+        "label_text_rgb": [
+          255,
+          255,
+          255
+        ],
+        "node_border_rgb": [
+          87,
+          31,
+          39
+        ],
+        "node_border_width_px": 2,
+        "node_color_name": "maroon",
+        "node_fill_rgb": [
+          150,
+          54,
+          68
+        ],
+        "node_radius_px": 21,
+        "node_shape_variant": "rounded_square",
+        "panel_border_rgb": [
+          226,
+          199,
+          203
+        ],
+        "panel_fill_rgb": [
+          249,
+          243,
+          244
+        ],
+        "post_image_noise_meta": {
+          "applied": false,
+          "apply_prob": 0.0,
+          "edit_count_range": [
+            1,
+            2
+          ],
+          "edit_types": [
+            "blur",
+            "downsample",
+            "jpeg",
+            "noise"
+          ],
+          "edits": [],
+          "enabled": false
+        },
+        "resolved_label_font_size_px": 20,
+        "title_color_rgb": [
+          69,
+          25,
+          31
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_xyxy": [
+            766,
+            315,
+            808,
+            357
+          ],
+          "center_px": [
+            787,
+            336
+          ],
+          "degree": 3,
+          "entity_id": "node_2",
+          "entity_kind": "graph_node",
+          "is_query_node": true,
+          "is_reachable": true,
+          "label": "2",
+          "neighbors": [
+            "3",
+            "6",
+            "8"
+          ],
+          "predecessors": [
+            "3",
+            "6",
+            "8"
+          ],
+          "successors": []
+        },
+        {
+          "bbox_xyxy": [
+            680,
+            463,
+            722,
+            505
+          ],
+          "center_px": [
+            701,
+            484
+          ],
+          "degree": 1,
+          "entity_id": "node_8",
+          "entity_kind": "graph_node",
+          "is_query_node": false,
+          "is_reachable": false,
+          "label": "8",
+          "neighbors": [
+            "1",
+            "2",
+            "3"
+          ],
+          "predecessors": [
+            "1"
+          ],
+          "successors": [
+            "2",
+            "3"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            464,
+            542,
+            506,
+            584
+          ],
+          "center_px": [
+            485,
+            563
+          ],
+          "degree": 0,
+          "entity_id": "node_6",
+          "entity_kind": "graph_node",
+          "is_query_node": false,
+          "is_reachable": false,
+          "label": "6",
+          "neighbors": [
+            "2"
+          ],
+          "predecessors": [],
+          "successors": [
+            "2"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            217,
+            515,
+            259,
+            557
+          ],
+          "center_px": [
+            238,
+            536
+          ],
+          "degree": 1,
+          "entity_id": "node_1",
+          "entity_kind": "graph_node",
+          "is_query_node": false,
+          "is_reachable": false,
+          "label": "1",
+          "neighbors": [
+            "4",
+            "5",
+            "8"
+          ],
+          "predecessors": [
+            "5"
+          ],
+          "successors": [
+            "4",
+            "8"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            56,
+            394,
+            98,
+            436
+          ],
+          "center_px": [
+            77,
+            415
+          ],
+          "degree": 2,
+          "entity_id": "node_5",
+          "entity_kind": "graph_node",
+          "is_query_node": false,
+          "is_reachable": false,
+          "label": "5",
+          "neighbors": [
+            "1",
+            "7",
+            "9"
+          ],
+          "predecessors": [
+            "7",
+            "9"
+          ],
+          "successors": [
+            "1"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            56,
+            235,
+            98,
+            277
+          ],
+          "center_px": [
+            77,
+            256
+          ],
+          "degree": 2,
+          "entity_id": "node_4",
+          "entity_kind": "graph_node",
+          "is_query_node": false,
+          "is_reachable": false,
+          "label": "4",
+          "neighbors": [
+            "1",
+            "9"
+          ],
+          "predecessors": [
+            "1",
+            "9"
+          ],
+          "successors": []
+        },
+        {
+          "bbox_xyxy": [
+            217,
+            114,
+            259,
+            156
+          ],
+          "center_px": [
+            238,
+            135
+          ],
+          "degree": 1,
+          "entity_id": "node_9",
+          "entity_kind": "graph_node",
+          "is_query_node": false,
+          "is_reachable": false,
+          "label": "9",
+          "neighbors": [
+            "4",
+            "5",
+            "7"
+          ],
+          "predecessors": [
+            "7"
+          ],
+          "successors": [
+            "4",
+            "5"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            464,
+            87,
+            506,
+            129
+          ],
+          "center_px": [
+            485,
+            108
+          ],
+          "degree": 1,
+          "entity_id": "node_3",
+          "entity_kind": "graph_node",
+          "is_query_node": false,
+          "is_reachable": false,
+          "label": "3",
+          "neighbors": [
+            "2",
+            "8"
+          ],
+          "predecessors": [
+            "8"
+          ],
+          "successors": [
+            "2"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            680,
+            166,
+            722,
+            208
+          ],
+          "center_px": [
+            701,
+            187
+          ],
+          "degree": 0,
+          "entity_id": "node_7",
+          "entity_kind": "graph_node",
+          "is_query_node": false,
+          "is_reachable": false,
+          "label": "7",
+          "neighbors": [
+            "5",
+            "9"
+          ],
+          "predecessors": [],
+          "successors": [
+            "5",
+            "9"
+          ]
+        },
+        {
+          "directed": true,
+          "entity_id": "edge_1_4",
+          "entity_kind": "graph_edge",
+          "node_u_label": "1",
+          "node_v_label": "4",
+          "segment_px": [
+            [
+              228,
+              518
+            ],
+            [
+              93,
+              284
+            ]
+          ]
+        },
+        {
+          "directed": true,
+          "entity_id": "edge_1_8",
+          "entity_kind": "graph_edge",
+          "node_u_label": "1",
+          "node_v_label": "8",
+          "segment_px": [
+            [
+              259,
+              534
+            ],
+            [
+              669,
+              488
+            ]
+          ]
+        },
+        {
+          "directed": true,
+          "entity_id": "edge_3_2",
+          "entity_kind": "graph_edge",
+          "node_u_label": "3",
+          "node_v_label": "2",
+          "segment_px": [
+            [
+              502,
+              121
+            ],
+            [
+              761,
+              317
+            ]
+          ]
+        },
+        {
+          "directed": true,
+          "entity_id": "edge_5_1",
+          "entity_kind": "graph_edge",
+          "node_u_label": "5",
+          "node_v_label": "1",
+          "segment_px": [
+            [
+              94,
+              428
+            ],
+            [
+              212,
+              517
+            ]
+          ]
+        },
+        {
+          "directed": true,
+          "entity_id": "edge_6_2",
+          "entity_kind": "graph_edge",
+          "node_u_label": "6",
+          "node_v_label": "2",
+          "segment_px": [
+            [
+              502,
+              550
+            ],
+            [
+              761,
+              355
+            ]
+          ]
+        },
+        {
+          "directed": true,
+          "entity_id": "edge_7_5",
+          "entity_kind": "graph_edge",
+          "node_u_label": "7",
+          "node_v_label": "5",
+          "segment_px": [
+            [
+              681,
+              194
+            ],
+            [
+              107,
+              404
+            ]
+          ]
+        },
+        {
+          "directed": true,
+          "entity_id": "edge_7_9",
+          "entity_kind": "graph_edge",
+          "node_u_label": "7",
+          "node_v_label": "9",
+          "segment_px": [
+            [
+              680,
+              185
+            ],
+            [
+              270,
+              139
+            ]
+          ]
+        },
+        {
+          "directed": true,
+          "entity_id": "edge_8_2",
+          "entity_kind": "graph_edge",
+          "node_u_label": "8",
+          "node_v_label": "2",
+          "segment_px": [
+            [
+              712,
+              466
+            ],
+            [
+              771,
+              364
+            ]
+          ]
+        },
+        {
+          "directed": true,
+          "entity_id": "edge_8_3",
+          "entity_kind": "graph_edge",
+          "node_u_label": "8",
+          "node_v_label": "3",
+          "segment_px": [
+            [
+              691,
+              466
+            ],
+            [
+              501,
+              136
+            ]
+          ]
+        },
+        {
+          "directed": true,
+          "entity_id": "edge_9_4",
+          "entity_kind": "graph_edge",
+          "node_u_label": "9",
+          "node_v_label": "4",
+          "segment_px": [
+            [
+              221,
+              148
+            ],
+            [
+              103,
+              237
+            ]
+          ]
+        },
+        {
+          "directed": true,
+          "entity_id": "edge_9_5",
+          "entity_kind": "graph_edge",
+          "node_u_label": "9",
+          "node_v_label": "5",
+          "segment_px": [
+            [
+              228,
+              153
+            ],
+            [
+              93,
+              387
+            ]
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            864,
+            640
+          ],
+          "scene_content_xyxy": [
+            52,
+            83,
+            812,
+            588
+          ],
+          "scene_panel_xyxy": [
+            28,
+            28,
+            836,
+            612
+          ],
+          "title_band_xyxy": [
+            28,
+            28,
+            836,
+            71
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "adjacency_by_label": {
+          "1": [
+            "4",
+            "8"
+          ],
+          "2": [],
+          "3": [
+            "2"
+          ],
+          "4": [],
+          "5": [
+            "1"
+          ],
+          "6": [
+            "2"
+          ],
+          "7": [
+            "5",
+            "9"
+          ],
+          "8": [
+            "2",
+            "3"
+          ],
+          "9": [
+            "4",
+            "5"
+          ]
+        },
+        "edge_labels": [
+          [
+            "1",
+            "4"
+          ],
+          [
+            "1",
+            "8"
+          ],
+          [
+            "3",
+            "2"
+          ],
+          [
+            "5",
+            "1"
+          ],
+          [
+            "6",
+            "2"
+          ],
+          [
+            "7",
+            "5"
+          ],
+          [
+            "7",
+            "9"
+          ],
+          [
+            "8",
+            "2"
+          ],
+          [
+            "8",
+            "3"
+          ],
+          [
+            "9",
+            "4"
+          ],
+          [
+            "9",
+            "5"
+          ]
+        ],
+        "graph_directionality": "directed",
+        "in_degrees_by_label": {
+          "1": 1,
+          "2": 3,
+          "3": 1,
+          "4": 2,
+          "5": 2,
+          "6": 0,
+          "7": 0,
+          "8": 1,
+          "9": 1
+        },
+        "matching_labels": [
+          "2"
+        ],
+        "out_degrees_by_label": {
+          "1": 2,
+          "2": 0,
+          "3": 1,
+          "4": 0,
+          "5": 1,
+          "6": 1,
+          "7": 2,
+          "8": 2,
+          "9": 2
+        },
+        "predecessors_by_label": {
+          "1": [
+            "5"
+          ],
+          "2": [
+            "3",
+            "6",
+            "8"
+          ],
+          "3": [
+            "8"
+          ],
+          "4": [
+            "1",
+            "9"
+          ],
+          "5": [
+            "7",
+            "9"
+          ],
+          "6": [],
+          "7": [],
+          "8": [
+            "1"
+          ],
+          "9": [
+            "7"
+          ]
+        },
+        "query_label": "2",
+        "relation_rule": "reachable_from_query_node_following_arrow_direction_including_query",
+        "successors_by_label": {
+          "1": [
+            "4",
+            "8"
+          ],
+          "2": [],
+          "3": [
+            "2"
+          ],
+          "4": [],
+          "5": [
+            "1"
+          ],
+          "6": [
+            "2"
+          ],
+          "7": [
+            "5",
+            "9"
+          ],
+          "8": [
+            "2",
+            "3"
+          ],
+          "9": [
+            "4",
+            "5"
+          ]
+        },
+        "unreachable_labels": [
+          "1",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9"
+        ]
+      },
+      "scene_kind": "graph_reachable_relation"
+    },
+    "witness_symbolic": {
+      "label_set": [
+        "2"
+      ],
+      "query_label": "2",
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

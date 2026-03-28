@@ -1,0 +1,1244 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 2
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "E",
+      "F"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_relation_occlusion_order/images/default/0009.png"
+  },
+  "instance_seed": 1252114557246923,
+  "prompt": "Use the image containing a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right. How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the image containing a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right. How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+    "answer_only": "Use the image containing a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right. How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_icons_relation_occlusion_order",
+  "task_variant": "same_front_to_back_order",
+  "trace_payload": {
+    "execution_trace": {
+      "cell_labels": [
+        "F",
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ],
+      "cell_order_ids": [
+        "a_over_b",
+        "b_over_a",
+        "b_over_a",
+        "b_over_a",
+        "b_over_a",
+        "a_over_b"
+      ],
+      "distractor_count": 4,
+      "distractor_count_probabilities": {
+        "1": 0.16666666666666666,
+        "2": 0.16666666666666666,
+        "3": 0.16666666666666666,
+        "4": 0.16666666666666666,
+        "5": 0.16666666666666666,
+        "6": 0.16666666666666666
+      },
+      "icon_a_id": "gi-delapouite-saint-basil-cathedral",
+      "icon_b_id": "gi-lorc-jeweled-chalice",
+      "matching_cell_labels": [
+        "E",
+        "F"
+      ],
+      "object_count": 6,
+      "object_count_probabilities": {
+        "3": 0.16666666666666666,
+        "4": 0.16666666666666666,
+        "5": 0.16666666666666666,
+        "6": 0.16666666666666666,
+        "7": 0.16666666666666666,
+        "8": 0.16666666666666666
+      },
+      "question_format": "count_scene_cells_matching_reference_occlusion_order",
+      "reference_order_id": "a_over_b",
+      "scene_variant": "reference_overlap_grid",
+      "target_count": 2,
+      "target_count_probabilities": {
+        "0": 0.14285714285714285,
+        "1": 0.14285714285714285,
+        "2": 0.14285714285714285,
+        "3": 0.14285714285714285,
+        "4": 0.14285714285714285,
+        "5": 0.14285714285714285,
+        "6": 0.14285714285714285
+      },
+      "task_variant": "same_front_to_back_order"
+    },
+    "projected_evidence": {
+      "label_set": [
+        "E",
+        "F"
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "distractor_count": 4,
+        "distractor_count_probabilities": {
+          "1": 0.16666666666666666,
+          "2": 0.16666666666666666,
+          "3": 0.16666666666666666,
+          "4": 0.16666666666666666,
+          "5": 0.16666666666666666,
+          "6": 0.16666666666666666
+        },
+        "object_count": 6,
+        "object_count_probabilities": {
+          "3": 0.16666666666666666,
+          "4": 0.16666666666666666,
+          "5": 0.16666666666666666,
+          "6": 0.16666666666666666,
+          "7": 0.16666666666666666,
+          "8": 0.16666666666666666
+        },
+        "pool_manifest": "all_icons.txt",
+        "target_count": 2,
+        "target_count_probabilities": {
+          "0": 0.14285714285714285,
+          "1": 0.14285714285714285,
+          "2": 0.14285714285714285,
+          "3": 0.14285714285714285,
+          "4": 0.14285714285714285,
+          "5": 0.14285714285714285,
+          "6": 0.14285714285714285
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "icons_relation_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+          "json_example": "{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right",
+          "question_text": "How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top."
+        },
+        "task_family_key": "reference_grid_occlusion_relation",
+        "task_family_variant_index": 3,
+        "task_key": "relation_query",
+        "task_variant_index": 0,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/relation/icons_relation_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:relation_query": 5,
+          "task_family:reference_grid_occlusion_relation": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "icons_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+              "json_example": "{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right",
+              "question_text": "How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top."
+            },
+            "task_family_key": "reference_grid_occlusion_relation",
+            "task_family_variant_index": 3,
+            "task_key": "relation_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/relation/icons_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:relation_query": 5,
+              "task_family:reference_grid_occlusion_relation": 5
+            }
+          },
+          "prompt": "Use the image containing a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right. How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "icons_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+              "json_example": "{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right",
+              "question_text": "How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top."
+            },
+            "task_family_key": "reference_grid_occlusion_relation",
+            "task_family_variant_index": 3,
+            "task_key": "relation_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/relation/icons_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:relation_query": 5,
+              "task_family:reference_grid_occlusion_relation": 5
+            }
+          },
+          "prompt": "Use the image containing a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right. How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "same_front_to_back_order",
+      "template_id": "icons_relation_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching_cell_labels": [
+          "E",
+          "F"
+        ],
+        "reference_pair": {
+          "front_role": "a",
+          "icon_a_bbox_xyxy": [
+            134,
+            264,
+            234,
+            367
+          ],
+          "icon_a_id": "gi-delapouite-saint-basil-cathedral",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "scale": 0.935465
+              },
+              "type": "downsample"
+            }
+          ],
+          "icon_a_noise_seed": 910701951003756,
+          "icon_a_tint_rgb": [
+            30,
+            107,
+            53
+          ],
+          "icon_b_bbox_xyxy": [
+            109,
+            306,
+            182,
+            409
+          ],
+          "icon_b_id": "gi-lorc-jeweled-chalice",
+          "icon_b_noise_edits": [],
+          "icon_b_noise_seed": 2175535996845739,
+          "icon_b_tint_rgb": [
+            34,
+            39,
+            176
+          ],
+          "order_id": "a_over_b",
+          "overlap_ratio": 0.4792779525158693,
+          "panel": "reference"
+        },
+        "scene_cells": [
+          {
+            "cell_bbox_xyxy": [
+              374,
+              87,
+              586,
+              326
+            ],
+            "front_role": "a",
+            "icon_a_bbox_xyxy": [
+              453,
+              192,
+              541,
+              281
+            ],
+            "icon_a_id": "gi-delapouite-saint-basil-cathedral",
+            "icon_a_noise_edits": [
+              {
+                "params": {
+                  "scale": 0.866617
+                },
+                "type": "downsample"
+              },
+              {
+                "params": {
+                  "quality": 85.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "icon_a_noise_seed": 728577192236976,
+            "icon_a_tint_rgb": [
+              179,
+              188,
+              107
+            ],
+            "icon_b_bbox_xyxy": [
+              419,
+              162,
+              483,
+              251
+            ],
+            "icon_b_id": "gi-lorc-jeweled-chalice",
+            "icon_b_noise_edits": [
+              {
+                "params": {
+                  "alpha": 0.069301
+                },
+                "type": "noise"
+              },
+              {
+                "params": {
+                  "radius": 0.5832
+                },
+                "type": "blur"
+              }
+            ],
+            "icon_b_noise_seed": 2930092723732795,
+            "icon_b_tint_rgb": [
+              34,
+              39,
+              176
+            ],
+            "index": 0,
+            "is_match": true,
+            "label": "F",
+            "order_id": "a_over_b",
+            "overlap_ratio": 0.4397913073561198,
+            "panel": "scene"
+          },
+          {
+            "cell_bbox_xyxy": [
+              606,
+              87,
+              818,
+              326
+            ],
+            "front_role": "b",
+            "icon_a_bbox_xyxy": [
+              659,
+              171,
+              747,
+              260
+            ],
+            "icon_a_id": "gi-delapouite-saint-basil-cathedral",
+            "icon_a_noise_edits": [],
+            "icon_a_noise_seed": 4747015729864471,
+            "icon_a_tint_rgb": [
+              179,
+              188,
+              107
+            ],
+            "icon_b_bbox_xyxy": [
+              701,
+              183,
+              765,
+              272
+            ],
+            "icon_b_id": "gi-lorc-jeweled-chalice",
+            "icon_b_noise_edits": [
+              {
+                "params": {
+                  "alpha": 0.078316
+                },
+                "type": "noise"
+              }
+            ],
+            "icon_b_noise_seed": 6873214494515711,
+            "icon_b_tint_rgb": [
+              69,
+              113,
+              203
+            ],
+            "index": 1,
+            "is_match": false,
+            "label": "A",
+            "order_id": "b_over_a",
+            "overlap_ratio": 0.49605117593547476,
+            "panel": "scene"
+          },
+          {
+            "cell_bbox_xyxy": [
+              838,
+              87,
+              1050,
+              326
+            ],
+            "front_role": "b",
+            "icon_a_bbox_xyxy": [
+              914,
+              168,
+              1002,
+              257
+            ],
+            "icon_a_id": "gi-delapouite-saint-basil-cathedral",
+            "icon_a_noise_edits": [
+              {
+                "params": {
+                  "radius": 0.421913
+                },
+                "type": "blur"
+              },
+              {
+                "params": {
+                  "scale": 0.867184
+                },
+                "type": "downsample"
+              }
+            ],
+            "icon_a_noise_seed": 6197949373538199,
+            "icon_a_tint_rgb": [
+              211,
+              106,
+              25
+            ],
+            "icon_b_bbox_xyxy": [
+              886,
+              186,
+              950,
+              275
+            ],
+            "icon_b_id": "gi-lorc-jeweled-chalice",
+            "icon_b_noise_edits": [
+              {
+                "params": {
+                  "quality": 79.0
+                },
+                "type": "jpeg"
+              },
+              {
+                "params": {
+                  "scale": 0.896035
+                },
+                "type": "downsample"
+              }
+            ],
+            "icon_b_noise_seed": 6695027345988177,
+            "icon_b_tint_rgb": [
+              30,
+              107,
+              53
+            ],
+            "index": 2,
+            "is_match": false,
+            "label": "B",
+            "order_id": "b_over_a",
+            "overlap_ratio": 0.5791313378226854,
+            "panel": "scene"
+          },
+          {
+            "cell_bbox_xyxy": [
+              374,
+              346,
+              586,
+              586
+            ],
+            "front_role": "b",
+            "icon_a_bbox_xyxy": [
+              452,
+              443,
+              540,
+              532
+            ],
+            "icon_a_id": "gi-delapouite-saint-basil-cathedral",
+            "icon_a_noise_edits": [],
+            "icon_a_noise_seed": 3480111068559889,
+            "icon_a_tint_rgb": [
+              201,
+              24,
+              61
+            ],
+            "icon_b_bbox_xyxy": [
+              419,
+              430,
+              483,
+              519
+            ],
+            "icon_b_id": "gi-lorc-jeweled-chalice",
+            "icon_b_noise_edits": [
+              {
+                "params": {
+                  "alpha": 0.039898
+                },
+                "type": "noise"
+              },
+              {
+                "params": {
+                  "scale": 0.876318
+                },
+                "type": "downsample"
+              }
+            ],
+            "icon_b_noise_seed": 377519793069209,
+            "icon_b_tint_rgb": [
+              69,
+              113,
+              203
+            ],
+            "index": 3,
+            "is_match": false,
+            "label": "C",
+            "order_id": "b_over_a",
+            "overlap_ratio": 0.5690505611100415,
+            "panel": "scene"
+          },
+          {
+            "cell_bbox_xyxy": [
+              606,
+              346,
+              818,
+              586
+            ],
+            "front_role": "b",
+            "icon_a_bbox_xyxy": [
+              689,
+              449,
+              777,
+              538
+            ],
+            "icon_a_id": "gi-delapouite-saint-basil-cathedral",
+            "icon_a_noise_edits": [],
+            "icon_a_noise_seed": 5402467019535689,
+            "icon_a_tint_rgb": [
+              211,
+              106,
+              25
+            ],
+            "icon_b_bbox_xyxy": [
+              647,
+              423,
+              711,
+              512
+            ],
+            "icon_b_id": "gi-lorc-jeweled-chalice",
+            "icon_b_noise_edits": [
+              {
+                "params": {
+                  "radius": 0.387922
+                },
+                "type": "blur"
+              }
+            ],
+            "icon_b_noise_seed": 8664706548126296,
+            "icon_b_tint_rgb": [
+              69,
+              113,
+              203
+            ],
+            "index": 4,
+            "is_match": false,
+            "label": "D",
+            "order_id": "b_over_a",
+            "overlap_ratio": 0.4104427312988591,
+            "panel": "scene"
+          },
+          {
+            "cell_bbox_xyxy": [
+              838,
+              346,
+              1050,
+              586
+            ],
+            "front_role": "a",
+            "icon_a_bbox_xyxy": [
+              900,
+              456,
+              988,
+              545
+            ],
+            "icon_a_id": "gi-delapouite-saint-basil-cathedral",
+            "icon_a_noise_edits": [
+              {
+                "params": {
+                  "quality": 87.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "icon_a_noise_seed": 6159841000874910,
+            "icon_a_tint_rgb": [
+              31,
+              199,
+              36
+            ],
+            "icon_b_bbox_xyxy": [
+              923,
+              417,
+              987,
+              506
+            ],
+            "icon_b_id": "gi-lorc-jeweled-chalice",
+            "icon_b_noise_edits": [],
+            "icon_b_noise_seed": 4022894006573355,
+            "icon_b_tint_rgb": [
+              69,
+              113,
+              203
+            ],
+            "index": 5,
+            "is_match": true,
+            "label": "E",
+            "order_id": "a_over_b",
+            "overlap_ratio": 0.4527821859262037,
+            "panel": "scene"
+          }
+        ]
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        1104,
+        640
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          1104,
+          640
+        ],
+        "reference_content_xyxy": [
+          44,
+          77,
+          300,
+          596
+        ],
+        "reference_panel_xyxy": [
+          24,
+          24,
+          320,
+          616
+        ],
+        "scene_content_xyxy": [
+          364,
+          77,
+          1060,
+          596
+        ],
+        "scene_panel_xyxy": [
+          344,
+          24,
+          1080,
+          616
+        ]
+      },
+      "style": {
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "cell_border_rgb": [
+          218,
+          223,
+          233
+        ],
+        "cell_label_color_rgb": [
+          52,
+          60,
+          77
+        ],
+        "cell_label_font_size_px": 22,
+        "cell_padding_px": 10,
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "overlap_ratio_range": [
+          0.4,
+          0.6
+        ],
+        "pair_min_color_distance": 80.0,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "sampled_palette_rgb": [
+          [
+            38,
+            194,
+            178
+          ],
+          [
+            179,
+            188,
+            107
+          ],
+          [
+            118,
+            33,
+            119
+          ],
+          [
+            191,
+            124,
+            121
+          ],
+          [
+            34,
+            39,
+            176
+          ],
+          [
+            69,
+            113,
+            203
+          ],
+          [
+            31,
+            199,
+            36
+          ],
+          [
+            211,
+            106,
+            25
+          ],
+          [
+            201,
+            24,
+            61
+          ],
+          [
+            30,
+            107,
+            53
+          ],
+          [
+            211,
+            25,
+            206
+          ]
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "front_role": "a",
+          "icon_a_bbox_xyxy": [
+            134,
+            264,
+            234,
+            367
+          ],
+          "icon_a_id": "gi-delapouite-saint-basil-cathedral",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "scale": 0.935465
+              },
+              "type": "downsample"
+            }
+          ],
+          "icon_a_noise_seed": 910701951003756,
+          "icon_a_tint_rgb": [
+            30,
+            107,
+            53
+          ],
+          "icon_b_bbox_xyxy": [
+            109,
+            306,
+            182,
+            409
+          ],
+          "icon_b_id": "gi-lorc-jeweled-chalice",
+          "icon_b_noise_edits": [],
+          "icon_b_noise_seed": 2175535996845739,
+          "icon_b_tint_rgb": [
+            34,
+            39,
+            176
+          ],
+          "order_id": "a_over_b",
+          "overlap_ratio": 0.4792779525158693,
+          "panel": "reference"
+        },
+        {
+          "cell_bbox_xyxy": [
+            374,
+            87,
+            586,
+            326
+          ],
+          "front_role": "a",
+          "icon_a_bbox_xyxy": [
+            453,
+            192,
+            541,
+            281
+          ],
+          "icon_a_id": "gi-delapouite-saint-basil-cathedral",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "scale": 0.866617
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "quality": 85.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "icon_a_noise_seed": 728577192236976,
+          "icon_a_tint_rgb": [
+            179,
+            188,
+            107
+          ],
+          "icon_b_bbox_xyxy": [
+            419,
+            162,
+            483,
+            251
+          ],
+          "icon_b_id": "gi-lorc-jeweled-chalice",
+          "icon_b_noise_edits": [
+            {
+              "params": {
+                "alpha": 0.069301
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "radius": 0.5832
+              },
+              "type": "blur"
+            }
+          ],
+          "icon_b_noise_seed": 2930092723732795,
+          "icon_b_tint_rgb": [
+            34,
+            39,
+            176
+          ],
+          "index": 0,
+          "is_match": true,
+          "label": "F",
+          "order_id": "a_over_b",
+          "overlap_ratio": 0.4397913073561198,
+          "panel": "scene"
+        },
+        {
+          "cell_bbox_xyxy": [
+            606,
+            87,
+            818,
+            326
+          ],
+          "front_role": "b",
+          "icon_a_bbox_xyxy": [
+            659,
+            171,
+            747,
+            260
+          ],
+          "icon_a_id": "gi-delapouite-saint-basil-cathedral",
+          "icon_a_noise_edits": [],
+          "icon_a_noise_seed": 4747015729864471,
+          "icon_a_tint_rgb": [
+            179,
+            188,
+            107
+          ],
+          "icon_b_bbox_xyxy": [
+            701,
+            183,
+            765,
+            272
+          ],
+          "icon_b_id": "gi-lorc-jeweled-chalice",
+          "icon_b_noise_edits": [
+            {
+              "params": {
+                "alpha": 0.078316
+              },
+              "type": "noise"
+            }
+          ],
+          "icon_b_noise_seed": 6873214494515711,
+          "icon_b_tint_rgb": [
+            69,
+            113,
+            203
+          ],
+          "index": 1,
+          "is_match": false,
+          "label": "A",
+          "order_id": "b_over_a",
+          "overlap_ratio": 0.49605117593547476,
+          "panel": "scene"
+        },
+        {
+          "cell_bbox_xyxy": [
+            838,
+            87,
+            1050,
+            326
+          ],
+          "front_role": "b",
+          "icon_a_bbox_xyxy": [
+            914,
+            168,
+            1002,
+            257
+          ],
+          "icon_a_id": "gi-delapouite-saint-basil-cathedral",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "radius": 0.421913
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "scale": 0.867184
+              },
+              "type": "downsample"
+            }
+          ],
+          "icon_a_noise_seed": 6197949373538199,
+          "icon_a_tint_rgb": [
+            211,
+            106,
+            25
+          ],
+          "icon_b_bbox_xyxy": [
+            886,
+            186,
+            950,
+            275
+          ],
+          "icon_b_id": "gi-lorc-jeweled-chalice",
+          "icon_b_noise_edits": [
+            {
+              "params": {
+                "quality": 79.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "scale": 0.896035
+              },
+              "type": "downsample"
+            }
+          ],
+          "icon_b_noise_seed": 6695027345988177,
+          "icon_b_tint_rgb": [
+            30,
+            107,
+            53
+          ],
+          "index": 2,
+          "is_match": false,
+          "label": "B",
+          "order_id": "b_over_a",
+          "overlap_ratio": 0.5791313378226854,
+          "panel": "scene"
+        },
+        {
+          "cell_bbox_xyxy": [
+            374,
+            346,
+            586,
+            586
+          ],
+          "front_role": "b",
+          "icon_a_bbox_xyxy": [
+            452,
+            443,
+            540,
+            532
+          ],
+          "icon_a_id": "gi-delapouite-saint-basil-cathedral",
+          "icon_a_noise_edits": [],
+          "icon_a_noise_seed": 3480111068559889,
+          "icon_a_tint_rgb": [
+            201,
+            24,
+            61
+          ],
+          "icon_b_bbox_xyxy": [
+            419,
+            430,
+            483,
+            519
+          ],
+          "icon_b_id": "gi-lorc-jeweled-chalice",
+          "icon_b_noise_edits": [
+            {
+              "params": {
+                "alpha": 0.039898
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "scale": 0.876318
+              },
+              "type": "downsample"
+            }
+          ],
+          "icon_b_noise_seed": 377519793069209,
+          "icon_b_tint_rgb": [
+            69,
+            113,
+            203
+          ],
+          "index": 3,
+          "is_match": false,
+          "label": "C",
+          "order_id": "b_over_a",
+          "overlap_ratio": 0.5690505611100415,
+          "panel": "scene"
+        },
+        {
+          "cell_bbox_xyxy": [
+            606,
+            346,
+            818,
+            586
+          ],
+          "front_role": "b",
+          "icon_a_bbox_xyxy": [
+            689,
+            449,
+            777,
+            538
+          ],
+          "icon_a_id": "gi-delapouite-saint-basil-cathedral",
+          "icon_a_noise_edits": [],
+          "icon_a_noise_seed": 5402467019535689,
+          "icon_a_tint_rgb": [
+            211,
+            106,
+            25
+          ],
+          "icon_b_bbox_xyxy": [
+            647,
+            423,
+            711,
+            512
+          ],
+          "icon_b_id": "gi-lorc-jeweled-chalice",
+          "icon_b_noise_edits": [
+            {
+              "params": {
+                "radius": 0.387922
+              },
+              "type": "blur"
+            }
+          ],
+          "icon_b_noise_seed": 8664706548126296,
+          "icon_b_tint_rgb": [
+            69,
+            113,
+            203
+          ],
+          "index": 4,
+          "is_match": false,
+          "label": "D",
+          "order_id": "b_over_a",
+          "overlap_ratio": 0.4104427312988591,
+          "panel": "scene"
+        },
+        {
+          "cell_bbox_xyxy": [
+            838,
+            346,
+            1050,
+            586
+          ],
+          "front_role": "a",
+          "icon_a_bbox_xyxy": [
+            900,
+            456,
+            988,
+            545
+          ],
+          "icon_a_id": "gi-delapouite-saint-basil-cathedral",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "quality": 87.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "icon_a_noise_seed": 6159841000874910,
+          "icon_a_tint_rgb": [
+            31,
+            199,
+            36
+          ],
+          "icon_b_bbox_xyxy": [
+            923,
+            417,
+            987,
+            506
+          ],
+          "icon_b_id": "gi-lorc-jeweled-chalice",
+          "icon_b_noise_edits": [],
+          "icon_b_noise_seed": 4022894006573355,
+          "icon_b_tint_rgb": [
+            69,
+            113,
+            203
+          ],
+          "index": 5,
+          "is_match": true,
+          "label": "E",
+          "order_id": "a_over_b",
+          "overlap_ratio": 0.4527821859262037,
+          "panel": "scene"
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            1104,
+            640
+          ],
+          "reference_content_xyxy": [
+            44,
+            77,
+            300,
+            596
+          ],
+          "reference_panel_xyxy": [
+            24,
+            24,
+            320,
+            616
+          ],
+          "scene_content_xyxy": [
+            364,
+            77,
+            1060,
+            596
+          ],
+          "scene_panel_xyxy": [
+            344,
+            24,
+            1080,
+            616
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "counting_target": "same_front_to_back_order_as_reference",
+        "matching_cell_labels": [
+          "E",
+          "F"
+        ],
+        "reference_order_id": "a_over_b"
+      },
+      "scene_kind": "icons_reference_grid_occlusion_order_count"
+    },
+    "witness_symbolic": {
+      "matching_cell_labels": [
+        "E",
+        "F"
+      ],
+      "reference_order_id": "a_over_b"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

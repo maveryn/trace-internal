@@ -1,0 +1,38 @@
+{
+  "config": {
+    "count_per_variant": 100,
+    "inspection_count_per_variant": 25,
+    "max_attempts_per_instance": 200,
+    "max_total_samples_per_task": 30000,
+    "mode": "full",
+    "random_count": 100,
+    "seed": 0,
+    "tasks": [
+      "task_graph_relation_reachable_count"
+    ],
+    "workers": 16
+  },
+  "summary": {
+    "distribution_tasks_failed": 0,
+    "failed_distribution_task_ids": [],
+    "total_tasks": 1
+  },
+  "tasks": [
+    {
+      "distribution_pass": true,
+      "domain": "graph",
+      "inspection_count": 25,
+      "inspection_workbook": "graph/task_graph_relation_reachable_count/task_graph_relation_reachable_count.xlsx",
+      "inspection_workbook_sheets": {
+        "reachable_count": "reachable_count"
+      },
+      "reports": {
+        "distribution_review": "graph/task_graph_relation_reachable_count/distribution_review.json",
+        "inspection_manifest": "graph/task_graph_relation_reachable_count/manifest.json",
+        "random_review": "graph/task_graph_relation_reachable_count/random_review_100.json"
+      },
+      "task_group": "relation",
+      "task_id": "task_graph_relation_reachable_count"
+    }
+  ]
+}

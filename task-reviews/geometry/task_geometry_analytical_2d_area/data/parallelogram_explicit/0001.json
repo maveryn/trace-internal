@@ -1,0 +1,443 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 228
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "HI": 19,
+      "JK": 12
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_2d_area/images/parallelogram_explicit/0001.png"
+  },
+  "instance_seed": 3961174280266170,
+  "prompt": "Look at the annotated image showing a geometric shape with measurement annotations. Task: The parallelogram has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, JK.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"HI\":2,\"JK\":3},\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the annotated image showing a geometric shape with measurement annotations. Task: The parallelogram has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, JK.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"HI\":2,\"JK\":3},\"answer\":8}",
+    "answer_only": "Look at the annotated image showing a geometric shape with measurement annotations. Task: The parallelogram has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_geometry_analytical_2d_area",
+  "task_variant": "parallelogram_explicit",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 2500,
+      "answer_min": 8,
+      "answer_scalar": 228,
+      "answer_type": "integer",
+      "answer_value": 228,
+      "case_id": "parallelogram_explicit",
+      "evidence_annotations": {
+        "b": "HI",
+        "h": "JK"
+      },
+      "evidence_ids": [
+        "HI",
+        "JK"
+      ],
+      "evidence_label_values": {
+        "b": 19,
+        "h": 12
+      },
+      "evidence_map": {
+        "HI": 19,
+        "JK": 12
+      },
+      "evidence_roles": [
+        "b",
+        "h"
+      ],
+      "formula_expression": "A = b * h",
+      "mode_probabilities": {
+        "derived": 0.5,
+        "explicit": 0.5
+      },
+      "reasoning_mode": "explicit",
+      "required_annotations": [
+        "HI",
+        "JK"
+      ],
+      "shape_probabilities": {
+        "circle": 0.14285714285714285,
+        "ellipse": 0.14285714285714285,
+        "parallelogram": 0.14285714285714285,
+        "rectangle": 0.14285714285714285,
+        "rhombus": 0.14285714285714285,
+        "trapezoid": 0.14285714285714285,
+        "triangle": 0.14285714285714285
+      },
+      "shape_variant": "parallelogram"
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "b": "HI",
+        "h": "JK"
+      },
+      "id_set": [
+        "HI",
+        "JK"
+      ],
+      "measurement_ref_map": {
+        "HI": 19,
+        "JK": 12
+      },
+      "pixel_annotation_centers": {
+        "HI": [
+          343.0,
+          120.0
+        ],
+        "JK": [
+          316.0,
+          208.0
+        ]
+      },
+      "pixel_point_set": [
+        [
+          343.0,
+          120.0
+        ],
+        [
+          316.0,
+          208.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 2500,
+        "answer_min": 8,
+        "mode_probabilities": {
+          "derived": 0.5,
+          "explicit": 0.5
+        },
+        "reasoning_mode": "explicit",
+        "shape_probabilities": {
+          "circle": 0.14285714285714285,
+          "ellipse": 0.14285714285714285,
+          "parallelogram": 0.14285714285714285,
+          "rectangle": 0.14285714285714285,
+          "rhombus": 0.14285714285714285,
+          "trapezoid": 0.14285714285714285,
+          "triangle": 0.14285714285714285
+        },
+        "shape_variant": "parallelogram"
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "geometry_analytical_area_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the area value as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, JK",
+          "json_example": "{\"evidence\":{\"HI\":2,\"JK\":3},\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a geometric shape with measurement annotations",
+          "question_text": "The parallelogram has an annotated base and height. What is its area in square units?"
+        },
+        "task_family_key": "analytical_single_shape",
+        "task_family_variant_index": 2,
+        "task_key": "analytical_area_query",
+        "task_variant_index": 2,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_2d/geometry_analytical_area_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_area_query": 5,
+          "task_family:analytical_single_shape": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "geometry_analytical_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the area value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, JK",
+              "json_example": "{\"evidence\":{\"HI\":2,\"JK\":3},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric shape with measurement annotations",
+              "question_text": "The parallelogram has an annotated base and height. What is its area in square units?"
+            },
+            "task_family_key": "analytical_single_shape",
+            "task_family_variant_index": 2,
+            "task_key": "analytical_area_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_area_query": 5,
+              "task_family:analytical_single_shape": 5
+            }
+          },
+          "prompt": "Look at the annotated image showing a geometric shape with measurement annotations. Task: The parallelogram has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, JK.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"HI\":2,\"JK\":3},\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "geometry_analytical_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the area value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, JK",
+              "json_example": "{\"evidence\":{\"HI\":2,\"JK\":3},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric shape with measurement annotations",
+              "question_text": "The parallelogram has an annotated base and height. What is its area in square units?"
+            },
+            "task_family_key": "analytical_single_shape",
+            "task_family_variant_index": 2,
+            "task_key": "analytical_area_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_area_query": 5,
+              "task_family:analytical_single_shape": 5
+            }
+          },
+          "prompt": "Look at the annotated image showing a geometric shape with measurement annotations. Task: The parallelogram has an annotated base and height. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "parallelogram_explicit",
+      "template_id": "geometry_analytical_area_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "HI": [
+          343.0,
+          120.0
+        ],
+        "JK": [
+          316.0,
+          208.0
+        ]
+      },
+      "annotation_labels": {
+        "b": "HI",
+        "h": "JK"
+      },
+      "coord_space": "pixel",
+      "entity_id": "shape_1",
+      "instance_anchor": {
+        "coord_space": "pixel",
+        "point": [
+          248.0,
+          148.0
+        ],
+        "polyline": [
+          [
+            248.0,
+            148.0
+          ],
+          [
+            438.0,
+            148.0
+          ],
+          [
+            478.0,
+            268.0
+          ],
+          [
+            288.0,
+            268.0
+          ],
+          [
+            248.0,
+            148.0
+          ]
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_offwhite",
+        "style_spec": {
+          "color": [
+            252,
+            252,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 598,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "origin_pixel": [
+          298,
+          298
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 54,
+        "target_cells_x": 11,
+        "target_cells_y": 11,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "partial_edge_cells": true,
+        "spacing_px": 54,
+        "target_cells_x": 11,
+        "target_cells_y": 11
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          19,
+          118,
+          92
+        ],
+        "label_stroke_color": [
+          253,
+          255,
+          249
+        ],
+        "line_color": [
+          19,
+          118,
+          92
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "area_square_units": 228,
+            "base_units": 19,
+            "height_units": 12,
+            "horizontal_offset_units": 4,
+            "reasoning_mode": "explicit",
+            "shape_variant": "parallelogram",
+            "vertices": [
+              [
+                248.0,
+                148.0
+              ],
+              [
+                438.0,
+                148.0
+              ],
+              [
+                478.0,
+                268.0
+              ],
+              [
+                288.0,
+                268.0
+              ]
+            ]
+          },
+          "entity_id": "shape_1",
+          "entity_type": "parallelogram"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            298,
+            298
+          ],
+          "spacing_px": 54,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_2d_analytical_area"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "HI",
+        "JK"
+      ],
+      "annotation_labels": {
+        "b": "HI",
+        "h": "JK"
+      },
+      "annotation_values": {
+        "HI": 19,
+        "JK": 12
+      },
+      "case_id": "parallelogram_explicit",
+      "formula_expression": "A = b * h",
+      "measurement_ref_map": {
+        "HI": 19,
+        "JK": 12
+      },
+      "reasoning_mode": "explicit",
+      "shape_variant": "parallelogram",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

@@ -1,0 +1,649 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 1
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "H"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_counting_triangle/images/acute_triangle/0013.png"
+  },
+  "instance_seed": 1218368809739116,
+  "prompt": "Look at the image showing several labeled triangles. Answer this question: How many labeled triangles are acute triangles?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a sorted JSON array of the labels of all triangles that match the requested type.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the image showing several labeled triangles. Answer this question: How many labeled triangles are acute triangles?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a sorted JSON array of the labels of all triangles that match the requested type.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+    "answer_only": "Look at the image showing several labeled triangles. Answer this question: How many labeled triangles are acute triangles?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_geometry_counting_triangle",
+  "task_variant": "acute_triangle",
+  "trace_payload": {
+    "execution_trace": {
+      "class_by_label": {
+        "A": {
+          "angle_kind": "right",
+          "side_kind": "scalene"
+        },
+        "B": {
+          "angle_kind": "obtuse",
+          "side_kind": "scalene"
+        },
+        "C": {
+          "angle_kind": "obtuse",
+          "side_kind": "scalene"
+        },
+        "D": {
+          "angle_kind": "right",
+          "side_kind": "scalene"
+        },
+        "E": {
+          "angle_kind": "right",
+          "side_kind": "scalene"
+        },
+        "F": {
+          "angle_kind": "obtuse",
+          "side_kind": "scalene"
+        },
+        "G": {
+          "angle_kind": "right",
+          "side_kind": "scalene"
+        },
+        "H": {
+          "angle_kind": "acute",
+          "side_kind": "equilateral"
+        }
+      },
+      "counting_class": "acute",
+      "matching_labels": [
+        "H"
+      ],
+      "object_count": 8,
+      "object_count_probabilities": {
+        "5": 0.25,
+        "6": 0.25,
+        "7": 0.25,
+        "8": 0.25
+      },
+      "object_labels": [
+        "C",
+        "H",
+        "F",
+        "B",
+        "E",
+        "D",
+        "A",
+        "G"
+      ],
+      "question_format": "count_matching_labeled_objects",
+      "scene_variant": "acute_triangle",
+      "target_count": 1,
+      "target_count_probabilities": {
+        "1": 0.14285714285714285,
+        "2": 0.14285714285714285,
+        "3": 0.14285714285714285,
+        "4": 0.14285714285714285,
+        "5": 0.14285714285714285,
+        "6": 0.14285714285714285,
+        "7": 0.14285714285714285
+      },
+      "task_variant": "acute_triangle"
+    },
+    "projected_evidence": {
+      "label_set": [
+        "H"
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "object_count": 8,
+        "object_count_probabilities": {
+          "5": 0.25,
+          "6": 0.25,
+          "7": 0.25,
+          "8": 0.25
+        },
+        "target_count": 1,
+        "target_count_probabilities": {
+          "1": 0.14285714285714285,
+          "2": 0.14285714285714285,
+          "3": 0.14285714285714285,
+          "4": 0.14285714285714285,
+          "5": 0.14285714285714285,
+          "6": 0.14285714285714285,
+          "7": 0.14285714285714285
+        },
+        "task_variant": "acute_triangle",
+        "variant_probabilities": {
+          "acute_triangle": 0.16666666666666666,
+          "equilateral_triangle": 0.16666666666666666,
+          "isosceles_triangle": 0.16666666666666666,
+          "obtuse_triangle": 0.16666666666666666,
+          "right_triangle": 0.16666666666666666,
+          "scalene_triangle": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "geometry_counting_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all triangles that match the requested type",
+          "json_example": "{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "several labeled triangles",
+          "question_text": "How many labeled triangles are acute triangles?"
+        },
+        "task_family_key": "counting_scene",
+        "task_family_variant_index": 2,
+        "task_key": "counting_query",
+        "task_variant_index": 3,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/counting/geometry_counting_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:counting_query": 5,
+          "task_family:counting_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all triangles that match the requested type",
+              "json_example": "{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled triangles",
+              "question_text": "How many labeled triangles are acute triangles?"
+            },
+            "task_family_key": "counting_scene",
+            "task_family_variant_index": 2,
+            "task_key": "counting_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/counting/geometry_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:counting_query": 5,
+              "task_family:counting_scene": 5
+            }
+          },
+          "prompt": "Look at the image showing several labeled triangles. Answer this question: How many labeled triangles are acute triangles?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a sorted JSON array of the labels of all triangles that match the requested type.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all triangles that match the requested type",
+              "json_example": "{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled triangles",
+              "question_text": "How many labeled triangles are acute triangles?"
+            },
+            "task_family_key": "counting_scene",
+            "task_family_variant_index": 2,
+            "task_key": "counting_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/counting/geometry_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:counting_query": 5,
+              "task_family:counting_scene": 5
+            }
+          },
+          "prompt": "Look at the image showing several labeled triangles. Answer this question: How many labeled triangles are acute triangles?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "acute_triangle",
+      "template_id": "geometry_counting_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching": {
+          "matching_labels": [
+            "H"
+          ],
+          "task_variant": "acute_triangle"
+        }
+      },
+      "image_id": "img0",
+      "object_label_centers": {
+        "A": [
+          26.495554087096576,
+          532.3785821119153
+        ],
+        "B": [
+          698.5066148217478,
+          531.1334066398298
+        ],
+        "C": [
+          484.79698081121927,
+          565.6599428587922
+        ],
+        "D": [
+          241.77605303048992,
+          566.3659621209067
+        ],
+        "E": [
+          288.4370644455374,
+          149.50174707258037
+        ],
+        "F": [
+          715.0043393536971,
+          188.04613326355835
+        ],
+        "G": [
+          479.5442759098464,
+          170.27473095326113
+        ],
+        "H": [
+          26.68201785580136,
+          195.21680600881544
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_warm",
+        "style_spec": {
+          "color": [
+            252,
+            249,
+            245
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 730,
+      "coord_space": "pixel",
+      "layout_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 24,
+        "full_cells_y": 24,
+        "origin_pixel": [
+          364,
+          364
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 27,
+        "target_cells_x": 27,
+        "target_cells_y": 27,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "scale": 0.95863
+            },
+            "type": "downsample"
+          }
+        ],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          99,
+          72,
+          100
+        ],
+        "label_stroke_color": [
+          252,
+          252,
+          255
+        ],
+        "line_color": [
+          99,
+          72,
+          100
+        ]
+      },
+      "text_style": {
+        "font_size_px": 90,
+        "stroke_width_px": 3
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "angle_kind": "obtuse",
+            "angles_degrees": [
+              29.800457143946904,
+              112.59744224443757,
+              37.60210061161551
+            ],
+            "label": "C",
+            "side_kind": "scalene",
+            "side_lengths": [
+              3.2431520377326883,
+              6.024712064782598,
+              3.9818186103669344
+            ],
+            "vertices": [
+              [
+                362.11151454351443,
+                525.9475005840095
+              ],
+              [
+                469.6206170234217,
+                525.9475005840095
+              ],
+              [
+                503.2678684330639,
+                445.10499883198094
+              ]
+            ]
+          },
+          "entity_id": "triangle_C",
+          "entity_type": "triangle"
+        },
+        {
+          "attrs": {
+            "angle_kind": "acute",
+            "angles_degrees": [
+              59.99999999999999,
+              59.99999999999999,
+              60.00000000000001
+            ],
+            "label": "H",
+            "side_kind": "equilateral",
+            "side_lengths": [
+              5.072014764334522,
+              5.072014764334522,
+              5.072014764334523
+            ],
+            "vertices": [
+              [
+                25.52780068148394,
+                268.53244270855095
+              ],
+              [
+                162.47219931851606,
+                268.53244270855095
+              ],
+              [
+                94.0,
+                149.9351145828981
+              ]
+            ]
+          },
+          "entity_id": "triangle_H",
+          "entity_type": "triangle"
+        },
+        {
+          "attrs": {
+            "angle_kind": "obtuse",
+            "angles_degrees": [
+              23.447983809356717,
+              102.6353481636402,
+              53.916668027003084
+            ],
+            "label": "F",
+            "side_kind": "scalene",
+            "side_lengths": [
+              2.716931693349507,
+              6.662538592329356,
+              5.51804150268374
+            ],
+            "vertices": [
+              [
+                529.3264090045434,
+                252.8601972406251
+              ],
+              [
+                678.3135295770044,
+                252.8601972406251
+              ],
+              [
+                694.3600614184522,
+                181.27960551874983
+              ]
+            ]
+          },
+          "entity_id": "triangle_F",
+          "entity_type": "triangle"
+        },
+        {
+          "attrs": {
+            "angle_kind": "obtuse",
+            "angles_degrees": [
+              27.612805632974883,
+              117.49730482880224,
+              34.88988953822289
+            ],
+            "label": "B",
+            "side_kind": "scalene",
+            "side_lengths": [
+              2.861753161883981,
+              5.476808150505939,
+              3.5317086113220357
+            ],
+            "vertices": [
+              [
+                558.5376246747805,
+                521.8462139107318
+              ],
+              [
+                653.8937571804755,
+                521.8462139107318
+              ],
+              [
+                689.5686181447439,
+                453.3075721785364
+              ]
+            ]
+          },
+          "entity_id": "triangle_B",
+          "entity_type": "triangle"
+        },
+        {
+          "attrs": {
+            "angle_kind": "right",
+            "angles_degrees": [
+              90.0,
+              40.10082869069338,
+              49.89917130930662
+            ],
+            "label": "E",
+            "side_kind": "scalene",
+            "side_lengths": [
+              7.0150851478318375,
+              4.518659718374304,
+              5.365923404305385
+            ],
+            "vertices": [
+              [
+                234.70668936125153,
+                269.6679374653687
+              ],
+              [
+                379.58662127749693,
+                269.6679374653687
+              ],
+              [
+                234.70668936125153,
+                147.66412506926252
+              ]
+            ]
+          },
+          "entity_id": "triangle_E",
+          "entity_type": "triangle"
+        },
+        {
+          "attrs": {
+            "angle_kind": "right",
+            "angles_degrees": [
+              90.0,
+              32.4340188801268,
+              57.5659811198732
+            ],
+            "label": "D",
+            "side_kind": "scalene",
+            "side_lengths": [
+              6.301362127576199,
+              3.3795970290930306,
+              5.31841034368327
+            ],
+            "vertices": [
+              [
+                235.13430690685055,
+                529.4163732618373
+              ],
+              [
+                378.7313861862989,
+                529.4163732618373
+              ],
+              [
+                235.13430690685055,
+                438.1672534763254
+              ]
+            ]
+          },
+          "entity_id": "triangle_D",
+          "entity_type": "triangle"
+        },
+        {
+          "attrs": {
+            "angle_kind": "right",
+            "angles_degrees": [
+              90.00000000000001,
+              52.986461512905045,
+              37.01353848709494
+            ],
+            "label": "A",
+            "side_kind": "scalene",
+            "side_lengths": [
+              6.350842389979283,
+              5.071104997246133,
+              3.8232307240425687
+            ],
+            "vertices": [
+              [
+                59.590923483616905,
+                544.6399449752153
+              ],
+              [
+                162.81815303276625,
+                544.6399449752153
+              ],
+              [
+                59.590923483616905,
+                407.7201100495696
+              ]
+            ]
+          },
+          "entity_id": "triangle_A",
+          "entity_type": "triangle"
+        },
+        {
+          "attrs": {
+            "angle_kind": "right",
+            "angles_degrees": [
+              90.00000000000001,
+              55.48376941692089,
+              34.51623058307909
+            ],
+            "label": "G",
+            "side_kind": "scalene",
+            "side_lengths": [
+              5.568206135578753,
+              4.588010897614873,
+              3.155166488739387
+            ],
+            "vertices": [
+              [
+                416.6035016013455,
+                270.29209807853385
+              ],
+              [
+                501.792996797309,
+                270.29209807853385
+              ],
+              [
+                416.6035016013455,
+                146.4158038429323
+              ]
+            ]
+          },
+          "entity_id": "triangle_G",
+          "entity_type": "triangle"
+        }
+      ],
+      "relations": {
+        "counting_target": "triangle_class",
+        "matching_labels": [
+          "H"
+        ],
+        "task_variant": "acute_triangle"
+      },
+      "scene_kind": "geometry_2d_triangle_counting"
+    },
+    "witness_symbolic": {
+      "counting_class": "acute",
+      "matching_labels": [
+        "H"
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

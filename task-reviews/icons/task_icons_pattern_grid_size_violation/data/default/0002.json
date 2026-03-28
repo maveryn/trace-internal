@@ -1,0 +1,1030 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 6
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        338,
+        241,
+        460,
+        375
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_pattern_grid_size_violation/images/default/0002.png"
+  },
+  "instance_seed": 1139878067371151,
+  "prompt": "Use the image containing a 3 by 3 grid of numbered boxes, each containing one icon. Which numbered box breaks the 2D size pattern?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the violating grid box.\nAnswer: set \"answer\" to the violating box index as an integer.\nExample JSON:\n{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the image containing a 3 by 3 grid of numbered boxes, each containing one icon. Which numbered box breaks the 2D size pattern?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the violating grid box.\nAnswer: set \"answer\" to the violating box index as an integer.\nExample JSON:\n{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+    "answer_only": "Use the image containing a 3 by 3 grid of numbered boxes, each containing one icon. Which numbered box breaks the 2D size pattern?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the violating box index as an integer.\nExample JSON:\n{\"answer\":5}"
+  },
+  "task": "task_icons_pattern_grid_size_violation",
+  "task_variant": "row_col_size_grid_violation",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_index": 6,
+      "base_size_level": 2,
+      "cell_box_height_px": 134,
+      "cell_box_width_px": 122,
+      "col_step_levels": 0,
+      "expected_grid_nominal_sizes_px": [
+        52,
+        52,
+        52,
+        60,
+        60,
+        60,
+        68,
+        68,
+        68
+      ],
+      "expected_grid_size_levels": [
+        2,
+        2,
+        2,
+        3,
+        3,
+        3,
+        4,
+        4,
+        4
+      ],
+      "grid_cols": 3,
+      "grid_rows": 3,
+      "observed_grid_nominal_sizes_px": [
+        52,
+        52,
+        52,
+        60,
+        60,
+        52,
+        68,
+        68,
+        68
+      ],
+      "observed_grid_size_levels": [
+        2,
+        2,
+        2,
+        3,
+        3,
+        2,
+        4,
+        4,
+        4
+      ],
+      "pattern_icon_id": "gi-delapouite-warlock-hood",
+      "plausible_rule_count": 1,
+      "question_format": "identify_grid_size_violation",
+      "row_step_levels": 1,
+      "scene_variant": "single_panel_numbered_grid",
+      "shared_rotation_degrees": 0,
+      "size_level_nominal_sizes_px": {
+        "1": 44,
+        "2": 52,
+        "3": 60,
+        "4": 68,
+        "5": 76
+      },
+      "size_levels": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "task_variant": "row_col_size_grid_violation",
+      "violation_cell_index": 5,
+      "violation_size_level": 2
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          338,
+          241,
+          460,
+          375
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_index": 6,
+        "answer_index_probabilities": {
+          "1": 0.1111111111111111,
+          "2": 0.1111111111111111,
+          "3": 0.1111111111111111,
+          "4": 0.1111111111111111,
+          "5": 0.1111111111111111,
+          "6": 0.1111111111111111,
+          "7": 0.1111111111111111,
+          "8": 0.1111111111111111,
+          "9": 0.1111111111111111
+        },
+        "base_level_candidates": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "base_size_level": 2,
+        "cell_box_height_px": 134,
+        "cell_box_width_px": 122,
+        "col_step_candidates": [
+          -1,
+          0,
+          1
+        ],
+        "col_step_levels": 0,
+        "grid_cols": 3,
+        "grid_rows": 3,
+        "pool_manifest": "all_icons.txt",
+        "row_step_candidates": [
+          -1,
+          0,
+          1
+        ],
+        "row_step_levels": 1,
+        "shared_rotation_candidates_degrees": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "shared_rotation_degrees": 0,
+        "size_levels": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "violation_cell_index": 5,
+        "violation_size_level": 2
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "icons_pattern_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the violating box index as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the violating grid box",
+          "json_example": "{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+          "json_example_answer_only": "{\"answer\":5}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a 3 by 3 grid of numbered boxes, each containing one icon",
+          "question_text": "Which numbered box breaks the 2D size pattern?"
+        },
+        "task_family_key": "numbered_grid_rotation_pattern",
+        "task_family_variant_index": 3,
+        "task_key": "grid_size_violation_query",
+        "task_variant_index": 0,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/pattern/icons_pattern_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:grid_size_violation_query": 5,
+          "task_family:numbered_grid_rotation_pattern": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "icons_pattern_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the violating box index as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the violating grid box",
+              "json_example": "{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+              "json_example_answer_only": "{\"answer\":5}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a 3 by 3 grid of numbered boxes, each containing one icon",
+              "question_text": "Which numbered box breaks the 2D size pattern?"
+            },
+            "task_family_key": "numbered_grid_rotation_pattern",
+            "task_family_variant_index": 3,
+            "task_key": "grid_size_violation_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/pattern/icons_pattern_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:grid_size_violation_query": 5,
+              "task_family:numbered_grid_rotation_pattern": 5
+            }
+          },
+          "prompt": "Use the image containing a 3 by 3 grid of numbered boxes, each containing one icon. Which numbered box breaks the 2D size pattern?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the violating grid box.\nAnswer: set \"answer\" to the violating box index as an integer.\nExample JSON:\n{\"evidence\":[[540,126,654,458]],\"answer\":5}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "icons_pattern_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the violating box index as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the violating grid box",
+              "json_example": "{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+              "json_example_answer_only": "{\"answer\":5}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a 3 by 3 grid of numbered boxes, each containing one icon",
+              "question_text": "Which numbered box breaks the 2D size pattern?"
+            },
+            "task_family_key": "numbered_grid_rotation_pattern",
+            "task_family_variant_index": 3,
+            "task_key": "grid_size_violation_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/pattern/icons_pattern_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:grid_size_violation_query": 5,
+              "task_family:numbered_grid_rotation_pattern": 5
+            }
+          },
+          "prompt": "Use the image containing a 3 by 3 grid of numbered boxes, each containing one icon. Which numbered box breaks the 2D size pattern?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the violating box index as an integer.\nExample JSON:\n{\"answer\":5}"
+        }
+      },
+      "task_variant": "row_col_size_grid_violation",
+      "template_id": "icons_pattern_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "violating_cell_bbox": [
+          338,
+          241,
+          460,
+          375
+        ]
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        514,
+        583
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          514,
+          583
+        ],
+        "scene_content_xyxy": [
+          44,
+          77,
+          470,
+          539
+        ],
+        "scene_panel_xyxy": [
+          24,
+          24,
+          490,
+          559
+        ]
+      },
+      "style": {
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "cell_box_height_range_px": [
+          116,
+          152
+        ],
+        "cell_box_width_range_px": [
+          116,
+          152
+        ],
+        "cell_corner_radius_px": 12,
+        "cell_icon_padding_px": 10,
+        "cell_label_color_rgb": [
+          52,
+          60,
+          77
+        ],
+        "cell_label_font_size_px": 22,
+        "cell_padding_px": 10,
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          1
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "palette_size_max": 1,
+        "palette_size_min": 1,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "reference_icon_size_max_px": 0,
+        "reference_icon_size_min_px": 0,
+        "reference_icon_size_px": 0,
+        "sampled_cell_box_size_px": [
+          122,
+          134
+        ],
+        "sampled_palette_rgb": [
+          [
+            86,
+            64,
+            162
+          ]
+        ],
+        "scene_content_bottom_padding_px": 10,
+        "scene_content_side_padding_px": 10,
+        "scene_content_top_offset_px": 40,
+        "scene_icon_size_max_px": 82,
+        "scene_icon_size_min_px": 34,
+        "scene_max_overlap_fraction": 0.2,
+        "scene_placement_max_attempts": 80,
+        "scene_size_shrink_factor": 0.9,
+        "scene_size_shrink_rounds": 6,
+        "size_level_gap_px": 8
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "cell_bbox_xyxy": [
+            54,
+            87,
+            176,
+            221
+          ],
+          "cell_index": 0,
+          "cell_label_text": "1",
+          "entity_kind": "pattern_cell",
+          "expected_nominal_size_px": 52,
+          "expected_size_level": 2,
+          "grid_col": 0,
+          "grid_row": 0,
+          "is_violation": false,
+          "observed_nominal_size_px": 52,
+          "observed_size_level": 2,
+          "panel": "scene",
+          "rendered_icon_count": 1
+        },
+        {
+          "cell_bbox_xyxy": [
+            196,
+            87,
+            318,
+            221
+          ],
+          "cell_index": 1,
+          "cell_label_text": "2",
+          "entity_kind": "pattern_cell",
+          "expected_nominal_size_px": 52,
+          "expected_size_level": 2,
+          "grid_col": 1,
+          "grid_row": 0,
+          "is_violation": false,
+          "observed_nominal_size_px": 52,
+          "observed_size_level": 2,
+          "panel": "scene",
+          "rendered_icon_count": 1
+        },
+        {
+          "cell_bbox_xyxy": [
+            338,
+            87,
+            460,
+            221
+          ],
+          "cell_index": 2,
+          "cell_label_text": "3",
+          "entity_kind": "pattern_cell",
+          "expected_nominal_size_px": 52,
+          "expected_size_level": 2,
+          "grid_col": 2,
+          "grid_row": 0,
+          "is_violation": false,
+          "observed_nominal_size_px": 52,
+          "observed_size_level": 2,
+          "panel": "scene",
+          "rendered_icon_count": 1
+        },
+        {
+          "cell_bbox_xyxy": [
+            54,
+            241,
+            176,
+            375
+          ],
+          "cell_index": 3,
+          "cell_label_text": "4",
+          "entity_kind": "pattern_cell",
+          "expected_nominal_size_px": 60,
+          "expected_size_level": 3,
+          "grid_col": 0,
+          "grid_row": 1,
+          "is_violation": false,
+          "observed_nominal_size_px": 60,
+          "observed_size_level": 3,
+          "panel": "scene",
+          "rendered_icon_count": 1
+        },
+        {
+          "cell_bbox_xyxy": [
+            196,
+            241,
+            318,
+            375
+          ],
+          "cell_index": 4,
+          "cell_label_text": "5",
+          "entity_kind": "pattern_cell",
+          "expected_nominal_size_px": 60,
+          "expected_size_level": 3,
+          "grid_col": 1,
+          "grid_row": 1,
+          "is_violation": false,
+          "observed_nominal_size_px": 60,
+          "observed_size_level": 3,
+          "panel": "scene",
+          "rendered_icon_count": 1
+        },
+        {
+          "cell_bbox_xyxy": [
+            338,
+            241,
+            460,
+            375
+          ],
+          "cell_index": 5,
+          "cell_label_text": "6",
+          "entity_kind": "pattern_cell",
+          "expected_nominal_size_px": 60,
+          "expected_size_level": 3,
+          "grid_col": 2,
+          "grid_row": 1,
+          "is_violation": true,
+          "observed_nominal_size_px": 52,
+          "observed_size_level": 2,
+          "panel": "scene",
+          "rendered_icon_count": 1
+        },
+        {
+          "cell_bbox_xyxy": [
+            54,
+            395,
+            176,
+            529
+          ],
+          "cell_index": 6,
+          "cell_label_text": "7",
+          "entity_kind": "pattern_cell",
+          "expected_nominal_size_px": 68,
+          "expected_size_level": 4,
+          "grid_col": 0,
+          "grid_row": 2,
+          "is_violation": false,
+          "observed_nominal_size_px": 68,
+          "observed_size_level": 4,
+          "panel": "scene",
+          "rendered_icon_count": 1
+        },
+        {
+          "cell_bbox_xyxy": [
+            196,
+            395,
+            318,
+            529
+          ],
+          "cell_index": 7,
+          "cell_label_text": "8",
+          "entity_kind": "pattern_cell",
+          "expected_nominal_size_px": 68,
+          "expected_size_level": 4,
+          "grid_col": 1,
+          "grid_row": 2,
+          "is_violation": false,
+          "observed_nominal_size_px": 68,
+          "observed_size_level": 4,
+          "panel": "scene",
+          "rendered_icon_count": 1
+        },
+        {
+          "cell_bbox_xyxy": [
+            338,
+            395,
+            460,
+            529
+          ],
+          "cell_index": 8,
+          "cell_label_text": "9",
+          "entity_kind": "pattern_cell",
+          "expected_nominal_size_px": 68,
+          "expected_size_level": 4,
+          "grid_col": 2,
+          "grid_row": 2,
+          "is_violation": false,
+          "observed_nominal_size_px": 68,
+          "observed_size_level": 4,
+          "panel": "scene",
+          "rendered_icon_count": 1
+        },
+        {
+          "bbox_xyxy": [
+            94,
+            146,
+            136,
+            192
+          ],
+          "cell_bbox_xyxy": [
+            54,
+            87,
+            176,
+            221
+          ],
+          "cell_index": 0,
+          "cell_label_text": "1",
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-warlock-hood",
+          "instance_id": "scene_icon_0",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 84.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 578770659936094,
+          "nominal_size_px": 52,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            86,
+            64,
+            162
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            236,
+            146,
+            278,
+            192
+          ],
+          "cell_bbox_xyxy": [
+            196,
+            87,
+            318,
+            221
+          ],
+          "cell_index": 1,
+          "cell_label_text": "2",
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-warlock-hood",
+          "instance_id": "scene_icon_1",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.887369
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 5260553489560598,
+          "nominal_size_px": 52,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            86,
+            64,
+            162
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            378,
+            146,
+            420,
+            192
+          ],
+          "cell_bbox_xyxy": [
+            338,
+            87,
+            460,
+            221
+          ],
+          "cell_index": 2,
+          "cell_label_text": "3",
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-warlock-hood",
+          "instance_id": "scene_icon_2",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.0391
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 1635036806293976,
+          "nominal_size_px": 52,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            86,
+            64,
+            162
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            91,
+            296,
+            139,
+            350
+          ],
+          "cell_bbox_xyxy": [
+            54,
+            241,
+            176,
+            375
+          ],
+          "cell_index": 3,
+          "cell_label_text": "4",
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-warlock-hood",
+          "instance_id": "scene_icon_3",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.517249
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 3143344890283382,
+          "nominal_size_px": 60,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            86,
+            64,
+            162
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            233,
+            296,
+            281,
+            350
+          ],
+          "cell_bbox_xyxy": [
+            196,
+            241,
+            318,
+            375
+          ],
+          "cell_index": 4,
+          "cell_label_text": "5",
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-warlock-hood",
+          "instance_id": "scene_icon_4",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 1626428062996947,
+          "nominal_size_px": 60,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            86,
+            64,
+            162
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            378,
+            300,
+            420,
+            346
+          ],
+          "cell_bbox_xyxy": [
+            338,
+            241,
+            460,
+            375
+          ],
+          "cell_index": 5,
+          "cell_label_text": "6",
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-warlock-hood",
+          "instance_id": "scene_icon_5",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 2979856333221273,
+          "nominal_size_px": 52,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            86,
+            64,
+            162
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            88,
+            446,
+            142,
+            508
+          ],
+          "cell_bbox_xyxy": [
+            54,
+            395,
+            176,
+            529
+          ],
+          "cell_index": 6,
+          "cell_label_text": "7",
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-warlock-hood",
+          "instance_id": "scene_icon_6",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 3700768662927403,
+          "nominal_size_px": 68,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            86,
+            64,
+            162
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            230,
+            446,
+            284,
+            508
+          ],
+          "cell_bbox_xyxy": [
+            196,
+            395,
+            318,
+            529
+          ],
+          "cell_index": 7,
+          "cell_label_text": "8",
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-warlock-hood",
+          "instance_id": "scene_icon_7",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.068807
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 2821556900394696,
+          "nominal_size_px": 68,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            86,
+            64,
+            162
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            372,
+            446,
+            426,
+            508
+          ],
+          "cell_bbox_xyxy": [
+            338,
+            395,
+            460,
+            529
+          ],
+          "cell_index": 8,
+          "cell_label_text": "9",
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-warlock-hood",
+          "instance_id": "scene_icon_8",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 3541090531068731,
+          "nominal_size_px": 68,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            86,
+            64,
+            162
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            514,
+            583
+          ],
+          "scene_content_xyxy": [
+            44,
+            77,
+            470,
+            539
+          ],
+          "scene_panel_xyxy": [
+            24,
+            24,
+            490,
+            559
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "base_size_level": 2,
+        "col_step_levels": 0,
+        "expected_grid_size_levels": [
+          2,
+          2,
+          2,
+          3,
+          3,
+          3,
+          4,
+          4,
+          4
+        ],
+        "observed_grid_size_levels": [
+          2,
+          2,
+          2,
+          3,
+          3,
+          2,
+          4,
+          4,
+          4
+        ],
+        "pattern_icon_id": "gi-delapouite-warlock-hood",
+        "pattern_rule": "row_col_size_level_offsets",
+        "row_step_levels": 1,
+        "shared_rotation_degrees": 0,
+        "size_level_nominal_sizes_px": {
+          "1": 44,
+          "2": 52,
+          "3": 60,
+          "4": 68,
+          "5": 76
+        },
+        "size_levels": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "violation_cell_index": 5
+      },
+      "scene_kind": "icons_pattern_grid_size_violation"
+    },
+    "witness_symbolic": {
+      "base_size_level": 2,
+      "col_step_levels": 0,
+      "expected_grid_size_levels": [
+        2,
+        2,
+        2,
+        3,
+        3,
+        3,
+        4,
+        4,
+        4
+      ],
+      "observed_grid_size_levels": [
+        2,
+        2,
+        2,
+        3,
+        3,
+        2,
+        4,
+        4,
+        4
+      ],
+      "pattern_rule": "row_col_size_level_offsets",
+      "plausible_rule_count": 1,
+      "row_step_levels": 1,
+      "size_level_nominal_sizes_px": {
+        "1": 44,
+        "2": 52,
+        "3": 60,
+        "4": 68,
+        "5": 76
+      },
+      "size_levels": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "violation_cell_index": 5
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

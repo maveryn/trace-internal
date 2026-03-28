@@ -1,0 +1,13 @@
+{
+  "inspection_count": 50,
+  "task_id": "task_geometry_measurement_angle",
+  "variants": {
+    "intersection_angle": 25,
+    "primitive_angle": 25
+  },
+  "workbook": "geometry/task_geometry_measurement_angle/task_geometry_measurement_angle.xlsx",
+  "workbook_sheets": {
+    "intersection_angle": "intersection_angle",
+    "primitive_angle": "primitive_angle"
+  }
+}

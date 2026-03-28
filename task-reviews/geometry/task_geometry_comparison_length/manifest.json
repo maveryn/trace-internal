@@ -1,0 +1,11 @@
+{
+  "inspection_count": 25,
+  "task_id": "task_geometry_comparison_length",
+  "variants": {
+    "": 25
+  },
+  "workbook": "geometry/task_geometry_comparison_length/task_geometry_comparison_length.xlsx",
+  "workbook_sheets": {
+    "segment_set": "segment_set"
+  }
+}

@@ -1,0 +1,676 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 1
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "H"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_counting_shape_type/images/triangle/0003.png"
+  },
+  "instance_seed": 428293171913130,
+  "prompt": "Use the diagram showing several labeled shapes. How many labeled shapes are triangles?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a sorted JSON array of the labels of all shapes that match the requested type.\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"D\",\"F\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the diagram showing several labeled shapes. How many labeled shapes are triangles?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a sorted JSON array of the labels of all shapes that match the requested type.\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"D\",\"F\"],\"answer\":3}",
+    "answer_only": "Use the diagram showing several labeled shapes. How many labeled shapes are triangles?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_geometry_counting_shape_type",
+  "task_variant": "triangle",
+  "trace_payload": {
+    "execution_trace": {
+      "class_by_label": {
+        "A": {
+          "shape_type": "circle"
+        },
+        "B": {
+          "shape_type": "quadrilateral"
+        },
+        "C": {
+          "shape_type": "quadrilateral"
+        },
+        "D": {
+          "shape_type": "quadrilateral"
+        },
+        "E": {
+          "shape_type": "pentagon"
+        },
+        "F": {
+          "shape_type": "quadrilateral"
+        },
+        "G": {
+          "shape_type": "hexagon"
+        },
+        "H": {
+          "shape_type": "triangle"
+        },
+        "I": {
+          "shape_type": "hexagon"
+        }
+      },
+      "counting_class": "triangle",
+      "matching_labels": [
+        "H"
+      ],
+      "object_count": 9,
+      "object_count_probabilities": {
+        "6": 0.25,
+        "7": 0.25,
+        "8": 0.25,
+        "9": 0.25
+      },
+      "object_labels": [
+        "A",
+        "G",
+        "D",
+        "C",
+        "B",
+        "E",
+        "I",
+        "H",
+        "F"
+      ],
+      "question_format": "count_matching_labeled_objects",
+      "scene_variant": "triangle",
+      "target_count": 1,
+      "target_count_probabilities": {
+        "1": 0.125,
+        "2": 0.125,
+        "3": 0.125,
+        "4": 0.125,
+        "5": 0.125,
+        "6": 0.125,
+        "7": 0.125,
+        "8": 0.125
+      },
+      "task_variant": "triangle"
+    },
+    "projected_evidence": {
+      "label_set": [
+        "H"
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "object_count": 9,
+        "object_count_probabilities": {
+          "6": 0.25,
+          "7": 0.25,
+          "8": 0.25,
+          "9": 0.25
+        },
+        "target_count": 1,
+        "target_count_probabilities": {
+          "1": 0.125,
+          "2": 0.125,
+          "3": 0.125,
+          "4": 0.125,
+          "5": 0.125,
+          "6": 0.125,
+          "7": 0.125,
+          "8": 0.125
+        },
+        "task_variant": "triangle",
+        "variant_probabilities": {
+          "circle": 0.16666666666666666,
+          "ellipse": 0.16666666666666666,
+          "hexagon": 0.16666666666666666,
+          "pentagon": 0.16666666666666666,
+          "quadrilateral": 0.16666666666666666,
+          "triangle": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "geometry_counting_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all shapes that match the requested type",
+          "json_example": "{\"evidence\":[\"A\",\"D\",\"F\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "several labeled shapes",
+          "question_text": "How many labeled shapes are triangles?"
+        },
+        "task_family_key": "counting_scene",
+        "task_family_variant_index": 3,
+        "task_key": "counting_query",
+        "task_variant_index": 0,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/counting/geometry_counting_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:counting_query": 5,
+          "task_family:counting_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all shapes that match the requested type",
+              "json_example": "{\"evidence\":[\"A\",\"D\",\"F\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled shapes",
+              "question_text": "How many labeled shapes are triangles?"
+            },
+            "task_family_key": "counting_scene",
+            "task_family_variant_index": 3,
+            "task_key": "counting_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/counting/geometry_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:counting_query": 5,
+              "task_family:counting_scene": 5
+            }
+          },
+          "prompt": "Use the diagram showing several labeled shapes. How many labeled shapes are triangles?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a sorted JSON array of the labels of all shapes that match the requested type.\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"D\",\"F\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all shapes that match the requested type",
+              "json_example": "{\"evidence\":[\"A\",\"D\",\"F\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled shapes",
+              "question_text": "How many labeled shapes are triangles?"
+            },
+            "task_family_key": "counting_scene",
+            "task_family_variant_index": 3,
+            "task_key": "counting_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/counting/geometry_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:counting_query": 5,
+              "task_family:counting_scene": 5
+            }
+          },
+          "prompt": "Use the diagram showing several labeled shapes. How many labeled shapes are triangles?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "triangle",
+      "template_id": "geometry_counting_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching": {
+          "matching_labels": [
+            "H"
+          ],
+          "task_variant": "triangle"
+        }
+      },
+      "image_id": "img0",
+      "object_label_centers": {
+        "A": [
+          535.5283445860624,
+          110.74507023365435
+        ],
+        "B": [
+          305.2236126729124,
+          337.65950515438465
+        ],
+        "C": [
+          220.3970922463559,
+          583.7618369186314
+        ],
+        "D": [
+          23.231147733209326,
+          365.85109857794555
+        ],
+        "E": [
+          715.1050211999946,
+          175.32950450322878
+        ],
+        "F": [
+          693.0878676233418,
+          365.8802886762365
+        ],
+        "G": [
+          25.126595794967045,
+          180.00299845887614
+        ],
+        "H": [
+          250.03362764582906,
+          140.31645674084135
+        ],
+        "I": [
+          526.2815063406528,
+          557.3163068143532
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_cool",
+        "style_spec": {
+          "color": [
+            246,
+            248,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 733,
+      "coord_space": "pixel",
+      "layout_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 28,
+        "full_cells_y": 28,
+        "origin_pixel": [
+          366,
+          366
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 24,
+        "target_cells_x": 31,
+        "target_cells_y": 31,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          137,
+          70,
+          119
+        ],
+        "label_stroke_color": [
+          254,
+          251,
+          255
+        ],
+        "line_color": [
+          137,
+          70,
+          119
+        ]
+      },
+      "text_style": {
+        "font_size_px": 90,
+        "stroke_width_px": 3
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "center": [
+              462.0,
+              222.0
+            ],
+            "circle_radius_px": 114.96289032795494,
+            "ellipse_radius_x_px": null,
+            "ellipse_radius_y_px": null,
+            "label": "A",
+            "polygon_vertices": [],
+            "shape_type": "circle"
+          },
+          "entity_id": "shape_A",
+          "entity_type": "circle"
+        },
+        {
+          "attrs": {
+            "center": [
+              102.0,
+              222.0
+            ],
+            "circle_radius_px": null,
+            "ellipse_radius_x_px": null,
+            "ellipse_radius_y_px": null,
+            "label": "G",
+            "polygon_vertices": [
+              [
+                177.51482249174543,
+                224.41368262552126
+              ],
+              [
+                141.8477217162473,
+                157.80908667263657
+              ],
+              [
+                66.33289922450183,
+                155.39540404711528
+              ],
+              [
+                26.485177508254537,
+                219.58631737447874
+              ],
+              [
+                62.15227828375271,
+                286.19091332736343
+              ],
+              [
+                137.66710077549817,
+                288.60459595288467
+              ]
+            ],
+            "shape_type": "hexagon"
+          },
+          "entity_id": "shape_G",
+          "entity_type": "hexagon"
+        },
+        {
+          "attrs": {
+            "center": [
+              102.0,
+              366.0
+            ],
+            "circle_radius_px": null,
+            "ellipse_radius_x_px": null,
+            "ellipse_radius_y_px": null,
+            "label": "D",
+            "polygon_vertices": [
+              [
+                34.09569568513007,
+                398.3426467534162
+              ],
+              [
+                97.41951737108178,
+                398.3426467534162
+              ],
+              [
+                169.90430431486993,
+                333.6573532465838
+              ],
+              [
+                106.58048262891822,
+                333.6573532465838
+              ]
+            ],
+            "shape_type": "quadrilateral"
+          },
+          "entity_id": "shape_D",
+          "entity_type": "quadrilateral"
+        },
+        {
+          "attrs": {
+            "center": [
+              270.0,
+              510.0
+            ],
+            "circle_radius_px": null,
+            "ellipse_radius_x_px": null,
+            "ellipse_radius_y_px": null,
+            "label": "C",
+            "polygon_vertices": [
+              [
+                193.37153852369988,
+                555.1420602377548
+              ],
+              [
+                276.5212767869683,
+                555.1420602377548
+              ],
+              [
+                346.6284614763001,
+                464.85793976224517
+              ],
+              [
+                263.4787232130317,
+                464.85793976224517
+              ]
+            ],
+            "shape_type": "quadrilateral"
+          },
+          "entity_id": "shape_C",
+          "entity_type": "quadrilateral"
+        },
+        {
+          "attrs": {
+            "center": [
+              366.0,
+              366.0
+            ],
+            "circle_radius_px": null,
+            "ellipse_radius_x_px": null,
+            "ellipse_radius_y_px": null,
+            "label": "B",
+            "polygon_vertices": [
+              [
+                334.54240403725873,
+                410.4690475935148
+              ],
+              [
+                397.45759596274127,
+                410.4690475935148
+              ],
+              [
+                397.45759596274127,
+                321.5309524064852
+              ],
+              [
+                334.54240403725873,
+                321.5309524064852
+              ]
+            ],
+            "shape_type": "quadrilateral"
+          },
+          "entity_id": "shape_B",
+          "entity_type": "quadrilateral"
+        },
+        {
+          "attrs": {
+            "center": [
+              630.0,
+              222.0
+            ],
+            "circle_radius_px": null,
+            "ellipse_radius_x_px": null,
+            "ellipse_radius_y_px": null,
+            "label": "E",
+            "polygon_vertices": [
+              [
+                715.9655673750524,
+                242.13459635531564
+              ],
+              [
+                675.7139603166713,
+                146.4638194196187
+              ],
+              [
+                572.2872138610144,
+                155.18147666565898
+              ],
+              [
+                548.6175762639817,
+                256.2400620816806
+              ],
+              [
+                637.4156821832802,
+                309.9800454777261
+              ]
+            ],
+            "shape_type": "pentagon"
+          },
+          "entity_id": "shape_E",
+          "entity_type": "pentagon"
+        },
+        {
+          "attrs": {
+            "center": [
+              462.0,
+              510.0
+            ],
+            "circle_radius_px": null,
+            "ellipse_radius_x_px": null,
+            "ellipse_radius_y_px": null,
+            "label": "I",
+            "polygon_vertices": [
+              [
+                530.8087925457876,
+                519.4519937275592
+              ],
+              [
+                504.5900629573712,
+                455.1358345153942
+              ],
+              [
+                435.7812704115836,
+                445.6838407878351
+              ],
+              [
+                393.1912074542124,
+                500.54800627244083
+              ],
+              [
+                419.4099370426288,
+                564.8641654846058
+              ],
+              [
+                488.2187295884164,
+                574.316159212165
+              ]
+            ],
+            "shape_type": "hexagon"
+          },
+          "entity_id": "shape_I",
+          "entity_type": "hexagon"
+        },
+        {
+          "attrs": {
+            "center": [
+              270.0,
+              222.0
+            ],
+            "circle_radius_px": null,
+            "ellipse_radius_x_px": null,
+            "ellipse_radius_y_px": null,
+            "label": "H",
+            "polygon_vertices": [
+              [
+                353.7042316677279,
+                201.47720844679898
+              ],
+              [
+                210.3746253244913,
+                159.77140474809025
+              ],
+              [
+                245.9211430077808,
+                304.75138680511077
+              ]
+            ],
+            "shape_type": "triangle"
+          },
+          "entity_id": "shape_H",
+          "entity_type": "triangle"
+        },
+        {
+          "attrs": {
+            "center": [
+              630.0,
+              366.0
+            ],
+            "circle_radius_px": null,
+            "ellipse_radius_x_px": null,
+            "ellipse_radius_y_px": null,
+            "label": "F",
+            "polygon_vertices": [
+              [
+                588.3294139794881,
+                420.3861906908152
+              ],
+              [
+                671.6705860205119,
+                420.3861906908152
+              ],
+              [
+                671.6705860205119,
+                311.6138093091848
+              ],
+              [
+                588.3294139794881,
+                311.6138093091848
+              ]
+            ],
+            "shape_type": "quadrilateral"
+          },
+          "entity_id": "shape_F",
+          "entity_type": "quadrilateral"
+        }
+      ],
+      "relations": {
+        "counting_target": "shape_type",
+        "matching_labels": [
+          "H"
+        ],
+        "task_variant": "triangle"
+      },
+      "scene_kind": "geometry_2d_shape_type_counting"
+    },
+    "witness_symbolic": {
+      "counting_class": "triangle",
+      "matching_labels": [
+        "H"
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

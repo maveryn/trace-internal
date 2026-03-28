@@ -1,0 +1,419 @@
+{
+  "answer_gt": {
+    "type": "number",
+    "value": 146.4
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "MO": 52,
+      "NO": 33
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_2d_perimeter/images/rectangle_side_diagonal/0009.png"
+  },
+  "instance_seed": 5457631953182001,
+  "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, MO.\nAnswer field: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"NO\":2,\"MO\":3},\"answer\":42.3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the annotated image showing a geometric scene with measurement annotations. The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, MO.\nAnswer field: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"NO\":2,\"MO\":3},\"answer\":42.3}",
+    "answer_only": "Look at the annotated image showing a geometric scene with measurement annotations. The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+  },
+  "task": "task_geometry_analytical_2d_perimeter",
+  "task_variant": "rectangle_side_diagonal",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 250,
+      "answer_min": 8,
+      "answer_scalar": 1464,
+      "answer_type": "number",
+      "answer_value": 146.4,
+      "evidence_map": {
+        "MO": 52,
+        "NO": 33
+      },
+      "evidence_role_tokens": {
+        "diagonal": "MO",
+        "known_side": "NO"
+      },
+      "evidence_role_values": {
+        "diagonal": 52,
+        "known_side": 33
+      },
+      "evidence_roles": [
+        "known_side",
+        "diagonal"
+      ],
+      "formula_expression": "2 * (known_side + sqrt(diagonal^2 - known_side^2))",
+      "raw_answer_value": 146.3741251896405,
+      "required_annotations": [
+        "NO",
+        "MO"
+      ],
+      "target_quantity": "perimeter",
+      "task_variant": "rectangle_side_diagonal",
+      "variant_probabilities": {
+        "inscribed_square_diameter": 0.2,
+        "isosceles_trapezoid_bases_height": 0.2,
+        "rectangle_side_diagonal": 0.2,
+        "rhombus_diagonals": 0.2,
+        "right_triangle_leg_hypotenuse": 0.2
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "diagonal": "MO",
+        "known_side": "NO"
+      },
+      "id_set": [
+        "NO",
+        "MO"
+      ],
+      "measurement_ref_map": {
+        "MO": 52,
+        "NO": 33
+      },
+      "pixel_annotation_centers": {
+        "MO": [
+          285.1807692307693,
+          290.05318570306855
+        ],
+        "NO": [
+          541.4566666666668,
+          312.36215763070595
+        ]
+      },
+      "pixel_point_set": [
+        [
+          541.4566666666668,
+          312.36215763070595
+        ],
+        [
+          285.1807692307693,
+          290.05318570306855
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 250,
+        "answer_min": 8,
+        "task_variant": "rectangle_side_diagonal",
+        "variant_probabilities": {
+          "inscribed_square_diameter": 0.2,
+          "isosceles_trapezoid_bases_height": 0.2,
+          "rectangle_side_diagonal": 0.2,
+          "rhombus_diagonals": 0.2,
+          "right_triangle_leg_hypotenuse": 0.2
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "geometry_analytical_perimeter_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, MO",
+          "json_example": "{\"evidence\":{\"NO\":2,\"MO\":3},\"answer\":42.3}",
+          "json_example_answer_only": "{\"answer\":42.3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a geometric scene with measurement annotations",
+          "question_text": "The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?"
+        },
+        "task_family_key": "analytical_perimeter_scene",
+        "task_family_variant_index": 2,
+        "task_key": "analytical_perimeter_query",
+        "task_variant_index": 0,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_2d/geometry_analytical_perimeter_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_perimeter_query": 5,
+          "task_family:analytical_perimeter_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "geometry_analytical_perimeter_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, MO",
+              "json_example": "{\"evidence\":{\"NO\":2,\"MO\":3},\"answer\":42.3}",
+              "json_example_answer_only": "{\"answer\":42.3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric scene with measurement annotations",
+              "question_text": "The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?"
+            },
+            "task_family_key": "analytical_perimeter_scene",
+            "task_family_variant_index": 2,
+            "task_key": "analytical_perimeter_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_perimeter_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_perimeter_query": 5,
+              "task_family:analytical_perimeter_scene": 5
+            }
+          },
+          "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, MO.\nAnswer field: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"NO\":2,\"MO\":3},\"answer\":42.3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_analytical_perimeter_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, MO",
+              "json_example": "{\"evidence\":{\"NO\":2,\"MO\":3},\"answer\":42.3}",
+              "json_example_answer_only": "{\"answer\":42.3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric scene with measurement annotations",
+              "question_text": "The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?"
+            },
+            "task_family_key": "analytical_perimeter_scene",
+            "task_family_variant_index": 2,
+            "task_key": "analytical_perimeter_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_perimeter_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_perimeter_query": 5,
+              "task_family:analytical_perimeter_scene": 5
+            }
+          },
+          "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. The rectangle shows one side and its diagonal. What is the perimeter of the rectangle?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+        }
+      },
+      "task_variant": "rectangle_side_diagonal",
+      "template_id": "geometry_analytical_perimeter_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "MO": [
+          285.1807692307693,
+          290.05318570306855
+        ],
+        "NO": [
+          541.4566666666668,
+          312.36215763070595
+        ]
+      },
+      "annotation_labels": {
+        "diagonal": "MO",
+        "known_side": "NO"
+      },
+      "coord_space": "pixel",
+      "instance_anchor": {
+        "bbox": [
+          93.71000000000001,
+          140.0910446658006,
+          513.2900000000001,
+          484.63327059561135
+        ],
+        "coord_space": "pixel"
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_warm",
+        "style_spec": {
+          "color": [
+            252,
+            249,
+            245
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 607,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 6,
+        "full_cells_y": 6,
+        "origin_pixel": [
+          303,
+          303
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 76,
+        "target_cells_x": 8,
+        "target_cells_y": 8,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 6,
+        "full_cells_y": 6,
+        "partial_edge_cells": true,
+        "spacing_px": 76,
+        "target_cells_x": 8,
+        "target_cells_y": 8
+      },
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "quality": 92.0
+            },
+            "type": "jpeg"
+          }
+        ],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          114,
+          12,
+          73
+        ],
+        "label_stroke_color": [
+          255,
+          251,
+          248
+        ],
+        "line_color": [
+          114,
+          12,
+          73
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "vertices": [
+              [
+                93.71000000000001,
+                484.63327059561135
+              ],
+              [
+                513.2900000000001,
+                484.63327059561135
+              ],
+              [
+                513.2900000000001,
+                140.0910446658006
+              ],
+              [
+                93.71000000000001,
+                140.0910446658006
+              ]
+            ]
+          },
+          "entity_id": "rectangle_1",
+          "entity_type": "rectangle"
+        },
+        {
+          "attrs": {
+            "helper": true,
+            "point_a": [
+              93.71000000000001,
+              484.63327059561135
+            ],
+            "point_b": [
+              513.2900000000001,
+              140.0910446658006
+            ]
+          },
+          "entity_id": "diagonal_1",
+          "entity_type": "diagonal"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            303,
+            303
+          ],
+          "spacing_px": 76,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_2d_analytical_perimeter"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "NO",
+        "MO"
+      ],
+      "annotation_labels": {
+        "diagonal": "MO",
+        "known_side": "NO"
+      },
+      "annotation_values": {
+        "MO": 52,
+        "NO": 33
+      },
+      "formula_expression": "2 * (known_side + sqrt(diagonal^2 - known_side^2))",
+      "measurement_ref_map": {
+        "MO": 52,
+        "NO": 33
+      },
+      "task_variant": "rectangle_side_diagonal",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

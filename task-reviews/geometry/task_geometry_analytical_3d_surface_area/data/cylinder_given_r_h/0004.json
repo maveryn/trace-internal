@@ -1,0 +1,460 @@
+{
+  "answer_gt": {
+    "type": "pi_expression",
+    "value": "6424\u03c0"
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "HI": 44,
+      "JK": 29
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_3d_surface_area/images/cylinder_given_r_h/0004.png"
+  },
+  "instance_seed": 6695167620727497,
+  "prompt": "Look at the annotated image showing an annotated 3D solid. Question: The cylinder has an annotated radius and height. What is its total surface area? Express the result in k\u03c0 form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, JK.\nAnswer field: set \"answer\" to the value in the form k\u03c0 (for example 12\u03c0).\nExample JSON:\n{\"evidence\":{\"HI\":2,\"JK\":3},\"answer\":\"12\u03c0\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the annotated image showing an annotated 3D solid. Question: The cylinder has an annotated radius and height. What is its total surface area? Express the result in k\u03c0 form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, JK.\nAnswer field: set \"answer\" to the value in the form k\u03c0 (for example 12\u03c0).\nExample JSON:\n{\"evidence\":{\"HI\":2,\"JK\":3},\"answer\":\"12\u03c0\"}",
+    "answer_only": "Look at the annotated image showing an annotated 3D solid. Question: The cylinder has an annotated radius and height. What is its total surface area? Express the result in k\u03c0 form.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the value in the form k\u03c0 (for example 12\u03c0).\nExample JSON:\n{\"answer\":\"12\u03c0\"}"
+  },
+  "task": "task_geometry_analytical_3d_surface_area",
+  "task_variant": "cylinder_given_r_h",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 200000,
+      "answer_min": 8,
+      "answer_scalar": 6424,
+      "answer_type": "pi_expression",
+      "answer_value": "6424\u03c0",
+      "evidence_map": {
+        "HI": 44,
+        "JK": 29
+      },
+      "evidence_role_tokens": {
+        "h": "JK",
+        "r": "HI"
+      },
+      "evidence_role_values": {
+        "h": 29,
+        "r": 44
+      },
+      "evidence_roles": [
+        "r",
+        "h"
+      ],
+      "formula_expression": "SA = 2 * \u03c0 * r * (r + h)",
+      "required_annotations": [
+        "HI",
+        "JK"
+      ],
+      "task_variant": "cylinder_given_r_h",
+      "variant_probabilities": {
+        "cone_given_r_slant_height": 0.16666666666666666,
+        "cylinder_given_r_h": 0.16666666666666666,
+        "rectangular_prism_given_lwh": 0.16666666666666666,
+        "sphere_given_r": 0.16666666666666666,
+        "square_pyramid_given_base_side_slant_height": 0.16666666666666666,
+        "triangular_prism_given_a_b_c_l": 0.16666666666666666
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "h": "JK",
+        "r": "HI"
+      },
+      "id_set": [
+        "HI",
+        "JK"
+      ],
+      "measurement_ref_map": {
+        "HI": 44,
+        "JK": 29
+      },
+      "pixel_annotation_centers": {
+        "HI": [
+          352.3636363636363,
+          170.08760330578517
+        ],
+        "JK": [
+          478.44219778494477,
+          270.0
+        ]
+      },
+      "pixel_point_set": [
+        [
+          352.3636363636363,
+          170.08760330578517
+        ],
+        [
+          478.44219778494477,
+          270.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 200000,
+        "answer_min": 8,
+        "task_variant": "cylinder_given_r_h",
+        "variant_probabilities": {
+          "cone_given_r_slant_height": 0.16666666666666666,
+          "cylinder_given_r_h": 0.16666666666666666,
+          "rectangular_prism_given_lwh": 0.16666666666666666,
+          "sphere_given_r": 0.16666666666666666,
+          "square_pyramid_given_base_side_slant_height": 0.16666666666666666,
+          "triangular_prism_given_a_b_c_l": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "geometry_analytical_surface_area_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the value in the form k\u03c0 (for example 12\u03c0)",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, JK",
+          "json_example": "{\"evidence\":{\"HI\":2,\"JK\":3},\"answer\":\"12\u03c0\"}",
+          "json_example_answer_only": "{\"answer\":\"12\u03c0\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "an annotated 3D solid",
+          "question_text": "The cylinder has an annotated radius and height. What is its total surface area? Express the result in k\u03c0 form."
+        },
+        "task_family_key": "analytical_single_solid",
+        "task_family_variant_index": 2,
+        "task_key": "analytical_surface_area_query",
+        "task_variant_index": 1,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_3d/geometry_analytical_surface_area_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_surface_area_query": 5,
+          "task_family:analytical_single_solid": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "geometry_analytical_surface_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the value in the form k\u03c0 (for example 12\u03c0)",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, JK",
+              "json_example": "{\"evidence\":{\"HI\":2,\"JK\":3},\"answer\":\"12\u03c0\"}",
+              "json_example_answer_only": "{\"answer\":\"12\u03c0\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an annotated 3D solid",
+              "question_text": "The cylinder has an annotated radius and height. What is its total surface area? Express the result in k\u03c0 form."
+            },
+            "task_family_key": "analytical_single_solid",
+            "task_family_variant_index": 2,
+            "task_key": "analytical_surface_area_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_3d/geometry_analytical_surface_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_surface_area_query": 5,
+              "task_family:analytical_single_solid": 5
+            }
+          },
+          "prompt": "Look at the annotated image showing an annotated 3D solid. Question: The cylinder has an annotated radius and height. What is its total surface area? Express the result in k\u03c0 form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, JK.\nAnswer field: set \"answer\" to the value in the form k\u03c0 (for example 12\u03c0).\nExample JSON:\n{\"evidence\":{\"HI\":2,\"JK\":3},\"answer\":\"12\u03c0\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_analytical_surface_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the value in the form k\u03c0 (for example 12\u03c0)",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, JK",
+              "json_example": "{\"evidence\":{\"HI\":2,\"JK\":3},\"answer\":\"12\u03c0\"}",
+              "json_example_answer_only": "{\"answer\":\"12\u03c0\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an annotated 3D solid",
+              "question_text": "The cylinder has an annotated radius and height. What is its total surface area? Express the result in k\u03c0 form."
+            },
+            "task_family_key": "analytical_single_solid",
+            "task_family_variant_index": 2,
+            "task_key": "analytical_surface_area_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_3d/geometry_analytical_surface_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_surface_area_query": 5,
+              "task_family:analytical_single_solid": 5
+            }
+          },
+          "prompt": "Look at the annotated image showing an annotated 3D solid. Question: The cylinder has an annotated radius and height. What is its total surface area? Express the result in k\u03c0 form.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the value in the form k\u03c0 (for example 12\u03c0).\nExample JSON:\n{\"answer\":\"12\u03c0\"}"
+        }
+      },
+      "task_variant": "cylinder_given_r_h",
+      "template_id": "geometry_analytical_surface_area_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "HI": [
+          352.3636363636363,
+          170.08760330578517
+        ],
+        "JK": [
+          478.44219778494477,
+          270.0
+        ]
+      },
+      "annotation_labels": {
+        "h": "JK",
+        "r": "HI"
+      },
+      "coord_space": "pixel",
+      "entity_id": "solid_1",
+      "instance_anchor": {
+        "coord_space": "pixel",
+        "point": [
+          317.67272727272723,
+          256.0
+        ],
+        "polyline": [
+          [
+            256.0,
+            319.5123966942149
+          ],
+          [
+            502.69090909090903,
+            192.48760330578514
+          ],
+          [
+            502.69090909090903,
+            319.5123966942149
+          ],
+          [
+            63.27272727272731,
+            319.5123966942149
+          ],
+          [
+            63.27272727272731,
+            192.48760330578514
+          ],
+          [
+            448.7272727272727,
+            319.5123966942149
+          ],
+          [
+            448.7272727272727,
+            192.48760330578514
+          ],
+          [
+            256.0,
+            192.48760330578514
+          ]
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_cool",
+        "style_spec": {
+          "color": [
+            246,
+            248,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 512,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "origin_pixel": [
+          256,
+          256
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 47,
+        "target_cells_x": 11,
+        "target_cells_y": 11,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "partial_edge_cells": true,
+        "spacing_px": 47,
+        "target_cells_x": 11,
+        "target_cells_y": 11
+      },
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "quality": 85.0
+            },
+            "type": "jpeg"
+          }
+        ],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          135,
+          51,
+          135
+        ],
+        "label_stroke_color": [
+          252,
+          248,
+          253
+        ],
+        "line_color": [
+          135,
+          51,
+          135
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "height_units": 29,
+            "points": {
+              "bottom_center": [
+                256.0,
+                319.5123966942149
+              ],
+              "h_a": [
+                502.69090909090903,
+                192.48760330578514
+              ],
+              "h_b": [
+                502.69090909090903,
+                319.5123966942149
+              ],
+              "left_bottom": [
+                63.27272727272731,
+                319.5123966942149
+              ],
+              "left_top": [
+                63.27272727272731,
+                192.48760330578514
+              ],
+              "right_bottom": [
+                448.7272727272727,
+                319.5123966942149
+              ],
+              "right_top": [
+                448.7272727272727,
+                192.48760330578514
+              ],
+              "top_center": [
+                256.0,
+                192.48760330578514
+              ]
+            },
+            "radius_units": 44,
+            "render_cap_radius_y_px": 60.21239669421487,
+            "render_height_px": 127.02479338842973,
+            "render_radius_px": 192.7272727272727,
+            "surface_area_pi_coefficient": 6424,
+            "task_variant": "cylinder_given_r_h"
+          },
+          "entity_id": "solid_1",
+          "entity_type": "cylinder"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            256,
+            256
+          ],
+          "spacing_px": 47,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_3d_analytical_surface_area"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "HI",
+        "JK"
+      ],
+      "annotation_labels": {
+        "h": "JK",
+        "r": "HI"
+      },
+      "annotation_values": {
+        "HI": 44,
+        "JK": 29
+      },
+      "formula_expression": "SA = 2 * \u03c0 * r * (r + h)",
+      "measurement_ref_map": {
+        "HI": 44,
+        "JK": 29
+      },
+      "task_variant": "cylinder_given_r_h",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

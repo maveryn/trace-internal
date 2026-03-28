@@ -1,0 +1,438 @@
+{
+  "answer_gt": {
+    "type": "number",
+    "value": 91.9
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "MN": 45,
+      "PO": 9,
+      "PQ": 6
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_2d_perimeter/images/isosceles_trapezoid_bases_height/0005.png"
+  },
+  "instance_seed": 1726169903628188,
+  "prompt": "Use the image showing a geometric scene with measurement annotations. Task: The isosceles trapezoid shows both bases and a height. What is the perimeter of the trapezoid?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: MN, PO, PQ.\nAnswer field: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"MN\":2,\"PO\":3,\"PQ\":4},\"answer\":42.3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the image showing a geometric scene with measurement annotations. Task: The isosceles trapezoid shows both bases and a height. What is the perimeter of the trapezoid?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: MN, PO, PQ.\nAnswer field: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"MN\":2,\"PO\":3,\"PQ\":4},\"answer\":42.3}",
+    "answer_only": "Use the image showing a geometric scene with measurement annotations. Task: The isosceles trapezoid shows both bases and a height. What is the perimeter of the trapezoid?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+  },
+  "task": "task_geometry_analytical_2d_perimeter",
+  "task_variant": "isosceles_trapezoid_bases_height",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 250,
+      "answer_min": 8,
+      "answer_scalar": 919,
+      "answer_type": "number",
+      "answer_value": 91.9,
+      "evidence_map": {
+        "MN": 45,
+        "PO": 9,
+        "PQ": 6
+      },
+      "evidence_role_tokens": {
+        "base_bottom": "MN",
+        "base_top": "PO",
+        "height": "PQ"
+      },
+      "evidence_role_values": {
+        "base_bottom": 45,
+        "base_top": 9,
+        "height": 6
+      },
+      "evidence_roles": [
+        "base_bottom",
+        "base_top",
+        "height"
+      ],
+      "formula_expression": "base_bottom + base_top + 2 * sqrt(height^2 + ((base_bottom - base_top)/2)^2)",
+      "raw_answer_value": 91.94733192202055,
+      "required_annotations": [
+        "MN",
+        "PO",
+        "PQ"
+      ],
+      "target_quantity": "perimeter",
+      "task_variant": "isosceles_trapezoid_bases_height",
+      "variant_probabilities": {
+        "inscribed_square_diameter": 0.2,
+        "isosceles_trapezoid_bases_height": 0.2,
+        "rectangle_side_diagonal": 0.2,
+        "rhombus_diagonals": 0.2,
+        "right_triangle_leg_hypotenuse": 0.2
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "base_bottom": "MN",
+        "base_top": "PO",
+        "height": "PQ"
+      },
+      "id_set": [
+        "MN",
+        "PO",
+        "PQ"
+      ],
+      "measurement_ref_map": {
+        "MN": 45,
+        "PO": 9,
+        "PQ": 6
+      },
+      "pixel_annotation_centers": {
+        "MN": [
+          329.0,
+          245.94806387381394
+        ],
+        "PO": [
+          329.0,
+          146.5387305404806
+        ],
+        "PQ": [
+          302.4346666666667,
+          196.79339720714725
+        ]
+      },
+      "pixel_point_set": [
+        [
+          329.0,
+          245.94806387381394
+        ],
+        [
+          329.0,
+          146.5387305404806
+        ],
+        [
+          302.4346666666667,
+          196.79339720714725
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 250,
+        "answer_min": 8,
+        "task_variant": "isosceles_trapezoid_bases_height",
+        "variant_probabilities": {
+          "inscribed_square_diameter": 0.2,
+          "isosceles_trapezoid_bases_height": 0.2,
+          "rectangle_side_diagonal": 0.2,
+          "rhombus_diagonals": 0.2,
+          "right_triangle_leg_hypotenuse": 0.2
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "geometry_analytical_perimeter_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: MN, PO, PQ",
+          "json_example": "{\"evidence\":{\"MN\":2,\"PO\":3,\"PQ\":4},\"answer\":42.3}",
+          "json_example_answer_only": "{\"answer\":42.3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a geometric scene with measurement annotations",
+          "question_text": "The isosceles trapezoid shows both bases and a height. What is the perimeter of the trapezoid?"
+        },
+        "task_family_key": "analytical_perimeter_scene",
+        "task_family_variant_index": 3,
+        "task_key": "analytical_perimeter_query",
+        "task_variant_index": 2,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_2d/geometry_analytical_perimeter_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_perimeter_query": 5,
+          "task_family:analytical_perimeter_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "geometry_analytical_perimeter_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: MN, PO, PQ",
+              "json_example": "{\"evidence\":{\"MN\":2,\"PO\":3,\"PQ\":4},\"answer\":42.3}",
+              "json_example_answer_only": "{\"answer\":42.3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric scene with measurement annotations",
+              "question_text": "The isosceles trapezoid shows both bases and a height. What is the perimeter of the trapezoid?"
+            },
+            "task_family_key": "analytical_perimeter_scene",
+            "task_family_variant_index": 3,
+            "task_key": "analytical_perimeter_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_perimeter_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_perimeter_query": 5,
+              "task_family:analytical_perimeter_scene": 5
+            }
+          },
+          "prompt": "Use the image showing a geometric scene with measurement annotations. Task: The isosceles trapezoid shows both bases and a height. What is the perimeter of the trapezoid?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: MN, PO, PQ.\nAnswer field: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"MN\":2,\"PO\":3,\"PQ\":4},\"answer\":42.3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "geometry_analytical_perimeter_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: MN, PO, PQ",
+              "json_example": "{\"evidence\":{\"MN\":2,\"PO\":3,\"PQ\":4},\"answer\":42.3}",
+              "json_example_answer_only": "{\"answer\":42.3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric scene with measurement annotations",
+              "question_text": "The isosceles trapezoid shows both bases and a height. What is the perimeter of the trapezoid?"
+            },
+            "task_family_key": "analytical_perimeter_scene",
+            "task_family_variant_index": 3,
+            "task_key": "analytical_perimeter_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_perimeter_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_perimeter_query": 5,
+              "task_family:analytical_perimeter_scene": 5
+            }
+          },
+          "prompt": "Use the image showing a geometric scene with measurement annotations. Task: The isosceles trapezoid shows both bases and a height. What is the perimeter of the trapezoid?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+        }
+      },
+      "task_variant": "isosceles_trapezoid_bases_height",
+      "template_id": "geometry_analytical_perimeter_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "MN": [
+          329.0,
+          245.94806387381394
+        ],
+        "PO": [
+          329.0,
+          146.5387305404806
+        ],
+        "PQ": [
+          302.4346666666667,
+          196.79339720714725
+        ]
+      },
+      "annotation_labels": {
+        "base_bottom": "MN",
+        "base_top": "PO",
+        "height": "PQ"
+      },
+      "coord_space": "pixel",
+      "instance_anchor": {
+        "bbox": [
+          100.34,
+          166.30539720714728,
+          557.66,
+          227.28139720714728
+        ],
+        "coord_space": "pixel"
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_offwhite",
+        "style_spec": {
+          "color": [
+            252,
+            252,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 658,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "origin_pixel": [
+          328,
+          328
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 73,
+        "target_cells_x": 9,
+        "target_cells_y": 9,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "partial_edge_cells": true,
+        "spacing_px": 73,
+        "target_cells_x": 9,
+        "target_cells_y": 9
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          35,
+          134,
+          96
+        ],
+        "label_stroke_color": [
+          249,
+          255,
+          248
+        ],
+        "line_color": [
+          35,
+          134,
+          96
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "vertices": [
+              [
+                100.34,
+                227.28139720714728
+              ],
+              [
+                557.66,
+                227.28139720714728
+              ],
+              [
+                374.73199999999997,
+                166.30539720714728
+              ],
+              [
+                283.26800000000003,
+                166.30539720714728
+              ]
+            ]
+          },
+          "entity_id": "trapezoid_1",
+          "entity_type": "isosceles_trapezoid"
+        },
+        {
+          "attrs": {
+            "helper": true,
+            "point_a": [
+              283.26800000000003,
+              166.30539720714728
+            ],
+            "point_b": [
+              283.26800000000003,
+              227.28139720714728
+            ]
+          },
+          "entity_id": "height_1",
+          "entity_type": "altitude"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            328,
+            328
+          ],
+          "spacing_px": 73,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_2d_analytical_perimeter"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "MN",
+        "PO",
+        "PQ"
+      ],
+      "annotation_labels": {
+        "base_bottom": "MN",
+        "base_top": "PO",
+        "height": "PQ"
+      },
+      "annotation_values": {
+        "MN": 45,
+        "PO": 9,
+        "PQ": 6
+      },
+      "formula_expression": "base_bottom + base_top + 2 * sqrt(height^2 + ((base_bottom - base_top)/2)^2)",
+      "measurement_ref_map": {
+        "MN": 45,
+        "PO": 9,
+        "PQ": 6
+      },
+      "task_variant": "isosceles_trapezoid_bases_height",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

@@ -1,0 +1,731 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 3
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "2",
+      "3",
+      "4"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "graph/task_graph_comparison_largest_component_size/images/default/0007.png"
+  },
+  "instance_seed": 7660850332748910,
+  "prompt": "You are given an image with a labeled undirected graph. Task: How many nodes are in the largest connected component?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the labels of all nodes in the unique largest connected component, sorted in ascending label order.\nAnswer rule: set \"answer\" to the size of that connected component as an integer.\nExample JSON:\n{\"evidence\":[\"2\",\"5\",\"7\",\"9\"],\"answer\":4}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given an image with a labeled undirected graph. Task: How many nodes are in the largest connected component?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the labels of all nodes in the unique largest connected component, sorted in ascending label order.\nAnswer rule: set \"answer\" to the size of that connected component as an integer.\nExample JSON:\n{\"evidence\":[\"2\",\"5\",\"7\",\"9\"],\"answer\":4}",
+    "answer_only": "You are given an image with a labeled undirected graph. Task: How many nodes are in the largest connected component?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the size of that connected component as an integer.\nExample JSON:\n{\"answer\":4}"
+  },
+  "task": "task_graph_comparison_largest_component_size",
+  "task_variant": "largest_component_size",
+  "trace_payload": {
+    "execution_trace": {
+      "adjacency_by_label": {
+        "1": [
+          "5"
+        ],
+        "2": [
+          "4"
+        ],
+        "3": [
+          "4"
+        ],
+        "4": [
+          "2",
+          "3"
+        ],
+        "5": [
+          "1"
+        ]
+      },
+      "component_count": 2,
+      "component_sizes": [
+        2,
+        3
+      ],
+      "components_by_label": [
+        [
+          "1",
+          "5"
+        ],
+        [
+          "2",
+          "3",
+          "4"
+        ]
+      ],
+      "crossing_count": 0,
+      "degrees_by_label": {
+        "1": 1,
+        "2": 1,
+        "3": 1,
+        "4": 2,
+        "5": 1
+      },
+      "edge_count": 3,
+      "graph_directionality": "undirected",
+      "label_variant": "numbers",
+      "largest_component_count": 1,
+      "layout_transform_variant": "rotate_270",
+      "layout_variant_requested": "circular",
+      "layout_variant_used": "circular",
+      "matching_labels": [
+        "2",
+        "3",
+        "4"
+      ],
+      "node_color_name": "brown",
+      "node_count": 5,
+      "node_shape_variant": "hexagon",
+      "question_format": "count_nodes_in_unique_largest_component",
+      "scene_variant": "circular",
+      "target_largest_component_size": 3,
+      "task_variant": "largest_component_size",
+      "topology_profile": "low_degree"
+    },
+    "projected_evidence": {
+      "label_set": [
+        "2",
+        "3",
+        "4"
+      ],
+      "pixel_bbox_set": [
+        [
+          56,
+          262,
+          96,
+          302
+        ],
+        [
+          632,
+          544,
+          672,
+          584
+        ],
+        [
+          192,
+          544,
+          232,
+          584
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          76,
+          282
+        ],
+        [
+          652,
+          564
+        ],
+        [
+          212,
+          564
+        ]
+      ],
+      "type": "label_set"
+    },
+    "query_spec": {
+      "params": {
+        "component_count": 2,
+        "component_count_probabilities": {
+          "2": 0.3333333333333333,
+          "3": 0.3333333333333333,
+          "4": 0.3333333333333333
+        },
+        "edge_count": 3,
+        "graph_directionality": "undirected",
+        "label_variant": "numbers",
+        "label_variant_probabilities": {
+          "letters": 0.5,
+          "numbers": 0.5
+        },
+        "layout_transform_variant": "rotate_270",
+        "layout_transform_variant_probabilities": {
+          "identity": 0.16666666666666666,
+          "mirror_left_right": 0.16666666666666666,
+          "mirror_up_down": 0.16666666666666666,
+          "rotate_180": 0.16666666666666666,
+          "rotate_270": 0.16666666666666666,
+          "rotate_90": 0.16666666666666666
+        },
+        "layout_variant": "circular",
+        "layout_variant_probabilities": {
+          "circular": 0.3333333333333333,
+          "shell": 0.3333333333333333,
+          "spring": 0.3333333333333333
+        },
+        "node_color_name": "brown",
+        "node_color_name_probabilities": {
+          "blue": 0.1,
+          "brown": 0.1,
+          "cyan": 0.1,
+          "green": 0.1,
+          "magenta": 0.1,
+          "maroon": 0.1,
+          "orange": 0.1,
+          "purple": 0.1,
+          "red": 0.1,
+          "yellow": 0.1
+        },
+        "node_count": 5,
+        "node_count_probabilities": {
+          "5": 1.0
+        },
+        "node_shape_variant": "hexagon",
+        "node_shape_variant_probabilities": {
+          "circle": 0.3333333333333333,
+          "hexagon": 0.3333333333333333,
+          "rounded_square": 0.3333333333333333
+        },
+        "target_largest_component_size": 3,
+        "target_largest_component_size_probabilities": {
+          "2": 0.2,
+          "3": 0.2,
+          "4": 0.2,
+          "5": 0.2,
+          "6": 0.2
+        },
+        "task_variant_probabilities": {
+          "largest_component_size": 1.0
+        },
+        "topology_profile": "low_degree",
+        "topology_profile_probabilities": {
+          "balanced": 0.3333333333333333,
+          "hub_heavy": 0.3333333333333333,
+          "low_degree": 0.3333333333333333
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "graph_comparison_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the size of that connected component as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the labels of all nodes in the unique largest connected component, sorted in ascending label order",
+          "json_example": "{\"evidence\":[\"2\",\"5\",\"7\",\"9\"],\"answer\":4}",
+          "json_example_answer_only": "{\"answer\":4}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a labeled undirected graph",
+          "question_text": "How many nodes are in the largest connected component?"
+        },
+        "task_family_key": "single_graph_comparison",
+        "task_family_variant_index": 0,
+        "task_key": "largest_component_size_query",
+        "task_variant_index": 2,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "graph/comparison/graph_comparison_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:largest_component_size_query": 5,
+          "task_family:single_graph_comparison": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "graph_comparison_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the size of that connected component as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the labels of all nodes in the unique largest connected component, sorted in ascending label order",
+              "json_example": "{\"evidence\":[\"2\",\"5\",\"7\",\"9\"],\"answer\":4}",
+              "json_example_answer_only": "{\"answer\":4}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled undirected graph",
+              "question_text": "How many nodes are in the largest connected component?"
+            },
+            "task_family_key": "single_graph_comparison",
+            "task_family_variant_index": 0,
+            "task_key": "largest_component_size_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "graph/comparison/graph_comparison_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:largest_component_size_query": 5,
+              "task_family:single_graph_comparison": 5
+            }
+          },
+          "prompt": "You are given an image with a labeled undirected graph. Task: How many nodes are in the largest connected component?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the labels of all nodes in the unique largest connected component, sorted in ascending label order.\nAnswer rule: set \"answer\" to the size of that connected component as an integer.\nExample JSON:\n{\"evidence\":[\"2\",\"5\",\"7\",\"9\"],\"answer\":4}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "graph_comparison_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the size of that connected component as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the labels of all nodes in the unique largest connected component, sorted in ascending label order",
+              "json_example": "{\"evidence\":[\"2\",\"5\",\"7\",\"9\"],\"answer\":4}",
+              "json_example_answer_only": "{\"answer\":4}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled undirected graph",
+              "question_text": "How many nodes are in the largest connected component?"
+            },
+            "task_family_key": "single_graph_comparison",
+            "task_family_variant_index": 0,
+            "task_key": "largest_component_size_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "graph/comparison/graph_comparison_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:largest_component_size_query": 5,
+              "task_family:single_graph_comparison": 5
+            }
+          },
+          "prompt": "You are given an image with a labeled undirected graph. Task: How many nodes are in the largest connected component?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the size of that connected component as an integer.\nExample JSON:\n{\"answer\":4}"
+        }
+      },
+      "task_variant": "largest_component_size",
+      "template_id": "graph_comparison_v1"
+    },
+    "render_map": {
+      "anchors": {},
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        864,
+        640
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          864,
+          640
+        ],
+        "scene_content_xyxy": [
+          52,
+          83,
+          812,
+          588
+        ],
+        "scene_panel_xyxy": [
+          28,
+          28,
+          836,
+          612
+        ],
+        "title_band_xyxy": [
+          28,
+          28,
+          836,
+          71
+        ]
+      },
+      "style": {
+        "arrow_length_px": 12,
+        "arrow_width_px": 7,
+        "background_color_rgb": [
+          251,
+          251,
+          249
+        ],
+        "background_meta": {
+          "available_styles": [
+            "solid_light"
+          ],
+          "enabled": true,
+          "selected_style": "solid_light",
+          "style_spec": {
+            "color": [
+              248,
+              248,
+              248
+            ],
+            "kind": "solid"
+          }
+        },
+        "edge_color_rgb": [
+          98,
+          81,
+          49
+        ],
+        "edge_width_px": 4,
+        "label_font_size_px": 20,
+        "label_stroke_rgb": [
+          79,
+          65,
+          39
+        ],
+        "label_stroke_width_px": 2,
+        "label_text_rgb": [
+          255,
+          255,
+          255
+        ],
+        "node_border_rgb": [
+          79,
+          65,
+          39
+        ],
+        "node_border_width_px": 2,
+        "node_color_name": "brown",
+        "node_fill_rgb": [
+          136,
+          112,
+          68
+        ],
+        "node_radius_px": 20,
+        "node_shape_variant": "hexagon",
+        "panel_border_rgb": [
+          222,
+          215,
+          203
+        ],
+        "panel_fill_rgb": [
+          248,
+          246,
+          244
+        ],
+        "post_image_noise_meta": {
+          "applied": false,
+          "apply_prob": 0.0,
+          "edit_count_range": [
+            1,
+            2
+          ],
+          "edit_types": [
+            "blur",
+            "downsample",
+            "jpeg",
+            "noise"
+          ],
+          "edits": [],
+          "enabled": false
+        },
+        "resolved_label_font_size_px": 20,
+        "title_color_rgb": [
+          63,
+          52,
+          31
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_xyxy": [
+            412,
+            87,
+            452,
+            127
+          ],
+          "center_px": [
+            432,
+            107
+          ],
+          "degree": 1,
+          "entity_id": "node_5",
+          "entity_kind": "graph_node",
+          "is_largest_component": false,
+          "label": "5",
+          "neighbors": [
+            "1"
+          ],
+          "predecessors": [
+            "1"
+          ],
+          "successors": [
+            "1"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            768,
+            262,
+            808,
+            302
+          ],
+          "center_px": [
+            788,
+            282
+          ],
+          "degree": 1,
+          "entity_id": "node_1",
+          "entity_kind": "graph_node",
+          "is_largest_component": false,
+          "label": "1",
+          "neighbors": [
+            "5"
+          ],
+          "predecessors": [
+            "5"
+          ],
+          "successors": [
+            "5"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            632,
+            544,
+            672,
+            584
+          ],
+          "center_px": [
+            652,
+            564
+          ],
+          "degree": 1,
+          "entity_id": "node_3",
+          "entity_kind": "graph_node",
+          "is_largest_component": true,
+          "label": "3",
+          "neighbors": [
+            "4"
+          ],
+          "predecessors": [
+            "4"
+          ],
+          "successors": [
+            "4"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            192,
+            544,
+            232,
+            584
+          ],
+          "center_px": [
+            212,
+            564
+          ],
+          "degree": 2,
+          "entity_id": "node_4",
+          "entity_kind": "graph_node",
+          "is_largest_component": true,
+          "label": "4",
+          "neighbors": [
+            "2",
+            "3"
+          ],
+          "predecessors": [
+            "2",
+            "3"
+          ],
+          "successors": [
+            "2",
+            "3"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            56,
+            262,
+            96,
+            302
+          ],
+          "center_px": [
+            76,
+            282
+          ],
+          "degree": 1,
+          "entity_id": "node_2",
+          "entity_kind": "graph_node",
+          "is_largest_component": true,
+          "label": "2",
+          "neighbors": [
+            "4"
+          ],
+          "predecessors": [
+            "4"
+          ],
+          "successors": [
+            "4"
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_1_5",
+          "entity_kind": "graph_edge",
+          "node_u_label": "1",
+          "node_v_label": "5",
+          "segment_px": [
+            [
+              770,
+              273
+            ],
+            [
+              450,
+              116
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_2_4",
+          "entity_kind": "graph_edge",
+          "node_u_label": "2",
+          "node_v_label": "4",
+          "segment_px": [
+            [
+              85,
+              300
+            ],
+            [
+              203,
+              546
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_3_4",
+          "entity_kind": "graph_edge",
+          "node_u_label": "3",
+          "node_v_label": "4",
+          "segment_px": [
+            [
+              632,
+              564
+            ],
+            [
+              232,
+              564
+            ]
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            864,
+            640
+          ],
+          "scene_content_xyxy": [
+            52,
+            83,
+            812,
+            588
+          ],
+          "scene_panel_xyxy": [
+            28,
+            28,
+            836,
+            612
+          ],
+          "title_band_xyxy": [
+            28,
+            28,
+            836,
+            71
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "adjacency_by_label": {
+          "1": [
+            "5"
+          ],
+          "2": [
+            "4"
+          ],
+          "3": [
+            "4"
+          ],
+          "4": [
+            "2",
+            "3"
+          ],
+          "5": [
+            "1"
+          ]
+        },
+        "comparison_rule": "unique_largest_connected_component_size",
+        "component_sizes": [
+          2,
+          3
+        ],
+        "components_by_label": [
+          [
+            "1",
+            "5"
+          ],
+          [
+            "2",
+            "3",
+            "4"
+          ]
+        ],
+        "degrees_by_label": {
+          "1": 1,
+          "2": 1,
+          "3": 1,
+          "4": 2,
+          "5": 1
+        },
+        "edge_labels": [
+          [
+            "1",
+            "5"
+          ],
+          [
+            "2",
+            "4"
+          ],
+          [
+            "3",
+            "4"
+          ]
+        ],
+        "graph_directionality": "undirected",
+        "matching_labels": [
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "scene_kind": "graph_largest_component_comparison"
+    },
+    "witness_symbolic": {
+      "label_set": [
+        "2",
+        "3",
+        "4"
+      ],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

@@ -1,0 +1,761 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 1
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        567,
+        301,
+        588,
+        344
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_counting_size_relation/images/size_smaller/0001.png"
+  },
+  "instance_seed": 2811471875216750,
+  "prompt": "The image shows a Reference icon on the left and a Scene panel of icons on the right. Answer this question: How many icons in the Scene panel are smaller than the Reference icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[318,148,370,200],[572,322,632,382]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows a Reference icon on the left and a Scene panel of icons on the right. Answer this question: How many icons in the Scene panel are smaller than the Reference icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[318,148,370,200],[572,322,632,382]],\"answer\":2}",
+    "answer_only": "The image shows a Reference icon on the left and a Scene panel of icons on the right. Answer this question: How many icons in the Scene panel are smaller than the Reference icon?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_icons_counting_size_relation",
+  "task_variant": "size_smaller",
+  "trace_payload": {
+    "execution_trace": {
+      "distractor_count": 6,
+      "distractor_count_probabilities": {
+        "1": 0.125,
+        "2": 0.125,
+        "3": 0.125,
+        "4": 0.125,
+        "5": 0.125,
+        "6": 0.125,
+        "7": 0.125,
+        "8": 0.125
+      },
+      "matching_scene_indices": [
+        0
+      ],
+      "object_count": 7,
+      "object_count_probabilities": {
+        "2": 0.125,
+        "3": 0.125,
+        "4": 0.125,
+        "5": 0.125,
+        "6": 0.125,
+        "7": 0.125,
+        "8": 0.125,
+        "9": 0.125
+      },
+      "question_format": "count_matching_scene_icons_by_size_relation",
+      "reference_icon_id": "gi-delapouite-igloo",
+      "reference_nominal_size_px": 80,
+      "reference_rotation_degrees": 0,
+      "scene_icon_ids": [
+        "gi-delapouite-igloo",
+        "gi-delapouite-igloo",
+        "gi-delapouite-igloo",
+        "gi-delapouite-igloo",
+        "gi-delapouite-igloo",
+        "gi-delapouite-igloo",
+        "gi-delapouite-igloo"
+      ],
+      "scene_nominal_sizes_px": [
+        47,
+        119,
+        116,
+        93,
+        118,
+        100,
+        100
+      ],
+      "scene_rotations_degrees": [
+        90,
+        180,
+        90,
+        270,
+        0,
+        90,
+        180
+      ],
+      "scene_variant": "reference_scene",
+      "size_relation": "smaller",
+      "size_relation_min_delta_px": 12,
+      "size_relation_probabilities": {
+        "larger": 0.5,
+        "smaller": 0.5
+      },
+      "target_count": 1,
+      "target_count_probabilities": {
+        "0": 0.1111111111111111,
+        "1": 0.1111111111111111,
+        "2": 0.1111111111111111,
+        "3": 0.1111111111111111,
+        "4": 0.1111111111111111,
+        "5": 0.1111111111111111,
+        "6": 0.1111111111111111,
+        "7": 0.1111111111111111,
+        "8": 0.1111111111111111
+      },
+      "task_variant": "size_smaller"
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          567,
+          301,
+          588,
+          344
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "distractor_count": 6,
+        "distractor_count_probabilities": {
+          "1": 0.125,
+          "2": 0.125,
+          "3": 0.125,
+          "4": 0.125,
+          "5": 0.125,
+          "6": 0.125,
+          "7": 0.125,
+          "8": 0.125
+        },
+        "object_count": 7,
+        "object_count_probabilities": {
+          "2": 0.125,
+          "3": 0.125,
+          "4": 0.125,
+          "5": 0.125,
+          "6": 0.125,
+          "7": 0.125,
+          "8": 0.125,
+          "9": 0.125
+        },
+        "pool_manifest": "all_icons.txt",
+        "rotation_candidates_degrees": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "size_relation": "smaller",
+        "size_relation_min_delta_px": 12,
+        "size_relation_probabilities": {
+          "larger": 0.5,
+          "smaller": 0.5
+        },
+        "target_count": 1,
+        "target_count_probabilities": {
+          "0": 0.1111111111111111,
+          "1": 0.1111111111111111,
+          "2": 0.1111111111111111,
+          "3": 0.1111111111111111,
+          "4": 0.1111111111111111,
+          "5": 0.1111111111111111,
+          "6": 0.1111111111111111,
+          "7": 0.1111111111111111,
+          "8": 0.1111111111111111
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "icons_counting_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+          "json_example": "{\"evidence\":[[318,148,370,200],[572,322,632,382]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+          "question_text": "How many icons in the Scene panel are smaller than the Reference icon?"
+        },
+        "task_family_key": "reference_scene_counting",
+        "task_family_variant_index": 1,
+        "task_key": "counting_query",
+        "task_variant_index": 3,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/counting/icons_counting_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:counting_query": 5,
+          "task_family:reference_scene_counting": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "icons_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[318,148,370,200],[572,322,632,382]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+              "question_text": "How many icons in the Scene panel are smaller than the Reference icon?"
+            },
+            "task_family_key": "reference_scene_counting",
+            "task_family_variant_index": 1,
+            "task_key": "counting_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/counting/icons_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:counting_query": 5,
+              "task_family:reference_scene_counting": 5
+            }
+          },
+          "prompt": "The image shows a Reference icon on the left and a Scene panel of icons on the right. Answer this question: How many icons in the Scene panel are smaller than the Reference icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[318,148,370,200],[572,322,632,382]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "icons_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[318,148,370,200],[572,322,632,382]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+              "question_text": "How many icons in the Scene panel are smaller than the Reference icon?"
+            },
+            "task_family_key": "reference_scene_counting",
+            "task_family_variant_index": 1,
+            "task_key": "counting_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/counting/icons_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:counting_query": 5,
+              "task_family:reference_scene_counting": 5
+            }
+          },
+          "prompt": "The image shows a Reference icon on the left and a Scene panel of icons on the right. Answer this question: How many icons in the Scene panel are smaller than the Reference icon?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "size_smaller",
+      "template_id": "icons_counting_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching_scene_boxes": [
+          [
+            567,
+            301,
+            588,
+            344
+          ]
+        ],
+        "reference_icon": {
+          "bbox_xyxy": [
+            111,
+            270,
+            185,
+            306
+          ],
+          "icon_id": "gi-delapouite-igloo",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 3383316685344898,
+          "nominal_size_px": 80,
+          "panel": "reference",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            207,
+            75,
+            145
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        960,
+        544
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          960,
+          544
+        ],
+        "reference_content_xyxy": [
+          44,
+          77,
+          252,
+          500
+        ],
+        "reference_panel_xyxy": [
+          24,
+          24,
+          272,
+          520
+        ],
+        "scene_content_xyxy": [
+          316,
+          77,
+          916,
+          500
+        ],
+        "scene_panel_xyxy": [
+          296,
+          24,
+          936,
+          520
+        ]
+      },
+      "style": {
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "palette_size_max": 12,
+        "palette_size_min": 8,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "reference_icon_size_max_px": 96,
+        "reference_icon_size_min_px": 64,
+        "reference_icon_size_px": 80,
+        "sampled_palette_rgb": [
+          [
+            207,
+            75,
+            145
+          ],
+          [
+            47,
+            205,
+            135
+          ],
+          [
+            211,
+            169,
+            81
+          ],
+          [
+            29,
+            106,
+            207
+          ],
+          [
+            217,
+            41,
+            63
+          ],
+          [
+            186,
+            33,
+            201
+          ],
+          [
+            124,
+            219,
+            53
+          ],
+          [
+            117,
+            75,
+            41
+          ],
+          [
+            36,
+            31,
+            207
+          ]
+        ],
+        "scene_icon_size_max_px": 120,
+        "scene_icon_size_min_px": 40,
+        "scene_max_overlap_fraction": 0.1,
+        "scene_placement_max_attempts": 120,
+        "scene_size_shrink_factor": 0.9,
+        "scene_size_shrink_rounds": 6
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_xyxy": [
+            111,
+            270,
+            185,
+            306
+          ],
+          "icon_id": "gi-delapouite-igloo",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 3383316685344898,
+          "nominal_size_px": 80,
+          "panel": "reference",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            207,
+            75,
+            145
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            567,
+            301,
+            588,
+            344
+          ],
+          "icon_id": "gi-delapouite-igloo",
+          "index": 0,
+          "instance_id": "scene_icon_0",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 4042682230068360,
+          "nominal_size_px": 47,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            186,
+            33,
+            201
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            460,
+            342,
+            569,
+            395
+          ],
+          "icon_id": "gi-delapouite-igloo",
+          "index": 1,
+          "instance_id": "scene_icon_1",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 4856066460831020,
+          "nominal_size_px": 119,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            117,
+            75,
+            41
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            316,
+            335,
+            368,
+            441
+          ],
+          "icon_id": "gi-delapouite-igloo",
+          "index": 2,
+          "instance_id": "scene_icon_2",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 74.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 4383720483792804,
+          "nominal_size_px": 116,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            217,
+            41,
+            63
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            529,
+            395,
+            570,
+            480
+          ],
+          "icon_id": "gi-delapouite-igloo",
+          "index": 3,
+          "instance_id": "scene_icon_3",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.050603
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 2112255226892407,
+          "nominal_size_px": 93,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            186,
+            33,
+            201
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            654,
+            86,
+            762,
+            138
+          ],
+          "icon_id": "gi-delapouite-igloo",
+          "index": 4,
+          "instance_id": "scene_icon_4",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.056797
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "quality": 71.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 7733929220467493,
+          "nominal_size_px": 118,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            29,
+            106,
+            207
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            664,
+            153,
+            708,
+            245
+          ],
+          "icon_id": "gi-delapouite-igloo",
+          "index": 5,
+          "instance_id": "scene_icon_5",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.519927
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "scale": 0.890024
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 154241488029083,
+          "nominal_size_px": 100,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            186,
+            33,
+            201
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            646,
+            349,
+            738,
+            393
+          ],
+          "icon_id": "gi-delapouite-igloo",
+          "index": 6,
+          "instance_id": "scene_icon_6",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 72.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 2896063819608257,
+          "nominal_size_px": 100,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            36,
+            31,
+            207
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            960,
+            544
+          ],
+          "reference_content_xyxy": [
+            44,
+            77,
+            252,
+            500
+          ],
+          "reference_panel_xyxy": [
+            24,
+            24,
+            272,
+            520
+          ],
+          "scene_content_xyxy": [
+            316,
+            77,
+            916,
+            500
+          ],
+          "scene_panel_xyxy": [
+            296,
+            24,
+            936,
+            520
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "counting_target": "same_icon_type_and_smaller_than_reference",
+        "matching_scene_indices": [
+          0
+        ],
+        "reference_icon_id": "gi-delapouite-igloo",
+        "reference_nominal_size_px": 80,
+        "size_relation": "smaller",
+        "size_relation_min_delta_px": 12
+      },
+      "scene_kind": "icons_reference_counting_size_relation"
+    },
+    "witness_symbolic": {
+      "matching_scene_indices": [
+        0
+      ],
+      "reference_icon_id": "gi-delapouite-igloo",
+      "reference_nominal_size_px": 80,
+      "size_relation": "smaller"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

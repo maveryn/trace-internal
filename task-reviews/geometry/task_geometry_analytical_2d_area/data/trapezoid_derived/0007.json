@@ -1,0 +1,472 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 600
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "AB": 45,
+      "YA": 13,
+      "YZ": 55
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_2d_area/images/trapezoid_derived/0007.png"
+  },
+  "instance_seed": 2394092498665339,
+  "prompt": "Look at the annotated image showing a geometric shape with measurement annotations. Based on the shown values, answer this question: The isosceles trapezoid shows both bases and one leg length. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ, AB, YA.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"YZ\":2,\"AB\":3,\"YA\":4},\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the annotated image showing a geometric shape with measurement annotations. Based on the shown values, answer this question: The isosceles trapezoid shows both bases and one leg length. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ, AB, YA.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"YZ\":2,\"AB\":3,\"YA\":4},\"answer\":8}",
+    "answer_only": "Look at the annotated image showing a geometric shape with measurement annotations. Based on the shown values, answer this question: The isosceles trapezoid shows both bases and one leg length. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_geometry_analytical_2d_area",
+  "task_variant": "trapezoid_derived",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 2500,
+      "answer_min": 8,
+      "answer_scalar": 600,
+      "answer_type": "integer",
+      "answer_value": 600,
+      "case_id": "trapezoid_derived",
+      "evidence_annotations": {
+        "b1": "YZ",
+        "b2": "AB",
+        "leg": "YA"
+      },
+      "evidence_ids": [
+        "YZ",
+        "AB",
+        "YA"
+      ],
+      "evidence_label_values": {
+        "b1": 55,
+        "b2": 45,
+        "leg": 13
+      },
+      "evidence_map": {
+        "AB": 45,
+        "YA": 13,
+        "YZ": 55
+      },
+      "evidence_roles": [
+        "b1",
+        "b2",
+        "leg"
+      ],
+      "formula_expression": "A = ((b1 + b2) * sqrt(leg^2 - ((b1-b2)/2)^2)) / 2",
+      "mode_probabilities": {
+        "derived": 0.5,
+        "explicit": 0.5
+      },
+      "reasoning_mode": "derived",
+      "required_annotations": [
+        "YZ",
+        "AB",
+        "YA"
+      ],
+      "shape_probabilities": {
+        "circle": 0.14285714285714285,
+        "ellipse": 0.14285714285714285,
+        "parallelogram": 0.14285714285714285,
+        "rectangle": 0.14285714285714285,
+        "rhombus": 0.14285714285714285,
+        "trapezoid": 0.14285714285714285,
+        "triangle": 0.14285714285714285
+      },
+      "shape_variant": "trapezoid"
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "b1": "YZ",
+        "b2": "AB",
+        "leg": "YA"
+      },
+      "id_set": [
+        "YZ",
+        "AB",
+        "YA"
+      ],
+      "measurement_ref_map": {
+        "AB": 45,
+        "YA": 13,
+        "YZ": 55
+      },
+      "pixel_annotation_centers": {
+        "AB": [
+          338.0,
+          301.0
+        ],
+        "YA": [
+          62.15384615384615,
+          223.76923076923075
+        ],
+        "YZ": [
+          338.0,
+          125.0
+        ]
+      },
+      "pixel_point_set": [
+        [
+          338.0,
+          125.0
+        ],
+        [
+          338.0,
+          301.0
+        ],
+        [
+          62.15384615384615,
+          223.76923076923075
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 2500,
+        "answer_min": 8,
+        "mode_probabilities": {
+          "derived": 0.5,
+          "explicit": 0.5
+        },
+        "reasoning_mode": "derived",
+        "shape_probabilities": {
+          "circle": 0.14285714285714285,
+          "ellipse": 0.14285714285714285,
+          "parallelogram": 0.14285714285714285,
+          "rectangle": 0.14285714285714285,
+          "rhombus": 0.14285714285714285,
+          "trapezoid": 0.14285714285714285,
+          "triangle": 0.14285714285714285
+        },
+        "shape_variant": "trapezoid"
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "geometry_analytical_area_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the area value as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ, AB, YA",
+          "json_example": "{\"evidence\":{\"YZ\":2,\"AB\":3,\"YA\":4},\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a geometric shape with measurement annotations",
+          "question_text": "The isosceles trapezoid shows both bases and one leg length. What is its area in square units?"
+        },
+        "task_family_key": "analytical_single_shape",
+        "task_family_variant_index": 2,
+        "task_key": "analytical_area_query",
+        "task_variant_index": 4,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_2d/geometry_analytical_area_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_area_query": 5,
+          "task_family:analytical_single_shape": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "geometry_analytical_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the area value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ, AB, YA",
+              "json_example": "{\"evidence\":{\"YZ\":2,\"AB\":3,\"YA\":4},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric shape with measurement annotations",
+              "question_text": "The isosceles trapezoid shows both bases and one leg length. What is its area in square units?"
+            },
+            "task_family_key": "analytical_single_shape",
+            "task_family_variant_index": 2,
+            "task_key": "analytical_area_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_area_query": 5,
+              "task_family:analytical_single_shape": 5
+            }
+          },
+          "prompt": "Look at the annotated image showing a geometric shape with measurement annotations. Based on the shown values, answer this question: The isosceles trapezoid shows both bases and one leg length. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ, AB, YA.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"YZ\":2,\"AB\":3,\"YA\":4},\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_analytical_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the area value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: YZ, AB, YA",
+              "json_example": "{\"evidence\":{\"YZ\":2,\"AB\":3,\"YA\":4},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric shape with measurement annotations",
+              "question_text": "The isosceles trapezoid shows both bases and one leg length. What is its area in square units?"
+            },
+            "task_family_key": "analytical_single_shape",
+            "task_family_variant_index": 2,
+            "task_key": "analytical_area_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_area_query": 5,
+              "task_family:analytical_single_shape": 5
+            }
+          },
+          "prompt": "Look at the annotated image showing a geometric shape with measurement annotations. Based on the shown values, answer this question: The isosceles trapezoid shows both bases and one leg length. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "trapezoid_derived",
+      "template_id": "geometry_analytical_area_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "AB": [
+          338.0,
+          301.0
+        ],
+        "YA": [
+          62.15384615384615,
+          223.76923076923075
+        ],
+        "YZ": [
+          338.0,
+          125.0
+        ]
+      },
+      "annotation_labels": {
+        "b1": "YZ",
+        "b2": "AB",
+        "leg": "YA"
+      },
+      "coord_space": "pixel",
+      "entity_id": "shape_1",
+      "instance_anchor": {
+        "coord_space": "pixel",
+        "point": [
+          63.0,
+          153.0
+        ],
+        "polyline": [
+          [
+            63.0,
+            153.0
+          ],
+          [
+            613.0,
+            153.0
+          ],
+          [
+            563.0,
+            273.0
+          ],
+          [
+            113.0,
+            273.0
+          ],
+          [
+            63.0,
+            153.0
+          ]
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_warm",
+        "style_spec": {
+          "color": [
+            252,
+            249,
+            245
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 667,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "origin_pixel": [
+          333,
+          333
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 74,
+        "target_cells_x": 9,
+        "target_cells_y": 9,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "partial_edge_cells": true,
+        "spacing_px": 74,
+        "target_cells_x": 9,
+        "target_cells_y": 9
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          47,
+          19,
+          88
+        ],
+        "label_stroke_color": [
+          249,
+          252,
+          248
+        ],
+        "line_color": [
+          47,
+          19,
+          88
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "area_square_units": 600,
+            "base1_units": 55,
+            "base2_units": 45,
+            "half_base_difference_units": 5,
+            "inferred_height_units": 12,
+            "leg_units": 13,
+            "reasoning_mode": "derived",
+            "shape_variant": "trapezoid",
+            "vertices": [
+              [
+                63.0,
+                153.0
+              ],
+              [
+                613.0,
+                153.0
+              ],
+              [
+                563.0,
+                273.0
+              ],
+              [
+                113.0,
+                273.0
+              ]
+            ]
+          },
+          "entity_id": "shape_1",
+          "entity_type": "trapezoid"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            333,
+            333
+          ],
+          "spacing_px": 74,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_2d_analytical_area"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "YZ",
+        "AB",
+        "YA"
+      ],
+      "annotation_labels": {
+        "b1": "YZ",
+        "b2": "AB",
+        "leg": "YA"
+      },
+      "annotation_values": {
+        "AB": 45,
+        "YA": 13,
+        "YZ": 55
+      },
+      "case_id": "trapezoid_derived",
+      "formula_expression": "A = ((b1 + b2) * sqrt(leg^2 - ((b1-b2)/2)^2)) / 2",
+      "measurement_ref_map": {
+        "AB": 45,
+        "YA": 13,
+        "YZ": 55
+      },
+      "reasoning_mode": "derived",
+      "shape_variant": "trapezoid",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

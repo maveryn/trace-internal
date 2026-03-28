@@ -1,0 +1,1135 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 2
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "A",
+      "C"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_relation_occlusion_order/images/default/0007.png"
+  },
+  "instance_seed": 1933416282405897,
+  "prompt": "You are given an image with a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right. Question: How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer requirement: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given an image with a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right. Question: How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer requirement: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+    "answer_only": "You are given an image with a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right. Question: How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_icons_relation_occlusion_order",
+  "task_variant": "same_front_to_back_order",
+  "trace_payload": {
+    "execution_trace": {
+      "cell_labels": [
+        "D",
+        "A",
+        "E",
+        "C",
+        "B"
+      ],
+      "cell_order_ids": [
+        "a_over_b",
+        "b_over_a",
+        "a_over_b",
+        "b_over_a",
+        "a_over_b"
+      ],
+      "distractor_count": 3,
+      "distractor_count_probabilities": {
+        "1": 0.16666666666666666,
+        "2": 0.16666666666666666,
+        "3": 0.16666666666666666,
+        "4": 0.16666666666666666,
+        "5": 0.16666666666666666,
+        "6": 0.16666666666666666
+      },
+      "icon_a_id": "gi-delapouite-galea",
+      "icon_b_id": "tabler-hexagon-letter-t",
+      "matching_cell_labels": [
+        "A",
+        "C"
+      ],
+      "object_count": 5,
+      "object_count_probabilities": {
+        "3": 0.16666666666666666,
+        "4": 0.16666666666666666,
+        "5": 0.16666666666666666,
+        "6": 0.16666666666666666,
+        "7": 0.16666666666666666,
+        "8": 0.16666666666666666
+      },
+      "question_format": "count_scene_cells_matching_reference_occlusion_order",
+      "reference_order_id": "b_over_a",
+      "scene_variant": "reference_overlap_grid",
+      "target_count": 2,
+      "target_count_probabilities": {
+        "0": 0.14285714285714285,
+        "1": 0.14285714285714285,
+        "2": 0.14285714285714285,
+        "3": 0.14285714285714285,
+        "4": 0.14285714285714285,
+        "5": 0.14285714285714285,
+        "6": 0.14285714285714285
+      },
+      "task_variant": "same_front_to_back_order"
+    },
+    "projected_evidence": {
+      "label_set": [
+        "A",
+        "C"
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "distractor_count": 3,
+        "distractor_count_probabilities": {
+          "1": 0.16666666666666666,
+          "2": 0.16666666666666666,
+          "3": 0.16666666666666666,
+          "4": 0.16666666666666666,
+          "5": 0.16666666666666666,
+          "6": 0.16666666666666666
+        },
+        "object_count": 5,
+        "object_count_probabilities": {
+          "3": 0.16666666666666666,
+          "4": 0.16666666666666666,
+          "5": 0.16666666666666666,
+          "6": 0.16666666666666666,
+          "7": 0.16666666666666666,
+          "8": 0.16666666666666666
+        },
+        "pool_manifest": "all_icons.txt",
+        "target_count": 2,
+        "target_count_probabilities": {
+          "0": 0.14285714285714285,
+          "1": 0.14285714285714285,
+          "2": 0.14285714285714285,
+          "3": 0.14285714285714285,
+          "4": 0.14285714285714285,
+          "5": 0.14285714285714285,
+          "6": 0.14285714285714285
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "icons_relation_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+          "json_example": "{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right",
+          "question_text": "How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top."
+        },
+        "task_family_key": "reference_grid_occlusion_relation",
+        "task_family_variant_index": 0,
+        "task_key": "relation_query",
+        "task_variant_index": 1,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/relation/icons_relation_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:relation_query": 5,
+          "task_family:reference_grid_occlusion_relation": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "icons_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+              "json_example": "{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right",
+              "question_text": "How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top."
+            },
+            "task_family_key": "reference_grid_occlusion_relation",
+            "task_family_variant_index": 0,
+            "task_key": "relation_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/relation/icons_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:relation_query": 5,
+              "task_family:reference_grid_occlusion_relation": 5
+            }
+          },
+          "prompt": "You are given an image with a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right. Question: How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer requirement: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "icons_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+              "json_example": "{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right",
+              "question_text": "How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top."
+            },
+            "task_family_key": "reference_grid_occlusion_relation",
+            "task_family_variant_index": 0,
+            "task_key": "relation_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/relation/icons_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:relation_query": 5,
+              "task_family:reference_grid_occlusion_relation": 5
+            }
+          },
+          "prompt": "You are given an image with a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right. Question: How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "same_front_to_back_order",
+      "template_id": "icons_relation_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching_cell_labels": [
+          "A",
+          "C"
+        ],
+        "reference_pair": {
+          "front_role": "b",
+          "icon_a_bbox_xyxy": [
+            138,
+            270,
+            234,
+            372
+          ],
+          "icon_a_id": "gi-delapouite-galea",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "quality": 79.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "radius": 0.40415
+              },
+              "type": "blur"
+            }
+          ],
+          "icon_a_noise_seed": 623482321995691,
+          "icon_a_tint_rgb": [
+            32,
+            135,
+            218
+          ],
+          "icon_b_bbox_xyxy": [
+            109,
+            300,
+            201,
+            402
+          ],
+          "icon_b_id": "tabler-hexagon-letter-t",
+          "icon_b_noise_edits": [],
+          "icon_b_noise_seed": 8330087288246619,
+          "icon_b_tint_rgb": [
+            189,
+            220,
+            82
+          ],
+          "order_id": "b_over_a",
+          "overlap_ratio": 0.5376072502619751,
+          "panel": "reference"
+        },
+        "scene_cells": [
+          {
+            "cell_bbox_xyxy": [
+              374,
+              87,
+              586,
+              326
+            ],
+            "front_role": "a",
+            "icon_a_bbox_xyxy": [
+              421,
+              193,
+              505,
+              281
+            ],
+            "icon_a_id": "gi-delapouite-galea",
+            "icon_a_noise_edits": [
+              {
+                "params": {
+                  "quality": 88.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "icon_a_noise_seed": 5909001641573463,
+            "icon_a_tint_rgb": [
+              32,
+              71,
+              193
+            ],
+            "icon_b_bbox_xyxy": [
+              459,
+              162,
+              539,
+              250
+            ],
+            "icon_b_id": "tabler-hexagon-letter-t",
+            "icon_b_noise_edits": [],
+            "icon_b_noise_seed": 2347978579917808,
+            "icon_b_tint_rgb": [
+              214,
+              186,
+              128
+            ],
+            "index": 0,
+            "is_match": false,
+            "label": "D",
+            "order_id": "a_over_b",
+            "overlap_ratio": 0.40576439114683316,
+            "panel": "scene"
+          },
+          {
+            "cell_bbox_xyxy": [
+              606,
+              87,
+              818,
+              326
+            ],
+            "front_role": "b",
+            "icon_a_bbox_xyxy": [
+              657,
+              166,
+              741,
+              254
+            ],
+            "icon_a_id": "gi-delapouite-galea",
+            "icon_a_noise_edits": [
+              {
+                "params": {
+                  "alpha": 0.035967
+                },
+                "type": "noise"
+              },
+              {
+                "params": {
+                  "quality": 89.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "icon_a_noise_seed": 8523319446477962,
+            "icon_a_tint_rgb": [
+              183,
+              50,
+              25
+            ],
+            "icon_b_bbox_xyxy": [
+              686,
+              189,
+              766,
+              277
+            ],
+            "icon_b_id": "tabler-hexagon-letter-t",
+            "icon_b_noise_edits": [],
+            "icon_b_noise_seed": 2678279966296207,
+            "icon_b_tint_rgb": [
+              27,
+              197,
+              190
+            ],
+            "index": 1,
+            "is_match": true,
+            "label": "A",
+            "order_id": "b_over_a",
+            "overlap_ratio": 0.5300909630753101,
+            "panel": "scene"
+          },
+          {
+            "cell_bbox_xyxy": [
+              838,
+              87,
+              1050,
+              326
+            ],
+            "front_role": "a",
+            "icon_a_bbox_xyxy": [
+              886,
+              161,
+              970,
+              249
+            ],
+            "icon_a_id": "gi-delapouite-galea",
+            "icon_a_noise_edits": [
+              {
+                "params": {
+                  "quality": 75.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "icon_a_noise_seed": 3015188434529678,
+            "icon_a_tint_rgb": [
+              183,
+              50,
+              25
+            ],
+            "icon_b_bbox_xyxy": [
+              921,
+              194,
+              1001,
+              282
+            ],
+            "icon_b_id": "tabler-hexagon-letter-t",
+            "icon_b_noise_edits": [],
+            "icon_b_noise_seed": 2582034991629772,
+            "icon_b_tint_rgb": [
+              32,
+              71,
+              193
+            ],
+            "index": 2,
+            "is_match": false,
+            "label": "E",
+            "order_id": "a_over_b",
+            "overlap_ratio": 0.41341090143056386,
+            "panel": "scene"
+          },
+          {
+            "cell_bbox_xyxy": [
+              374,
+              346,
+              586,
+              586
+            ],
+            "front_role": "b",
+            "icon_a_bbox_xyxy": [
+              454,
+              449,
+              538,
+              537
+            ],
+            "icon_a_id": "gi-delapouite-galea",
+            "icon_a_noise_edits": [
+              {
+                "params": {
+                  "alpha": 0.055245
+                },
+                "type": "noise"
+              },
+              {
+                "params": {
+                  "scale": 0.915379
+                },
+                "type": "downsample"
+              }
+            ],
+            "icon_a_noise_seed": 7616032861595356,
+            "icon_a_tint_rgb": [
+              32,
+              71,
+              193
+            ],
+            "icon_b_bbox_xyxy": [
+              421,
+              424,
+              501,
+              512
+            ],
+            "icon_b_id": "tabler-hexagon-letter-t",
+            "icon_b_noise_edits": [
+              {
+                "params": {
+                  "alpha": 0.044508
+                },
+                "type": "noise"
+              },
+              {
+                "params": {
+                  "radius": 0.562409
+                },
+                "type": "blur"
+              }
+            ],
+            "icon_b_noise_seed": 6989095031967305,
+            "icon_b_tint_rgb": [
+              64,
+              82,
+              35
+            ],
+            "index": 3,
+            "is_match": true,
+            "label": "C",
+            "order_id": "b_over_a",
+            "overlap_ratio": 0.4910064245516155,
+            "panel": "scene"
+          },
+          {
+            "cell_bbox_xyxy": [
+              606,
+              346,
+              818,
+              586
+            ],
+            "front_role": "a",
+            "icon_a_bbox_xyxy": [
+              680,
+              450,
+              764,
+              538
+            ],
+            "icon_a_id": "gi-delapouite-galea",
+            "icon_a_noise_edits": [
+              {
+                "params": {
+                  "radius": 0.544941
+                },
+                "type": "blur"
+              }
+            ],
+            "icon_a_noise_seed": 5579560861341498,
+            "icon_a_tint_rgb": [
+              30,
+              193,
+              97
+            ],
+            "icon_b_bbox_xyxy": [
+              659,
+              424,
+              739,
+              512
+            ],
+            "icon_b_id": "tabler-hexagon-letter-t",
+            "icon_b_noise_edits": [
+              {
+                "params": {
+                  "scale": 0.897314
+                },
+                "type": "downsample"
+              }
+            ],
+            "icon_b_noise_seed": 7044055062700795,
+            "icon_b_tint_rgb": [
+              102,
+              26,
+              97
+            ],
+            "index": 4,
+            "is_match": false,
+            "label": "B",
+            "order_id": "a_over_b",
+            "overlap_ratio": 0.574753716485273,
+            "panel": "scene"
+          }
+        ]
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        1104,
+        640
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          1104,
+          640
+        ],
+        "reference_content_xyxy": [
+          44,
+          77,
+          300,
+          596
+        ],
+        "reference_panel_xyxy": [
+          24,
+          24,
+          320,
+          616
+        ],
+        "scene_content_xyxy": [
+          364,
+          77,
+          1060,
+          596
+        ],
+        "scene_panel_xyxy": [
+          344,
+          24,
+          1080,
+          616
+        ]
+      },
+      "style": {
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "cell_border_rgb": [
+          218,
+          223,
+          233
+        ],
+        "cell_label_color_rgb": [
+          52,
+          60,
+          77
+        ],
+        "cell_label_font_size_px": 22,
+        "cell_padding_px": 10,
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "overlap_ratio_range": [
+          0.4,
+          0.6
+        ],
+        "pair_min_color_distance": 80.0,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "sampled_palette_rgb": [
+          [
+            102,
+            26,
+            97
+          ],
+          [
+            189,
+            220,
+            82
+          ],
+          [
+            27,
+            197,
+            190
+          ],
+          [
+            183,
+            50,
+            25
+          ],
+          [
+            32,
+            135,
+            218
+          ],
+          [
+            30,
+            193,
+            97
+          ],
+          [
+            64,
+            82,
+            35
+          ],
+          [
+            182,
+            54,
+            214
+          ],
+          [
+            218,
+            26,
+            109
+          ],
+          [
+            32,
+            71,
+            193
+          ],
+          [
+            214,
+            186,
+            128
+          ],
+          [
+            193,
+            119,
+            138
+          ]
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "front_role": "b",
+          "icon_a_bbox_xyxy": [
+            138,
+            270,
+            234,
+            372
+          ],
+          "icon_a_id": "gi-delapouite-galea",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "quality": 79.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "radius": 0.40415
+              },
+              "type": "blur"
+            }
+          ],
+          "icon_a_noise_seed": 623482321995691,
+          "icon_a_tint_rgb": [
+            32,
+            135,
+            218
+          ],
+          "icon_b_bbox_xyxy": [
+            109,
+            300,
+            201,
+            402
+          ],
+          "icon_b_id": "tabler-hexagon-letter-t",
+          "icon_b_noise_edits": [],
+          "icon_b_noise_seed": 8330087288246619,
+          "icon_b_tint_rgb": [
+            189,
+            220,
+            82
+          ],
+          "order_id": "b_over_a",
+          "overlap_ratio": 0.5376072502619751,
+          "panel": "reference"
+        },
+        {
+          "cell_bbox_xyxy": [
+            374,
+            87,
+            586,
+            326
+          ],
+          "front_role": "a",
+          "icon_a_bbox_xyxy": [
+            421,
+            193,
+            505,
+            281
+          ],
+          "icon_a_id": "gi-delapouite-galea",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "quality": 88.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "icon_a_noise_seed": 5909001641573463,
+          "icon_a_tint_rgb": [
+            32,
+            71,
+            193
+          ],
+          "icon_b_bbox_xyxy": [
+            459,
+            162,
+            539,
+            250
+          ],
+          "icon_b_id": "tabler-hexagon-letter-t",
+          "icon_b_noise_edits": [],
+          "icon_b_noise_seed": 2347978579917808,
+          "icon_b_tint_rgb": [
+            214,
+            186,
+            128
+          ],
+          "index": 0,
+          "is_match": false,
+          "label": "D",
+          "order_id": "a_over_b",
+          "overlap_ratio": 0.40576439114683316,
+          "panel": "scene"
+        },
+        {
+          "cell_bbox_xyxy": [
+            606,
+            87,
+            818,
+            326
+          ],
+          "front_role": "b",
+          "icon_a_bbox_xyxy": [
+            657,
+            166,
+            741,
+            254
+          ],
+          "icon_a_id": "gi-delapouite-galea",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "alpha": 0.035967
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "quality": 89.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "icon_a_noise_seed": 8523319446477962,
+          "icon_a_tint_rgb": [
+            183,
+            50,
+            25
+          ],
+          "icon_b_bbox_xyxy": [
+            686,
+            189,
+            766,
+            277
+          ],
+          "icon_b_id": "tabler-hexagon-letter-t",
+          "icon_b_noise_edits": [],
+          "icon_b_noise_seed": 2678279966296207,
+          "icon_b_tint_rgb": [
+            27,
+            197,
+            190
+          ],
+          "index": 1,
+          "is_match": true,
+          "label": "A",
+          "order_id": "b_over_a",
+          "overlap_ratio": 0.5300909630753101,
+          "panel": "scene"
+        },
+        {
+          "cell_bbox_xyxy": [
+            838,
+            87,
+            1050,
+            326
+          ],
+          "front_role": "a",
+          "icon_a_bbox_xyxy": [
+            886,
+            161,
+            970,
+            249
+          ],
+          "icon_a_id": "gi-delapouite-galea",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "quality": 75.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "icon_a_noise_seed": 3015188434529678,
+          "icon_a_tint_rgb": [
+            183,
+            50,
+            25
+          ],
+          "icon_b_bbox_xyxy": [
+            921,
+            194,
+            1001,
+            282
+          ],
+          "icon_b_id": "tabler-hexagon-letter-t",
+          "icon_b_noise_edits": [],
+          "icon_b_noise_seed": 2582034991629772,
+          "icon_b_tint_rgb": [
+            32,
+            71,
+            193
+          ],
+          "index": 2,
+          "is_match": false,
+          "label": "E",
+          "order_id": "a_over_b",
+          "overlap_ratio": 0.41341090143056386,
+          "panel": "scene"
+        },
+        {
+          "cell_bbox_xyxy": [
+            374,
+            346,
+            586,
+            586
+          ],
+          "front_role": "b",
+          "icon_a_bbox_xyxy": [
+            454,
+            449,
+            538,
+            537
+          ],
+          "icon_a_id": "gi-delapouite-galea",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "alpha": 0.055245
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "scale": 0.915379
+              },
+              "type": "downsample"
+            }
+          ],
+          "icon_a_noise_seed": 7616032861595356,
+          "icon_a_tint_rgb": [
+            32,
+            71,
+            193
+          ],
+          "icon_b_bbox_xyxy": [
+            421,
+            424,
+            501,
+            512
+          ],
+          "icon_b_id": "tabler-hexagon-letter-t",
+          "icon_b_noise_edits": [
+            {
+              "params": {
+                "alpha": 0.044508
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "radius": 0.562409
+              },
+              "type": "blur"
+            }
+          ],
+          "icon_b_noise_seed": 6989095031967305,
+          "icon_b_tint_rgb": [
+            64,
+            82,
+            35
+          ],
+          "index": 3,
+          "is_match": true,
+          "label": "C",
+          "order_id": "b_over_a",
+          "overlap_ratio": 0.4910064245516155,
+          "panel": "scene"
+        },
+        {
+          "cell_bbox_xyxy": [
+            606,
+            346,
+            818,
+            586
+          ],
+          "front_role": "a",
+          "icon_a_bbox_xyxy": [
+            680,
+            450,
+            764,
+            538
+          ],
+          "icon_a_id": "gi-delapouite-galea",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "radius": 0.544941
+              },
+              "type": "blur"
+            }
+          ],
+          "icon_a_noise_seed": 5579560861341498,
+          "icon_a_tint_rgb": [
+            30,
+            193,
+            97
+          ],
+          "icon_b_bbox_xyxy": [
+            659,
+            424,
+            739,
+            512
+          ],
+          "icon_b_id": "tabler-hexagon-letter-t",
+          "icon_b_noise_edits": [
+            {
+              "params": {
+                "scale": 0.897314
+              },
+              "type": "downsample"
+            }
+          ],
+          "icon_b_noise_seed": 7044055062700795,
+          "icon_b_tint_rgb": [
+            102,
+            26,
+            97
+          ],
+          "index": 4,
+          "is_match": false,
+          "label": "B",
+          "order_id": "a_over_b",
+          "overlap_ratio": 0.574753716485273,
+          "panel": "scene"
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            1104,
+            640
+          ],
+          "reference_content_xyxy": [
+            44,
+            77,
+            300,
+            596
+          ],
+          "reference_panel_xyxy": [
+            24,
+            24,
+            320,
+            616
+          ],
+          "scene_content_xyxy": [
+            364,
+            77,
+            1060,
+            596
+          ],
+          "scene_panel_xyxy": [
+            344,
+            24,
+            1080,
+            616
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "counting_target": "same_front_to_back_order_as_reference",
+        "matching_cell_labels": [
+          "A",
+          "C"
+        ],
+        "reference_order_id": "b_over_a"
+      },
+      "scene_kind": "icons_reference_grid_occlusion_order_count"
+    },
+    "witness_symbolic": {
+      "matching_cell_labels": [
+        "A",
+        "C"
+      ],
+      "reference_order_id": "b_over_a"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

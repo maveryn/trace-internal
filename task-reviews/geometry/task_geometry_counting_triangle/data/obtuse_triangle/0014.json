@@ -1,0 +1,668 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 6
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "A",
+      "B",
+      "D",
+      "E",
+      "F",
+      "G"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_counting_triangle/images/obtuse_triangle/0014.png"
+  },
+  "instance_seed": 2349425686299449,
+  "prompt": "Use the diagram showing several labeled triangles. Answer this question: How many labeled triangles are obtuse triangles?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a sorted JSON array of the labels of all triangles that match the requested type.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the diagram showing several labeled triangles. Answer this question: How many labeled triangles are obtuse triangles?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a sorted JSON array of the labels of all triangles that match the requested type.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+    "answer_only": "Use the diagram showing several labeled triangles. Answer this question: How many labeled triangles are obtuse triangles?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_geometry_counting_triangle",
+  "task_variant": "obtuse_triangle",
+  "trace_payload": {
+    "execution_trace": {
+      "class_by_label": {
+        "A": {
+          "angle_kind": "obtuse",
+          "side_kind": "scalene"
+        },
+        "B": {
+          "angle_kind": "obtuse",
+          "side_kind": "scalene"
+        },
+        "C": {
+          "angle_kind": "acute",
+          "side_kind": "equilateral"
+        },
+        "D": {
+          "angle_kind": "obtuse",
+          "side_kind": "scalene"
+        },
+        "E": {
+          "angle_kind": "obtuse",
+          "side_kind": "scalene"
+        },
+        "F": {
+          "angle_kind": "obtuse",
+          "side_kind": "scalene"
+        },
+        "G": {
+          "angle_kind": "obtuse",
+          "side_kind": "scalene"
+        },
+        "H": {
+          "angle_kind": "right",
+          "side_kind": "scalene"
+        }
+      },
+      "counting_class": "obtuse",
+      "matching_labels": [
+        "A",
+        "B",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "object_count": 8,
+      "object_count_probabilities": {
+        "7": 0.5,
+        "8": 0.5
+      },
+      "object_labels": [
+        "G",
+        "B",
+        "D",
+        "A",
+        "C",
+        "H",
+        "F",
+        "E"
+      ],
+      "question_format": "count_matching_labeled_objects",
+      "scene_variant": "obtuse_triangle",
+      "target_count": 6,
+      "target_count_probabilities": {
+        "1": 0.14285714285714285,
+        "2": 0.14285714285714285,
+        "3": 0.14285714285714285,
+        "4": 0.14285714285714285,
+        "5": 0.14285714285714285,
+        "6": 0.14285714285714285,
+        "7": 0.14285714285714285
+      },
+      "task_variant": "obtuse_triangle"
+    },
+    "projected_evidence": {
+      "label_set": [
+        "A",
+        "B",
+        "D",
+        "E",
+        "F",
+        "G"
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "object_count": 8,
+        "object_count_probabilities": {
+          "7": 0.5,
+          "8": 0.5
+        },
+        "target_count": 6,
+        "target_count_probabilities": {
+          "1": 0.14285714285714285,
+          "2": 0.14285714285714285,
+          "3": 0.14285714285714285,
+          "4": 0.14285714285714285,
+          "5": 0.14285714285714285,
+          "6": 0.14285714285714285,
+          "7": 0.14285714285714285
+        },
+        "task_variant": "obtuse_triangle",
+        "variant_probabilities": {
+          "acute_triangle": 0.16666666666666666,
+          "equilateral_triangle": 0.16666666666666666,
+          "isosceles_triangle": 0.16666666666666666,
+          "obtuse_triangle": 0.16666666666666666,
+          "right_triangle": 0.16666666666666666,
+          "scalene_triangle": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "geometry_counting_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all triangles that match the requested type",
+          "json_example": "{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "several labeled triangles",
+          "question_text": "How many labeled triangles are obtuse triangles?"
+        },
+        "task_family_key": "counting_scene",
+        "task_family_variant_index": 3,
+        "task_key": "counting_query",
+        "task_variant_index": 3,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/counting/geometry_counting_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:counting_query": 5,
+          "task_family:counting_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all triangles that match the requested type",
+              "json_example": "{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled triangles",
+              "question_text": "How many labeled triangles are obtuse triangles?"
+            },
+            "task_family_key": "counting_scene",
+            "task_family_variant_index": 3,
+            "task_key": "counting_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/counting/geometry_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:counting_query": 5,
+              "task_family:counting_scene": 5
+            }
+          },
+          "prompt": "Use the diagram showing several labeled triangles. Answer this question: How many labeled triangles are obtuse triangles?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a sorted JSON array of the labels of all triangles that match the requested type.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all triangles that match the requested type",
+              "json_example": "{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled triangles",
+              "question_text": "How many labeled triangles are obtuse triangles?"
+            },
+            "task_family_key": "counting_scene",
+            "task_family_variant_index": 3,
+            "task_key": "counting_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/counting/geometry_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:counting_query": 5,
+              "task_family:counting_scene": 5
+            }
+          },
+          "prompt": "Use the diagram showing several labeled triangles. Answer this question: How many labeled triangles are obtuse triangles?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "obtuse_triangle",
+      "template_id": "geometry_counting_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching": {
+          "matching_labels": [
+            "A",
+            "B",
+            "D",
+            "E",
+            "F",
+            "G"
+          ],
+          "task_variant": "obtuse_triangle"
+        }
+      },
+      "image_id": "img0",
+      "object_label_centers": {
+        "A": [
+          381.6383034495114,
+          95.240046988108
+        ],
+        "B": [
+          163.36595083700908,
+          466.8045822978561
+        ],
+        "C": [
+          23.28723395635286,
+          388.531455022071
+        ],
+        "D": [
+          534.4143007441536,
+          105.3125179985276
+        ],
+        "E": [
+          390.2437087704363,
+          442.94494588763695
+        ],
+        "F": [
+          169.44604388147076,
+          111.77948183499659
+        ],
+        "G": [
+          552.6607818791971,
+          430.94744161532594
+        ],
+        "H": [
+          74.0081122342898,
+          105.82752902365792
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_warm",
+        "style_spec": {
+          "color": [
+            252,
+            249,
+            245
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 571,
+      "coord_space": "pixel",
+      "layout_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 26,
+        "full_cells_y": 26,
+        "origin_pixel": [
+          285,
+          285
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 20,
+        "target_cells_x": 28,
+        "target_cells_y": 28,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          119,
+          71,
+          125
+        ],
+        "label_stroke_color": [
+          254,
+          250,
+          253
+        ],
+        "line_color": [
+          119,
+          71,
+          125
+        ]
+      },
+      "text_style": {
+        "font_size_px": 87,
+        "stroke_width_px": 6
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "angle_kind": "obtuse",
+            "angles_degrees": [
+              30.92862976569863,
+              104.13974025472187,
+              44.93162997957948
+            ],
+            "label": "G",
+            "side_kind": "scalene",
+            "side_lengths": [
+              3.0482147847750967,
+              5.751041381879267,
+              4.188649160077196
+            ],
+            "vertices": [
+              [
+                444.1870695935742,
+                424.7057496365426
+              ],
+              [
+                527.9600527951181,
+                424.7057496365426
+              ],
+              [
+                542.8528776113076,
+                365.58850072691484
+              ]
+            ]
+          },
+          "entity_id": "triangle_G",
+          "entity_type": "triangle"
+        },
+        {
+          "attrs": {
+            "angle_kind": "obtuse",
+            "angles_degrees": [
+              32.99697607046098,
+              109.8652066270495,
+              37.13781730248951
+            ],
+            "label": "B",
+            "side_kind": "scalene",
+            "side_lengths": [
+              4.677241991854758,
+              8.077420702424165,
+              5.185160647053108
+            ],
+            "vertices": [
+              [
+                125.26874780866981,
+                434.32614053410316
+              ],
+              [
+                228.97196074973198,
+                434.32614053410316
+              ],
+              [
+                260.75929144159824,
+                346.3477189317937
+              ]
+            ]
+          },
+          "entity_id": "triangle_B",
+          "entity_type": "triangle"
+        },
+        {
+          "attrs": {
+            "angle_kind": "obtuse",
+            "angles_degrees": [
+              21.034465800878507,
+              112.73102040422974,
+              46.234513794891754
+            ],
+            "label": "D",
+            "side_kind": "scalene",
+            "side_lengths": [
+              2.5221622872380833,
+              6.481115802885021,
+              5.074667338253619
+            ],
+            "vertices": [
+              [
+                430.8405870417066,
+                180.50842316413366
+              ],
+              [
+                532.333933806779,
+                180.50842316413366
+              ],
+              [
+                551.8254791515144,
+                133.98315367173268
+              ]
+            ]
+          },
+          "entity_id": "triangle_D",
+          "entity_type": "triangle"
+        },
+        {
+          "attrs": {
+            "angle_kind": "obtuse",
+            "angles_degrees": [
+              36.46476861241875,
+              107.29381944051255,
+              36.241411947068684
+            ],
+            "label": "A",
+            "side_kind": "scalene",
+            "side_lengths": [
+              5.046248977200538,
+              8.106835746671258,
+              5.019591520044423
+            ],
+            "vertices": [
+              [
+                288.0713935550876,
+                197.12081702870188
+              ],
+              [
+                388.46322395597605,
+                197.12081702870188
+              ],
+              [
+                418.46538248893637,
+                100.75836594259619
+              ]
+            ]
+          },
+          "entity_id": "triangle_A",
+          "entity_type": "triangle"
+        },
+        {
+          "attrs": {
+            "angle_kind": "acute",
+            "angles_degrees": [
+              60.00000000000001,
+              60.00000000000001,
+              59.99999999999999
+            ],
+            "label": "C",
+            "side_kind": "equilateral",
+            "side_lengths": [
+              4.076913255362811,
+              4.076913255362811,
+              4.076913255362811
+            ],
+            "vertices": [
+              [
+                24.230867446371917,
+                428.5380696544647
+              ],
+              [
+                105.76913255362811,
+                428.5380696544647
+              ],
+              [
+                65.0,
+                357.92386069107056
+              ]
+            ]
+          },
+          "entity_id": "triangle_C",
+          "entity_type": "triangle"
+        },
+        {
+          "attrs": {
+            "angle_kind": "right",
+            "angles_degrees": [
+              90.0,
+              40.34577353297957,
+              49.65422646702043
+            ],
+            "label": "H",
+            "side_kind": "scalene",
+            "side_lengths": [
+              7.139385664188985,
+              4.622030196511968,
+              5.441292541718257
+            ],
+            "vertices": [
+              [
+                28.724716388544948,
+                195.8135346434131
+              ],
+              [
+                137.5505672229101,
+                195.8135346434131
+              ],
+              [
+                28.724716388544948,
+                103.37293071317376
+              ]
+            ]
+          },
+          "entity_id": "triangle_H",
+          "entity_type": "triangle"
+        },
+        {
+          "attrs": {
+            "angle_kind": "obtuse",
+            "angles_degrees": [
+              30.323958596264056,
+              108.60581072998515,
+              41.0702306737508
+            ],
+            "label": "F",
+            "side_kind": "scalene",
+            "side_lengths": [
+              3.591027423950844,
+              6.740786142042037,
+              4.672805352705536
+            ],
+            "vertices": [
+              [
+                135.05768337912184,
+                187.68897448623264
+              ],
+              [
+                228.51379043323254,
+                187.68897448623264
+              ],
+              [
+                251.42852618764562,
+                119.62205102753472
+              ]
+            ]
+          },
+          "entity_id": "triangle_F",
+          "entity_type": "triangle"
+        },
+        {
+          "attrs": {
+            "angle_kind": "obtuse",
+            "angles_degrees": [
+              30.82498901357047,
+              109.85535650865013,
+              39.319654477779395
+            ],
+            "label": "E",
+            "side_kind": "scalene",
+            "side_lengths": [
+              2.628529860927681,
+              4.8247221638447115,
+              3.2503932402971705
+            ],
+            "vertices": [
+              [
+                315.7096118070315,
+                421.4818119758113
+              ],
+              [
+                380.7174766129749,
+                421.4818119758113
+              ],
+              [
+                398.5729115799937,
+                372.03637604837746
+              ]
+            ]
+          },
+          "entity_id": "triangle_E",
+          "entity_type": "triangle"
+        }
+      ],
+      "relations": {
+        "counting_target": "triangle_class",
+        "matching_labels": [
+          "A",
+          "B",
+          "D",
+          "E",
+          "F",
+          "G"
+        ],
+        "task_variant": "obtuse_triangle"
+      },
+      "scene_kind": "geometry_2d_triangle_counting"
+    },
+    "witness_symbolic": {
+      "counting_class": "obtuse",
+      "matching_labels": [
+        "A",
+        "B",
+        "D",
+        "E",
+        "F",
+        "G"
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

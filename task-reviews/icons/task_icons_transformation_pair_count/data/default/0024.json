@@ -1,0 +1,1155 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 3
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "A",
+      "F",
+      "G"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_transformation_pair_count/images/default/0024.png"
+  },
+  "instance_seed": 7753002519067082,
+  "prompt": "You are given an image with a Reference pair on the left and a labeled Scene grid of icon pairs on the right. Determine the answer: How many labeled Scene cells show the same transformation as the Reference pair?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given an image with a Reference pair on the left and a labeled Scene grid of icon pairs on the right. Determine the answer: How many labeled Scene cells show the same transformation as the Reference pair?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+    "answer_only": "You are given an image with a Reference pair on the left and a labeled Scene grid of icon pairs on the right. Determine the answer: How many labeled Scene cells show the same transformation as the Reference pair?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_icons_transformation_pair_count",
+  "task_variant": "same_pair_transform",
+  "trace_payload": {
+    "execution_trace": {
+      "cell_icon_ids": [
+        "gi-delapouite-dunce-cap",
+        "gi-skoll-walther-ppk",
+        "gi-delapouite-iraq",
+        "gi-delapouite-tired-eye",
+        "gi-lorc-backbone-shell",
+        "gi-skoll-spectre-m4",
+        "gi-delapouite-vending-machine"
+      ],
+      "cell_labels": [
+        "F",
+        "D",
+        "E",
+        "B",
+        "G",
+        "C",
+        "A"
+      ],
+      "cell_transform_ids": [
+        "flip_diag_anti",
+        "rot90",
+        "rot270",
+        "rot180",
+        "flip_diag_anti",
+        "flip_h",
+        "flip_diag_anti"
+      ],
+      "distractor_count": 4,
+      "distractor_count_probabilities": {
+        "1": 0.16666666666666666,
+        "2": 0.16666666666666666,
+        "3": 0.16666666666666666,
+        "4": 0.16666666666666666,
+        "5": 0.16666666666666666,
+        "6": 0.16666666666666666
+      },
+      "matching_cell_labels": [
+        "A",
+        "F",
+        "G"
+      ],
+      "object_count": 7,
+      "object_count_probabilities": {
+        "4": 0.16666666666666666,
+        "5": 0.16666666666666666,
+        "6": 0.16666666666666666,
+        "7": 0.16666666666666666,
+        "8": 0.16666666666666666,
+        "9": 0.16666666666666666
+      },
+      "question_format": "count_scene_cells_matching_reference_transform",
+      "reference_icon_id": "gi-delapouite-finger-print",
+      "reference_transform_id": "flip_diag_anti",
+      "scene_variant": "reference_pair_grid",
+      "target_count": 3,
+      "target_count_probabilities": {
+        "0": 0.14285714285714285,
+        "1": 0.14285714285714285,
+        "2": 0.14285714285714285,
+        "3": 0.14285714285714285,
+        "4": 0.14285714285714285,
+        "5": 0.14285714285714285,
+        "6": 0.14285714285714285
+      },
+      "task_variant": "same_pair_transform"
+    },
+    "projected_evidence": {
+      "label_set": [
+        "A",
+        "F",
+        "G"
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "distractor_count": 4,
+        "distractor_count_probabilities": {
+          "1": 0.16666666666666666,
+          "2": 0.16666666666666666,
+          "3": 0.16666666666666666,
+          "4": 0.16666666666666666,
+          "5": 0.16666666666666666,
+          "6": 0.16666666666666666
+        },
+        "object_count": 7,
+        "object_count_probabilities": {
+          "4": 0.16666666666666666,
+          "5": 0.16666666666666666,
+          "6": 0.16666666666666666,
+          "7": 0.16666666666666666,
+          "8": 0.16666666666666666,
+          "9": 0.16666666666666666
+        },
+        "pool_manifest": "non_symmetry.txt",
+        "target_count": 3,
+        "target_count_probabilities": {
+          "0": 0.14285714285714285,
+          "1": 0.14285714285714285,
+          "2": 0.14285714285714285,
+          "3": 0.14285714285714285,
+          "4": 0.14285714285714285,
+          "5": 0.14285714285714285,
+          "6": 0.14285714285714285
+        },
+        "transform_check_size_px": 72,
+        "transform_ids": [
+          "rot90",
+          "rot180",
+          "rot270",
+          "flip_h",
+          "flip_v",
+          "flip_diag_main",
+          "flip_diag_anti"
+        ]
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "icons_transformation_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+          "json_example": "{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Reference pair on the left and a labeled Scene grid of icon pairs on the right",
+          "question_text": "How many labeled Scene cells show the same transformation as the Reference pair?"
+        },
+        "task_family_key": "reference_pair_grid_transformation",
+        "task_family_variant_index": 0,
+        "task_key": "transformation_query",
+        "task_variant_index": 4,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/transformation/icons_transformation_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:transformation_query": 5,
+          "task_family:reference_pair_grid_transformation": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "icons_transformation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+              "json_example": "{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference pair on the left and a labeled Scene grid of icon pairs on the right",
+              "question_text": "How many labeled Scene cells show the same transformation as the Reference pair?"
+            },
+            "task_family_key": "reference_pair_grid_transformation",
+            "task_family_variant_index": 0,
+            "task_key": "transformation_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/transformation/icons_transformation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:transformation_query": 5,
+              "task_family:reference_pair_grid_transformation": 5
+            }
+          },
+          "prompt": "You are given an image with a Reference pair on the left and a labeled Scene grid of icon pairs on the right. Determine the answer: How many labeled Scene cells show the same transformation as the Reference pair?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "icons_transformation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+              "json_example": "{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference pair on the left and a labeled Scene grid of icon pairs on the right",
+              "question_text": "How many labeled Scene cells show the same transformation as the Reference pair?"
+            },
+            "task_family_key": "reference_pair_grid_transformation",
+            "task_family_variant_index": 0,
+            "task_key": "transformation_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/transformation/icons_transformation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:transformation_query": 5,
+              "task_family:reference_pair_grid_transformation": 5
+            }
+          },
+          "prompt": "You are given an image with a Reference pair on the left and a labeled Scene grid of icon pairs on the right. Determine the answer: How many labeled Scene cells show the same transformation as the Reference pair?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "same_pair_transform",
+      "template_id": "icons_transformation_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching_cell_labels": [
+          "A",
+          "F",
+          "G"
+        ],
+        "reference_pair": {
+          "icon_id": "gi-delapouite-finger-print",
+          "left_bbox_xyxy": [
+            54,
+            285,
+            129,
+            387
+          ],
+          "left_noise_edits": [
+            {
+              "params": {
+                "quality": 70.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "left_noise_seed": 1927140568711100,
+          "panel": "reference",
+          "right_bbox_xyxy": [
+            188,
+            298,
+            290,
+            373
+          ],
+          "right_noise_edits": [],
+          "right_noise_seed": 226119377556392,
+          "tint_rgb": [
+            62,
+            43,
+            177
+          ],
+          "transform_id": "flip_diag_anti"
+        },
+        "scene_cells": [
+          {
+            "cell_bbox_xyxy": [
+              374,
+              87,
+              528,
+              326
+            ],
+            "icon_id": "gi-delapouite-dunce-cap",
+            "index": 0,
+            "is_match": true,
+            "label": "F",
+            "left_bbox_xyxy": [
+              407,
+              201,
+              427,
+              239
+            ],
+            "left_noise_edits": [],
+            "left_noise_seed": 3492293262933015,
+            "panel": "scene",
+            "right_bbox_xyxy": [
+              457,
+              210,
+              495,
+              230
+            ],
+            "right_noise_edits": [],
+            "right_noise_seed": 3972930654298517,
+            "tint_rgb": [
+              62,
+              43,
+              177
+            ],
+            "transform_id": "flip_diag_anti"
+          },
+          {
+            "cell_bbox_xyxy": [
+              548,
+              87,
+              702,
+              326
+            ],
+            "icon_id": "gi-skoll-walther-ppk",
+            "index": 1,
+            "is_match": false,
+            "label": "D",
+            "left_bbox_xyxy": [
+              576,
+              205,
+              614,
+              235
+            ],
+            "left_noise_edits": [
+              {
+                "params": {
+                  "quality": 87.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "left_noise_seed": 2436054452261153,
+            "panel": "scene",
+            "right_bbox_xyxy": [
+              644,
+              201,
+              674,
+              239
+            ],
+            "right_noise_edits": [],
+            "right_noise_seed": 2538508119244626,
+            "tint_rgb": [
+              62,
+              43,
+              177
+            ],
+            "transform_id": "rot90"
+          },
+          {
+            "cell_bbox_xyxy": [
+              722,
+              87,
+              876,
+              326
+            ],
+            "icon_id": "gi-delapouite-iraq",
+            "index": 2,
+            "is_match": false,
+            "label": "E",
+            "left_bbox_xyxy": [
+              747,
+              203,
+              787,
+              237
+            ],
+            "left_noise_edits": [
+              {
+                "params": {
+                  "scale": 0.868542
+                },
+                "type": "downsample"
+              },
+              {
+                "params": {
+                  "quality": 73.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "left_noise_seed": 7653065801768940,
+            "panel": "scene",
+            "right_bbox_xyxy": [
+              817,
+              200,
+              851,
+              240
+            ],
+            "right_noise_edits": [
+              {
+                "params": {
+                  "quality": 78.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "right_noise_seed": 4878899512155885,
+            "tint_rgb": [
+              62,
+              43,
+              177
+            ],
+            "transform_id": "rot270"
+          },
+          {
+            "cell_bbox_xyxy": [
+              896,
+              87,
+              1050,
+              326
+            ],
+            "icon_id": "gi-delapouite-tired-eye",
+            "index": 3,
+            "is_match": false,
+            "label": "B",
+            "left_bbox_xyxy": [
+              922,
+              206,
+              958,
+              234
+            ],
+            "left_noise_edits": [],
+            "left_noise_seed": 8411193373390242,
+            "panel": "scene",
+            "right_bbox_xyxy": [
+              988,
+              206,
+              1024,
+              234
+            ],
+            "right_noise_edits": [],
+            "right_noise_seed": 6215805886016109,
+            "tint_rgb": [
+              62,
+              43,
+              177
+            ],
+            "transform_id": "rot180"
+          },
+          {
+            "cell_bbox_xyxy": [
+              374,
+              346,
+              528,
+              586
+            ],
+            "icon_id": "gi-lorc-backbone-shell",
+            "index": 4,
+            "is_match": true,
+            "label": "G",
+            "left_bbox_xyxy": [
+              396,
+              460,
+              436,
+              500
+            ],
+            "left_noise_edits": [
+              {
+                "params": {
+                  "alpha": 0.067111
+                },
+                "type": "noise"
+              },
+              {
+                "params": {
+                  "radius": 0.429608
+                },
+                "type": "blur"
+              }
+            ],
+            "left_noise_seed": 7298960233849741,
+            "panel": "scene",
+            "right_bbox_xyxy": [
+              466,
+              460,
+              506,
+              500
+            ],
+            "right_noise_edits": [
+              {
+                "params": {
+                  "quality": 85.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "right_noise_seed": 6848889981188281,
+            "tint_rgb": [
+              62,
+              43,
+              177
+            ],
+            "transform_id": "flip_diag_anti"
+          },
+          {
+            "cell_bbox_xyxy": [
+              548,
+              346,
+              702,
+              586
+            ],
+            "icon_id": "gi-skoll-spectre-m4",
+            "index": 5,
+            "is_match": false,
+            "label": "C",
+            "left_bbox_xyxy": [
+              570,
+              464,
+              610,
+              496
+            ],
+            "left_noise_edits": [
+              {
+                "params": {
+                  "scale": 0.858042
+                },
+                "type": "downsample"
+              },
+              {
+                "params": {
+                  "alpha": 0.062752
+                },
+                "type": "noise"
+              }
+            ],
+            "left_noise_seed": 992752791397337,
+            "panel": "scene",
+            "right_bbox_xyxy": [
+              640,
+              464,
+              680,
+              496
+            ],
+            "right_noise_edits": [
+              {
+                "params": {
+                  "scale": 0.941624
+                },
+                "type": "downsample"
+              }
+            ],
+            "right_noise_seed": 5171703544606328,
+            "tint_rgb": [
+              62,
+              43,
+              177
+            ],
+            "transform_id": "flip_h"
+          },
+          {
+            "cell_bbox_xyxy": [
+              722,
+              346,
+              876,
+              586
+            ],
+            "icon_id": "gi-delapouite-vending-machine",
+            "index": 6,
+            "is_match": true,
+            "label": "A",
+            "left_bbox_xyxy": [
+              752,
+              461,
+              778,
+              499
+            ],
+            "left_noise_edits": [],
+            "left_noise_seed": 8634711526732253,
+            "panel": "scene",
+            "right_bbox_xyxy": [
+              808,
+              467,
+              846,
+              493
+            ],
+            "right_noise_edits": [
+              {
+                "params": {
+                  "radius": 0.426194
+                },
+                "type": "blur"
+              }
+            ],
+            "right_noise_seed": 8417531570922667,
+            "tint_rgb": [
+              62,
+              43,
+              177
+            ],
+            "transform_id": "flip_diag_anti"
+          }
+        ]
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        1104,
+        640
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          1104,
+          640
+        ],
+        "reference_content_xyxy": [
+          44,
+          77,
+          300,
+          596
+        ],
+        "reference_panel_xyxy": [
+          24,
+          24,
+          320,
+          616
+        ],
+        "scene_content_xyxy": [
+          364,
+          77,
+          1060,
+          596
+        ],
+        "scene_panel_xyxy": [
+          344,
+          24,
+          1080,
+          616
+        ]
+      },
+      "style": {
+        "arrow_color_rgb": [
+          84,
+          96,
+          118
+        ],
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "cell_border_rgb": [
+          218,
+          223,
+          233
+        ],
+        "cell_label_color_rgb": [
+          52,
+          60,
+          77
+        ],
+        "cell_label_font_size_px": 22,
+        "cell_padding_px": 10,
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "pair_arrow_stroke_px": 4,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "sampled_palette_rgb": [
+          [
+            62,
+            43,
+            177
+          ]
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "icon_id": "gi-delapouite-finger-print",
+          "left_bbox_xyxy": [
+            54,
+            285,
+            129,
+            387
+          ],
+          "left_noise_edits": [
+            {
+              "params": {
+                "quality": 70.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "left_noise_seed": 1927140568711100,
+          "panel": "reference",
+          "right_bbox_xyxy": [
+            188,
+            298,
+            290,
+            373
+          ],
+          "right_noise_edits": [],
+          "right_noise_seed": 226119377556392,
+          "tint_rgb": [
+            62,
+            43,
+            177
+          ],
+          "transform_id": "flip_diag_anti"
+        },
+        {
+          "cell_bbox_xyxy": [
+            374,
+            87,
+            528,
+            326
+          ],
+          "icon_id": "gi-delapouite-dunce-cap",
+          "index": 0,
+          "is_match": true,
+          "label": "F",
+          "left_bbox_xyxy": [
+            407,
+            201,
+            427,
+            239
+          ],
+          "left_noise_edits": [],
+          "left_noise_seed": 3492293262933015,
+          "panel": "scene",
+          "right_bbox_xyxy": [
+            457,
+            210,
+            495,
+            230
+          ],
+          "right_noise_edits": [],
+          "right_noise_seed": 3972930654298517,
+          "tint_rgb": [
+            62,
+            43,
+            177
+          ],
+          "transform_id": "flip_diag_anti"
+        },
+        {
+          "cell_bbox_xyxy": [
+            548,
+            87,
+            702,
+            326
+          ],
+          "icon_id": "gi-skoll-walther-ppk",
+          "index": 1,
+          "is_match": false,
+          "label": "D",
+          "left_bbox_xyxy": [
+            576,
+            205,
+            614,
+            235
+          ],
+          "left_noise_edits": [
+            {
+              "params": {
+                "quality": 87.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "left_noise_seed": 2436054452261153,
+          "panel": "scene",
+          "right_bbox_xyxy": [
+            644,
+            201,
+            674,
+            239
+          ],
+          "right_noise_edits": [],
+          "right_noise_seed": 2538508119244626,
+          "tint_rgb": [
+            62,
+            43,
+            177
+          ],
+          "transform_id": "rot90"
+        },
+        {
+          "cell_bbox_xyxy": [
+            722,
+            87,
+            876,
+            326
+          ],
+          "icon_id": "gi-delapouite-iraq",
+          "index": 2,
+          "is_match": false,
+          "label": "E",
+          "left_bbox_xyxy": [
+            747,
+            203,
+            787,
+            237
+          ],
+          "left_noise_edits": [
+            {
+              "params": {
+                "scale": 0.868542
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "quality": 73.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "left_noise_seed": 7653065801768940,
+          "panel": "scene",
+          "right_bbox_xyxy": [
+            817,
+            200,
+            851,
+            240
+          ],
+          "right_noise_edits": [
+            {
+              "params": {
+                "quality": 78.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "right_noise_seed": 4878899512155885,
+          "tint_rgb": [
+            62,
+            43,
+            177
+          ],
+          "transform_id": "rot270"
+        },
+        {
+          "cell_bbox_xyxy": [
+            896,
+            87,
+            1050,
+            326
+          ],
+          "icon_id": "gi-delapouite-tired-eye",
+          "index": 3,
+          "is_match": false,
+          "label": "B",
+          "left_bbox_xyxy": [
+            922,
+            206,
+            958,
+            234
+          ],
+          "left_noise_edits": [],
+          "left_noise_seed": 8411193373390242,
+          "panel": "scene",
+          "right_bbox_xyxy": [
+            988,
+            206,
+            1024,
+            234
+          ],
+          "right_noise_edits": [],
+          "right_noise_seed": 6215805886016109,
+          "tint_rgb": [
+            62,
+            43,
+            177
+          ],
+          "transform_id": "rot180"
+        },
+        {
+          "cell_bbox_xyxy": [
+            374,
+            346,
+            528,
+            586
+          ],
+          "icon_id": "gi-lorc-backbone-shell",
+          "index": 4,
+          "is_match": true,
+          "label": "G",
+          "left_bbox_xyxy": [
+            396,
+            460,
+            436,
+            500
+          ],
+          "left_noise_edits": [
+            {
+              "params": {
+                "alpha": 0.067111
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "radius": 0.429608
+              },
+              "type": "blur"
+            }
+          ],
+          "left_noise_seed": 7298960233849741,
+          "panel": "scene",
+          "right_bbox_xyxy": [
+            466,
+            460,
+            506,
+            500
+          ],
+          "right_noise_edits": [
+            {
+              "params": {
+                "quality": 85.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "right_noise_seed": 6848889981188281,
+          "tint_rgb": [
+            62,
+            43,
+            177
+          ],
+          "transform_id": "flip_diag_anti"
+        },
+        {
+          "cell_bbox_xyxy": [
+            548,
+            346,
+            702,
+            586
+          ],
+          "icon_id": "gi-skoll-spectre-m4",
+          "index": 5,
+          "is_match": false,
+          "label": "C",
+          "left_bbox_xyxy": [
+            570,
+            464,
+            610,
+            496
+          ],
+          "left_noise_edits": [
+            {
+              "params": {
+                "scale": 0.858042
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "alpha": 0.062752
+              },
+              "type": "noise"
+            }
+          ],
+          "left_noise_seed": 992752791397337,
+          "panel": "scene",
+          "right_bbox_xyxy": [
+            640,
+            464,
+            680,
+            496
+          ],
+          "right_noise_edits": [
+            {
+              "params": {
+                "scale": 0.941624
+              },
+              "type": "downsample"
+            }
+          ],
+          "right_noise_seed": 5171703544606328,
+          "tint_rgb": [
+            62,
+            43,
+            177
+          ],
+          "transform_id": "flip_h"
+        },
+        {
+          "cell_bbox_xyxy": [
+            722,
+            346,
+            876,
+            586
+          ],
+          "icon_id": "gi-delapouite-vending-machine",
+          "index": 6,
+          "is_match": true,
+          "label": "A",
+          "left_bbox_xyxy": [
+            752,
+            461,
+            778,
+            499
+          ],
+          "left_noise_edits": [],
+          "left_noise_seed": 8634711526732253,
+          "panel": "scene",
+          "right_bbox_xyxy": [
+            808,
+            467,
+            846,
+            493
+          ],
+          "right_noise_edits": [
+            {
+              "params": {
+                "radius": 0.426194
+              },
+              "type": "blur"
+            }
+          ],
+          "right_noise_seed": 8417531570922667,
+          "tint_rgb": [
+            62,
+            43,
+            177
+          ],
+          "transform_id": "flip_diag_anti"
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            1104,
+            640
+          ],
+          "reference_content_xyxy": [
+            44,
+            77,
+            300,
+            596
+          ],
+          "reference_panel_xyxy": [
+            24,
+            24,
+            320,
+            616
+          ],
+          "scene_content_xyxy": [
+            364,
+            77,
+            1060,
+            596
+          ],
+          "scene_panel_xyxy": [
+            344,
+            24,
+            1080,
+            616
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "counting_target": "same_pair_transform_as_reference",
+        "matching_cell_labels": [
+          "A",
+          "F",
+          "G"
+        ],
+        "reference_transform_id": "flip_diag_anti"
+      },
+      "scene_kind": "icons_reference_pair_transformation_count"
+    },
+    "witness_symbolic": {
+      "matching_cell_labels": [
+        "A",
+        "F",
+        "G"
+      ],
+      "reference_transform_id": "flip_diag_anti"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

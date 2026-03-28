@@ -1,0 +1,1070 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 6
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        767,
+        103,
+        808,
+        144
+      ],
+      [
+        443,
+        123,
+        493,
+        173
+      ],
+      [
+        529,
+        176,
+        572,
+        220
+      ],
+      [
+        680,
+        244,
+        729,
+        294
+      ],
+      [
+        602,
+        434,
+        650,
+        481
+      ],
+      [
+        741,
+        437,
+        789,
+        484
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_counting_size_relation/images/size_smaller/0017.png"
+  },
+  "instance_seed": 4507651707705650,
+  "prompt": "Work from the image with a Reference icon on the left and a Scene panel of icons on the right. Question: How many icons in the Scene panel are smaller than the Reference icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[318,148,370,200],[572,322,632,382]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the image with a Reference icon on the left and a Scene panel of icons on the right. Question: How many icons in the Scene panel are smaller than the Reference icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[318,148,370,200],[572,322,632,382]],\"answer\":2}",
+    "answer_only": "Work from the image with a Reference icon on the left and a Scene panel of icons on the right. Question: How many icons in the Scene panel are smaller than the Reference icon?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_icons_counting_size_relation",
+  "task_variant": "size_smaller",
+  "trace_payload": {
+    "execution_trace": {
+      "distractor_count": 7,
+      "distractor_count_probabilities": {
+        "1": 0.125,
+        "2": 0.125,
+        "3": 0.125,
+        "4": 0.125,
+        "5": 0.125,
+        "6": 0.125,
+        "7": 0.125,
+        "8": 0.125
+      },
+      "matching_scene_indices": [
+        0,
+        1,
+        5,
+        6,
+        8,
+        12
+      ],
+      "object_count": 13,
+      "object_count_probabilities": {
+        "10": 0.125,
+        "11": 0.125,
+        "12": 0.125,
+        "13": 0.125,
+        "14": 0.125,
+        "7": 0.125,
+        "8": 0.125,
+        "9": 0.125
+      },
+      "question_format": "count_matching_scene_icons_by_size_relation",
+      "reference_icon_id": "gi-lorc-potion-ball",
+      "reference_nominal_size_px": 69,
+      "reference_rotation_degrees": 90,
+      "scene_icon_ids": [
+        "gi-lorc-potion-ball",
+        "gi-lorc-potion-ball",
+        "gi-lorc-potion-ball",
+        "gi-lorc-potion-ball",
+        "gi-lorc-potion-ball",
+        "gi-lorc-potion-ball",
+        "gi-lorc-potion-ball",
+        "gi-lorc-potion-ball",
+        "gi-lorc-potion-ball",
+        "gi-lorc-potion-ball",
+        "gi-lorc-potion-ball",
+        "gi-lorc-potion-ball",
+        "gi-lorc-potion-ball"
+      ],
+      "scene_nominal_sizes_px": [
+        54,
+        47,
+        105,
+        89,
+        81,
+        51,
+        51,
+        106,
+        53,
+        88,
+        106,
+        86,
+        44
+      ],
+      "scene_rotations_degrees": [
+        270,
+        90,
+        0,
+        0,
+        90,
+        180,
+        0,
+        180,
+        90,
+        270,
+        90,
+        270,
+        90
+      ],
+      "scene_variant": "reference_scene",
+      "size_relation": "smaller",
+      "size_relation_min_delta_px": 12,
+      "size_relation_probabilities": {
+        "larger": 0.5,
+        "smaller": 0.5
+      },
+      "target_count": 6,
+      "target_count_probabilities": {
+        "0": 0.1111111111111111,
+        "1": 0.1111111111111111,
+        "2": 0.1111111111111111,
+        "3": 0.1111111111111111,
+        "4": 0.1111111111111111,
+        "5": 0.1111111111111111,
+        "6": 0.1111111111111111,
+        "7": 0.1111111111111111,
+        "8": 0.1111111111111111
+      },
+      "task_variant": "size_smaller"
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          767,
+          103,
+          808,
+          144
+        ],
+        [
+          443,
+          123,
+          493,
+          173
+        ],
+        [
+          529,
+          176,
+          572,
+          220
+        ],
+        [
+          680,
+          244,
+          729,
+          294
+        ],
+        [
+          602,
+          434,
+          650,
+          481
+        ],
+        [
+          741,
+          437,
+          789,
+          484
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "distractor_count": 7,
+        "distractor_count_probabilities": {
+          "1": 0.125,
+          "2": 0.125,
+          "3": 0.125,
+          "4": 0.125,
+          "5": 0.125,
+          "6": 0.125,
+          "7": 0.125,
+          "8": 0.125
+        },
+        "object_count": 13,
+        "object_count_probabilities": {
+          "10": 0.125,
+          "11": 0.125,
+          "12": 0.125,
+          "13": 0.125,
+          "14": 0.125,
+          "7": 0.125,
+          "8": 0.125,
+          "9": 0.125
+        },
+        "pool_manifest": "all_icons.txt",
+        "rotation_candidates_degrees": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "size_relation": "smaller",
+        "size_relation_min_delta_px": 12,
+        "size_relation_probabilities": {
+          "larger": 0.5,
+          "smaller": 0.5
+        },
+        "target_count": 6,
+        "target_count_probabilities": {
+          "0": 0.1111111111111111,
+          "1": 0.1111111111111111,
+          "2": 0.1111111111111111,
+          "3": 0.1111111111111111,
+          "4": 0.1111111111111111,
+          "5": 0.1111111111111111,
+          "6": 0.1111111111111111,
+          "7": 0.1111111111111111,
+          "8": 0.1111111111111111
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "icons_counting_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+          "json_example": "{\"evidence\":[[318,148,370,200],[572,322,632,382]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+          "question_text": "How many icons in the Scene panel are smaller than the Reference icon?"
+        },
+        "task_family_key": "reference_scene_counting",
+        "task_family_variant_index": 4,
+        "task_key": "counting_query",
+        "task_variant_index": 1,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/counting/icons_counting_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:counting_query": 5,
+          "task_family:reference_scene_counting": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "icons_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[318,148,370,200],[572,322,632,382]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+              "question_text": "How many icons in the Scene panel are smaller than the Reference icon?"
+            },
+            "task_family_key": "reference_scene_counting",
+            "task_family_variant_index": 4,
+            "task_key": "counting_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/counting/icons_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:counting_query": 5,
+              "task_family:reference_scene_counting": 5
+            }
+          },
+          "prompt": "Work from the image with a Reference icon on the left and a Scene panel of icons on the right. Question: How many icons in the Scene panel are smaller than the Reference icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[318,148,370,200],[572,322,632,382]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "icons_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[318,148,370,200],[572,322,632,382]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+              "question_text": "How many icons in the Scene panel are smaller than the Reference icon?"
+            },
+            "task_family_key": "reference_scene_counting",
+            "task_family_variant_index": 4,
+            "task_key": "counting_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/counting/icons_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:counting_query": 5,
+              "task_family:reference_scene_counting": 5
+            }
+          },
+          "prompt": "Work from the image with a Reference icon on the left and a Scene panel of icons on the right. Question: How many icons in the Scene panel are smaller than the Reference icon?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "size_smaller",
+      "template_id": "icons_counting_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching_scene_boxes": [
+          [
+            767,
+            103,
+            808,
+            144
+          ],
+          [
+            443,
+            123,
+            493,
+            173
+          ],
+          [
+            529,
+            176,
+            572,
+            220
+          ],
+          [
+            680,
+            244,
+            729,
+            294
+          ],
+          [
+            602,
+            434,
+            650,
+            481
+          ],
+          [
+            741,
+            437,
+            789,
+            484
+          ]
+        ],
+        "reference_icon": {
+          "bbox_xyxy": [
+            116,
+            256,
+            179,
+            320
+          ],
+          "icon_id": "gi-lorc-potion-ball",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 1778497143731320,
+          "nominal_size_px": 69,
+          "panel": "reference",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            220,
+            41,
+            204
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        960,
+        544
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          960,
+          544
+        ],
+        "reference_content_xyxy": [
+          44,
+          77,
+          252,
+          500
+        ],
+        "reference_panel_xyxy": [
+          24,
+          24,
+          272,
+          520
+        ],
+        "scene_content_xyxy": [
+          316,
+          77,
+          916,
+          500
+        ],
+        "scene_panel_xyxy": [
+          296,
+          24,
+          936,
+          520
+        ]
+      },
+      "style": {
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "palette_size_max": 12,
+        "palette_size_min": 8,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "reference_icon_size_max_px": 96,
+        "reference_icon_size_min_px": 64,
+        "reference_icon_size_px": 80,
+        "sampled_palette_rgb": [
+          [
+            87,
+            163,
+            62
+          ],
+          [
+            212,
+            95,
+            152
+          ],
+          [
+            155,
+            106,
+            58
+          ],
+          [
+            108,
+            49,
+            142
+          ],
+          [
+            52,
+            188,
+            159
+          ],
+          [
+            220,
+            41,
+            204
+          ],
+          [
+            219,
+            74,
+            54
+          ],
+          [
+            208,
+            192,
+            44
+          ]
+        ],
+        "scene_icon_size_max_px": 120,
+        "scene_icon_size_min_px": 40,
+        "scene_max_overlap_fraction": 0.1,
+        "scene_placement_max_attempts": 120,
+        "scene_size_shrink_factor": 0.9,
+        "scene_size_shrink_rounds": 6
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_xyxy": [
+            116,
+            256,
+            179,
+            320
+          ],
+          "icon_id": "gi-lorc-potion-ball",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 1778497143731320,
+          "nominal_size_px": 69,
+          "panel": "reference",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            220,
+            41,
+            204
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            443,
+            123,
+            493,
+            173
+          ],
+          "icon_id": "gi-lorc-potion-ball",
+          "index": 0,
+          "instance_id": "scene_icon_0",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.054977
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "radius": 0.329765
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 7364338442435861,
+          "nominal_size_px": 54,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            219,
+            74,
+            54
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            529,
+            176,
+            572,
+            220
+          ],
+          "icon_id": "gi-lorc-potion-ball",
+          "index": 1,
+          "instance_id": "scene_icon_1",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.387462
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "alpha": 0.056361
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 3241184214758900,
+          "nominal_size_px": 47,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            108,
+            49,
+            142
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            475,
+            276,
+            572,
+            372
+          ],
+          "icon_id": "gi-lorc-potion-ball",
+          "index": 2,
+          "instance_id": "scene_icon_2",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 6064419859939285,
+          "nominal_size_px": 105,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            212,
+            95,
+            152
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            595,
+            243,
+            677,
+            325
+          ],
+          "icon_id": "gi-lorc-potion-ball",
+          "index": 3,
+          "instance_id": "scene_icon_3",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.055647
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "quality": 81.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 7602792061725276,
+          "nominal_size_px": 89,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            219,
+            74,
+            54
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            732,
+            338,
+            807,
+            412
+          ],
+          "icon_id": "gi-lorc-potion-ball",
+          "index": 4,
+          "instance_id": "scene_icon_4",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.855873
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "radius": 0.597594
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 6659919640930866,
+          "nominal_size_px": 81,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            208,
+            192,
+            44
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            602,
+            434,
+            650,
+            481
+          ],
+          "icon_id": "gi-lorc-potion-ball",
+          "index": 5,
+          "instance_id": "scene_icon_5",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 88.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 8516687699717610,
+          "nominal_size_px": 51,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            87,
+            163,
+            62
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            741,
+            437,
+            789,
+            484
+          ],
+          "icon_id": "gi-lorc-potion-ball",
+          "index": 6,
+          "instance_id": "scene_icon_6",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.946814
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 1727513507665600,
+          "nominal_size_px": 51,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            220,
+            41,
+            204
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            381,
+            214,
+            479,
+            311
+          ],
+          "icon_id": "gi-lorc-potion-ball",
+          "index": 7,
+          "instance_id": "scene_icon_7",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.062422
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 3187733914568264,
+          "nominal_size_px": 106,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            212,
+            95,
+            152
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            680,
+            244,
+            729,
+            294
+          ],
+          "icon_id": "gi-lorc-potion-ball",
+          "index": 8,
+          "instance_id": "scene_icon_8",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 2369724405340701,
+          "nominal_size_px": 53,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            220,
+            41,
+            204
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            822,
+            317,
+            903,
+            398
+          ],
+          "icon_id": "gi-lorc-potion-ball",
+          "index": 9,
+          "instance_id": "scene_icon_9",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 3226561582266919,
+          "nominal_size_px": 88,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            220,
+            41,
+            204
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            811,
+            87,
+            908,
+            185
+          ],
+          "icon_id": "gi-lorc-potion-ball",
+          "index": 10,
+          "instance_id": "scene_icon_10",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 88.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 7508192322945552,
+          "nominal_size_px": 106,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            219,
+            74,
+            54
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            488,
+            365,
+            567,
+            444
+          ],
+          "icon_id": "gi-lorc-potion-ball",
+          "index": 11,
+          "instance_id": "scene_icon_11",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 77.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 3256042833481396,
+          "nominal_size_px": 86,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            155,
+            106,
+            58
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            767,
+            103,
+            808,
+            144
+          ],
+          "icon_id": "gi-lorc-potion-ball",
+          "index": 12,
+          "instance_id": "scene_icon_12",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.366922
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "quality": 79.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 5855111464730214,
+          "nominal_size_px": 44,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            52,
+            188,
+            159
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            960,
+            544
+          ],
+          "reference_content_xyxy": [
+            44,
+            77,
+            252,
+            500
+          ],
+          "reference_panel_xyxy": [
+            24,
+            24,
+            272,
+            520
+          ],
+          "scene_content_xyxy": [
+            316,
+            77,
+            916,
+            500
+          ],
+          "scene_panel_xyxy": [
+            296,
+            24,
+            936,
+            520
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "counting_target": "same_icon_type_and_smaller_than_reference",
+        "matching_scene_indices": [
+          0,
+          1,
+          5,
+          6,
+          8,
+          12
+        ],
+        "reference_icon_id": "gi-lorc-potion-ball",
+        "reference_nominal_size_px": 69,
+        "size_relation": "smaller",
+        "size_relation_min_delta_px": 12
+      },
+      "scene_kind": "icons_reference_counting_size_relation"
+    },
+    "witness_symbolic": {
+      "matching_scene_indices": [
+        0,
+        1,
+        5,
+        6,
+        8,
+        12
+      ],
+      "reference_icon_id": "gi-lorc-potion-ball",
+      "reference_nominal_size_px": 69,
+      "size_relation": "smaller"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

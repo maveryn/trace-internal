@@ -1,0 +1,519 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 18
+  },
+  "evidence_gt": {
+    "type": "graph_point_set",
+    "value": [
+      [
+        -9,
+        -7
+      ],
+      [
+        9,
+        -7
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_measurement_length/images/ellipse_major_axis/0024.png"
+  },
+  "instance_seed": 1469080754173227,
+  "prompt": "The graph-paper image shows an ellipse. What is the length of the major axis of the ellipse in graph units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of exactly two graph-paper points for the measured ellipse-axis endpoints.\nAnswer field: set \"answer\" to the measurement value as an integer.\nExample JSON:\n{\"evidence\":[[-4,0],[4,0]],\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "The graph-paper image shows an ellipse. What is the length of the major axis of the ellipse in graph units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of exactly two graph-paper points for the measured ellipse-axis endpoints.\nAnswer field: set \"answer\" to the measurement value as an integer.\nExample JSON:\n{\"evidence\":[[-4,0],[4,0]],\"answer\":8}",
+    "answer_only": "The graph-paper image shows an ellipse. What is the length of the major axis of the ellipse in graph units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the measurement value as an integer.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_geometry_measurement_length",
+  "task_variant": "ellipse_major_axis",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_format": "integer",
+      "answer_scalar": 18,
+      "answer_scalar_probabilities": {
+        "10": 0.14285714285714285,
+        "12": 0.14285714285714285,
+        "14": 0.14285714285714285,
+        "16": 0.14285714285714285,
+        "18": 0.14285714285714285,
+        "6": 0.14285714285714285,
+        "8": 0.14285714285714285
+      },
+      "feasible_answer_values": [
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18
+      ],
+      "measurement_axis": "horizontal",
+      "measurement_kind": "major_axis",
+      "question_text": "What is the length of the major axis of the ellipse in graph units?",
+      "required_evidence_labels": [
+        "U",
+        "V"
+      ],
+      "required_graph_cells": 20,
+      "shape_variant": "ellipse_major_axis",
+      "variant_probabilities": {
+        "circle_diameter": 0.05,
+        "circle_radius": 0.05,
+        "ellipse_major_axis": 0.05,
+        "ellipse_minor_axis": 0.05,
+        "pentagon": 0.2,
+        "quadrilateral": 0.2,
+        "segment": 0.2,
+        "triangle": 0.2
+      }
+    },
+    "projected_evidence": {
+      "grid_point_map": {
+        "U": [
+          -9,
+          -7
+        ],
+        "V": [
+          9,
+          -7
+        ]
+      },
+      "grid_point_path": [
+        [
+          -9,
+          -7
+        ],
+        [
+          9,
+          -7
+        ]
+      ],
+      "grid_point_set": [
+        [
+          -9,
+          -7
+        ],
+        [
+          9,
+          -7
+        ]
+      ],
+      "pixel_point_map": {
+        "U": [
+          37.0,
+          597.0
+        ],
+        "V": [
+          667.0,
+          597.0
+        ]
+      },
+      "pixel_point_path": [
+        [
+          37.0,
+          597.0
+        ],
+        [
+          667.0,
+          597.0
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          37.0,
+          597.0
+        ],
+        [
+          667.0,
+          597.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 20,
+        "answer_min": 2,
+        "required_graph_cells": 20,
+        "shape_variant": "ellipse_major_axis",
+        "supported_shape_variants": [
+          "segment",
+          "triangle",
+          "quadrilateral",
+          "pentagon",
+          "circle_radius",
+          "circle_diameter",
+          "ellipse_major_axis",
+          "ellipse_minor_axis"
+        ],
+        "variant_probabilities": {
+          "circle_diameter": 0.05,
+          "circle_radius": 0.05,
+          "ellipse_major_axis": 0.05,
+          "ellipse_minor_axis": 0.05,
+          "pentagon": 0.2,
+          "quadrilateral": 0.2,
+          "segment": 0.2,
+          "triangle": 0.2
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "geometry_measurement_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the measurement value as an integer",
+          "evidence_hint": "set \"evidence\" to an array of exactly two graph-paper points for the measured ellipse-axis endpoints",
+          "json_example": "{\"evidence\":[[-4,0],[4,0]],\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "an ellipse",
+          "question_text": "What is the length of the major axis of the ellipse in graph units?"
+        },
+        "task_family_key": "measurement_single_object",
+        "task_family_variant_index": 1,
+        "task_key": "measurement_query",
+        "task_variant_index": 0,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/measurement/geometry_measurement_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:measurement_query": 5,
+          "task_family:measurement_single_object": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "geometry_measurement_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the measurement value as an integer",
+              "evidence_hint": "set \"evidence\" to an array of exactly two graph-paper points for the measured ellipse-axis endpoints",
+              "json_example": "{\"evidence\":[[-4,0],[4,0]],\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an ellipse",
+              "question_text": "What is the length of the major axis of the ellipse in graph units?"
+            },
+            "task_family_key": "measurement_single_object",
+            "task_family_variant_index": 1,
+            "task_key": "measurement_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/measurement/geometry_measurement_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:measurement_query": 5,
+              "task_family:measurement_single_object": 5
+            }
+          },
+          "prompt": "The graph-paper image shows an ellipse. What is the length of the major axis of the ellipse in graph units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of exactly two graph-paper points for the measured ellipse-axis endpoints.\nAnswer field: set \"answer\" to the measurement value as an integer.\nExample JSON:\n{\"evidence\":[[-4,0],[4,0]],\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_measurement_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the measurement value as an integer",
+              "evidence_hint": "set \"evidence\" to an array of exactly two graph-paper points for the measured ellipse-axis endpoints",
+              "json_example": "{\"evidence\":[[-4,0],[4,0]],\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an ellipse",
+              "question_text": "What is the length of the major axis of the ellipse in graph units?"
+            },
+            "task_family_key": "measurement_single_object",
+            "task_family_variant_index": 1,
+            "task_key": "measurement_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/measurement/geometry_measurement_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:measurement_query": 5,
+              "task_family:measurement_single_object": 5
+            }
+          },
+          "prompt": "The graph-paper image shows an ellipse. What is the length of the major axis of the ellipse in graph units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the measurement value as an integer.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "ellipse_major_axis",
+      "template_id": "geometry_2d_length_measure_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "target_1": {
+          "coord_space": "pixel",
+          "point": [
+            37.0,
+            597.0
+          ],
+          "polyline": [
+            [
+              37.0,
+              597.0
+            ],
+            [
+              667.0,
+              597.0
+            ]
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "graph_paper",
+        "style_spec": {
+          "axis_arrow_size": 10,
+          "axis_arrows_enabled": true,
+          "axis_color": [
+            184,
+            189,
+            196
+          ],
+          "axis_darken_range": [
+            32,
+            48
+          ],
+          "axis_enabled": true,
+          "axis_line_width": 2,
+          "axis_scale_label_max_abs": 0,
+          "axis_scale_labels_enabled": true,
+          "base_color": [
+            255,
+            255,
+            255
+          ],
+          "base_color_jitter": [
+            0,
+            0
+          ],
+          "center_point_color": [
+            173,
+            178,
+            185
+          ],
+          "center_point_darken_extra_range": [
+            8,
+            14
+          ],
+          "center_point_enabled": true,
+          "center_point_radius": 2,
+          "color_variation_applied": true,
+          "color_variation_enabled": true,
+          "color_variation_sampled": {
+            "axis_darken": 40,
+            "base_color_delta": 0,
+            "center_point_darken_extra": 11,
+            "line_color_delta": 0,
+            "major_line_darken": 14,
+            "origin_label_darken_extra": 11
+          },
+          "kind": "grid",
+          "line_color": [
+            224,
+            229,
+            236
+          ],
+          "line_color_jitter": [
+            -5,
+            5
+          ],
+          "line_width": 1,
+          "major_every": 0,
+          "major_line_color": [
+            210,
+            215,
+            222
+          ],
+          "major_line_darken_range": [
+            6,
+            14
+          ],
+          "major_line_width": 1,
+          "origin_label_color": [
+            173,
+            178,
+            185
+          ],
+          "origin_label_darken_extra_range": [
+            6,
+            12
+          ],
+          "origin_label_enabled": false,
+          "origin_label_text": "0",
+          "outer_margin_px": 16,
+          "scene_supersample_scale": 3,
+          "spacing": 35,
+          "supersample_scale": 1
+        }
+      },
+      "canvas_size": 704,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 18,
+        "full_cells_y": 18,
+        "origin_pixel": [
+          352,
+          352
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 35,
+        "target_cells_x": 20,
+        "target_cells_y": 20,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 18,
+        "full_cells_y": 18,
+        "partial_edge_cells": true,
+        "spacing_px": 35,
+        "target_cells_x": 20,
+        "target_cells_y": 20
+      },
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "scale": 0.962249
+            },
+            "type": "downsample"
+          }
+        ],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          167,
+          73,
+          167
+        ],
+        "label_stroke_color": [
+          255,
+          248,
+          249
+        ],
+        "line_color": [
+          167,
+          73,
+          167
+        ]
+      },
+      "text_style": {
+        "font_size_px": 32,
+        "stroke_width_px": 1
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "area_pi_coefficient": 18,
+            "center": [
+              352.0,
+              597.0
+            ],
+            "evidence_labels": {
+              "endpoint_a": "U",
+              "endpoint_b": "V"
+            },
+            "measurement_axis": "horizontal",
+            "measurement_kind": "major_axis",
+            "measurement_points": [
+              [
+                37.0,
+                597.0
+              ],
+              [
+                667.0,
+                597.0
+              ]
+            ],
+            "semi_axis_x_units": 9,
+            "semi_axis_y_units": 2
+          },
+          "entity_id": "ellipse_1",
+          "entity_type": "ellipse"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            352,
+            352
+          ],
+          "spacing_px": 35,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_2d_length_measurement"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "U",
+        "V"
+      ],
+      "type": "ellipse_measure_segment"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

@@ -1,0 +1,490 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 4
+  },
+  "evidence_gt": {
+    "type": "graph_point_set",
+    "value": [
+      [
+        -2,
+        0
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_measurement_length/images/circle_radius/0010.png"
+  },
+  "instance_seed": 314150184821690,
+  "prompt": "Work from the graph-paper image showing a circle. Question: What is the radius of the circle in graph units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of exactly one graph-paper point for the circle center.\nAnswer rule: set \"answer\" to the measurement value as an integer.\nExample JSON:\n{\"evidence\":[[0,0]],\"answer\":4}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the graph-paper image showing a circle. Question: What is the radius of the circle in graph units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of exactly one graph-paper point for the circle center.\nAnswer rule: set \"answer\" to the measurement value as an integer.\nExample JSON:\n{\"evidence\":[[0,0]],\"answer\":4}",
+    "answer_only": "Work from the graph-paper image showing a circle. Question: What is the radius of the circle in graph units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the measurement value as an integer.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_geometry_measurement_length",
+  "task_variant": "circle_radius",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_format": "integer",
+      "answer_scalar": 4,
+      "answer_scalar_probabilities": {
+        "2": 0.125,
+        "3": 0.125,
+        "4": 0.125,
+        "5": 0.125,
+        "6": 0.125,
+        "7": 0.125,
+        "8": 0.125,
+        "9": 0.125
+      },
+      "feasible_answer_values": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "measurement_axis": "vertical",
+      "measurement_kind": "radius",
+      "question_text": "What is the radius of the circle in graph units?",
+      "required_evidence_labels": [
+        "D"
+      ],
+      "required_graph_cells": 10,
+      "shape_variant": "circle_radius",
+      "variant_probabilities": {
+        "circle_diameter": 0.05,
+        "circle_radius": 0.05,
+        "ellipse_major_axis": 0.05,
+        "ellipse_minor_axis": 0.05,
+        "pentagon": 0.2,
+        "quadrilateral": 0.2,
+        "segment": 0.2,
+        "triangle": 0.2
+      }
+    },
+    "projected_evidence": {
+      "grid_point_map": {
+        "D": [
+          -2,
+          0
+        ]
+      },
+      "grid_point_path": [
+        [
+          -2,
+          0
+        ]
+      ],
+      "grid_point_set": [
+        [
+          -2,
+          0
+        ]
+      ],
+      "pixel_point_map": {
+        "D": [
+          285.0,
+          379.0
+        ]
+      },
+      "pixel_point_path": [
+        [
+          285.0,
+          379.0
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          285.0,
+          379.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 20,
+        "answer_min": 2,
+        "required_graph_cells": 10,
+        "shape_variant": "circle_radius",
+        "supported_shape_variants": [
+          "segment",
+          "triangle",
+          "quadrilateral",
+          "pentagon",
+          "circle_radius",
+          "circle_diameter",
+          "ellipse_major_axis",
+          "ellipse_minor_axis"
+        ],
+        "variant_probabilities": {
+          "circle_diameter": 0.05,
+          "circle_radius": 0.05,
+          "ellipse_major_axis": 0.05,
+          "ellipse_minor_axis": 0.05,
+          "pentagon": 0.2,
+          "quadrilateral": 0.2,
+          "segment": 0.2,
+          "triangle": 0.2
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "geometry_measurement_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the measurement value as an integer",
+          "evidence_hint": "set \"evidence\" to an array of exactly one graph-paper point for the circle center",
+          "json_example": "{\"evidence\":[[0,0]],\"answer\":4}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a circle",
+          "question_text": "What is the radius of the circle in graph units?"
+        },
+        "task_family_key": "measurement_single_object",
+        "task_family_variant_index": 4,
+        "task_key": "measurement_query",
+        "task_variant_index": 1,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/measurement/geometry_measurement_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:measurement_query": 5,
+          "task_family:measurement_single_object": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_measurement_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the measurement value as an integer",
+              "evidence_hint": "set \"evidence\" to an array of exactly one graph-paper point for the circle center",
+              "json_example": "{\"evidence\":[[0,0]],\"answer\":4}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a circle",
+              "question_text": "What is the radius of the circle in graph units?"
+            },
+            "task_family_key": "measurement_single_object",
+            "task_family_variant_index": 4,
+            "task_key": "measurement_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/measurement/geometry_measurement_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:measurement_query": 5,
+              "task_family:measurement_single_object": 5
+            }
+          },
+          "prompt": "Work from the graph-paper image showing a circle. Question: What is the radius of the circle in graph units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of exactly one graph-paper point for the circle center.\nAnswer rule: set \"answer\" to the measurement value as an integer.\nExample JSON:\n{\"evidence\":[[0,0]],\"answer\":4}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_measurement_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the measurement value as an integer",
+              "evidence_hint": "set \"evidence\" to an array of exactly one graph-paper point for the circle center",
+              "json_example": "{\"evidence\":[[0,0]],\"answer\":4}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a circle",
+              "question_text": "What is the radius of the circle in graph units?"
+            },
+            "task_family_key": "measurement_single_object",
+            "task_family_variant_index": 4,
+            "task_key": "measurement_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/measurement/geometry_measurement_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:measurement_query": 5,
+              "task_family:measurement_single_object": 5
+            }
+          },
+          "prompt": "Work from the graph-paper image showing a circle. Question: What is the radius of the circle in graph units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the measurement value as an integer.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "circle_radius",
+      "template_id": "geometry_2d_length_measure_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "target_1": {
+          "coord_space": "pixel",
+          "point": [
+            285.0,
+            379.0
+          ],
+          "polyline": [
+            [
+              285.0,
+              379.0
+            ],
+            [
+              285.0,
+              191.0
+            ]
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "graph_paper",
+        "style_spec": {
+          "axis_arrow_size": 10,
+          "axis_arrows_enabled": true,
+          "axis_color": [
+            189,
+            194,
+            201
+          ],
+          "axis_darken_range": [
+            32,
+            48
+          ],
+          "axis_enabled": true,
+          "axis_line_width": 2,
+          "axis_scale_label_max_abs": 0,
+          "axis_scale_labels_enabled": true,
+          "base_color": [
+            255,
+            255,
+            255
+          ],
+          "base_color_jitter": [
+            0,
+            0
+          ],
+          "center_point_color": [
+            180,
+            185,
+            192
+          ],
+          "center_point_darken_extra_range": [
+            8,
+            14
+          ],
+          "center_point_enabled": true,
+          "center_point_radius": 2,
+          "color_variation_applied": true,
+          "color_variation_enabled": true,
+          "color_variation_sampled": {
+            "axis_darken": 39,
+            "base_color_delta": 0,
+            "center_point_darken_extra": 9,
+            "line_color_delta": 4,
+            "major_line_darken": 8,
+            "origin_label_darken_extra": 9
+          },
+          "kind": "grid",
+          "line_color": [
+            228,
+            233,
+            240
+          ],
+          "line_color_jitter": [
+            -5,
+            5
+          ],
+          "line_width": 1,
+          "major_every": 0,
+          "major_line_color": [
+            220,
+            225,
+            232
+          ],
+          "major_line_darken_range": [
+            6,
+            14
+          ],
+          "major_line_width": 1,
+          "origin_label_color": [
+            180,
+            185,
+            192
+          ],
+          "origin_label_darken_extra_range": [
+            6,
+            12
+          ],
+          "origin_label_enabled": false,
+          "origin_label_text": "0",
+          "outer_margin_px": 16,
+          "scene_supersample_scale": 3,
+          "spacing": 47,
+          "supersample_scale": 1
+        }
+      },
+      "canvas_size": 759,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 14,
+        "full_cells_y": 14,
+        "origin_pixel": [
+          379,
+          379
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 47,
+        "target_cells_x": 16,
+        "target_cells_y": 16,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 14,
+        "full_cells_y": 14,
+        "partial_edge_cells": true,
+        "spacing_px": 47,
+        "target_cells_x": 16,
+        "target_cells_y": 16
+      },
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "radius": 0.164977
+            },
+            "type": "blur"
+          }
+        ],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          100,
+          172,
+          22
+        ],
+        "label_stroke_color": [
+          248,
+          254,
+          255
+        ],
+        "line_color": [
+          100,
+          172,
+          22
+        ]
+      },
+      "text_style": {
+        "font_size_px": 32,
+        "stroke_width_px": 2
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "area_pi_coefficient": 16,
+            "center": [
+              285.0,
+              379.0
+            ],
+            "circumference_pi_coefficient": 8,
+            "evidence_labels": {
+              "center": "D"
+            },
+            "measurement_axis": "vertical",
+            "measurement_kind": "radius",
+            "measurement_points": [
+              [
+                285.0,
+                379.0
+              ],
+              [
+                285.0,
+                191.0
+              ]
+            ],
+            "radius_units": 4
+          },
+          "entity_id": "circle_1",
+          "entity_type": "circle"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            379,
+            379
+          ],
+          "spacing_px": 47,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_2d_length_measurement"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "D"
+      ],
+      "type": "circle_center"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

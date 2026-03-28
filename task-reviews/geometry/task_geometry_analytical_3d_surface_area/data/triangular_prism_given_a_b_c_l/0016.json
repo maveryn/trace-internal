@@ -1,0 +1,488 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 4200
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "GH": 21,
+      "GI": 28,
+      "GJ": 43,
+      "HI": 35
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_3d_surface_area/images/triangular_prism_given_a_b_c_l/0016.png"
+  },
+  "instance_seed": 5434049396063263,
+  "prompt": "Use the image showing an annotated 3D solid. Read the marked measurements and answer: The triangular prism has annotated side lengths for the triangular base and an annotated prism length. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, GI, HI, GJ.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"GH\":2,\"GI\":3,\"HI\":4,\"GJ\":5},\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the image showing an annotated 3D solid. Read the marked measurements and answer: The triangular prism has annotated side lengths for the triangular base and an annotated prism length. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, GI, HI, GJ.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"GH\":2,\"GI\":3,\"HI\":4,\"GJ\":5},\"answer\":8}",
+    "answer_only": "Use the image showing an annotated 3D solid. Read the marked measurements and answer: The triangular prism has annotated side lengths for the triangular base and an annotated prism length. What is its total surface area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_geometry_analytical_3d_surface_area",
+  "task_variant": "triangular_prism_given_a_b_c_l",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 200000,
+      "answer_min": 8,
+      "answer_scalar": 4200,
+      "answer_type": "integer",
+      "answer_value": 4200,
+      "evidence_map": {
+        "GH": 21,
+        "GI": 28,
+        "GJ": 43,
+        "HI": 35
+      },
+      "evidence_role_tokens": {
+        "L": "GJ",
+        "a": "GH",
+        "b": "GI",
+        "c": "HI"
+      },
+      "evidence_role_values": {
+        "L": 43,
+        "a": 21,
+        "b": 28,
+        "c": 35
+      },
+      "evidence_roles": [
+        "a",
+        "b",
+        "c",
+        "L"
+      ],
+      "formula_expression": "SA = a*b + L*(a + b + c)",
+      "required_annotations": [
+        "GH",
+        "GI",
+        "HI",
+        "GJ"
+      ],
+      "task_variant": "triangular_prism_given_a_b_c_l",
+      "variant_probabilities": {
+        "cone_given_r_slant_height": 0.16666666666666666,
+        "cylinder_given_r_h": 0.16666666666666666,
+        "rectangular_prism_given_lwh": 0.16666666666666666,
+        "sphere_given_r": 0.16666666666666666,
+        "square_pyramid_given_base_side_slant_height": 0.16666666666666666,
+        "triangular_prism_given_a_b_c_l": 0.16666666666666666
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "L": "GJ",
+        "a": "GH",
+        "b": "GI",
+        "c": "HI"
+      },
+      "id_set": [
+        "GH",
+        "GI",
+        "HI",
+        "GJ"
+      ],
+      "measurement_ref_map": {
+        "GH": 21,
+        "GI": 28,
+        "GJ": 43,
+        "HI": 35
+      },
+      "pixel_annotation_centers": {
+        "GH": [
+          480.6443848307828,
+          373.9070446128065
+        ],
+        "GI": [
+          436.86456900666667,
+          168.06666666666666
+        ],
+        "GJ": [
+          219.22018408411614,
+          377.29295538719344
+        ],
+        "HI": [
+          519.9618289418751,
+          205.6322759629123
+        ]
+      },
+      "pixel_point_set": [
+        [
+          480.6443848307828,
+          373.9070446128065
+        ],
+        [
+          436.86456900666667,
+          168.06666666666666
+        ],
+        [
+          519.9618289418751,
+          205.6322759629123
+        ],
+        [
+          219.22018408411614,
+          377.29295538719344
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 200000,
+        "answer_min": 8,
+        "task_variant": "triangular_prism_given_a_b_c_l",
+        "variant_probabilities": {
+          "cone_given_r_slant_height": 0.16666666666666666,
+          "cylinder_given_r_h": 0.16666666666666666,
+          "rectangular_prism_given_lwh": 0.16666666666666666,
+          "sphere_given_r": 0.16666666666666666,
+          "square_pyramid_given_base_side_slant_height": 0.16666666666666666,
+          "triangular_prism_given_a_b_c_l": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "geometry_analytical_surface_area_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the value as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, GI, HI, GJ",
+          "json_example": "{\"evidence\":{\"GH\":2,\"GI\":3,\"HI\":4,\"GJ\":5},\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "an annotated 3D solid",
+          "question_text": "The triangular prism has annotated side lengths for the triangular base and an annotated prism length. What is its total surface area in square units?"
+        },
+        "task_family_key": "analytical_single_solid",
+        "task_family_variant_index": 3,
+        "task_key": "analytical_surface_area_query",
+        "task_variant_index": 3,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_3d/geometry_analytical_surface_area_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_surface_area_query": 5,
+          "task_family:analytical_single_solid": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_analytical_surface_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, GI, HI, GJ",
+              "json_example": "{\"evidence\":{\"GH\":2,\"GI\":3,\"HI\":4,\"GJ\":5},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an annotated 3D solid",
+              "question_text": "The triangular prism has annotated side lengths for the triangular base and an annotated prism length. What is its total surface area in square units?"
+            },
+            "task_family_key": "analytical_single_solid",
+            "task_family_variant_index": 3,
+            "task_key": "analytical_surface_area_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_3d/geometry_analytical_surface_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_surface_area_query": 5,
+              "task_family:analytical_single_solid": 5
+            }
+          },
+          "prompt": "Use the image showing an annotated 3D solid. Read the marked measurements and answer: The triangular prism has annotated side lengths for the triangular base and an annotated prism length. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, GI, HI, GJ.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"GH\":2,\"GI\":3,\"HI\":4,\"GJ\":5},\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_analytical_surface_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, GI, HI, GJ",
+              "json_example": "{\"evidence\":{\"GH\":2,\"GI\":3,\"HI\":4,\"GJ\":5},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an annotated 3D solid",
+              "question_text": "The triangular prism has annotated side lengths for the triangular base and an annotated prism length. What is its total surface area in square units?"
+            },
+            "task_family_key": "analytical_single_solid",
+            "task_family_variant_index": 3,
+            "task_key": "analytical_surface_area_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_3d/geometry_analytical_surface_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_surface_area_query": 5,
+              "task_family:analytical_single_solid": 5
+            }
+          },
+          "prompt": "Use the image showing an annotated 3D solid. Read the marked measurements and answer: The triangular prism has annotated side lengths for the triangular base and an annotated prism length. What is its total surface area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "triangular_prism_given_a_b_c_l",
+      "template_id": "geometry_analytical_surface_area_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "GH": [
+          480.6443848307828,
+          373.9070446128065
+        ],
+        "GI": [
+          436.86456900666667,
+          168.06666666666666
+        ],
+        "GJ": [
+          219.22018408411614,
+          377.29295538719344
+        ],
+        "HI": [
+          519.9618289418751,
+          205.6322759629123
+        ]
+      },
+      "annotation_labels": {
+        "L": "GJ",
+        "a": "GH",
+        "b": "GI",
+        "c": "HI"
+      },
+      "coord_space": "pixel",
+      "entity_id": "solid_1",
+      "instance_anchor": {
+        "coord_space": "pixel",
+        "point": [
+          290.4067280433333,
+          346.5138888888889
+        ],
+        "polyline": [
+          [
+            408.86456900666667,
+            300.1333333333333
+          ],
+          [
+            580.4242007466667,
+            399.18333333333334
+          ],
+          [
+            408.86456900666667,
+            36.0
+          ],
+          [
+            57.5757992533334,
+            502.95000000000005
+          ],
+          [
+            229.13543099333333,
+            602.0
+          ],
+          [
+            57.5757992533334,
+            238.81666666666666
+          ]
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_offwhite",
+        "style_spec": {
+          "color": [
+            252,
+            252,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 638,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "origin_pixel": [
+          318,
+          318
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 71,
+        "target_cells_x": 9,
+        "target_cells_y": 9,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "partial_edge_cells": true,
+        "spacing_px": 71,
+        "target_cells_x": 9,
+        "target_cells_y": 9
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          155,
+          73,
+          23
+        ],
+        "label_stroke_color": [
+          248,
+          255,
+          255
+        ],
+        "line_color": [
+          155,
+          73,
+          23
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "hypotenuse_units": 35,
+            "leg_a_units": 21,
+            "leg_b_units": 28,
+            "points": {
+              "A": [
+                408.86456900666667,
+                300.1333333333333
+              ],
+              "B": [
+                580.4242007466667,
+                399.18333333333334
+              ],
+              "C": [
+                408.86456900666667,
+                36.0
+              ],
+              "D": [
+                57.5757992533334,
+                502.95000000000005
+              ],
+              "E": [
+                229.13543099333333,
+                602.0
+              ],
+              "F": [
+                57.5757992533334,
+                238.81666666666666
+              ]
+            },
+            "prism_length_units": 43,
+            "surface_area_square_units": 4200,
+            "task_variant": "triangular_prism_given_a_b_c_l"
+          },
+          "entity_id": "solid_1",
+          "entity_type": "triangular_prism"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            318,
+            318
+          ],
+          "spacing_px": 71,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_3d_analytical_surface_area"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "GH",
+        "GI",
+        "HI",
+        "GJ"
+      ],
+      "annotation_labels": {
+        "L": "GJ",
+        "a": "GH",
+        "b": "GI",
+        "c": "HI"
+      },
+      "annotation_values": {
+        "GH": 21,
+        "GI": 28,
+        "GJ": 43,
+        "HI": 35
+      },
+      "formula_expression": "SA = a*b + L*(a + b + c)",
+      "measurement_ref_map": {
+        "GH": 21,
+        "GI": 28,
+        "GJ": 43,
+        "HI": 35
+      },
+      "task_variant": "triangular_prism_given_a_b_c_l",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

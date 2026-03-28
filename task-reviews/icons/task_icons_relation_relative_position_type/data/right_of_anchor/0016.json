@@ -1,0 +1,995 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 4
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        835,
+        184,
+        891,
+        244
+      ],
+      [
+        702,
+        317,
+        743,
+        360
+      ],
+      [
+        821,
+        363,
+        885,
+        429
+      ],
+      [
+        595,
+        455,
+        638,
+        498
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_relation_relative_position_type/images/right_of_anchor/0016.png"
+  },
+  "instance_seed": 974183607572041,
+  "prompt": "You are given an image with a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor. Answer this question: How many icons in the Scene panel have the same icon type as the Reference icon and are to the right of the Anchor icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[438,162,498,222],[602,302,670,370]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given an image with a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor. Answer this question: How many icons in the Scene panel have the same icon type as the Reference icon and are to the right of the Anchor icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[438,162,498,222],[602,302,670,370]],\"answer\":2}",
+    "answer_only": "You are given an image with a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor. Answer this question: How many icons in the Scene panel have the same icon type as the Reference icon and are to the right of the Anchor icon?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_icons_relation_relative_position_type",
+  "task_variant": "right_of_anchor",
+  "trace_payload": {
+    "execution_trace": {
+      "anchor_icon_id": "hero-outline-chat-bubble-left",
+      "different_type_distractor_count": 5,
+      "different_type_nonspatial_distractor_count": 2,
+      "different_type_spatial_distractor_count": 3,
+      "distractor_count": 6,
+      "distractor_count_probabilities": {
+        "10": 0.16666666666666666,
+        "5": 0.16666666666666666,
+        "6": 0.16666666666666666,
+        "7": 0.16666666666666666,
+        "8": 0.16666666666666666,
+        "9": 0.16666666666666666
+      },
+      "distractor_margin_over_target": 1,
+      "matching_scene_indices": [
+        0,
+        4,
+        6,
+        8
+      ],
+      "object_count": 10,
+      "object_count_probabilities": {
+        "10": 0.16666666666666666,
+        "11": 0.16666666666666666,
+        "12": 0.16666666666666666,
+        "13": 0.16666666666666666,
+        "14": 0.16666666666666666,
+        "9": 0.16666666666666666
+      },
+      "question_format": "count_matching_scene_icons_by_reference_and_anchor_relation",
+      "reference_icon_id": "gi-delapouite-healing-shield",
+      "same_type_distractor_count": 1,
+      "same_type_nonspatial_distractor_count": 1,
+      "scene_icon_ids": [
+        "gi-delapouite-healing-shield",
+        "tabler-circle-number-9",
+        "gi-delapouite-sarcophagus",
+        "gi-delapouite-moldova",
+        "gi-delapouite-healing-shield",
+        "gi-delapouite-healing-shield",
+        "gi-delapouite-healing-shield",
+        "gi-viscious-speed-abstract-027",
+        "gi-delapouite-healing-shield",
+        "tabler-zeppelin"
+      ],
+      "scene_variant": "reference_scene_anchor",
+      "spatial_relation": "right_of_anchor",
+      "target_count": 4,
+      "target_count_probabilities": {
+        "0": 0.16666666666666666,
+        "1": 0.16666666666666666,
+        "2": 0.16666666666666666,
+        "3": 0.16666666666666666,
+        "4": 0.16666666666666666,
+        "5": 0.16666666666666666
+      },
+      "task_variant": "right_of_anchor",
+      "variant_probabilities": {
+        "above_anchor": 0.25,
+        "below_anchor": 0.25,
+        "left_of_anchor": 0.25,
+        "right_of_anchor": 0.25
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          835,
+          184,
+          891,
+          244
+        ],
+        [
+          702,
+          317,
+          743,
+          360
+        ],
+        [
+          821,
+          363,
+          885,
+          429
+        ],
+        [
+          595,
+          455,
+          638,
+          498
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "anchor_gap_px_directional": 8,
+        "distractor_count": 6,
+        "distractor_count_probabilities": {
+          "10": 0.16666666666666666,
+          "5": 0.16666666666666666,
+          "6": 0.16666666666666666,
+          "7": 0.16666666666666666,
+          "8": 0.16666666666666666,
+          "9": 0.16666666666666666
+        },
+        "distractor_margin_over_target": 1,
+        "object_count": 10,
+        "object_count_probabilities": {
+          "10": 0.16666666666666666,
+          "11": 0.16666666666666666,
+          "12": 0.16666666666666666,
+          "13": 0.16666666666666666,
+          "14": 0.16666666666666666,
+          "9": 0.16666666666666666
+        },
+        "pool_manifest": "all_icons.txt",
+        "same_type_distractor_opposite_fraction_min": 0.75,
+        "target_count": 4,
+        "target_count_probabilities": {
+          "0": 0.16666666666666666,
+          "1": 0.16666666666666666,
+          "2": 0.16666666666666666,
+          "3": 0.16666666666666666,
+          "4": 0.16666666666666666,
+          "5": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "icons_relation_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+          "json_example": "{\"evidence\":[[438,162,498,222],[602,302,670,370]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor",
+          "question_text": "How many icons in the Scene panel have the same icon type as the Reference icon and are to the right of the Anchor icon?"
+        },
+        "task_family_key": "reference_scene_anchor_relation",
+        "task_family_variant_index": 0,
+        "task_key": "relation_query",
+        "task_variant_index": 3,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/relation/icons_relation_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:relation_query": 5,
+          "task_family:reference_scene_anchor_relation": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "icons_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[438,162,498,222],[602,302,670,370]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor",
+              "question_text": "How many icons in the Scene panel have the same icon type as the Reference icon and are to the right of the Anchor icon?"
+            },
+            "task_family_key": "reference_scene_anchor_relation",
+            "task_family_variant_index": 0,
+            "task_key": "relation_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/relation/icons_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:relation_query": 5,
+              "task_family:reference_scene_anchor_relation": 5
+            }
+          },
+          "prompt": "You are given an image with a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor. Answer this question: How many icons in the Scene panel have the same icon type as the Reference icon and are to the right of the Anchor icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[438,162,498,222],[602,302,670,370]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "icons_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[438,162,498,222],[602,302,670,370]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor",
+              "question_text": "How many icons in the Scene panel have the same icon type as the Reference icon and are to the right of the Anchor icon?"
+            },
+            "task_family_key": "reference_scene_anchor_relation",
+            "task_family_variant_index": 0,
+            "task_key": "relation_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/relation/icons_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:relation_query": 5,
+              "task_family:reference_scene_anchor_relation": 5
+            }
+          },
+          "prompt": "You are given an image with a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor. Answer this question: How many icons in the Scene panel have the same icon type as the Reference icon and are to the right of the Anchor icon?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "right_of_anchor",
+      "template_id": "icons_relation_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "anchor_icon": {
+          "bbox_xyxy": [
+            517,
+            411,
+            562,
+            454
+          ],
+          "highlight_bbox_xyxy": [
+            507,
+            401,
+            572,
+            464
+          ],
+          "icon_id": "hero-outline-chat-bubble-left",
+          "instance_id": "anchor_icon",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 1042388126207485,
+          "panel": "scene",
+          "role": "anchor",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            50,
+            125,
+            215
+          ]
+        },
+        "matching_scene_boxes": [
+          [
+            835,
+            184,
+            891,
+            244
+          ],
+          [
+            702,
+            317,
+            743,
+            360
+          ],
+          [
+            821,
+            363,
+            885,
+            429
+          ],
+          [
+            595,
+            455,
+            638,
+            498
+          ]
+        ],
+        "reference_icon": {
+          "bbox_xyxy": [
+            88,
+            225,
+            208,
+            351
+          ],
+          "icon_id": "gi-delapouite-healing-shield",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.431189
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "alpha": 0.079303
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 1141030823702517,
+          "panel": "reference",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            50,
+            125,
+            215
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        960,
+        544
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          960,
+          544
+        ],
+        "reference_content_xyxy": [
+          44,
+          77,
+          252,
+          500
+        ],
+        "reference_panel_xyxy": [
+          24,
+          24,
+          272,
+          520
+        ],
+        "scene_content_xyxy": [
+          316,
+          77,
+          916,
+          500
+        ],
+        "scene_panel_xyxy": [
+          296,
+          24,
+          936,
+          520
+        ]
+      },
+      "style": {
+        "anchor_gap_px_directional": 8,
+        "anchor_highlight_padding_px": 10,
+        "anchor_highlight_radius_px": 14,
+        "anchor_label_color_rgb": [
+          57,
+          87,
+          145
+        ],
+        "anchor_label_font_size_px": 20,
+        "anchor_opposite_area_ratio_min": 0.25,
+        "anchor_outline_rgb": [
+          74,
+          113,
+          188
+        ],
+        "anchor_target_area_ratio_max": 0.65,
+        "anchor_target_area_ratio_min": 0.35,
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "palette_size_max": 12,
+        "palette_size_min": 8,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "same_type_distractor_opposite_fraction_min": 0.75,
+        "sampled_palette_rgb": [
+          [
+            185,
+            40,
+            122
+          ],
+          [
+            81,
+            136,
+            32
+          ],
+          [
+            137,
+            97,
+            38
+          ],
+          [
+            161,
+            33,
+            32
+          ],
+          [
+            170,
+            101,
+            219
+          ],
+          [
+            215,
+            215,
+            74
+          ],
+          [
+            66,
+            152,
+            126
+          ],
+          [
+            50,
+            125,
+            215
+          ]
+        ],
+        "scene_max_overlap_fraction": 0.05,
+        "scene_placement_max_attempts": 120,
+        "scene_size_shrink_factor": 0.9,
+        "scene_size_shrink_rounds": 6
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_xyxy": [
+            88,
+            225,
+            208,
+            351
+          ],
+          "icon_id": "gi-delapouite-healing-shield",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.431189
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "alpha": 0.079303
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 1141030823702517,
+          "panel": "reference",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            50,
+            125,
+            215
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            517,
+            411,
+            562,
+            454
+          ],
+          "highlight_bbox_xyxy": [
+            507,
+            401,
+            572,
+            464
+          ],
+          "icon_id": "hero-outline-chat-bubble-left",
+          "instance_id": "anchor_icon",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 1042388126207485,
+          "panel": "scene",
+          "role": "anchor",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            50,
+            125,
+            215
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            835,
+            184,
+            891,
+            244
+          ],
+          "icon_id": "gi-delapouite-healing-shield",
+          "index": 0,
+          "instance_id": "scene_icon_0",
+          "is_match": true,
+          "is_same_type": true,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 4319508567246969,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": true,
+          "tint_rgb": [
+            50,
+            125,
+            215
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            691,
+            215,
+            741,
+            265
+          ],
+          "icon_id": "tabler-circle-number-9",
+          "index": 1,
+          "instance_id": "scene_icon_1",
+          "is_match": false,
+          "is_same_type": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 74.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "alpha": 0.076302
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 234514755110095,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": true,
+          "tint_rgb": [
+            161,
+            33,
+            32
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            720,
+            371,
+            779,
+            436
+          ],
+          "icon_id": "gi-delapouite-sarcophagus",
+          "index": 2,
+          "instance_id": "scene_icon_2",
+          "is_match": false,
+          "is_same_type": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 8740532133423384,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": true,
+          "tint_rgb": [
+            81,
+            136,
+            32
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            527,
+            211,
+            578,
+            272
+          ],
+          "icon_id": "gi-delapouite-moldova",
+          "index": 3,
+          "instance_id": "scene_icon_3",
+          "is_match": false,
+          "is_same_type": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 2949894382355289,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": false,
+          "tint_rgb": [
+            81,
+            136,
+            32
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            821,
+            363,
+            885,
+            429
+          ],
+          "icon_id": "gi-delapouite-healing-shield",
+          "index": 4,
+          "instance_id": "scene_icon_4",
+          "is_match": true,
+          "is_same_type": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 74.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "alpha": 0.06169
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 7471238029962428,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": true,
+          "tint_rgb": [
+            50,
+            125,
+            215
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            465,
+            179,
+            509,
+            225
+          ],
+          "icon_id": "gi-delapouite-healing-shield",
+          "index": 5,
+          "instance_id": "scene_icon_5",
+          "is_match": false,
+          "is_same_type": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 81.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 1029593762456512,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": false,
+          "tint_rgb": [
+            215,
+            215,
+            74
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            702,
+            317,
+            743,
+            360
+          ],
+          "icon_id": "gi-delapouite-healing-shield",
+          "index": 6,
+          "instance_id": "scene_icon_6",
+          "is_match": true,
+          "is_same_type": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.869208
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "radius": 0.227151
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 1397524274591371,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": true,
+          "tint_rgb": [
+            215,
+            215,
+            74
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            806,
+            255,
+            850,
+            299
+          ],
+          "icon_id": "gi-viscious-speed-abstract-027",
+          "index": 7,
+          "instance_id": "scene_icon_7",
+          "is_match": false,
+          "is_same_type": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.890601
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "radius": 0.447682
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 7867900581455084,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": true,
+          "tint_rgb": [
+            66,
+            152,
+            126
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            595,
+            455,
+            638,
+            498
+          ],
+          "icon_id": "gi-delapouite-healing-shield",
+          "index": 8,
+          "instance_id": "scene_icon_8",
+          "is_match": true,
+          "is_same_type": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.331546
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 3659977755606637,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": true,
+          "tint_rgb": [
+            215,
+            215,
+            74
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            427,
+            313,
+            487,
+            361
+          ],
+          "icon_id": "tabler-zeppelin",
+          "index": 9,
+          "instance_id": "scene_icon_9",
+          "is_match": false,
+          "is_same_type": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.512486
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 2575270343287022,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": false,
+          "tint_rgb": [
+            66,
+            152,
+            126
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            960,
+            544
+          ],
+          "reference_content_xyxy": [
+            44,
+            77,
+            252,
+            500
+          ],
+          "reference_panel_xyxy": [
+            24,
+            24,
+            272,
+            520
+          ],
+          "scene_content_xyxy": [
+            316,
+            77,
+            916,
+            500
+          ],
+          "scene_panel_xyxy": [
+            296,
+            24,
+            936,
+            520
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "anchor_icon_id": "hero-outline-chat-bubble-left",
+        "counting_target": "same_icon_type_and_directional_relation_to_anchor",
+        "different_type_nonspatial_distractor_count": 2,
+        "different_type_spatial_distractor_count": 3,
+        "matching_scene_indices": [
+          0,
+          4,
+          6,
+          8
+        ],
+        "reference_icon_id": "gi-delapouite-healing-shield",
+        "same_type_nonspatial_distractor_count": 1,
+        "spatial_relation": "right_of_anchor"
+      },
+      "scene_kind": "icons_reference_anchor_relation_type"
+    },
+    "witness_symbolic": {
+      "anchor_icon_id": "hero-outline-chat-bubble-left",
+      "matching_scene_indices": [
+        0,
+        4,
+        6,
+        8
+      ],
+      "reference_icon_id": "gi-delapouite-healing-shield",
+      "spatial_relation": "right_of_anchor"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

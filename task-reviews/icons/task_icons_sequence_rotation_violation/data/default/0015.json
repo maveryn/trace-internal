@@ -1,0 +1,800 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 2
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        198,
+        87,
+        322,
+        221
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_sequence_rotation_violation/images/default/0015.png"
+  },
+  "instance_seed": 6939023278603635,
+  "prompt": "Look at the image with a horizontal row of numbered Scene boxes, each containing one icon. Task: Which numbered box breaks the rotation sequence?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the violating Scene box.\nAnswer requirement: set \"answer\" to the violating box index as an integer.\nExample JSON:\n{\"evidence\":[[540,126,654,458]],\"answer\":4}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the image with a horizontal row of numbered Scene boxes, each containing one icon. Task: Which numbered box breaks the rotation sequence?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the violating Scene box.\nAnswer requirement: set \"answer\" to the violating box index as an integer.\nExample JSON:\n{\"evidence\":[[540,126,654,458]],\"answer\":4}",
+    "answer_only": "Look at the image with a horizontal row of numbered Scene boxes, each containing one icon. Task: Which numbered box breaks the rotation sequence?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the violating box index as an integer.\nExample JSON:\n{\"answer\":4}"
+  },
+  "task": "task_icons_sequence_rotation_violation",
+  "task_variant": "constant_rotation_step_violation",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_index": 2,
+      "cell_box_height_px": 134,
+      "cell_box_width_px": 124,
+      "expected_sequence_rotations_degrees": [
+        270,
+        0,
+        90,
+        180,
+        270,
+        0,
+        90
+      ],
+      "observed_sequence_rotations_degrees": [
+        270,
+        270,
+        90,
+        180,
+        270,
+        0,
+        90
+      ],
+      "question_format": "identify_rotation_sequence_violation",
+      "scene_variant": "single_panel_sequence_row",
+      "sequence_icon_id": "gi-lorc-wyvern",
+      "sequence_length": 7,
+      "start_rotation_degrees": 270,
+      "step_delta_degrees": 90,
+      "task_variant": "constant_rotation_step_violation",
+      "violation_cell_index": 1,
+      "violation_rotation_degrees": 270
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          198,
+          87,
+          322,
+          221
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_index": 2,
+        "answer_index_probabilities": {
+          "1": 0.14285714285714285,
+          "2": 0.14285714285714285,
+          "3": 0.14285714285714285,
+          "4": 0.14285714285714285,
+          "5": 0.14285714285714285,
+          "6": 0.14285714285714285,
+          "7": 0.14285714285714285
+        },
+        "cell_box_height_px": 134,
+        "cell_box_width_px": 124,
+        "pool_manifest": "non_symmetry.txt",
+        "rotation_candidates_degrees": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "sequence_length": 7,
+        "sequence_length_probabilities": {
+          "5": 0.3333333333333333,
+          "6": 0.3333333333333333,
+          "7": 0.3333333333333333
+        },
+        "start_rotation_degrees": 270,
+        "step_candidates_degrees": [
+          90,
+          270
+        ],
+        "step_delta_degrees": 90,
+        "violation_cell_index": 1,
+        "violation_rotation_degrees": 270
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "icons_sequence_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the violating box index as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the violating Scene box",
+          "json_example": "{\"evidence\":[[540,126,654,458]],\"answer\":4}",
+          "json_example_answer_only": "{\"answer\":4}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a horizontal row of numbered Scene boxes, each containing one icon",
+          "question_text": "Which numbered box breaks the rotation sequence?"
+        },
+        "task_family_key": "sequence_rotation_violation",
+        "task_family_variant_index": 2,
+        "task_key": "rotation_violation_query",
+        "task_variant_index": 2,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/sequence/icons_sequence_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:rotation_violation_query": 5,
+          "task_family:sequence_rotation_violation": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "icons_sequence_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the violating box index as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the violating Scene box",
+              "json_example": "{\"evidence\":[[540,126,654,458]],\"answer\":4}",
+              "json_example_answer_only": "{\"answer\":4}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a horizontal row of numbered Scene boxes, each containing one icon",
+              "question_text": "Which numbered box breaks the rotation sequence?"
+            },
+            "task_family_key": "sequence_rotation_violation",
+            "task_family_variant_index": 2,
+            "task_key": "rotation_violation_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/sequence/icons_sequence_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:rotation_violation_query": 5,
+              "task_family:sequence_rotation_violation": 5
+            }
+          },
+          "prompt": "Look at the image with a horizontal row of numbered Scene boxes, each containing one icon. Task: Which numbered box breaks the rotation sequence?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the violating Scene box.\nAnswer requirement: set \"answer\" to the violating box index as an integer.\nExample JSON:\n{\"evidence\":[[540,126,654,458]],\"answer\":4}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "icons_sequence_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the violating box index as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the violating Scene box",
+              "json_example": "{\"evidence\":[[540,126,654,458]],\"answer\":4}",
+              "json_example_answer_only": "{\"answer\":4}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a horizontal row of numbered Scene boxes, each containing one icon",
+              "question_text": "Which numbered box breaks the rotation sequence?"
+            },
+            "task_family_key": "sequence_rotation_violation",
+            "task_family_variant_index": 2,
+            "task_key": "rotation_violation_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/sequence/icons_sequence_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:rotation_violation_query": 5,
+              "task_family:sequence_rotation_violation": 5
+            }
+          },
+          "prompt": "Look at the image with a horizontal row of numbered Scene boxes, each containing one icon. Task: Which numbered box breaks the rotation sequence?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the violating box index as an integer.\nExample JSON:\n{\"answer\":4}"
+        }
+      },
+      "task_variant": "constant_rotation_step_violation",
+      "template_id": "icons_sequence_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "violating_cell_bbox": [
+          198,
+          87,
+          322,
+          221
+        ]
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        1096,
+        275
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          1096,
+          275
+        ],
+        "scene_content_xyxy": [
+          44,
+          77,
+          1052,
+          231
+        ],
+        "scene_panel_xyxy": [
+          24,
+          24,
+          1072,
+          251
+        ]
+      },
+      "style": {
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "cell_box_height_range_px": [
+          96,
+          136
+        ],
+        "cell_box_width_range_px": [
+          96,
+          136
+        ],
+        "cell_corner_radius_px": 12,
+        "cell_icon_padding_px": 8,
+        "cell_label_color_rgb": [
+          52,
+          60,
+          77
+        ],
+        "cell_label_font_size_px": 22,
+        "cell_padding_px": 10,
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "palette_size_max": 1,
+        "palette_size_min": 1,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "reference_icon_size_max_px": 0,
+        "reference_icon_size_min_px": 0,
+        "reference_icon_size_px": 0,
+        "sampled_cell_box_size_px": [
+          124,
+          134
+        ],
+        "sampled_palette_rgb": [
+          [
+            54,
+            219,
+            74
+          ]
+        ],
+        "scene_icon_size_max_px": 72,
+        "scene_icon_size_min_px": 48,
+        "scene_max_overlap_fraction": 0.2,
+        "scene_placement_max_attempts": 160,
+        "scene_size_shrink_factor": 0.9,
+        "scene_size_shrink_rounds": 6
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "cell_bbox_xyxy": [
+            54,
+            87,
+            178,
+            221
+          ],
+          "cell_index": 0,
+          "cell_label_text": "1",
+          "entity_kind": "sequence_cell",
+          "expected_rotation_degrees": 270,
+          "is_violation": false,
+          "observed_rotation_degrees": 270,
+          "panel": "scene",
+          "rendered_icon_count": 1
+        },
+        {
+          "cell_bbox_xyxy": [
+            198,
+            87,
+            322,
+            221
+          ],
+          "cell_index": 1,
+          "cell_label_text": "2",
+          "entity_kind": "sequence_cell",
+          "expected_rotation_degrees": 0,
+          "is_violation": true,
+          "observed_rotation_degrees": 270,
+          "panel": "scene",
+          "rendered_icon_count": 1
+        },
+        {
+          "cell_bbox_xyxy": [
+            342,
+            87,
+            466,
+            221
+          ],
+          "cell_index": 2,
+          "cell_label_text": "3",
+          "entity_kind": "sequence_cell",
+          "expected_rotation_degrees": 90,
+          "is_violation": false,
+          "observed_rotation_degrees": 90,
+          "panel": "scene",
+          "rendered_icon_count": 1
+        },
+        {
+          "cell_bbox_xyxy": [
+            486,
+            87,
+            610,
+            221
+          ],
+          "cell_index": 3,
+          "cell_label_text": "4",
+          "entity_kind": "sequence_cell",
+          "expected_rotation_degrees": 180,
+          "is_violation": false,
+          "observed_rotation_degrees": 180,
+          "panel": "scene",
+          "rendered_icon_count": 1
+        },
+        {
+          "cell_bbox_xyxy": [
+            630,
+            87,
+            754,
+            221
+          ],
+          "cell_index": 4,
+          "cell_label_text": "5",
+          "entity_kind": "sequence_cell",
+          "expected_rotation_degrees": 270,
+          "is_violation": false,
+          "observed_rotation_degrees": 270,
+          "panel": "scene",
+          "rendered_icon_count": 1
+        },
+        {
+          "cell_bbox_xyxy": [
+            774,
+            87,
+            898,
+            221
+          ],
+          "cell_index": 5,
+          "cell_label_text": "6",
+          "entity_kind": "sequence_cell",
+          "expected_rotation_degrees": 0,
+          "is_violation": false,
+          "observed_rotation_degrees": 0,
+          "panel": "scene",
+          "rendered_icon_count": 1
+        },
+        {
+          "cell_bbox_xyxy": [
+            918,
+            87,
+            1042,
+            221
+          ],
+          "cell_index": 6,
+          "cell_label_text": "7",
+          "entity_kind": "sequence_cell",
+          "expected_rotation_degrees": 90,
+          "is_violation": false,
+          "observed_rotation_degrees": 90,
+          "panel": "scene",
+          "rendered_icon_count": 1
+        },
+        {
+          "bbox_xyxy": [
+            102,
+            130,
+            151,
+            179
+          ],
+          "cell_bbox_xyxy": [
+            54,
+            87,
+            178,
+            221
+          ],
+          "cell_index": 0,
+          "cell_label_text": "1",
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-lorc-wyvern",
+          "instance_id": "scene_cell_0_icon_0",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.05397
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "scale": 0.853637
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 4613207868210896,
+          "nominal_size_px": 51,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            54,
+            219,
+            74
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            237,
+            128,
+            285,
+            176
+          ],
+          "cell_bbox_xyxy": [
+            198,
+            87,
+            322,
+            221
+          ],
+          "cell_index": 1,
+          "cell_label_text": "2",
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-lorc-wyvern",
+          "instance_id": "scene_cell_1_icon_0",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 1815498806711796,
+          "nominal_size_px": 50,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            54,
+            219,
+            74
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            389,
+            162,
+            440,
+            213
+          ],
+          "cell_bbox_xyxy": [
+            342,
+            87,
+            466,
+            221
+          ],
+          "cell_index": 2,
+          "cell_label_text": "3",
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-lorc-wyvern",
+          "instance_id": "scene_cell_2_icon_0",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 88.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 8193536266842789,
+          "nominal_size_px": 53,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            54,
+            219,
+            74
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            507,
+            129,
+            562,
+            184
+          ],
+          "cell_bbox_xyxy": [
+            486,
+            87,
+            610,
+            221
+          ],
+          "cell_index": 3,
+          "cell_label_text": "4",
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-lorc-wyvern",
+          "instance_id": "scene_cell_3_icon_0",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.865146
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 2720779723138242,
+          "nominal_size_px": 59,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            54,
+            219,
+            74
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            687,
+            137,
+            744,
+            194
+          ],
+          "cell_bbox_xyxy": [
+            630,
+            87,
+            754,
+            221
+          ],
+          "cell_index": 4,
+          "cell_label_text": "5",
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-lorc-wyvern",
+          "instance_id": "scene_cell_4_icon_0",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.853879
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 5500254869272325,
+          "nominal_size_px": 61,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            54,
+            219,
+            74
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            816,
+            149,
+            877,
+            210
+          ],
+          "cell_bbox_xyxy": [
+            774,
+            87,
+            898,
+            221
+          ],
+          "cell_index": 5,
+          "cell_label_text": "6",
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-lorc-wyvern",
+          "instance_id": "scene_cell_5_icon_0",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.381901
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 2520325074889274,
+          "nominal_size_px": 65,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            54,
+            219,
+            74
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            963,
+            144,
+            1018,
+            199
+          ],
+          "cell_bbox_xyxy": [
+            918,
+            87,
+            1042,
+            221
+          ],
+          "cell_index": 6,
+          "cell_label_text": "7",
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-lorc-wyvern",
+          "instance_id": "scene_cell_6_icon_0",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 6260618820740330,
+          "nominal_size_px": 59,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            54,
+            219,
+            74
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            1096,
+            275
+          ],
+          "scene_content_xyxy": [
+            44,
+            77,
+            1052,
+            231
+          ],
+          "scene_panel_xyxy": [
+            24,
+            24,
+            1072,
+            251
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "expected_sequence_rotations_degrees": [
+          270,
+          0,
+          90,
+          180,
+          270,
+          0,
+          90
+        ],
+        "observed_sequence_rotations_degrees": [
+          270,
+          270,
+          90,
+          180,
+          270,
+          0,
+          90
+        ],
+        "sequence_icon_id": "gi-lorc-wyvern",
+        "sequence_rule": "constant_rotation_step",
+        "start_rotation_degrees": 270,
+        "step_delta_degrees": 90,
+        "violation_cell_index": 1
+      },
+      "scene_kind": "icons_sequence_rotation_violation"
+    },
+    "witness_symbolic": {
+      "expected_sequence_rotations_degrees": [
+        270,
+        0,
+        90,
+        180,
+        270,
+        0,
+        90
+      ],
+      "observed_sequence_rotations_degrees": [
+        270,
+        270,
+        90,
+        180,
+        270,
+        0,
+        90
+      ],
+      "sequence_rule": "constant_rotation_step",
+      "start_rotation_degrees": 270,
+      "step_delta_degrees": 90,
+      "violation_cell_index": 1
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

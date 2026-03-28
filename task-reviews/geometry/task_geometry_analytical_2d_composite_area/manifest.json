@@ -1,0 +1,19 @@
+{
+  "inspection_count": 125,
+  "task_id": "task_geometry_analytical_2d_composite_area",
+  "variants": {
+    "l_shape_cutout": 25,
+    "rectangle_inner_cutout": 25,
+    "rectangle_triangle_cutout": 25,
+    "rectangle_triangle_union": 25,
+    "step_rectangles_union": 25
+  },
+  "workbook": "geometry/task_geometry_analytical_2d_composite_area/task_geometry_analytical_2d_composite_area.xlsx",
+  "workbook_sheets": {
+    "l_shape_cutout": "l_shape_cutout",
+    "rectangle_inner_cutout": "rectangle_inner_cutout",
+    "rectangle_triangle_cutout": "rectangle_triangle_cutout",
+    "rectangle_triangle_union": "rectangle_triangle_union",
+    "step_rectangles_union": "step_rectangles_union"
+  }
+}

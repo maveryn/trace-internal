@@ -1,0 +1,438 @@
+{
+  "answer_gt": {
+    "type": "number",
+    "value": 39.6
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "PQ": 21,
+      "PR": 7
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_2d_length/images/circle_chord_length/0007.png"
+  },
+  "instance_seed": 7758415915671875,
+  "prompt": "Use the image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment ST?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PQ, PR.\nAnswer field: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"PQ\":2,\"PR\":3},\"answer\":42.3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment ST?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PQ, PR.\nAnswer field: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"PQ\":2,\"PR\":3},\"answer\":42.3}",
+    "answer_only": "Use the image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment ST?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+  },
+  "task": "task_geometry_analytical_2d_length",
+  "task_variant": "circle_chord_length",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 100,
+      "answer_min": 3,
+      "answer_scalar": 396,
+      "answer_type": "number",
+      "answer_value": 39.6,
+      "evidence_map": {
+        "PQ": 21,
+        "PR": 7
+      },
+      "evidence_role_tokens": {
+        "offset": "PR",
+        "radius": "PQ"
+      },
+      "evidence_role_values": {
+        "offset": 7,
+        "radius": 21
+      },
+      "evidence_roles": [
+        "radius",
+        "offset"
+      ],
+      "formula_expression": "2 * sqrt(radius^2 - offset^2)",
+      "raw_answer_value": 39.59797974644666,
+      "required_annotations": [
+        "PQ",
+        "PR"
+      ],
+      "target_annotation": "ST",
+      "task_variant": "circle_chord_length",
+      "variant_probabilities": {
+        "circle_chord_length": 0.16666666666666666,
+        "inscribed_square_side": 0.16666666666666666,
+        "isosceles_trapezoid_leg": 0.16666666666666666,
+        "rectangle_diagonal_side": 0.16666666666666666,
+        "rhombus_diagonal_side": 0.16666666666666666,
+        "triangle_altitude_side": 0.16666666666666666
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "offset": "PR",
+        "radius": "PQ"
+      },
+      "id_set": [
+        "PQ",
+        "PR"
+      ],
+      "measurement_ref_map": {
+        "PQ": 21,
+        "PR": 7
+      },
+      "pixel_annotation_centers": {
+        "PQ": [
+          398.741,
+          288.76666666666665
+        ],
+        "PR": [
+          250.9,
+          235.65116666666665
+        ]
+      },
+      "pixel_point_set": [
+        [
+          398.741,
+          288.76666666666665
+        ],
+        [
+          250.9,
+          235.65116666666665
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 100,
+        "answer_min": 3,
+        "task_variant": "circle_chord_length",
+        "variant_probabilities": {
+          "circle_chord_length": 0.16666666666666666,
+          "inscribed_square_side": 0.16666666666666666,
+          "isosceles_trapezoid_leg": 0.16666666666666666,
+          "rectangle_diagonal_side": 0.16666666666666666,
+          "rhombus_diagonal_side": 0.16666666666666666,
+          "triangle_altitude_side": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "geometry_analytical_length_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PQ, PR",
+          "json_example": "{\"evidence\":{\"PQ\":2,\"PR\":3},\"answer\":42.3}",
+          "json_example_answer_only": "{\"answer\":42.3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a geometric scene with measurement annotations",
+          "question_text": "The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment ST?"
+        },
+        "task_family_key": "analytical_length_scene",
+        "task_family_variant_index": 3,
+        "task_key": "analytical_length_query",
+        "task_variant_index": 3,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_2d/geometry_analytical_length_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_length_query": 5,
+          "task_family:analytical_length_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "geometry_analytical_length_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PQ, PR",
+              "json_example": "{\"evidence\":{\"PQ\":2,\"PR\":3},\"answer\":42.3}",
+              "json_example_answer_only": "{\"answer\":42.3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric scene with measurement annotations",
+              "question_text": "The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment ST?"
+            },
+            "task_family_key": "analytical_length_scene",
+            "task_family_variant_index": 3,
+            "task_key": "analytical_length_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_length_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_length_query": 5,
+              "task_family:analytical_length_scene": 5
+            }
+          },
+          "prompt": "Use the image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment ST?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PQ, PR.\nAnswer field: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"PQ\":2,\"PR\":3},\"answer\":42.3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_analytical_length_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PQ, PR",
+              "json_example": "{\"evidence\":{\"PQ\":2,\"PR\":3},\"answer\":42.3}",
+              "json_example_answer_only": "{\"answer\":42.3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric scene with measurement annotations",
+              "question_text": "The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment ST?"
+            },
+            "task_family_key": "analytical_length_scene",
+            "task_family_variant_index": 3,
+            "task_key": "analytical_length_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_length_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_length_query": 5,
+              "task_family:analytical_length_scene": 5
+            }
+          },
+          "prompt": "Use the image showing a geometric scene with measurement annotations. Read the marked measurements and answer: The circle shows a chord and the perpendicular distance from the center to that chord. What is the length of segment ST?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+        }
+      },
+      "task_variant": "circle_chord_length",
+      "template_id": "geometry_analytical_length_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "PQ": [
+          398.741,
+          288.76666666666665
+        ],
+        "PR": [
+          250.9,
+          235.65116666666665
+        ]
+      },
+      "annotation_labels": {
+        "offset": "PR",
+        "radius": "PQ"
+      },
+      "coord_space": "pixel",
+      "instance_anchor": {
+        "bbox": [
+          95.42916665270363,
+          207.95666666666665,
+          454.13,
+          269.5
+        ],
+        "coord_space": "pixel"
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_offwhite",
+        "style_spec": {
+          "color": [
+            252,
+            252,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 539,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 6,
+        "full_cells_y": 6,
+        "origin_pixel": [
+          269,
+          269
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 77,
+        "target_cells_x": 7,
+        "target_cells_y": 7,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 6,
+        "full_cells_y": 6,
+        "partial_edge_cells": true,
+        "spacing_px": 77,
+        "target_cells_x": 7,
+        "target_cells_y": 7
+      },
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "radius": 0.16853
+            },
+            "type": "blur"
+          }
+        ],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          25,
+          75,
+          106
+        ],
+        "label_stroke_color": [
+          254,
+          248,
+          249
+        ],
+        "line_color": [
+          25,
+          75,
+          106
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "center": [
+              269.5,
+              269.5
+            ],
+            "radius_px": 185
+          },
+          "entity_id": "circle_1",
+          "entity_type": "circle"
+        },
+        {
+          "attrs": {
+            "helper": true,
+            "point_a": [
+              269.5,
+              269.5
+            ],
+            "point_b": [
+              454.13,
+              269.5
+            ]
+          },
+          "entity_id": "radius_1",
+          "entity_type": "radius"
+        },
+        {
+          "attrs": {
+            "helper": true,
+            "point_a": [
+              269.5,
+              269.5
+            ],
+            "point_b": [
+              269.5,
+              207.95666666666665
+            ]
+          },
+          "entity_id": "distance_1",
+          "entity_type": "distance_to_chord"
+        },
+        {
+          "attrs": {
+            "helper": false,
+            "point_a": [
+              95.42916665270363,
+              207.95666666666665
+            ],
+            "point_b": [
+              443.57083334729634,
+              207.95666666666665
+            ]
+          },
+          "entity_id": "chord_1",
+          "entity_type": "chord"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            269,
+            269
+          ],
+          "spacing_px": 77,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_2d_analytical_length"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "PQ",
+        "PR"
+      ],
+      "annotation_labels": {
+        "offset": "PR",
+        "radius": "PQ"
+      },
+      "annotation_values": {
+        "PQ": 21,
+        "PR": 7
+      },
+      "formula_expression": "2 * sqrt(radius^2 - offset^2)",
+      "measurement_ref_map": {
+        "PQ": 21,
+        "PR": 7
+      },
+      "task_variant": "circle_chord_length",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

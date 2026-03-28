@@ -1,0 +1,817 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 0
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": []
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_counting_color/images/default/0013.png"
+  },
+  "instance_seed": 5653426514775299,
+  "prompt": "You are given an image with a Reference icon on the left and a Scene panel of icons on the right. Task: How many icons in the Scene panel have the same color as the Reference icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[322,152,377,207],[756,318,820,382]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given an image with a Reference icon on the left and a Scene panel of icons on the right. Task: How many icons in the Scene panel have the same color as the Reference icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[322,152,377,207],[756,318,820,382]],\"answer\":2}",
+    "answer_only": "You are given an image with a Reference icon on the left and a Scene panel of icons on the right. Task: How many icons in the Scene panel have the same color as the Reference icon?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_icons_counting_color",
+  "task_variant": "same_icon_color",
+  "trace_payload": {
+    "execution_trace": {
+      "distractor_count": 10,
+      "distractor_count_probabilities": {
+        "1": 0.1,
+        "10": 0.1,
+        "2": 0.1,
+        "3": 0.1,
+        "4": 0.1,
+        "5": 0.1,
+        "6": 0.1,
+        "7": 0.1,
+        "8": 0.1,
+        "9": 0.1
+      },
+      "matching_scene_indices": [],
+      "object_count": 10,
+      "object_count_probabilities": {
+        "1": 0.1,
+        "10": 0.1,
+        "2": 0.1,
+        "3": 0.1,
+        "4": 0.1,
+        "5": 0.1,
+        "6": 0.1,
+        "7": 0.1,
+        "8": 0.1,
+        "9": 0.1
+      },
+      "question_format": "count_matching_scene_icons_by_reference",
+      "reference_icon_id": "gi-delapouite-sea-turtle",
+      "reference_tint_rgb": [
+        107,
+        190,
+        24
+      ],
+      "scene_icon_ids": [
+        "gi-delapouite-sea-turtle",
+        "gi-delapouite-sea-turtle",
+        "gi-delapouite-sea-turtle",
+        "gi-delapouite-sea-turtle",
+        "gi-delapouite-sea-turtle",
+        "gi-delapouite-sea-turtle",
+        "gi-delapouite-sea-turtle",
+        "gi-delapouite-sea-turtle",
+        "gi-delapouite-sea-turtle",
+        "gi-delapouite-sea-turtle"
+      ],
+      "scene_tints_rgb": [
+        [
+          29,
+          53,
+          220
+        ],
+        [
+          201,
+          55,
+          165
+        ],
+        [
+          201,
+          55,
+          165
+        ],
+        [
+          206,
+          156,
+          62
+        ],
+        [
+          206,
+          156,
+          62
+        ],
+        [
+          29,
+          53,
+          220
+        ],
+        [
+          201,
+          55,
+          165
+        ],
+        [
+          29,
+          53,
+          220
+        ],
+        [
+          201,
+          55,
+          165
+        ],
+        [
+          206,
+          156,
+          62
+        ]
+      ],
+      "scene_variant": "reference_scene",
+      "target_count": 0,
+      "target_count_probabilities": {
+        "0": 0.09090909090909091,
+        "1": 0.09090909090909091,
+        "10": 0.09090909090909091,
+        "2": 0.09090909090909091,
+        "3": 0.09090909090909091,
+        "4": 0.09090909090909091,
+        "5": 0.09090909090909091,
+        "6": 0.09090909090909091,
+        "7": 0.09090909090909091,
+        "8": 0.09090909090909091,
+        "9": 0.09090909090909091
+      },
+      "task_variant": "same_icon_color"
+    },
+    "projected_evidence": {
+      "bbox_set": []
+    },
+    "query_spec": {
+      "params": {
+        "distractor_count": 10,
+        "distractor_count_probabilities": {
+          "1": 0.1,
+          "10": 0.1,
+          "2": 0.1,
+          "3": 0.1,
+          "4": 0.1,
+          "5": 0.1,
+          "6": 0.1,
+          "7": 0.1,
+          "8": 0.1,
+          "9": 0.1
+        },
+        "object_count": 10,
+        "object_count_probabilities": {
+          "1": 0.1,
+          "10": 0.1,
+          "2": 0.1,
+          "3": 0.1,
+          "4": 0.1,
+          "5": 0.1,
+          "6": 0.1,
+          "7": 0.1,
+          "8": 0.1,
+          "9": 0.1
+        },
+        "pool_manifest": "all_icons.txt",
+        "target_count": 0,
+        "target_count_probabilities": {
+          "0": 0.09090909090909091,
+          "1": 0.09090909090909091,
+          "10": 0.09090909090909091,
+          "2": 0.09090909090909091,
+          "3": 0.09090909090909091,
+          "4": 0.09090909090909091,
+          "5": 0.09090909090909091,
+          "6": 0.09090909090909091,
+          "7": 0.09090909090909091,
+          "8": 0.09090909090909091,
+          "9": 0.09090909090909091
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "icons_counting_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+          "json_example": "{\"evidence\":[[322,152,377,207],[756,318,820,382]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+          "question_text": "How many icons in the Scene panel have the same color as the Reference icon?"
+        },
+        "task_family_key": "reference_scene_counting",
+        "task_family_variant_index": 0,
+        "task_key": "counting_query",
+        "task_variant_index": 2,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/counting/icons_counting_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:counting_query": 5,
+          "task_family:reference_scene_counting": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "icons_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[322,152,377,207],[756,318,820,382]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+              "question_text": "How many icons in the Scene panel have the same color as the Reference icon?"
+            },
+            "task_family_key": "reference_scene_counting",
+            "task_family_variant_index": 0,
+            "task_key": "counting_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/counting/icons_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:counting_query": 5,
+              "task_family:reference_scene_counting": 5
+            }
+          },
+          "prompt": "You are given an image with a Reference icon on the left and a Scene panel of icons on the right. Task: How many icons in the Scene panel have the same color as the Reference icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[322,152,377,207],[756,318,820,382]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "icons_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[322,152,377,207],[756,318,820,382]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+              "question_text": "How many icons in the Scene panel have the same color as the Reference icon?"
+            },
+            "task_family_key": "reference_scene_counting",
+            "task_family_variant_index": 0,
+            "task_key": "counting_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/counting/icons_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:counting_query": 5,
+              "task_family:reference_scene_counting": 5
+            }
+          },
+          "prompt": "You are given an image with a Reference icon on the left and a Scene panel of icons on the right. Task: How many icons in the Scene panel have the same color as the Reference icon?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "same_icon_color",
+      "template_id": "icons_counting_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching_scene_boxes": [],
+        "reference_icon": {
+          "bbox_xyxy": [
+            84,
+            236,
+            212,
+            340
+          ],
+          "icon_id": "gi-delapouite-sea-turtle",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 5613903091168043,
+          "panel": "reference",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            107,
+            190,
+            24
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        960,
+        544
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          960,
+          544
+        ],
+        "reference_content_xyxy": [
+          44,
+          77,
+          252,
+          500
+        ],
+        "reference_panel_xyxy": [
+          24,
+          24,
+          272,
+          520
+        ],
+        "scene_content_xyxy": [
+          316,
+          77,
+          916,
+          500
+        ],
+        "scene_panel_xyxy": [
+          296,
+          24,
+          936,
+          520
+        ]
+      },
+      "style": {
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 60.0,
+        "palette_size_max": 4,
+        "palette_size_min": 3,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "reference_icon_size_max_px": 136,
+        "reference_icon_size_min_px": 136,
+        "reference_icon_size_px": 136,
+        "sampled_palette_rgb": [
+          [
+            107,
+            190,
+            24
+          ],
+          [
+            201,
+            55,
+            165
+          ],
+          [
+            206,
+            156,
+            62
+          ],
+          [
+            29,
+            53,
+            220
+          ]
+        ],
+        "scene_icon_size_max_px": 96,
+        "scene_icon_size_min_px": 40,
+        "scene_max_overlap_fraction": 0.1,
+        "scene_placement_max_attempts": 120,
+        "scene_size_shrink_factor": 0.9,
+        "scene_size_shrink_rounds": 6
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_xyxy": [
+            84,
+            236,
+            212,
+            340
+          ],
+          "icon_id": "gi-delapouite-sea-turtle",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 5613903091168043,
+          "panel": "reference",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            107,
+            190,
+            24
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            703,
+            394,
+            788,
+            463
+          ],
+          "icon_id": "gi-delapouite-sea-turtle",
+          "index": 0,
+          "instance_id": "scene_icon_0",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 76.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "radius": 0.340675
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 1744569423817111,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            29,
+            53,
+            220
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            386,
+            331,
+            425,
+            363
+          ],
+          "icon_id": "gi-delapouite-sea-turtle",
+          "index": 1,
+          "instance_id": "scene_icon_1",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 81.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "scale": 0.87312
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 3141557915954078,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            201,
+            55,
+            165
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            584,
+            299,
+            625,
+            332
+          ],
+          "icon_id": "gi-delapouite-sea-turtle",
+          "index": 2,
+          "instance_id": "scene_icon_2",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 2017690145406045,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            201,
+            55,
+            165
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            597,
+            378,
+            652,
+            423
+          ],
+          "icon_id": "gi-delapouite-sea-turtle",
+          "index": 3,
+          "instance_id": "scene_icon_3",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 6109678846875481,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            206,
+            156,
+            62
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            570,
+            87,
+            622,
+            129
+          ],
+          "icon_id": "gi-delapouite-sea-turtle",
+          "index": 4,
+          "instance_id": "scene_icon_4",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 2140264698076311,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            206,
+            156,
+            62
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            628,
+            225,
+            674,
+            263
+          ],
+          "icon_id": "gi-delapouite-sea-turtle",
+          "index": 5,
+          "instance_id": "scene_icon_5",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.031109
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 5801010447632395,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            29,
+            53,
+            220
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            488,
+            130,
+            540,
+            172
+          ],
+          "icon_id": "gi-delapouite-sea-turtle",
+          "index": 6,
+          "instance_id": "scene_icon_6",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.037229
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 1831800027376755,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            201,
+            55,
+            165
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            834,
+            145,
+            903,
+            202
+          ],
+          "icon_id": "gi-delapouite-sea-turtle",
+          "index": 7,
+          "instance_id": "scene_icon_7",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.464335
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "alpha": 0.039179
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 462413962324705,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            29,
+            53,
+            220
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            725,
+            245,
+            783,
+            293
+          ],
+          "icon_id": "gi-delapouite-sea-turtle",
+          "index": 8,
+          "instance_id": "scene_icon_8",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 6052612460741534,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            201,
+            55,
+            165
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            765,
+            113,
+            834,
+            170
+          ],
+          "icon_id": "gi-delapouite-sea-turtle",
+          "index": 9,
+          "instance_id": "scene_icon_9",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.45414
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 863281401862400,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            206,
+            156,
+            62
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            960,
+            544
+          ],
+          "reference_content_xyxy": [
+            44,
+            77,
+            252,
+            500
+          ],
+          "reference_panel_xyxy": [
+            24,
+            24,
+            272,
+            520
+          ],
+          "scene_content_xyxy": [
+            316,
+            77,
+            916,
+            500
+          ],
+          "scene_panel_xyxy": [
+            296,
+            24,
+            936,
+            520
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "counting_target": "same_color_as_reference",
+        "matching_scene_indices": [],
+        "reference_icon_id": "gi-delapouite-sea-turtle",
+        "reference_tint_rgb": [
+          107,
+          190,
+          24
+        ]
+      },
+      "scene_kind": "icons_reference_counting_color"
+    },
+    "witness_symbolic": {
+      "matching_scene_indices": [],
+      "reference_tint_rgb": [
+        107,
+        190,
+        24
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

@@ -1,0 +1,995 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 9
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        829,
+        105,
+        899,
+        175
+      ],
+      [
+        702,
+        127,
+        776,
+        201
+      ],
+      [
+        373,
+        158,
+        425,
+        210
+      ],
+      [
+        568,
+        219,
+        644,
+        295
+      ],
+      [
+        387,
+        270,
+        444,
+        327
+      ],
+      [
+        775,
+        312,
+        825,
+        362
+      ],
+      [
+        630,
+        361,
+        708,
+        439
+      ],
+      [
+        385,
+        383,
+        465,
+        463
+      ],
+      [
+        762,
+        405,
+        837,
+        480
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_counting_orientation/images/default/0009.png"
+  },
+  "instance_seed": 8956923165946278,
+  "prompt": "Use the image containing a Reference icon on the left and a Scene panel of icons on the right. How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[334,150,410,226],[588,318,664,394],[756,318,832,394]],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the image containing a Reference icon on the left and a Scene panel of icons on the right. How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[334,150,410,226],[588,318,664,394],[756,318,832,394]],\"answer\":3}",
+    "answer_only": "Use the image containing a Reference icon on the left and a Scene panel of icons on the right. How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_icons_counting_orientation",
+  "task_variant": "same_orientation",
+  "trace_payload": {
+    "execution_trace": {
+      "base_icon_id": "gi-lorc-zigzag-leaf",
+      "distractor_count": 1,
+      "distractor_count_probabilities": {
+        "1": 0.1,
+        "10": 0.1,
+        "2": 0.1,
+        "3": 0.1,
+        "4": 0.1,
+        "5": 0.1,
+        "6": 0.1,
+        "7": 0.1,
+        "8": 0.1,
+        "9": 0.1
+      },
+      "matching_scene_indices": [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "object_count": 10,
+      "object_count_probabilities": {
+        "10": 0.1,
+        "11": 0.1,
+        "12": 0.1,
+        "13": 0.1,
+        "14": 0.1,
+        "15": 0.1,
+        "16": 0.1,
+        "17": 0.1,
+        "18": 0.1,
+        "19": 0.1
+      },
+      "question_format": "count_matching_scene_icons_by_reference",
+      "reference_rotation_degrees": 180,
+      "scene_rotations_degrees": [
+        180,
+        180,
+        90,
+        180,
+        180,
+        180,
+        180,
+        180,
+        180,
+        180
+      ],
+      "scene_variant": "reference_scene",
+      "target_count": 9,
+      "target_count_probabilities": {
+        "0": 0.09090909090909091,
+        "1": 0.09090909090909091,
+        "10": 0.09090909090909091,
+        "2": 0.09090909090909091,
+        "3": 0.09090909090909091,
+        "4": 0.09090909090909091,
+        "5": 0.09090909090909091,
+        "6": 0.09090909090909091,
+        "7": 0.09090909090909091,
+        "8": 0.09090909090909091,
+        "9": 0.09090909090909091
+      },
+      "task_variant": "same_orientation"
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          829,
+          105,
+          899,
+          175
+        ],
+        [
+          702,
+          127,
+          776,
+          201
+        ],
+        [
+          373,
+          158,
+          425,
+          210
+        ],
+        [
+          568,
+          219,
+          644,
+          295
+        ],
+        [
+          387,
+          270,
+          444,
+          327
+        ],
+        [
+          775,
+          312,
+          825,
+          362
+        ],
+        [
+          630,
+          361,
+          708,
+          439
+        ],
+        [
+          385,
+          383,
+          465,
+          463
+        ],
+        [
+          762,
+          405,
+          837,
+          480
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "distractor_count": 1,
+        "distractor_count_probabilities": {
+          "1": 0.1,
+          "10": 0.1,
+          "2": 0.1,
+          "3": 0.1,
+          "4": 0.1,
+          "5": 0.1,
+          "6": 0.1,
+          "7": 0.1,
+          "8": 0.1,
+          "9": 0.1
+        },
+        "object_count": 10,
+        "object_count_probabilities": {
+          "10": 0.1,
+          "11": 0.1,
+          "12": 0.1,
+          "13": 0.1,
+          "14": 0.1,
+          "15": 0.1,
+          "16": 0.1,
+          "17": 0.1,
+          "18": 0.1,
+          "19": 0.1
+        },
+        "pool_manifest": "non_symmetry.txt",
+        "rotation_candidates_degrees": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "target_count": 9,
+        "target_count_probabilities": {
+          "0": 0.09090909090909091,
+          "1": 0.09090909090909091,
+          "10": 0.09090909090909091,
+          "2": 0.09090909090909091,
+          "3": 0.09090909090909091,
+          "4": 0.09090909090909091,
+          "5": 0.09090909090909091,
+          "6": 0.09090909090909091,
+          "7": 0.09090909090909091,
+          "8": 0.09090909090909091,
+          "9": 0.09090909090909091
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "icons_counting_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+          "json_example": "{\"evidence\":[[334,150,410,226],[588,318,664,394],[756,318,832,394]],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+          "question_text": "How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation."
+        },
+        "task_family_key": "reference_scene_counting",
+        "task_family_variant_index": 3,
+        "task_key": "counting_query",
+        "task_variant_index": 0,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/counting/icons_counting_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:counting_query": 5,
+          "task_family:reference_scene_counting": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "icons_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[334,150,410,226],[588,318,664,394],[756,318,832,394]],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+              "question_text": "How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation."
+            },
+            "task_family_key": "reference_scene_counting",
+            "task_family_variant_index": 3,
+            "task_key": "counting_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/counting/icons_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:counting_query": 5,
+              "task_family:reference_scene_counting": 5
+            }
+          },
+          "prompt": "Use the image containing a Reference icon on the left and a Scene panel of icons on the right. How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[334,150,410,226],[588,318,664,394],[756,318,832,394]],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "icons_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[334,150,410,226],[588,318,664,394],[756,318,832,394]],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+              "question_text": "How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation."
+            },
+            "task_family_key": "reference_scene_counting",
+            "task_family_variant_index": 3,
+            "task_key": "counting_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/counting/icons_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:counting_query": 5,
+              "task_family:reference_scene_counting": 5
+            }
+          },
+          "prompt": "Use the image containing a Reference icon on the left and a Scene panel of icons on the right. How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "same_orientation",
+      "template_id": "icons_counting_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching_scene_boxes": [
+          [
+            829,
+            105,
+            899,
+            175
+          ],
+          [
+            702,
+            127,
+            776,
+            201
+          ],
+          [
+            373,
+            158,
+            425,
+            210
+          ],
+          [
+            568,
+            219,
+            644,
+            295
+          ],
+          [
+            387,
+            270,
+            444,
+            327
+          ],
+          [
+            775,
+            312,
+            825,
+            362
+          ],
+          [
+            630,
+            361,
+            708,
+            439
+          ],
+          [
+            385,
+            383,
+            465,
+            463
+          ],
+          [
+            762,
+            405,
+            837,
+            480
+          ]
+        ],
+        "reference_icon": {
+          "bbox_xyxy": [
+            85,
+            225,
+            210,
+            351
+          ],
+          "icon_id": "gi-lorc-zigzag-leaf",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 6722204157433765,
+          "panel": "reference",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            51,
+            153,
+            125
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        960,
+        544
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          960,
+          544
+        ],
+        "reference_content_xyxy": [
+          44,
+          77,
+          252,
+          500
+        ],
+        "reference_panel_xyxy": [
+          24,
+          24,
+          272,
+          520
+        ],
+        "scene_content_xyxy": [
+          316,
+          77,
+          916,
+          500
+        ],
+        "scene_panel_xyxy": [
+          296,
+          24,
+          936,
+          520
+        ]
+      },
+      "style": {
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "palette_size_max": 12,
+        "palette_size_min": 8,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "reference_icon_size_max_px": 136,
+        "reference_icon_size_min_px": 136,
+        "reference_icon_size_px": 136,
+        "sampled_palette_rgb": [
+          [
+            51,
+            153,
+            125
+          ],
+          [
+            209,
+            137,
+            106
+          ],
+          [
+            73,
+            173,
+            40
+          ],
+          [
+            126,
+            74,
+            184
+          ],
+          [
+            178,
+            172,
+            70
+          ],
+          [
+            215,
+            59,
+            116
+          ],
+          [
+            88,
+            86,
+            36
+          ],
+          [
+            41,
+            121,
+            201
+          ]
+        ],
+        "scene_icon_size_max_px": 96,
+        "scene_icon_size_min_px": 40,
+        "scene_max_overlap_fraction": 0.1,
+        "scene_placement_max_attempts": 120,
+        "scene_size_shrink_factor": 0.9,
+        "scene_size_shrink_rounds": 6
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_xyxy": [
+            85,
+            225,
+            210,
+            351
+          ],
+          "icon_id": "gi-lorc-zigzag-leaf",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 6722204157433765,
+          "panel": "reference",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            51,
+            153,
+            125
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            385,
+            383,
+            465,
+            463
+          ],
+          "icon_id": "gi-lorc-zigzag-leaf",
+          "index": 0,
+          "instance_id": "scene_icon_0",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.853904
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 3509542655896406,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            88,
+            86,
+            36
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            630,
+            361,
+            708,
+            439
+          ],
+          "icon_id": "gi-lorc-zigzag-leaf",
+          "index": 1,
+          "instance_id": "scene_icon_1",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 2574444835261889,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            215,
+            59,
+            116
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            664,
+            263,
+            727,
+            325
+          ],
+          "icon_id": "gi-lorc-zigzag-leaf",
+          "index": 2,
+          "instance_id": "scene_icon_2",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 74.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 8231030466865072,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            126,
+            74,
+            184
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            762,
+            405,
+            837,
+            480
+          ],
+          "icon_id": "gi-lorc-zigzag-leaf",
+          "index": 3,
+          "instance_id": "scene_icon_3",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.075666
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "scale": 0.890736
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 4041836290218157,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            88,
+            86,
+            36
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            568,
+            219,
+            644,
+            295
+          ],
+          "icon_id": "gi-lorc-zigzag-leaf",
+          "index": 4,
+          "instance_id": "scene_icon_4",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.053946
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "scale": 0.903318
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 8212294328799454,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            209,
+            137,
+            106
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            702,
+            127,
+            776,
+            201
+          ],
+          "icon_id": "gi-lorc-zigzag-leaf",
+          "index": 5,
+          "instance_id": "scene_icon_5",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 2678511870059826,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            51,
+            153,
+            125
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            775,
+            312,
+            825,
+            362
+          ],
+          "icon_id": "gi-lorc-zigzag-leaf",
+          "index": 6,
+          "instance_id": "scene_icon_6",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.889314
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "alpha": 0.049784
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 1283679926477721,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            209,
+            137,
+            106
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            373,
+            158,
+            425,
+            210
+          ],
+          "icon_id": "gi-lorc-zigzag-leaf",
+          "index": 7,
+          "instance_id": "scene_icon_7",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.859684
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 8066863244153552,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            73,
+            173,
+            40
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            829,
+            105,
+            899,
+            175
+          ],
+          "icon_id": "gi-lorc-zigzag-leaf",
+          "index": 8,
+          "instance_id": "scene_icon_8",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.878669
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "alpha": 0.0787
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 8957728261060657,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            73,
+            173,
+            40
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            387,
+            270,
+            444,
+            327
+          ],
+          "icon_id": "gi-lorc-zigzag-leaf",
+          "index": 9,
+          "instance_id": "scene_icon_9",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.306049
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 3415146332068317,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            88,
+            86,
+            36
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            960,
+            544
+          ],
+          "reference_content_xyxy": [
+            44,
+            77,
+            252,
+            500
+          ],
+          "reference_panel_xyxy": [
+            24,
+            24,
+            272,
+            520
+          ],
+          "scene_content_xyxy": [
+            316,
+            77,
+            916,
+            500
+          ],
+          "scene_panel_xyxy": [
+            296,
+            24,
+            936,
+            520
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "counting_target": "same_orientation_as_reference",
+        "matching_scene_indices": [
+          0,
+          1,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "reference_icon_id": "gi-lorc-zigzag-leaf",
+        "reference_rotation_degrees": 180
+      },
+      "scene_kind": "icons_reference_counting_orientation"
+    },
+    "witness_symbolic": {
+      "base_icon_id": "gi-lorc-zigzag-leaf",
+      "matching_scene_indices": [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "reference_rotation_degrees": 180
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

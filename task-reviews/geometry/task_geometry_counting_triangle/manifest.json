@@ -1,0 +1,21 @@
+{
+  "inspection_count": 150,
+  "task_id": "task_geometry_counting_triangle",
+  "variants": {
+    "acute_triangle": 25,
+    "equilateral_triangle": 25,
+    "isosceles_triangle": 25,
+    "obtuse_triangle": 25,
+    "right_triangle": 25,
+    "scalene_triangle": 25
+  },
+  "workbook": "geometry/task_geometry_counting_triangle/task_geometry_counting_triangle.xlsx",
+  "workbook_sheets": {
+    "acute_triangle": "acute_triangle",
+    "equilateral_triangle": "equilateral_triangle",
+    "isosceles_triangle": "isosceles_triangle",
+    "obtuse_triangle": "obtuse_triangle",
+    "right_triangle": "right_triangle",
+    "scalene_triangle": "scalene_triangle"
+  }
+}

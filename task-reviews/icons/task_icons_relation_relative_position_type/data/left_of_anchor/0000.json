@@ -1,0 +1,956 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 3
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        490,
+        144,
+        556,
+        192
+      ],
+      [
+        392,
+        178,
+        439,
+        213
+      ],
+      [
+        454,
+        420,
+        518,
+        467
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_relation_relative_position_type/images/left_of_anchor/0000.png"
+  },
+  "instance_seed": 3247653441607740,
+  "prompt": "Use the image containing a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor. Task: How many icons in the Scene panel have the same icon type as the Reference icon and are to the left of the Anchor icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[438,162,498,222],[602,302,670,370]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the image containing a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor. Task: How many icons in the Scene panel have the same icon type as the Reference icon and are to the left of the Anchor icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[438,162,498,222],[602,302,670,370]],\"answer\":2}",
+    "answer_only": "Use the image containing a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor. Task: How many icons in the Scene panel have the same icon type as the Reference icon and are to the left of the Anchor icon?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_icons_relation_relative_position_type",
+  "task_variant": "left_of_anchor",
+  "trace_payload": {
+    "execution_trace": {
+      "anchor_icon_id": "gi-lorc-aerodynamic-harpoon",
+      "different_type_distractor_count": 5,
+      "different_type_nonspatial_distractor_count": 2,
+      "different_type_spatial_distractor_count": 3,
+      "distractor_count": 7,
+      "distractor_count_probabilities": {
+        "10": 0.14285714285714285,
+        "4": 0.14285714285714285,
+        "5": 0.14285714285714285,
+        "6": 0.14285714285714285,
+        "7": 0.14285714285714285,
+        "8": 0.14285714285714285,
+        "9": 0.14285714285714285
+      },
+      "distractor_margin_over_target": 1,
+      "matching_scene_indices": [
+        2,
+        3,
+        5
+      ],
+      "object_count": 10,
+      "object_count_probabilities": {
+        "10": 0.14285714285714285,
+        "11": 0.14285714285714285,
+        "12": 0.14285714285714285,
+        "13": 0.14285714285714285,
+        "7": 0.14285714285714285,
+        "8": 0.14285714285714285,
+        "9": 0.14285714285714285
+      },
+      "question_format": "count_matching_scene_icons_by_reference_and_anchor_relation",
+      "reference_icon_id": "gi-caro-asercion-goblin",
+      "same_type_distractor_count": 2,
+      "same_type_nonspatial_distractor_count": 2,
+      "scene_icon_ids": [
+        "gi-delapouite-starfighter",
+        "gi-delapouite-caveman",
+        "gi-caro-asercion-goblin",
+        "gi-caro-asercion-goblin",
+        "gi-caro-asercion-goblin",
+        "gi-caro-asercion-goblin",
+        "gi-sbed-expander",
+        "hero-outline-paper-airplane",
+        "gi-lorc-magic-portal",
+        "gi-caro-asercion-goblin"
+      ],
+      "scene_variant": "reference_scene_anchor",
+      "spatial_relation": "left_of_anchor",
+      "target_count": 3,
+      "target_count_probabilities": {
+        "0": 0.16666666666666666,
+        "1": 0.16666666666666666,
+        "2": 0.16666666666666666,
+        "3": 0.16666666666666666,
+        "4": 0.16666666666666666,
+        "5": 0.16666666666666666
+      },
+      "task_variant": "left_of_anchor",
+      "variant_probabilities": {
+        "above_anchor": 0.25,
+        "below_anchor": 0.25,
+        "left_of_anchor": 0.25,
+        "right_of_anchor": 0.25
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          490,
+          144,
+          556,
+          192
+        ],
+        [
+          392,
+          178,
+          439,
+          213
+        ],
+        [
+          454,
+          420,
+          518,
+          467
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "anchor_gap_px_directional": 8,
+        "distractor_count": 7,
+        "distractor_count_probabilities": {
+          "10": 0.14285714285714285,
+          "4": 0.14285714285714285,
+          "5": 0.14285714285714285,
+          "6": 0.14285714285714285,
+          "7": 0.14285714285714285,
+          "8": 0.14285714285714285,
+          "9": 0.14285714285714285
+        },
+        "distractor_margin_over_target": 1,
+        "object_count": 10,
+        "object_count_probabilities": {
+          "10": 0.14285714285714285,
+          "11": 0.14285714285714285,
+          "12": 0.14285714285714285,
+          "13": 0.14285714285714285,
+          "7": 0.14285714285714285,
+          "8": 0.14285714285714285,
+          "9": 0.14285714285714285
+        },
+        "pool_manifest": "all_icons.txt",
+        "same_type_distractor_opposite_fraction_min": 0.75,
+        "target_count": 3,
+        "target_count_probabilities": {
+          "0": 0.16666666666666666,
+          "1": 0.16666666666666666,
+          "2": 0.16666666666666666,
+          "3": 0.16666666666666666,
+          "4": 0.16666666666666666,
+          "5": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "icons_relation_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+          "json_example": "{\"evidence\":[[438,162,498,222],[602,302,670,370]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor",
+          "question_text": "How many icons in the Scene panel have the same icon type as the Reference icon and are to the left of the Anchor icon?"
+        },
+        "task_family_key": "reference_scene_anchor_relation",
+        "task_family_variant_index": 3,
+        "task_key": "relation_query",
+        "task_variant_index": 2,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/relation/icons_relation_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:relation_query": 5,
+          "task_family:reference_scene_anchor_relation": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "icons_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[438,162,498,222],[602,302,670,370]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor",
+              "question_text": "How many icons in the Scene panel have the same icon type as the Reference icon and are to the left of the Anchor icon?"
+            },
+            "task_family_key": "reference_scene_anchor_relation",
+            "task_family_variant_index": 3,
+            "task_key": "relation_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/relation/icons_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:relation_query": 5,
+              "task_family:reference_scene_anchor_relation": 5
+            }
+          },
+          "prompt": "Use the image containing a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor. Task: How many icons in the Scene panel have the same icon type as the Reference icon and are to the left of the Anchor icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[438,162,498,222],[602,302,670,370]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "icons_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[438,162,498,222],[602,302,670,370]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor",
+              "question_text": "How many icons in the Scene panel have the same icon type as the Reference icon and are to the left of the Anchor icon?"
+            },
+            "task_family_key": "reference_scene_anchor_relation",
+            "task_family_variant_index": 3,
+            "task_key": "relation_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/relation/icons_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:relation_query": 5,
+              "task_family:reference_scene_anchor_relation": 5
+            }
+          },
+          "prompt": "Use the image containing a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor. Task: How many icons in the Scene panel have the same icon type as the Reference icon and are to the left of the Anchor icon?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "left_of_anchor",
+      "template_id": "icons_relation_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "anchor_icon": {
+          "bbox_xyxy": [
+            584,
+            199,
+            636,
+            251
+          ],
+          "highlight_bbox_xyxy": [
+            574,
+            189,
+            646,
+            261
+          ],
+          "icon_id": "gi-lorc-aerodynamic-harpoon",
+          "instance_id": "anchor_icon",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 8138112621048822,
+          "panel": "scene",
+          "role": "anchor",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            207,
+            131,
+            200
+          ]
+        },
+        "matching_scene_boxes": [
+          [
+            490,
+            144,
+            556,
+            192
+          ],
+          [
+            392,
+            178,
+            439,
+            213
+          ],
+          [
+            454,
+            420,
+            518,
+            467
+          ]
+        ],
+        "reference_icon": {
+          "bbox_xyxy": [
+            85,
+            242,
+            211,
+            334
+          ],
+          "icon_id": "gi-caro-asercion-goblin",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 8862513325708069,
+          "panel": "reference",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            208,
+            206,
+            73
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        960,
+        544
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          960,
+          544
+        ],
+        "reference_content_xyxy": [
+          44,
+          77,
+          252,
+          500
+        ],
+        "reference_panel_xyxy": [
+          24,
+          24,
+          272,
+          520
+        ],
+        "scene_content_xyxy": [
+          316,
+          77,
+          916,
+          500
+        ],
+        "scene_panel_xyxy": [
+          296,
+          24,
+          936,
+          520
+        ]
+      },
+      "style": {
+        "anchor_gap_px_directional": 8,
+        "anchor_highlight_padding_px": 10,
+        "anchor_highlight_radius_px": 14,
+        "anchor_label_color_rgb": [
+          57,
+          87,
+          145
+        ],
+        "anchor_label_font_size_px": 20,
+        "anchor_opposite_area_ratio_min": 0.25,
+        "anchor_outline_rgb": [
+          74,
+          113,
+          188
+        ],
+        "anchor_target_area_ratio_max": 0.65,
+        "anchor_target_area_ratio_min": 0.35,
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "palette_size_max": 12,
+        "palette_size_min": 8,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "same_type_distractor_opposite_fraction_min": 0.75,
+        "sampled_palette_rgb": [
+          [
+            208,
+            206,
+            73
+          ],
+          [
+            212,
+            141,
+            117
+          ],
+          [
+            82,
+            141,
+            60
+          ],
+          [
+            212,
+            69,
+            215
+          ],
+          [
+            175,
+            27,
+            90
+          ],
+          [
+            45,
+            217,
+            60
+          ],
+          [
+            213,
+            70,
+            38
+          ],
+          [
+            67,
+            71,
+            191
+          ],
+          [
+            207,
+            131,
+            200
+          ]
+        ],
+        "scene_max_overlap_fraction": 0.05,
+        "scene_placement_max_attempts": 120,
+        "scene_size_shrink_factor": 0.9,
+        "scene_size_shrink_rounds": 6
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_xyxy": [
+            85,
+            242,
+            211,
+            334
+          ],
+          "icon_id": "gi-caro-asercion-goblin",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 8862513325708069,
+          "panel": "reference",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            208,
+            206,
+            73
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            584,
+            199,
+            636,
+            251
+          ],
+          "highlight_bbox_xyxy": [
+            574,
+            189,
+            646,
+            261
+          ],
+          "icon_id": "gi-lorc-aerodynamic-harpoon",
+          "instance_id": "anchor_icon",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 8138112621048822,
+          "panel": "scene",
+          "role": "anchor",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            207,
+            131,
+            200
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            373,
+            412,
+            426,
+            463
+          ],
+          "icon_id": "gi-delapouite-starfighter",
+          "index": 0,
+          "instance_id": "scene_icon_0",
+          "is_match": false,
+          "is_same_type": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 73.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "radius": 0.402456
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 8817622765295565,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": true,
+          "tint_rgb": [
+            207,
+            131,
+            200
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            615,
+            325,
+            687,
+            397
+          ],
+          "icon_id": "gi-delapouite-caveman",
+          "index": 1,
+          "instance_id": "scene_icon_1",
+          "is_match": false,
+          "is_same_type": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 3454708059499969,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": false,
+          "tint_rgb": [
+            208,
+            206,
+            73
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            454,
+            420,
+            518,
+            467
+          ],
+          "icon_id": "gi-caro-asercion-goblin",
+          "index": 2,
+          "instance_id": "scene_icon_2",
+          "is_match": true,
+          "is_same_type": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.938205
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "quality": 89.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 2515509082497941,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": true,
+          "tint_rgb": [
+            67,
+            71,
+            191
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            490,
+            144,
+            556,
+            192
+          ],
+          "icon_id": "gi-caro-asercion-goblin",
+          "index": 3,
+          "instance_id": "scene_icon_3",
+          "is_match": true,
+          "is_same_type": true,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 560920377808496,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": true,
+          "tint_rgb": [
+            212,
+            141,
+            117
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            586,
+            395,
+            650,
+            442
+          ],
+          "icon_id": "gi-caro-asercion-goblin",
+          "index": 4,
+          "instance_id": "scene_icon_4",
+          "is_match": false,
+          "is_same_type": true,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 4647188932798728,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": false,
+          "tint_rgb": [
+            207,
+            131,
+            200
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            392,
+            178,
+            439,
+            213
+          ],
+          "icon_id": "gi-caro-asercion-goblin",
+          "index": 5,
+          "instance_id": "scene_icon_5",
+          "is_match": true,
+          "is_same_type": true,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 3509371303425951,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": true,
+          "tint_rgb": [
+            213,
+            70,
+            38
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            518,
+            230,
+            589,
+            301
+          ],
+          "icon_id": "gi-sbed-expander",
+          "index": 6,
+          "instance_id": "scene_icon_6",
+          "is_match": false,
+          "is_same_type": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.055602
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "radius": 0.315216
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 5661332667564047,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": false,
+          "tint_rgb": [
+            82,
+            141,
+            60
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            342,
+            174,
+            388,
+            218
+          ],
+          "icon_id": "hero-outline-paper-airplane",
+          "index": 7,
+          "instance_id": "scene_icon_7",
+          "is_match": false,
+          "is_same_type": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.93592
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 8907889036467657,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": true,
+          "tint_rgb": [
+            175,
+            27,
+            90
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            438,
+            300,
+            522,
+            386
+          ],
+          "icon_id": "gi-lorc-magic-portal",
+          "index": 8,
+          "instance_id": "scene_icon_8",
+          "is_match": false,
+          "is_same_type": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.907759
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "radius": 0.295566
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 8149290211433556,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": true,
+          "tint_rgb": [
+            208,
+            206,
+            73
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            795,
+            353,
+            840,
+            387
+          ],
+          "icon_id": "gi-caro-asercion-goblin",
+          "index": 9,
+          "instance_id": "scene_icon_9",
+          "is_match": false,
+          "is_same_type": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.900666
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "radius": 0.550199
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 7536746624766124,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": false,
+          "tint_rgb": [
+            213,
+            70,
+            38
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            960,
+            544
+          ],
+          "reference_content_xyxy": [
+            44,
+            77,
+            252,
+            500
+          ],
+          "reference_panel_xyxy": [
+            24,
+            24,
+            272,
+            520
+          ],
+          "scene_content_xyxy": [
+            316,
+            77,
+            916,
+            500
+          ],
+          "scene_panel_xyxy": [
+            296,
+            24,
+            936,
+            520
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "anchor_icon_id": "gi-lorc-aerodynamic-harpoon",
+        "counting_target": "same_icon_type_and_directional_relation_to_anchor",
+        "different_type_nonspatial_distractor_count": 2,
+        "different_type_spatial_distractor_count": 3,
+        "matching_scene_indices": [
+          2,
+          3,
+          5
+        ],
+        "reference_icon_id": "gi-caro-asercion-goblin",
+        "same_type_nonspatial_distractor_count": 2,
+        "spatial_relation": "left_of_anchor"
+      },
+      "scene_kind": "icons_reference_anchor_relation_type"
+    },
+    "witness_symbolic": {
+      "anchor_icon_id": "gi-lorc-aerodynamic-harpoon",
+      "matching_scene_indices": [
+        2,
+        3,
+        5
+      ],
+      "reference_icon_id": "gi-caro-asercion-goblin",
+      "spatial_relation": "left_of_anchor"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

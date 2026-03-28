@@ -1,0 +1,1579 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 3
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "D",
+      "F",
+      "G"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_relation_occlusion_order/images/default/0015.png"
+  },
+  "instance_seed": 1474695743266586,
+  "prompt": "The image shows a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right. How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right. How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+    "answer_only": "The image shows a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right. How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_icons_relation_occlusion_order",
+  "task_variant": "same_front_to_back_order",
+  "trace_payload": {
+    "execution_trace": {
+      "cell_labels": [
+        "E",
+        "D",
+        "A",
+        "G",
+        "B",
+        "I",
+        "H",
+        "F",
+        "C"
+      ],
+      "cell_order_ids": [
+        "b_over_a",
+        "a_over_b",
+        "b_over_a",
+        "a_over_b",
+        "b_over_a",
+        "b_over_a",
+        "b_over_a",
+        "a_over_b",
+        "b_over_a"
+      ],
+      "distractor_count": 6,
+      "distractor_count_probabilities": {
+        "1": 0.16666666666666666,
+        "2": 0.16666666666666666,
+        "3": 0.16666666666666666,
+        "4": 0.16666666666666666,
+        "5": 0.16666666666666666,
+        "6": 0.16666666666666666
+      },
+      "icon_a_id": "gi-delapouite-toucan",
+      "icon_b_id": "gi-lorc-pumpkin-lantern",
+      "matching_cell_labels": [
+        "D",
+        "F",
+        "G"
+      ],
+      "object_count": 9,
+      "object_count_probabilities": {
+        "4": 0.16666666666666666,
+        "5": 0.16666666666666666,
+        "6": 0.16666666666666666,
+        "7": 0.16666666666666666,
+        "8": 0.16666666666666666,
+        "9": 0.16666666666666666
+      },
+      "question_format": "count_scene_cells_matching_reference_occlusion_order",
+      "reference_order_id": "a_over_b",
+      "scene_variant": "reference_overlap_grid",
+      "target_count": 3,
+      "target_count_probabilities": {
+        "0": 0.14285714285714285,
+        "1": 0.14285714285714285,
+        "2": 0.14285714285714285,
+        "3": 0.14285714285714285,
+        "4": 0.14285714285714285,
+        "5": 0.14285714285714285,
+        "6": 0.14285714285714285
+      },
+      "task_variant": "same_front_to_back_order"
+    },
+    "projected_evidence": {
+      "label_set": [
+        "D",
+        "F",
+        "G"
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "distractor_count": 6,
+        "distractor_count_probabilities": {
+          "1": 0.16666666666666666,
+          "2": 0.16666666666666666,
+          "3": 0.16666666666666666,
+          "4": 0.16666666666666666,
+          "5": 0.16666666666666666,
+          "6": 0.16666666666666666
+        },
+        "object_count": 9,
+        "object_count_probabilities": {
+          "4": 0.16666666666666666,
+          "5": 0.16666666666666666,
+          "6": 0.16666666666666666,
+          "7": 0.16666666666666666,
+          "8": 0.16666666666666666,
+          "9": 0.16666666666666666
+        },
+        "pool_manifest": "all_icons.txt",
+        "target_count": 3,
+        "target_count_probabilities": {
+          "0": 0.14285714285714285,
+          "1": 0.14285714285714285,
+          "2": 0.14285714285714285,
+          "3": 0.14285714285714285,
+          "4": 0.14285714285714285,
+          "5": 0.14285714285714285,
+          "6": 0.14285714285714285
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "icons_relation_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+          "json_example": "{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right",
+          "question_text": "How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top."
+        },
+        "task_family_key": "reference_grid_occlusion_relation",
+        "task_family_variant_index": 1,
+        "task_key": "relation_query",
+        "task_variant_index": 0,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/relation/icons_relation_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:relation_query": 5,
+          "task_family:reference_grid_occlusion_relation": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "icons_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+              "json_example": "{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right",
+              "question_text": "How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top."
+            },
+            "task_family_key": "reference_grid_occlusion_relation",
+            "task_family_variant_index": 1,
+            "task_key": "relation_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/relation/icons_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:relation_query": 5,
+              "task_family:reference_grid_occlusion_relation": 5
+            }
+          },
+          "prompt": "The image shows a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right. How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "icons_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+              "json_example": "{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right",
+              "question_text": "How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top."
+            },
+            "task_family_key": "reference_grid_occlusion_relation",
+            "task_family_variant_index": 1,
+            "task_key": "relation_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/relation/icons_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:relation_query": 5,
+              "task_family:reference_grid_occlusion_relation": 5
+            }
+          },
+          "prompt": "The image shows a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right. How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "same_front_to_back_order",
+      "template_id": "icons_relation_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching_cell_labels": [
+          "D",
+          "F",
+          "G"
+        ],
+        "reference_pair": {
+          "front_role": "a",
+          "icon_a_bbox_xyxy": [
+            107,
+            264,
+            209,
+            350
+          ],
+          "icon_a_id": "gi-delapouite-toucan",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "radius": 0.375039
+              },
+              "type": "blur"
+            }
+          ],
+          "icon_a_noise_seed": 5052162866540985,
+          "icon_a_tint_rgb": [
+            192,
+            106,
+            216
+          ],
+          "icon_b_bbox_xyxy": [
+            135,
+            307,
+            236,
+            409
+          ],
+          "icon_b_id": "gi-lorc-pumpkin-lantern",
+          "icon_b_noise_edits": [
+            {
+              "params": {
+                "quality": 71.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "scale": 0.865492
+              },
+              "type": "downsample"
+            }
+          ],
+          "icon_b_noise_seed": 5687283052229802,
+          "icon_b_tint_rgb": [
+            207,
+            123,
+            43
+          ],
+          "order_id": "a_over_b",
+          "overlap_ratio": 0.454017082159901,
+          "panel": "reference"
+        },
+        "scene_cells": [
+          {
+            "cell_bbox_xyxy": [
+              374,
+              87,
+              528,
+              240
+            ],
+            "front_role": "b",
+            "icon_a_bbox_xyxy": [
+              425,
+              132,
+              496,
+              192
+            ],
+            "icon_a_id": "gi-delapouite-toucan",
+            "icon_a_noise_edits": [
+              {
+                "params": {
+                  "scale": 0.872217
+                },
+                "type": "downsample"
+              },
+              {
+                "params": {
+                  "alpha": 0.05943
+                },
+                "type": "noise"
+              }
+            ],
+            "icon_a_noise_seed": 2728264471178586,
+            "icon_a_tint_rgb": [
+              210,
+              218,
+              126
+            ],
+            "icon_b_bbox_xyxy": [
+              405,
+              154,
+              475,
+              225
+            ],
+            "icon_b_id": "gi-lorc-pumpkin-lantern",
+            "icon_b_noise_edits": [
+              {
+                "params": {
+                  "radius": 0.305725
+                },
+                "type": "blur"
+              },
+              {
+                "params": {
+                  "quality": 84.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "icon_b_noise_seed": 1971997535368376,
+            "icon_b_tint_rgb": [
+              192,
+              106,
+              216
+            ],
+            "index": 0,
+            "is_match": false,
+            "label": "E",
+            "order_id": "b_over_a",
+            "overlap_ratio": 0.5213893133032507,
+            "panel": "scene"
+          },
+          {
+            "cell_bbox_xyxy": [
+              548,
+              87,
+              702,
+              240
+            ],
+            "front_role": "a",
+            "icon_a_bbox_xyxy": [
+              595,
+              131,
+              663,
+              189
+            ],
+            "icon_a_id": "gi-delapouite-toucan",
+            "icon_a_noise_edits": [],
+            "icon_a_noise_seed": 541996933788268,
+            "icon_a_tint_rgb": [
+              192,
+              106,
+              216
+            ],
+            "icon_b_bbox_xyxy": [
+              586,
+              158,
+              652,
+              225
+            ],
+            "icon_b_id": "gi-lorc-pumpkin-lantern",
+            "icon_b_noise_edits": [
+              {
+                "params": {
+                  "scale": 0.909069
+                },
+                "type": "downsample"
+              }
+            ],
+            "icon_b_noise_seed": 7736663648875851,
+            "icon_b_tint_rgb": [
+              207,
+              123,
+              43
+            ],
+            "index": 1,
+            "is_match": true,
+            "label": "D",
+            "order_id": "a_over_b",
+            "overlap_ratio": 0.5500396257377067,
+            "panel": "scene"
+          },
+          {
+            "cell_bbox_xyxy": [
+              722,
+              87,
+              876,
+              240
+            ],
+            "front_role": "b",
+            "icon_a_bbox_xyxy": [
+              743,
+              132,
+              820,
+              197
+            ],
+            "icon_a_id": "gi-delapouite-toucan",
+            "icon_a_noise_edits": [],
+            "icon_a_noise_seed": 470780836236992,
+            "icon_a_tint_rgb": [
+              47,
+              208,
+              177
+            ],
+            "icon_b_bbox_xyxy": [
+              779,
+              147,
+              855,
+              224
+            ],
+            "icon_b_id": "gi-lorc-pumpkin-lantern",
+            "icon_b_noise_edits": [
+              {
+                "params": {
+                  "quality": 77.0
+                },
+                "type": "jpeg"
+              },
+              {
+                "params": {
+                  "scale": 0.865638
+                },
+                "type": "downsample"
+              }
+            ],
+            "icon_b_noise_seed": 1454887713247858,
+            "icon_b_tint_rgb": [
+              51,
+              45,
+              212
+            ],
+            "index": 2,
+            "is_match": false,
+            "label": "A",
+            "order_id": "b_over_a",
+            "overlap_ratio": 0.46070381942835886,
+            "panel": "scene"
+          },
+          {
+            "cell_bbox_xyxy": [
+              896,
+              87,
+              1050,
+              240
+            ],
+            "front_role": "a",
+            "icon_a_bbox_xyxy": [
+              947,
+              159,
+              1018,
+              220
+            ],
+            "icon_a_id": "gi-delapouite-toucan",
+            "icon_a_noise_edits": [],
+            "icon_a_noise_seed": 8897852556332629,
+            "icon_a_tint_rgb": [
+              57,
+              155,
+              38
+            ],
+            "icon_b_bbox_xyxy": [
+              927,
+              137,
+              998,
+              209
+            ],
+            "icon_b_id": "gi-lorc-pumpkin-lantern",
+            "icon_b_noise_edits": [],
+            "icon_b_noise_seed": 7910506334483089,
+            "icon_b_tint_rgb": [
+              133,
+              25,
+              59
+            ],
+            "index": 3,
+            "is_match": true,
+            "label": "G",
+            "order_id": "a_over_b",
+            "overlap_ratio": 0.52812263672846,
+            "panel": "scene"
+          },
+          {
+            "cell_bbox_xyxy": [
+              374,
+              260,
+              528,
+              413
+            ],
+            "front_role": "b",
+            "icon_a_bbox_xyxy": [
+              390,
+              305,
+              475,
+              376
+            ],
+            "icon_a_id": "gi-delapouite-toucan",
+            "icon_a_noise_edits": [],
+            "icon_a_noise_seed": 3205127892164196,
+            "icon_a_tint_rgb": [
+              207,
+              123,
+              43
+            ],
+            "icon_b_bbox_xyxy": [
+              428,
+              313,
+              512,
+              398
+            ],
+            "icon_b_id": "gi-lorc-pumpkin-lantern",
+            "icon_b_noise_edits": [],
+            "icon_b_noise_seed": 5633521689294049,
+            "icon_b_tint_rgb": [
+              192,
+              106,
+              216
+            ],
+            "index": 4,
+            "is_match": false,
+            "label": "B",
+            "order_id": "b_over_a",
+            "overlap_ratio": 0.5273389563572923,
+            "panel": "scene"
+          },
+          {
+            "cell_bbox_xyxy": [
+              548,
+              260,
+              702,
+              413
+            ],
+            "front_role": "b",
+            "icon_a_bbox_xyxy": [
+              599,
+              304,
+              666,
+              361
+            ],
+            "icon_a_id": "gi-delapouite-toucan",
+            "icon_a_noise_edits": [
+              {
+                "params": {
+                  "alpha": 0.060298
+                },
+                "type": "noise"
+              },
+              {
+                "params": {
+                  "quality": 77.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "icon_a_noise_seed": 6221015774761107,
+            "icon_a_tint_rgb": [
+              192,
+              106,
+              216
+            ],
+            "icon_b_bbox_xyxy": [
+              584,
+              332,
+              649,
+              399
+            ],
+            "icon_b_id": "gi-lorc-pumpkin-lantern",
+            "icon_b_noise_edits": [
+              {
+                "params": {
+                  "quality": 90.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "icon_b_noise_seed": 6108049808058308,
+            "icon_b_tint_rgb": [
+              57,
+              155,
+              38
+            ],
+            "index": 5,
+            "is_match": false,
+            "label": "I",
+            "order_id": "b_over_a",
+            "overlap_ratio": 0.4780666233274993,
+            "panel": "scene"
+          },
+          {
+            "cell_bbox_xyxy": [
+              722,
+              260,
+              876,
+              413
+            ],
+            "front_role": "b",
+            "icon_a_bbox_xyxy": [
+              772,
+              305,
+              848,
+              369
+            ],
+            "icon_a_id": "gi-delapouite-toucan",
+            "icon_a_noise_edits": [
+              {
+                "params": {
+                  "radius": 0.322575
+                },
+                "type": "blur"
+              }
+            ],
+            "icon_a_noise_seed": 6981105733322481,
+            "icon_a_tint_rgb": [
+              47,
+              208,
+              177
+            ],
+            "icon_b_bbox_xyxy": [
+              750,
+              322,
+              826,
+              398
+            ],
+            "icon_b_id": "gi-lorc-pumpkin-lantern",
+            "icon_b_noise_edits": [
+              {
+                "params": {
+                  "quality": 90.0
+                },
+                "type": "jpeg"
+              },
+              {
+                "params": {
+                  "scale": 0.902602
+                },
+                "type": "downsample"
+              }
+            ],
+            "icon_b_noise_seed": 7802721917477330,
+            "icon_b_tint_rgb": [
+              133,
+              25,
+              59
+            ],
+            "index": 6,
+            "is_match": false,
+            "label": "H",
+            "order_id": "b_over_a",
+            "overlap_ratio": 0.5809908710107726,
+            "panel": "scene"
+          },
+          {
+            "cell_bbox_xyxy": [
+              896,
+              260,
+              1050,
+              413
+            ],
+            "front_role": "a",
+            "icon_a_bbox_xyxy": [
+              934,
+              305,
+              1003,
+              362
+            ],
+            "icon_a_id": "gi-delapouite-toucan",
+            "icon_a_noise_edits": [
+              {
+                "params": {
+                  "radius": 0.240065
+                },
+                "type": "blur"
+              }
+            ],
+            "icon_a_noise_seed": 3406824523670333,
+            "icon_a_tint_rgb": [
+              207,
+              123,
+              43
+            ],
+            "icon_b_bbox_xyxy": [
+              945,
+              330,
+              1012,
+              398
+            ],
+            "icon_b_id": "gi-lorc-pumpkin-lantern",
+            "icon_b_noise_edits": [],
+            "icon_b_noise_seed": 4974494795537377,
+            "icon_b_tint_rgb": [
+              47,
+              208,
+              177
+            ],
+            "index": 7,
+            "is_match": true,
+            "label": "F",
+            "order_id": "a_over_b",
+            "overlap_ratio": 0.5580171324113871,
+            "panel": "scene"
+          },
+          {
+            "cell_bbox_xyxy": [
+              374,
+              433,
+              528,
+              586
+            ],
+            "front_role": "b",
+            "icon_a_bbox_xyxy": [
+              424,
+              504,
+              496,
+              566
+            ],
+            "icon_a_id": "gi-delapouite-toucan",
+            "icon_a_noise_edits": [
+              {
+                "params": {
+                  "scale": 0.940555
+                },
+                "type": "downsample"
+              }
+            ],
+            "icon_a_noise_seed": 5204365498603127,
+            "icon_a_tint_rgb": [
+              51,
+              45,
+              212
+            ],
+            "icon_b_bbox_xyxy": [
+              406,
+              483,
+              478,
+              556
+            ],
+            "icon_b_id": "gi-lorc-pumpkin-lantern",
+            "icon_b_noise_edits": [
+              {
+                "params": {
+                  "radius": 0.381539
+                },
+                "type": "blur"
+              },
+              {
+                "params": {
+                  "quality": 90.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "icon_b_noise_seed": 8714985105982807,
+            "icon_b_tint_rgb": [
+              133,
+              25,
+              59
+            ],
+            "index": 8,
+            "is_match": false,
+            "label": "C",
+            "order_id": "b_over_a",
+            "overlap_ratio": 0.5659569996480222,
+            "panel": "scene"
+          }
+        ]
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        1104,
+        640
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          1104,
+          640
+        ],
+        "reference_content_xyxy": [
+          44,
+          77,
+          300,
+          596
+        ],
+        "reference_panel_xyxy": [
+          24,
+          24,
+          320,
+          616
+        ],
+        "scene_content_xyxy": [
+          364,
+          77,
+          1060,
+          596
+        ],
+        "scene_panel_xyxy": [
+          344,
+          24,
+          1080,
+          616
+        ]
+      },
+      "style": {
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "cell_border_rgb": [
+          218,
+          223,
+          233
+        ],
+        "cell_label_color_rgb": [
+          52,
+          60,
+          77
+        ],
+        "cell_label_font_size_px": 22,
+        "cell_padding_px": 10,
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "overlap_ratio_range": [
+          0.4,
+          0.6
+        ],
+        "pair_min_color_distance": 80.0,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "sampled_palette_rgb": [
+          [
+            51,
+            45,
+            212
+          ],
+          [
+            133,
+            25,
+            59
+          ],
+          [
+            192,
+            106,
+            216
+          ],
+          [
+            47,
+            208,
+            177
+          ],
+          [
+            57,
+            155,
+            38
+          ],
+          [
+            210,
+            218,
+            126
+          ],
+          [
+            207,
+            123,
+            43
+          ],
+          [
+            49,
+            132,
+            211
+          ]
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "front_role": "a",
+          "icon_a_bbox_xyxy": [
+            107,
+            264,
+            209,
+            350
+          ],
+          "icon_a_id": "gi-delapouite-toucan",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "radius": 0.375039
+              },
+              "type": "blur"
+            }
+          ],
+          "icon_a_noise_seed": 5052162866540985,
+          "icon_a_tint_rgb": [
+            192,
+            106,
+            216
+          ],
+          "icon_b_bbox_xyxy": [
+            135,
+            307,
+            236,
+            409
+          ],
+          "icon_b_id": "gi-lorc-pumpkin-lantern",
+          "icon_b_noise_edits": [
+            {
+              "params": {
+                "quality": 71.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "scale": 0.865492
+              },
+              "type": "downsample"
+            }
+          ],
+          "icon_b_noise_seed": 5687283052229802,
+          "icon_b_tint_rgb": [
+            207,
+            123,
+            43
+          ],
+          "order_id": "a_over_b",
+          "overlap_ratio": 0.454017082159901,
+          "panel": "reference"
+        },
+        {
+          "cell_bbox_xyxy": [
+            374,
+            87,
+            528,
+            240
+          ],
+          "front_role": "b",
+          "icon_a_bbox_xyxy": [
+            425,
+            132,
+            496,
+            192
+          ],
+          "icon_a_id": "gi-delapouite-toucan",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "scale": 0.872217
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "alpha": 0.05943
+              },
+              "type": "noise"
+            }
+          ],
+          "icon_a_noise_seed": 2728264471178586,
+          "icon_a_tint_rgb": [
+            210,
+            218,
+            126
+          ],
+          "icon_b_bbox_xyxy": [
+            405,
+            154,
+            475,
+            225
+          ],
+          "icon_b_id": "gi-lorc-pumpkin-lantern",
+          "icon_b_noise_edits": [
+            {
+              "params": {
+                "radius": 0.305725
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "quality": 84.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "icon_b_noise_seed": 1971997535368376,
+          "icon_b_tint_rgb": [
+            192,
+            106,
+            216
+          ],
+          "index": 0,
+          "is_match": false,
+          "label": "E",
+          "order_id": "b_over_a",
+          "overlap_ratio": 0.5213893133032507,
+          "panel": "scene"
+        },
+        {
+          "cell_bbox_xyxy": [
+            548,
+            87,
+            702,
+            240
+          ],
+          "front_role": "a",
+          "icon_a_bbox_xyxy": [
+            595,
+            131,
+            663,
+            189
+          ],
+          "icon_a_id": "gi-delapouite-toucan",
+          "icon_a_noise_edits": [],
+          "icon_a_noise_seed": 541996933788268,
+          "icon_a_tint_rgb": [
+            192,
+            106,
+            216
+          ],
+          "icon_b_bbox_xyxy": [
+            586,
+            158,
+            652,
+            225
+          ],
+          "icon_b_id": "gi-lorc-pumpkin-lantern",
+          "icon_b_noise_edits": [
+            {
+              "params": {
+                "scale": 0.909069
+              },
+              "type": "downsample"
+            }
+          ],
+          "icon_b_noise_seed": 7736663648875851,
+          "icon_b_tint_rgb": [
+            207,
+            123,
+            43
+          ],
+          "index": 1,
+          "is_match": true,
+          "label": "D",
+          "order_id": "a_over_b",
+          "overlap_ratio": 0.5500396257377067,
+          "panel": "scene"
+        },
+        {
+          "cell_bbox_xyxy": [
+            722,
+            87,
+            876,
+            240
+          ],
+          "front_role": "b",
+          "icon_a_bbox_xyxy": [
+            743,
+            132,
+            820,
+            197
+          ],
+          "icon_a_id": "gi-delapouite-toucan",
+          "icon_a_noise_edits": [],
+          "icon_a_noise_seed": 470780836236992,
+          "icon_a_tint_rgb": [
+            47,
+            208,
+            177
+          ],
+          "icon_b_bbox_xyxy": [
+            779,
+            147,
+            855,
+            224
+          ],
+          "icon_b_id": "gi-lorc-pumpkin-lantern",
+          "icon_b_noise_edits": [
+            {
+              "params": {
+                "quality": 77.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "scale": 0.865638
+              },
+              "type": "downsample"
+            }
+          ],
+          "icon_b_noise_seed": 1454887713247858,
+          "icon_b_tint_rgb": [
+            51,
+            45,
+            212
+          ],
+          "index": 2,
+          "is_match": false,
+          "label": "A",
+          "order_id": "b_over_a",
+          "overlap_ratio": 0.46070381942835886,
+          "panel": "scene"
+        },
+        {
+          "cell_bbox_xyxy": [
+            896,
+            87,
+            1050,
+            240
+          ],
+          "front_role": "a",
+          "icon_a_bbox_xyxy": [
+            947,
+            159,
+            1018,
+            220
+          ],
+          "icon_a_id": "gi-delapouite-toucan",
+          "icon_a_noise_edits": [],
+          "icon_a_noise_seed": 8897852556332629,
+          "icon_a_tint_rgb": [
+            57,
+            155,
+            38
+          ],
+          "icon_b_bbox_xyxy": [
+            927,
+            137,
+            998,
+            209
+          ],
+          "icon_b_id": "gi-lorc-pumpkin-lantern",
+          "icon_b_noise_edits": [],
+          "icon_b_noise_seed": 7910506334483089,
+          "icon_b_tint_rgb": [
+            133,
+            25,
+            59
+          ],
+          "index": 3,
+          "is_match": true,
+          "label": "G",
+          "order_id": "a_over_b",
+          "overlap_ratio": 0.52812263672846,
+          "panel": "scene"
+        },
+        {
+          "cell_bbox_xyxy": [
+            374,
+            260,
+            528,
+            413
+          ],
+          "front_role": "b",
+          "icon_a_bbox_xyxy": [
+            390,
+            305,
+            475,
+            376
+          ],
+          "icon_a_id": "gi-delapouite-toucan",
+          "icon_a_noise_edits": [],
+          "icon_a_noise_seed": 3205127892164196,
+          "icon_a_tint_rgb": [
+            207,
+            123,
+            43
+          ],
+          "icon_b_bbox_xyxy": [
+            428,
+            313,
+            512,
+            398
+          ],
+          "icon_b_id": "gi-lorc-pumpkin-lantern",
+          "icon_b_noise_edits": [],
+          "icon_b_noise_seed": 5633521689294049,
+          "icon_b_tint_rgb": [
+            192,
+            106,
+            216
+          ],
+          "index": 4,
+          "is_match": false,
+          "label": "B",
+          "order_id": "b_over_a",
+          "overlap_ratio": 0.5273389563572923,
+          "panel": "scene"
+        },
+        {
+          "cell_bbox_xyxy": [
+            548,
+            260,
+            702,
+            413
+          ],
+          "front_role": "b",
+          "icon_a_bbox_xyxy": [
+            599,
+            304,
+            666,
+            361
+          ],
+          "icon_a_id": "gi-delapouite-toucan",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "alpha": 0.060298
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "quality": 77.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "icon_a_noise_seed": 6221015774761107,
+          "icon_a_tint_rgb": [
+            192,
+            106,
+            216
+          ],
+          "icon_b_bbox_xyxy": [
+            584,
+            332,
+            649,
+            399
+          ],
+          "icon_b_id": "gi-lorc-pumpkin-lantern",
+          "icon_b_noise_edits": [
+            {
+              "params": {
+                "quality": 90.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "icon_b_noise_seed": 6108049808058308,
+          "icon_b_tint_rgb": [
+            57,
+            155,
+            38
+          ],
+          "index": 5,
+          "is_match": false,
+          "label": "I",
+          "order_id": "b_over_a",
+          "overlap_ratio": 0.4780666233274993,
+          "panel": "scene"
+        },
+        {
+          "cell_bbox_xyxy": [
+            722,
+            260,
+            876,
+            413
+          ],
+          "front_role": "b",
+          "icon_a_bbox_xyxy": [
+            772,
+            305,
+            848,
+            369
+          ],
+          "icon_a_id": "gi-delapouite-toucan",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "radius": 0.322575
+              },
+              "type": "blur"
+            }
+          ],
+          "icon_a_noise_seed": 6981105733322481,
+          "icon_a_tint_rgb": [
+            47,
+            208,
+            177
+          ],
+          "icon_b_bbox_xyxy": [
+            750,
+            322,
+            826,
+            398
+          ],
+          "icon_b_id": "gi-lorc-pumpkin-lantern",
+          "icon_b_noise_edits": [
+            {
+              "params": {
+                "quality": 90.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "scale": 0.902602
+              },
+              "type": "downsample"
+            }
+          ],
+          "icon_b_noise_seed": 7802721917477330,
+          "icon_b_tint_rgb": [
+            133,
+            25,
+            59
+          ],
+          "index": 6,
+          "is_match": false,
+          "label": "H",
+          "order_id": "b_over_a",
+          "overlap_ratio": 0.5809908710107726,
+          "panel": "scene"
+        },
+        {
+          "cell_bbox_xyxy": [
+            896,
+            260,
+            1050,
+            413
+          ],
+          "front_role": "a",
+          "icon_a_bbox_xyxy": [
+            934,
+            305,
+            1003,
+            362
+          ],
+          "icon_a_id": "gi-delapouite-toucan",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "radius": 0.240065
+              },
+              "type": "blur"
+            }
+          ],
+          "icon_a_noise_seed": 3406824523670333,
+          "icon_a_tint_rgb": [
+            207,
+            123,
+            43
+          ],
+          "icon_b_bbox_xyxy": [
+            945,
+            330,
+            1012,
+            398
+          ],
+          "icon_b_id": "gi-lorc-pumpkin-lantern",
+          "icon_b_noise_edits": [],
+          "icon_b_noise_seed": 4974494795537377,
+          "icon_b_tint_rgb": [
+            47,
+            208,
+            177
+          ],
+          "index": 7,
+          "is_match": true,
+          "label": "F",
+          "order_id": "a_over_b",
+          "overlap_ratio": 0.5580171324113871,
+          "panel": "scene"
+        },
+        {
+          "cell_bbox_xyxy": [
+            374,
+            433,
+            528,
+            586
+          ],
+          "front_role": "b",
+          "icon_a_bbox_xyxy": [
+            424,
+            504,
+            496,
+            566
+          ],
+          "icon_a_id": "gi-delapouite-toucan",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "scale": 0.940555
+              },
+              "type": "downsample"
+            }
+          ],
+          "icon_a_noise_seed": 5204365498603127,
+          "icon_a_tint_rgb": [
+            51,
+            45,
+            212
+          ],
+          "icon_b_bbox_xyxy": [
+            406,
+            483,
+            478,
+            556
+          ],
+          "icon_b_id": "gi-lorc-pumpkin-lantern",
+          "icon_b_noise_edits": [
+            {
+              "params": {
+                "radius": 0.381539
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "quality": 90.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "icon_b_noise_seed": 8714985105982807,
+          "icon_b_tint_rgb": [
+            133,
+            25,
+            59
+          ],
+          "index": 8,
+          "is_match": false,
+          "label": "C",
+          "order_id": "b_over_a",
+          "overlap_ratio": 0.5659569996480222,
+          "panel": "scene"
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            1104,
+            640
+          ],
+          "reference_content_xyxy": [
+            44,
+            77,
+            300,
+            596
+          ],
+          "reference_panel_xyxy": [
+            24,
+            24,
+            320,
+            616
+          ],
+          "scene_content_xyxy": [
+            364,
+            77,
+            1060,
+            596
+          ],
+          "scene_panel_xyxy": [
+            344,
+            24,
+            1080,
+            616
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "counting_target": "same_front_to_back_order_as_reference",
+        "matching_cell_labels": [
+          "D",
+          "F",
+          "G"
+        ],
+        "reference_order_id": "a_over_b"
+      },
+      "scene_kind": "icons_reference_grid_occlusion_order_count"
+    },
+    "witness_symbolic": {
+      "matching_cell_labels": [
+        "D",
+        "F",
+        "G"
+      ],
+      "reference_order_id": "a_over_b"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

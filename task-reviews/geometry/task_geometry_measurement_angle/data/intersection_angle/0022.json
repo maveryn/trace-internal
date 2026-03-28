@@ -1,0 +1,598 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 76
+  },
+  "evidence_gt": {
+    "type": "graph_point_set",
+    "value": [
+      [
+        3,
+        7
+      ],
+      [
+        3,
+        0
+      ],
+      [
+        -1,
+        1
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_measurement_angle/images/intersection_angle/0022.png"
+  },
+  "instance_seed": 2990688420025603,
+  "prompt": "Look at the graph-paper image showing two intersecting line segments. What is the measure of angle BCD in degrees?\nGive the angle measure to the nearest integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of exactly three graph-paper points for the queried angle: the vertex and the two ray endpoints.\nAnswer: set \"answer\" to the angle value rounded to the nearest integer.\nExample JSON:\n{\"evidence\":[[0,2],[0,0],[3,0]],\"answer\":90}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the graph-paper image showing two intersecting line segments. What is the measure of angle BCD in degrees?\nGive the angle measure to the nearest integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of exactly three graph-paper points for the queried angle: the vertex and the two ray endpoints.\nAnswer: set \"answer\" to the angle value rounded to the nearest integer.\nExample JSON:\n{\"evidence\":[[0,2],[0,0],[3,0]],\"answer\":90}",
+    "answer_only": "Look at the graph-paper image showing two intersecting line segments. What is the measure of angle BCD in degrees?\nGive the angle measure to the nearest integer.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the angle value rounded to the nearest integer.\nExample JSON:\n{\"answer\":45}"
+  },
+  "task": "task_geometry_measurement_angle",
+  "task_variant": "intersection_angle",
+  "trace_payload": {
+    "execution_trace": {
+      "angle_degrees": 76,
+      "answer_value": 76,
+      "feasible_answer_values": [
+        31,
+        32,
+        45,
+        58,
+        59,
+        66,
+        76,
+        90,
+        104,
+        114,
+        121,
+        122,
+        135,
+        148,
+        149
+      ],
+      "feasible_target_angles": [
+        31,
+        32,
+        45,
+        58,
+        59,
+        66,
+        76,
+        90,
+        104,
+        114,
+        121,
+        122,
+        135,
+        148,
+        149
+      ],
+      "question_format": "numeric_open",
+      "raw_angle_degrees": 75.963757,
+      "required_evidence_labels": [
+        "B",
+        "C",
+        "D"
+      ],
+      "scene_variant": "intersection_angle",
+      "source_kind": "intersection_lines",
+      "target_angle": 76,
+      "target_labels": [
+        "B",
+        "C",
+        "D"
+      ],
+      "task_variant_probabilities": {
+        "intersection_angle": 0.5,
+        "primitive_angle": 0.5
+      }
+    },
+    "projected_evidence": {
+      "grid_point_map": {
+        "B": [
+          3,
+          7
+        ],
+        "C": [
+          3,
+          0
+        ],
+        "D": [
+          -1,
+          1
+        ]
+      },
+      "grid_point_path": [
+        [
+          3,
+          7
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          -1,
+          1
+        ]
+      ],
+      "grid_point_set": [
+        [
+          3,
+          7
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          -1,
+          1
+        ]
+      ],
+      "pixel_point_map": {
+        "B": [
+          454.0,
+          44.0
+        ],
+        "C": [
+          454.0,
+          331.0
+        ],
+        "D": [
+          290.0,
+          290.0
+        ]
+      },
+      "pixel_point_path": [
+        [
+          454.0,
+          44.0
+        ],
+        [
+          454.0,
+          331.0
+        ],
+        [
+          290.0,
+          290.0
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          454.0,
+          44.0
+        ],
+        [
+          454.0,
+          331.0
+        ],
+        [
+          290.0,
+          290.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "angle_step": 1,
+        "answer_rounding": "nearest_integer_degree",
+        "max_abs_vector_component": 20,
+        "max_angle": 150,
+        "min_angle": 30,
+        "min_ray_length_units": 2.0,
+        "quantization_tolerance_degrees": 0.05,
+        "required_graph_cells": 10,
+        "scene_variant": "intersection_angle",
+        "source_kind": "intersection_lines",
+        "source_kind_probabilities": {
+          "intersection_lines": 0.5,
+          "primitive_angle": 0.5
+        },
+        "target_angle": 76,
+        "target_angle_probabilities": {
+          "104": 0.06666666666666667,
+          "114": 0.06666666666666667,
+          "121": 0.06666666666666667,
+          "122": 0.06666666666666667,
+          "135": 0.06666666666666667,
+          "148": 0.06666666666666667,
+          "149": 0.06666666666666667,
+          "31": 0.06666666666666667,
+          "32": 0.06666666666666667,
+          "45": 0.06666666666666667,
+          "58": 0.06666666666666667,
+          "59": 0.06666666666666667,
+          "66": 0.06666666666666667,
+          "76": 0.06666666666666667,
+          "90": 0.06666666666666667
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "geometry_angle_measure_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the angle value rounded to the nearest integer",
+          "evidence_hint": "set \"evidence\" to an array of exactly three graph-paper points for the queried angle: the vertex and the two ray endpoints",
+          "json_example": "{\"evidence\":[[0,2],[0,0],[3,0]],\"answer\":90}",
+          "json_example_answer_only": "{\"answer\":45}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "two intersecting line segments",
+          "question_text": "What is the measure of angle BCD in degrees?"
+        },
+        "task_family_key": "measurement_single_object",
+        "task_family_variant_index": 2,
+        "task_key": "measurement_angle_value",
+        "task_variant_index": 1,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/measurement/geometry_angle_measure_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:measurement_angle_value": 5,
+          "task_family:measurement_single_object": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_angle_measure_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the angle value rounded to the nearest integer",
+              "evidence_hint": "set \"evidence\" to an array of exactly three graph-paper points for the queried angle: the vertex and the two ray endpoints",
+              "json_example": "{\"evidence\":[[0,2],[0,0],[3,0]],\"answer\":90}",
+              "json_example_answer_only": "{\"answer\":45}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "two intersecting line segments",
+              "question_text": "What is the measure of angle BCD in degrees?"
+            },
+            "task_family_key": "measurement_single_object",
+            "task_family_variant_index": 2,
+            "task_key": "measurement_angle_value",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/measurement/geometry_angle_measure_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:measurement_angle_value": 5,
+              "task_family:measurement_single_object": 5
+            }
+          },
+          "prompt": "Look at the graph-paper image showing two intersecting line segments. What is the measure of angle BCD in degrees?\nGive the angle measure to the nearest integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of exactly three graph-paper points for the queried angle: the vertex and the two ray endpoints.\nAnswer: set \"answer\" to the angle value rounded to the nearest integer.\nExample JSON:\n{\"evidence\":[[0,2],[0,0],[3,0]],\"answer\":90}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_angle_measure_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the angle value rounded to the nearest integer",
+              "evidence_hint": "set \"evidence\" to an array of exactly three graph-paper points for the queried angle: the vertex and the two ray endpoints",
+              "json_example": "{\"evidence\":[[0,2],[0,0],[3,0]],\"answer\":90}",
+              "json_example_answer_only": "{\"answer\":45}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "two intersecting line segments",
+              "question_text": "What is the measure of angle BCD in degrees?"
+            },
+            "task_family_key": "measurement_single_object",
+            "task_family_variant_index": 2,
+            "task_key": "measurement_angle_value",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/measurement/geometry_angle_measure_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:measurement_angle_value": 5,
+              "task_family:measurement_single_object": 5
+            }
+          },
+          "prompt": "Look at the graph-paper image showing two intersecting line segments. What is the measure of angle BCD in degrees?\nGive the angle measure to the nearest integer.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the angle value rounded to the nearest integer.\nExample JSON:\n{\"answer\":45}"
+        }
+      },
+      "task_variant": "intersection_angle",
+      "template_id": "geometry_angle_measure_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "target": {
+          "coord_space": "pixel",
+          "point": [
+            454.0,
+            331.0
+          ],
+          "polyline": [
+            [
+              454.0,
+              618.0
+            ],
+            [
+              454.0,
+              331.0
+            ],
+            [
+              454.0,
+              44.0
+            ]
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "graph_paper",
+        "style_spec": {
+          "axis_arrow_size": 10,
+          "axis_arrows_enabled": true,
+          "axis_color": [
+            182,
+            187,
+            194
+          ],
+          "axis_darken_range": [
+            32,
+            48
+          ],
+          "axis_enabled": true,
+          "axis_line_width": 2,
+          "axis_scale_label_max_abs": 0,
+          "axis_scale_labels_enabled": true,
+          "base_color": [
+            255,
+            255,
+            255
+          ],
+          "base_color_jitter": [
+            0,
+            0
+          ],
+          "center_point_color": [
+            172,
+            177,
+            184
+          ],
+          "center_point_darken_extra_range": [
+            8,
+            14
+          ],
+          "center_point_enabled": true,
+          "center_point_radius": 2,
+          "color_variation_applied": true,
+          "color_variation_enabled": true,
+          "color_variation_sampled": {
+            "axis_darken": 46,
+            "base_color_delta": 0,
+            "center_point_darken_extra": 10,
+            "line_color_delta": 4,
+            "major_line_darken": 12,
+            "origin_label_darken_extra": 10
+          },
+          "kind": "grid",
+          "line_color": [
+            228,
+            233,
+            240
+          ],
+          "line_color_jitter": [
+            -5,
+            5
+          ],
+          "line_width": 1,
+          "major_every": 0,
+          "major_line_color": [
+            216,
+            221,
+            228
+          ],
+          "major_line_darken_range": [
+            6,
+            14
+          ],
+          "major_line_width": 1,
+          "origin_label_color": [
+            172,
+            177,
+            184
+          ],
+          "origin_label_darken_extra_range": [
+            6,
+            12
+          ],
+          "origin_label_enabled": false,
+          "origin_label_text": "0",
+          "outer_margin_px": 16,
+          "scene_supersample_scale": 3,
+          "spacing": 41,
+          "supersample_scale": 1
+        }
+      },
+      "canvas_size": 663,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 14,
+        "full_cells_y": 14,
+        "origin_pixel": [
+          331,
+          331
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 41,
+        "target_cells_x": 16,
+        "target_cells_y": 16,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 14,
+        "full_cells_y": 14,
+        "partial_edge_cells": true,
+        "spacing_px": 41,
+        "target_cells_x": 16,
+        "target_cells_y": 16
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          74,
+          170,
+          44
+        ],
+        "label_stroke_color": [
+          254,
+          250,
+          255
+        ],
+        "line_color": [
+          74,
+          170,
+          44
+        ]
+      },
+      "text_style": {
+        "font_size_px": 96,
+        "stroke_width_px": 6
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "angle_degrees": 76,
+            "labels": [
+              "B",
+              "C",
+              "D"
+            ],
+            "points": {
+              "line_a": [
+                [
+                  454.0,
+                  618.0
+                ],
+                [
+                  454.0,
+                  331.0
+                ],
+                [
+                  454.0,
+                  44.0
+                ]
+              ],
+              "line_b": [
+                [
+                  618.0,
+                  372.0
+                ],
+                [
+                  454.0,
+                  331.0
+                ],
+                [
+                  290.0,
+                  290.0
+                ]
+              ],
+              "target": {
+                "arm_a": [
+                  454.0,
+                  44.0
+                ],
+                "arm_b": [
+                  290.0,
+                  290.0
+                ],
+                "vertex": [
+                  454.0,
+                  331.0
+                ]
+              }
+            },
+            "raw_angle_degrees": 75.963757,
+            "source_kind": "intersection_lines"
+          },
+          "entity_id": "intersection_1",
+          "entity_type": "line_intersection"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            331,
+            331
+          ],
+          "spacing_px": 41,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_2d_angle_measurement"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "B",
+        "C",
+        "D"
+      ],
+      "type": "angle_triplet"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

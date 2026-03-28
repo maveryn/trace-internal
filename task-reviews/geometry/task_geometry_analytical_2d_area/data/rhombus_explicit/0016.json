@@ -1,0 +1,449 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 336
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "ST": 28,
+      "UV": 24
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_2d_area/images/rhombus_explicit/0016.png"
+  },
+  "instance_seed": 1819628786332368,
+  "prompt": "Use the image showing a geometric shape with measurement annotations. Question: The rhombus has both diagonals annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, UV.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"ST\":2,\"UV\":3},\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the image showing a geometric shape with measurement annotations. Question: The rhombus has both diagonals annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, UV.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"ST\":2,\"UV\":3},\"answer\":8}",
+    "answer_only": "Use the image showing a geometric shape with measurement annotations. Question: The rhombus has both diagonals annotated. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_geometry_analytical_2d_area",
+  "task_variant": "rhombus_explicit",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 2500,
+      "answer_min": 8,
+      "answer_scalar": 336,
+      "answer_type": "integer",
+      "answer_value": 336,
+      "case_id": "rhombus_explicit",
+      "evidence_annotations": {
+        "d1": "ST",
+        "d2": "UV"
+      },
+      "evidence_ids": [
+        "ST",
+        "UV"
+      ],
+      "evidence_label_values": {
+        "d1": 28,
+        "d2": 24
+      },
+      "evidence_map": {
+        "ST": 28,
+        "UV": 24
+      },
+      "evidence_roles": [
+        "d1",
+        "d2"
+      ],
+      "formula_expression": "A = (d1 * d2) / 2",
+      "mode_probabilities": {
+        "derived": 0.5,
+        "explicit": 0.5
+      },
+      "reasoning_mode": "explicit",
+      "required_annotations": [
+        "ST",
+        "UV"
+      ],
+      "shape_probabilities": {
+        "circle": 0.14285714285714285,
+        "ellipse": 0.14285714285714285,
+        "parallelogram": 0.14285714285714285,
+        "rectangle": 0.14285714285714285,
+        "rhombus": 0.14285714285714285,
+        "trapezoid": 0.14285714285714285,
+        "triangle": 0.14285714285714285
+      },
+      "shape_variant": "rhombus"
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "d1": "ST",
+        "d2": "UV"
+      },
+      "id_set": [
+        "ST",
+        "UV"
+      ],
+      "measurement_ref_map": {
+        "ST": 28,
+        "UV": 24
+      },
+      "pixel_annotation_centers": {
+        "ST": [
+          520.0,
+          264.4
+        ],
+        "UV": [
+          466.8,
+          190.0
+        ]
+      },
+      "pixel_point_set": [
+        [
+          520.0,
+          264.4
+        ],
+        [
+          466.8,
+          190.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 2500,
+        "answer_min": 8,
+        "mode_probabilities": {
+          "derived": 0.5,
+          "explicit": 0.5
+        },
+        "reasoning_mode": "explicit",
+        "shape_probabilities": {
+          "circle": 0.14285714285714285,
+          "ellipse": 0.14285714285714285,
+          "parallelogram": 0.14285714285714285,
+          "rectangle": 0.14285714285714285,
+          "rhombus": 0.14285714285714285,
+          "trapezoid": 0.14285714285714285,
+          "triangle": 0.14285714285714285
+        },
+        "shape_variant": "rhombus"
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "geometry_analytical_area_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the area value as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, UV",
+          "json_example": "{\"evidence\":{\"ST\":2,\"UV\":3},\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a geometric shape with measurement annotations",
+          "question_text": "The rhombus has both diagonals annotated. What is its area in square units?"
+        },
+        "task_family_key": "analytical_single_shape",
+        "task_family_variant_index": 3,
+        "task_key": "analytical_area_query",
+        "task_variant_index": 1,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_2d/geometry_analytical_area_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_area_query": 5,
+          "task_family:analytical_single_shape": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "geometry_analytical_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the area value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, UV",
+              "json_example": "{\"evidence\":{\"ST\":2,\"UV\":3},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric shape with measurement annotations",
+              "question_text": "The rhombus has both diagonals annotated. What is its area in square units?"
+            },
+            "task_family_key": "analytical_single_shape",
+            "task_family_variant_index": 3,
+            "task_key": "analytical_area_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_area_query": 5,
+              "task_family:analytical_single_shape": 5
+            }
+          },
+          "prompt": "Use the image showing a geometric shape with measurement annotations. Question: The rhombus has both diagonals annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, UV.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"ST\":2,\"UV\":3},\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_analytical_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the area value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, UV",
+              "json_example": "{\"evidence\":{\"ST\":2,\"UV\":3},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric shape with measurement annotations",
+              "question_text": "The rhombus has both diagonals annotated. What is its area in square units?"
+            },
+            "task_family_key": "analytical_single_shape",
+            "task_family_variant_index": 3,
+            "task_key": "analytical_area_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_area_query": 5,
+              "task_family:analytical_single_shape": 5
+            }
+          },
+          "prompt": "Use the image showing a geometric shape with measurement annotations. Question: The rhombus has both diagonals annotated. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "rhombus_explicit",
+      "template_id": "geometry_analytical_area_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "ST": [
+          520.0,
+          264.4
+        ],
+        "UV": [
+          466.8,
+          190.0
+        ]
+      },
+      "annotation_labels": {
+        "d1": "ST",
+        "d2": "UV"
+      },
+      "coord_space": "pixel",
+      "entity_id": "shape_1",
+      "instance_anchor": {
+        "coord_space": "pixel",
+        "point": [
+          310.0,
+          250.0
+        ],
+        "polyline": [
+          [
+            310.0,
+            250.0
+          ],
+          [
+            450.0,
+            370.0
+          ],
+          [
+            590.0,
+            250.0
+          ],
+          [
+            450.0,
+            130.0
+          ],
+          [
+            310.0,
+            250.0
+          ]
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_offwhite",
+        "style_spec": {
+          "color": [
+            252,
+            252,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 722,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 4,
+        "full_cells_y": 4,
+        "origin_pixel": [
+          360,
+          360
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 120,
+        "target_cells_x": 6,
+        "target_cells_y": 6,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 4,
+        "full_cells_y": 4,
+        "partial_edge_cells": true,
+        "spacing_px": 120,
+        "target_cells_x": 6,
+        "target_cells_y": 6
+      },
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "radius": 0.179293
+            },
+            "type": "blur"
+          }
+        ],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          40,
+          52,
+          126
+        ],
+        "label_stroke_color": [
+          253,
+          254,
+          254
+        ],
+        "line_color": [
+          40,
+          52,
+          126
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "area_square_units": 336,
+            "diagonal1_units": 28,
+            "diagonal2_units": 24,
+            "reasoning_mode": "explicit",
+            "shape_variant": "rhombus",
+            "vertices": [
+              [
+                310.0,
+                250.0
+              ],
+              [
+                450.0,
+                370.0
+              ],
+              [
+                590.0,
+                250.0
+              ],
+              [
+                450.0,
+                130.0
+              ]
+            ]
+          },
+          "entity_id": "shape_1",
+          "entity_type": "rhombus"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            360,
+            360
+          ],
+          "spacing_px": 120,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_2d_analytical_area"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "ST",
+        "UV"
+      ],
+      "annotation_labels": {
+        "d1": "ST",
+        "d2": "UV"
+      },
+      "annotation_values": {
+        "ST": 28,
+        "UV": 24
+      },
+      "case_id": "rhombus_explicit",
+      "formula_expression": "A = (d1 * d2) / 2",
+      "measurement_ref_map": {
+        "ST": 28,
+        "UV": 24
+      },
+      "reasoning_mode": "explicit",
+      "shape_variant": "rhombus",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

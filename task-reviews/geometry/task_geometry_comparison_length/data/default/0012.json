@@ -1,0 +1,590 @@
+{
+  "answer_gt": {
+    "type": "option_letter",
+    "value": "C"
+  },
+  "evidence_gt": {
+    "type": "graph_point_set",
+    "value": [
+      [
+        9,
+        9
+      ],
+      [
+        3,
+        1
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_comparison_length/images/default/0012.png"
+  },
+  "instance_seed": 1671532636603152,
+  "prompt": "Use the graph-paper diagram showing several labeled line segments. Which labeled segment is the longest?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of exactly two graph-paper points for the winning segment endpoints.\nAnswer field: set \"answer\" to the single-letter label of the correct segment.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":\"B\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the graph-paper diagram showing several labeled line segments. Which labeled segment is the longest?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of exactly two graph-paper points for the winning segment endpoints.\nAnswer field: set \"answer\" to the single-letter label of the correct segment.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":\"B\"}",
+    "answer_only": "Use the graph-paper diagram showing several labeled line segments. Which labeled segment is the longest?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the single-letter label of the correct segment.\nExample JSON:\n{\"answer\":\"B\"}"
+  },
+  "task": "task_geometry_comparison_length",
+  "task_variant": "segment_set",
+  "trace_payload": {
+    "execution_trace": {
+      "object_count": 4,
+      "object_count_probabilities": {
+        "4": 0.3333333333333333,
+        "5": 0.3333333333333333,
+        "6": 0.3333333333333333
+      },
+      "object_labels": [
+        "D",
+        "B",
+        "F",
+        "C"
+      ],
+      "query_type": "largest",
+      "query_type_probabilities": {
+        "largest": 0.5,
+        "smallest": 0.5
+      },
+      "question_format": "label_choice_no_text_options",
+      "required_evidence_labels": [
+        "endpoint_a",
+        "endpoint_b"
+      ],
+      "runner_up_value": 8.0,
+      "scene_variant": "segment_set",
+      "values_by_label": {
+        "B": 8,
+        "C": 10,
+        "D": 6,
+        "F": 4
+      },
+      "winner_gap_abs": 2.0,
+      "winner_gap_normalized": 0.3333333333333333,
+      "winner_label": "C",
+      "winner_label_probabilities": {
+        "A": 0.16666666666666666,
+        "B": 0.16666666666666666,
+        "C": 0.16666666666666666,
+        "D": 0.16666666666666666,
+        "E": 0.16666666666666666,
+        "F": 0.16666666666666666
+      },
+      "winner_label_target": "C",
+      "winner_value": 10.0
+    },
+    "projected_evidence": {
+      "grid_point_map": {
+        "endpoint_a": [
+          9,
+          9
+        ],
+        "endpoint_b": [
+          3,
+          1
+        ]
+      },
+      "grid_point_path": [
+        [
+          9,
+          9
+        ],
+        [
+          3,
+          1
+        ]
+      ],
+      "grid_point_set": [
+        [
+          9,
+          9
+        ],
+        [
+          3,
+          1
+        ]
+      ],
+      "pixel_point_map": {
+        "endpoint_a": [
+          609.0,
+          87.0
+        ],
+        "endpoint_b": [
+          435.0,
+          319.0
+        ]
+      },
+      "pixel_point_path": [
+        [
+          609.0,
+          87.0
+        ],
+        [
+          435.0,
+          319.0
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          609.0,
+          87.0
+        ],
+        [
+          435.0,
+          319.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "max_abs_vector_component": 10,
+        "max_segment_length": 10,
+        "min_absolute_gap_units": 2.0,
+        "min_normalized_gap": 0.2,
+        "min_segment_length": 2,
+        "object_count": 4,
+        "object_count_probabilities": {
+          "4": 0.3333333333333333,
+          "5": 0.3333333333333333,
+          "6": 0.3333333333333333
+        },
+        "query_type": "largest",
+        "query_type_probabilities": {
+          "largest": 0.5,
+          "smallest": 0.5
+        },
+        "winner_label": "C",
+        "winner_label_probabilities": {
+          "A": 0.16666666666666666,
+          "B": 0.16666666666666666,
+          "C": 0.16666666666666666,
+          "D": 0.16666666666666666,
+          "E": 0.16666666666666666,
+          "F": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "geometry_comparison_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the single-letter label of the correct segment",
+          "evidence_hint": "set \"evidence\" to an array of exactly two graph-paper points for the winning segment endpoints",
+          "json_example": "{\"evidence\":[[0,0],[4,0]],\"answer\":\"B\"}",
+          "json_example_answer_only": "{\"answer\":\"B\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "several labeled line segments",
+          "question_text": "Which labeled segment is the longest?"
+        },
+        "task_family_key": "comparison_graph_scene",
+        "task_family_variant_index": 3,
+        "task_key": "comparison_query",
+        "task_variant_index": 0,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/comparison/geometry_comparison_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:comparison_query": 5,
+          "task_family:comparison_graph_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "geometry_comparison_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single-letter label of the correct segment",
+              "evidence_hint": "set \"evidence\" to an array of exactly two graph-paper points for the winning segment endpoints",
+              "json_example": "{\"evidence\":[[0,0],[4,0]],\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled line segments",
+              "question_text": "Which labeled segment is the longest?"
+            },
+            "task_family_key": "comparison_graph_scene",
+            "task_family_variant_index": 3,
+            "task_key": "comparison_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/comparison/geometry_comparison_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:comparison_query": 5,
+              "task_family:comparison_graph_scene": 5
+            }
+          },
+          "prompt": "Use the graph-paper diagram showing several labeled line segments. Which labeled segment is the longest?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of exactly two graph-paper points for the winning segment endpoints.\nAnswer field: set \"answer\" to the single-letter label of the correct segment.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":\"B\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_comparison_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single-letter label of the correct segment",
+              "evidence_hint": "set \"evidence\" to an array of exactly two graph-paper points for the winning segment endpoints",
+              "json_example": "{\"evidence\":[[0,0],[4,0]],\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled line segments",
+              "question_text": "Which labeled segment is the longest?"
+            },
+            "task_family_key": "comparison_graph_scene",
+            "task_family_variant_index": 3,
+            "task_key": "comparison_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/comparison/geometry_comparison_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:comparison_query": 5,
+              "task_family:comparison_graph_scene": 5
+            }
+          },
+          "prompt": "Use the graph-paper diagram showing several labeled line segments. Which labeled segment is the longest?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the single-letter label of the correct segment.\nExample JSON:\n{\"answer\":\"B\"}"
+        }
+      },
+      "task_variant": "segment_set",
+      "template_id": "geometry_comparison_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "winner": {
+          "winner_label": "C",
+          "winner_midpoint": [
+            522.0,
+            203.0
+          ],
+          "winner_segment": [
+            [
+              609.0,
+              87.0
+            ],
+            [
+              435.0,
+              319.0
+            ]
+          ]
+        }
+      },
+      "image_id": "img0",
+      "object_label_centers": {
+        "B": [
+          379.2,
+          203.0
+        ],
+        "C": [
+          497.03999999999996,
+          184.28
+        ],
+        "D": [
+          174.0,
+          524.1999999999999
+        ],
+        "F": [
+          348.0,
+          461.8
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "graph_paper",
+        "style_spec": {
+          "axis_arrow_size": 10,
+          "axis_arrows_enabled": true,
+          "axis_color": [
+            185,
+            190,
+            197
+          ],
+          "axis_darken_range": [
+            32,
+            48
+          ],
+          "axis_enabled": true,
+          "axis_line_width": 2,
+          "axis_scale_label_max_abs": 0,
+          "axis_scale_labels_enabled": true,
+          "base_color": [
+            255,
+            255,
+            255
+          ],
+          "base_color_jitter": [
+            0,
+            0
+          ],
+          "center_point_color": [
+            173,
+            178,
+            185
+          ],
+          "center_point_darken_extra_range": [
+            8,
+            14
+          ],
+          "center_point_enabled": true,
+          "center_point_radius": 2,
+          "color_variation_applied": true,
+          "color_variation_enabled": true,
+          "color_variation_sampled": {
+            "axis_darken": 34,
+            "base_color_delta": 0,
+            "center_point_darken_extra": 12,
+            "line_color_delta": -5,
+            "major_line_darken": 6,
+            "origin_label_darken_extra": 8
+          },
+          "kind": "grid",
+          "line_color": [
+            219,
+            224,
+            231
+          ],
+          "line_color_jitter": [
+            -5,
+            5
+          ],
+          "line_width": 1,
+          "major_every": 0,
+          "major_line_color": [
+            213,
+            218,
+            225
+          ],
+          "major_line_darken_range": [
+            6,
+            14
+          ],
+          "major_line_width": 1,
+          "origin_label_color": [
+            177,
+            182,
+            189
+          ],
+          "origin_label_darken_extra_range": [
+            6,
+            12
+          ],
+          "origin_label_enabled": false,
+          "origin_label_text": "0",
+          "outer_margin_px": 16,
+          "scene_supersample_scale": 3,
+          "spacing": 29,
+          "supersample_scale": 1
+        }
+      },
+      "canvas_size": 697,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 22,
+        "full_cells_y": 22,
+        "origin_pixel": [
+          348,
+          348
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 29,
+        "target_cells_x": 24,
+        "target_cells_y": 24,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 22,
+        "full_cells_y": 22,
+        "partial_edge_cells": true,
+        "spacing_px": 29,
+        "target_cells_x": 24,
+        "target_cells_y": 24
+      },
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "radius": 0.2237
+            },
+            "type": "blur"
+          }
+        ],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          78,
+          26,
+          81
+        ],
+        "label_stroke_color": [
+          249,
+          252,
+          253
+        ],
+        "line_color": [
+          78,
+          26,
+          81
+        ]
+      },
+      "text_style": {
+        "font_size_px": 90,
+        "stroke_width_px": 3
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "label": "D",
+            "length_units": 6,
+            "points": {
+              "endpoint_a": [
+                87.0,
+                493.0
+              ],
+              "endpoint_b": [
+                261.0,
+                493.0
+              ]
+            }
+          },
+          "entity_id": "segment_D",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "label": "B",
+            "length_units": 8,
+            "points": {
+              "endpoint_a": [
+                348.0,
+                319.0
+              ],
+              "endpoint_b": [
+                348.0,
+                87.0
+              ]
+            }
+          },
+          "entity_id": "segment_B",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "label": "F",
+            "length_units": 4,
+            "points": {
+              "endpoint_a": [
+                406.0,
+                493.0
+              ],
+              "endpoint_b": [
+                290.0,
+                493.0
+              ]
+            }
+          },
+          "entity_id": "segment_F",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "label": "C",
+            "length_units": 10,
+            "points": {
+              "endpoint_a": [
+                609.0,
+                87.0
+              ],
+              "endpoint_b": [
+                435.0,
+                319.0
+              ]
+            }
+          },
+          "entity_id": "segment_C",
+          "entity_type": "segment"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            348,
+            348
+          ],
+          "spacing_px": 29,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "comparison_target": "segment_length",
+        "query_type": "largest",
+        "winner_label": "C"
+      },
+      "scene_kind": "geometry_2d_length_comparison"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "endpoint_a",
+        "endpoint_b"
+      ],
+      "type": "winning_segment_endpoints",
+      "winner_label": "C"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

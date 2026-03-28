@@ -1,0 +1,477 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 29172
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "MN": 39,
+      "MP": 34,
+      "NO": 22
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_3d_volume/images/rectangular_prism_given_lwh/0001.png"
+  },
+  "instance_seed": 3284661962906904,
+  "prompt": "Look at the annotated image showing an annotated 3D solid. Based on the shown values, answer this question: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: MN, NO, MP.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"MN\":2,\"NO\":3,\"MP\":4},\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the annotated image showing an annotated 3D solid. Based on the shown values, answer this question: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: MN, NO, MP.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"MN\":2,\"NO\":3,\"MP\":4},\"answer\":8}",
+    "answer_only": "Look at the annotated image showing an annotated 3D solid. Based on the shown values, answer this question: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_geometry_analytical_3d_volume",
+  "task_variant": "rectangular_prism_given_lwh",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 200000,
+      "answer_min": 8,
+      "answer_scalar": 29172,
+      "answer_type": "integer",
+      "answer_value": 29172,
+      "evidence_map": {
+        "MN": 39,
+        "MP": 34,
+        "NO": 22
+      },
+      "evidence_role_tokens": {
+        "h": "MP",
+        "l": "MN",
+        "w": "NO"
+      },
+      "evidence_role_values": {
+        "h": 34,
+        "l": 39,
+        "w": 22
+      },
+      "evidence_roles": [
+        "l",
+        "w",
+        "h"
+      ],
+      "formula_expression": "V = l * w * h",
+      "required_annotations": [
+        "MN",
+        "NO",
+        "MP"
+      ],
+      "task_variant": "rectangular_prism_given_lwh",
+      "variant_probabilities": {
+        "cone_given_r_h": 0.16666666666666666,
+        "cylinder_given_r_h": 0.16666666666666666,
+        "rectangular_prism_given_lwh": 0.16666666666666666,
+        "sphere_given_r": 0.16666666666666666,
+        "square_pyramid_given_base_height": 0.16666666666666666,
+        "triangular_prism_given_b_h_l": 0.16666666666666666
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "h": "MP",
+        "l": "MN",
+        "w": "NO"
+      },
+      "id_set": [
+        "MN",
+        "NO",
+        "MP"
+      ],
+      "measurement_ref_map": {
+        "MN": 39,
+        "MP": 34,
+        "NO": 22
+      },
+      "pixel_annotation_centers": {
+        "MN": [
+          353.76860529549623,
+          329.8714437592865
+        ],
+        "MP": [
+          244.97425957984498,
+          159.6124031007752
+        ],
+        "NO": [
+          379.2943456238836,
+          440.7590406585113
+        ]
+      },
+      "pixel_point_set": [
+        [
+          353.76860529549623,
+          329.8714437592865
+        ],
+        [
+          379.2943456238836,
+          440.7590406585113
+        ],
+        [
+          244.97425957984498,
+          159.6124031007752
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 200000,
+        "answer_min": 8,
+        "task_variant": "rectangular_prism_given_lwh",
+        "variant_probabilities": {
+          "cone_given_r_h": 0.16666666666666666,
+          "cylinder_given_r_h": 0.16666666666666666,
+          "rectangular_prism_given_lwh": 0.16666666666666666,
+          "sphere_given_r": 0.16666666666666666,
+          "square_pyramid_given_base_height": 0.16666666666666666,
+          "triangular_prism_given_b_h_l": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "geometry_analytical_volume_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the value as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: MN, NO, MP",
+          "json_example": "{\"evidence\":{\"MN\":2,\"NO\":3,\"MP\":4},\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "an annotated 3D solid",
+          "question_text": "The rectangular prism has annotated length, width, and height. What is its volume in cubic units?"
+        },
+        "task_family_key": "analytical_single_solid",
+        "task_family_variant_index": 2,
+        "task_key": "analytical_volume_query",
+        "task_variant_index": 4,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_3d/geometry_analytical_volume_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_volume_query": 5,
+          "task_family:analytical_single_solid": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "geometry_analytical_volume_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: MN, NO, MP",
+              "json_example": "{\"evidence\":{\"MN\":2,\"NO\":3,\"MP\":4},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an annotated 3D solid",
+              "question_text": "The rectangular prism has annotated length, width, and height. What is its volume in cubic units?"
+            },
+            "task_family_key": "analytical_single_solid",
+            "task_family_variant_index": 2,
+            "task_key": "analytical_volume_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_3d/geometry_analytical_volume_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_volume_query": 5,
+              "task_family:analytical_single_solid": 5
+            }
+          },
+          "prompt": "Look at the annotated image showing an annotated 3D solid. Based on the shown values, answer this question: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: MN, NO, MP.\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"MN\":2,\"NO\":3,\"MP\":4},\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_analytical_volume_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: MN, NO, MP",
+              "json_example": "{\"evidence\":{\"MN\":2,\"NO\":3,\"MP\":4},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an annotated 3D solid",
+              "question_text": "The rectangular prism has annotated length, width, and height. What is its volume in cubic units?"
+            },
+            "task_family_key": "analytical_single_solid",
+            "task_family_variant_index": 2,
+            "task_key": "analytical_volume_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_3d/geometry_analytical_volume_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_volume_query": 5,
+              "task_family:analytical_single_solid": 5
+            }
+          },
+          "prompt": "Look at the annotated image showing an annotated 3D solid. Based on the shown values, answer this question: The rectangular prism has annotated length, width, and height. What is its volume in cubic units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "rectangular_prism_given_lwh",
+      "template_id": "geometry_analytical_volume_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "MN": [
+          353.76860529549623,
+          329.8714437592865
+        ],
+        "MP": [
+          244.97425957984498,
+          159.6124031007752
+        ],
+        "NO": [
+          379.2943456238836,
+          440.7590406585113
+        ]
+      },
+      "annotation_labels": {
+        "h": "MP",
+        "l": "MN",
+        "w": "NO"
+      },
+      "coord_space": "pixel",
+      "entity_id": "solid_1",
+      "instance_anchor": {
+        "coord_space": "pixel",
+        "point": [
+          270.5,
+          270.5
+        ],
+        "polyline": [
+          [
+            216.97425957984498,
+            283.2248062015504
+          ],
+          [
+            462.56295091937983,
+            425.015503875969
+          ],
+          [
+            324.02574042015505,
+            505.0
+          ],
+          [
+            78.43704908062017,
+            363.2093023255814
+          ],
+          [
+            216.97425957984498,
+            36.0
+          ],
+          [
+            462.56295091937983,
+            177.7906976744186
+          ],
+          [
+            324.02574042015505,
+            257.7751937984496
+          ],
+          [
+            78.43704908062017,
+            115.98449612403101
+          ]
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_cool",
+        "style_spec": {
+          "color": [
+            246,
+            248,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 541,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 6,
+        "full_cells_y": 6,
+        "origin_pixel": [
+          270,
+          270
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 77,
+        "target_cells_x": 7,
+        "target_cells_y": 7,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 6,
+        "full_cells_y": 6,
+        "partial_edge_cells": true,
+        "spacing_px": 77,
+        "target_cells_x": 7,
+        "target_cells_y": 7
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          108,
+          50,
+          126
+        ],
+        "label_stroke_color": [
+          249,
+          248,
+          249
+        ],
+        "line_color": [
+          108,
+          50,
+          126
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "height_units": 34,
+            "length_units": 39,
+            "points": {
+              "A": [
+                216.97425957984498,
+                283.2248062015504
+              ],
+              "B": [
+                462.56295091937983,
+                425.015503875969
+              ],
+              "C": [
+                324.02574042015505,
+                505.0
+              ],
+              "D": [
+                78.43704908062017,
+                363.2093023255814
+              ],
+              "E": [
+                216.97425957984498,
+                36.0
+              ],
+              "F": [
+                462.56295091937983,
+                177.7906976744186
+              ],
+              "G": [
+                324.02574042015505,
+                257.7751937984496
+              ],
+              "H": [
+                78.43704908062017,
+                115.98449612403101
+              ]
+            },
+            "task_variant": "rectangular_prism_given_lwh",
+            "volume_cubic_units": 29172,
+            "width_units": 22
+          },
+          "entity_id": "solid_1",
+          "entity_type": "rectangular_prism"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            270,
+            270
+          ],
+          "spacing_px": 77,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_3d_analytical_volume"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "MN",
+        "NO",
+        "MP"
+      ],
+      "annotation_labels": {
+        "h": "MP",
+        "l": "MN",
+        "w": "NO"
+      },
+      "annotation_values": {
+        "MN": 39,
+        "MP": 34,
+        "NO": 22
+      },
+      "formula_expression": "V = l * w * h",
+      "measurement_ref_map": {
+        "MN": 39,
+        "MP": 34,
+        "NO": 22
+      },
+      "task_variant": "rectangular_prism_given_lwh",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

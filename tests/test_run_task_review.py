@@ -18,6 +18,8 @@ class _DummyVariantTask:
     """Minimal task stub used to verify inspection workbook variant routing."""
 
     task_id = "task_dummy_review_variant"
+    domain = "dummy"
+    task_group = "review"
 
     def __init__(self) -> None:
         self.calls: list[tuple[int, dict[str, object]]] = []
@@ -48,7 +50,7 @@ def test_build_inspection_rows_passes_requested_task_variant(
     monkeypatch,
 ) -> None:
     out_root = tmp_path / "task-reviews"
-    task_dir = out_root / "task_dummy_review_variant"
+    task_dir = out_root / "dummy" / "task_dummy_review_variant"
     out_root.mkdir(parents=True, exist_ok=True)
     task_dir.mkdir(parents=True, exist_ok=True)
 

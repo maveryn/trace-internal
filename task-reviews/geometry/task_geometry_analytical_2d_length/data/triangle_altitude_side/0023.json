@@ -1,0 +1,410 @@
+{
+  "answer_gt": {
+    "type": "number",
+    "value": 28.3
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "MP": 15,
+      "OP": 24
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_2d_length/images/triangle_altitude_side/0023.png"
+  },
+  "instance_seed": 5506084973482776,
+  "prompt": "The image shows a geometric scene with measurement annotations. Based on the shown values, answer this question: The triangle includes an altitude to the base. What is the length of segment MO?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP, MP.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"OP\":2,\"MP\":3},\"answer\":42.3}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows a geometric scene with measurement annotations. Based on the shown values, answer this question: The triangle includes an altitude to the base. What is the length of segment MO?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP, MP.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"OP\":2,\"MP\":3},\"answer\":42.3}",
+    "answer_only": "The image shows a geometric scene with measurement annotations. Based on the shown values, answer this question: The triangle includes an altitude to the base. What is the length of segment MO?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+  },
+  "task": "task_geometry_analytical_2d_length",
+  "task_variant": "triangle_altitude_side",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 100,
+      "answer_min": 3,
+      "answer_scalar": 283,
+      "answer_type": "number",
+      "answer_value": 28.3,
+      "evidence_map": {
+        "MP": 15,
+        "OP": 24
+      },
+      "evidence_role_tokens": {
+        "base_part": "MP",
+        "height": "OP"
+      },
+      "evidence_role_values": {
+        "base_part": 15,
+        "height": 24
+      },
+      "evidence_roles": [
+        "height",
+        "base_part"
+      ],
+      "formula_expression": "sqrt(height^2 + base_part^2)",
+      "raw_answer_value": 28.30194339616981,
+      "required_annotations": [
+        "OP",
+        "MP"
+      ],
+      "target_annotation": "MO",
+      "task_variant": "triangle_altitude_side",
+      "variant_probabilities": {
+        "circle_chord_length": 0.16666666666666666,
+        "inscribed_square_side": 0.16666666666666666,
+        "isosceles_trapezoid_leg": 0.16666666666666666,
+        "rectangle_diagonal_side": 0.16666666666666666,
+        "rhombus_diagonal_side": 0.16666666666666666,
+        "triangle_altitude_side": 0.16666666666666666
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "base_part": "MP",
+        "height": "OP"
+      },
+      "id_set": [
+        "OP",
+        "MP"
+      ],
+      "measurement_ref_map": {
+        "MP": 15,
+        "OP": 24
+      },
+      "pixel_annotation_centers": {
+        "MP": [
+          254.7706683719217,
+          590.5500000000001
+        ],
+        "OP": [
+          430.0144183719217,
+          337.50000000000006
+        ]
+      },
+      "pixel_point_set": [
+        [
+          430.0144183719217,
+          337.50000000000006
+        ],
+        [
+          254.7706683719217,
+          590.5500000000001
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 100,
+        "answer_min": 3,
+        "task_variant": "triangle_altitude_side",
+        "variant_probabilities": {
+          "circle_chord_length": 0.16666666666666666,
+          "inscribed_square_side": 0.16666666666666666,
+          "isosceles_trapezoid_leg": 0.16666666666666666,
+          "rectangle_diagonal_side": 0.16666666666666666,
+          "rhombus_diagonal_side": 0.16666666666666666,
+          "triangle_altitude_side": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "geometry_analytical_length_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP, MP",
+          "json_example": "{\"evidence\":{\"OP\":2,\"MP\":3},\"answer\":42.3}",
+          "json_example_answer_only": "{\"answer\":42.3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a geometric scene with measurement annotations",
+          "question_text": "The triangle includes an altitude to the base. What is the length of segment MO?"
+        },
+        "task_family_key": "analytical_length_scene",
+        "task_family_variant_index": 1,
+        "task_key": "analytical_length_query",
+        "task_variant_index": 4,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_2d/geometry_analytical_length_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_length_query": 5,
+          "task_family:analytical_length_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "geometry_analytical_length_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP, MP",
+              "json_example": "{\"evidence\":{\"OP\":2,\"MP\":3},\"answer\":42.3}",
+              "json_example_answer_only": "{\"answer\":42.3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric scene with measurement annotations",
+              "question_text": "The triangle includes an altitude to the base. What is the length of segment MO?"
+            },
+            "task_family_key": "analytical_length_scene",
+            "task_family_variant_index": 1,
+            "task_key": "analytical_length_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_length_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_length_query": 5,
+              "task_family:analytical_length_scene": 5
+            }
+          },
+          "prompt": "The image shows a geometric scene with measurement annotations. Based on the shown values, answer this question: The triangle includes an altitude to the base. What is the length of segment MO?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP, MP.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"OP\":2,\"MP\":3},\"answer\":42.3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_analytical_length_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP, MP",
+              "json_example": "{\"evidence\":{\"OP\":2,\"MP\":3},\"answer\":42.3}",
+              "json_example_answer_only": "{\"answer\":42.3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric scene with measurement annotations",
+              "question_text": "The triangle includes an altitude to the base. What is the length of segment MO?"
+            },
+            "task_family_key": "analytical_length_scene",
+            "task_family_variant_index": 1,
+            "task_key": "analytical_length_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_length_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_length_query": 5,
+              "task_family:analytical_length_scene": 5
+            }
+          },
+          "prompt": "The image shows a geometric scene with measurement annotations. Based on the shown values, answer this question: The triangle includes an altitude to the base. What is the length of segment MO?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+        }
+      },
+      "task_variant": "triangle_altitude_side",
+      "template_id": "geometry_analytical_length_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "MP": [
+          254.7706683719217,
+          590.5500000000001
+        ],
+        "OP": [
+          430.0144183719217,
+          337.50000000000006
+        ]
+      },
+      "annotation_labels": {
+        "base_part": "MP",
+        "height": "OP"
+      },
+      "coord_space": "pixel",
+      "instance_anchor": {
+        "bbox": [
+          107.92691837192166,
+          102.55000000000007,
+          519.0894183719216,
+          572.45
+        ],
+        "coord_space": "pixel"
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_offwhite",
+        "style_spec": {
+          "color": [
+            252,
+            252,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 675,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "origin_pixel": [
+          337,
+          337
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 75,
+        "target_cells_x": 9,
+        "target_cells_y": 9,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "partial_edge_cells": true,
+        "spacing_px": 75,
+        "target_cells_x": 9,
+        "target_cells_y": 9
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          163,
+          79,
+          53
+        ],
+        "label_stroke_color": [
+          255,
+          254,
+          252
+        ],
+        "line_color": [
+          163,
+          79,
+          53
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "vertices": [
+              [
+                107.92691837192166,
+                572.45
+              ],
+              [
+                519.0894183719216,
+                572.45
+              ],
+              [
+                401.61441837192166,
+                102.55000000000007
+              ]
+            ]
+          },
+          "entity_id": "triangle_1",
+          "entity_type": "triangle"
+        },
+        {
+          "attrs": {
+            "helper": true,
+            "point_a": [
+              401.61441837192166,
+              102.55000000000007
+            ],
+            "point_b": [
+              401.61441837192166,
+              572.45
+            ]
+          },
+          "entity_id": "altitude_1",
+          "entity_type": "altitude"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            337,
+            337
+          ],
+          "spacing_px": 75,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_2d_analytical_length"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "OP",
+        "MP"
+      ],
+      "annotation_labels": {
+        "base_part": "MP",
+        "height": "OP"
+      },
+      "annotation_values": {
+        "MP": 15,
+        "OP": 24
+      },
+      "formula_expression": "sqrt(height^2 + base_part^2)",
+      "measurement_ref_map": {
+        "MP": 15,
+        "OP": 24
+      },
+      "task_variant": "triangle_altitude_side",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

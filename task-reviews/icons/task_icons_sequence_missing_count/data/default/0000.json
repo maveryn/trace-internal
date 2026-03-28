@@ -1,0 +1,1592 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 9
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        471,
+        87,
+        590,
+        219
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_sequence_missing_count/images/default/0000.png"
+  },
+  "instance_seed": 3329467869360528,
+  "prompt": "The image shows a horizontal row of Scene boxes, where one box is missing and marked with a question mark. Answer this question: How many icons should be in the missing box to continue the sequence?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the missing Scene box.\nAnswer requirement: set \"answer\" to the missing count as an integer.\nExample JSON:\n{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows a horizontal row of Scene boxes, where one box is missing and marked with a question mark. Answer this question: How many icons should be in the missing box to continue the sequence?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the missing Scene box.\nAnswer requirement: set \"answer\" to the missing count as an integer.\nExample JSON:\n{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+    "answer_only": "The image shows a horizontal row of Scene boxes, where one box is missing and marked with a question mark. Answer this question: How many icons should be in the missing box to continue the sequence?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the missing count as an integer.\nExample JSON:\n{\"answer\":5}"
+  },
+  "task": "task_icons_sequence_missing_count",
+  "task_variant": "arithmetic_progression",
+  "trace_payload": {
+    "execution_trace": {
+      "cell_box_height_px": 132,
+      "cell_box_width_px": 119,
+      "full_sequence_counts": [
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "missing_cell_index": 3,
+      "question_format": "infer_missing_sequence_count",
+      "scene_rotations_degrees_by_cell": [
+        [
+          180,
+          90,
+          90,
+          180,
+          0,
+          270
+        ],
+        [
+          90,
+          270,
+          90,
+          0,
+          180,
+          180,
+          90
+        ],
+        [
+          90,
+          180,
+          270,
+          0,
+          90,
+          270,
+          270,
+          270
+        ],
+        [],
+        [
+          90,
+          270,
+          270,
+          0,
+          270,
+          90,
+          90,
+          0,
+          270,
+          270
+        ]
+      ],
+      "scene_variant": "single_panel_sequence_row",
+      "sequence_icon_id": "gi-delapouite-protection-glasses",
+      "sequence_length": 5,
+      "sequence_length_probabilities": {
+        "4": 0.3333333333333333,
+        "5": 0.3333333333333333,
+        "6": 0.3333333333333333
+      },
+      "step_delta": 1,
+      "target_count": 9,
+      "target_count_probabilities": {
+        "0": 0.09090909090909091,
+        "1": 0.09090909090909091,
+        "10": 0.09090909090909091,
+        "2": 0.09090909090909091,
+        "3": 0.09090909090909091,
+        "4": 0.09090909090909091,
+        "5": 0.09090909090909091,
+        "6": 0.09090909090909091,
+        "7": 0.09090909090909091,
+        "8": 0.09090909090909091,
+        "9": 0.09090909090909091
+      },
+      "task_variant": "arithmetic_progression"
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          471,
+          87,
+          590,
+          219
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "cell_box_height_px": 132,
+        "cell_box_width_px": 119,
+        "missing_cell_index": 3,
+        "pool_manifest": "all_icons.txt",
+        "rotation_candidates_degrees": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "sequence_length": 5,
+        "sequence_length_probabilities": {
+          "4": 0.3333333333333333,
+          "5": 0.3333333333333333,
+          "6": 0.3333333333333333
+        },
+        "step_delta": 1,
+        "target_count": 9,
+        "target_count_probabilities": {
+          "0": 0.09090909090909091,
+          "1": 0.09090909090909091,
+          "10": 0.09090909090909091,
+          "2": 0.09090909090909091,
+          "3": 0.09090909090909091,
+          "4": 0.09090909090909091,
+          "5": 0.09090909090909091,
+          "6": 0.09090909090909091,
+          "7": 0.09090909090909091,
+          "8": 0.09090909090909091,
+          "9": 0.09090909090909091
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "icons_sequence_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the missing count as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the missing Scene box",
+          "json_example": "{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+          "json_example_answer_only": "{\"answer\":5}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a horizontal row of Scene boxes, where one box is missing and marked with a question mark",
+          "question_text": "How many icons should be in the missing box to continue the sequence?"
+        },
+        "task_family_key": "sequence_missing_count",
+        "task_family_variant_index": 1,
+        "task_key": "missing_count_query",
+        "task_variant_index": 3,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/sequence/icons_sequence_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:missing_count_query": 5,
+          "task_family:sequence_missing_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "icons_sequence_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the missing count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the missing Scene box",
+              "json_example": "{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+              "json_example_answer_only": "{\"answer\":5}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a horizontal row of Scene boxes, where one box is missing and marked with a question mark",
+              "question_text": "How many icons should be in the missing box to continue the sequence?"
+            },
+            "task_family_key": "sequence_missing_count",
+            "task_family_variant_index": 1,
+            "task_key": "missing_count_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/sequence/icons_sequence_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:missing_count_query": 5,
+              "task_family:sequence_missing_count": 5
+            }
+          },
+          "prompt": "The image shows a horizontal row of Scene boxes, where one box is missing and marked with a question mark. Answer this question: How many icons should be in the missing box to continue the sequence?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the missing Scene box.\nAnswer requirement: set \"answer\" to the missing count as an integer.\nExample JSON:\n{\"evidence\":[[540,126,654,458]],\"answer\":5}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "icons_sequence_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the missing count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the missing Scene box",
+              "json_example": "{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+              "json_example_answer_only": "{\"answer\":5}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a horizontal row of Scene boxes, where one box is missing and marked with a question mark",
+              "question_text": "How many icons should be in the missing box to continue the sequence?"
+            },
+            "task_family_key": "sequence_missing_count",
+            "task_family_variant_index": 1,
+            "task_key": "missing_count_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/sequence/icons_sequence_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:missing_count_query": 5,
+              "task_family:sequence_missing_count": 5
+            }
+          },
+          "prompt": "The image shows a horizontal row of Scene boxes, where one box is missing and marked with a question mark. Answer this question: How many icons should be in the missing box to continue the sequence?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the missing count as an integer.\nExample JSON:\n{\"answer\":5}"
+        }
+      },
+      "task_variant": "arithmetic_progression",
+      "template_id": "icons_sequence_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "missing_cell_bbox": [
+          471,
+          87,
+          590,
+          219
+        ]
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        783,
+        273
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          783,
+          273
+        ],
+        "scene_content_xyxy": [
+          44,
+          77,
+          739,
+          229
+        ],
+        "scene_panel_xyxy": [
+          24,
+          24,
+          759,
+          249
+        ]
+      },
+      "style": {
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "cell_box_height_range_px": [
+          96,
+          144
+        ],
+        "cell_box_width_range_px": [
+          112,
+          160
+        ],
+        "cell_corner_radius_px": 12,
+        "cell_icon_padding_px": 8,
+        "cell_padding_px": 10,
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "missing_mark_color_rgb": [
+          84,
+          96,
+          118
+        ],
+        "missing_mark_font_size_px": 56,
+        "palette_size_max": 1,
+        "palette_size_min": 1,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "reference_icon_size_max_px": 0,
+        "reference_icon_size_min_px": 0,
+        "reference_icon_size_px": 0,
+        "sampled_cell_box_size_px": [
+          119,
+          132
+        ],
+        "sampled_palette_rgb": [
+          [
+            90,
+            211,
+            99
+          ]
+        ],
+        "scene_icon_size_max_px": 40,
+        "scene_icon_size_min_px": 24,
+        "scene_max_overlap_fraction": 0.2,
+        "scene_placement_max_attempts": 160,
+        "scene_size_shrink_factor": 0.9,
+        "scene_size_shrink_rounds": 6
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "cell_bbox_xyxy": [
+            54,
+            87,
+            173,
+            219
+          ],
+          "cell_index": 0,
+          "entity_kind": "sequence_cell",
+          "is_missing": false,
+          "panel": "scene",
+          "rendered_icon_count": 6,
+          "target_icon_count": 6
+        },
+        {
+          "cell_bbox_xyxy": [
+            193,
+            87,
+            312,
+            219
+          ],
+          "cell_index": 1,
+          "entity_kind": "sequence_cell",
+          "is_missing": false,
+          "panel": "scene",
+          "rendered_icon_count": 7,
+          "target_icon_count": 7
+        },
+        {
+          "cell_bbox_xyxy": [
+            332,
+            87,
+            451,
+            219
+          ],
+          "cell_index": 2,
+          "entity_kind": "sequence_cell",
+          "is_missing": false,
+          "panel": "scene",
+          "rendered_icon_count": 8,
+          "target_icon_count": 8
+        },
+        {
+          "cell_bbox_xyxy": [
+            471,
+            87,
+            590,
+            219
+          ],
+          "cell_index": 3,
+          "entity_kind": "sequence_cell",
+          "is_missing": true,
+          "panel": "scene",
+          "rendered_icon_count": 0,
+          "target_icon_count": 9
+        },
+        {
+          "cell_bbox_xyxy": [
+            610,
+            87,
+            729,
+            219
+          ],
+          "cell_index": 4,
+          "entity_kind": "sequence_cell",
+          "is_missing": false,
+          "panel": "scene",
+          "rendered_icon_count": 10,
+          "target_icon_count": 10
+        },
+        {
+          "bbox_xyxy": [
+            99,
+            163,
+            125,
+            175
+          ],
+          "cell_bbox_xyxy": [
+            54,
+            87,
+            173,
+            219
+          ],
+          "cell_index": 0,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_0_icon_0",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 78.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "radius": 0.484653
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 2062909777024998,
+          "nominal_size_px": 28,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            122,
+            115,
+            139,
+            150
+          ],
+          "cell_bbox_xyxy": [
+            54,
+            87,
+            173,
+            219
+          ],
+          "cell_index": 0,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_0_icon_1",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.050022
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "radius": 0.551654
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 794243665585644,
+          "nominal_size_px": 39,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            84,
+            125,
+            98,
+            155
+          ],
+          "cell_bbox_xyxy": [
+            54,
+            87,
+            173,
+            219
+          ],
+          "cell_index": 0,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_0_icon_2",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 7494645765827137,
+          "nominal_size_px": 32,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            106,
+            193,
+            139,
+            208
+          ],
+          "cell_bbox_xyxy": [
+            54,
+            87,
+            173,
+            219
+          ],
+          "cell_index": 0,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_0_icon_3",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 71.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 6621056417483629,
+          "nominal_size_px": 35,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            72,
+            175,
+            107,
+            192
+          ],
+          "cell_bbox_xyxy": [
+            54,
+            87,
+            173,
+            219
+          ],
+          "cell_index": 0,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_0_icon_4",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.388256
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "scale": 0.910879
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 2940978748605025,
+          "nominal_size_px": 39,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            115,
+            142,
+            127,
+            164
+          ],
+          "cell_bbox_xyxy": [
+            54,
+            87,
+            173,
+            219
+          ],
+          "cell_index": 0,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_0_icon_5",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 6713190113940167,
+          "nominal_size_px": 24,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            283,
+            137,
+            298,
+            170
+          ],
+          "cell_bbox_xyxy": [
+            193,
+            87,
+            312,
+            219
+          ],
+          "cell_index": 1,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_1_icon_0",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 3180221330836997,
+          "nominal_size_px": 35,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            223,
+            173,
+            236,
+            198
+          ],
+          "cell_bbox_xyxy": [
+            193,
+            87,
+            312,
+            219
+          ],
+          "cell_index": 1,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_1_icon_1",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 2568602942376736,
+          "nominal_size_px": 27,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            246,
+            106,
+            259,
+            131
+          ],
+          "cell_bbox_xyxy": [
+            193,
+            87,
+            312,
+            219
+          ],
+          "cell_index": 1,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_1_icon_2",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 3116206477039148,
+          "nominal_size_px": 27,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            263,
+            170,
+            294,
+            185
+          ],
+          "cell_bbox_xyxy": [
+            193,
+            87,
+            312,
+            219
+          ],
+          "cell_index": 1,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_1_icon_3",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 78.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "radius": 0.305133
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 3968183015621362,
+          "nominal_size_px": 33,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            237,
+            153,
+            262,
+            166
+          ],
+          "cell_bbox_xyxy": [
+            193,
+            87,
+            312,
+            219
+          ],
+          "cell_index": 1,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_1_icon_4",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.906108
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "alpha": 0.040007
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 539944307604895,
+          "nominal_size_px": 27,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            239,
+            192,
+            275,
+            210
+          ],
+          "cell_bbox_xyxy": [
+            193,
+            87,
+            312,
+            219
+          ],
+          "cell_index": 1,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_1_icon_5",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.874632
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 7380547910989479,
+          "nominal_size_px": 40,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            233,
+            105,
+            245,
+            129
+          ],
+          "cell_bbox_xyxy": [
+            193,
+            87,
+            312,
+            219
+          ],
+          "cell_index": 1,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_1_icon_6",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 6257181406088370,
+          "nominal_size_px": 26,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            385,
+            105,
+            398,
+            130
+          ],
+          "cell_bbox_xyxy": [
+            332,
+            87,
+            451,
+            219
+          ],
+          "cell_index": 2,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_2_icon_0",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.910763
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "radius": 0.52082
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 1559962538650894,
+          "nominal_size_px": 27,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            369,
+            137,
+            397,
+            151
+          ],
+          "cell_bbox_xyxy": [
+            332,
+            87,
+            451,
+            219
+          ],
+          "cell_index": 2,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_2_icon_1",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 2124446418712950,
+          "nominal_size_px": 30,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            398,
+            147,
+            410,
+            173
+          ],
+          "cell_bbox_xyxy": [
+            332,
+            87,
+            451,
+            219
+          ],
+          "cell_index": 2,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_2_icon_2",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.894067
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "radius": 0.211286
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 2586196496471165,
+          "nominal_size_px": 28,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            350,
+            105,
+            382,
+            121
+          ],
+          "cell_bbox_xyxy": [
+            332,
+            87,
+            451,
+            219
+          ],
+          "cell_index": 2,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_2_icon_3",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.879557
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "radius": 0.50144
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 1178276429405858,
+          "nominal_size_px": 34,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            376,
+            184,
+            389,
+            211
+          ],
+          "cell_bbox_xyxy": [
+            332,
+            87,
+            451,
+            219
+          ],
+          "cell_index": 2,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_2_icon_4",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 2298133695719785,
+          "nominal_size_px": 29,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            355,
+            180,
+            366,
+            203
+          ],
+          "cell_bbox_xyxy": [
+            332,
+            87,
+            451,
+            219
+          ],
+          "cell_index": 2,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_2_icon_5",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 8423402152016172,
+          "nominal_size_px": 25,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            428,
+            116,
+            443,
+            145
+          ],
+          "cell_bbox_xyxy": [
+            332,
+            87,
+            451,
+            219
+          ],
+          "cell_index": 2,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_2_icon_6",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 100612122879943,
+          "nominal_size_px": 31,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            340,
+            135,
+            352,
+            159
+          ],
+          "cell_bbox_xyxy": [
+            332,
+            87,
+            451,
+            219
+          ],
+          "cell_index": 2,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_2_icon_7",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.408336
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "quality": 87.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 4447785124871461,
+          "nominal_size_px": 26,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            709,
+            138,
+            721,
+            162
+          ],
+          "cell_bbox_xyxy": [
+            610,
+            87,
+            729,
+            219
+          ],
+          "cell_index": 4,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_4_icon_0",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 2107966242305753,
+          "nominal_size_px": 26,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            669,
+            145,
+            681,
+            171
+          ],
+          "cell_bbox_xyxy": [
+            610,
+            87,
+            729,
+            219
+          ],
+          "cell_index": 4,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_4_icon_1",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 4594640849590597,
+          "nominal_size_px": 28,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            647,
+            122,
+            662,
+            155
+          ],
+          "cell_bbox_xyxy": [
+            610,
+            87,
+            729,
+            219
+          ],
+          "cell_index": 4,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_4_icon_2",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 8288004137775037,
+          "nominal_size_px": 35,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            630,
+            189,
+            662,
+            205
+          ],
+          "cell_bbox_xyxy": [
+            610,
+            87,
+            729,
+            219
+          ],
+          "cell_index": 4,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_4_icon_3",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.876679
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 7272652182777323,
+          "nominal_size_px": 34,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            655,
+            161,
+            670,
+            190
+          ],
+          "cell_bbox_xyxy": [
+            610,
+            87,
+            729,
+            219
+          ],
+          "cell_index": 4,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_4_icon_4",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 3427795273527952,
+          "nominal_size_px": 31,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            683,
+            97,
+            694,
+            120
+          ],
+          "cell_bbox_xyxy": [
+            610,
+            87,
+            729,
+            219
+          ],
+          "cell_index": 4,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_4_icon_5",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.399125
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 2322831807633586,
+          "nominal_size_px": 25,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            623,
+            160,
+            634,
+            183
+          ],
+          "cell_bbox_xyxy": [
+            610,
+            87,
+            729,
+            219
+          ],
+          "cell_index": 4,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_4_icon_6",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.234532
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "quality": 87.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 2947771811561139,
+          "nominal_size_px": 25,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            672,
+            175,
+            706,
+            193
+          ],
+          "cell_bbox_xyxy": [
+            610,
+            87,
+            729,
+            219
+          ],
+          "cell_index": 4,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_4_icon_7",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 3147012235929963,
+          "nominal_size_px": 38,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            632,
+            101,
+            650,
+            135
+          ],
+          "cell_bbox_xyxy": [
+            610,
+            87,
+            729,
+            219
+          ],
+          "cell_index": 4,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_4_icon_8",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 3821599762836814,
+          "nominal_size_px": 38,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            691,
+            146,
+            704,
+            173
+          ],
+          "cell_bbox_xyxy": [
+            610,
+            87,
+            729,
+            219
+          ],
+          "cell_index": 4,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-protection-glasses",
+          "instance_id": "scene_cell_4_icon_9",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 82.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 3171092232068125,
+          "nominal_size_px": 29,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            90,
+            211,
+            99
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            783,
+            273
+          ],
+          "scene_content_xyxy": [
+            44,
+            77,
+            739,
+            229
+          ],
+          "scene_panel_xyxy": [
+            24,
+            24,
+            759,
+            249
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "full_sequence_counts": [
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "missing_cell_index": 3,
+        "sequence_icon_id": "gi-delapouite-protection-glasses",
+        "sequence_rule": "arithmetic_progression",
+        "step_delta": 1
+      },
+      "scene_kind": "icons_sequence_missing_count"
+    },
+    "witness_symbolic": {
+      "full_sequence_counts": [
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "missing_cell_index": 3,
+      "sequence_rule": "arithmetic_progression",
+      "step_delta": 1
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

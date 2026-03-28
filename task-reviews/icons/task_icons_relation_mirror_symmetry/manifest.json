@@ -1,0 +1,19 @@
+{
+  "inspection_count": 25,
+  "task_id": "task_icons_relation_mirror_symmetry",
+  "variants": {
+    "mirror_both_axes": 5,
+    "mirror_diagonal_anti": 5,
+    "mirror_diagonal_main": 5,
+    "mirror_horizontal": 5,
+    "mirror_vertical": 5
+  },
+  "workbook": "icons/task_icons_relation_mirror_symmetry/task_icons_relation_mirror_symmetry.xlsx",
+  "workbook_sheets": {
+    "mirror_both_axes": "mirror_both_axes",
+    "mirror_diagonal_anti": "mirror_diagonal_anti",
+    "mirror_diagonal_main": "mirror_diagonal_main",
+    "mirror_horizontal": "mirror_horizontal",
+    "mirror_vertical": "mirror_vertical"
+  }
+}

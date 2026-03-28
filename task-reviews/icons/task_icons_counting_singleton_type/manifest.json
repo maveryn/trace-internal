@@ -1,0 +1,11 @@
+{
+  "inspection_count": 25,
+  "task_id": "task_icons_counting_singleton_type",
+  "variants": {
+    "": 25
+  },
+  "workbook": "icons/task_icons_counting_singleton_type/task_icons_counting_singleton_type.xlsx",
+  "workbook_sheets": {
+    "singleton_type_count": "singleton_type_count"
+  }
+}

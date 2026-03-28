@@ -1,0 +1,1209 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 8
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        659,
+        139,
+        698,
+        168
+      ],
+      [
+        390,
+        209,
+        457,
+        258
+      ],
+      [
+        644,
+        209,
+        686,
+        241
+      ],
+      [
+        320,
+        216,
+        388,
+        266
+      ],
+      [
+        445,
+        289,
+        484,
+        318
+      ],
+      [
+        763,
+        325,
+        824,
+        370
+      ],
+      [
+        707,
+        371,
+        789,
+        433
+      ],
+      [
+        461,
+        419,
+        512,
+        458
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_counting_orientation/images/default/0006.png"
+  },
+  "instance_seed": 2080765647481079,
+  "prompt": "Look at the image with a Reference icon on the left and a Scene panel of icons on the right. Answer this question: How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer requirement: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[334,150,410,226],[588,318,664,394],[756,318,832,394]],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the image with a Reference icon on the left and a Scene panel of icons on the right. Answer this question: How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer requirement: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[334,150,410,226],[588,318,664,394],[756,318,832,394]],\"answer\":3}",
+    "answer_only": "Look at the image with a Reference icon on the left and a Scene panel of icons on the right. Answer this question: How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_icons_counting_orientation",
+  "task_variant": "same_orientation",
+  "trace_payload": {
+    "execution_trace": {
+      "base_icon_id": "gi-delapouite-globe-ring",
+      "distractor_count": 9,
+      "distractor_count_probabilities": {
+        "1": 0.1,
+        "10": 0.1,
+        "2": 0.1,
+        "3": 0.1,
+        "4": 0.1,
+        "5": 0.1,
+        "6": 0.1,
+        "7": 0.1,
+        "8": 0.1,
+        "9": 0.1
+      },
+      "matching_scene_indices": [
+        2,
+        4,
+        5,
+        6,
+        8,
+        10,
+        12,
+        15
+      ],
+      "object_count": 17,
+      "object_count_probabilities": {
+        "10": 0.1,
+        "11": 0.1,
+        "12": 0.1,
+        "13": 0.1,
+        "14": 0.1,
+        "15": 0.1,
+        "16": 0.1,
+        "17": 0.1,
+        "18": 0.1,
+        "9": 0.1
+      },
+      "question_format": "count_matching_scene_icons_by_reference",
+      "reference_rotation_degrees": 270,
+      "scene_rotations_degrees": [
+        0,
+        90,
+        270,
+        0,
+        270,
+        270,
+        270,
+        180,
+        270,
+        180,
+        270,
+        0,
+        270,
+        0,
+        0,
+        270,
+        0
+      ],
+      "scene_variant": "reference_scene",
+      "target_count": 8,
+      "target_count_probabilities": {
+        "0": 0.09090909090909091,
+        "1": 0.09090909090909091,
+        "10": 0.09090909090909091,
+        "2": 0.09090909090909091,
+        "3": 0.09090909090909091,
+        "4": 0.09090909090909091,
+        "5": 0.09090909090909091,
+        "6": 0.09090909090909091,
+        "7": 0.09090909090909091,
+        "8": 0.09090909090909091,
+        "9": 0.09090909090909091
+      },
+      "task_variant": "same_orientation"
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          659,
+          139,
+          698,
+          168
+        ],
+        [
+          390,
+          209,
+          457,
+          258
+        ],
+        [
+          644,
+          209,
+          686,
+          241
+        ],
+        [
+          320,
+          216,
+          388,
+          266
+        ],
+        [
+          445,
+          289,
+          484,
+          318
+        ],
+        [
+          763,
+          325,
+          824,
+          370
+        ],
+        [
+          707,
+          371,
+          789,
+          433
+        ],
+        [
+          461,
+          419,
+          512,
+          458
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "distractor_count": 9,
+        "distractor_count_probabilities": {
+          "1": 0.1,
+          "10": 0.1,
+          "2": 0.1,
+          "3": 0.1,
+          "4": 0.1,
+          "5": 0.1,
+          "6": 0.1,
+          "7": 0.1,
+          "8": 0.1,
+          "9": 0.1
+        },
+        "object_count": 17,
+        "object_count_probabilities": {
+          "10": 0.1,
+          "11": 0.1,
+          "12": 0.1,
+          "13": 0.1,
+          "14": 0.1,
+          "15": 0.1,
+          "16": 0.1,
+          "17": 0.1,
+          "18": 0.1,
+          "9": 0.1
+        },
+        "pool_manifest": "non_symmetry.txt",
+        "rotation_candidates_degrees": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "target_count": 8,
+        "target_count_probabilities": {
+          "0": 0.09090909090909091,
+          "1": 0.09090909090909091,
+          "10": 0.09090909090909091,
+          "2": 0.09090909090909091,
+          "3": 0.09090909090909091,
+          "4": 0.09090909090909091,
+          "5": 0.09090909090909091,
+          "6": 0.09090909090909091,
+          "7": 0.09090909090909091,
+          "8": 0.09090909090909091,
+          "9": 0.09090909090909091
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "icons_counting_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+          "json_example": "{\"evidence\":[[334,150,410,226],[588,318,664,394],[756,318,832,394]],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+          "question_text": "How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation."
+        },
+        "task_family_key": "reference_scene_counting",
+        "task_family_variant_index": 2,
+        "task_key": "counting_query",
+        "task_variant_index": 3,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/counting/icons_counting_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:counting_query": 5,
+          "task_family:reference_scene_counting": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "icons_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[334,150,410,226],[588,318,664,394],[756,318,832,394]],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+              "question_text": "How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation."
+            },
+            "task_family_key": "reference_scene_counting",
+            "task_family_variant_index": 2,
+            "task_key": "counting_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/counting/icons_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:counting_query": 5,
+              "task_family:reference_scene_counting": 5
+            }
+          },
+          "prompt": "Look at the image with a Reference icon on the left and a Scene panel of icons on the right. Answer this question: How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer requirement: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[334,150,410,226],[588,318,664,394],[756,318,832,394]],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "icons_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[334,150,410,226],[588,318,664,394],[756,318,832,394]],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+              "question_text": "How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation."
+            },
+            "task_family_key": "reference_scene_counting",
+            "task_family_variant_index": 2,
+            "task_key": "counting_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/counting/icons_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:counting_query": 5,
+              "task_family:reference_scene_counting": 5
+            }
+          },
+          "prompt": "Look at the image with a Reference icon on the left and a Scene panel of icons on the right. Answer this question: How many icons in the Scene panel have the same orientation as the Reference icon? Orientation refers to the icon's rotation.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "same_orientation",
+      "template_id": "icons_counting_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching_scene_boxes": [
+          [
+            659,
+            139,
+            698,
+            168
+          ],
+          [
+            390,
+            209,
+            457,
+            258
+          ],
+          [
+            644,
+            209,
+            686,
+            241
+          ],
+          [
+            320,
+            216,
+            388,
+            266
+          ],
+          [
+            445,
+            289,
+            484,
+            318
+          ],
+          [
+            763,
+            325,
+            824,
+            370
+          ],
+          [
+            707,
+            371,
+            789,
+            433
+          ],
+          [
+            461,
+            419,
+            512,
+            458
+          ]
+        ],
+        "reference_icon": {
+          "bbox_xyxy": [
+            84,
+            241,
+            212,
+            335
+          ],
+          "icon_id": "gi-delapouite-globe-ring",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 7680042736974306,
+          "panel": "reference",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            138,
+            69,
+            53
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        960,
+        544
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          960,
+          544
+        ],
+        "reference_content_xyxy": [
+          44,
+          77,
+          252,
+          500
+        ],
+        "reference_panel_xyxy": [
+          24,
+          24,
+          272,
+          520
+        ],
+        "scene_content_xyxy": [
+          316,
+          77,
+          916,
+          500
+        ],
+        "scene_panel_xyxy": [
+          296,
+          24,
+          936,
+          520
+        ]
+      },
+      "style": {
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "palette_size_max": 12,
+        "palette_size_min": 8,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "reference_icon_size_max_px": 136,
+        "reference_icon_size_min_px": 136,
+        "reference_icon_size_px": 136,
+        "sampled_palette_rgb": [
+          [
+            56,
+            132,
+            36
+          ],
+          [
+            149,
+            92,
+            176
+          ],
+          [
+            212,
+            34,
+            113
+          ],
+          [
+            138,
+            69,
+            53
+          ],
+          [
+            201,
+            141,
+            57
+          ],
+          [
+            70,
+            39,
+            215
+          ],
+          [
+            76,
+            214,
+            177
+          ],
+          [
+            30,
+            201,
+            27
+          ],
+          [
+            204,
+            211,
+            78
+          ],
+          [
+            216,
+            24,
+            198
+          ],
+          [
+            218,
+            42,
+            42
+          ],
+          [
+            54,
+            146,
+            214
+          ]
+        ],
+        "scene_icon_size_max_px": 96,
+        "scene_icon_size_min_px": 40,
+        "scene_max_overlap_fraction": 0.1,
+        "scene_placement_max_attempts": 120,
+        "scene_size_shrink_factor": 0.9,
+        "scene_size_shrink_rounds": 6
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_xyxy": [
+            84,
+            241,
+            212,
+            335
+          ],
+          "icon_id": "gi-delapouite-globe-ring",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 7680042736974306,
+          "panel": "reference",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            138,
+            69,
+            53
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            631,
+            307,
+            685,
+            381
+          ],
+          "icon_id": "gi-delapouite-globe-ring",
+          "index": 0,
+          "instance_id": "scene_icon_0",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 87.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 2743287809231439,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            218,
+            42,
+            42
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            730,
+            219,
+            793,
+            266
+          ],
+          "icon_id": "gi-delapouite-globe-ring",
+          "index": 1,
+          "instance_id": "scene_icon_1",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.072366
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "quality": 75.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 862400172744451,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            204,
+            211,
+            78
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            659,
+            139,
+            698,
+            168
+          ],
+          "icon_id": "gi-delapouite-globe-ring",
+          "index": 2,
+          "instance_id": "scene_icon_2",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 4394374083620014,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            76,
+            214,
+            177
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            845,
+            208,
+            880,
+            255
+          ],
+          "icon_id": "gi-delapouite-globe-ring",
+          "index": 3,
+          "instance_id": "scene_icon_3",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.31615
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 6958092631876565,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            212,
+            34,
+            113
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            644,
+            209,
+            686,
+            241
+          ],
+          "icon_id": "gi-delapouite-globe-ring",
+          "index": 4,
+          "instance_id": "scene_icon_4",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 101789750177879,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            212,
+            34,
+            113
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            445,
+            289,
+            484,
+            318
+          ],
+          "icon_id": "gi-delapouite-globe-ring",
+          "index": 5,
+          "instance_id": "scene_icon_5",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.465463
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "quality": 81.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 1662803054079931,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            204,
+            211,
+            78
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            707,
+            371,
+            789,
+            433
+          ],
+          "icon_id": "gi-delapouite-globe-ring",
+          "index": 6,
+          "instance_id": "scene_icon_6",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.932982
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "radius": 0.376877
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 2272089850414020,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            30,
+            201,
+            27
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            819,
+            334,
+            885,
+            424
+          ],
+          "icon_id": "gi-delapouite-globe-ring",
+          "index": 7,
+          "instance_id": "scene_icon_7",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 76.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "scale": 0.880453
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 5149414514993605,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            56,
+            132,
+            36
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            320,
+            216,
+            388,
+            266
+          ],
+          "icon_id": "gi-delapouite-globe-ring",
+          "index": 8,
+          "instance_id": "scene_icon_8",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.862391
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 4775291922605472,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            204,
+            211,
+            78
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            331,
+            146,
+            380,
+            211
+          ],
+          "icon_id": "gi-delapouite-globe-ring",
+          "index": 9,
+          "instance_id": "scene_icon_9",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.879403
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 6573521927726892,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            70,
+            39,
+            215
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            763,
+            325,
+            824,
+            370
+          ],
+          "icon_id": "gi-delapouite-globe-ring",
+          "index": 10,
+          "instance_id": "scene_icon_10",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.89976
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 2625107747789055,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            149,
+            92,
+            176
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            378,
+            158,
+            413,
+            207
+          ],
+          "icon_id": "gi-delapouite-globe-ring",
+          "index": 11,
+          "instance_id": "scene_icon_11",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.065141
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 4326007822761787,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            204,
+            211,
+            78
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            461,
+            419,
+            512,
+            458
+          ],
+          "icon_id": "gi-delapouite-globe-ring",
+          "index": 12,
+          "instance_id": "scene_icon_12",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.597019
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 4759095167006743,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            30,
+            201,
+            27
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            377,
+            384,
+            408,
+            425
+          ],
+          "icon_id": "gi-delapouite-globe-ring",
+          "index": 13,
+          "instance_id": "scene_icon_13",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.893287
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "quality": 79.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 5387609612545823,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            212,
+            34,
+            113
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            834,
+            438,
+            878,
+            498
+          ],
+          "icon_id": "gi-delapouite-globe-ring",
+          "index": 14,
+          "instance_id": "scene_icon_14",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.041453
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 1207774471507236,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            149,
+            92,
+            176
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            390,
+            209,
+            457,
+            258
+          ],
+          "icon_id": "gi-delapouite-globe-ring",
+          "index": 15,
+          "instance_id": "scene_icon_15",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 88.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "radius": 0.574811
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 7651724011029199,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            216,
+            24,
+            198
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            323,
+            318,
+            382,
+            397
+          ],
+          "icon_id": "gi-delapouite-globe-ring",
+          "index": 16,
+          "instance_id": "scene_icon_16",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 3151723235306028,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            204,
+            211,
+            78
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            960,
+            544
+          ],
+          "reference_content_xyxy": [
+            44,
+            77,
+            252,
+            500
+          ],
+          "reference_panel_xyxy": [
+            24,
+            24,
+            272,
+            520
+          ],
+          "scene_content_xyxy": [
+            316,
+            77,
+            916,
+            500
+          ],
+          "scene_panel_xyxy": [
+            296,
+            24,
+            936,
+            520
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "counting_target": "same_orientation_as_reference",
+        "matching_scene_indices": [
+          2,
+          4,
+          5,
+          6,
+          8,
+          10,
+          12,
+          15
+        ],
+        "reference_icon_id": "gi-delapouite-globe-ring",
+        "reference_rotation_degrees": 270
+      },
+      "scene_kind": "icons_reference_counting_orientation"
+    },
+    "witness_symbolic": {
+      "base_icon_id": "gi-delapouite-globe-ring",
+      "matching_scene_indices": [
+        2,
+        4,
+        5,
+        6,
+        8,
+        10,
+        12,
+        15
+      ],
+      "reference_rotation_degrees": 270
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

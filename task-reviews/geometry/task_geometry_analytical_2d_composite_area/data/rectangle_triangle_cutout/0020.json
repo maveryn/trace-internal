@@ -1,0 +1,479 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 212
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "PQ": 34,
+      "QR": 7,
+      "SR": 26,
+      "TR": 2
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_2d_composite_area/images/rectangle_triangle_cutout/0020.png"
+  },
+  "instance_seed": 1211702679441231,
+  "prompt": "Work from the annotated scene showing a shaded composite geometric region with measurement annotations. Task: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PQ, QR, SR, TR.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"PQ\":2,\"QR\":3,\"SR\":4,\"TR\":5},\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the annotated scene showing a shaded composite geometric region with measurement annotations. Task: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PQ, QR, SR, TR.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"PQ\":2,\"QR\":3,\"SR\":4,\"TR\":5},\"answer\":8}",
+    "answer_only": "Work from the annotated scene showing a shaded composite geometric region with measurement annotations. Task: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_geometry_analytical_2d_composite_area",
+  "task_variant": "rectangle_triangle_cutout",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 2500,
+      "answer_min": 20,
+      "answer_scalar": 212,
+      "answer_type": "integer",
+      "answer_value": 212,
+      "evidence_map": {
+        "PQ": 34,
+        "QR": 7,
+        "SR": 26,
+        "TR": 2
+      },
+      "evidence_role_tokens": {
+        "cut_right": "TR",
+        "cut_top": "SR",
+        "outer_height": "QR",
+        "outer_width": "PQ"
+      },
+      "evidence_role_values": {
+        "cut_right": 2,
+        "cut_top": 26,
+        "outer_height": 7,
+        "outer_width": 34
+      },
+      "evidence_roles": [
+        "outer_width",
+        "outer_height",
+        "cut_top",
+        "cut_right"
+      ],
+      "formula_expression": "outer_width * outer_height - (cut_top * cut_right) / 2",
+      "raw_answer_value": 212,
+      "required_annotations": [
+        "PQ",
+        "QR",
+        "SR",
+        "TR"
+      ],
+      "scene_kind": "composite_region",
+      "target_quantity": "area",
+      "task_variant": "rectangle_triangle_cutout",
+      "variant_probabilities": {
+        "l_shape_cutout": 0.2,
+        "rectangle_inner_cutout": 0.2,
+        "rectangle_triangle_cutout": 0.2,
+        "rectangle_triangle_union": 0.2,
+        "step_rectangles_union": 0.2
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "cut_right": "TR",
+        "cut_top": "SR",
+        "outer_height": "QR",
+        "outer_width": "PQ"
+      },
+      "id_set": [
+        "PQ",
+        "QR",
+        "SR",
+        "TR"
+      ],
+      "measurement_ref_map": {
+        "PQ": 34,
+        "QR": 7,
+        "SR": 26,
+        "TR": 2
+      },
+      "pixel_annotation_centers": {
+        "PQ": [
+          334.5,
+          551.6851422548481
+        ],
+        "QR": [
+          566.36,
+          488.82180892151473
+        ],
+        "SR": [
+          384.82,
+          425.725142254848
+        ],
+        "TR": [
+          566.5933333333334,
+          457.3718089215147
+        ]
+      },
+      "pixel_point_set": [
+        [
+          334.5,
+          551.6851422548481
+        ],
+        [
+          566.36,
+          488.82180892151473
+        ],
+        [
+          384.82,
+          425.725142254848
+        ],
+        [
+          566.5933333333334,
+          457.3718089215147
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 2500,
+        "answer_min": 20,
+        "task_variant": "rectangle_triangle_cutout",
+        "variant_probabilities": {
+          "l_shape_cutout": 0.2,
+          "rectangle_inner_cutout": 0.2,
+          "rectangle_triangle_cutout": 0.2,
+          "rectangle_triangle_union": 0.2,
+          "step_rectangles_union": 0.2
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "geometry_analytical_composite_area_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the area value as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PQ, QR, SR, TR",
+          "json_example": "{\"evidence\":{\"PQ\":2,\"QR\":3,\"SR\":4,\"TR\":5},\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a shaded composite geometric region with measurement annotations",
+          "question_text": "The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?"
+        },
+        "task_family_key": "analytical_composite_area_scene",
+        "task_family_variant_index": 4,
+        "task_key": "analytical_composite_area_query",
+        "task_variant_index": 2,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_2d/geometry_analytical_composite_area_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_composite_area_query": 5,
+          "task_family:analytical_composite_area_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "geometry_analytical_composite_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the area value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PQ, QR, SR, TR",
+              "json_example": "{\"evidence\":{\"PQ\":2,\"QR\":3,\"SR\":4,\"TR\":5},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a shaded composite geometric region with measurement annotations",
+              "question_text": "The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?"
+            },
+            "task_family_key": "analytical_composite_area_scene",
+            "task_family_variant_index": 4,
+            "task_key": "analytical_composite_area_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_composite_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_composite_area_query": 5,
+              "task_family:analytical_composite_area_scene": 5
+            }
+          },
+          "prompt": "Work from the annotated scene showing a shaded composite geometric region with measurement annotations. Task: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PQ, QR, SR, TR.\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"PQ\":2,\"QR\":3,\"SR\":4,\"TR\":5},\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "geometry_analytical_composite_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the area value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: PQ, QR, SR, TR",
+              "json_example": "{\"evidence\":{\"PQ\":2,\"QR\":3,\"SR\":4,\"TR\":5},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a shaded composite geometric region with measurement annotations",
+              "question_text": "The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?"
+            },
+            "task_family_key": "analytical_composite_area_scene",
+            "task_family_variant_index": 4,
+            "task_key": "analytical_composite_area_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_composite_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_composite_area_query": 5,
+              "task_family:analytical_composite_area_scene": 5
+            }
+          },
+          "prompt": "Work from the annotated scene showing a shaded composite geometric region with measurement annotations. Task: The shaded region is a rectangle with one triangular corner cut out. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "rectangle_triangle_cutout",
+      "template_id": "geometry_analytical_composite_area_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "PQ": [
+          334.5,
+          551.6851422548481
+        ],
+        "QR": [
+          566.36,
+          488.82180892151473
+        ],
+        "SR": [
+          384.82,
+          425.725142254848
+        ],
+        "TR": [
+          566.5933333333334,
+          457.3718089215147
+        ]
+      },
+      "annotation_labels": {
+        "cut_right": "TR",
+        "cut_top": "SR",
+        "outer_height": "QR",
+        "outer_width": "PQ"
+      },
+      "coord_space": "pixel",
+      "instance_anchor": {
+        "bbox": [
+          120.63999999999999,
+          444.7918089215147,
+          548.36,
+          532.8518089215147
+        ],
+        "coord_space": "pixel"
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_warm",
+        "style_spec": {
+          "color": [
+            252,
+            249,
+            245
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 669,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 6,
+        "full_cells_y": 6,
+        "origin_pixel": [
+          334,
+          334
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 84,
+        "target_cells_x": 8,
+        "target_cells_y": 8,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 6,
+        "full_cells_y": 6,
+        "partial_edge_cells": true,
+        "spacing_px": 84,
+        "target_cells_x": 8,
+        "target_cells_y": 8
+      },
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "scale": 0.92947
+            },
+            "type": "downsample"
+          }
+        ],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          77,
+          96,
+          57
+        ],
+        "label_stroke_color": [
+          252,
+          248,
+          255
+        ],
+        "line_color": [
+          77,
+          96,
+          57
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "fill_kind": "shaded",
+            "vertices": [
+              [
+                120.63999999999999,
+                532.8518089215147
+              ],
+              [
+                548.36,
+                532.8518089215147
+              ],
+              [
+                548.36,
+                444.7918089215147
+              ],
+              [
+                120.63999999999999,
+                444.7918089215147
+              ]
+            ]
+          },
+          "entity_id": "outer_rect",
+          "entity_type": "rectangle"
+        },
+        {
+          "attrs": {
+            "fill_kind": "background",
+            "vertices": [
+              [
+                221.27999999999997,
+                444.7918089215147
+              ],
+              [
+                548.36,
+                444.7918089215147
+              ],
+              [
+                548.36,
+                469.9518089215147
+              ]
+            ]
+          },
+          "entity_id": "cut_triangle",
+          "entity_type": "cutout_triangle"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            334,
+            334
+          ],
+          "spacing_px": 84,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_2d_analytical_composite_area"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "PQ",
+        "QR",
+        "SR",
+        "TR"
+      ],
+      "annotation_labels": {
+        "cut_right": "TR",
+        "cut_top": "SR",
+        "outer_height": "QR",
+        "outer_width": "PQ"
+      },
+      "annotation_values": {
+        "PQ": 34,
+        "QR": 7,
+        "SR": 26,
+        "TR": 2
+      },
+      "formula_expression": "outer_width * outer_height - (cut_top * cut_right) / 2",
+      "measurement_ref_map": {
+        "PQ": 34,
+        "QR": 7,
+        "SR": 26,
+        "TR": 2
+      },
+      "task_variant": "rectangle_triangle_cutout",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

@@ -1,0 +1,435 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 5208
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "JK": 42,
+      "LM": 41
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_3d_surface_area/images/square_pyramid_given_base_side_slant_height/0008.png"
+  },
+  "instance_seed": 7197157205411126,
+  "prompt": "Work from the annotated figure showing an annotated 3D solid. The square pyramid has an annotated base side and slant height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, LM.\nAnswer: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"JK\":2,\"LM\":3},\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the annotated figure showing an annotated 3D solid. The square pyramid has an annotated base side and slant height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, LM.\nAnswer: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"JK\":2,\"LM\":3},\"answer\":8}",
+    "answer_only": "Work from the annotated figure showing an annotated 3D solid. The square pyramid has an annotated base side and slant height. What is its total surface area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_geometry_analytical_3d_surface_area",
+  "task_variant": "square_pyramid_given_base_side_slant_height",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 200000,
+      "answer_min": 8,
+      "answer_scalar": 5208,
+      "answer_type": "integer",
+      "answer_value": 5208,
+      "evidence_map": {
+        "JK": 42,
+        "LM": 41
+      },
+      "evidence_role_tokens": {
+        "l": "LM",
+        "s": "JK"
+      },
+      "evidence_role_values": {
+        "l": 41,
+        "s": 42
+      },
+      "evidence_roles": [
+        "s",
+        "l"
+      ],
+      "formula_expression": "SA = s^2 + 2*s*l",
+      "required_annotations": [
+        "JK",
+        "LM"
+      ],
+      "task_variant": "square_pyramid_given_base_side_slant_height",
+      "variant_probabilities": {
+        "cone_given_r_slant_height": 0.16666666666666666,
+        "cylinder_given_r_h": 0.16666666666666666,
+        "rectangular_prism_given_lwh": 0.16666666666666666,
+        "sphere_given_r": 0.16666666666666666,
+        "square_pyramid_given_base_side_slant_height": 0.16666666666666666,
+        "triangular_prism_given_a_b_c_l": 0.16666666666666666
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "l": "LM",
+        "s": "JK"
+      },
+      "id_set": [
+        "JK",
+        "LM"
+      ],
+      "measurement_ref_map": {
+        "JK": 42,
+        "LM": 41
+      },
+      "pixel_annotation_centers": {
+        "JK": [
+          475.74999995411616,
+          334.52898746591376
+        ],
+        "LM": [
+          389.87628869403574,
+          221.51365710520727
+        ]
+      },
+      "pixel_point_set": [
+        [
+          475.74999995411616,
+          334.52898746591376
+        ],
+        [
+          389.87628869403574,
+          221.51365710520727
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 200000,
+        "answer_min": 8,
+        "task_variant": "square_pyramid_given_base_side_slant_height",
+        "variant_probabilities": {
+          "cone_given_r_slant_height": 0.16666666666666666,
+          "cylinder_given_r_h": 0.16666666666666666,
+          "rectangular_prism_given_lwh": 0.16666666666666666,
+          "sphere_given_r": 0.16666666666666666,
+          "square_pyramid_given_base_side_slant_height": 0.16666666666666666,
+          "triangular_prism_given_a_b_c_l": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "geometry_analytical_surface_area_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the value as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, LM",
+          "json_example": "{\"evidence\":{\"JK\":2,\"LM\":3},\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "an annotated 3D solid",
+          "question_text": "The square pyramid has an annotated base side and slant height. What is its total surface area in square units?"
+        },
+        "task_family_key": "analytical_single_solid",
+        "task_family_variant_index": 4,
+        "task_key": "analytical_surface_area_query",
+        "task_variant_index": 0,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_3d/geometry_analytical_surface_area_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_surface_area_query": 5,
+          "task_family:analytical_single_solid": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_analytical_surface_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, LM",
+              "json_example": "{\"evidence\":{\"JK\":2,\"LM\":3},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an annotated 3D solid",
+              "question_text": "The square pyramid has an annotated base side and slant height. What is its total surface area in square units?"
+            },
+            "task_family_key": "analytical_single_solid",
+            "task_family_variant_index": 4,
+            "task_key": "analytical_surface_area_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_3d/geometry_analytical_surface_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_surface_area_query": 5,
+              "task_family:analytical_single_solid": 5
+            }
+          },
+          "prompt": "Work from the annotated figure showing an annotated 3D solid. The square pyramid has an annotated base side and slant height. What is its total surface area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, LM.\nAnswer: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"JK\":2,\"LM\":3},\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "geometry_analytical_surface_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, LM",
+              "json_example": "{\"evidence\":{\"JK\":2,\"LM\":3},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an annotated 3D solid",
+              "question_text": "The square pyramid has an annotated base side and slant height. What is its total surface area in square units?"
+            },
+            "task_family_key": "analytical_single_solid",
+            "task_family_variant_index": 4,
+            "task_key": "analytical_surface_area_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_3d/geometry_analytical_surface_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_surface_area_query": 5,
+              "task_family:analytical_single_solid": 5
+            }
+          },
+          "prompt": "Work from the annotated figure showing an annotated 3D solid. The square pyramid has an annotated base side and slant height. What is its total surface area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "square_pyramid_given_base_side_slant_height",
+      "template_id": "geometry_analytical_surface_area_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "JK": [
+          475.74999995411616,
+          334.52898746591376
+        ],
+        "LM": [
+          389.87628869403574,
+          221.51365710520727
+        ]
+      },
+      "annotation_labels": {
+        "l": "LM",
+        "s": "JK"
+      },
+      "coord_space": "pixel",
+      "entity_id": "solid_1",
+      "instance_anchor": {
+        "coord_space": "pixel",
+        "point": [
+          363.7083333333333,
+          334.24088889038177
+        ],
+        "polyline": [
+          [
+            338.5,
+            222.95604758991203
+          ],
+          [
+            641.0,
+            397.604504782969
+          ],
+          [
+            338.5,
+            572.252961976026
+          ],
+          [
+            35.99999999999994,
+            397.604504782969
+          ],
+          [
+            338.5,
+            104.74703802397406
+          ],
+          [
+            489.75,
+            310.2802761864405
+          ]
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_offwhite",
+        "style_spec": {
+          "color": [
+            252,
+            252,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 677,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 6,
+        "full_cells_y": 6,
+        "origin_pixel": [
+          338,
+          338
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 97,
+        "target_cells_x": 7,
+        "target_cells_y": 7,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 6,
+        "full_cells_y": 6,
+        "partial_edge_cells": true,
+        "spacing_px": 97,
+        "target_cells_x": 7,
+        "target_cells_y": 7
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          22,
+          18,
+          124
+        ],
+        "label_stroke_color": [
+          253,
+          252,
+          252
+        ],
+        "line_color": [
+          22,
+          18,
+          124
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "base_side_units": 42,
+            "height_units": 35.21363372331802,
+            "points": {
+              "A": [
+                338.5,
+                222.95604758991203
+              ],
+              "B": [
+                641.0,
+                397.604504782969
+              ],
+              "C": [
+                338.5,
+                572.252961976026
+              ],
+              "D": [
+                35.99999999999994,
+                397.604504782969
+              ],
+              "E": [
+                338.5,
+                104.74703802397406
+              ],
+              "M": [
+                489.75,
+                310.2802761864405
+              ]
+            },
+            "slant_height_units": 41,
+            "surface_area_square_units": 5208,
+            "task_variant": "square_pyramid_given_base_side_slant_height"
+          },
+          "entity_id": "solid_1",
+          "entity_type": "square_pyramid"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            338,
+            338
+          ],
+          "spacing_px": 97,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_3d_analytical_surface_area"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "JK",
+        "LM"
+      ],
+      "annotation_labels": {
+        "l": "LM",
+        "s": "JK"
+      },
+      "annotation_values": {
+        "JK": 42,
+        "LM": 41
+      },
+      "formula_expression": "SA = s^2 + 2*s*l",
+      "measurement_ref_map": {
+        "JK": 42,
+        "LM": 41
+      },
+      "task_variant": "square_pyramid_given_base_side_slant_height",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

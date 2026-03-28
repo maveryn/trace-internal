@@ -1,0 +1,928 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 5
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "A",
+      "C",
+      "D",
+      "F",
+      "G"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "graph/task_graph_relation_unique_cycle_size/images/default/0012.png"
+  },
+  "instance_seed": 9006008269839317,
+  "prompt": "Use the image containing a labeled undirected graph that contains exactly one cycle. Question: The graph contains exactly one cycle. How many nodes are in that cycle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the labels of all nodes in the unique cycle.\nAnswer rule: set \"answer\" to the number of nodes in the unique cycle as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"D\",\"H\",\"J\"],\"answer\":4}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the image containing a labeled undirected graph that contains exactly one cycle. Question: The graph contains exactly one cycle. How many nodes are in that cycle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the labels of all nodes in the unique cycle.\nAnswer rule: set \"answer\" to the number of nodes in the unique cycle as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"D\",\"H\",\"J\"],\"answer\":4}",
+    "answer_only": "Use the image containing a labeled undirected graph that contains exactly one cycle. Question: The graph contains exactly one cycle. How many nodes are in that cycle?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of nodes in the unique cycle as an integer.\nExample JSON:\n{\"answer\":4}"
+  },
+  "task": "task_graph_relation_unique_cycle_size",
+  "task_variant": "unique_cycle_size",
+  "trace_payload": {
+    "execution_trace": {
+      "adjacency_by_label": {
+        "A": [
+          "D",
+          "F"
+        ],
+        "B": [
+          "F"
+        ],
+        "C": [
+          "F",
+          "G"
+        ],
+        "D": [
+          "A",
+          "E",
+          "G"
+        ],
+        "E": [
+          "D"
+        ],
+        "F": [
+          "A",
+          "B",
+          "C"
+        ],
+        "G": [
+          "C",
+          "D"
+        ]
+      },
+      "attachment_count": 2,
+      "crossing_count": 2,
+      "cycle_basis_by_label": [
+        [
+          "A",
+          "C",
+          "D",
+          "F",
+          "G"
+        ]
+      ],
+      "degrees_by_label": {
+        "A": 2,
+        "B": 1,
+        "C": 2,
+        "D": 3,
+        "E": 1,
+        "F": 3,
+        "G": 2
+      },
+      "edge_count": 7,
+      "graph_directionality": "undirected",
+      "label_variant": "letters",
+      "layout_transform_variant": "mirror_left_right",
+      "layout_variant_requested": "circular",
+      "layout_variant_used": "circular",
+      "matching_labels": [
+        "A",
+        "C",
+        "D",
+        "F",
+        "G"
+      ],
+      "node_color_name": "yellow",
+      "node_count": 7,
+      "node_shape_variant": "circle",
+      "question_format": "count_nodes_in_unique_cycle",
+      "scene_variant": "circular",
+      "target_cycle_size": 5,
+      "task_variant": "unique_cycle_size",
+      "topology_profile": "balanced"
+    },
+    "projected_evidence": {
+      "label_set": [
+        "A",
+        "C",
+        "D",
+        "F",
+        "G"
+      ],
+      "pixel_bbox_set": [
+        [
+          513,
+          542,
+          555,
+          584
+        ],
+        [
+          766,
+          213,
+          808,
+          255
+        ],
+        [
+          197,
+          497,
+          239,
+          539
+        ],
+        [
+          766,
+          416,
+          808,
+          458
+        ],
+        [
+          56,
+          315,
+          98,
+          357
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          534,
+          563
+        ],
+        [
+          787,
+          234
+        ],
+        [
+          218,
+          518
+        ],
+        [
+          787,
+          437
+        ],
+        [
+          77,
+          336
+        ]
+      ],
+      "type": "label_set"
+    },
+    "query_spec": {
+      "params": {
+        "edge_count": 7,
+        "graph_directionality": "undirected",
+        "label_variant": "letters",
+        "label_variant_probabilities": {
+          "letters": 0.5,
+          "numbers": 0.5
+        },
+        "layout_transform_variant": "mirror_left_right",
+        "layout_transform_variant_probabilities": {
+          "identity": 0.16666666666666666,
+          "mirror_left_right": 0.16666666666666666,
+          "mirror_up_down": 0.16666666666666666,
+          "rotate_180": 0.16666666666666666,
+          "rotate_270": 0.16666666666666666,
+          "rotate_90": 0.16666666666666666
+        },
+        "layout_variant": "circular",
+        "layout_variant_probabilities": {
+          "circular": 0.3333333333333333,
+          "shell": 0.3333333333333333,
+          "spring": 0.3333333333333333
+        },
+        "node_color_name": "yellow",
+        "node_color_name_probabilities": {
+          "blue": 0.1,
+          "brown": 0.1,
+          "cyan": 0.1,
+          "green": 0.1,
+          "magenta": 0.1,
+          "maroon": 0.1,
+          "orange": 0.1,
+          "purple": 0.1,
+          "red": 0.1,
+          "yellow": 0.1
+        },
+        "node_count": 7,
+        "node_count_probabilities": {
+          "10": 0.2,
+          "6": 0.2,
+          "7": 0.2,
+          "8": 0.2,
+          "9": 0.2
+        },
+        "node_shape_variant": "circle",
+        "node_shape_variant_probabilities": {
+          "circle": 0.3333333333333333,
+          "hexagon": 0.3333333333333333,
+          "rounded_square": 0.3333333333333333
+        },
+        "target_cycle_size": 5,
+        "target_cycle_size_probabilities": {
+          "3": 0.2,
+          "4": 0.2,
+          "5": 0.2,
+          "6": 0.2,
+          "7": 0.2
+        },
+        "task_variant_probabilities": {
+          "unique_cycle_size": 1.0
+        },
+        "topology_profile": "balanced",
+        "topology_profile_probabilities": {
+          "balanced": 0.3333333333333333,
+          "hub_heavy": 0.3333333333333333,
+          "low_degree": 0.3333333333333333
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "graph_relation_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of nodes in the unique cycle as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the labels of all nodes in the unique cycle",
+          "json_example": "{\"evidence\":[\"B\",\"D\",\"H\",\"J\"],\"answer\":4}",
+          "json_example_answer_only": "{\"answer\":4}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a labeled undirected graph that contains exactly one cycle",
+          "question_text": "The graph contains exactly one cycle. How many nodes are in that cycle?"
+        },
+        "task_family_key": "single_graph_relation",
+        "task_family_variant_index": 3,
+        "task_key": "unique_cycle_size_query",
+        "task_variant_index": 1,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "graph/relation/graph_relation_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:unique_cycle_size_query": 5,
+          "task_family:single_graph_relation": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "graph_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of nodes in the unique cycle as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the labels of all nodes in the unique cycle",
+              "json_example": "{\"evidence\":[\"B\",\"D\",\"H\",\"J\"],\"answer\":4}",
+              "json_example_answer_only": "{\"answer\":4}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled undirected graph that contains exactly one cycle",
+              "question_text": "The graph contains exactly one cycle. How many nodes are in that cycle?"
+            },
+            "task_family_key": "single_graph_relation",
+            "task_family_variant_index": 3,
+            "task_key": "unique_cycle_size_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "graph/relation/graph_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:unique_cycle_size_query": 5,
+              "task_family:single_graph_relation": 5
+            }
+          },
+          "prompt": "Use the image containing a labeled undirected graph that contains exactly one cycle. Question: The graph contains exactly one cycle. How many nodes are in that cycle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the labels of all nodes in the unique cycle.\nAnswer rule: set \"answer\" to the number of nodes in the unique cycle as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"D\",\"H\",\"J\"],\"answer\":4}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "graph_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of nodes in the unique cycle as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the labels of all nodes in the unique cycle",
+              "json_example": "{\"evidence\":[\"B\",\"D\",\"H\",\"J\"],\"answer\":4}",
+              "json_example_answer_only": "{\"answer\":4}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled undirected graph that contains exactly one cycle",
+              "question_text": "The graph contains exactly one cycle. How many nodes are in that cycle?"
+            },
+            "task_family_key": "single_graph_relation",
+            "task_family_variant_index": 3,
+            "task_key": "unique_cycle_size_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "graph/relation/graph_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:unique_cycle_size_query": 5,
+              "task_family:single_graph_relation": 5
+            }
+          },
+          "prompt": "Use the image containing a labeled undirected graph that contains exactly one cycle. Question: The graph contains exactly one cycle. How many nodes are in that cycle?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of nodes in the unique cycle as an integer.\nExample JSON:\n{\"answer\":4}"
+        }
+      },
+      "task_variant": "unique_cycle_size",
+      "template_id": "graph_relation_v1"
+    },
+    "render_map": {
+      "anchors": {},
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        864,
+        640
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          864,
+          640
+        ],
+        "scene_content_xyxy": [
+          52,
+          83,
+          812,
+          588
+        ],
+        "scene_panel_xyxy": [
+          28,
+          28,
+          836,
+          612
+        ],
+        "title_band_xyxy": [
+          28,
+          28,
+          836,
+          71
+        ]
+      },
+      "style": {
+        "arrow_length_px": 12,
+        "arrow_width_px": 7,
+        "background_color_rgb": [
+          254,
+          253,
+          248
+        ],
+        "background_meta": {
+          "available_styles": [
+            "solid_light"
+          ],
+          "enabled": true,
+          "selected_style": "solid_light",
+          "style_spec": {
+            "color": [
+              248,
+              248,
+              248
+            ],
+            "kind": "solid"
+          }
+        },
+        "edge_color_rgb": [
+          153,
+          140,
+          22
+        ],
+        "edge_width_px": 4,
+        "label_font_size_px": 20,
+        "label_stroke_rgb": [
+          255,
+          255,
+          255
+        ],
+        "label_stroke_width_px": 2,
+        "label_text_rgb": [
+          49,
+          45,
+          7
+        ],
+        "node_border_rgb": [
+          123,
+          113,
+          17
+        ],
+        "node_border_width_px": 2,
+        "node_color_name": "yellow",
+        "node_fill_rgb": [
+          212,
+          194,
+          30
+        ],
+        "node_radius_px": 21,
+        "node_shape_variant": "circle",
+        "panel_border_rgb": [
+          243,
+          238,
+          192
+        ],
+        "panel_fill_rgb": [
+          252,
+          251,
+          242
+        ],
+        "post_image_noise_meta": {
+          "applied": false,
+          "apply_prob": 0.0,
+          "edit_count_range": [
+            1,
+            2
+          ],
+          "edit_types": [
+            "blur",
+            "downsample",
+            "jpeg",
+            "noise"
+          ],
+          "edits": [],
+          "enabled": false
+        },
+        "resolved_label_font_size_px": 20,
+        "title_color_rgb": [
+          98,
+          89,
+          14
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_xyxy": [
+            56,
+            315,
+            98,
+            357
+          ],
+          "center_px": [
+            77,
+            336
+          ],
+          "degree": 2,
+          "entity_id": "node_G",
+          "entity_kind": "graph_node",
+          "is_cycle_node": true,
+          "label": "G",
+          "neighbors": [
+            "C",
+            "D"
+          ],
+          "predecessors": [
+            "C",
+            "D"
+          ],
+          "successors": [
+            "C",
+            "D"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            197,
+            497,
+            239,
+            539
+          ],
+          "center_px": [
+            218,
+            518
+          ],
+          "degree": 3,
+          "entity_id": "node_D",
+          "entity_kind": "graph_node",
+          "is_cycle_node": true,
+          "label": "D",
+          "neighbors": [
+            "A",
+            "E",
+            "G"
+          ],
+          "predecessors": [
+            "A",
+            "E",
+            "G"
+          ],
+          "successors": [
+            "A",
+            "E",
+            "G"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            513,
+            542,
+            555,
+            584
+          ],
+          "center_px": [
+            534,
+            563
+          ],
+          "degree": 2,
+          "entity_id": "node_A",
+          "entity_kind": "graph_node",
+          "is_cycle_node": true,
+          "label": "A",
+          "neighbors": [
+            "D",
+            "F"
+          ],
+          "predecessors": [
+            "D",
+            "F"
+          ],
+          "successors": [
+            "D",
+            "F"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            766,
+            416,
+            808,
+            458
+          ],
+          "center_px": [
+            787,
+            437
+          ],
+          "degree": 3,
+          "entity_id": "node_F",
+          "entity_kind": "graph_node",
+          "is_cycle_node": true,
+          "label": "F",
+          "neighbors": [
+            "A",
+            "B",
+            "C"
+          ],
+          "predecessors": [
+            "A",
+            "B",
+            "C"
+          ],
+          "successors": [
+            "A",
+            "B",
+            "C"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            766,
+            213,
+            808,
+            255
+          ],
+          "center_px": [
+            787,
+            234
+          ],
+          "degree": 2,
+          "entity_id": "node_C",
+          "entity_kind": "graph_node",
+          "is_cycle_node": true,
+          "label": "C",
+          "neighbors": [
+            "F",
+            "G"
+          ],
+          "predecessors": [
+            "F",
+            "G"
+          ],
+          "successors": [
+            "F",
+            "G"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            513,
+            87,
+            555,
+            129
+          ],
+          "center_px": [
+            534,
+            108
+          ],
+          "degree": 1,
+          "entity_id": "node_B",
+          "entity_kind": "graph_node",
+          "is_cycle_node": false,
+          "label": "B",
+          "neighbors": [
+            "F"
+          ],
+          "predecessors": [
+            "F"
+          ],
+          "successors": [
+            "F"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            197,
+            132,
+            239,
+            174
+          ],
+          "center_px": [
+            218,
+            153
+          ],
+          "degree": 1,
+          "entity_id": "node_E",
+          "entity_kind": "graph_node",
+          "is_cycle_node": false,
+          "label": "E",
+          "neighbors": [
+            "D"
+          ],
+          "predecessors": [
+            "D"
+          ],
+          "successors": [
+            "D"
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_A_D",
+          "entity_kind": "graph_edge",
+          "node_u_label": "A",
+          "node_v_label": "D",
+          "segment_px": [
+            [
+              513,
+              560
+            ],
+            [
+              239,
+              521
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_A_F",
+          "entity_kind": "graph_edge",
+          "node_u_label": "A",
+          "node_v_label": "F",
+          "segment_px": [
+            [
+              553,
+              554
+            ],
+            [
+              768,
+              446
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_B_F",
+          "entity_kind": "graph_edge",
+          "node_u_label": "B",
+          "node_v_label": "F",
+          "segment_px": [
+            [
+              547,
+              125
+            ],
+            [
+              774,
+              420
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_C_F",
+          "entity_kind": "graph_edge",
+          "node_u_label": "C",
+          "node_v_label": "F",
+          "segment_px": [
+            [
+              787,
+              255
+            ],
+            [
+              787,
+              416
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_C_G",
+          "entity_kind": "graph_edge",
+          "node_u_label": "C",
+          "node_v_label": "G",
+          "segment_px": [
+            [
+              766,
+              237
+            ],
+            [
+              98,
+              333
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_D_E",
+          "entity_kind": "graph_edge",
+          "node_u_label": "D",
+          "node_v_label": "E",
+          "segment_px": [
+            [
+              218,
+              497
+            ],
+            [
+              218,
+              174
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_D_G",
+          "entity_kind": "graph_edge",
+          "node_u_label": "D",
+          "node_v_label": "G",
+          "segment_px": [
+            [
+              205,
+              501
+            ],
+            [
+              90,
+              353
+            ]
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            864,
+            640
+          ],
+          "scene_content_xyxy": [
+            52,
+            83,
+            812,
+            588
+          ],
+          "scene_panel_xyxy": [
+            28,
+            28,
+            836,
+            612
+          ],
+          "title_band_xyxy": [
+            28,
+            28,
+            836,
+            71
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "adjacency_by_label": {
+          "A": [
+            "D",
+            "F"
+          ],
+          "B": [
+            "F"
+          ],
+          "C": [
+            "F",
+            "G"
+          ],
+          "D": [
+            "A",
+            "E",
+            "G"
+          ],
+          "E": [
+            "D"
+          ],
+          "F": [
+            "A",
+            "B",
+            "C"
+          ],
+          "G": [
+            "C",
+            "D"
+          ]
+        },
+        "cycle_basis_by_label": [
+          [
+            "A",
+            "C",
+            "D",
+            "F",
+            "G"
+          ]
+        ],
+        "degrees_by_label": {
+          "A": 2,
+          "B": 1,
+          "C": 2,
+          "D": 3,
+          "E": 1,
+          "F": 3,
+          "G": 2
+        },
+        "edge_labels": [
+          [
+            "A",
+            "D"
+          ],
+          [
+            "A",
+            "F"
+          ],
+          [
+            "B",
+            "F"
+          ],
+          [
+            "C",
+            "F"
+          ],
+          [
+            "C",
+            "G"
+          ],
+          [
+            "D",
+            "E"
+          ],
+          [
+            "D",
+            "G"
+          ]
+        ],
+        "graph_directionality": "undirected",
+        "matching_labels": [
+          "A",
+          "C",
+          "D",
+          "F",
+          "G"
+        ],
+        "relation_rule": "node_belongs_to_unique_cycle"
+      },
+      "scene_kind": "graph_unique_cycle_relation"
+    },
+    "witness_symbolic": {
+      "label_set": [
+        "A",
+        "C",
+        "D",
+        "F",
+        "G"
+      ],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

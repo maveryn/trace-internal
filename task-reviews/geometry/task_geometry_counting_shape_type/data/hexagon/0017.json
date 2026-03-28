@@ -1,0 +1,767 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 8
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "F",
+      "G",
+      "H",
+      "I"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_counting_shape_type/images/hexagon/0017.png"
+  },
+  "instance_seed": 3251674257496533,
+  "prompt": "Look at the image showing several labeled shapes. Task: How many labeled shapes are hexagons?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a sorted JSON array of the labels of all shapes that match the requested type.\nAnswer requirement: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"D\",\"F\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the image showing several labeled shapes. Task: How many labeled shapes are hexagons?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a sorted JSON array of the labels of all shapes that match the requested type.\nAnswer requirement: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"D\",\"F\"],\"answer\":3}",
+    "answer_only": "Look at the image showing several labeled shapes. Task: How many labeled shapes are hexagons?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_geometry_counting_shape_type",
+  "task_variant": "hexagon",
+  "trace_payload": {
+    "execution_trace": {
+      "class_by_label": {
+        "A": {
+          "shape_type": "hexagon"
+        },
+        "B": {
+          "shape_type": "hexagon"
+        },
+        "C": {
+          "shape_type": "hexagon"
+        },
+        "D": {
+          "shape_type": "hexagon"
+        },
+        "E": {
+          "shape_type": "ellipse"
+        },
+        "F": {
+          "shape_type": "hexagon"
+        },
+        "G": {
+          "shape_type": "hexagon"
+        },
+        "H": {
+          "shape_type": "hexagon"
+        },
+        "I": {
+          "shape_type": "hexagon"
+        }
+      },
+      "counting_class": "hexagon",
+      "matching_labels": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "F",
+        "G",
+        "H",
+        "I"
+      ],
+      "object_count": 9,
+      "object_count_probabilities": {
+        "9": 1.0
+      },
+      "object_labels": [
+        "I",
+        "F",
+        "E",
+        "D",
+        "C",
+        "G",
+        "B",
+        "A",
+        "H"
+      ],
+      "question_format": "count_matching_labeled_objects",
+      "scene_variant": "hexagon",
+      "target_count": 8,
+      "target_count_probabilities": {
+        "1": 0.125,
+        "2": 0.125,
+        "3": 0.125,
+        "4": 0.125,
+        "5": 0.125,
+        "6": 0.125,
+        "7": 0.125,
+        "8": 0.125
+      },
+      "task_variant": "hexagon"
+    },
+    "projected_evidence": {
+      "label_set": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "F",
+        "G",
+        "H",
+        "I"
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "object_count": 9,
+        "object_count_probabilities": {
+          "9": 1.0
+        },
+        "target_count": 8,
+        "target_count_probabilities": {
+          "1": 0.125,
+          "2": 0.125,
+          "3": 0.125,
+          "4": 0.125,
+          "5": 0.125,
+          "6": 0.125,
+          "7": 0.125,
+          "8": 0.125
+        },
+        "task_variant": "hexagon",
+        "variant_probabilities": {
+          "circle": 0.16666666666666666,
+          "ellipse": 0.16666666666666666,
+          "hexagon": 0.16666666666666666,
+          "pentagon": 0.16666666666666666,
+          "quadrilateral": 0.16666666666666666,
+          "triangle": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "geometry_counting_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all shapes that match the requested type",
+          "json_example": "{\"evidence\":[\"A\",\"D\",\"F\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "several labeled shapes",
+          "question_text": "How many labeled shapes are hexagons?"
+        },
+        "task_family_key": "counting_scene",
+        "task_family_variant_index": 2,
+        "task_key": "counting_query",
+        "task_variant_index": 2,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/counting/geometry_counting_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:counting_query": 5,
+          "task_family:counting_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "geometry_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all shapes that match the requested type",
+              "json_example": "{\"evidence\":[\"A\",\"D\",\"F\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled shapes",
+              "question_text": "How many labeled shapes are hexagons?"
+            },
+            "task_family_key": "counting_scene",
+            "task_family_variant_index": 2,
+            "task_key": "counting_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/counting/geometry_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:counting_query": 5,
+              "task_family:counting_scene": 5
+            }
+          },
+          "prompt": "Look at the image showing several labeled shapes. Task: How many labeled shapes are hexagons?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a sorted JSON array of the labels of all shapes that match the requested type.\nAnswer requirement: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"D\",\"F\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all shapes that match the requested type",
+              "json_example": "{\"evidence\":[\"A\",\"D\",\"F\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled shapes",
+              "question_text": "How many labeled shapes are hexagons?"
+            },
+            "task_family_key": "counting_scene",
+            "task_family_variant_index": 2,
+            "task_key": "counting_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/counting/geometry_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:counting_query": 5,
+              "task_family:counting_scene": 5
+            }
+          },
+          "prompt": "Look at the image showing several labeled shapes. Task: How many labeled shapes are hexagons?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "hexagon",
+      "template_id": "geometry_counting_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching": {
+          "matching_labels": [
+            "A",
+            "B",
+            "C",
+            "D",
+            "F",
+            "G",
+            "H",
+            "I"
+          ],
+          "task_variant": "hexagon"
+        }
+      },
+      "image_id": "img0",
+      "object_label_centers": {
+        "A": [
+          171.05524133201743,
+          477.09884136854384
+        ],
+        "B": [
+          12.446300751866602,
+          313.76549254261454
+        ],
+        "C": [
+          432.6716301424602,
+          110.79475156291534
+        ],
+        "D": [
+          27.28238368301872,
+          127.89345948809546
+        ],
+        "E": [
+          560.5619468897847,
+          333.27868395749124
+        ],
+        "F": [
+          228.90309929975305,
+          228.90309929975305
+        ],
+        "G": [
+          562.7158854198286,
+          120.30365649904589
+        ],
+        "H": [
+          413.69474072939755,
+          488.6802445660149
+        ],
+        "I": [
+          163.85138849235554,
+          125.80903602773977
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_cool",
+        "style_spec": {
+          "color": [
+            246,
+            248,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 579,
+      "coord_space": "pixel",
+      "layout_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 34,
+        "full_cells_y": 34,
+        "origin_pixel": [
+          289,
+          289
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 16,
+        "target_cells_x": 36,
+        "target_cells_y": 36,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "quality": 87.0
+            },
+            "type": "jpeg"
+          }
+        ],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          37,
+          85,
+          17
+        ],
+        "label_stroke_color": [
+          249,
+          255,
+          251
+        ],
+        "line_color": [
+          37,
+          85,
+          17
+        ]
+      },
+      "text_style": {
+        "font_size_px": 87,
+        "stroke_width_px": 3
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "center": [
+              209.0,
+              161.0
+            ],
+            "circle_radius_px": null,
+            "ellipse_radius_x_px": null,
+            "ellipse_radius_y_px": null,
+            "label": "I",
+            "polygon_vertices": [
+              [
+                258.34771511923265,
+                162.80913832762968
+              ],
+              [
+                235.24061731030375,
+                119.16819425184192
+              ],
+              [
+                185.89290219107107,
+                117.35905592421224
+              ],
+              [
+                159.65228488076733,
+                159.19086167237032
+              ],
+              [
+                182.75938268969622,
+                202.83180574815805
+              ],
+              [
+                232.10709780892893,
+                204.6409440757878
+              ]
+            ],
+            "shape_type": "hexagon"
+          },
+          "entity_id": "shape_I",
+          "entity_type": "hexagon"
+        },
+        {
+          "attrs": {
+            "center": [
+              289.0,
+              289.0
+            ],
+            "circle_radius_px": null,
+            "ellipse_radius_x_px": null,
+            "ellipse_radius_y_px": null,
+            "label": "F",
+            "polygon_vertices": [
+              [
+                345.3593183202111,
+                278.02120081908384
+              ],
+              [
+                307.6717401663844,
+                234.70199900426542
+              ],
+              [
+                251.3124218461733,
+                245.68079818518154
+              ],
+              [
+                232.64068167978888,
+                299.97879918091616
+              ],
+              [
+                270.3282598336156,
+                343.2980009957346
+              ],
+              [
+                326.68757815382673,
+                332.3192018148184
+              ]
+            ],
+            "shape_type": "hexagon"
+          },
+          "entity_id": "shape_F",
+          "entity_type": "hexagon"
+        },
+        {
+          "attrs": {
+            "center": [
+              497.0,
+              289.0
+            ],
+            "circle_radius_px": null,
+            "ellipse_radius_x_px": 66.7795977381488,
+            "ellipse_radius_y_px": 44.12668384386202,
+            "label": "E",
+            "polygon_vertices": [],
+            "shape_type": "ellipse"
+          },
+          "entity_id": "shape_E",
+          "entity_type": "ellipse"
+        },
+        {
+          "attrs": {
+            "center": [
+              81.0,
+              161.0
+            ],
+            "circle_radius_px": null,
+            "ellipse_radius_x_px": null,
+            "ellipse_radius_y_px": null,
+            "label": "D",
+            "polygon_vertices": [
+              [
+                122.84358186570745,
+                160.77931942931127
+              ],
+              [
+                101.73067595251564,
+                124.6520548336191
+              ],
+              [
+                59.88709408680819,
+                124.87273540430783
+              ],
+              [
+                39.15641813429255,
+                161.22068057068873
+              ],
+              [
+                60.26932404748433,
+                197.3479451663809
+              ],
+              [
+                102.11290591319181,
+                197.12726459569217
+              ]
+            ],
+            "shape_type": "hexagon"
+          },
+          "entity_id": "shape_D",
+          "entity_type": "hexagon"
+        },
+        {
+          "attrs": {
+            "center": [
+              369.0,
+              161.0
+            ],
+            "circle_radius_px": null,
+            "ellipse_radius_x_px": null,
+            "ellipse_radius_y_px": null,
+            "label": "C",
+            "polygon_vertices": [
+              [
+                438.90015096943404,
+                151.67672901843713
+              ],
+              [
+                395.8758859683173,
+                95.80305804132126
+              ],
+              [
+                325.9757349988833,
+                105.12632902288411
+              ],
+              [
+                299.09984903056596,
+                170.32327098156287
+              ],
+              [
+                342.1241140316827,
+                226.19694195867876
+              ],
+              [
+                412.02426500111676,
+                216.87367097711586
+              ]
+            ],
+            "shape_type": "hexagon"
+          },
+          "entity_id": "shape_C",
+          "entity_type": "hexagon"
+        },
+        {
+          "attrs": {
+            "center": [
+              497.0,
+              161.0
+            ],
+            "circle_radius_px": null,
+            "ellipse_radius_x_px": null,
+            "ellipse_radius_y_px": null,
+            "label": "G",
+            "polygon_vertices": [
+              [
+                563.6350312237626,
+                152.45686322524782
+              ],
+              [
+                522.9189421369408,
+                99.02080179087633
+              ],
+              [
+                456.2839109131783,
+                107.56393856562852
+              ],
+              [
+                430.3649687762375,
+                169.54313677475216
+              ],
+              [
+                471.0810578630592,
+                222.97919820912364
+              ],
+              [
+                537.7160890868216,
+                214.4360614343715
+              ]
+            ],
+            "shape_type": "hexagon"
+          },
+          "entity_id": "shape_G",
+          "entity_type": "hexagon"
+        },
+        {
+          "attrs": {
+            "center": [
+              81.0,
+              289.0
+            ],
+            "circle_radius_px": null,
+            "ellipse_radius_x_px": null,
+            "ellipse_radius_y_px": null,
+            "label": "B",
+            "polygon_vertices": [
+              [
+                143.83613121256235,
+                299.75110772662816
+              ],
+              [
+                121.72879801636432,
+                239.95786795770277
+              ],
+              [
+                58.89266680380197,
+                229.20676023107464
+              ],
+              [
+                18.16386878743765,
+                278.24889227337184
+              ],
+              [
+                40.27120198363565,
+                338.0421320422972
+              ],
+              [
+                103.10733319619806,
+                348.79323976892533
+              ]
+            ],
+            "shape_type": "hexagon"
+          },
+          "entity_id": "shape_B",
+          "entity_type": "hexagon"
+        },
+        {
+          "attrs": {
+            "center": [
+              209.0,
+              417.0
+            ],
+            "circle_radius_px": null,
+            "ellipse_radius_x_px": null,
+            "ellipse_radius_y_px": null,
+            "label": "A",
+            "polygon_vertices": [
+              [
+                256.13205532128984,
+                408.31687182209845
+              ],
+              [
+                225.0462180742657,
+                371.8408786702387
+              ],
+              [
+                177.91416275297587,
+                380.5240068481402
+              ],
+              [
+                161.86794467871016,
+                425.6831281779015
+              ],
+              [
+                192.95378192573426,
+                462.1591213297613
+              ],
+              [
+                240.08583724702413,
+                453.47599315185977
+              ]
+            ],
+            "shape_type": "hexagon"
+          },
+          "entity_id": "shape_A",
+          "entity_type": "hexagon"
+        },
+        {
+          "attrs": {
+            "center": [
+              369.0,
+              417.0
+            ],
+            "circle_radius_px": null,
+            "ellipse_radius_x_px": null,
+            "ellipse_radius_y_px": null,
+            "label": "H",
+            "polygon_vertices": [
+              [
+                425.016537353357,
+                412.6324082967396
+              ],
+              [
+                393.22582330829687,
+                366.30445976832266
+              ],
+              [
+                337.20928595493984,
+                370.6720514715831
+              ],
+              [
+                312.983462646643,
+                421.36759170326036
+              ],
+              [
+                344.77417669170313,
+                467.69554023167734
+              ],
+              [
+                400.7907140450602,
+                463.32794852841687
+              ]
+            ],
+            "shape_type": "hexagon"
+          },
+          "entity_id": "shape_H",
+          "entity_type": "hexagon"
+        }
+      ],
+      "relations": {
+        "counting_target": "shape_type",
+        "matching_labels": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "F",
+          "G",
+          "H",
+          "I"
+        ],
+        "task_variant": "hexagon"
+      },
+      "scene_kind": "geometry_2d_shape_type_counting"
+    },
+    "witness_symbolic": {
+      "counting_class": "hexagon",
+      "matching_labels": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "F",
+        "G",
+        "H",
+        "I"
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

@@ -184,7 +184,7 @@ PYTHONPATH=. python scripts/run_task_review.py --tasks <task_id> --mode full
 
 The review scripts default to all visible CPUs; pass `--workers <n>` when you want to limit parallelism explicitly.
 
-This writes review artifacts under `task-reviews/<task_id>/`:
+This writes review artifacts under `task-reviews/<domain>/<task_id>/`:
 - `random_review_100.json` (100 random samples, includes variant/sampling-axis distributions)
 - `distribution_review.json` (100 answers per variant when variants exist; otherwise single 100-sample check)
 - `<task_id>.xlsx` (25 manual-inspection samples per variant, one sheet per task variant)

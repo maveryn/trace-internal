@@ -185,7 +185,7 @@ Date: 2026-03-28
 ## Current quality baseline
 1. Tests are required to pass before finalize.
 2. Distribution QA uses `scripts/check_task_answer_distribution.py` with per-variant answer-only checks (`unique_answers >= 5`, `max_answer_frequency < 25%`) and multithreaded sample generation (`--workers`); numeric 5-bin summaries remain reported for review but are not hard pass/fail gates.
-3. Task-review tooling writes per-task artifacts under `task-reviews/<task_id>/`, including one inspection workbook named `<task_id>.xlsx` with one sheet per task variant.
+3. Task-review tooling writes per-task artifacts under `task-reviews/<domain>/<task_id>/`, including one inspection workbook named `<task_id>.xlsx` with one sheet per task variant.
 4. The current active reviewed task set (6 graph tasks + 10 tile tasks + 20 geometry tasks + 14 reviewed icons tasks + 10 charts tasks + 10 table tasks) passes distribution review under the active gates. There are currently `71` active tasks total and `70` tasks in the reviewed/pass bucket; `task_icons_relation_mirror_symmetry` remains the only active task still marked `needs_refresh` in `task-reviews/REVIEW_STATUS.md`.
 
 ## Next priorities

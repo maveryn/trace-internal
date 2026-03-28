@@ -1,0 +1,2435 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 0
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": []
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_relation_mirror_symmetry/images/mirror_diagonal_main/0004.png"
+  },
+  "instance_seed": 1371993709071640,
+  "prompt": "Work from the image with a Reference cell on the left and a labeled Scene grid of icon arrangements on the right. Task: How many labeled Scene cells have the same mirror symmetry as the Reference cell? Mirror symmetry may be vertical, horizontal, diagonal, or across both the vertical and horizontal axes.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\"],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the image with a Reference cell on the left and a labeled Scene grid of icon arrangements on the right. Task: How many labeled Scene cells have the same mirror symmetry as the Reference cell? Mirror symmetry may be vertical, horizontal, diagonal, or across both the vertical and horizontal axes.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\"],\"answer\":2}",
+    "answer_only": "Work from the image with a Reference cell on the left and a labeled Scene grid of icon arrangements on the right. Task: How many labeled Scene cells have the same mirror symmetry as the Reference cell? Mirror symmetry may be vertical, horizontal, diagonal, or across both the vertical and horizontal axes.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_icons_relation_mirror_symmetry",
+  "task_variant": "mirror_diagonal_main",
+  "trace_payload": {
+    "execution_trace": {
+      "cell_labels": [
+        "A",
+        "F",
+        "B",
+        "E",
+        "D",
+        "C"
+      ],
+      "distractor_count": 6,
+      "distractor_count_probabilities": {
+        "2": 0.0,
+        "3": 0.0,
+        "4": 0.0,
+        "5": 0.0,
+        "6": 1.0
+      },
+      "matching_cell_labels": [],
+      "object_count": 6,
+      "object_count_probabilities": {
+        "6": 1.0
+      },
+      "question_format": "count_scene_cells_matching_reference_mirror_symmetry",
+      "scene_cell_symmetry_ids": [
+        "mirror_vertical",
+        "mirror_diagonal_anti",
+        "mirror_both_axes",
+        "none",
+        "mirror_vertical",
+        "mirror_horizontal"
+      ],
+      "scene_variant": "reference_grid",
+      "target_count": 0,
+      "target_count_probabilities": {
+        "0": 0.2,
+        "1": 0.2,
+        "2": 0.2,
+        "3": 0.2,
+        "4": 0.2
+      },
+      "task_variant": "mirror_diagonal_main"
+    },
+    "projected_evidence": {
+      "label_set": []
+    },
+    "query_spec": {
+      "params": {
+        "distractor_count": 6,
+        "distractor_count_probabilities": {
+          "2": 0.0,
+          "3": 0.0,
+          "4": 0.0,
+          "5": 0.0,
+          "6": 1.0
+        },
+        "object_count": 6,
+        "object_count_probabilities": {
+          "6": 1.0
+        },
+        "pool_manifest": "non_symmetry.txt",
+        "target_count": 0,
+        "target_count_probabilities": {
+          "0": 0.2,
+          "1": 0.2,
+          "2": 0.2,
+          "3": 0.2,
+          "4": 0.2
+        },
+        "variant_probabilities": {
+          "mirror_both_axes": 0.0,
+          "mirror_diagonal_anti": 0.0,
+          "mirror_diagonal_main": 1.0,
+          "mirror_horizontal": 0.0,
+          "mirror_vertical": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "icons_relation_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+          "json_example": "{\"evidence\":[\"B\",\"E\"],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Reference cell on the left and a labeled Scene grid of icon arrangements on the right",
+          "question_text": "How many labeled Scene cells have the same mirror symmetry as the Reference cell? Mirror symmetry may be vertical, horizontal, diagonal, or across both the vertical and horizontal axes."
+        },
+        "task_family_key": "reference_grid_mirror_symmetry_relation",
+        "task_family_variant_index": 4,
+        "task_key": "relation_query",
+        "task_variant_index": 2,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/relation/icons_relation_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:relation_query": 5,
+          "task_family:reference_grid_mirror_symmetry_relation": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "icons_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+              "json_example": "{\"evidence\":[\"B\",\"E\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference cell on the left and a labeled Scene grid of icon arrangements on the right",
+              "question_text": "How many labeled Scene cells have the same mirror symmetry as the Reference cell? Mirror symmetry may be vertical, horizontal, diagonal, or across both the vertical and horizontal axes."
+            },
+            "task_family_key": "reference_grid_mirror_symmetry_relation",
+            "task_family_variant_index": 4,
+            "task_key": "relation_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/relation/icons_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:relation_query": 5,
+              "task_family:reference_grid_mirror_symmetry_relation": 5
+            }
+          },
+          "prompt": "Work from the image with a Reference cell on the left and a labeled Scene grid of icon arrangements on the right. Task: How many labeled Scene cells have the same mirror symmetry as the Reference cell? Mirror symmetry may be vertical, horizontal, diagonal, or across both the vertical and horizontal axes.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\"],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "icons_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+              "json_example": "{\"evidence\":[\"B\",\"E\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference cell on the left and a labeled Scene grid of icon arrangements on the right",
+              "question_text": "How many labeled Scene cells have the same mirror symmetry as the Reference cell? Mirror symmetry may be vertical, horizontal, diagonal, or across both the vertical and horizontal axes."
+            },
+            "task_family_key": "reference_grid_mirror_symmetry_relation",
+            "task_family_variant_index": 4,
+            "task_key": "relation_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/relation/icons_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:relation_query": 5,
+              "task_family:reference_grid_mirror_symmetry_relation": 5
+            }
+          },
+          "prompt": "Work from the image with a Reference cell on the left and a labeled Scene grid of icon arrangements on the right. Task: How many labeled Scene cells have the same mirror symmetry as the Reference cell? Mirror symmetry may be vertical, horizontal, diagonal, or across both the vertical and horizontal axes.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "mirror_diagonal_main",
+      "template_id": "icons_relation_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching_cell_labels": [],
+        "reference_cell": {
+          "cell_bbox_xyxy": [
+            56,
+            220,
+            288,
+            452
+          ],
+          "content_bbox_xyxy": [
+            68,
+            232,
+            276,
+            440
+          ],
+          "has_diagonal_anti_symmetry": false,
+          "has_diagonal_main_symmetry": true,
+          "has_horizontal_symmetry": false,
+          "has_vertical_symmetry": false,
+          "icon_count": 2,
+          "panel": "reference",
+          "placements": [
+            {
+              "bbox_xyxy": [
+                161,
+                260,
+                220,
+                319
+              ],
+              "icon_id": "gi-skoll-orbit",
+              "mirrored_from_index": null,
+              "noise_edits": [],
+              "noise_seed": 969196226967448,
+              "reflection_applied": "none",
+              "relation_to_pair": "base",
+              "rotation_degrees": 180,
+              "tint_rgb": [
+                94,
+                192,
+                80
+              ]
+            },
+            {
+              "bbox_xyxy": [
+                96,
+                325,
+                155,
+                384
+              ],
+              "icon_id": "gi-skoll-orbit",
+              "mirrored_from_index": 0,
+              "noise_edits": [],
+              "noise_seed": 969196226967448,
+              "reflection_applied": "diagonal_main_flip",
+              "relation_to_pair": "mirrored",
+              "rotation_degrees": 180,
+              "tint_rgb": [
+                94,
+                192,
+                80
+              ]
+            }
+          ],
+          "symmetry_id": "mirror_diagonal_main"
+        },
+        "scene_cells": [
+          {
+            "cell_bbox_xyxy": [
+              374,
+              100,
+              586,
+              312
+            ],
+            "content_bbox_xyxy": [
+              400,
+              140,
+              560,
+              300
+            ],
+            "has_diagonal_anti_symmetry": false,
+            "has_diagonal_main_symmetry": false,
+            "has_horizontal_symmetry": false,
+            "has_vertical_symmetry": true,
+            "icon_count": 6,
+            "is_match": false,
+            "label": "A",
+            "panel": "scene",
+            "placements": [
+              {
+                "bbox_xyxy": [
+                  444,
+                  157,
+                  472,
+                  193
+                ],
+                "icon_id": "tabler-badge-8k",
+                "mirrored_from_index": null,
+                "noise_edits": [],
+                "noise_seed": 7563754796871355,
+                "reflection_applied": "none",
+                "relation_to_pair": "base",
+                "rotation_degrees": 90,
+                "tint_rgb": [
+                  182,
+                  171,
+                  45
+                ]
+              },
+              {
+                "bbox_xyxy": [
+                  488,
+                  157,
+                  516,
+                  193
+                ],
+                "icon_id": "tabler-badge-8k",
+                "mirrored_from_index": 0,
+                "noise_edits": [],
+                "noise_seed": 7563754796871355,
+                "reflection_applied": "horizontal_flip",
+                "relation_to_pair": "mirrored",
+                "rotation_degrees": 90,
+                "tint_rgb": [
+                  182,
+                  171,
+                  45
+                ]
+              },
+              {
+                "bbox_xyxy": [
+                  434,
+                  203,
+                  461,
+                  230
+                ],
+                "icon_id": "gi-delapouite-crane",
+                "mirrored_from_index": null,
+                "noise_edits": [
+                  {
+                    "params": {
+                      "radius": 0.574151
+                    },
+                    "type": "blur"
+                  },
+                  {
+                    "params": {
+                      "alpha": 0.044547
+                    },
+                    "type": "noise"
+                  }
+                ],
+                "noise_seed": 7464508363864578,
+                "reflection_applied": "none",
+                "relation_to_pair": "base",
+                "rotation_degrees": 0,
+                "tint_rgb": [
+                  30,
+                  37,
+                  185
+                ]
+              },
+              {
+                "bbox_xyxy": [
+                  499,
+                  203,
+                  526,
+                  230
+                ],
+                "icon_id": "gi-delapouite-crane",
+                "mirrored_from_index": 1,
+                "noise_edits": [
+                  {
+                    "params": {
+                      "radius": 0.574151
+                    },
+                    "type": "blur"
+                  },
+                  {
+                    "params": {
+                      "alpha": 0.044547
+                    },
+                    "type": "noise"
+                  }
+                ],
+                "noise_seed": 7464508363864578,
+                "reflection_applied": "horizontal_flip",
+                "relation_to_pair": "mirrored",
+                "rotation_degrees": 0,
+                "tint_rgb": [
+                  30,
+                  37,
+                  185
+                ]
+              },
+              {
+                "bbox_xyxy": [
+                  437,
+                  249,
+                  466,
+                  282
+                ],
+                "icon_id": "gi-delapouite-pirate-hook",
+                "mirrored_from_index": null,
+                "noise_edits": [
+                  {
+                    "params": {
+                      "quality": 74.0
+                    },
+                    "type": "jpeg"
+                  }
+                ],
+                "noise_seed": 12586581661927,
+                "reflection_applied": "none",
+                "relation_to_pair": "base",
+                "rotation_degrees": 180,
+                "tint_rgb": [
+                  211,
+                  73,
+                  51
+                ]
+              },
+              {
+                "bbox_xyxy": [
+                  494,
+                  249,
+                  523,
+                  282
+                ],
+                "icon_id": "gi-delapouite-pirate-hook",
+                "mirrored_from_index": 2,
+                "noise_edits": [
+                  {
+                    "params": {
+                      "quality": 74.0
+                    },
+                    "type": "jpeg"
+                  }
+                ],
+                "noise_seed": 12586581661927,
+                "reflection_applied": "horizontal_flip",
+                "relation_to_pair": "mirrored",
+                "rotation_degrees": 180,
+                "tint_rgb": [
+                  211,
+                  73,
+                  51
+                ]
+              }
+            ],
+            "symmetry_id": "mirror_vertical"
+          },
+          {
+            "cell_bbox_xyxy": [
+              606,
+              100,
+              818,
+              312
+            ],
+            "content_bbox_xyxy": [
+              632,
+              140,
+              792,
+              300
+            ],
+            "has_diagonal_anti_symmetry": true,
+            "has_diagonal_main_symmetry": false,
+            "has_horizontal_symmetry": false,
+            "has_vertical_symmetry": false,
+            "icon_count": 4,
+            "is_match": false,
+            "label": "F",
+            "panel": "scene",
+            "placements": [
+              {
+                "bbox_xyxy": [
+                  692,
+                  157,
+                  728,
+                  193
+                ],
+                "icon_id": "tabler-square-letter-b",
+                "mirrored_from_index": null,
+                "noise_edits": [
+                  {
+                    "params": {
+                      "alpha": 0.071832
+                    },
+                    "type": "noise"
+                  }
+                ],
+                "noise_seed": 4240146734050190,
+                "reflection_applied": "none",
+                "relation_to_pair": "base",
+                "rotation_degrees": 270,
+                "tint_rgb": [
+                  92,
+                  157,
+                  123
+                ]
+              },
+              {
+                "bbox_xyxy": [
+                  739,
+                  204,
+                  775,
+                  240
+                ],
+                "icon_id": "tabler-square-letter-b",
+                "mirrored_from_index": 0,
+                "noise_edits": [
+                  {
+                    "params": {
+                      "alpha": 0.071832
+                    },
+                    "type": "noise"
+                  }
+                ],
+                "noise_seed": 4240146734050190,
+                "reflection_applied": "diagonal_anti_flip",
+                "relation_to_pair": "mirrored",
+                "rotation_degrees": 270,
+                "tint_rgb": [
+                  92,
+                  157,
+                  123
+                ]
+              },
+              {
+                "bbox_xyxy": [
+                  640,
+                  188,
+                  676,
+                  238
+                ],
+                "icon_id": "tabler-cactus",
+                "mirrored_from_index": null,
+                "noise_edits": [
+                  {
+                    "params": {
+                      "alpha": 0.042449
+                    },
+                    "type": "noise"
+                  },
+                  {
+                    "params": {
+                      "scale": 0.907954
+                    },
+                    "type": "downsample"
+                  }
+                ],
+                "noise_seed": 955720839074073,
+                "reflection_applied": "none",
+                "relation_to_pair": "base",
+                "rotation_degrees": 180,
+                "tint_rgb": [
+                  199,
+                  112,
+                  165
+                ]
+              },
+              {
+                "bbox_xyxy": [
+                  694,
+                  256,
+                  744,
+                  292
+                ],
+                "icon_id": "tabler-cactus",
+                "mirrored_from_index": 1,
+                "noise_edits": [
+                  {
+                    "params": {
+                      "alpha": 0.042449
+                    },
+                    "type": "noise"
+                  },
+                  {
+                    "params": {
+                      "scale": 0.907954
+                    },
+                    "type": "downsample"
+                  }
+                ],
+                "noise_seed": 955720839074073,
+                "reflection_applied": "diagonal_anti_flip",
+                "relation_to_pair": "mirrored",
+                "rotation_degrees": 180,
+                "tint_rgb": [
+                  199,
+                  112,
+                  165
+                ]
+              }
+            ],
+            "symmetry_id": "mirror_diagonal_anti"
+          },
+          {
+            "cell_bbox_xyxy": [
+              838,
+              100,
+              1050,
+              312
+            ],
+            "content_bbox_xyxy": [
+              864,
+              140,
+              1024,
+              300
+            ],
+            "has_diagonal_anti_symmetry": false,
+            "has_diagonal_main_symmetry": false,
+            "has_horizontal_symmetry": true,
+            "has_vertical_symmetry": true,
+            "icon_count": 4,
+            "is_match": false,
+            "label": "B",
+            "panel": "scene",
+            "placements": [
+              {
+                "bbox_xyxy": [
+                  901,
+                  226,
+                  938,
+                  275
+                ],
+                "icon_id": "tabler-train",
+                "mirrored_from_index": null,
+                "noise_edits": [
+                  {
+                    "params": {
+                      "scale": 0.948313
+                    },
+                    "type": "downsample"
+                  },
+                  {
+                    "params": {
+                      "radius": 0.22464
+                    },
+                    "type": "blur"
+                  }
+                ],
+                "noise_seed": 1313173677818887,
+                "reflection_applied": "none",
+                "relation_to_pair": "base",
+                "rotation_degrees": 90,
+                "tint_rgb": [
+                  182,
+                  171,
+                  45
+                ]
+              },
+              {
+                "bbox_xyxy": [
+                  950,
+                  226,
+                  987,
+                  275
+                ],
+                "icon_id": "tabler-train",
+                "mirrored_from_index": 0,
+                "noise_edits": [
+                  {
+                    "params": {
+                      "scale": 0.948313
+                    },
+                    "type": "downsample"
+                  },
+                  {
+                    "params": {
+                      "radius": 0.22464
+                    },
+                    "type": "blur"
+                  }
+                ],
+                "noise_seed": 1313173677818887,
+                "reflection_applied": "horizontal_flip",
+                "relation_to_pair": "mirrored",
+                "rotation_degrees": 90,
+                "tint_rgb": [
+                  182,
+                  171,
+                  45
+                ]
+              },
+              {
+                "bbox_xyxy": [
+                  901,
+                  165,
+                  938,
+                  214
+                ],
+                "icon_id": "tabler-train",
+                "mirrored_from_index": 0,
+                "noise_edits": [
+                  {
+                    "params": {
+                      "scale": 0.948313
+                    },
+                    "type": "downsample"
+                  },
+                  {
+                    "params": {
+                      "radius": 0.22464
+                    },
+                    "type": "blur"
+                  }
+                ],
+                "noise_seed": 1313173677818887,
+                "reflection_applied": "vertical_flip",
+                "relation_to_pair": "mirrored",
+                "rotation_degrees": 90,
+                "tint_rgb": [
+                  182,
+                  171,
+                  45
+                ]
+              },
+              {
+                "bbox_xyxy": [
+                  950,
+                  165,
+                  987,
+                  214
+                ],
+                "icon_id": "tabler-train",
+                "mirrored_from_index": 0,
+                "noise_edits": [
+                  {
+                    "params": {
+                      "scale": 0.948313
+                    },
+                    "type": "downsample"
+                  },
+                  {
+                    "params": {
+                      "radius": 0.22464
+                    },
+                    "type": "blur"
+                  }
+                ],
+                "noise_seed": 1313173677818887,
+                "reflection_applied": "both_axes_flip",
+                "relation_to_pair": "mirrored",
+                "rotation_degrees": 90,
+                "tint_rgb": [
+                  182,
+                  171,
+                  45
+                ]
+              }
+            ],
+            "symmetry_id": "mirror_both_axes"
+          },
+          {
+            "cell_bbox_xyxy": [
+              374,
+              360,
+              586,
+              572
+            ],
+            "content_bbox_xyxy": [
+              400,
+              400,
+              560,
+              560
+            ],
+            "has_diagonal_anti_symmetry": false,
+            "has_diagonal_main_symmetry": false,
+            "has_horizontal_symmetry": false,
+            "has_vertical_symmetry": false,
+            "icon_count": 4,
+            "is_match": false,
+            "label": "E",
+            "panel": "scene",
+            "placements": [
+              {
+                "bbox_xyxy": [
+                  498,
+                  433,
+                  552,
+                  484
+                ],
+                "icon_id": "gi-delapouite-horse-head",
+                "mirrored_from_index": null,
+                "noise_edits": [
+                  {
+                    "params": {
+                      "scale": 0.941549
+                    },
+                    "type": "downsample"
+                  }
+                ],
+                "noise_seed": 849962004133162,
+                "reflection_applied": "none",
+                "relation_to_pair": "single",
+                "rotation_degrees": 90,
+                "tint_rgb": [
+                  211,
+                  73,
+                  51
+                ]
+              },
+              {
+                "bbox_xyxy": [
+                  414,
+                  525,
+                  448,
+                  551
+                ],
+                "icon_id": "gi-delapouite-full-metal-bucket-handle",
+                "mirrored_from_index": null,
+                "noise_edits": [
+                  {
+                    "params": {
+                      "alpha": 0.059286
+                    },
+                    "type": "noise"
+                  }
+                ],
+                "noise_seed": 2170709965331600,
+                "reflection_applied": "none",
+                "relation_to_pair": "single",
+                "rotation_degrees": 270,
+                "tint_rgb": [
+                  44,
+                  97,
+                  185
+                ]
+              },
+              {
+                "bbox_xyxy": [
+                  456,
+                  497,
+                  504,
+                  544
+                ],
+                "icon_id": "gi-lorc-stone-sphere",
+                "mirrored_from_index": null,
+                "noise_edits": [],
+                "noise_seed": 3235654337249630,
+                "reflection_applied": "none",
+                "relation_to_pair": "single",
+                "rotation_degrees": 0,
+                "tint_rgb": [
+                  44,
+                  97,
+                  185
+                ]
+              },
+              {
+                "bbox_xyxy": [
+                  439,
+                  414,
+                  480,
+                  450
+                ],
+                "icon_id": "gi-lorc-pointing",
+                "mirrored_from_index": null,
+                "noise_edits": [
+                  {
+                    "params": {
+                      "alpha": 0.042362
+                    },
+                    "type": "noise"
+                  }
+                ],
+                "noise_seed": 5310848025025589,
+                "reflection_applied": "none",
+                "relation_to_pair": "single",
+                "rotation_degrees": 180,
+                "tint_rgb": [
+                  44,
+                  97,
+                  185
+                ]
+              }
+            ],
+            "symmetry_id": "none"
+          },
+          {
+            "cell_bbox_xyxy": [
+              606,
+              360,
+              818,
+              572
+            ],
+            "content_bbox_xyxy": [
+              632,
+              400,
+              792,
+              560
+            ],
+            "has_diagonal_anti_symmetry": false,
+            "has_diagonal_main_symmetry": false,
+            "has_horizontal_symmetry": false,
+            "has_vertical_symmetry": true,
+            "icon_count": 6,
+            "is_match": false,
+            "label": "D",
+            "panel": "scene",
+            "placements": [
+              {
+                "bbox_xyxy": [
+                  671,
+                  435,
+                  707,
+                  468
+                ],
+                "icon_id": "gi-delapouite-stork-delivery",
+                "mirrored_from_index": null,
+                "noise_edits": [
+                  {
+                    "params": {
+                      "quality": 87.0
+                    },
+                    "type": "jpeg"
+                  },
+                  {
+                    "params": {
+                      "radius": 0.595204
+                    },
+                    "type": "blur"
+                  }
+                ],
+                "noise_seed": 3291022633081215,
+                "reflection_applied": "none",
+                "relation_to_pair": "base",
+                "rotation_degrees": 0,
+                "tint_rgb": [
+                  211,
+                  73,
+                  51
+                ]
+              },
+              {
+                "bbox_xyxy": [
+                  717,
+                  435,
+                  753,
+                  468
+                ],
+                "icon_id": "gi-delapouite-stork-delivery",
+                "mirrored_from_index": 0,
+                "noise_edits": [
+                  {
+                    "params": {
+                      "quality": 87.0
+                    },
+                    "type": "jpeg"
+                  },
+                  {
+                    "params": {
+                      "radius": 0.595204
+                    },
+                    "type": "blur"
+                  }
+                ],
+                "noise_seed": 3291022633081215,
+                "reflection_applied": "horizontal_flip",
+                "relation_to_pair": "mirrored",
+                "rotation_degrees": 0,
+                "tint_rgb": [
+                  211,
+                  73,
+                  51
+                ]
+              },
+              {
+                "bbox_xyxy": [
+                  641,
+                  494,
+                  663,
+                  522
+                ],
+                "icon_id": "gi-delapouite-sailboat",
+                "mirrored_from_index": null,
+                "noise_edits": [],
+                "noise_seed": 5792567771092033,
+                "reflection_applied": "none",
+                "relation_to_pair": "base",
+                "rotation_degrees": 90,
+                "tint_rgb": [
+                  92,
+                  157,
+                  123
+                ]
+              },
+              {
+                "bbox_xyxy": [
+                  761,
+                  494,
+                  783,
+                  522
+                ],
+                "icon_id": "gi-delapouite-sailboat",
+                "mirrored_from_index": 1,
+                "noise_edits": [],
+                "noise_seed": 5792567771092033,
+                "reflection_applied": "horizontal_flip",
+                "relation_to_pair": "mirrored",
+                "rotation_degrees": 90,
+                "tint_rgb": [
+                  92,
+                  157,
+                  123
+                ]
+              },
+              {
+                "bbox_xyxy": [
+                  691,
+                  486,
+                  709,
+                  512
+                ],
+                "icon_id": "gi-delapouite-beer-horn",
+                "mirrored_from_index": null,
+                "noise_edits": [],
+                "noise_seed": 4896096054949948,
+                "reflection_applied": "none",
+                "relation_to_pair": "base",
+                "rotation_degrees": 0,
+                "tint_rgb": [
+                  94,
+                  192,
+                  80
+                ]
+              },
+              {
+                "bbox_xyxy": [
+                  715,
+                  486,
+                  733,
+                  512
+                ],
+                "icon_id": "gi-delapouite-beer-horn",
+                "mirrored_from_index": 2,
+                "noise_edits": [],
+                "noise_seed": 4896096054949948,
+                "reflection_applied": "horizontal_flip",
+                "relation_to_pair": "mirrored",
+                "rotation_degrees": 0,
+                "tint_rgb": [
+                  94,
+                  192,
+                  80
+                ]
+              }
+            ],
+            "symmetry_id": "mirror_vertical"
+          },
+          {
+            "cell_bbox_xyxy": [
+              838,
+              360,
+              1050,
+              572
+            ],
+            "content_bbox_xyxy": [
+              864,
+              400,
+              1024,
+              560
+            ],
+            "has_diagonal_anti_symmetry": false,
+            "has_diagonal_main_symmetry": false,
+            "has_horizontal_symmetry": true,
+            "has_vertical_symmetry": false,
+            "icon_count": 4,
+            "is_match": false,
+            "label": "C",
+            "panel": "scene",
+            "placements": [
+              {
+                "bbox_xyxy": [
+                  952,
+                  419,
+                  990,
+                  463
+                ],
+                "icon_id": "gi-delapouite-phrygian-cap",
+                "mirrored_from_index": null,
+                "noise_edits": [
+                  {
+                    "params": {
+                      "scale": 0.940346
+                    },
+                    "type": "downsample"
+                  }
+                ],
+                "noise_seed": 3341561484415892,
+                "reflection_applied": "none",
+                "relation_to_pair": "base",
+                "rotation_degrees": 180,
+                "tint_rgb": [
+                  44,
+                  97,
+                  185
+                ]
+              },
+              {
+                "bbox_xyxy": [
+                  952,
+                  497,
+                  990,
+                  541
+                ],
+                "icon_id": "gi-delapouite-phrygian-cap",
+                "mirrored_from_index": 0,
+                "noise_edits": [
+                  {
+                    "params": {
+                      "scale": 0.940346
+                    },
+                    "type": "downsample"
+                  }
+                ],
+                "noise_seed": 3341561484415892,
+                "reflection_applied": "vertical_flip",
+                "relation_to_pair": "mirrored",
+                "rotation_degrees": 180,
+                "tint_rgb": [
+                  44,
+                  97,
+                  185
+                ]
+              },
+              {
+                "bbox_xyxy": [
+                  884,
+                  410,
+                  921,
+                  455
+                ],
+                "icon_id": "hero-document",
+                "mirrored_from_index": null,
+                "noise_edits": [
+                  {
+                    "params": {
+                      "quality": 79.0
+                    },
+                    "type": "jpeg"
+                  },
+                  {
+                    "params": {
+                      "scale": 0.8992
+                    },
+                    "type": "downsample"
+                  }
+                ],
+                "noise_seed": 417274258216707,
+                "reflection_applied": "none",
+                "relation_to_pair": "base",
+                "rotation_degrees": 180,
+                "tint_rgb": [
+                  94,
+                  192,
+                  80
+                ]
+              },
+              {
+                "bbox_xyxy": [
+                  884,
+                  505,
+                  921,
+                  550
+                ],
+                "icon_id": "hero-document",
+                "mirrored_from_index": 1,
+                "noise_edits": [
+                  {
+                    "params": {
+                      "quality": 79.0
+                    },
+                    "type": "jpeg"
+                  },
+                  {
+                    "params": {
+                      "scale": 0.8992
+                    },
+                    "type": "downsample"
+                  }
+                ],
+                "noise_seed": 417274258216707,
+                "reflection_applied": "vertical_flip",
+                "relation_to_pair": "mirrored",
+                "rotation_degrees": 180,
+                "tint_rgb": [
+                  94,
+                  192,
+                  80
+                ]
+              }
+            ],
+            "symmetry_id": "mirror_horizontal"
+          }
+        ]
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        1104,
+        640
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          1104,
+          640
+        ],
+        "reference_content_xyxy": [
+          44,
+          77,
+          300,
+          596
+        ],
+        "reference_panel_xyxy": [
+          24,
+          24,
+          320,
+          616
+        ],
+        "scene_content_xyxy": [
+          364,
+          77,
+          1060,
+          596
+        ],
+        "scene_panel_xyxy": [
+          344,
+          24,
+          1080,
+          616
+        ]
+      },
+      "style": {
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "both_axes_icon_count_choices": [
+          4
+        ],
+        "cell_border_rgb": [
+          218,
+          223,
+          233
+        ],
+        "cell_label_color_rgb": [
+          52,
+          60,
+          77
+        ],
+        "cell_label_font_size_px": 22,
+        "cell_padding_px": 10,
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "nonsymmetric_icon_count_choices": [
+          2,
+          4,
+          6
+        ],
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "patch_inner_margin_px": 8,
+        "patch_min_gap_px": 6,
+        "patch_sampling_attempts": 160,
+        "rotation_candidates_degrees": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "sampled_palette_rgb": [
+          [
+            94,
+            192,
+            80
+          ],
+          [
+            199,
+            112,
+            165
+          ],
+          [
+            211,
+            73,
+            51
+          ],
+          [
+            92,
+            157,
+            123
+          ],
+          [
+            30,
+            37,
+            185
+          ],
+          [
+            182,
+            171,
+            45
+          ],
+          [
+            198,
+            29,
+            172
+          ],
+          [
+            108,
+            28,
+            40
+          ],
+          [
+            44,
+            97,
+            185
+          ]
+        ],
+        "symmetric_icon_count_choices": [
+          2,
+          4,
+          6
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "cell_bbox_xyxy": [
+            56,
+            220,
+            288,
+            452
+          ],
+          "content_bbox_xyxy": [
+            68,
+            232,
+            276,
+            440
+          ],
+          "has_diagonal_anti_symmetry": false,
+          "has_diagonal_main_symmetry": true,
+          "has_horizontal_symmetry": false,
+          "has_vertical_symmetry": false,
+          "icon_count": 2,
+          "panel": "reference",
+          "placements": [
+            {
+              "bbox_xyxy": [
+                161,
+                260,
+                220,
+                319
+              ],
+              "icon_id": "gi-skoll-orbit",
+              "mirrored_from_index": null,
+              "noise_edits": [],
+              "noise_seed": 969196226967448,
+              "reflection_applied": "none",
+              "relation_to_pair": "base",
+              "rotation_degrees": 180,
+              "tint_rgb": [
+                94,
+                192,
+                80
+              ]
+            },
+            {
+              "bbox_xyxy": [
+                96,
+                325,
+                155,
+                384
+              ],
+              "icon_id": "gi-skoll-orbit",
+              "mirrored_from_index": 0,
+              "noise_edits": [],
+              "noise_seed": 969196226967448,
+              "reflection_applied": "diagonal_main_flip",
+              "relation_to_pair": "mirrored",
+              "rotation_degrees": 180,
+              "tint_rgb": [
+                94,
+                192,
+                80
+              ]
+            }
+          ],
+          "symmetry_id": "mirror_diagonal_main"
+        },
+        {
+          "cell_bbox_xyxy": [
+            374,
+            100,
+            586,
+            312
+          ],
+          "content_bbox_xyxy": [
+            400,
+            140,
+            560,
+            300
+          ],
+          "has_diagonal_anti_symmetry": false,
+          "has_diagonal_main_symmetry": false,
+          "has_horizontal_symmetry": false,
+          "has_vertical_symmetry": true,
+          "icon_count": 6,
+          "is_match": false,
+          "label": "A",
+          "panel": "scene",
+          "placements": [
+            {
+              "bbox_xyxy": [
+                444,
+                157,
+                472,
+                193
+              ],
+              "icon_id": "tabler-badge-8k",
+              "mirrored_from_index": null,
+              "noise_edits": [],
+              "noise_seed": 7563754796871355,
+              "reflection_applied": "none",
+              "relation_to_pair": "base",
+              "rotation_degrees": 90,
+              "tint_rgb": [
+                182,
+                171,
+                45
+              ]
+            },
+            {
+              "bbox_xyxy": [
+                488,
+                157,
+                516,
+                193
+              ],
+              "icon_id": "tabler-badge-8k",
+              "mirrored_from_index": 0,
+              "noise_edits": [],
+              "noise_seed": 7563754796871355,
+              "reflection_applied": "horizontal_flip",
+              "relation_to_pair": "mirrored",
+              "rotation_degrees": 90,
+              "tint_rgb": [
+                182,
+                171,
+                45
+              ]
+            },
+            {
+              "bbox_xyxy": [
+                434,
+                203,
+                461,
+                230
+              ],
+              "icon_id": "gi-delapouite-crane",
+              "mirrored_from_index": null,
+              "noise_edits": [
+                {
+                  "params": {
+                    "radius": 0.574151
+                  },
+                  "type": "blur"
+                },
+                {
+                  "params": {
+                    "alpha": 0.044547
+                  },
+                  "type": "noise"
+                }
+              ],
+              "noise_seed": 7464508363864578,
+              "reflection_applied": "none",
+              "relation_to_pair": "base",
+              "rotation_degrees": 0,
+              "tint_rgb": [
+                30,
+                37,
+                185
+              ]
+            },
+            {
+              "bbox_xyxy": [
+                499,
+                203,
+                526,
+                230
+              ],
+              "icon_id": "gi-delapouite-crane",
+              "mirrored_from_index": 1,
+              "noise_edits": [
+                {
+                  "params": {
+                    "radius": 0.574151
+                  },
+                  "type": "blur"
+                },
+                {
+                  "params": {
+                    "alpha": 0.044547
+                  },
+                  "type": "noise"
+                }
+              ],
+              "noise_seed": 7464508363864578,
+              "reflection_applied": "horizontal_flip",
+              "relation_to_pair": "mirrored",
+              "rotation_degrees": 0,
+              "tint_rgb": [
+                30,
+                37,
+                185
+              ]
+            },
+            {
+              "bbox_xyxy": [
+                437,
+                249,
+                466,
+                282
+              ],
+              "icon_id": "gi-delapouite-pirate-hook",
+              "mirrored_from_index": null,
+              "noise_edits": [
+                {
+                  "params": {
+                    "quality": 74.0
+                  },
+                  "type": "jpeg"
+                }
+              ],
+              "noise_seed": 12586581661927,
+              "reflection_applied": "none",
+              "relation_to_pair": "base",
+              "rotation_degrees": 180,
+              "tint_rgb": [
+                211,
+                73,
+                51
+              ]
+            },
+            {
+              "bbox_xyxy": [
+                494,
+                249,
+                523,
+                282
+              ],
+              "icon_id": "gi-delapouite-pirate-hook",
+              "mirrored_from_index": 2,
+              "noise_edits": [
+                {
+                  "params": {
+                    "quality": 74.0
+                  },
+                  "type": "jpeg"
+                }
+              ],
+              "noise_seed": 12586581661927,
+              "reflection_applied": "horizontal_flip",
+              "relation_to_pair": "mirrored",
+              "rotation_degrees": 180,
+              "tint_rgb": [
+                211,
+                73,
+                51
+              ]
+            }
+          ],
+          "symmetry_id": "mirror_vertical"
+        },
+        {
+          "cell_bbox_xyxy": [
+            606,
+            100,
+            818,
+            312
+          ],
+          "content_bbox_xyxy": [
+            632,
+            140,
+            792,
+            300
+          ],
+          "has_diagonal_anti_symmetry": true,
+          "has_diagonal_main_symmetry": false,
+          "has_horizontal_symmetry": false,
+          "has_vertical_symmetry": false,
+          "icon_count": 4,
+          "is_match": false,
+          "label": "F",
+          "panel": "scene",
+          "placements": [
+            {
+              "bbox_xyxy": [
+                692,
+                157,
+                728,
+                193
+              ],
+              "icon_id": "tabler-square-letter-b",
+              "mirrored_from_index": null,
+              "noise_edits": [
+                {
+                  "params": {
+                    "alpha": 0.071832
+                  },
+                  "type": "noise"
+                }
+              ],
+              "noise_seed": 4240146734050190,
+              "reflection_applied": "none",
+              "relation_to_pair": "base",
+              "rotation_degrees": 270,
+              "tint_rgb": [
+                92,
+                157,
+                123
+              ]
+            },
+            {
+              "bbox_xyxy": [
+                739,
+                204,
+                775,
+                240
+              ],
+              "icon_id": "tabler-square-letter-b",
+              "mirrored_from_index": 0,
+              "noise_edits": [
+                {
+                  "params": {
+                    "alpha": 0.071832
+                  },
+                  "type": "noise"
+                }
+              ],
+              "noise_seed": 4240146734050190,
+              "reflection_applied": "diagonal_anti_flip",
+              "relation_to_pair": "mirrored",
+              "rotation_degrees": 270,
+              "tint_rgb": [
+                92,
+                157,
+                123
+              ]
+            },
+            {
+              "bbox_xyxy": [
+                640,
+                188,
+                676,
+                238
+              ],
+              "icon_id": "tabler-cactus",
+              "mirrored_from_index": null,
+              "noise_edits": [
+                {
+                  "params": {
+                    "alpha": 0.042449
+                  },
+                  "type": "noise"
+                },
+                {
+                  "params": {
+                    "scale": 0.907954
+                  },
+                  "type": "downsample"
+                }
+              ],
+              "noise_seed": 955720839074073,
+              "reflection_applied": "none",
+              "relation_to_pair": "base",
+              "rotation_degrees": 180,
+              "tint_rgb": [
+                199,
+                112,
+                165
+              ]
+            },
+            {
+              "bbox_xyxy": [
+                694,
+                256,
+                744,
+                292
+              ],
+              "icon_id": "tabler-cactus",
+              "mirrored_from_index": 1,
+              "noise_edits": [
+                {
+                  "params": {
+                    "alpha": 0.042449
+                  },
+                  "type": "noise"
+                },
+                {
+                  "params": {
+                    "scale": 0.907954
+                  },
+                  "type": "downsample"
+                }
+              ],
+              "noise_seed": 955720839074073,
+              "reflection_applied": "diagonal_anti_flip",
+              "relation_to_pair": "mirrored",
+              "rotation_degrees": 180,
+              "tint_rgb": [
+                199,
+                112,
+                165
+              ]
+            }
+          ],
+          "symmetry_id": "mirror_diagonal_anti"
+        },
+        {
+          "cell_bbox_xyxy": [
+            838,
+            100,
+            1050,
+            312
+          ],
+          "content_bbox_xyxy": [
+            864,
+            140,
+            1024,
+            300
+          ],
+          "has_diagonal_anti_symmetry": false,
+          "has_diagonal_main_symmetry": false,
+          "has_horizontal_symmetry": true,
+          "has_vertical_symmetry": true,
+          "icon_count": 4,
+          "is_match": false,
+          "label": "B",
+          "panel": "scene",
+          "placements": [
+            {
+              "bbox_xyxy": [
+                901,
+                226,
+                938,
+                275
+              ],
+              "icon_id": "tabler-train",
+              "mirrored_from_index": null,
+              "noise_edits": [
+                {
+                  "params": {
+                    "scale": 0.948313
+                  },
+                  "type": "downsample"
+                },
+                {
+                  "params": {
+                    "radius": 0.22464
+                  },
+                  "type": "blur"
+                }
+              ],
+              "noise_seed": 1313173677818887,
+              "reflection_applied": "none",
+              "relation_to_pair": "base",
+              "rotation_degrees": 90,
+              "tint_rgb": [
+                182,
+                171,
+                45
+              ]
+            },
+            {
+              "bbox_xyxy": [
+                950,
+                226,
+                987,
+                275
+              ],
+              "icon_id": "tabler-train",
+              "mirrored_from_index": 0,
+              "noise_edits": [
+                {
+                  "params": {
+                    "scale": 0.948313
+                  },
+                  "type": "downsample"
+                },
+                {
+                  "params": {
+                    "radius": 0.22464
+                  },
+                  "type": "blur"
+                }
+              ],
+              "noise_seed": 1313173677818887,
+              "reflection_applied": "horizontal_flip",
+              "relation_to_pair": "mirrored",
+              "rotation_degrees": 90,
+              "tint_rgb": [
+                182,
+                171,
+                45
+              ]
+            },
+            {
+              "bbox_xyxy": [
+                901,
+                165,
+                938,
+                214
+              ],
+              "icon_id": "tabler-train",
+              "mirrored_from_index": 0,
+              "noise_edits": [
+                {
+                  "params": {
+                    "scale": 0.948313
+                  },
+                  "type": "downsample"
+                },
+                {
+                  "params": {
+                    "radius": 0.22464
+                  },
+                  "type": "blur"
+                }
+              ],
+              "noise_seed": 1313173677818887,
+              "reflection_applied": "vertical_flip",
+              "relation_to_pair": "mirrored",
+              "rotation_degrees": 90,
+              "tint_rgb": [
+                182,
+                171,
+                45
+              ]
+            },
+            {
+              "bbox_xyxy": [
+                950,
+                165,
+                987,
+                214
+              ],
+              "icon_id": "tabler-train",
+              "mirrored_from_index": 0,
+              "noise_edits": [
+                {
+                  "params": {
+                    "scale": 0.948313
+                  },
+                  "type": "downsample"
+                },
+                {
+                  "params": {
+                    "radius": 0.22464
+                  },
+                  "type": "blur"
+                }
+              ],
+              "noise_seed": 1313173677818887,
+              "reflection_applied": "both_axes_flip",
+              "relation_to_pair": "mirrored",
+              "rotation_degrees": 90,
+              "tint_rgb": [
+                182,
+                171,
+                45
+              ]
+            }
+          ],
+          "symmetry_id": "mirror_both_axes"
+        },
+        {
+          "cell_bbox_xyxy": [
+            374,
+            360,
+            586,
+            572
+          ],
+          "content_bbox_xyxy": [
+            400,
+            400,
+            560,
+            560
+          ],
+          "has_diagonal_anti_symmetry": false,
+          "has_diagonal_main_symmetry": false,
+          "has_horizontal_symmetry": false,
+          "has_vertical_symmetry": false,
+          "icon_count": 4,
+          "is_match": false,
+          "label": "E",
+          "panel": "scene",
+          "placements": [
+            {
+              "bbox_xyxy": [
+                498,
+                433,
+                552,
+                484
+              ],
+              "icon_id": "gi-delapouite-horse-head",
+              "mirrored_from_index": null,
+              "noise_edits": [
+                {
+                  "params": {
+                    "scale": 0.941549
+                  },
+                  "type": "downsample"
+                }
+              ],
+              "noise_seed": 849962004133162,
+              "reflection_applied": "none",
+              "relation_to_pair": "single",
+              "rotation_degrees": 90,
+              "tint_rgb": [
+                211,
+                73,
+                51
+              ]
+            },
+            {
+              "bbox_xyxy": [
+                414,
+                525,
+                448,
+                551
+              ],
+              "icon_id": "gi-delapouite-full-metal-bucket-handle",
+              "mirrored_from_index": null,
+              "noise_edits": [
+                {
+                  "params": {
+                    "alpha": 0.059286
+                  },
+                  "type": "noise"
+                }
+              ],
+              "noise_seed": 2170709965331600,
+              "reflection_applied": "none",
+              "relation_to_pair": "single",
+              "rotation_degrees": 270,
+              "tint_rgb": [
+                44,
+                97,
+                185
+              ]
+            },
+            {
+              "bbox_xyxy": [
+                456,
+                497,
+                504,
+                544
+              ],
+              "icon_id": "gi-lorc-stone-sphere",
+              "mirrored_from_index": null,
+              "noise_edits": [],
+              "noise_seed": 3235654337249630,
+              "reflection_applied": "none",
+              "relation_to_pair": "single",
+              "rotation_degrees": 0,
+              "tint_rgb": [
+                44,
+                97,
+                185
+              ]
+            },
+            {
+              "bbox_xyxy": [
+                439,
+                414,
+                480,
+                450
+              ],
+              "icon_id": "gi-lorc-pointing",
+              "mirrored_from_index": null,
+              "noise_edits": [
+                {
+                  "params": {
+                    "alpha": 0.042362
+                  },
+                  "type": "noise"
+                }
+              ],
+              "noise_seed": 5310848025025589,
+              "reflection_applied": "none",
+              "relation_to_pair": "single",
+              "rotation_degrees": 180,
+              "tint_rgb": [
+                44,
+                97,
+                185
+              ]
+            }
+          ],
+          "symmetry_id": "none"
+        },
+        {
+          "cell_bbox_xyxy": [
+            606,
+            360,
+            818,
+            572
+          ],
+          "content_bbox_xyxy": [
+            632,
+            400,
+            792,
+            560
+          ],
+          "has_diagonal_anti_symmetry": false,
+          "has_diagonal_main_symmetry": false,
+          "has_horizontal_symmetry": false,
+          "has_vertical_symmetry": true,
+          "icon_count": 6,
+          "is_match": false,
+          "label": "D",
+          "panel": "scene",
+          "placements": [
+            {
+              "bbox_xyxy": [
+                671,
+                435,
+                707,
+                468
+              ],
+              "icon_id": "gi-delapouite-stork-delivery",
+              "mirrored_from_index": null,
+              "noise_edits": [
+                {
+                  "params": {
+                    "quality": 87.0
+                  },
+                  "type": "jpeg"
+                },
+                {
+                  "params": {
+                    "radius": 0.595204
+                  },
+                  "type": "blur"
+                }
+              ],
+              "noise_seed": 3291022633081215,
+              "reflection_applied": "none",
+              "relation_to_pair": "base",
+              "rotation_degrees": 0,
+              "tint_rgb": [
+                211,
+                73,
+                51
+              ]
+            },
+            {
+              "bbox_xyxy": [
+                717,
+                435,
+                753,
+                468
+              ],
+              "icon_id": "gi-delapouite-stork-delivery",
+              "mirrored_from_index": 0,
+              "noise_edits": [
+                {
+                  "params": {
+                    "quality": 87.0
+                  },
+                  "type": "jpeg"
+                },
+                {
+                  "params": {
+                    "radius": 0.595204
+                  },
+                  "type": "blur"
+                }
+              ],
+              "noise_seed": 3291022633081215,
+              "reflection_applied": "horizontal_flip",
+              "relation_to_pair": "mirrored",
+              "rotation_degrees": 0,
+              "tint_rgb": [
+                211,
+                73,
+                51
+              ]
+            },
+            {
+              "bbox_xyxy": [
+                641,
+                494,
+                663,
+                522
+              ],
+              "icon_id": "gi-delapouite-sailboat",
+              "mirrored_from_index": null,
+              "noise_edits": [],
+              "noise_seed": 5792567771092033,
+              "reflection_applied": "none",
+              "relation_to_pair": "base",
+              "rotation_degrees": 90,
+              "tint_rgb": [
+                92,
+                157,
+                123
+              ]
+            },
+            {
+              "bbox_xyxy": [
+                761,
+                494,
+                783,
+                522
+              ],
+              "icon_id": "gi-delapouite-sailboat",
+              "mirrored_from_index": 1,
+              "noise_edits": [],
+              "noise_seed": 5792567771092033,
+              "reflection_applied": "horizontal_flip",
+              "relation_to_pair": "mirrored",
+              "rotation_degrees": 90,
+              "tint_rgb": [
+                92,
+                157,
+                123
+              ]
+            },
+            {
+              "bbox_xyxy": [
+                691,
+                486,
+                709,
+                512
+              ],
+              "icon_id": "gi-delapouite-beer-horn",
+              "mirrored_from_index": null,
+              "noise_edits": [],
+              "noise_seed": 4896096054949948,
+              "reflection_applied": "none",
+              "relation_to_pair": "base",
+              "rotation_degrees": 0,
+              "tint_rgb": [
+                94,
+                192,
+                80
+              ]
+            },
+            {
+              "bbox_xyxy": [
+                715,
+                486,
+                733,
+                512
+              ],
+              "icon_id": "gi-delapouite-beer-horn",
+              "mirrored_from_index": 2,
+              "noise_edits": [],
+              "noise_seed": 4896096054949948,
+              "reflection_applied": "horizontal_flip",
+              "relation_to_pair": "mirrored",
+              "rotation_degrees": 0,
+              "tint_rgb": [
+                94,
+                192,
+                80
+              ]
+            }
+          ],
+          "symmetry_id": "mirror_vertical"
+        },
+        {
+          "cell_bbox_xyxy": [
+            838,
+            360,
+            1050,
+            572
+          ],
+          "content_bbox_xyxy": [
+            864,
+            400,
+            1024,
+            560
+          ],
+          "has_diagonal_anti_symmetry": false,
+          "has_diagonal_main_symmetry": false,
+          "has_horizontal_symmetry": true,
+          "has_vertical_symmetry": false,
+          "icon_count": 4,
+          "is_match": false,
+          "label": "C",
+          "panel": "scene",
+          "placements": [
+            {
+              "bbox_xyxy": [
+                952,
+                419,
+                990,
+                463
+              ],
+              "icon_id": "gi-delapouite-phrygian-cap",
+              "mirrored_from_index": null,
+              "noise_edits": [
+                {
+                  "params": {
+                    "scale": 0.940346
+                  },
+                  "type": "downsample"
+                }
+              ],
+              "noise_seed": 3341561484415892,
+              "reflection_applied": "none",
+              "relation_to_pair": "base",
+              "rotation_degrees": 180,
+              "tint_rgb": [
+                44,
+                97,
+                185
+              ]
+            },
+            {
+              "bbox_xyxy": [
+                952,
+                497,
+                990,
+                541
+              ],
+              "icon_id": "gi-delapouite-phrygian-cap",
+              "mirrored_from_index": 0,
+              "noise_edits": [
+                {
+                  "params": {
+                    "scale": 0.940346
+                  },
+                  "type": "downsample"
+                }
+              ],
+              "noise_seed": 3341561484415892,
+              "reflection_applied": "vertical_flip",
+              "relation_to_pair": "mirrored",
+              "rotation_degrees": 180,
+              "tint_rgb": [
+                44,
+                97,
+                185
+              ]
+            },
+            {
+              "bbox_xyxy": [
+                884,
+                410,
+                921,
+                455
+              ],
+              "icon_id": "hero-document",
+              "mirrored_from_index": null,
+              "noise_edits": [
+                {
+                  "params": {
+                    "quality": 79.0
+                  },
+                  "type": "jpeg"
+                },
+                {
+                  "params": {
+                    "scale": 0.8992
+                  },
+                  "type": "downsample"
+                }
+              ],
+              "noise_seed": 417274258216707,
+              "reflection_applied": "none",
+              "relation_to_pair": "base",
+              "rotation_degrees": 180,
+              "tint_rgb": [
+                94,
+                192,
+                80
+              ]
+            },
+            {
+              "bbox_xyxy": [
+                884,
+                505,
+                921,
+                550
+              ],
+              "icon_id": "hero-document",
+              "mirrored_from_index": 1,
+              "noise_edits": [
+                {
+                  "params": {
+                    "quality": 79.0
+                  },
+                  "type": "jpeg"
+                },
+                {
+                  "params": {
+                    "scale": 0.8992
+                  },
+                  "type": "downsample"
+                }
+              ],
+              "noise_seed": 417274258216707,
+              "reflection_applied": "vertical_flip",
+              "relation_to_pair": "mirrored",
+              "rotation_degrees": 180,
+              "tint_rgb": [
+                94,
+                192,
+                80
+              ]
+            }
+          ],
+          "symmetry_id": "mirror_horizontal"
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            1104,
+            640
+          ],
+          "reference_content_xyxy": [
+            44,
+            77,
+            300,
+            596
+          ],
+          "reference_panel_xyxy": [
+            24,
+            24,
+            320,
+            616
+          ],
+          "scene_content_xyxy": [
+            364,
+            77,
+            1060,
+            596
+          ],
+          "scene_panel_xyxy": [
+            344,
+            24,
+            1080,
+            616
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "counting_target": "same_mirror_symmetry_as_reference",
+        "matching_cell_labels": [],
+        "reference_symmetry_id": "mirror_diagonal_main"
+      },
+      "scene_kind": "icons_reference_grid_mirror_symmetry_count"
+    },
+    "witness_symbolic": {
+      "matching_cell_labels": [],
+      "reference_symmetry_id": "mirror_diagonal_main"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

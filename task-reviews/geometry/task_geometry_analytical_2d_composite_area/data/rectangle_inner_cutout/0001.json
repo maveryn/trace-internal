@@ -1,0 +1,483 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 1067
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "BC": 33,
+      "CD": 37,
+      "EF": 14,
+      "FG": 11
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_2d_composite_area/images/rectangle_inner_cutout/0001.png"
+  },
+  "instance_seed": 4433816123266670,
+  "prompt": "The image shows a shaded composite geometric region with measurement annotations. Task: The shaded region is an outer rectangle with one inner rectangular cutout. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, CD, EF, FG.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"BC\":2,\"CD\":3,\"EF\":4,\"FG\":5},\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows a shaded composite geometric region with measurement annotations. Task: The shaded region is an outer rectangle with one inner rectangular cutout. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, CD, EF, FG.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"BC\":2,\"CD\":3,\"EF\":4,\"FG\":5},\"answer\":8}",
+    "answer_only": "The image shows a shaded composite geometric region with measurement annotations. Task: The shaded region is an outer rectangle with one inner rectangular cutout. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_geometry_analytical_2d_composite_area",
+  "task_variant": "rectangle_inner_cutout",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 2500,
+      "answer_min": 20,
+      "answer_scalar": 1067,
+      "answer_type": "integer",
+      "answer_value": 1067,
+      "evidence_map": {
+        "BC": 33,
+        "CD": 37,
+        "EF": 14,
+        "FG": 11
+      },
+      "evidence_role_tokens": {
+        "inner_height": "FG",
+        "inner_width": "EF",
+        "outer_height": "CD",
+        "outer_width": "BC"
+      },
+      "evidence_role_values": {
+        "inner_height": 11,
+        "inner_width": 14,
+        "outer_height": 37,
+        "outer_width": 33
+      },
+      "evidence_roles": [
+        "outer_width",
+        "outer_height",
+        "inner_width",
+        "inner_height"
+      ],
+      "formula_expression": "outer_width * outer_height - inner_width * inner_height",
+      "raw_answer_value": 1067,
+      "required_annotations": [
+        "BC",
+        "CD",
+        "EF",
+        "FG"
+      ],
+      "scene_kind": "composite_region",
+      "target_quantity": "area",
+      "task_variant": "rectangle_inner_cutout",
+      "variant_probabilities": {
+        "l_shape_cutout": 0.2,
+        "rectangle_inner_cutout": 0.2,
+        "rectangle_triangle_cutout": 0.2,
+        "rectangle_triangle_union": 0.2,
+        "step_rectangles_union": 0.2
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "inner_height": "FG",
+        "inner_width": "EF",
+        "outer_height": "CD",
+        "outer_width": "BC"
+      },
+      "id_set": [
+        "BC",
+        "CD",
+        "EF",
+        "FG"
+      ],
+      "measurement_ref_map": {
+        "BC": 33,
+        "CD": 37,
+        "EF": 14,
+        "FG": 11
+      },
+      "pixel_annotation_centers": {
+        "BC": [
+          357.12652336324436,
+          631.0333333333334
+        ],
+        "CD": [
+          599.4130098497309,
+          372.5
+        ],
+        "EF": [
+          428.3886855254066,
+          477.08918918918926
+        ],
+        "FG": [
+          490.5859828227038,
+          424.32702702702704
+        ]
+      },
+      "pixel_point_set": [
+        [
+          357.12652336324436,
+          631.0333333333334
+        ],
+        [
+          599.4130098497309,
+          372.5
+        ],
+        [
+          428.3886855254066,
+          477.08918918918926
+        ],
+        [
+          490.5859828227038,
+          424.32702702702704
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 2500,
+        "answer_min": 20,
+        "task_variant": "rectangle_inner_cutout",
+        "variant_probabilities": {
+          "l_shape_cutout": 0.2,
+          "rectangle_inner_cutout": 0.2,
+          "rectangle_triangle_cutout": 0.2,
+          "rectangle_triangle_union": 0.2,
+          "step_rectangles_union": 0.2
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "geometry_analytical_composite_area_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the area value as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, CD, EF, FG",
+          "json_example": "{\"evidence\":{\"BC\":2,\"CD\":3,\"EF\":4,\"FG\":5},\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a shaded composite geometric region with measurement annotations",
+          "question_text": "The shaded region is an outer rectangle with one inner rectangular cutout. What is the area of the shaded region in square units?"
+        },
+        "task_family_key": "analytical_composite_area_scene",
+        "task_family_variant_index": 1,
+        "task_key": "analytical_composite_area_query",
+        "task_variant_index": 2,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_2d/geometry_analytical_composite_area_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_composite_area_query": 5,
+          "task_family:analytical_composite_area_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_analytical_composite_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the area value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, CD, EF, FG",
+              "json_example": "{\"evidence\":{\"BC\":2,\"CD\":3,\"EF\":4,\"FG\":5},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a shaded composite geometric region with measurement annotations",
+              "question_text": "The shaded region is an outer rectangle with one inner rectangular cutout. What is the area of the shaded region in square units?"
+            },
+            "task_family_key": "analytical_composite_area_scene",
+            "task_family_variant_index": 1,
+            "task_key": "analytical_composite_area_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_composite_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_composite_area_query": 5,
+              "task_family:analytical_composite_area_scene": 5
+            }
+          },
+          "prompt": "The image shows a shaded composite geometric region with measurement annotations. Task: The shaded region is an outer rectangle with one inner rectangular cutout. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, CD, EF, FG.\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"BC\":2,\"CD\":3,\"EF\":4,\"FG\":5},\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_analytical_composite_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the area value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BC, CD, EF, FG",
+              "json_example": "{\"evidence\":{\"BC\":2,\"CD\":3,\"EF\":4,\"FG\":5},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a shaded composite geometric region with measurement annotations",
+              "question_text": "The shaded region is an outer rectangle with one inner rectangular cutout. What is the area of the shaded region in square units?"
+            },
+            "task_family_key": "analytical_composite_area_scene",
+            "task_family_variant_index": 1,
+            "task_key": "analytical_composite_area_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_composite_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_composite_area_query": 5,
+              "task_family:analytical_composite_area_scene": 5
+            }
+          },
+          "prompt": "The image shows a shaded composite geometric region with measurement annotations. Task: The shaded region is an outer rectangle with one inner rectangular cutout. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "rectangle_inner_cutout",
+      "template_id": "geometry_analytical_composite_area_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "BC": [
+          357.12652336324436,
+          631.0333333333334
+        ],
+        "CD": [
+          599.4130098497309,
+          372.5
+        ],
+        "EF": [
+          428.3886855254066,
+          477.08918918918926
+        ],
+        "FG": [
+          490.5859828227038,
+          424.32702702702704
+        ]
+      },
+      "annotation_labels": {
+        "inner_height": "FG",
+        "inner_width": "EF",
+        "outer_height": "CD",
+        "outer_width": "BC"
+      },
+      "coord_space": "pixel",
+      "instance_anchor": {
+        "bbox": [
+          143.3400368767579,
+          132.8,
+          570.9130098497309,
+          612.2
+        ],
+        "coord_space": "pixel"
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_offwhite",
+        "style_spec": {
+          "color": [
+            252,
+            252,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 745,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "origin_pixel": [
+          372,
+          372
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 68,
+        "target_cells_x": 11,
+        "target_cells_y": 11,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "partial_edge_cells": true,
+        "spacing_px": 68,
+        "target_cells_x": 11,
+        "target_cells_y": 11
+      },
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "radius": 0.213346
+            },
+            "type": "blur"
+          }
+        ],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          29,
+          110,
+          75
+        ],
+        "label_stroke_color": [
+          251,
+          249,
+          248
+        ],
+        "line_color": [
+          29,
+          110,
+          75
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "fill_kind": "shaded",
+            "vertices": [
+              [
+                143.3400368767579,
+                612.2
+              ],
+              [
+                570.9130098497309,
+                612.2
+              ],
+              [
+                570.9130098497309,
+                132.8
+              ],
+              [
+                143.3400368767579,
+                132.8
+              ]
+            ]
+          },
+          "entity_id": "outer_rect",
+          "entity_type": "rectangle"
+        },
+        {
+          "attrs": {
+            "fill_kind": "background",
+            "vertices": [
+              [
+                337.69138822810925,
+                495.58918918918926
+              ],
+              [
+                519.0859828227038,
+                495.58918918918926
+              ],
+              [
+                519.0859828227038,
+                353.0648648648649
+              ],
+              [
+                337.69138822810925,
+                353.0648648648649
+              ]
+            ]
+          },
+          "entity_id": "inner_rect",
+          "entity_type": "cutout_rectangle"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            372,
+            372
+          ],
+          "spacing_px": 68,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_2d_analytical_composite_area"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "BC",
+        "CD",
+        "EF",
+        "FG"
+      ],
+      "annotation_labels": {
+        "inner_height": "FG",
+        "inner_width": "EF",
+        "outer_height": "CD",
+        "outer_width": "BC"
+      },
+      "annotation_values": {
+        "BC": 33,
+        "CD": 37,
+        "EF": 14,
+        "FG": 11
+      },
+      "formula_expression": "outer_width * outer_height - inner_width * inner_height",
+      "measurement_ref_map": {
+        "BC": 33,
+        "CD": 37,
+        "EF": 14,
+        "FG": 11
+      },
+      "task_variant": "rectangle_inner_cutout",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

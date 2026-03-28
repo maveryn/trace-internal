@@ -1,0 +1,647 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 4
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "A",
+      "B",
+      "C",
+      "G"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_counting_quadrilateral/images/parallelogram_only/0012.png"
+  },
+  "instance_seed": 8472139552603963,
+  "prompt": "Use the diagram showing several labeled quadrilaterals. Determine the answer: How many labeled quadrilaterals are parallelograms that are neither rectangles nor rhombuses?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a sorted JSON array of the labels of all quadrilaterals that match the requested type.\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\"],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the diagram showing several labeled quadrilaterals. Determine the answer: How many labeled quadrilaterals are parallelograms that are neither rectangles nor rhombuses?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a sorted JSON array of the labels of all quadrilaterals that match the requested type.\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\"],\"answer\":2}",
+    "answer_only": "Use the diagram showing several labeled quadrilaterals. Determine the answer: How many labeled quadrilaterals are parallelograms that are neither rectangles nor rhombuses?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_geometry_counting_quadrilateral",
+  "task_variant": "parallelogram_only",
+  "trace_payload": {
+    "execution_trace": {
+      "class_by_label": {
+        "A": {
+          "quadrilateral_kind": "parallelogram_only"
+        },
+        "B": {
+          "quadrilateral_kind": "parallelogram_only"
+        },
+        "C": {
+          "quadrilateral_kind": "parallelogram_only"
+        },
+        "D": {
+          "quadrilateral_kind": "rectangle_non_square"
+        },
+        "E": {
+          "quadrilateral_kind": "square"
+        },
+        "F": {
+          "quadrilateral_kind": "square"
+        },
+        "G": {
+          "quadrilateral_kind": "parallelogram_only"
+        }
+      },
+      "counting_class": "parallelogram_only",
+      "matching_labels": [
+        "A",
+        "B",
+        "C",
+        "G"
+      ],
+      "object_count": 7,
+      "object_count_probabilities": {
+        "5": 0.3333333333333333,
+        "6": 0.3333333333333333,
+        "7": 0.3333333333333333
+      },
+      "object_labels": [
+        "B",
+        "G",
+        "F",
+        "A",
+        "C",
+        "D",
+        "E"
+      ],
+      "question_format": "count_matching_labeled_objects",
+      "scene_variant": "parallelogram_only",
+      "target_count": 4,
+      "target_count_probabilities": {
+        "1": 0.16666666666666666,
+        "2": 0.16666666666666666,
+        "3": 0.16666666666666666,
+        "4": 0.16666666666666666,
+        "5": 0.16666666666666666,
+        "6": 0.16666666666666666
+      },
+      "task_variant": "parallelogram_only"
+    },
+    "projected_evidence": {
+      "label_set": [
+        "A",
+        "B",
+        "C",
+        "G"
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "object_count": 7,
+        "object_count_probabilities": {
+          "5": 0.3333333333333333,
+          "6": 0.3333333333333333,
+          "7": 0.3333333333333333
+        },
+        "target_count": 4,
+        "target_count_probabilities": {
+          "1": 0.16666666666666666,
+          "2": 0.16666666666666666,
+          "3": 0.16666666666666666,
+          "4": 0.16666666666666666,
+          "5": 0.16666666666666666,
+          "6": 0.16666666666666666
+        },
+        "task_variant": "parallelogram_only",
+        "variant_probabilities": {
+          "parallelogram_only": 0.25,
+          "rectangle_non_square": 0.25,
+          "rhombus_non_square": 0.25,
+          "square": 0.25
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "geometry_counting_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all quadrilaterals that match the requested type",
+          "json_example": "{\"evidence\":[\"B\",\"E\"],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "several labeled quadrilaterals",
+          "question_text": "How many labeled quadrilaterals are parallelograms that are neither rectangles nor rhombuses?"
+        },
+        "task_family_key": "counting_scene",
+        "task_family_variant_index": 3,
+        "task_key": "counting_query",
+        "task_variant_index": 4,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/counting/geometry_counting_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:counting_query": 5,
+          "task_family:counting_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all quadrilaterals that match the requested type",
+              "json_example": "{\"evidence\":[\"B\",\"E\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled quadrilaterals",
+              "question_text": "How many labeled quadrilaterals are parallelograms that are neither rectangles nor rhombuses?"
+            },
+            "task_family_key": "counting_scene",
+            "task_family_variant_index": 3,
+            "task_key": "counting_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/counting/geometry_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:counting_query": 5,
+              "task_family:counting_scene": 5
+            }
+          },
+          "prompt": "Use the diagram showing several labeled quadrilaterals. Determine the answer: How many labeled quadrilaterals are parallelograms that are neither rectangles nor rhombuses?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a sorted JSON array of the labels of all quadrilaterals that match the requested type.\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\"],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all quadrilaterals that match the requested type",
+              "json_example": "{\"evidence\":[\"B\",\"E\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled quadrilaterals",
+              "question_text": "How many labeled quadrilaterals are parallelograms that are neither rectangles nor rhombuses?"
+            },
+            "task_family_key": "counting_scene",
+            "task_family_variant_index": 3,
+            "task_key": "counting_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/counting/geometry_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:counting_query": 5,
+              "task_family:counting_scene": 5
+            }
+          },
+          "prompt": "Use the diagram showing several labeled quadrilaterals. Determine the answer: How many labeled quadrilaterals are parallelograms that are neither rectangles nor rhombuses?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "parallelogram_only",
+      "template_id": "geometry_counting_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching": {
+          "matching_labels": [
+            "A",
+            "B",
+            "C",
+            "G"
+          ],
+          "task_variant": "parallelogram_only"
+        }
+      },
+      "image_id": "img0",
+      "object_label_centers": {
+        "A": [
+          158.23436272843932,
+          87.7239378807322
+        ],
+        "B": [
+          22.27744199952311,
+          119.93350565515011
+        ],
+        "C": [
+          367.5512268926663,
+          91.41462184555625
+        ],
+        "D": [
+          514.4147275154199,
+          138.79263624229003
+        ],
+        "E": [
+          479.9212490362516,
+          430.6500463444506
+        ],
+        "F": [
+          264.0,
+          422.45828596855904
+        ],
+        "G": [
+          13.107161710267405,
+          341.939836078872
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_warm",
+        "style_spec": {
+          "color": [
+            252,
+            249,
+            245
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 528,
+      "coord_space": "pixel",
+      "layout_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 24,
+        "full_cells_y": 24,
+        "origin_pixel": [
+          264,
+          264
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 20,
+        "target_cells_x": 27,
+        "target_cells_y": 27,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "scale": 0.957149
+            },
+            "type": "downsample"
+          }
+        ],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          99,
+          84,
+          52
+        ],
+        "label_stroke_color": [
+          249,
+          255,
+          250
+        ],
+        "line_color": [
+          99,
+          84,
+          52
+        ]
+      },
+      "text_style": {
+        "font_size_px": 78,
+        "stroke_width_px": 3
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "angles_degrees": [
+              78.08680567055261,
+              101.9131943294474,
+              78.08680567055261,
+              101.9131943294474
+            ],
+            "label": "B",
+            "quadrilateral_kind": "parallelogram_only",
+            "side_lengths": [
+              3.109836883373611,
+              5.638226215467721,
+              3.109836883373611,
+              5.638226215467721
+            ],
+            "vertices": [
+              [
+                21.262668114150358,
+                219.16787130885405
+              ],
+              [
+                83.45940578162262,
+                219.16787130885405
+              ],
+              [
+                106.73733188584961,
+                108.83212869114593
+              ],
+              [
+                44.54059421837738,
+                108.83212869114593
+              ]
+            ]
+          },
+          "entity_id": "quadrilateral_B",
+          "entity_type": "quadrilateral"
+        },
+        {
+          "attrs": {
+            "angles_degrees": [
+              77.14910141291863,
+              102.85089858708139,
+              77.14910141291863,
+              102.85089858708139
+            ],
+            "label": "G",
+            "quadrilateral_kind": "parallelogram_only",
+            "side_lengths": [
+              3.012488309018982,
+              5.172122850098532,
+              3.012488309018982,
+              5.172122850098532
+            ],
+            "vertices": [
+              [
+                22.371556320308457,
+                414.42572331077463
+              ],
+              [
+                82.62132250068808,
+                414.42572331077463
+              ],
+              [
+                105.62844367969154,
+                313.57427668922537
+              ],
+              [
+                45.37867749931192,
+                313.57427668922537
+              ]
+            ]
+          },
+          "entity_id": "quadrilateral_G",
+          "entity_type": "quadrilateral"
+        },
+        {
+          "attrs": {
+            "angles_degrees": [
+              90.0,
+              90.0,
+              90.0,
+              90.0
+            ],
+            "label": "F",
+            "quadrilateral_kind": "square",
+            "side_lengths": [
+              4.087992025773362,
+              4.087992025773362,
+              4.087992025773362,
+              4.087992025773362
+            ],
+            "vertices": [
+              [
+                223.1200797422664,
+                404.8799202577336
+              ],
+              [
+                304.8799202577336,
+                404.8799202577336
+              ],
+              [
+                304.8799202577336,
+                323.1200797422664
+              ],
+              [
+                223.1200797422664,
+                323.1200797422664
+              ]
+            ]
+          },
+          "entity_id": "quadrilateral_F",
+          "entity_type": "quadrilateral"
+        },
+        {
+          "attrs": {
+            "angles_degrees": [
+              53.055197812476486,
+              126.94480218752352,
+              53.055197812476486,
+              126.94480218752352
+            ],
+            "label": "A",
+            "quadrilateral_kind": "parallelogram_only",
+            "side_lengths": [
+              4.65670599761582,
+              5.706518985564336,
+              4.65670599761582,
+              5.706518985564336
+            ],
+            "vertices": [
+              [
+                123.13417291896681,
+                209.60735103408405
+              ],
+              [
+                216.26829287128322,
+                209.60735103408405
+              ],
+              [
+                284.86582708103316,
+                118.39264896591595
+              ],
+              [
+                191.73170712871678,
+                118.39264896591595
+              ]
+            ]
+          },
+          "entity_id": "quadrilateral_A",
+          "entity_type": "quadrilateral"
+        },
+        {
+          "attrs": {
+            "angles_degrees": [
+              52.565059425819456,
+              127.43494057418056,
+              52.565059425819456,
+              127.43494057418056
+            ],
+            "label": "C",
+            "quadrilateral_kind": "parallelogram_only",
+            "side_lengths": [
+              5.596733677860465,
+              3.4523936804007573,
+              5.596733677860465,
+              3.4523936804007573
+            ],
+            "vertices": [
+              [
+                247.04693667496065,
+                191.4135275688003
+              ],
+              [
+                358.98161023216994,
+                191.4135275688003
+              ],
+              [
+                400.95306332503935,
+                136.5864724311997
+              ],
+              [
+                289.01838976783006,
+                136.5864724311997
+              ]
+            ]
+          },
+          "entity_id": "quadrilateral_C",
+          "entity_type": "quadrilateral"
+        },
+        {
+          "attrs": {
+            "angles_degrees": [
+              90.0,
+              90.0,
+              90.0,
+              90.0
+            ],
+            "label": "D",
+            "quadrilateral_kind": "rectangle_non_square",
+            "side_lengths": [
+              3.083084966218384,
+              3.9416348878184646,
+              3.083084966218384,
+              3.9416348878184646
+            ],
+            "vertices": [
+              [
+                433.1691503378162,
+                203.41634887818464
+              ],
+              [
+                494.8308496621838,
+                203.41634887818464
+              ],
+              [
+                494.8308496621838,
+                124.58365112181536
+              ],
+              [
+                433.1691503378162,
+                124.58365112181536
+              ]
+            ]
+          },
+          "entity_id": "quadrilateral_D",
+          "entity_type": "quadrilateral"
+        },
+        {
+          "attrs": {
+            "angles_degrees": [
+              90.0,
+              90.0,
+              90.0,
+              90.0
+            ],
+            "label": "E",
+            "quadrilateral_kind": "square",
+            "side_lengths": [
+              4.79197805584192,
+              4.79197805584192,
+              4.79197805584192,
+              4.79197805584192
+            ],
+            "vertices": [
+              [
+                416.08021944158077,
+                411.91978055841923
+              ],
+              [
+                511.91978055841923,
+                411.91978055841923
+              ],
+              [
+                511.91978055841923,
+                316.0802194415808
+              ],
+              [
+                416.08021944158077,
+                316.0802194415808
+              ]
+            ]
+          },
+          "entity_id": "quadrilateral_E",
+          "entity_type": "quadrilateral"
+        }
+      ],
+      "relations": {
+        "counting_target": "quadrilateral_class",
+        "matching_labels": [
+          "A",
+          "B",
+          "C",
+          "G"
+        ],
+        "task_variant": "parallelogram_only"
+      },
+      "scene_kind": "geometry_2d_quadrilateral_counting"
+    },
+    "witness_symbolic": {
+      "counting_class": "parallelogram_only",
+      "matching_labels": [
+        "A",
+        "B",
+        "C",
+        "G"
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

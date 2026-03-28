@@ -1,0 +1,954 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 0
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": []
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_relation_occlusion_order/images/default/0000.png"
+  },
+  "instance_seed": 4956474971800070,
+  "prompt": "Use the image containing a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right. Determine the answer: How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the image containing a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right. Determine the answer: How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+    "answer_only": "Use the image containing a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right. Determine the answer: How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_icons_relation_occlusion_order",
+  "task_variant": "same_front_to_back_order",
+  "trace_payload": {
+    "execution_trace": {
+      "cell_labels": [
+        "D",
+        "B",
+        "A",
+        "C"
+      ],
+      "cell_order_ids": [
+        "a_over_b",
+        "a_over_b",
+        "a_over_b",
+        "a_over_b"
+      ],
+      "distractor_count": 4,
+      "distractor_count_probabilities": {
+        "2": 0.2,
+        "3": 0.2,
+        "4": 0.2,
+        "5": 0.2,
+        "6": 0.2
+      },
+      "icon_a_id": "gi-lorc-life-tap",
+      "icon_b_id": "gi-lorc-unfriendly-fire",
+      "matching_cell_labels": [],
+      "object_count": 4,
+      "object_count_probabilities": {
+        "2": 0.2,
+        "3": 0.2,
+        "4": 0.2,
+        "5": 0.2,
+        "6": 0.2
+      },
+      "question_format": "count_scene_cells_matching_reference_occlusion_order",
+      "reference_order_id": "b_over_a",
+      "scene_variant": "reference_overlap_grid",
+      "target_count": 0,
+      "target_count_probabilities": {
+        "0": 0.14285714285714285,
+        "1": 0.14285714285714285,
+        "2": 0.14285714285714285,
+        "3": 0.14285714285714285,
+        "4": 0.14285714285714285,
+        "5": 0.14285714285714285,
+        "6": 0.14285714285714285
+      },
+      "task_variant": "same_front_to_back_order"
+    },
+    "projected_evidence": {
+      "label_set": []
+    },
+    "query_spec": {
+      "params": {
+        "distractor_count": 4,
+        "distractor_count_probabilities": {
+          "2": 0.2,
+          "3": 0.2,
+          "4": 0.2,
+          "5": 0.2,
+          "6": 0.2
+        },
+        "object_count": 4,
+        "object_count_probabilities": {
+          "2": 0.2,
+          "3": 0.2,
+          "4": 0.2,
+          "5": 0.2,
+          "6": 0.2
+        },
+        "pool_manifest": "all_icons.txt",
+        "target_count": 0,
+        "target_count_probabilities": {
+          "0": 0.14285714285714285,
+          "1": 0.14285714285714285,
+          "2": 0.14285714285714285,
+          "3": 0.14285714285714285,
+          "4": 0.14285714285714285,
+          "5": 0.14285714285714285,
+          "6": 0.14285714285714285
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "icons_relation_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+          "json_example": "{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right",
+          "question_text": "How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top."
+        },
+        "task_family_key": "reference_grid_occlusion_relation",
+        "task_family_variant_index": 3,
+        "task_key": "relation_query",
+        "task_variant_index": 4,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/relation/icons_relation_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:relation_query": 5,
+          "task_family:reference_grid_occlusion_relation": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "icons_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+              "json_example": "{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right",
+              "question_text": "How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top."
+            },
+            "task_family_key": "reference_grid_occlusion_relation",
+            "task_family_variant_index": 3,
+            "task_key": "relation_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/relation/icons_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:relation_query": 5,
+              "task_family:reference_grid_occlusion_relation": 5
+            }
+          },
+          "prompt": "Use the image containing a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right. Determine the answer: How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "icons_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+              "json_example": "{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right",
+              "question_text": "How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top."
+            },
+            "task_family_key": "reference_grid_occlusion_relation",
+            "task_family_variant_index": 3,
+            "task_key": "relation_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/relation/icons_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:relation_query": 5,
+              "task_family:reference_grid_occlusion_relation": 5
+            }
+          },
+          "prompt": "Use the image containing a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right. Determine the answer: How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "same_front_to_back_order",
+      "template_id": "icons_relation_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching_cell_labels": [],
+        "reference_pair": {
+          "front_role": "b",
+          "icon_a_bbox_xyxy": [
+            103,
+            272,
+            205,
+            363
+          ],
+          "icon_a_id": "gi-lorc-life-tap",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "scale": 0.886783
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "radius": 0.250289
+              },
+              "type": "blur"
+            }
+          ],
+          "icon_a_noise_seed": 3765882411015230,
+          "icon_a_tint_rgb": [
+            97,
+            200,
+            49
+          ],
+          "icon_b_bbox_xyxy": [
+            140,
+            298,
+            241,
+            400
+          ],
+          "icon_b_id": "gi-lorc-unfriendly-fire",
+          "icon_b_noise_edits": [],
+          "icon_b_noise_seed": 2150695965421693,
+          "icon_b_tint_rgb": [
+            200,
+            24,
+            48
+          ],
+          "order_id": "b_over_a",
+          "overlap_ratio": 0.5054639679315012,
+          "panel": "reference"
+        },
+        "scene_cells": [
+          {
+            "cell_bbox_xyxy": [
+              374,
+              87,
+              702,
+              326
+            ],
+            "front_role": "a",
+            "icon_a_bbox_xyxy": [
+              509,
+              166,
+              598,
+              246
+            ],
+            "icon_a_id": "gi-lorc-life-tap",
+            "icon_a_noise_edits": [],
+            "icon_a_noise_seed": 4678080025510150,
+            "icon_a_tint_rgb": [
+              32,
+              24,
+              90
+            ],
+            "icon_b_bbox_xyxy": [
+              477,
+              187,
+              566,
+              277
+            ],
+            "icon_b_id": "gi-lorc-unfriendly-fire",
+            "icon_b_noise_edits": [
+              {
+                "params": {
+                  "radius": 0.223342
+                },
+                "type": "blur"
+              },
+              {
+                "params": {
+                  "quality": 87.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "icon_b_noise_seed": 773971027373387,
+            "icon_b_tint_rgb": [
+              213,
+              217,
+              27
+            ],
+            "index": 0,
+            "is_match": false,
+            "label": "D",
+            "order_id": "a_over_b",
+            "overlap_ratio": 0.5223317709793733,
+            "panel": "scene"
+          },
+          {
+            "cell_bbox_xyxy": [
+              722,
+              87,
+              1050,
+              326
+            ],
+            "front_role": "a",
+            "icon_a_bbox_xyxy": [
+              835,
+              158,
+              924,
+              238
+            ],
+            "icon_a_id": "gi-lorc-life-tap",
+            "icon_a_noise_edits": [],
+            "icon_a_noise_seed": 971065298218127,
+            "icon_a_tint_rgb": [
+              68,
+              202,
+              159
+            ],
+            "icon_b_bbox_xyxy": [
+              848,
+              194,
+              937,
+              284
+            ],
+            "icon_b_id": "gi-lorc-unfriendly-fire",
+            "icon_b_noise_edits": [],
+            "icon_b_noise_seed": 6666833816698503,
+            "icon_b_tint_rgb": [
+              219,
+              37,
+              128
+            ],
+            "index": 1,
+            "is_match": false,
+            "label": "B",
+            "order_id": "a_over_b",
+            "overlap_ratio": 0.5402005308667382,
+            "panel": "scene"
+          },
+          {
+            "cell_bbox_xyxy": [
+              374,
+              346,
+              702,
+              586
+            ],
+            "front_role": "a",
+            "icon_a_bbox_xyxy": [
+              489,
+              416,
+              578,
+              496
+            ],
+            "icon_a_id": "gi-lorc-life-tap",
+            "icon_a_noise_edits": [
+              {
+                "params": {
+                  "quality": 71.0
+                },
+                "type": "jpeg"
+              },
+              {
+                "params": {
+                  "alpha": 0.055875
+                },
+                "type": "noise"
+              }
+            ],
+            "icon_a_noise_seed": 7023346233125933,
+            "icon_a_tint_rgb": [
+              217,
+              132,
+              43
+            ],
+            "icon_b_bbox_xyxy": [
+              497,
+              455,
+              586,
+              545
+            ],
+            "icon_b_id": "gi-lorc-unfriendly-fire",
+            "icon_b_noise_edits": [
+              {
+                "params": {
+                  "alpha": 0.063993
+                },
+                "type": "noise"
+              },
+              {
+                "params": {
+                  "scale": 0.859327
+                },
+                "type": "downsample"
+              }
+            ],
+            "icon_b_noise_seed": 1692341524815095,
+            "icon_b_tint_rgb": [
+              32,
+              24,
+              90
+            ],
+            "index": 2,
+            "is_match": false,
+            "label": "A",
+            "order_id": "a_over_b",
+            "overlap_ratio": 0.5483062179865087,
+            "panel": "scene"
+          },
+          {
+            "cell_bbox_xyxy": [
+              722,
+              346,
+              1050,
+              586
+            ],
+            "front_role": "a",
+            "icon_a_bbox_xyxy": [
+              829,
+              451,
+              918,
+              531
+            ],
+            "icon_a_id": "gi-lorc-life-tap",
+            "icon_a_noise_edits": [],
+            "icon_a_noise_seed": 5801468881485143,
+            "icon_a_tint_rgb": [
+              97,
+              200,
+              49
+            ],
+            "icon_b_bbox_xyxy": [
+              853,
+              430,
+              942,
+              520
+            ],
+            "icon_b_id": "gi-lorc-unfriendly-fire",
+            "icon_b_noise_edits": [],
+            "icon_b_noise_seed": 2990936006039365,
+            "icon_b_tint_rgb": [
+              63,
+              53,
+              190
+            ],
+            "index": 3,
+            "is_match": false,
+            "label": "C",
+            "order_id": "a_over_b",
+            "overlap_ratio": 0.5851706930812104,
+            "panel": "scene"
+          }
+        ]
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        1104,
+        640
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          1104,
+          640
+        ],
+        "reference_content_xyxy": [
+          44,
+          77,
+          300,
+          596
+        ],
+        "reference_panel_xyxy": [
+          24,
+          24,
+          320,
+          616
+        ],
+        "scene_content_xyxy": [
+          364,
+          77,
+          1060,
+          596
+        ],
+        "scene_panel_xyxy": [
+          344,
+          24,
+          1080,
+          616
+        ]
+      },
+      "style": {
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "cell_border_rgb": [
+          218,
+          223,
+          233
+        ],
+        "cell_label_color_rgb": [
+          52,
+          60,
+          77
+        ],
+        "cell_label_font_size_px": 22,
+        "cell_padding_px": 10,
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "overlap_ratio_range": [
+          0.4,
+          0.6
+        ],
+        "pair_min_color_distance": 80.0,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "sampled_palette_rgb": [
+          [
+            217,
+            132,
+            43
+          ],
+          [
+            63,
+            53,
+            190
+          ],
+          [
+            68,
+            202,
+            159
+          ],
+          [
+            97,
+            200,
+            49
+          ],
+          [
+            219,
+            37,
+            128
+          ],
+          [
+            87,
+            79,
+            26
+          ],
+          [
+            213,
+            217,
+            27
+          ],
+          [
+            200,
+            24,
+            48
+          ],
+          [
+            32,
+            24,
+            90
+          ]
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "front_role": "b",
+          "icon_a_bbox_xyxy": [
+            103,
+            272,
+            205,
+            363
+          ],
+          "icon_a_id": "gi-lorc-life-tap",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "scale": 0.886783
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "radius": 0.250289
+              },
+              "type": "blur"
+            }
+          ],
+          "icon_a_noise_seed": 3765882411015230,
+          "icon_a_tint_rgb": [
+            97,
+            200,
+            49
+          ],
+          "icon_b_bbox_xyxy": [
+            140,
+            298,
+            241,
+            400
+          ],
+          "icon_b_id": "gi-lorc-unfriendly-fire",
+          "icon_b_noise_edits": [],
+          "icon_b_noise_seed": 2150695965421693,
+          "icon_b_tint_rgb": [
+            200,
+            24,
+            48
+          ],
+          "order_id": "b_over_a",
+          "overlap_ratio": 0.5054639679315012,
+          "panel": "reference"
+        },
+        {
+          "cell_bbox_xyxy": [
+            374,
+            87,
+            702,
+            326
+          ],
+          "front_role": "a",
+          "icon_a_bbox_xyxy": [
+            509,
+            166,
+            598,
+            246
+          ],
+          "icon_a_id": "gi-lorc-life-tap",
+          "icon_a_noise_edits": [],
+          "icon_a_noise_seed": 4678080025510150,
+          "icon_a_tint_rgb": [
+            32,
+            24,
+            90
+          ],
+          "icon_b_bbox_xyxy": [
+            477,
+            187,
+            566,
+            277
+          ],
+          "icon_b_id": "gi-lorc-unfriendly-fire",
+          "icon_b_noise_edits": [
+            {
+              "params": {
+                "radius": 0.223342
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "quality": 87.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "icon_b_noise_seed": 773971027373387,
+          "icon_b_tint_rgb": [
+            213,
+            217,
+            27
+          ],
+          "index": 0,
+          "is_match": false,
+          "label": "D",
+          "order_id": "a_over_b",
+          "overlap_ratio": 0.5223317709793733,
+          "panel": "scene"
+        },
+        {
+          "cell_bbox_xyxy": [
+            722,
+            87,
+            1050,
+            326
+          ],
+          "front_role": "a",
+          "icon_a_bbox_xyxy": [
+            835,
+            158,
+            924,
+            238
+          ],
+          "icon_a_id": "gi-lorc-life-tap",
+          "icon_a_noise_edits": [],
+          "icon_a_noise_seed": 971065298218127,
+          "icon_a_tint_rgb": [
+            68,
+            202,
+            159
+          ],
+          "icon_b_bbox_xyxy": [
+            848,
+            194,
+            937,
+            284
+          ],
+          "icon_b_id": "gi-lorc-unfriendly-fire",
+          "icon_b_noise_edits": [],
+          "icon_b_noise_seed": 6666833816698503,
+          "icon_b_tint_rgb": [
+            219,
+            37,
+            128
+          ],
+          "index": 1,
+          "is_match": false,
+          "label": "B",
+          "order_id": "a_over_b",
+          "overlap_ratio": 0.5402005308667382,
+          "panel": "scene"
+        },
+        {
+          "cell_bbox_xyxy": [
+            374,
+            346,
+            702,
+            586
+          ],
+          "front_role": "a",
+          "icon_a_bbox_xyxy": [
+            489,
+            416,
+            578,
+            496
+          ],
+          "icon_a_id": "gi-lorc-life-tap",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "quality": 71.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "alpha": 0.055875
+              },
+              "type": "noise"
+            }
+          ],
+          "icon_a_noise_seed": 7023346233125933,
+          "icon_a_tint_rgb": [
+            217,
+            132,
+            43
+          ],
+          "icon_b_bbox_xyxy": [
+            497,
+            455,
+            586,
+            545
+          ],
+          "icon_b_id": "gi-lorc-unfriendly-fire",
+          "icon_b_noise_edits": [
+            {
+              "params": {
+                "alpha": 0.063993
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "scale": 0.859327
+              },
+              "type": "downsample"
+            }
+          ],
+          "icon_b_noise_seed": 1692341524815095,
+          "icon_b_tint_rgb": [
+            32,
+            24,
+            90
+          ],
+          "index": 2,
+          "is_match": false,
+          "label": "A",
+          "order_id": "a_over_b",
+          "overlap_ratio": 0.5483062179865087,
+          "panel": "scene"
+        },
+        {
+          "cell_bbox_xyxy": [
+            722,
+            346,
+            1050,
+            586
+          ],
+          "front_role": "a",
+          "icon_a_bbox_xyxy": [
+            829,
+            451,
+            918,
+            531
+          ],
+          "icon_a_id": "gi-lorc-life-tap",
+          "icon_a_noise_edits": [],
+          "icon_a_noise_seed": 5801468881485143,
+          "icon_a_tint_rgb": [
+            97,
+            200,
+            49
+          ],
+          "icon_b_bbox_xyxy": [
+            853,
+            430,
+            942,
+            520
+          ],
+          "icon_b_id": "gi-lorc-unfriendly-fire",
+          "icon_b_noise_edits": [],
+          "icon_b_noise_seed": 2990936006039365,
+          "icon_b_tint_rgb": [
+            63,
+            53,
+            190
+          ],
+          "index": 3,
+          "is_match": false,
+          "label": "C",
+          "order_id": "a_over_b",
+          "overlap_ratio": 0.5851706930812104,
+          "panel": "scene"
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            1104,
+            640
+          ],
+          "reference_content_xyxy": [
+            44,
+            77,
+            300,
+            596
+          ],
+          "reference_panel_xyxy": [
+            24,
+            24,
+            320,
+            616
+          ],
+          "scene_content_xyxy": [
+            364,
+            77,
+            1060,
+            596
+          ],
+          "scene_panel_xyxy": [
+            344,
+            24,
+            1080,
+            616
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "counting_target": "same_front_to_back_order_as_reference",
+        "matching_cell_labels": [],
+        "reference_order_id": "b_over_a"
+      },
+      "scene_kind": "icons_reference_grid_occlusion_order_count"
+    },
+    "witness_symbolic": {
+      "matching_cell_labels": [],
+      "reference_order_id": "b_over_a"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

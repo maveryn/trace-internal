@@ -1,0 +1,21 @@
+{
+  "inspection_count": 150,
+  "task_id": "task_geometry_counting_shape_type",
+  "variants": {
+    "circle": 25,
+    "ellipse": 25,
+    "hexagon": 25,
+    "pentagon": 25,
+    "quadrilateral": 25,
+    "triangle": 25
+  },
+  "workbook": "geometry/task_geometry_counting_shape_type/task_geometry_counting_shape_type.xlsx",
+  "workbook_sheets": {
+    "circle": "circle",
+    "ellipse": "ellipse",
+    "hexagon": "hexagon",
+    "pentagon": "pentagon",
+    "quadrilateral": "quadrilateral",
+    "triangle": "triangle"
+  }
+}

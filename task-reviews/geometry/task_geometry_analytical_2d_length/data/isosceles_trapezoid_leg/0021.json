@@ -1,0 +1,440 @@
+{
+  "answer_gt": {
+    "type": "number",
+    "value": 37.9
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "DE": 31,
+      "GF": 15,
+      "GH": 37
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_2d_length/images/isosceles_trapezoid_leg/0021.png"
+  },
+  "instance_seed": 8327041608326175,
+  "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The isosceles trapezoid shows both bases and a height. What is the length of segment DG?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, GF, GH.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"DE\":2,\"GF\":3,\"GH\":4},\"answer\":42.3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The isosceles trapezoid shows both bases and a height. What is the length of segment DG?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, GF, GH.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"DE\":2,\"GF\":3,\"GH\":4},\"answer\":42.3}",
+    "answer_only": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The isosceles trapezoid shows both bases and a height. What is the length of segment DG?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+  },
+  "task": "task_geometry_analytical_2d_length",
+  "task_variant": "isosceles_trapezoid_leg",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 100,
+      "answer_min": 3,
+      "answer_scalar": 379,
+      "answer_type": "number",
+      "answer_value": 37.9,
+      "evidence_map": {
+        "DE": 31,
+        "GF": 15,
+        "GH": 37
+      },
+      "evidence_role_tokens": {
+        "base_bottom": "DE",
+        "base_top": "GF",
+        "height": "GH"
+      },
+      "evidence_role_values": {
+        "base_bottom": 31,
+        "base_top": 15,
+        "height": 37
+      },
+      "evidence_roles": [
+        "base_bottom",
+        "base_top",
+        "height"
+      ],
+      "formula_expression": "sqrt(height^2 + ((base_bottom - base_top)/2)^2)",
+      "raw_answer_value": 37.8549864614954,
+      "required_annotations": [
+        "DE",
+        "GF",
+        "GH"
+      ],
+      "target_annotation": "DG",
+      "task_variant": "isosceles_trapezoid_leg",
+      "variant_probabilities": {
+        "circle_chord_length": 0.16666666666666666,
+        "inscribed_square_side": 0.16666666666666666,
+        "isosceles_trapezoid_leg": 0.16666666666666666,
+        "rectangle_diagonal_side": 0.16666666666666666,
+        "rhombus_diagonal_side": 0.16666666666666666,
+        "triangle_altitude_side": 0.16666666666666666
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "base_bottom": "DE",
+        "base_top": "GF",
+        "height": "GH"
+      },
+      "id_set": [
+        "DE",
+        "GF",
+        "GH"
+      ],
+      "measurement_ref_map": {
+        "DE": 31,
+        "GF": 15,
+        "GH": 37
+      },
+      "pixel_annotation_centers": {
+        "DE": [
+          391.5779815828576,
+          639.4366666666666
+        ],
+        "GF": [
+          391.5779815828576,
+          90.56333333333338
+        ],
+        "GH": [
+          317.261314916191,
+          365.5
+        ]
+      },
+      "pixel_point_set": [
+        [
+          391.5779815828576,
+          639.4366666666666
+        ],
+        [
+          391.5779815828576,
+          90.56333333333338
+        ],
+        [
+          317.261314916191,
+          365.5
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 100,
+        "answer_min": 3,
+        "task_variant": "isosceles_trapezoid_leg",
+        "variant_probabilities": {
+          "circle_chord_length": 0.16666666666666666,
+          "inscribed_square_side": 0.16666666666666666,
+          "isosceles_trapezoid_leg": 0.16666666666666666,
+          "rectangle_diagonal_side": 0.16666666666666666,
+          "rhombus_diagonal_side": 0.16666666666666666,
+          "triangle_altitude_side": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "geometry_analytical_length_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, GF, GH",
+          "json_example": "{\"evidence\":{\"DE\":2,\"GF\":3,\"GH\":4},\"answer\":42.3}",
+          "json_example_answer_only": "{\"answer\":42.3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a geometric scene with measurement annotations",
+          "question_text": "The isosceles trapezoid shows both bases and a height. What is the length of segment DG?"
+        },
+        "task_family_key": "analytical_length_scene",
+        "task_family_variant_index": 4,
+        "task_key": "analytical_length_query",
+        "task_variant_index": 1,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_2d/geometry_analytical_length_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_length_query": 5,
+          "task_family:analytical_length_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_analytical_length_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, GF, GH",
+              "json_example": "{\"evidence\":{\"DE\":2,\"GF\":3,\"GH\":4},\"answer\":42.3}",
+              "json_example_answer_only": "{\"answer\":42.3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric scene with measurement annotations",
+              "question_text": "The isosceles trapezoid shows both bases and a height. What is the length of segment DG?"
+            },
+            "task_family_key": "analytical_length_scene",
+            "task_family_variant_index": 4,
+            "task_key": "analytical_length_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_length_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_length_query": 5,
+              "task_family:analytical_length_scene": 5
+            }
+          },
+          "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The isosceles trapezoid shows both bases and a height. What is the length of segment DG?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, GF, GH.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"DE\":2,\"GF\":3,\"GH\":4},\"answer\":42.3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_analytical_length_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: DE, GF, GH",
+              "json_example": "{\"evidence\":{\"DE\":2,\"GF\":3,\"GH\":4},\"answer\":42.3}",
+              "json_example_answer_only": "{\"answer\":42.3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric scene with measurement annotations",
+              "question_text": "The isosceles trapezoid shows both bases and a height. What is the length of segment DG?"
+            },
+            "task_family_key": "analytical_length_scene",
+            "task_family_variant_index": 4,
+            "task_key": "analytical_length_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_length_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_length_query": 5,
+              "task_family:analytical_length_scene": 5
+            }
+          },
+          "prompt": "Work from the annotated scene showing a geometric scene with measurement annotations. Question: The isosceles trapezoid shows both bases and a height. What is the length of segment DG?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+        }
+      },
+      "task_variant": "isosceles_trapezoid_leg",
+      "template_id": "geometry_analytical_length_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "DE": [
+          391.5779815828576,
+          639.4366666666666
+        ],
+        "GF": [
+          391.5779815828576,
+          90.56333333333338
+        ],
+        "GH": [
+          317.261314916191,
+          365.5
+        ]
+      },
+      "annotation_labels": {
+        "base_bottom": "DE",
+        "base_top": "GF",
+        "height": "GH"
+      },
+      "coord_space": "pixel",
+      "instance_anchor": {
+        "bbox": [
+          177.36798158285768,
+          109.83000000000004,
+          605.7879815828576,
+          621.17
+        ],
+        "coord_space": "pixel"
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_warm",
+        "style_spec": {
+          "color": [
+            252,
+            249,
+            245
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 731,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 6,
+        "full_cells_y": 6,
+        "origin_pixel": [
+          365,
+          365
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 104,
+        "target_cells_x": 7,
+        "target_cells_y": 7,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 6,
+        "full_cells_y": 6,
+        "partial_edge_cells": true,
+        "spacing_px": 104,
+        "target_cells_x": 7,
+        "target_cells_y": 7
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          56,
+          51,
+          125
+        ],
+        "label_stroke_color": [
+          253,
+          253,
+          253
+        ],
+        "line_color": [
+          56,
+          51,
+          125
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "vertices": [
+              [
+                177.36798158285768,
+                621.17
+              ],
+              [
+                605.7879815828576,
+                621.17
+              ],
+              [
+                495.22798158285764,
+                109.83000000000004
+              ],
+              [
+                287.9279815828577,
+                109.83000000000004
+              ]
+            ]
+          },
+          "entity_id": "trapezoid_1",
+          "entity_type": "isosceles_trapezoid"
+        },
+        {
+          "attrs": {
+            "helper": true,
+            "point_a": [
+              287.9279815828577,
+              109.83000000000004
+            ],
+            "point_b": [
+              287.9279815828577,
+              621.17
+            ]
+          },
+          "entity_id": "height_1",
+          "entity_type": "altitude"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            365,
+            365
+          ],
+          "spacing_px": 104,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_2d_analytical_length"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "DE",
+        "GF",
+        "GH"
+      ],
+      "annotation_labels": {
+        "base_bottom": "DE",
+        "base_top": "GF",
+        "height": "GH"
+      },
+      "annotation_values": {
+        "DE": 31,
+        "GF": 15,
+        "GH": 37
+      },
+      "formula_expression": "sqrt(height^2 + ((base_bottom - base_top)/2)^2)",
+      "measurement_ref_map": {
+        "DE": 31,
+        "GF": 15,
+        "GH": 37
+      },
+      "task_variant": "isosceles_trapezoid_leg",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

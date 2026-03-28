@@ -1,0 +1,11 @@
+{
+  "inspection_count": 25,
+  "task_id": "task_icons_pattern_grid_rotation_violation",
+  "variants": {
+    "": 25
+  },
+  "workbook": "icons/task_icons_pattern_grid_rotation_violation/task_icons_pattern_grid_rotation_violation.xlsx",
+  "workbook_sheets": {
+    "row_col_rotation_grid_violation": "row_col_rotation_grid_violation"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "inspection_count": 25,
+  "task_id": "task_graph_relation_reachable_count",
+  "variants": {
+    "": 25
+  },
+  "workbook": "graph/task_graph_relation_reachable_count/task_graph_relation_reachable_count.xlsx",
+  "workbook_sheets": {
+    "reachable_count": "reachable_count"
+  }
+}

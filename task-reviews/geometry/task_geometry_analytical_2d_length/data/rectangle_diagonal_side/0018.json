@@ -1,0 +1,414 @@
+{
+  "answer_gt": {
+    "type": "number",
+    "value": 14.4
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "HJ": 16,
+      "IJ": 7
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_2d_length/images/rectangle_diagonal_side/0018.png"
+  },
+  "instance_seed": 1412117466269005,
+  "prompt": "The image shows a geometric scene with measurement annotations. Based on the shown values, answer this question: The rectangle shows one side and its diagonal. What is the length of segment HI?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ, HJ.\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"IJ\":2,\"HJ\":3},\"answer\":42.3}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows a geometric scene with measurement annotations. Based on the shown values, answer this question: The rectangle shows one side and its diagonal. What is the length of segment HI?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ, HJ.\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"IJ\":2,\"HJ\":3},\"answer\":42.3}",
+    "answer_only": "The image shows a geometric scene with measurement annotations. Based on the shown values, answer this question: The rectangle shows one side and its diagonal. What is the length of segment HI?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+  },
+  "task": "task_geometry_analytical_2d_length",
+  "task_variant": "rectangle_diagonal_side",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 100,
+      "answer_min": 3,
+      "answer_scalar": 144,
+      "answer_type": "number",
+      "answer_value": 14.4,
+      "evidence_map": {
+        "HJ": 16,
+        "IJ": 7
+      },
+      "evidence_role_tokens": {
+        "diagonal": "HJ",
+        "known_side": "IJ"
+      },
+      "evidence_role_values": {
+        "diagonal": 16,
+        "known_side": 7
+      },
+      "evidence_roles": [
+        "known_side",
+        "diagonal"
+      ],
+      "formula_expression": "sqrt(diagonal^2 - known_side^2)",
+      "raw_answer_value": 14.38749456993816,
+      "required_annotations": [
+        "IJ",
+        "HJ"
+      ],
+      "target_annotation": "HI",
+      "task_variant": "rectangle_diagonal_side",
+      "variant_probabilities": {
+        "circle_chord_length": 0.16666666666666666,
+        "inscribed_square_side": 0.16666666666666666,
+        "isosceles_trapezoid_leg": 0.16666666666666666,
+        "rectangle_diagonal_side": 0.16666666666666666,
+        "rhombus_diagonal_side": 0.16666666666666666,
+        "triangle_altitude_side": 0.16666666666666666
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "diagonal": "HJ",
+        "known_side": "IJ"
+      },
+      "id_set": [
+        "IJ",
+        "HJ"
+      ],
+      "measurement_ref_map": {
+        "HJ": 16,
+        "IJ": 7
+      },
+      "pixel_annotation_centers": {
+        "HJ": [
+          383.62916666666666,
+          464.9079255118047
+        ],
+        "IJ": [
+          648.1733333333333,
+          438.95048739187456
+        ]
+      },
+      "pixel_point_set": [
+        [
+          648.1733333333333,
+          438.95048739187456
+        ],
+        [
+          383.62916666666666,
+          464.9079255118047
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 100,
+        "answer_min": 3,
+        "task_variant": "rectangle_diagonal_side",
+        "variant_probabilities": {
+          "circle_chord_length": 0.16666666666666666,
+          "inscribed_square_side": 0.16666666666666666,
+          "isosceles_trapezoid_leg": 0.16666666666666666,
+          "rectangle_diagonal_side": 0.16666666666666666,
+          "rhombus_diagonal_side": 0.16666666666666666,
+          "triangle_altitude_side": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "geometry_analytical_length_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ, HJ",
+          "json_example": "{\"evidence\":{\"IJ\":2,\"HJ\":3},\"answer\":42.3}",
+          "json_example_answer_only": "{\"answer\":42.3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a geometric scene with measurement annotations",
+          "question_text": "The rectangle shows one side and its diagonal. What is the length of segment HI?"
+        },
+        "task_family_key": "analytical_length_scene",
+        "task_family_variant_index": 1,
+        "task_key": "analytical_length_query",
+        "task_variant_index": 4,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_2d/geometry_analytical_length_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_length_query": 5,
+          "task_family:analytical_length_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_analytical_length_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ, HJ",
+              "json_example": "{\"evidence\":{\"IJ\":2,\"HJ\":3},\"answer\":42.3}",
+              "json_example_answer_only": "{\"answer\":42.3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric scene with measurement annotations",
+              "question_text": "The rectangle shows one side and its diagonal. What is the length of segment HI?"
+            },
+            "task_family_key": "analytical_length_scene",
+            "task_family_variant_index": 1,
+            "task_key": "analytical_length_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_length_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_length_query": 5,
+              "task_family:analytical_length_scene": 5
+            }
+          },
+          "prompt": "The image shows a geometric scene with measurement annotations. Based on the shown values, answer this question: The rectangle shows one side and its diagonal. What is the length of segment HI?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ, HJ.\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"IJ\":2,\"HJ\":3},\"answer\":42.3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_analytical_length_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: IJ, HJ",
+              "json_example": "{\"evidence\":{\"IJ\":2,\"HJ\":3},\"answer\":42.3}",
+              "json_example_answer_only": "{\"answer\":42.3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric scene with measurement annotations",
+              "question_text": "The rectangle shows one side and its diagonal. What is the length of segment HI?"
+            },
+            "task_family_key": "analytical_length_scene",
+            "task_family_variant_index": 1,
+            "task_key": "analytical_length_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_length_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_length_query": 5,
+              "task_family:analytical_length_scene": 5
+            }
+          },
+          "prompt": "The image shows a geometric scene with measurement annotations. Based on the shown values, answer this question: The rectangle shows one side and its diagonal. What is the length of segment HI?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+        }
+      },
+      "task_variant": "rectangle_diagonal_side",
+      "template_id": "geometry_analytical_length_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "HJ": [
+          383.62916666666666,
+          464.9079255118047
+        ],
+        "IJ": [
+          648.1733333333333,
+          438.95048739187456
+        ]
+      },
+      "annotation_labels": {
+        "diagonal": "HJ",
+        "known_side": "IJ"
+      },
+      "coord_space": "pixel",
+      "instance_anchor": {
+        "bbox": [
+          111.25999999999999,
+          312.5782416084438,
+          630.74,
+          565.3227331753053
+        ],
+        "coord_space": "pixel"
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_cool",
+        "style_spec": {
+          "color": [
+            246,
+            248,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 742,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "origin_pixel": [
+          370,
+          370
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 62,
+        "target_cells_x": 12,
+        "target_cells_y": 12,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "partial_edge_cells": true,
+        "spacing_px": 62,
+        "target_cells_x": 12,
+        "target_cells_y": 12
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          86,
+          82,
+          63
+        ],
+        "label_stroke_color": [
+          248,
+          255,
+          248
+        ],
+        "line_color": [
+          86,
+          82,
+          63
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "vertices": [
+              [
+                111.25999999999999,
+                565.3227331753053
+              ],
+              [
+                630.74,
+                565.3227331753053
+              ],
+              [
+                630.74,
+                312.5782416084438
+              ],
+              [
+                111.25999999999999,
+                312.5782416084438
+              ]
+            ]
+          },
+          "entity_id": "rectangle_1",
+          "entity_type": "rectangle"
+        },
+        {
+          "attrs": {
+            "helper": true,
+            "point_a": [
+              111.25999999999999,
+              565.3227331753053
+            ],
+            "point_b": [
+              630.74,
+              312.5782416084438
+            ]
+          },
+          "entity_id": "diagonal_1",
+          "entity_type": "diagonal"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            370,
+            370
+          ],
+          "spacing_px": 62,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_2d_analytical_length"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "IJ",
+        "HJ"
+      ],
+      "annotation_labels": {
+        "diagonal": "HJ",
+        "known_side": "IJ"
+      },
+      "annotation_values": {
+        "HJ": 16,
+        "IJ": 7
+      },
+      "formula_expression": "sqrt(diagonal^2 - known_side^2)",
+      "measurement_ref_map": {
+        "HJ": 16,
+        "IJ": 7
+      },
+      "task_variant": "rectangle_diagonal_side",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

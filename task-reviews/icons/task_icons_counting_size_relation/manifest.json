@@ -1,0 +1,13 @@
+{
+  "inspection_count": 50,
+  "task_id": "task_icons_counting_size_relation",
+  "variants": {
+    "size_larger": 25,
+    "size_smaller": 25
+  },
+  "workbook": "icons/task_icons_counting_size_relation/task_icons_counting_size_relation.xlsx",
+  "workbook_sheets": {
+    "size_larger": "size_larger",
+    "size_smaller": "size_smaller"
+  }
+}

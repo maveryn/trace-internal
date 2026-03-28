@@ -1,0 +1,468 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 7659
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "JK": 18,
+      "JL": 37,
+      "JM": 23
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_3d_volume/images/triangular_prism_given_b_h_l/0021.png"
+  },
+  "instance_seed": 7610123255867203,
+  "prompt": "The image shows an annotated 3D solid. Task: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, JL, JM.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"JK\":2,\"JL\":3,\"JM\":4},\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows an annotated 3D solid. Task: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, JL, JM.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"JK\":2,\"JL\":3,\"JM\":4},\"answer\":8}",
+    "answer_only": "The image shows an annotated 3D solid. Task: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_geometry_analytical_3d_volume",
+  "task_variant": "triangular_prism_given_b_h_l",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 200000,
+      "answer_min": 8,
+      "answer_scalar": 7659,
+      "answer_type": "integer",
+      "answer_value": 7659,
+      "evidence_map": {
+        "JK": 18,
+        "JL": 37,
+        "JM": 23
+      },
+      "evidence_role_tokens": {
+        "L": "JM",
+        "b": "JK",
+        "h": "JL"
+      },
+      "evidence_role_values": {
+        "L": 23,
+        "b": 18,
+        "h": 37
+      },
+      "evidence_roles": [
+        "b",
+        "h",
+        "L"
+      ],
+      "formula_expression": "V = (b * h / 2) * L",
+      "required_annotations": [
+        "JK",
+        "JL",
+        "JM"
+      ],
+      "task_variant": "triangular_prism_given_b_h_l",
+      "variant_probabilities": {
+        "cone_given_r_h": 0.16666666666666666,
+        "cylinder_given_r_h": 0.16666666666666666,
+        "rectangular_prism_given_lwh": 0.16666666666666666,
+        "sphere_given_r": 0.16666666666666666,
+        "square_pyramid_given_base_height": 0.16666666666666666,
+        "triangular_prism_given_b_h_l": 0.16666666666666666
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "L": "JM",
+        "b": "JK",
+        "h": "JL"
+      },
+      "id_set": [
+        "JK",
+        "JL",
+        "JM"
+      ],
+      "measurement_ref_map": {
+        "JK": 18,
+        "JL": 37,
+        "JM": 23
+      },
+      "pixel_annotation_centers": {
+        "JK": [
+          355.90971963411613,
+          418.23131997512536
+        ],
+        "JL": [
+          328.98741939939674,
+          205.1591727087709
+        ],
+        "JM": [
+          186.31436466609037,
+          390.5652438544385
+        ]
+      },
+      "pixel_point_set": [
+        [
+          355.90971963411613,
+          418.23131997512536
+        ],
+        [
+          328.98741939939674,
+          205.1591727087709
+        ],
+        [
+          186.31436466609037,
+          390.5652438544385
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 200000,
+        "answer_min": 8,
+        "task_variant": "triangular_prism_given_b_h_l",
+        "variant_probabilities": {
+          "cone_given_r_h": 0.16666666666666666,
+          "cylinder_given_r_h": 0.16666666666666666,
+          "rectangular_prism_given_lwh": 0.16666666666666666,
+          "sphere_given_r": 0.16666666666666666,
+          "square_pyramid_given_base_height": 0.16666666666666666,
+          "triangular_prism_given_b_h_l": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "geometry_analytical_volume_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the value as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, JL, JM",
+          "json_example": "{\"evidence\":{\"JK\":2,\"JL\":3,\"JM\":4},\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "an annotated 3D solid",
+          "question_text": "The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?"
+        },
+        "task_family_key": "analytical_single_solid",
+        "task_family_variant_index": 1,
+        "task_key": "analytical_volume_query",
+        "task_variant_index": 2,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_3d/geometry_analytical_volume_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_volume_query": 5,
+          "task_family:analytical_single_solid": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_analytical_volume_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, JL, JM",
+              "json_example": "{\"evidence\":{\"JK\":2,\"JL\":3,\"JM\":4},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an annotated 3D solid",
+              "question_text": "The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?"
+            },
+            "task_family_key": "analytical_single_solid",
+            "task_family_variant_index": 1,
+            "task_key": "analytical_volume_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_3d/geometry_analytical_volume_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_volume_query": 5,
+              "task_family:analytical_single_solid": 5
+            }
+          },
+          "prompt": "The image shows an annotated 3D solid. Task: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, JL, JM.\nAnswer rule: set \"answer\" to the value as an integer.\nExample JSON:\n{\"evidence\":{\"JK\":2,\"JL\":3,\"JM\":4},\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_analytical_volume_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: JK, JL, JM",
+              "json_example": "{\"evidence\":{\"JK\":2,\"JL\":3,\"JM\":4},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an annotated 3D solid",
+              "question_text": "The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?"
+            },
+            "task_family_key": "analytical_single_solid",
+            "task_family_variant_index": 1,
+            "task_key": "analytical_volume_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_3d/geometry_analytical_volume_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_volume_query": 5,
+              "task_family:analytical_single_solid": 5
+            }
+          },
+          "prompt": "The image shows an annotated 3D solid. Task: The triangular prism has an annotated triangle base, triangle height, and prism length. What is its volume in cubic units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the value as an integer.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "triangular_prism_given_b_h_l",
+      "template_id": "geometry_analytical_volume_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "JK": [
+          355.90971963411613,
+          418.23131997512536
+        ],
+        "JL": [
+          328.98741939939674,
+          205.1591727087709
+        ],
+        "JM": [
+          186.31436466609037,
+          390.5652438544385
+        ]
+      },
+      "annotation_labels": {
+        "L": "JM",
+        "b": "JK",
+        "h": "JL"
+      },
+      "coord_space": "pixel",
+      "entity_id": "solid_1",
+      "instance_anchor": {
+        "coord_space": "pixel",
+        "point": [
+          261.5887687791304,
+          324.2550724637681
+        ],
+        "polyline": [
+          [
+            302.6760260173913,
+            355.16521739130434
+          ],
+          [
+            437.1434133426087,
+            432.8
+          ],
+          [
+            302.6760260173913,
+            36.0
+          ],
+          [
+            130.85658665739132,
+            454.3652173913043
+          ],
+          [
+            265.32397398260866,
+            532.0
+          ],
+          [
+            130.85658665739132,
+            135.2
+          ]
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_warm",
+        "style_spec": {
+          "color": [
+            252,
+            249,
+            245
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 568,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 4,
+        "full_cells_y": 4,
+        "origin_pixel": [
+          284,
+          284
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 95,
+        "target_cells_x": 6,
+        "target_cells_y": 6,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 4,
+        "full_cells_y": 4,
+        "partial_edge_cells": true,
+        "spacing_px": 95,
+        "target_cells_x": 6,
+        "target_cells_y": 6
+      },
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "alpha": 0.039254
+            },
+            "type": "noise"
+          }
+        ],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          117,
+          51,
+          105
+        ],
+        "label_stroke_color": [
+          254,
+          255,
+          251
+        ],
+        "line_color": [
+          117,
+          51,
+          105
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "base_units": 18,
+            "points": {
+              "A": [
+                302.6760260173913,
+                355.16521739130434
+              ],
+              "B": [
+                437.1434133426087,
+                432.8
+              ],
+              "C": [
+                302.6760260173913,
+                36.0
+              ],
+              "D": [
+                130.85658665739132,
+                454.3652173913043
+              ],
+              "E": [
+                265.32397398260866,
+                532.0
+              ],
+              "F": [
+                130.85658665739132,
+                135.2
+              ]
+            },
+            "prism_length_units": 23,
+            "task_variant": "triangular_prism_given_b_h_l",
+            "triangle_height_units": 37,
+            "volume_cubic_units": 7659
+          },
+          "entity_id": "solid_1",
+          "entity_type": "triangular_prism"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            284,
+            284
+          ],
+          "spacing_px": 95,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_3d_analytical_volume"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "JK",
+        "JL",
+        "JM"
+      ],
+      "annotation_labels": {
+        "L": "JM",
+        "b": "JK",
+        "h": "JL"
+      },
+      "annotation_values": {
+        "JK": 18,
+        "JL": 37,
+        "JM": 23
+      },
+      "formula_expression": "V = (b * h / 2) * L",
+      "measurement_ref_map": {
+        "JK": 18,
+        "JL": 37,
+        "JM": 23
+      },
+      "task_variant": "triangular_prism_given_b_h_l",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

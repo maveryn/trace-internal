@@ -1,0 +1,787 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 4
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        666,
+        188,
+        722,
+        244
+      ],
+      [
+        719,
+        270,
+        795,
+        346
+      ],
+      [
+        805,
+        277,
+        848,
+        320
+      ],
+      [
+        671,
+        407,
+        749,
+        485
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_counting_type/images/default/0015.png"
+  },
+  "instance_seed": 1659112710957617,
+  "prompt": "Work from the image with a Reference icon on the left and a Scene panel of icons on the right. Task: How many icons in the Scene panel have the same icon type as the Reference icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[318,146,394,222],[575,320,651,396]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the image with a Reference icon on the left and a Scene panel of icons on the right. Task: How many icons in the Scene panel have the same icon type as the Reference icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[318,146,394,222],[575,320,651,396]],\"answer\":2}",
+    "answer_only": "Work from the image with a Reference icon on the left and a Scene panel of icons on the right. Task: How many icons in the Scene panel have the same icon type as the Reference icon?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_icons_counting_type",
+  "task_variant": "same_icon_type",
+  "trace_payload": {
+    "execution_trace": {
+      "distractor_count": 2,
+      "distractor_count_probabilities": {
+        "1": 0.1,
+        "10": 0.1,
+        "2": 0.1,
+        "3": 0.1,
+        "4": 0.1,
+        "5": 0.1,
+        "6": 0.1,
+        "7": 0.1,
+        "8": 0.1,
+        "9": 0.1
+      },
+      "matching_scene_indices": [
+        0,
+        1,
+        3,
+        5
+      ],
+      "object_count": 6,
+      "object_count_probabilities": {
+        "10": 0.1,
+        "11": 0.1,
+        "12": 0.1,
+        "13": 0.1,
+        "14": 0.1,
+        "5": 0.1,
+        "6": 0.1,
+        "7": 0.1,
+        "8": 0.1,
+        "9": 0.1
+      },
+      "question_format": "count_matching_scene_icons_by_reference",
+      "reference_icon_id": "gi-delapouite-flower-emblem",
+      "scene_icon_ids": [
+        "gi-delapouite-flower-emblem",
+        "gi-delapouite-flower-emblem",
+        "gi-delapouite-crescent-staff",
+        "gi-delapouite-flower-emblem",
+        "gi-lorc-caged-ball",
+        "gi-delapouite-flower-emblem"
+      ],
+      "scene_variant": "reference_scene",
+      "target_count": 4,
+      "target_count_probabilities": {
+        "0": 0.09090909090909091,
+        "1": 0.09090909090909091,
+        "10": 0.09090909090909091,
+        "2": 0.09090909090909091,
+        "3": 0.09090909090909091,
+        "4": 0.09090909090909091,
+        "5": 0.09090909090909091,
+        "6": 0.09090909090909091,
+        "7": 0.09090909090909091,
+        "8": 0.09090909090909091,
+        "9": 0.09090909090909091
+      },
+      "task_variant": "same_icon_type"
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          666,
+          188,
+          722,
+          244
+        ],
+        [
+          719,
+          270,
+          795,
+          346
+        ],
+        [
+          805,
+          277,
+          848,
+          320
+        ],
+        [
+          671,
+          407,
+          749,
+          485
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "distractor_count": 2,
+        "distractor_count_probabilities": {
+          "1": 0.1,
+          "10": 0.1,
+          "2": 0.1,
+          "3": 0.1,
+          "4": 0.1,
+          "5": 0.1,
+          "6": 0.1,
+          "7": 0.1,
+          "8": 0.1,
+          "9": 0.1
+        },
+        "object_count": 6,
+        "object_count_probabilities": {
+          "10": 0.1,
+          "11": 0.1,
+          "12": 0.1,
+          "13": 0.1,
+          "14": 0.1,
+          "5": 0.1,
+          "6": 0.1,
+          "7": 0.1,
+          "8": 0.1,
+          "9": 0.1
+        },
+        "pool_manifest": "all_icons.txt",
+        "target_count": 4,
+        "target_count_probabilities": {
+          "0": 0.09090909090909091,
+          "1": 0.09090909090909091,
+          "10": 0.09090909090909091,
+          "2": 0.09090909090909091,
+          "3": 0.09090909090909091,
+          "4": 0.09090909090909091,
+          "5": 0.09090909090909091,
+          "6": 0.09090909090909091,
+          "7": 0.09090909090909091,
+          "8": 0.09090909090909091,
+          "9": 0.09090909090909091
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "icons_counting_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+          "json_example": "{\"evidence\":[[318,146,394,222],[575,320,651,396]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+          "question_text": "How many icons in the Scene panel have the same icon type as the Reference icon?"
+        },
+        "task_family_key": "reference_scene_counting",
+        "task_family_variant_index": 4,
+        "task_key": "counting_query",
+        "task_variant_index": 2,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/counting/icons_counting_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:counting_query": 5,
+          "task_family:reference_scene_counting": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "icons_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[318,146,394,222],[575,320,651,396]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+              "question_text": "How many icons in the Scene panel have the same icon type as the Reference icon?"
+            },
+            "task_family_key": "reference_scene_counting",
+            "task_family_variant_index": 4,
+            "task_key": "counting_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/counting/icons_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:counting_query": 5,
+              "task_family:reference_scene_counting": 5
+            }
+          },
+          "prompt": "Work from the image with a Reference icon on the left and a Scene panel of icons on the right. Task: How many icons in the Scene panel have the same icon type as the Reference icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[318,146,394,222],[575,320,651,396]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "icons_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[318,146,394,222],[575,320,651,396]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+              "question_text": "How many icons in the Scene panel have the same icon type as the Reference icon?"
+            },
+            "task_family_key": "reference_scene_counting",
+            "task_family_variant_index": 4,
+            "task_key": "counting_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/counting/icons_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:counting_query": 5,
+              "task_family:reference_scene_counting": 5
+            }
+          },
+          "prompt": "Work from the image with a Reference icon on the left and a Scene panel of icons on the right. Task: How many icons in the Scene panel have the same icon type as the Reference icon?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "same_icon_type",
+      "template_id": "icons_counting_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching_scene_boxes": [
+          [
+            666,
+            188,
+            722,
+            244
+          ],
+          [
+            719,
+            270,
+            795,
+            346
+          ],
+          [
+            805,
+            277,
+            848,
+            320
+          ],
+          [
+            671,
+            407,
+            749,
+            485
+          ]
+        ],
+        "reference_icon": {
+          "bbox_xyxy": [
+            86,
+            226,
+            210,
+            350
+          ],
+          "icon_id": "gi-delapouite-flower-emblem",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.943253
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 2727282740560354,
+          "panel": "reference",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            180,
+            45,
+            64
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        960,
+        544
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          960,
+          544
+        ],
+        "reference_content_xyxy": [
+          44,
+          77,
+          252,
+          500
+        ],
+        "reference_panel_xyxy": [
+          24,
+          24,
+          272,
+          520
+        ],
+        "scene_content_xyxy": [
+          316,
+          77,
+          916,
+          500
+        ],
+        "scene_panel_xyxy": [
+          296,
+          24,
+          936,
+          520
+        ]
+      },
+      "style": {
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "palette_size_max": 12,
+        "palette_size_min": 8,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "reference_icon_size_max_px": 136,
+        "reference_icon_size_min_px": 136,
+        "reference_icon_size_px": 136,
+        "sampled_palette_rgb": [
+          [
+            105,
+            199,
+            118
+          ],
+          [
+            146,
+            67,
+            147
+          ],
+          [
+            176,
+            129,
+            57
+          ],
+          [
+            180,
+            45,
+            64
+          ],
+          [
+            56,
+            128,
+            213
+          ],
+          [
+            203,
+            208,
+            74
+          ],
+          [
+            47,
+            65,
+            203
+          ],
+          [
+            85,
+            220,
+            39
+          ],
+          [
+            62,
+            94,
+            40
+          ]
+        ],
+        "scene_icon_size_max_px": 96,
+        "scene_icon_size_min_px": 40,
+        "scene_max_overlap_fraction": 0.1,
+        "scene_placement_max_attempts": 120,
+        "scene_size_shrink_factor": 0.9,
+        "scene_size_shrink_rounds": 6
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_xyxy": [
+            86,
+            226,
+            210,
+            350
+          ],
+          "icon_id": "gi-delapouite-flower-emblem",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.943253
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 2727282740560354,
+          "panel": "reference",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            180,
+            45,
+            64
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            805,
+            277,
+            848,
+            320
+          ],
+          "icon_id": "gi-delapouite-flower-emblem",
+          "index": 0,
+          "instance_id": "scene_icon_0",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.895089
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "alpha": 0.077788
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 3546875775500430,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            146,
+            67,
+            147
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            719,
+            270,
+            795,
+            346
+          ],
+          "icon_id": "gi-delapouite-flower-emblem",
+          "index": 1,
+          "instance_id": "scene_icon_1",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.050642
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 7752836348003242,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            180,
+            45,
+            64
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            411,
+            319,
+            482,
+            389
+          ],
+          "icon_id": "gi-delapouite-crescent-staff",
+          "index": 2,
+          "instance_id": "scene_icon_2",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.568243
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "alpha": 0.0335
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 4452455487167839,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            176,
+            129,
+            57
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            671,
+            407,
+            749,
+            485
+          ],
+          "icon_id": "gi-delapouite-flower-emblem",
+          "index": 3,
+          "instance_id": "scene_icon_3",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.216861
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "alpha": 0.044137
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 2296575028769795,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            56,
+            128,
+            213
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            749,
+            173,
+            810,
+            235
+          ],
+          "icon_id": "gi-lorc-caged-ball",
+          "index": 4,
+          "instance_id": "scene_icon_4",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 6531267454405549,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            85,
+            220,
+            39
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            666,
+            188,
+            722,
+            244
+          ],
+          "icon_id": "gi-delapouite-flower-emblem",
+          "index": 5,
+          "instance_id": "scene_icon_5",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.039953
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "radius": 0.273883
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 6732737777137754,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            56,
+            128,
+            213
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            960,
+            544
+          ],
+          "reference_content_xyxy": [
+            44,
+            77,
+            252,
+            500
+          ],
+          "reference_panel_xyxy": [
+            24,
+            24,
+            272,
+            520
+          ],
+          "scene_content_xyxy": [
+            316,
+            77,
+            916,
+            500
+          ],
+          "scene_panel_xyxy": [
+            296,
+            24,
+            936,
+            520
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "counting_target": "same_icon_type_as_reference",
+        "matching_scene_indices": [
+          0,
+          1,
+          3,
+          5
+        ],
+        "reference_icon_id": "gi-delapouite-flower-emblem"
+      },
+      "scene_kind": "icons_reference_counting_type"
+    },
+    "witness_symbolic": {
+      "matching_scene_indices": [
+        0,
+        1,
+        3,
+        5
+      ],
+      "reference_icon_id": "gi-delapouite-flower-emblem"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

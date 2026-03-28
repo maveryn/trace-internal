@@ -1,0 +1,957 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 3
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "B",
+      "D",
+      "F"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "graph/task_graph_relation_same_component_count/images/default/0000.png"
+  },
+  "instance_seed": 7930823410654273,
+  "prompt": "Work from the image with a labeled undirected graph. Answer this question: How many nodes, including node F itself, are in the same connected component as F?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the labels of all nodes in the connected component containing the asked node, including the asked node itself, sorted in ascending label order.\nAnswer format: set \"answer\" to the count of those nodes as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"F\",\"H\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the image with a labeled undirected graph. Answer this question: How many nodes, including node F itself, are in the same connected component as F?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the labels of all nodes in the connected component containing the asked node, including the asked node itself, sorted in ascending label order.\nAnswer format: set \"answer\" to the count of those nodes as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"F\",\"H\"],\"answer\":3}",
+    "answer_only": "Work from the image with a labeled undirected graph. Answer this question: How many nodes, including node F itself, are in the same connected component as F?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the count of those nodes as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_graph_relation_same_component_count",
+  "task_variant": "same_component_count",
+  "trace_payload": {
+    "execution_trace": {
+      "adjacency_by_label": {
+        "A": [
+          "C",
+          "E",
+          "G"
+        ],
+        "B": [
+          "D",
+          "F"
+        ],
+        "C": [
+          "A",
+          "E"
+        ],
+        "D": [
+          "B",
+          "F"
+        ],
+        "E": [
+          "A",
+          "C",
+          "G"
+        ],
+        "F": [
+          "B",
+          "D"
+        ],
+        "G": [
+          "A",
+          "E"
+        ]
+      },
+      "component_count": 2,
+      "component_sizes": [
+        4,
+        3
+      ],
+      "components_by_label": [
+        [
+          "A",
+          "C",
+          "E",
+          "G"
+        ],
+        [
+          "B",
+          "D",
+          "F"
+        ]
+      ],
+      "crossing_count": 3,
+      "degrees_by_label": {
+        "A": 3,
+        "B": 2,
+        "C": 2,
+        "D": 2,
+        "E": 3,
+        "F": 2,
+        "G": 2
+      },
+      "edge_count": 8,
+      "graph_directionality": "undirected",
+      "label_variant": "letters",
+      "layout_transform_variant": "mirror_left_right",
+      "layout_variant_requested": "shell",
+      "layout_variant_used": "shell",
+      "matching_labels": [
+        "B",
+        "D",
+        "F"
+      ],
+      "node_color_name": "blue",
+      "node_count": 7,
+      "node_shape_variant": "hexagon",
+      "query_label": "F",
+      "question_format": "count_nodes_in_same_component_including_query",
+      "scene_variant": "shell",
+      "target_component_size": 3,
+      "task_variant": "same_component_count",
+      "topology_profile": "hub_heavy"
+    },
+    "projected_evidence": {
+      "label_set": [
+        "B",
+        "D",
+        "F"
+      ],
+      "pixel_bbox_set": [
+        [
+          56,
+          174,
+          98,
+          216
+        ],
+        [
+          766,
+          314,
+          808,
+          356
+        ],
+        [
+          495,
+          87,
+          537,
+          129
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          77,
+          195
+        ],
+        [
+          787,
+          335
+        ],
+        [
+          516,
+          108
+        ]
+      ],
+      "type": "label_set"
+    },
+    "query_spec": {
+      "params": {
+        "component_count": 2,
+        "component_count_probabilities": {
+          "2": 0.3333333333333333,
+          "3": 0.3333333333333333,
+          "4": 0.3333333333333333
+        },
+        "edge_count": 8,
+        "graph_directionality": "undirected",
+        "label_variant": "letters",
+        "label_variant_probabilities": {
+          "letters": 0.5,
+          "numbers": 0.5
+        },
+        "layout_transform_variant": "mirror_left_right",
+        "layout_transform_variant_probabilities": {
+          "identity": 0.16666666666666666,
+          "mirror_left_right": 0.16666666666666666,
+          "mirror_up_down": 0.16666666666666666,
+          "rotate_180": 0.16666666666666666,
+          "rotate_270": 0.16666666666666666,
+          "rotate_90": 0.16666666666666666
+        },
+        "layout_variant": "shell",
+        "layout_variant_probabilities": {
+          "circular": 0.3333333333333333,
+          "shell": 0.3333333333333333,
+          "spring": 0.3333333333333333
+        },
+        "node_color_name": "blue",
+        "node_color_name_probabilities": {
+          "blue": 0.1,
+          "brown": 0.1,
+          "cyan": 0.1,
+          "green": 0.1,
+          "magenta": 0.1,
+          "maroon": 0.1,
+          "orange": 0.1,
+          "purple": 0.1,
+          "red": 0.1,
+          "yellow": 0.1
+        },
+        "node_count": 7,
+        "node_count_probabilities": {
+          "10": 0.16666666666666666,
+          "5": 0.16666666666666666,
+          "6": 0.16666666666666666,
+          "7": 0.16666666666666666,
+          "8": 0.16666666666666666,
+          "9": 0.16666666666666666
+        },
+        "node_shape_variant": "hexagon",
+        "node_shape_variant_probabilities": {
+          "circle": 0.3333333333333333,
+          "hexagon": 0.3333333333333333,
+          "rounded_square": 0.3333333333333333
+        },
+        "query_label": "F",
+        "target_component_size": 3,
+        "target_component_size_probabilities": {
+          "1": 0.16666666666666666,
+          "2": 0.16666666666666666,
+          "3": 0.16666666666666666,
+          "4": 0.16666666666666666,
+          "5": 0.16666666666666666,
+          "6": 0.16666666666666666
+        },
+        "task_variant_probabilities": {
+          "same_component_count": 1.0
+        },
+        "topology_profile": "hub_heavy",
+        "topology_profile_probabilities": {
+          "balanced": 0.3333333333333333,
+          "hub_heavy": 0.3333333333333333,
+          "low_degree": 0.3333333333333333
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "graph_relation_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count of those nodes as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the labels of all nodes in the connected component containing the asked node, including the asked node itself, sorted in ascending label order",
+          "json_example": "{\"evidence\":[\"B\",\"F\",\"H\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a labeled undirected graph",
+          "question_text": "How many nodes, including node F itself, are in the same connected component as F?"
+        },
+        "task_family_key": "single_graph_relation",
+        "task_family_variant_index": 4,
+        "task_key": "same_component_count_query",
+        "task_variant_index": 3,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "graph/relation/graph_relation_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:same_component_count_query": 5,
+          "task_family:single_graph_relation": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "graph_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count of those nodes as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the labels of all nodes in the connected component containing the asked node, including the asked node itself, sorted in ascending label order",
+              "json_example": "{\"evidence\":[\"B\",\"F\",\"H\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled undirected graph",
+              "question_text": "How many nodes, including node F itself, are in the same connected component as F?"
+            },
+            "task_family_key": "single_graph_relation",
+            "task_family_variant_index": 4,
+            "task_key": "same_component_count_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "graph/relation/graph_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:same_component_count_query": 5,
+              "task_family:single_graph_relation": 5
+            }
+          },
+          "prompt": "Work from the image with a labeled undirected graph. Answer this question: How many nodes, including node F itself, are in the same connected component as F?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the labels of all nodes in the connected component containing the asked node, including the asked node itself, sorted in ascending label order.\nAnswer format: set \"answer\" to the count of those nodes as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"F\",\"H\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "graph_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count of those nodes as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the labels of all nodes in the connected component containing the asked node, including the asked node itself, sorted in ascending label order",
+              "json_example": "{\"evidence\":[\"B\",\"F\",\"H\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled undirected graph",
+              "question_text": "How many nodes, including node F itself, are in the same connected component as F?"
+            },
+            "task_family_key": "single_graph_relation",
+            "task_family_variant_index": 4,
+            "task_key": "same_component_count_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "graph/relation/graph_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:same_component_count_query": 5,
+              "task_family:single_graph_relation": 5
+            }
+          },
+          "prompt": "Work from the image with a labeled undirected graph. Answer this question: How many nodes, including node F itself, are in the same connected component as F?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the count of those nodes as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "same_component_count",
+      "template_id": "graph_relation_v1"
+    },
+    "render_map": {
+      "anchors": {},
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        864,
+        640
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          864,
+          640
+        ],
+        "scene_content_xyxy": [
+          52,
+          83,
+          812,
+          588
+        ],
+        "scene_panel_xyxy": [
+          28,
+          28,
+          836,
+          612
+        ],
+        "title_band_xyxy": [
+          28,
+          28,
+          836,
+          71
+        ]
+      },
+      "style": {
+        "arrow_length_px": 12,
+        "arrow_width_px": 7,
+        "background_color_rgb": [
+          249,
+          251,
+          254
+        ],
+        "background_meta": {
+          "available_styles": [
+            "solid_light"
+          ],
+          "enabled": true,
+          "selected_style": "solid_light",
+          "style_spec": {
+            "color": [
+              248,
+              248,
+              248
+            ],
+            "kind": "solid"
+          }
+        },
+        "edge_color_rgb": [
+          32,
+          84,
+          166
+        ],
+        "edge_width_px": 4,
+        "label_font_size_px": 20,
+        "label_stroke_rgb": [
+          26,
+          68,
+          133
+        ],
+        "label_stroke_width_px": 2,
+        "label_text_rgb": [
+          255,
+          255,
+          255
+        ],
+        "node_border_rgb": [
+          26,
+          68,
+          133
+        ],
+        "node_border_width_px": 2,
+        "node_color_name": "blue",
+        "node_fill_rgb": [
+          45,
+          117,
+          230
+        ],
+        "node_radius_px": 21,
+        "node_shape_variant": "hexagon",
+        "panel_border_rgb": [
+          196,
+          216,
+          248
+        ],
+        "panel_fill_rgb": [
+          242,
+          247,
+          254
+        ],
+        "post_image_noise_meta": {
+          "applied": false,
+          "apply_prob": 0.0,
+          "edit_count_range": [
+            1,
+            2
+          ],
+          "edit_types": [
+            "blur",
+            "downsample",
+            "jpeg",
+            "noise"
+          ],
+          "edits": [],
+          "enabled": false
+        },
+        "resolved_label_font_size_px": 20,
+        "title_color_rgb": [
+          21,
+          54,
+          106
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_xyxy": [
+            766,
+            314,
+            808,
+            356
+          ],
+          "center_px": [
+            787,
+            335
+          ],
+          "degree": 2,
+          "entity_id": "node_D",
+          "entity_kind": "graph_node",
+          "is_query_node": false,
+          "label": "D",
+          "neighbors": [
+            "B",
+            "F"
+          ],
+          "predecessors": [
+            "B",
+            "F"
+          ],
+          "successors": [
+            "B",
+            "F"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            495,
+            87,
+            537,
+            129
+          ],
+          "center_px": [
+            516,
+            108
+          ],
+          "degree": 2,
+          "entity_id": "node_F",
+          "entity_kind": "graph_node",
+          "is_query_node": true,
+          "label": "F",
+          "neighbors": [
+            "B",
+            "D"
+          ],
+          "predecessors": [
+            "B",
+            "D"
+          ],
+          "successors": [
+            "B",
+            "D"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            56,
+            174,
+            98,
+            216
+          ],
+          "center_px": [
+            77,
+            195
+          ],
+          "degree": 2,
+          "entity_id": "node_B",
+          "entity_kind": "graph_node",
+          "is_query_node": false,
+          "label": "B",
+          "neighbors": [
+            "D",
+            "F"
+          ],
+          "predecessors": [
+            "D",
+            "F"
+          ],
+          "successors": [
+            "D",
+            "F"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            374,
+            434,
+            416,
+            476
+          ],
+          "center_px": [
+            395,
+            455
+          ],
+          "degree": 3,
+          "entity_id": "node_E",
+          "entity_kind": "graph_node",
+          "is_query_node": false,
+          "label": "E",
+          "neighbors": [
+            "A",
+            "C",
+            "G"
+          ],
+          "predecessors": [
+            "A",
+            "C",
+            "G"
+          ],
+          "successors": [
+            "A",
+            "C",
+            "G"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            56,
+            455,
+            98,
+            497
+          ],
+          "center_px": [
+            77,
+            476
+          ],
+          "degree": 2,
+          "entity_id": "node_C",
+          "entity_kind": "graph_node",
+          "is_query_node": false,
+          "label": "C",
+          "neighbors": [
+            "A",
+            "E"
+          ],
+          "predecessors": [
+            "A",
+            "E"
+          ],
+          "successors": [
+            "A",
+            "E"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            374,
+            195,
+            416,
+            237
+          ],
+          "center_px": [
+            395,
+            216
+          ],
+          "degree": 3,
+          "entity_id": "node_A",
+          "entity_kind": "graph_node",
+          "is_query_node": false,
+          "label": "A",
+          "neighbors": [
+            "C",
+            "E",
+            "G"
+          ],
+          "predecessors": [
+            "C",
+            "E",
+            "G"
+          ],
+          "successors": [
+            "C",
+            "E",
+            "G"
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            495,
+            542,
+            537,
+            584
+          ],
+          "center_px": [
+            516,
+            563
+          ],
+          "degree": 2,
+          "entity_id": "node_G",
+          "entity_kind": "graph_node",
+          "is_query_node": false,
+          "label": "G",
+          "neighbors": [
+            "A",
+            "E"
+          ],
+          "predecessors": [
+            "A",
+            "E"
+          ],
+          "successors": [
+            "A",
+            "E"
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_A_C",
+          "entity_kind": "graph_edge",
+          "node_u_label": "A",
+          "node_v_label": "C",
+          "segment_px": [
+            [
+              379,
+              229
+            ],
+            [
+              93,
+              463
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_A_E",
+          "entity_kind": "graph_edge",
+          "node_u_label": "A",
+          "node_v_label": "E",
+          "segment_px": [
+            [
+              395,
+              237
+            ],
+            [
+              395,
+              434
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_A_G",
+          "entity_kind": "graph_edge",
+          "node_u_label": "A",
+          "node_v_label": "G",
+          "segment_px": [
+            [
+              402,
+              236
+            ],
+            [
+              509,
+              543
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_B_D",
+          "entity_kind": "graph_edge",
+          "node_u_label": "B",
+          "node_v_label": "D",
+          "segment_px": [
+            [
+              98,
+              199
+            ],
+            [
+              766,
+              331
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_B_F",
+          "entity_kind": "graph_edge",
+          "node_u_label": "B",
+          "node_v_label": "F",
+          "segment_px": [
+            [
+              98,
+              191
+            ],
+            [
+              495,
+              112
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_C_E",
+          "entity_kind": "graph_edge",
+          "node_u_label": "C",
+          "node_v_label": "E",
+          "segment_px": [
+            [
+              98,
+              475
+            ],
+            [
+              374,
+              456
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_D_F",
+          "entity_kind": "graph_edge",
+          "node_u_label": "D",
+          "node_v_label": "F",
+          "segment_px": [
+            [
+              771,
+              322
+            ],
+            [
+              532,
+              121
+            ]
+          ]
+        },
+        {
+          "directed": false,
+          "entity_id": "edge_E_G",
+          "entity_kind": "graph_edge",
+          "node_u_label": "E",
+          "node_v_label": "G",
+          "segment_px": [
+            [
+              411,
+              469
+            ],
+            [
+              500,
+              549
+            ]
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            864,
+            640
+          ],
+          "scene_content_xyxy": [
+            52,
+            83,
+            812,
+            588
+          ],
+          "scene_panel_xyxy": [
+            28,
+            28,
+            836,
+            612
+          ],
+          "title_band_xyxy": [
+            28,
+            28,
+            836,
+            71
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "adjacency_by_label": {
+          "A": [
+            "C",
+            "E",
+            "G"
+          ],
+          "B": [
+            "D",
+            "F"
+          ],
+          "C": [
+            "A",
+            "E"
+          ],
+          "D": [
+            "B",
+            "F"
+          ],
+          "E": [
+            "A",
+            "C",
+            "G"
+          ],
+          "F": [
+            "B",
+            "D"
+          ],
+          "G": [
+            "A",
+            "E"
+          ]
+        },
+        "component_sizes": [
+          4,
+          3
+        ],
+        "components_by_label": [
+          [
+            "A",
+            "C",
+            "E",
+            "G"
+          ],
+          [
+            "B",
+            "D",
+            "F"
+          ]
+        ],
+        "degrees_by_label": {
+          "A": 3,
+          "B": 2,
+          "C": 2,
+          "D": 2,
+          "E": 3,
+          "F": 2,
+          "G": 2
+        },
+        "edge_labels": [
+          [
+            "A",
+            "C"
+          ],
+          [
+            "A",
+            "E"
+          ],
+          [
+            "A",
+            "G"
+          ],
+          [
+            "B",
+            "D"
+          ],
+          [
+            "B",
+            "F"
+          ],
+          [
+            "C",
+            "E"
+          ],
+          [
+            "D",
+            "F"
+          ],
+          [
+            "E",
+            "G"
+          ]
+        ],
+        "graph_directionality": "undirected",
+        "matching_labels": [
+          "B",
+          "D",
+          "F"
+        ],
+        "query_label": "F",
+        "relation_rule": "same_connected_component_including_query_node"
+      },
+      "scene_kind": "graph_same_component_relation"
+    },
+    "witness_symbolic": {
+      "label_set": [
+        "B",
+        "D",
+        "F"
+      ],
+      "query_label": "F",
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

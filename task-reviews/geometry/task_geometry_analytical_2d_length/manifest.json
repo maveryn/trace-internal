@@ -1,0 +1,21 @@
+{
+  "inspection_count": 150,
+  "task_id": "task_geometry_analytical_2d_length",
+  "variants": {
+    "circle_chord_length": 25,
+    "inscribed_square_side": 25,
+    "isosceles_trapezoid_leg": 25,
+    "rectangle_diagonal_side": 25,
+    "rhombus_diagonal_side": 25,
+    "triangle_altitude_side": 25
+  },
+  "workbook": "geometry/task_geometry_analytical_2d_length/task_geometry_analytical_2d_length.xlsx",
+  "workbook_sheets": {
+    "circle_chord_length": "circle_chord_length",
+    "inscribed_square_side": "inscribed_square_side",
+    "isosceles_trapezoid_leg": "isosceles_trapezoid_leg",
+    "rectangle_diagonal_side": "rectangle_diagonal_side",
+    "rhombus_diagonal_side": "rhombus_diagonal_side",
+    "triangle_altitude_side": "triangle_altitude_side"
+  }
+}

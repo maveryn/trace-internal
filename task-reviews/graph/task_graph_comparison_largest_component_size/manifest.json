@@ -1,0 +1,11 @@
+{
+  "inspection_count": 25,
+  "task_id": "task_graph_comparison_largest_component_size",
+  "variants": {
+    "": 25
+  },
+  "workbook": "graph/task_graph_comparison_largest_component_size/task_graph_comparison_largest_component_size.xlsx",
+  "workbook_sheets": {
+    "largest_component_size": "largest_component_size"
+  }
+}

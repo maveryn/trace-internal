@@ -1,0 +1,895 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 1
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        565,
+        426,
+        626,
+        487
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_relation_between_two_anchors_count/images/inside_vertical_strip/0018.png"
+  },
+  "instance_seed": 472983654966824,
+  "prompt": "Use the image containing a Scene panel of icons where two icons are marked as Anchor A and Anchor B. Answer this question: How many icons have centers in the vertical strip between Anchor A and Anchor B?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[312,180,372,240],[540,286,612,358]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the image containing a Scene panel of icons where two icons are marked as Anchor A and Anchor B. Answer this question: How many icons have centers in the vertical strip between Anchor A and Anchor B?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[312,180,372,240],[540,286,612,358]],\"answer\":2}",
+    "answer_only": "Use the image containing a Scene panel of icons where two icons are marked as Anchor A and Anchor B. Answer this question: How many icons have centers in the vertical strip between Anchor A and Anchor B?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_icons_relation_between_two_anchors_count",
+  "task_variant": "inside_vertical_strip",
+  "trace_payload": {
+    "execution_trace": {
+      "anchor_a_center_xy": [
+        314.0,
+        272.0
+      ],
+      "anchor_b_center_xy": [
+        746.0,
+        272.0
+      ],
+      "anchor_icon_id": "gi-skoll-flatbed",
+      "anchor_rotation_degrees": 180,
+      "anchor_tint_rgb": [
+        186,
+        110,
+        112
+      ],
+      "distractor_count": 5,
+      "distractor_count_probabilities": {
+        "1": 0.1,
+        "10": 0.1,
+        "2": 0.1,
+        "3": 0.1,
+        "4": 0.1,
+        "5": 0.1,
+        "6": 0.1,
+        "7": 0.1,
+        "8": 0.1,
+        "9": 0.1
+      },
+      "distractor_margin_over_target": 0,
+      "matching_scene_indices": [
+        1
+      ],
+      "object_count": 6,
+      "object_count_probabilities": {
+        "10": 0.1,
+        "11": 0.1,
+        "2": 0.1,
+        "3": 0.1,
+        "4": 0.1,
+        "5": 0.1,
+        "6": 0.1,
+        "7": 0.1,
+        "8": 0.1,
+        "9": 0.1
+      },
+      "question_format": "count_scene_icon_centers_in_strip_between_two_anchors",
+      "scene_icon_ids": [
+        "gi-delapouite-samus-helmet",
+        "tabler-square-letter-x",
+        "gi-delapouite-basketball-basket",
+        "hero-arrow-uturn-down",
+        "gi-delapouite-croissant",
+        "tabler-circle-letter-a"
+      ],
+      "scene_rotations_degrees": [
+        0,
+        90,
+        0,
+        0,
+        0,
+        270
+      ],
+      "scene_tints_rgb": [
+        [
+          216,
+          86,
+          28
+        ],
+        [
+          186,
+          110,
+          112
+        ],
+        [
+          85,
+          189,
+          126
+        ],
+        [
+          216,
+          86,
+          28
+        ],
+        [
+          85,
+          189,
+          126
+        ],
+        [
+          186,
+          110,
+          112
+        ]
+      ],
+      "scene_variant": "scene_two_anchors_strip",
+      "strip_boundary_margin_px": 14,
+      "target_count": 1,
+      "target_count_probabilities": {
+        "0": 0.16666666666666666,
+        "1": 0.16666666666666666,
+        "2": 0.16666666666666666,
+        "3": 0.16666666666666666,
+        "4": 0.16666666666666666,
+        "5": 0.16666666666666666
+      },
+      "task_variant": "inside_vertical_strip",
+      "variant_probabilities": {
+        "inside_horizontal_strip": 0.5,
+        "inside_vertical_strip": 0.5
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          565,
+          426,
+          626,
+          487
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "distractor_count": 5,
+        "distractor_count_probabilities": {
+          "1": 0.1,
+          "10": 0.1,
+          "2": 0.1,
+          "3": 0.1,
+          "4": 0.1,
+          "5": 0.1,
+          "6": 0.1,
+          "7": 0.1,
+          "8": 0.1,
+          "9": 0.1
+        },
+        "distractor_margin_over_target": 0,
+        "object_count": 6,
+        "object_count_probabilities": {
+          "10": 0.1,
+          "11": 0.1,
+          "2": 0.1,
+          "3": 0.1,
+          "4": 0.1,
+          "5": 0.1,
+          "6": 0.1,
+          "7": 0.1,
+          "8": 0.1,
+          "9": 0.1
+        },
+        "pool_manifest": "all_icons.txt",
+        "rotation_candidates_degrees": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "strip_boundary_margin_px": 14,
+        "strip_outside_ratio_min": 0.12,
+        "strip_span_ratio_max": 0.6,
+        "strip_span_ratio_min": 0.32,
+        "target_count": 1,
+        "target_count_probabilities": {
+          "0": 0.16666666666666666,
+          "1": 0.16666666666666666,
+          "2": 0.16666666666666666,
+          "3": 0.16666666666666666,
+          "4": 0.16666666666666666,
+          "5": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "icons_relation_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+          "json_example": "{\"evidence\":[[312,180,372,240],[540,286,612,358]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Scene panel of icons where two icons are marked as Anchor A and Anchor B",
+          "question_text": "How many icons have centers in the vertical strip between Anchor A and Anchor B?"
+        },
+        "task_family_key": "scene_two_anchor_relation",
+        "task_family_variant_index": 3,
+        "task_key": "relation_query",
+        "task_variant_index": 3,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/relation/icons_relation_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:relation_query": 5,
+          "task_family:scene_two_anchor_relation": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "icons_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[312,180,372,240],[540,286,612,358]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Scene panel of icons where two icons are marked as Anchor A and Anchor B",
+              "question_text": "How many icons have centers in the vertical strip between Anchor A and Anchor B?"
+            },
+            "task_family_key": "scene_two_anchor_relation",
+            "task_family_variant_index": 3,
+            "task_key": "relation_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/relation/icons_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:relation_query": 5,
+              "task_family:scene_two_anchor_relation": 5
+            }
+          },
+          "prompt": "Use the image containing a Scene panel of icons where two icons are marked as Anchor A and Anchor B. Answer this question: How many icons have centers in the vertical strip between Anchor A and Anchor B?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[312,180,372,240],[540,286,612,358]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "icons_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[312,180,372,240],[540,286,612,358]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Scene panel of icons where two icons are marked as Anchor A and Anchor B",
+              "question_text": "How many icons have centers in the vertical strip between Anchor A and Anchor B?"
+            },
+            "task_family_key": "scene_two_anchor_relation",
+            "task_family_variant_index": 3,
+            "task_key": "relation_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/relation/icons_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:relation_query": 5,
+              "task_family:scene_two_anchor_relation": 5
+            }
+          },
+          "prompt": "Use the image containing a Scene panel of icons where two icons are marked as Anchor A and Anchor B. Answer this question: How many icons have centers in the vertical strip between Anchor A and Anchor B?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "inside_vertical_strip",
+      "template_id": "icons_relation_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "anchor_a": {
+          "bbox_xyxy": [
+            292,
+            263,
+            336,
+            281
+          ],
+          "center_xy": [
+            314.0,
+            272.0
+          ],
+          "entity_kind": "anchor_icon",
+          "highlight_bbox_xyxy": [
+            282,
+            253,
+            346,
+            291
+          ],
+          "icon_id": "gi-skoll-flatbed",
+          "instance_id": "anchor_a",
+          "label": "A",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 6380673932954120,
+          "nominal_size_px": 46,
+          "panel": "scene",
+          "role": "anchor_a",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            186,
+            110,
+            112
+          ]
+        },
+        "anchor_b": {
+          "bbox_xyxy": [
+            724,
+            263,
+            768,
+            281
+          ],
+          "center_xy": [
+            746.0,
+            272.0
+          ],
+          "entity_kind": "anchor_icon",
+          "highlight_bbox_xyxy": [
+            714,
+            253,
+            778,
+            291
+          ],
+          "icon_id": "gi-skoll-flatbed",
+          "instance_id": "anchor_b",
+          "label": "B",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 8524277539556965,
+          "nominal_size_px": 46,
+          "panel": "scene",
+          "role": "anchor_b",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            186,
+            110,
+            112
+          ]
+        },
+        "matching_scene_boxes": [
+          [
+            565,
+            426,
+            626,
+            487
+          ]
+        ]
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        960,
+        544
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          960,
+          544
+        ],
+        "scene_content_xyxy": [
+          44,
+          77,
+          916,
+          500
+        ],
+        "scene_panel_xyxy": [
+          24,
+          24,
+          936,
+          520
+        ]
+      },
+      "style": {
+        "anchor_highlight_padding_px": 10,
+        "anchor_highlight_radius_px": 14,
+        "anchor_label_color_rgb": [
+          57,
+          87,
+          145
+        ],
+        "anchor_label_font_size_px": 20,
+        "anchor_outline_rgb": [
+          74,
+          113,
+          188
+        ],
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "palette_size_max": 12,
+        "palette_size_min": 8,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "reference_icon_size_max_px": 0,
+        "reference_icon_size_min_px": 0,
+        "reference_icon_size_px": 136,
+        "sampled_palette_rgb": [
+          [
+            150,
+            56,
+            145
+          ],
+          [
+            207,
+            180,
+            72
+          ],
+          [
+            85,
+            189,
+            126
+          ],
+          [
+            216,
+            86,
+            28
+          ],
+          [
+            40,
+            152,
+            213
+          ],
+          [
+            186,
+            110,
+            112
+          ],
+          [
+            81,
+            35,
+            201
+          ],
+          [
+            83,
+            203,
+            35
+          ]
+        ],
+        "scene_icon_size_max_px": 96,
+        "scene_icon_size_min_px": 40,
+        "scene_max_overlap_fraction": 0.08,
+        "scene_placement_max_attempts": 120,
+        "scene_size_shrink_factor": 0.9,
+        "scene_size_shrink_rounds": 6,
+        "strip_boundary_margin_px": 14,
+        "strip_outside_ratio_min": 0.12,
+        "strip_span_ratio_max": 0.6,
+        "strip_span_ratio_min": 0.32
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_xyxy": [
+            292,
+            263,
+            336,
+            281
+          ],
+          "center_xy": [
+            314.0,
+            272.0
+          ],
+          "entity_kind": "anchor_icon",
+          "highlight_bbox_xyxy": [
+            282,
+            253,
+            346,
+            291
+          ],
+          "icon_id": "gi-skoll-flatbed",
+          "instance_id": "anchor_a",
+          "label": "A",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 6380673932954120,
+          "nominal_size_px": 46,
+          "panel": "scene",
+          "role": "anchor_a",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            186,
+            110,
+            112
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            724,
+            263,
+            768,
+            281
+          ],
+          "center_xy": [
+            746.0,
+            272.0
+          ],
+          "entity_kind": "anchor_icon",
+          "highlight_bbox_xyxy": [
+            714,
+            253,
+            778,
+            291
+          ],
+          "icon_id": "gi-skoll-flatbed",
+          "instance_id": "anchor_b",
+          "label": "B",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 8524277539556965,
+          "nominal_size_px": 46,
+          "panel": "scene",
+          "role": "anchor_b",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            186,
+            110,
+            112
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            819,
+            99,
+            904,
+            178
+          ],
+          "center_in_strip": false,
+          "center_xy": [
+            861.5,
+            138.5
+          ],
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-samus-helmet",
+          "instance_id": "scene_icon_0",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.895473
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "radius": 0.262463
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 3998239795427613,
+          "nominal_size_px": 93,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            216,
+            86,
+            28
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            565,
+            426,
+            626,
+            487
+          ],
+          "center_in_strip": true,
+          "center_xy": [
+            595.5,
+            456.5
+          ],
+          "entity_kind": "scene_icon",
+          "icon_id": "tabler-square-letter-x",
+          "instance_id": "scene_icon_1",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 5025273798845341,
+          "nominal_size_px": 71,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            186,
+            110,
+            112
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            86,
+            386,
+            161,
+            459
+          ],
+          "center_in_strip": false,
+          "center_xy": [
+            123.5,
+            422.5
+          ],
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-basketball-basket",
+          "instance_id": "scene_icon_2",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.043177
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "scale": 0.858599
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 5587443009839576,
+          "nominal_size_px": 81,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            85,
+            189,
+            126
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            777,
+            314,
+            825,
+            362
+          ],
+          "center_in_strip": false,
+          "center_xy": [
+            801.0,
+            338.0
+          ],
+          "entity_kind": "scene_icon",
+          "icon_id": "hero-arrow-uturn-down",
+          "instance_id": "scene_icon_3",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 3215113619200174,
+          "nominal_size_px": 58,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            216,
+            86,
+            28
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            100,
+            104,
+            178,
+            157
+          ],
+          "center_in_strip": false,
+          "center_xy": [
+            139.0,
+            130.5
+          ],
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-croissant",
+          "instance_id": "scene_icon_4",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.225343
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 2051007670421651,
+          "nominal_size_px": 86,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            85,
+            189,
+            126
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            221,
+            250,
+            280,
+            309
+          ],
+          "center_in_strip": false,
+          "center_xy": [
+            250.5,
+            279.5
+          ],
+          "entity_kind": "scene_icon",
+          "icon_id": "tabler-circle-letter-a",
+          "instance_id": "scene_icon_5",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.934715
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "radius": 0.222092
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 6101392009515765,
+          "nominal_size_px": 69,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            186,
+            110,
+            112
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            960,
+            544
+          ],
+          "scene_content_xyxy": [
+            44,
+            77,
+            916,
+            500
+          ],
+          "scene_panel_xyxy": [
+            24,
+            24,
+            936,
+            520
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "anchor_icon_id": "gi-skoll-flatbed",
+        "counting_target": "candidate_icon_centers_in_strip_between_two_anchors",
+        "matching_scene_indices": [
+          1
+        ],
+        "strip_boundary_margin_px": 14,
+        "task_variant": "inside_vertical_strip"
+      },
+      "scene_kind": "icons_two_anchor_strip_relation"
+    },
+    "witness_symbolic": {
+      "anchor_a_center_xy": [
+        314.0,
+        272.0
+      ],
+      "anchor_b_center_xy": [
+        746.0,
+        272.0
+      ],
+      "matching_scene_indices": [
+        1
+      ],
+      "strip_boundary_margin_px": 14,
+      "task_variant": "inside_vertical_strip"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

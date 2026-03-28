@@ -1,0 +1,947 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 0
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": []
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_relation_relative_position_type/images/above_anchor/0007.png"
+  },
+  "instance_seed": 4876373453255414,
+  "prompt": "The image shows a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor. Answer this question: How many icons in the Scene panel have the same icon type as the Reference icon and are above the Anchor icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[438,162,498,222],[602,302,670,370]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor. Answer this question: How many icons in the Scene panel have the same icon type as the Reference icon and are above the Anchor icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[438,162,498,222],[602,302,670,370]],\"answer\":2}",
+    "answer_only": "The image shows a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor. Answer this question: How many icons in the Scene panel have the same icon type as the Reference icon and are above the Anchor icon?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_icons_relation_relative_position_type",
+  "task_variant": "above_anchor",
+  "trace_payload": {
+    "execution_trace": {
+      "anchor_icon_id": "gi-delapouite-elysium-shade",
+      "different_type_distractor_count": 8,
+      "different_type_nonspatial_distractor_count": 4,
+      "different_type_spatial_distractor_count": 4,
+      "distractor_count": 10,
+      "distractor_count_probabilities": {
+        "1": 0.1,
+        "10": 0.1,
+        "2": 0.1,
+        "3": 0.1,
+        "4": 0.1,
+        "5": 0.1,
+        "6": 0.1,
+        "7": 0.1,
+        "8": 0.1,
+        "9": 0.1
+      },
+      "distractor_margin_over_target": 1,
+      "matching_scene_indices": [],
+      "object_count": 10,
+      "object_count_probabilities": {
+        "1": 0.1,
+        "10": 0.1,
+        "2": 0.1,
+        "3": 0.1,
+        "4": 0.1,
+        "5": 0.1,
+        "6": 0.1,
+        "7": 0.1,
+        "8": 0.1,
+        "9": 0.1
+      },
+      "question_format": "count_matching_scene_icons_by_reference_and_anchor_relation",
+      "reference_icon_id": "hero-chat-bubble-left-ellipsis",
+      "same_type_distractor_count": 2,
+      "same_type_nonspatial_distractor_count": 2,
+      "scene_icon_ids": [
+        "tabler-brand-opera",
+        "gi-lorc-evil-book",
+        "gi-delapouite-tusks-flag",
+        "hero-outline-document-currency-yen",
+        "gi-darkzaitzev-hooded-figure",
+        "hero-chat-bubble-left-ellipsis",
+        "gi-delapouite-sauropod-head",
+        "gi-lorc-daisy",
+        "hero-chat-bubble-left-ellipsis",
+        "gi-caro-asercion-canadian-goose"
+      ],
+      "scene_variant": "reference_scene_anchor",
+      "spatial_relation": "above_anchor",
+      "target_count": 0,
+      "target_count_probabilities": {
+        "0": 0.16666666666666666,
+        "1": 0.16666666666666666,
+        "2": 0.16666666666666666,
+        "3": 0.16666666666666666,
+        "4": 0.16666666666666666,
+        "5": 0.16666666666666666
+      },
+      "task_variant": "above_anchor",
+      "variant_probabilities": {
+        "above_anchor": 0.25,
+        "below_anchor": 0.25,
+        "left_of_anchor": 0.25,
+        "right_of_anchor": 0.25
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": []
+    },
+    "query_spec": {
+      "params": {
+        "anchor_gap_px_directional": 8,
+        "distractor_count": 10,
+        "distractor_count_probabilities": {
+          "1": 0.1,
+          "10": 0.1,
+          "2": 0.1,
+          "3": 0.1,
+          "4": 0.1,
+          "5": 0.1,
+          "6": 0.1,
+          "7": 0.1,
+          "8": 0.1,
+          "9": 0.1
+        },
+        "distractor_margin_over_target": 1,
+        "object_count": 10,
+        "object_count_probabilities": {
+          "1": 0.1,
+          "10": 0.1,
+          "2": 0.1,
+          "3": 0.1,
+          "4": 0.1,
+          "5": 0.1,
+          "6": 0.1,
+          "7": 0.1,
+          "8": 0.1,
+          "9": 0.1
+        },
+        "pool_manifest": "all_icons.txt",
+        "same_type_distractor_opposite_fraction_min": 0.75,
+        "target_count": 0,
+        "target_count_probabilities": {
+          "0": 0.16666666666666666,
+          "1": 0.16666666666666666,
+          "2": 0.16666666666666666,
+          "3": 0.16666666666666666,
+          "4": 0.16666666666666666,
+          "5": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "icons_relation_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+          "json_example": "{\"evidence\":[[438,162,498,222],[602,302,670,370]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor",
+          "question_text": "How many icons in the Scene panel have the same icon type as the Reference icon and are above the Anchor icon?"
+        },
+        "task_family_key": "reference_scene_anchor_relation",
+        "task_family_variant_index": 1,
+        "task_key": "relation_query",
+        "task_variant_index": 3,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/relation/icons_relation_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:relation_query": 5,
+          "task_family:reference_scene_anchor_relation": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "icons_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[438,162,498,222],[602,302,670,370]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor",
+              "question_text": "How many icons in the Scene panel have the same icon type as the Reference icon and are above the Anchor icon?"
+            },
+            "task_family_key": "reference_scene_anchor_relation",
+            "task_family_variant_index": 1,
+            "task_key": "relation_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/relation/icons_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:relation_query": 5,
+              "task_family:reference_scene_anchor_relation": 5
+            }
+          },
+          "prompt": "The image shows a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor. Answer this question: How many icons in the Scene panel have the same icon type as the Reference icon and are above the Anchor icon?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right.\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[438,162,498,222],[602,302,670,370]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "icons_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all matching icons in the Scene panel, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[438,162,498,222],[602,302,670,370]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor",
+              "question_text": "How many icons in the Scene panel have the same icon type as the Reference icon and are above the Anchor icon?"
+            },
+            "task_family_key": "reference_scene_anchor_relation",
+            "task_family_variant_index": 1,
+            "task_key": "relation_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/relation/icons_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:relation_query": 5,
+              "task_family:reference_scene_anchor_relation": 5
+            }
+          },
+          "prompt": "The image shows a Reference icon on the left and a Scene panel of icons on the right, where one Scene icon is marked as the Anchor. Answer this question: How many icons in the Scene panel have the same icon type as the Reference icon and are above the Anchor icon?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "above_anchor",
+      "template_id": "icons_relation_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "anchor_icon": {
+          "bbox_xyxy": [
+            582,
+            253,
+            620,
+            313
+          ],
+          "highlight_bbox_xyxy": [
+            572,
+            243,
+            630,
+            323
+          ],
+          "icon_id": "gi-delapouite-elysium-shade",
+          "instance_id": "anchor_icon",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.074712
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "scale": 0.862497
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 4721045568328163,
+          "panel": "scene",
+          "role": "anchor",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            82,
+            131,
+            210
+          ]
+        },
+        "matching_scene_boxes": [],
+        "reference_icon": {
+          "bbox_xyxy": [
+            88,
+            232,
+            208,
+            344
+          ],
+          "icon_id": "hero-chat-bubble-left-ellipsis",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.937625
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 8641407908619328,
+          "panel": "reference",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            216,
+            156,
+            98
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        960,
+        544
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          960,
+          544
+        ],
+        "reference_content_xyxy": [
+          44,
+          77,
+          252,
+          500
+        ],
+        "reference_panel_xyxy": [
+          24,
+          24,
+          272,
+          520
+        ],
+        "scene_content_xyxy": [
+          316,
+          77,
+          916,
+          500
+        ],
+        "scene_panel_xyxy": [
+          296,
+          24,
+          936,
+          520
+        ]
+      },
+      "style": {
+        "anchor_gap_px_directional": 8,
+        "anchor_highlight_padding_px": 10,
+        "anchor_highlight_radius_px": 14,
+        "anchor_label_color_rgb": [
+          57,
+          87,
+          145
+        ],
+        "anchor_label_font_size_px": 20,
+        "anchor_opposite_area_ratio_min": 0.25,
+        "anchor_outline_rgb": [
+          74,
+          113,
+          188
+        ],
+        "anchor_target_area_ratio_max": 0.65,
+        "anchor_target_area_ratio_min": 0.35,
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "palette_size_max": 12,
+        "palette_size_min": 8,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "same_type_distractor_opposite_fraction_min": 0.75,
+        "sampled_palette_rgb": [
+          [
+            77,
+            68,
+            213
+          ],
+          [
+            187,
+            77,
+            120
+          ],
+          [
+            47,
+            201,
+            171
+          ],
+          [
+            175,
+            182,
+            54
+          ],
+          [
+            207,
+            39,
+            47
+          ],
+          [
+            26,
+            102,
+            45
+          ],
+          [
+            82,
+            131,
+            210
+          ],
+          [
+            216,
+            156,
+            98
+          ]
+        ],
+        "scene_max_overlap_fraction": 0.05,
+        "scene_placement_max_attempts": 120,
+        "scene_size_shrink_factor": 0.9,
+        "scene_size_shrink_rounds": 6
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_xyxy": [
+            88,
+            232,
+            208,
+            344
+          ],
+          "icon_id": "hero-chat-bubble-left-ellipsis",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.937625
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 8641407908619328,
+          "panel": "reference",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            216,
+            156,
+            98
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            582,
+            253,
+            620,
+            313
+          ],
+          "highlight_bbox_xyxy": [
+            572,
+            243,
+            630,
+            323
+          ],
+          "icon_id": "gi-delapouite-elysium-shade",
+          "instance_id": "anchor_icon",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.074712
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "scale": 0.862497
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 4721045568328163,
+          "panel": "scene",
+          "role": "anchor",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            82,
+            131,
+            210
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            394,
+            239,
+            447,
+            292
+          ],
+          "icon_id": "tabler-brand-opera",
+          "index": 0,
+          "instance_id": "scene_icon_0",
+          "is_match": false,
+          "is_same_type": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 8808398197143328,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": false,
+          "tint_rgb": [
+            26,
+            102,
+            45
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            516,
+            183,
+            597,
+            259
+          ],
+          "icon_id": "gi-lorc-evil-book",
+          "index": 1,
+          "instance_id": "scene_icon_1",
+          "is_match": false,
+          "is_same_type": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 89.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "scale": 0.89219
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 2517006408948007,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": false,
+          "tint_rgb": [
+            26,
+            102,
+            45
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            822,
+            370,
+            874,
+            418
+          ],
+          "icon_id": "gi-delapouite-tusks-flag",
+          "index": 2,
+          "instance_id": "scene_icon_2",
+          "is_match": false,
+          "is_same_type": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.914647
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "radius": 0.599054
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 3790431351904933,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": false,
+          "tint_rgb": [
+            175,
+            182,
+            54
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            713,
+            86,
+            751,
+            134
+          ],
+          "icon_id": "hero-outline-document-currency-yen",
+          "index": 3,
+          "instance_id": "scene_icon_3",
+          "is_match": false,
+          "is_same_type": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.866798
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "quality": 88.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 539254233728441,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": true,
+          "tint_rgb": [
+            82,
+            131,
+            210
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            450,
+            134,
+            517,
+            207
+          ],
+          "icon_id": "gi-darkzaitzev-hooded-figure",
+          "index": 4,
+          "instance_id": "scene_icon_4",
+          "is_match": false,
+          "is_same_type": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.052563
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "radius": 0.322368
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 1702094442360699,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": true,
+          "tint_rgb": [
+            47,
+            201,
+            171
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            798,
+            272,
+            841,
+            311
+          ],
+          "icon_id": "hero-chat-bubble-left-ellipsis",
+          "index": 5,
+          "instance_id": "scene_icon_5",
+          "is_match": false,
+          "is_same_type": true,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 2149236553457567,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": false,
+          "tint_rgb": [
+            207,
+            39,
+            47
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            575,
+            110,
+            655,
+            187
+          ],
+          "icon_id": "gi-delapouite-sauropod-head",
+          "index": 6,
+          "instance_id": "scene_icon_6",
+          "is_match": false,
+          "is_same_type": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 79.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "alpha": 0.071648
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 6500495314501927,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": true,
+          "tint_rgb": [
+            175,
+            182,
+            54
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            857,
+            227,
+            902,
+            273
+          ],
+          "icon_id": "gi-lorc-daisy",
+          "index": 7,
+          "instance_id": "scene_icon_7",
+          "is_match": false,
+          "is_same_type": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.200928
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 8285577340004239,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": false,
+          "tint_rgb": [
+            77,
+            68,
+            213
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            877,
+            351,
+            914,
+            386
+          ],
+          "icon_id": "hero-chat-bubble-left-ellipsis",
+          "index": 8,
+          "instance_id": "scene_icon_8",
+          "is_match": false,
+          "is_same_type": true,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 5566050632978151,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": false,
+          "tint_rgb": [
+            175,
+            182,
+            54
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            526,
+            114,
+            570,
+            155
+          ],
+          "icon_id": "gi-caro-asercion-canadian-goose",
+          "index": 9,
+          "instance_id": "scene_icon_9",
+          "is_match": false,
+          "is_same_type": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.070759
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "quality": 90.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 7739135436236971,
+          "panel": "scene",
+          "role": "candidate",
+          "rotation_degrees": 0,
+          "spatial_match": true,
+          "tint_rgb": [
+            26,
+            102,
+            45
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            960,
+            544
+          ],
+          "reference_content_xyxy": [
+            44,
+            77,
+            252,
+            500
+          ],
+          "reference_panel_xyxy": [
+            24,
+            24,
+            272,
+            520
+          ],
+          "scene_content_xyxy": [
+            316,
+            77,
+            916,
+            500
+          ],
+          "scene_panel_xyxy": [
+            296,
+            24,
+            936,
+            520
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "anchor_icon_id": "gi-delapouite-elysium-shade",
+        "counting_target": "same_icon_type_and_directional_relation_to_anchor",
+        "different_type_nonspatial_distractor_count": 4,
+        "different_type_spatial_distractor_count": 4,
+        "matching_scene_indices": [],
+        "reference_icon_id": "hero-chat-bubble-left-ellipsis",
+        "same_type_nonspatial_distractor_count": 2,
+        "spatial_relation": "above_anchor"
+      },
+      "scene_kind": "icons_reference_anchor_relation_type"
+    },
+    "witness_symbolic": {
+      "anchor_icon_id": "gi-delapouite-elysium-shade",
+      "matching_scene_indices": [],
+      "reference_icon_id": "hero-chat-bubble-left-ellipsis",
+      "spatial_relation": "above_anchor"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

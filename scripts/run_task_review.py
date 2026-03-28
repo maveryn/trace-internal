@@ -74,6 +74,12 @@ def _resolve_task_ids(raw_tasks: str) -> List[str]:
     return sorted(dict.fromkeys(task_ids))
 
 
+def _task_review_dir(*, out_root: Path, task_id: str, domain: str) -> Path:
+    """Return the domain-scoped review directory for one task."""
+
+    return Path(out_root) / str(domain) / str(task_id)
+
+
 def _parse_cli() -> argparse.Namespace:
     """Parse CLI arguments for task-review workflow execution."""
     parser = argparse.ArgumentParser(description="Run TRACE task review workflow")
@@ -743,7 +749,7 @@ def main() -> int:
 
     for task_id in task_ids:
         task = create_task(str(task_id))
-        task_dir = out_root / str(task_id)
+        task_dir = _task_review_dir(out_root=out_root, task_id=str(task_id), domain=str(task.domain))
         task_dir.mkdir(parents=True, exist_ok=True)
 
         task_summary: Dict[str, Any] = {

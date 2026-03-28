@@ -1,0 +1,639 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 6
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "A",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_counting_convexity/images/concave_polygon/0023.png"
+  },
+  "instance_seed": 6360001851271971,
+  "prompt": "You are given an image showing several labeled polygons. Task: How many labeled polygons are concave polygons?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a sorted JSON array of the labels of all polygons that match the requested type.\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"D\",\"G\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given an image showing several labeled polygons. Task: How many labeled polygons are concave polygons?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a sorted JSON array of the labels of all polygons that match the requested type.\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"D\",\"G\"],\"answer\":3}",
+    "answer_only": "You are given an image showing several labeled polygons. Task: How many labeled polygons are concave polygons?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_geometry_counting_convexity",
+  "task_variant": "concave_polygon",
+  "trace_payload": {
+    "execution_trace": {
+      "class_by_label": {
+        "A": {
+          "convexity_kind": "concave",
+          "polygon_sides": 5,
+          "prototype_id": "concave_pentagon_b_t1"
+        },
+        "B": {
+          "convexity_kind": "convex",
+          "polygon_sides": 4,
+          "prototype_id": "convex_quad_parallelogram_t6"
+        },
+        "C": {
+          "convexity_kind": "concave",
+          "polygon_sides": 6,
+          "prototype_id": "concave_hexagon_a_t3"
+        },
+        "D": {
+          "convexity_kind": "concave",
+          "polygon_sides": 6,
+          "prototype_id": "concave_hexagon_a_t4"
+        },
+        "E": {
+          "convexity_kind": "concave",
+          "polygon_sides": 6,
+          "prototype_id": "concave_hexagon_b_t2"
+        },
+        "F": {
+          "convexity_kind": "concave",
+          "polygon_sides": 6,
+          "prototype_id": "concave_hexagon_c_t5"
+        },
+        "G": {
+          "convexity_kind": "concave",
+          "polygon_sides": 4,
+          "prototype_id": "concave_quad_a_t4"
+        }
+      },
+      "counting_class": "concave",
+      "matching_labels": [
+        "A",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "object_count": 7,
+      "object_count_probabilities": {
+        "7": 0.3333333333333333,
+        "8": 0.3333333333333333,
+        "9": 0.3333333333333333
+      },
+      "object_labels": [
+        "F",
+        "E",
+        "G",
+        "C",
+        "D",
+        "A",
+        "B"
+      ],
+      "question_format": "count_matching_labeled_objects",
+      "scene_variant": "concave_polygon",
+      "target_count": 6,
+      "target_count_probabilities": {
+        "1": 0.125,
+        "2": 0.125,
+        "3": 0.125,
+        "4": 0.125,
+        "5": 0.125,
+        "6": 0.125,
+        "7": 0.125,
+        "8": 0.125
+      },
+      "task_variant": "concave_polygon"
+    },
+    "projected_evidence": {
+      "label_set": [
+        "A",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "object_count": 7,
+        "object_count_probabilities": {
+          "7": 0.3333333333333333,
+          "8": 0.3333333333333333,
+          "9": 0.3333333333333333
+        },
+        "side_count_probabilities": {
+          "4": 0.3333333333333333,
+          "5": 0.3333333333333333,
+          "6": 0.3333333333333333
+        },
+        "target_count": 6,
+        "target_count_probabilities": {
+          "1": 0.125,
+          "2": 0.125,
+          "3": 0.125,
+          "4": 0.125,
+          "5": 0.125,
+          "6": 0.125,
+          "7": 0.125,
+          "8": 0.125
+        },
+        "task_variant": "concave_polygon",
+        "variant_probabilities": {
+          "concave_polygon": 0.5,
+          "convex_polygon": 0.5
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "geometry_counting_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all polygons that match the requested type",
+          "json_example": "{\"evidence\":[\"B\",\"D\",\"G\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "several labeled polygons",
+          "question_text": "How many labeled polygons are concave polygons?"
+        },
+        "task_family_key": "counting_scene",
+        "task_family_variant_index": 0,
+        "task_key": "counting_query",
+        "task_variant_index": 2,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/counting/geometry_counting_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:counting_query": 5,
+          "task_family:counting_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all polygons that match the requested type",
+              "json_example": "{\"evidence\":[\"B\",\"D\",\"G\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled polygons",
+              "question_text": "How many labeled polygons are concave polygons?"
+            },
+            "task_family_key": "counting_scene",
+            "task_family_variant_index": 0,
+            "task_key": "counting_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/counting/geometry_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:counting_query": 5,
+              "task_family:counting_scene": 5
+            }
+          },
+          "prompt": "You are given an image showing several labeled polygons. Task: How many labeled polygons are concave polygons?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a sorted JSON array of the labels of all polygons that match the requested type.\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"D\",\"G\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all polygons that match the requested type",
+              "json_example": "{\"evidence\":[\"B\",\"D\",\"G\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled polygons",
+              "question_text": "How many labeled polygons are concave polygons?"
+            },
+            "task_family_key": "counting_scene",
+            "task_family_variant_index": 0,
+            "task_key": "counting_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/counting/geometry_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:counting_query": 5,
+              "task_family:counting_scene": 5
+            }
+          },
+          "prompt": "You are given an image showing several labeled polygons. Task: How many labeled polygons are concave polygons?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "concave_polygon",
+      "template_id": "geometry_counting_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching": {
+          "matching_labels": [
+            "A",
+            "C",
+            "D",
+            "E",
+            "F",
+            "G"
+          ],
+          "task_variant": "concave_polygon"
+        }
+      },
+      "image_id": "img0",
+      "object_label_centers": {
+        "A": [
+          460.4014556044167,
+          153.3331951816754
+        ],
+        "B": [
+          588.8236866627052,
+          280.29599374751564
+        ],
+        "C": [
+          136.51701761418911,
+          262.7106991949723
+        ],
+        "D": [
+          155.8540052772166,
+          512.9612596968792
+        ],
+        "E": [
+          438.49820324943136,
+          497.2312647339757
+        ],
+        "F": [
+          592.1379264028443,
+          129.07412089943844
+        ],
+        "G": [
+          28.962047032481156,
+          147.56617246261462
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_offwhite",
+        "style_spec": {
+          "color": [
+            252,
+            252,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 606,
+      "coord_space": "pixel",
+      "layout_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 30,
+        "full_cells_y": 30,
+        "origin_pixel": [
+          302,
+          302
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 19,
+        "target_cells_x": 32,
+        "target_cells_y": 32,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          145,
+          58,
+          30
+        ],
+        "label_stroke_color": [
+          249,
+          249,
+          253
+        ],
+        "line_color": [
+          145,
+          58,
+          30
+        ]
+      },
+      "text_style": {
+        "font_size_px": 90,
+        "stroke_width_px": 6
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "convexity_kind": "concave",
+            "label": "F",
+            "polygon_sides": 6,
+            "prototype_id": "concave_hexagon_c_t5",
+            "vertices": [
+              [
+                492.0,
+                245.0
+              ],
+              [
+                492.0,
+                188.0
+              ],
+              [
+                511.0,
+                169.0
+              ],
+              [
+                492.0,
+                93.0
+              ],
+              [
+                568.0,
+                93.0
+              ],
+              [
+                568.0,
+                245.0
+              ]
+            ]
+          },
+          "entity_id": "polygon_F",
+          "entity_type": "polygon"
+        },
+        {
+          "attrs": {
+            "convexity_kind": "concave",
+            "label": "E",
+            "polygon_sides": 6,
+            "prototype_id": "concave_hexagon_b_t2",
+            "vertices": [
+              [
+                473.0,
+                397.0
+              ],
+              [
+                397.0,
+                397.0
+              ],
+              [
+                359.0,
+                435.0
+              ],
+              [
+                321.0,
+                397.0
+              ],
+              [
+                321.0,
+                473.0
+              ],
+              [
+                473.0,
+                473.0
+              ]
+            ]
+          },
+          "entity_id": "polygon_E",
+          "entity_type": "polygon"
+        },
+        {
+          "attrs": {
+            "convexity_kind": "concave",
+            "label": "G",
+            "polygon_sides": 4,
+            "prototype_id": "concave_quad_a_t4",
+            "vertices": [
+              [
+                131.0,
+                207.0
+              ],
+              [
+                17.0,
+                207.0
+              ],
+              [
+                74.0,
+                169.0
+              ],
+              [
+                112.0,
+                131.0
+              ]
+            ]
+          },
+          "entity_id": "polygon_G",
+          "entity_type": "polygon"
+        },
+        {
+          "attrs": {
+            "convexity_kind": "concave",
+            "label": "C",
+            "polygon_sides": 6,
+            "prototype_id": "concave_hexagon_a_t3",
+            "vertices": [
+              [
+                36.0,
+                226.0
+              ],
+              [
+                36.0,
+                302.0
+              ],
+              [
+                55.0,
+                321.0
+              ],
+              [
+                36.0,
+                378.0
+              ],
+              [
+                112.0,
+                378.0
+              ],
+              [
+                112.0,
+                226.0
+              ]
+            ]
+          },
+          "entity_id": "polygon_C",
+          "entity_type": "polygon"
+        },
+        {
+          "attrs": {
+            "convexity_kind": "concave",
+            "label": "D",
+            "polygon_sides": 6,
+            "prototype_id": "concave_hexagon_a_t4",
+            "vertices": [
+              [
+                283.0,
+                473.0
+              ],
+              [
+                207.0,
+                473.0
+              ],
+              [
+                188.0,
+                454.0
+              ],
+              [
+                131.0,
+                473.0
+              ],
+              [
+                131.0,
+                397.0
+              ],
+              [
+                283.0,
+                397.0
+              ]
+            ]
+          },
+          "entity_id": "polygon_D",
+          "entity_type": "polygon"
+        },
+        {
+          "attrs": {
+            "convexity_kind": "concave",
+            "label": "A",
+            "polygon_sides": 5,
+            "prototype_id": "concave_pentagon_b_t1",
+            "vertices": [
+              [
+                435.0,
+                226.0
+              ],
+              [
+                435.0,
+                112.0
+              ],
+              [
+                416.0,
+                169.0
+              ],
+              [
+                359.0,
+                131.0
+              ],
+              [
+                359.0,
+                226.0
+              ]
+            ]
+          },
+          "entity_id": "polygon_A",
+          "entity_type": "polygon"
+        },
+        {
+          "attrs": {
+            "convexity_kind": "convex",
+            "label": "B",
+            "polygon_sides": 4,
+            "prototype_id": "convex_quad_parallelogram_t6",
+            "vertices": [
+              [
+                473.0,
+                264.0
+              ],
+              [
+                549.0,
+                264.0
+              ],
+              [
+                587.0,
+                340.0
+              ],
+              [
+                511.0,
+                340.0
+              ]
+            ]
+          },
+          "entity_id": "polygon_B",
+          "entity_type": "polygon"
+        }
+      ],
+      "relations": {
+        "counting_target": "polygon_convexity",
+        "matching_labels": [
+          "A",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G"
+        ],
+        "task_variant": "concave_polygon"
+      },
+      "scene_kind": "geometry_2d_polygon_convexity_counting"
+    },
+    "witness_symbolic": {
+      "counting_class": "concave",
+      "matching_labels": [
+        "A",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

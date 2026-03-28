@@ -1,0 +1,1318 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 5
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "A",
+      "B",
+      "D",
+      "E",
+      "F"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_relation_occlusion_order/images/default/0004.png"
+  },
+  "instance_seed": 5110052361305145,
+  "prompt": "The image shows a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right. Question: How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right. Question: How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+    "answer_only": "The image shows a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right. Question: How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_icons_relation_occlusion_order",
+  "task_variant": "same_front_to_back_order",
+  "trace_payload": {
+    "execution_trace": {
+      "cell_labels": [
+        "B",
+        "C",
+        "A",
+        "F",
+        "E",
+        "D"
+      ],
+      "cell_order_ids": [
+        "a_over_b",
+        "b_over_a",
+        "a_over_b",
+        "a_over_b",
+        "a_over_b",
+        "a_over_b"
+      ],
+      "distractor_count": 1,
+      "distractor_count_probabilities": {
+        "1": 0.16666666666666666,
+        "2": 0.16666666666666666,
+        "3": 0.16666666666666666,
+        "4": 0.16666666666666666,
+        "5": 0.16666666666666666,
+        "6": 0.16666666666666666
+      },
+      "icon_a_id": "hero-arrow-trending-down",
+      "icon_b_id": "gi-lorc-long-antennae-bug",
+      "matching_cell_labels": [
+        "A",
+        "B",
+        "D",
+        "E",
+        "F"
+      ],
+      "object_count": 6,
+      "object_count_probabilities": {
+        "10": 0.16666666666666666,
+        "11": 0.16666666666666666,
+        "6": 0.16666666666666666,
+        "7": 0.16666666666666666,
+        "8": 0.16666666666666666,
+        "9": 0.16666666666666666
+      },
+      "question_format": "count_scene_cells_matching_reference_occlusion_order",
+      "reference_order_id": "a_over_b",
+      "scene_variant": "reference_overlap_grid",
+      "target_count": 5,
+      "target_count_probabilities": {
+        "0": 0.14285714285714285,
+        "1": 0.14285714285714285,
+        "2": 0.14285714285714285,
+        "3": 0.14285714285714285,
+        "4": 0.14285714285714285,
+        "5": 0.14285714285714285,
+        "6": 0.14285714285714285
+      },
+      "task_variant": "same_front_to_back_order"
+    },
+    "projected_evidence": {
+      "label_set": [
+        "A",
+        "B",
+        "D",
+        "E",
+        "F"
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "distractor_count": 1,
+        "distractor_count_probabilities": {
+          "1": 0.16666666666666666,
+          "2": 0.16666666666666666,
+          "3": 0.16666666666666666,
+          "4": 0.16666666666666666,
+          "5": 0.16666666666666666,
+          "6": 0.16666666666666666
+        },
+        "object_count": 6,
+        "object_count_probabilities": {
+          "10": 0.16666666666666666,
+          "11": 0.16666666666666666,
+          "6": 0.16666666666666666,
+          "7": 0.16666666666666666,
+          "8": 0.16666666666666666,
+          "9": 0.16666666666666666
+        },
+        "pool_manifest": "all_icons.txt",
+        "target_count": 5,
+        "target_count_probabilities": {
+          "0": 0.14285714285714285,
+          "1": 0.14285714285714285,
+          "2": 0.14285714285714285,
+          "3": 0.14285714285714285,
+          "4": 0.14285714285714285,
+          "5": 0.14285714285714285,
+          "6": 0.14285714285714285
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "icons_relation_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+          "json_example": "{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right",
+          "question_text": "How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top."
+        },
+        "task_family_key": "reference_grid_occlusion_relation",
+        "task_family_variant_index": 1,
+        "task_key": "relation_query",
+        "task_variant_index": 1,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/relation/icons_relation_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:relation_query": 5,
+          "task_family:reference_grid_occlusion_relation": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "icons_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+              "json_example": "{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right",
+              "question_text": "How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top."
+            },
+            "task_family_key": "reference_grid_occlusion_relation",
+            "task_family_variant_index": 1,
+            "task_key": "relation_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/relation/icons_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:relation_query": 5,
+              "task_family:reference_grid_occlusion_relation": 5
+            }
+          },
+          "prompt": "The image shows a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right. Question: How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a sorted JSON array of the matching Scene cell labels.\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "icons_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the matching Scene cell labels",
+              "json_example": "{\"evidence\":[\"B\",\"E\",\"G\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right",
+              "question_text": "How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top."
+            },
+            "task_family_key": "reference_grid_occlusion_relation",
+            "task_family_variant_index": 1,
+            "task_key": "relation_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/relation/icons_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:relation_query": 5,
+              "task_family:reference_grid_occlusion_relation": 5
+            }
+          },
+          "prompt": "The image shows a Reference cell on the left and a labeled Scene grid of overlapping icon pairs on the right. Question: How many labeled Scene cells show the same front-to-back order as the Reference cell? Front-to-back order means which icon is on top.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "same_front_to_back_order",
+      "template_id": "icons_relation_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching_cell_labels": [
+          "A",
+          "B",
+          "D",
+          "E",
+          "F"
+        ],
+        "reference_pair": {
+          "front_role": "a",
+          "icon_a_bbox_xyxy": [
+            108,
+            327,
+            205,
+            388
+          ],
+          "icon_a_id": "hero-arrow-trending-down",
+          "icon_a_noise_edits": [],
+          "icon_a_noise_seed": 5514945130472375,
+          "icon_a_tint_rgb": [
+            209,
+            80,
+            63
+          ],
+          "icon_b_bbox_xyxy": [
+            133,
+            284,
+            236,
+            385
+          ],
+          "icon_b_id": "gi-lorc-long-antennae-bug",
+          "icon_b_noise_edits": [
+            {
+              "params": {
+                "quality": 86.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "icon_b_noise_seed": 627214323417690,
+          "icon_b_tint_rgb": [
+            54,
+            197,
+            182
+          ],
+          "order_id": "a_over_b",
+          "overlap_ratio": 0.4720010700972813,
+          "panel": "reference"
+        },
+        "scene_cells": [
+          {
+            "cell_bbox_xyxy": [
+              374,
+              87,
+              586,
+              326
+            ],
+            "front_role": "a",
+            "icon_a_bbox_xyxy": [
+              419,
+              201,
+              503,
+              255
+            ],
+            "icon_a_id": "hero-arrow-trending-down",
+            "icon_a_noise_edits": [],
+            "icon_a_noise_seed": 1924999953614075,
+            "icon_a_tint_rgb": [
+              102,
+              162,
+              45
+            ],
+            "icon_b_bbox_xyxy": [
+              451,
+              177,
+              541,
+              265
+            ],
+            "icon_b_id": "gi-lorc-long-antennae-bug",
+            "icon_b_noise_edits": [
+              {
+                "params": {
+                  "quality": 76.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "icon_b_noise_seed": 1490192766491760,
+            "icon_b_tint_rgb": [
+              200,
+              29,
+              151
+            ],
+            "index": 0,
+            "is_match": true,
+            "label": "B",
+            "order_id": "a_over_b",
+            "overlap_ratio": 0.49906571213468914,
+            "panel": "scene"
+          },
+          {
+            "cell_bbox_xyxy": [
+              606,
+              87,
+              818,
+              326
+            ],
+            "front_role": "b",
+            "icon_a_bbox_xyxy": [
+              660,
+              208,
+              744,
+              262
+            ],
+            "icon_a_id": "hero-arrow-trending-down",
+            "icon_a_noise_edits": [
+              {
+                "params": {
+                  "alpha": 0.079567
+                },
+                "type": "noise"
+              },
+              {
+                "params": {
+                  "quality": 86.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "icon_a_noise_seed": 5202064365766608,
+            "icon_a_tint_rgb": [
+              63,
+              30,
+              219
+            ],
+            "icon_b_bbox_xyxy": [
+              674,
+              177,
+              764,
+              265
+            ],
+            "icon_b_id": "gi-lorc-long-antennae-bug",
+            "icon_b_noise_edits": [
+              {
+                "params": {
+                  "quality": 88.0
+                },
+                "type": "jpeg"
+              },
+              {
+                "params": {
+                  "alpha": 0.052013
+                },
+                "type": "noise"
+              }
+            ],
+            "icon_b_noise_seed": 7284565680464744,
+            "icon_b_tint_rgb": [
+              102,
+              162,
+              45
+            ],
+            "index": 1,
+            "is_match": false,
+            "label": "C",
+            "order_id": "b_over_a",
+            "overlap_ratio": 0.5825753302454009,
+            "panel": "scene"
+          },
+          {
+            "cell_bbox_xyxy": [
+              838,
+              87,
+              1050,
+              326
+            ],
+            "front_role": "a",
+            "icon_a_bbox_xyxy": [
+              882,
+              189,
+              966,
+              243
+            ],
+            "icon_a_id": "hero-arrow-trending-down",
+            "icon_a_noise_edits": [
+              {
+                "params": {
+                  "scale": 0.917965
+                },
+                "type": "downsample"
+              }
+            ],
+            "icon_a_noise_seed": 7093342851551244,
+            "icon_a_tint_rgb": [
+              48,
+              220,
+              37
+            ],
+            "icon_b_bbox_xyxy": [
+              915,
+              177,
+              1005,
+              265
+            ],
+            "icon_b_id": "gi-lorc-long-antennae-bug",
+            "icon_b_noise_edits": [
+              {
+                "params": {
+                  "quality": 89.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "icon_b_noise_seed": 6673543715894991,
+            "icon_b_tint_rgb": [
+              79,
+              43,
+              153
+            ],
+            "index": 2,
+            "is_match": true,
+            "label": "A",
+            "order_id": "a_over_b",
+            "overlap_ratio": 0.5786187417779838,
+            "panel": "scene"
+          },
+          {
+            "cell_bbox_xyxy": [
+              374,
+              346,
+              586,
+              586
+            ],
+            "front_role": "a",
+            "icon_a_bbox_xyxy": [
+              419,
+              473,
+              503,
+              527
+            ],
+            "icon_a_id": "hero-arrow-trending-down",
+            "icon_a_noise_edits": [
+              {
+                "params": {
+                  "quality": 72.0
+                },
+                "type": "jpeg"
+              },
+              {
+                "params": {
+                  "radius": 0.534676
+                },
+                "type": "blur"
+              }
+            ],
+            "icon_a_noise_seed": 514344942272385,
+            "icon_a_tint_rgb": [
+              63,
+              30,
+              219
+            ],
+            "icon_b_bbox_xyxy": [
+              451,
+              435,
+              541,
+              523
+            ],
+            "icon_b_id": "gi-lorc-long-antennae-bug",
+            "icon_b_noise_edits": [
+              {
+                "params": {
+                  "quality": 78.0
+                },
+                "type": "jpeg"
+              },
+              {
+                "params": {
+                  "radius": 0.582088
+                },
+                "type": "blur"
+              }
+            ],
+            "icon_b_noise_seed": 611415423212161,
+            "icon_b_tint_rgb": [
+              48,
+              220,
+              37
+            ],
+            "index": 3,
+            "is_match": true,
+            "label": "F",
+            "order_id": "a_over_b",
+            "overlap_ratio": 0.4030156436551156,
+            "panel": "scene"
+          },
+          {
+            "cell_bbox_xyxy": [
+              606,
+              346,
+              818,
+              586
+            ],
+            "front_role": "a",
+            "icon_a_bbox_xyxy": [
+              677,
+              470,
+              761,
+              524
+            ],
+            "icon_a_id": "hero-arrow-trending-down",
+            "icon_a_noise_edits": [
+              {
+                "params": {
+                  "alpha": 0.037006
+                },
+                "type": "noise"
+              },
+              {
+                "params": {
+                  "quality": 75.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "icon_a_noise_seed": 7447768895004746,
+            "icon_a_tint_rgb": [
+              79,
+              43,
+              153
+            ],
+            "icon_b_bbox_xyxy": [
+              662,
+              437,
+              752,
+              525
+            ],
+            "icon_b_id": "gi-lorc-long-antennae-bug",
+            "icon_b_noise_edits": [
+              {
+                "params": {
+                  "quality": 82.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "icon_b_noise_seed": 4601306279387157,
+            "icon_b_tint_rgb": [
+              102,
+              162,
+              45
+            ],
+            "index": 4,
+            "is_match": true,
+            "label": "E",
+            "order_id": "a_over_b",
+            "overlap_ratio": 0.5524876661973027,
+            "panel": "scene"
+          },
+          {
+            "cell_bbox_xyxy": [
+              838,
+              346,
+              1050,
+              586
+            ],
+            "front_role": "a",
+            "icon_a_bbox_xyxy": [
+              882,
+              454,
+              966,
+              508
+            ],
+            "icon_a_id": "hero-arrow-trending-down",
+            "icon_a_noise_edits": [
+              {
+                "params": {
+                  "quality": 72.0
+                },
+                "type": "jpeg"
+              },
+              {
+                "params": {
+                  "alpha": 0.039221
+                },
+                "type": "noise"
+              }
+            ],
+            "icon_a_noise_seed": 5214192412843841,
+            "icon_a_tint_rgb": [
+              209,
+              80,
+              63
+            ],
+            "icon_b_bbox_xyxy": [
+              915,
+              437,
+              1005,
+              525
+            ],
+            "icon_b_id": "gi-lorc-long-antennae-bug",
+            "icon_b_noise_edits": [
+              {
+                "params": {
+                  "alpha": 0.076331
+                },
+                "type": "noise"
+              },
+              {
+                "params": {
+                  "quality": 80.0
+                },
+                "type": "jpeg"
+              }
+            ],
+            "icon_b_noise_seed": 761161115400953,
+            "icon_b_tint_rgb": [
+              63,
+              30,
+              219
+            ],
+            "index": 5,
+            "is_match": true,
+            "label": "D",
+            "order_id": "a_over_b",
+            "overlap_ratio": 0.5414122912584659,
+            "panel": "scene"
+          }
+        ]
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        1104,
+        640
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          1104,
+          640
+        ],
+        "reference_content_xyxy": [
+          44,
+          77,
+          300,
+          596
+        ],
+        "reference_panel_xyxy": [
+          24,
+          24,
+          320,
+          616
+        ],
+        "scene_content_xyxy": [
+          364,
+          77,
+          1060,
+          596
+        ],
+        "scene_panel_xyxy": [
+          344,
+          24,
+          1080,
+          616
+        ]
+      },
+      "style": {
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "cell_border_rgb": [
+          218,
+          223,
+          233
+        ],
+        "cell_label_color_rgb": [
+          52,
+          60,
+          77
+        ],
+        "cell_label_font_size_px": 22,
+        "cell_padding_px": 10,
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "overlap_ratio_range": [
+          0.4,
+          0.6
+        ],
+        "pair_min_color_distance": 80.0,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "sampled_palette_rgb": [
+          [
+            102,
+            162,
+            45
+          ],
+          [
+            79,
+            43,
+            153
+          ],
+          [
+            209,
+            80,
+            63
+          ],
+          [
+            200,
+            29,
+            151
+          ],
+          [
+            54,
+            197,
+            182
+          ],
+          [
+            193,
+            153,
+            31
+          ],
+          [
+            48,
+            220,
+            37
+          ],
+          [
+            119,
+            81,
+            44
+          ],
+          [
+            63,
+            30,
+            219
+          ]
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "front_role": "a",
+          "icon_a_bbox_xyxy": [
+            108,
+            327,
+            205,
+            388
+          ],
+          "icon_a_id": "hero-arrow-trending-down",
+          "icon_a_noise_edits": [],
+          "icon_a_noise_seed": 5514945130472375,
+          "icon_a_tint_rgb": [
+            209,
+            80,
+            63
+          ],
+          "icon_b_bbox_xyxy": [
+            133,
+            284,
+            236,
+            385
+          ],
+          "icon_b_id": "gi-lorc-long-antennae-bug",
+          "icon_b_noise_edits": [
+            {
+              "params": {
+                "quality": 86.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "icon_b_noise_seed": 627214323417690,
+          "icon_b_tint_rgb": [
+            54,
+            197,
+            182
+          ],
+          "order_id": "a_over_b",
+          "overlap_ratio": 0.4720010700972813,
+          "panel": "reference"
+        },
+        {
+          "cell_bbox_xyxy": [
+            374,
+            87,
+            586,
+            326
+          ],
+          "front_role": "a",
+          "icon_a_bbox_xyxy": [
+            419,
+            201,
+            503,
+            255
+          ],
+          "icon_a_id": "hero-arrow-trending-down",
+          "icon_a_noise_edits": [],
+          "icon_a_noise_seed": 1924999953614075,
+          "icon_a_tint_rgb": [
+            102,
+            162,
+            45
+          ],
+          "icon_b_bbox_xyxy": [
+            451,
+            177,
+            541,
+            265
+          ],
+          "icon_b_id": "gi-lorc-long-antennae-bug",
+          "icon_b_noise_edits": [
+            {
+              "params": {
+                "quality": 76.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "icon_b_noise_seed": 1490192766491760,
+          "icon_b_tint_rgb": [
+            200,
+            29,
+            151
+          ],
+          "index": 0,
+          "is_match": true,
+          "label": "B",
+          "order_id": "a_over_b",
+          "overlap_ratio": 0.49906571213468914,
+          "panel": "scene"
+        },
+        {
+          "cell_bbox_xyxy": [
+            606,
+            87,
+            818,
+            326
+          ],
+          "front_role": "b",
+          "icon_a_bbox_xyxy": [
+            660,
+            208,
+            744,
+            262
+          ],
+          "icon_a_id": "hero-arrow-trending-down",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "alpha": 0.079567
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "quality": 86.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "icon_a_noise_seed": 5202064365766608,
+          "icon_a_tint_rgb": [
+            63,
+            30,
+            219
+          ],
+          "icon_b_bbox_xyxy": [
+            674,
+            177,
+            764,
+            265
+          ],
+          "icon_b_id": "gi-lorc-long-antennae-bug",
+          "icon_b_noise_edits": [
+            {
+              "params": {
+                "quality": 88.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "alpha": 0.052013
+              },
+              "type": "noise"
+            }
+          ],
+          "icon_b_noise_seed": 7284565680464744,
+          "icon_b_tint_rgb": [
+            102,
+            162,
+            45
+          ],
+          "index": 1,
+          "is_match": false,
+          "label": "C",
+          "order_id": "b_over_a",
+          "overlap_ratio": 0.5825753302454009,
+          "panel": "scene"
+        },
+        {
+          "cell_bbox_xyxy": [
+            838,
+            87,
+            1050,
+            326
+          ],
+          "front_role": "a",
+          "icon_a_bbox_xyxy": [
+            882,
+            189,
+            966,
+            243
+          ],
+          "icon_a_id": "hero-arrow-trending-down",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "scale": 0.917965
+              },
+              "type": "downsample"
+            }
+          ],
+          "icon_a_noise_seed": 7093342851551244,
+          "icon_a_tint_rgb": [
+            48,
+            220,
+            37
+          ],
+          "icon_b_bbox_xyxy": [
+            915,
+            177,
+            1005,
+            265
+          ],
+          "icon_b_id": "gi-lorc-long-antennae-bug",
+          "icon_b_noise_edits": [
+            {
+              "params": {
+                "quality": 89.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "icon_b_noise_seed": 6673543715894991,
+          "icon_b_tint_rgb": [
+            79,
+            43,
+            153
+          ],
+          "index": 2,
+          "is_match": true,
+          "label": "A",
+          "order_id": "a_over_b",
+          "overlap_ratio": 0.5786187417779838,
+          "panel": "scene"
+        },
+        {
+          "cell_bbox_xyxy": [
+            374,
+            346,
+            586,
+            586
+          ],
+          "front_role": "a",
+          "icon_a_bbox_xyxy": [
+            419,
+            473,
+            503,
+            527
+          ],
+          "icon_a_id": "hero-arrow-trending-down",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "quality": 72.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "radius": 0.534676
+              },
+              "type": "blur"
+            }
+          ],
+          "icon_a_noise_seed": 514344942272385,
+          "icon_a_tint_rgb": [
+            63,
+            30,
+            219
+          ],
+          "icon_b_bbox_xyxy": [
+            451,
+            435,
+            541,
+            523
+          ],
+          "icon_b_id": "gi-lorc-long-antennae-bug",
+          "icon_b_noise_edits": [
+            {
+              "params": {
+                "quality": 78.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "radius": 0.582088
+              },
+              "type": "blur"
+            }
+          ],
+          "icon_b_noise_seed": 611415423212161,
+          "icon_b_tint_rgb": [
+            48,
+            220,
+            37
+          ],
+          "index": 3,
+          "is_match": true,
+          "label": "F",
+          "order_id": "a_over_b",
+          "overlap_ratio": 0.4030156436551156,
+          "panel": "scene"
+        },
+        {
+          "cell_bbox_xyxy": [
+            606,
+            346,
+            818,
+            586
+          ],
+          "front_role": "a",
+          "icon_a_bbox_xyxy": [
+            677,
+            470,
+            761,
+            524
+          ],
+          "icon_a_id": "hero-arrow-trending-down",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "alpha": 0.037006
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "quality": 75.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "icon_a_noise_seed": 7447768895004746,
+          "icon_a_tint_rgb": [
+            79,
+            43,
+            153
+          ],
+          "icon_b_bbox_xyxy": [
+            662,
+            437,
+            752,
+            525
+          ],
+          "icon_b_id": "gi-lorc-long-antennae-bug",
+          "icon_b_noise_edits": [
+            {
+              "params": {
+                "quality": 82.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "icon_b_noise_seed": 4601306279387157,
+          "icon_b_tint_rgb": [
+            102,
+            162,
+            45
+          ],
+          "index": 4,
+          "is_match": true,
+          "label": "E",
+          "order_id": "a_over_b",
+          "overlap_ratio": 0.5524876661973027,
+          "panel": "scene"
+        },
+        {
+          "cell_bbox_xyxy": [
+            838,
+            346,
+            1050,
+            586
+          ],
+          "front_role": "a",
+          "icon_a_bbox_xyxy": [
+            882,
+            454,
+            966,
+            508
+          ],
+          "icon_a_id": "hero-arrow-trending-down",
+          "icon_a_noise_edits": [
+            {
+              "params": {
+                "quality": 72.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "alpha": 0.039221
+              },
+              "type": "noise"
+            }
+          ],
+          "icon_a_noise_seed": 5214192412843841,
+          "icon_a_tint_rgb": [
+            209,
+            80,
+            63
+          ],
+          "icon_b_bbox_xyxy": [
+            915,
+            437,
+            1005,
+            525
+          ],
+          "icon_b_id": "gi-lorc-long-antennae-bug",
+          "icon_b_noise_edits": [
+            {
+              "params": {
+                "alpha": 0.076331
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "quality": 80.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "icon_b_noise_seed": 761161115400953,
+          "icon_b_tint_rgb": [
+            63,
+            30,
+            219
+          ],
+          "index": 5,
+          "is_match": true,
+          "label": "D",
+          "order_id": "a_over_b",
+          "overlap_ratio": 0.5414122912584659,
+          "panel": "scene"
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            1104,
+            640
+          ],
+          "reference_content_xyxy": [
+            44,
+            77,
+            300,
+            596
+          ],
+          "reference_panel_xyxy": [
+            24,
+            24,
+            320,
+            616
+          ],
+          "scene_content_xyxy": [
+            364,
+            77,
+            1060,
+            596
+          ],
+          "scene_panel_xyxy": [
+            344,
+            24,
+            1080,
+            616
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "counting_target": "same_front_to_back_order_as_reference",
+        "matching_cell_labels": [
+          "A",
+          "B",
+          "D",
+          "E",
+          "F"
+        ],
+        "reference_order_id": "a_over_b"
+      },
+      "scene_kind": "icons_reference_grid_occlusion_order_count"
+    },
+    "witness_symbolic": {
+      "matching_cell_labels": [
+        "A",
+        "B",
+        "D",
+        "E",
+        "F"
+      ],
+      "reference_order_id": "a_over_b"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

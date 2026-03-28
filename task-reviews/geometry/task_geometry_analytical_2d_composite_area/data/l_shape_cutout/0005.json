@@ -1,0 +1,459 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 154
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "ST": 26,
+      "VU": 20,
+      "VW": 4,
+      "XS": 9
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_2d_composite_area/images/l_shape_cutout/0005.png"
+  },
+  "instance_seed": 3277059901845618,
+  "prompt": "The image shows a shaded composite geometric region with measurement annotations. Question: The shaded figure is an L-shaped region formed from a rectangle with one corner removed. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, XS, VU, VW.\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"ST\":2,\"XS\":3,\"VU\":4,\"VW\":5},\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows a shaded composite geometric region with measurement annotations. Question: The shaded figure is an L-shaped region formed from a rectangle with one corner removed. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, XS, VU, VW.\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"ST\":2,\"XS\":3,\"VU\":4,\"VW\":5},\"answer\":8}",
+    "answer_only": "The image shows a shaded composite geometric region with measurement annotations. Question: The shaded figure is an L-shaped region formed from a rectangle with one corner removed. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_geometry_analytical_2d_composite_area",
+  "task_variant": "l_shape_cutout",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 2500,
+      "answer_min": 20,
+      "answer_scalar": 154,
+      "answer_type": "integer",
+      "answer_value": 154,
+      "evidence_map": {
+        "ST": 26,
+        "VU": 20,
+        "VW": 4,
+        "XS": 9
+      },
+      "evidence_role_tokens": {
+        "cut_height": "VW",
+        "cut_width": "VU",
+        "outer_height": "XS",
+        "outer_width": "ST"
+      },
+      "evidence_role_values": {
+        "cut_height": 4,
+        "cut_width": 20,
+        "outer_height": 9,
+        "outer_width": 26
+      },
+      "evidence_roles": [
+        "outer_width",
+        "outer_height",
+        "cut_width",
+        "cut_height"
+      ],
+      "formula_expression": "outer_width * outer_height - cut_width * cut_height",
+      "raw_answer_value": 154,
+      "required_annotations": [
+        "ST",
+        "XS",
+        "VU",
+        "VW"
+      ],
+      "scene_kind": "composite_region",
+      "target_quantity": "area",
+      "task_variant": "l_shape_cutout",
+      "variant_probabilities": {
+        "l_shape_cutout": 0.2,
+        "rectangle_inner_cutout": 0.2,
+        "rectangle_triangle_cutout": 0.2,
+        "rectangle_triangle_union": 0.2,
+        "step_rectangles_union": 0.2
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "cut_height": "VW",
+        "cut_width": "VU",
+        "outer_height": "XS",
+        "outer_width": "ST"
+      },
+      "id_set": [
+        "ST",
+        "XS",
+        "VU",
+        "VW"
+      ],
+      "measurement_ref_map": {
+        "ST": 26,
+        "VU": 20,
+        "VW": 4,
+        "XS": 9
+      },
+      "pixel_annotation_centers": {
+        "ST": [
+          322.5,
+          283.32153599412146
+        ],
+        "VU": [
+          369.96923076923076,
+          166.30615137873687
+        ],
+        "VW": [
+          229.9717948717949,
+          153.72666419924968
+        ],
+        "XS": [
+          98.8,
+          193.284356506942
+        ]
+      },
+      "pixel_point_set": [
+        [
+          322.5,
+          283.32153599412146
+        ],
+        [
+          98.8,
+          193.284356506942
+        ],
+        [
+          369.96923076923076,
+          166.30615137873687
+        ],
+        [
+          229.9717948717949,
+          153.72666419924968
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 2500,
+        "answer_min": 20,
+        "task_variant": "l_shape_cutout",
+        "variant_probabilities": {
+          "l_shape_cutout": 0.2,
+          "rectangle_inner_cutout": 0.2,
+          "rectangle_triangle_cutout": 0.2,
+          "rectangle_triangle_union": 0.2,
+          "step_rectangles_union": 0.2
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "geometry_analytical_composite_area_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the area value as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, XS, VU, VW",
+          "json_example": "{\"evidence\":{\"ST\":2,\"XS\":3,\"VU\":4,\"VW\":5},\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a shaded composite geometric region with measurement annotations",
+          "question_text": "The shaded figure is an L-shaped region formed from a rectangle with one corner removed. What is the area of the shaded region in square units?"
+        },
+        "task_family_key": "analytical_composite_area_scene",
+        "task_family_variant_index": 1,
+        "task_key": "analytical_composite_area_query",
+        "task_variant_index": 1,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_2d/geometry_analytical_composite_area_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_composite_area_query": 5,
+          "task_family:analytical_composite_area_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_analytical_composite_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the area value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, XS, VU, VW",
+              "json_example": "{\"evidence\":{\"ST\":2,\"XS\":3,\"VU\":4,\"VW\":5},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a shaded composite geometric region with measurement annotations",
+              "question_text": "The shaded figure is an L-shaped region formed from a rectangle with one corner removed. What is the area of the shaded region in square units?"
+            },
+            "task_family_key": "analytical_composite_area_scene",
+            "task_family_variant_index": 1,
+            "task_key": "analytical_composite_area_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_composite_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_composite_area_query": 5,
+              "task_family:analytical_composite_area_scene": 5
+            }
+          },
+          "prompt": "The image shows a shaded composite geometric region with measurement annotations. Question: The shaded figure is an L-shaped region formed from a rectangle with one corner removed. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, XS, VU, VW.\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"ST\":2,\"XS\":3,\"VU\":4,\"VW\":5},\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_analytical_composite_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the area value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ST, XS, VU, VW",
+              "json_example": "{\"evidence\":{\"ST\":2,\"XS\":3,\"VU\":4,\"VW\":5},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a shaded composite geometric region with measurement annotations",
+              "question_text": "The shaded figure is an L-shaped region formed from a rectangle with one corner removed. What is the area of the shaded region in square units?"
+            },
+            "task_family_key": "analytical_composite_area_scene",
+            "task_family_variant_index": 1,
+            "task_key": "analytical_composite_area_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_composite_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_composite_area_query": 5,
+              "task_family:analytical_composite_area_scene": 5
+            }
+          },
+          "prompt": "The image shows a shaded composite geometric region with measurement annotations. Question: The shaded figure is an L-shaped region formed from a rectangle with one corner removed. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "l_shape_cutout",
+      "template_id": "geometry_analytical_composite_area_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "ST": [
+          322.5,
+          283.32153599412146
+        ],
+        "VU": [
+          369.96923076923076,
+          166.30615137873687
+        ],
+        "VW": [
+          229.9717948717949,
+          153.72666419924968
+        ],
+        "XS": [
+          98.8,
+          193.284356506942
+        ]
+      },
+      "annotation_labels": {
+        "cut_height": "VW",
+        "cut_width": "VU",
+        "outer_height": "XS",
+        "outer_width": "ST"
+      },
+      "coord_space": "pixel",
+      "instance_anchor": {
+        "bbox": [
+          116.79999999999998,
+          122.08051035309583,
+          528.2,
+          264.48820266078815
+        ],
+        "coord_space": "pixel"
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_cool",
+        "style_spec": {
+          "color": [
+            246,
+            248,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 645,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 6,
+        "full_cells_y": 6,
+        "origin_pixel": [
+          322,
+          322
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 92,
+        "target_cells_x": 7,
+        "target_cells_y": 7,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 6,
+        "full_cells_y": 6,
+        "partial_edge_cells": true,
+        "spacing_px": 92,
+        "target_cells_x": 7,
+        "target_cells_y": 7
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          74,
+          54,
+          29
+        ],
+        "label_stroke_color": [
+          251,
+          252,
+          252
+        ],
+        "line_color": [
+          74,
+          54,
+          29
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "fill_kind": "shaded",
+            "vertices": [
+              [
+                116.79999999999998,
+                264.48820266078815
+              ],
+              [
+                528.2,
+                264.48820266078815
+              ],
+              [
+                528.2,
+                185.37281804540353
+              ],
+              [
+                211.73846153846154,
+                185.37281804540353
+              ],
+              [
+                211.73846153846154,
+                122.08051035309583
+              ],
+              [
+                116.79999999999998,
+                122.08051035309583
+              ]
+            ]
+          },
+          "entity_id": "l_shape",
+          "entity_type": "l_shape"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            322,
+            322
+          ],
+          "spacing_px": 92,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_2d_analytical_composite_area"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "ST",
+        "XS",
+        "VU",
+        "VW"
+      ],
+      "annotation_labels": {
+        "cut_height": "VW",
+        "cut_width": "VU",
+        "outer_height": "XS",
+        "outer_width": "ST"
+      },
+      "annotation_values": {
+        "ST": 26,
+        "VU": 20,
+        "VW": 4,
+        "XS": 9
+      },
+      "formula_expression": "outer_width * outer_height - cut_width * cut_height",
+      "measurement_ref_map": {
+        "ST": 26,
+        "VU": 20,
+        "VW": 4,
+        "XS": 9
+      },
+      "task_variant": "l_shape_cutout",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

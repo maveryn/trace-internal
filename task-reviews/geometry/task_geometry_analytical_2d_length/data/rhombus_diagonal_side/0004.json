@@ -1,0 +1,429 @@
+{
+  "answer_gt": {
+    "type": "number",
+    "value": 20.2
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "UW": 34,
+      "VX": 22
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_2d_length/images/rhombus_diagonal_side/0004.png"
+  },
+  "instance_seed": 3617034492756674,
+  "prompt": "You are given an image showing a geometric scene with measurement annotations. The rhombus shows both diagonals. What is the length of segment UV?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: UW, VX.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"UW\":2,\"VX\":3},\"answer\":42.3}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given an image showing a geometric scene with measurement annotations. The rhombus shows both diagonals. What is the length of segment UV?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: UW, VX.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"UW\":2,\"VX\":3},\"answer\":42.3}",
+    "answer_only": "You are given an image showing a geometric scene with measurement annotations. The rhombus shows both diagonals. What is the length of segment UV?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+  },
+  "task": "task_geometry_analytical_2d_length",
+  "task_variant": "rhombus_diagonal_side",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 100,
+      "answer_min": 3,
+      "answer_scalar": 202,
+      "answer_type": "number",
+      "answer_value": 20.2,
+      "evidence_map": {
+        "UW": 34,
+        "VX": 22
+      },
+      "evidence_role_tokens": {
+        "diag_x": "UW",
+        "diag_y": "VX"
+      },
+      "evidence_role_values": {
+        "diag_x": 34,
+        "diag_y": 22
+      },
+      "evidence_roles": [
+        "diag_x",
+        "diag_y"
+      ],
+      "formula_expression": "sqrt((diag_x/2)^2 + (diag_y/2)^2)",
+      "raw_answer_value": 20.248456731316587,
+      "required_annotations": [
+        "UW",
+        "VX"
+      ],
+      "target_annotation": "UV",
+      "task_variant": "rhombus_diagonal_side",
+      "variant_probabilities": {
+        "circle_chord_length": 0.16666666666666666,
+        "inscribed_square_side": 0.16666666666666666,
+        "isosceles_trapezoid_leg": 0.16666666666666666,
+        "rectangle_diagonal_side": 0.16666666666666666,
+        "rhombus_diagonal_side": 0.16666666666666666,
+        "triangle_altitude_side": 0.16666666666666666
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "diag_x": "UW",
+        "diag_y": "VX"
+      },
+      "id_set": [
+        "UW",
+        "VX"
+      ],
+      "measurement_ref_map": {
+        "UW": 34,
+        "VX": 22
+      },
+      "pixel_annotation_centers": {
+        "UW": [
+          249.50999999999996,
+          296.7977209910567
+        ],
+        "VX": [
+          346.5333333333333,
+          285.95517197144886
+        ]
+      },
+      "pixel_point_set": [
+        [
+          249.50999999999996,
+          296.7977209910567
+        ],
+        [
+          346.5333333333333,
+          285.95517197144886
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 100,
+        "answer_min": 3,
+        "task_variant": "rhombus_diagonal_side",
+        "variant_probabilities": {
+          "circle_chord_length": 0.16666666666666666,
+          "inscribed_square_side": 0.16666666666666666,
+          "isosceles_trapezoid_leg": 0.16666666666666666,
+          "rectangle_diagonal_side": 0.16666666666666666,
+          "rhombus_diagonal_side": 0.16666666666666666,
+          "triangle_altitude_side": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "geometry_analytical_length_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: UW, VX",
+          "json_example": "{\"evidence\":{\"UW\":2,\"VX\":3},\"answer\":42.3}",
+          "json_example_answer_only": "{\"answer\":42.3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a geometric scene with measurement annotations",
+          "question_text": "The rhombus shows both diagonals. What is the length of segment UV?"
+        },
+        "task_family_key": "analytical_length_scene",
+        "task_family_variant_index": 0,
+        "task_key": "analytical_length_query",
+        "task_variant_index": 0,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_2d/geometry_analytical_length_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_length_query": 5,
+          "task_family:analytical_length_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_analytical_length_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: UW, VX",
+              "json_example": "{\"evidence\":{\"UW\":2,\"VX\":3},\"answer\":42.3}",
+              "json_example_answer_only": "{\"answer\":42.3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric scene with measurement annotations",
+              "question_text": "The rhombus shows both diagonals. What is the length of segment UV?"
+            },
+            "task_family_key": "analytical_length_scene",
+            "task_family_variant_index": 0,
+            "task_key": "analytical_length_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_length_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_length_query": 5,
+              "task_family:analytical_length_scene": 5
+            }
+          },
+          "prompt": "You are given an image showing a geometric scene with measurement annotations. The rhombus shows both diagonals. What is the length of segment UV?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: UW, VX.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"UW\":2,\"VX\":3},\"answer\":42.3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_analytical_length_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: UW, VX",
+              "json_example": "{\"evidence\":{\"UW\":2,\"VX\":3},\"answer\":42.3}",
+              "json_example_answer_only": "{\"answer\":42.3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric scene with measurement annotations",
+              "question_text": "The rhombus shows both diagonals. What is the length of segment UV?"
+            },
+            "task_family_key": "analytical_length_scene",
+            "task_family_variant_index": 0,
+            "task_key": "analytical_length_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_length_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_length_query": 5,
+              "task_family:analytical_length_scene": 5
+            }
+          },
+          "prompt": "You are given an image showing a geometric scene with measurement annotations. The rhombus shows both diagonals. What is the length of segment UV?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+        }
+      },
+      "task_variant": "rhombus_diagonal_side",
+      "template_id": "geometry_analytical_length_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "UW": [
+          249.50999999999996,
+          296.7977209910567
+        ],
+        "VX": [
+          346.5333333333333,
+          285.95517197144886
+        ]
+      },
+      "annotation_labels": {
+        "diag_x": "UW",
+        "diag_y": "VX"
+      },
+      "coord_space": "pixel",
+      "instance_anchor": {
+        "bbox": [
+          96.69999999999999,
+          187.07811314791945,
+          533.3,
+          469.5839955008606
+        ],
+        "coord_space": "pixel"
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_cool",
+        "style_spec": {
+          "color": [
+            246,
+            248,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 630,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "origin_pixel": [
+          314,
+          314
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 57,
+        "target_cells_x": 11,
+        "target_cells_y": 11,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "partial_edge_cells": true,
+        "spacing_px": 57,
+        "target_cells_x": 11,
+        "target_cells_y": 11
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          55,
+          153,
+          106
+        ],
+        "label_stroke_color": [
+          251,
+          249,
+          250
+        ],
+        "line_color": [
+          55,
+          153,
+          106
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "vertices": [
+              [
+                96.69999999999999,
+                328.33105432439004
+              ],
+              [
+                315.0,
+                187.07811314791945
+              ],
+              [
+                533.3,
+                328.33105432439004
+              ],
+              [
+                315.0,
+                469.5839955008606
+              ]
+            ]
+          },
+          "entity_id": "rhombus_1",
+          "entity_type": "rhombus"
+        },
+        {
+          "attrs": {
+            "helper": true,
+            "point_a": [
+              96.69999999999999,
+              328.33105432439004
+            ],
+            "point_b": [
+              533.3,
+              328.33105432439004
+            ]
+          },
+          "entity_id": "diag_x_1",
+          "entity_type": "diagonal"
+        },
+        {
+          "attrs": {
+            "helper": true,
+            "point_a": [
+              315.0,
+              187.07811314791945
+            ],
+            "point_b": [
+              315.0,
+              469.5839955008606
+            ]
+          },
+          "entity_id": "diag_y_1",
+          "entity_type": "diagonal"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            314,
+            314
+          ],
+          "spacing_px": 57,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_2d_analytical_length"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "UW",
+        "VX"
+      ],
+      "annotation_labels": {
+        "diag_x": "UW",
+        "diag_y": "VX"
+      },
+      "annotation_values": {
+        "UW": 34,
+        "VX": 22
+      },
+      "formula_expression": "sqrt((diag_x/2)^2 + (diag_y/2)^2)",
+      "measurement_ref_map": {
+        "UW": 34,
+        "VX": 22
+      },
+      "task_variant": "rhombus_diagonal_side",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

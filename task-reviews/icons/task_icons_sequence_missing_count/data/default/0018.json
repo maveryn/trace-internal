@@ -1,0 +1,1082 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 5
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        340,
+        87,
+        463,
+        212
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_sequence_missing_count/images/default/0018.png"
+  },
+  "instance_seed": 2264499883166984,
+  "prompt": "You are given an image with a horizontal row of Scene boxes, where one box is missing and marked with a question mark. Question: How many icons should be in the missing box to continue the sequence?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the missing Scene box.\nAnswer requirement: set \"answer\" to the missing count as an integer.\nExample JSON:\n{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given an image with a horizontal row of Scene boxes, where one box is missing and marked with a question mark. Question: How many icons should be in the missing box to continue the sequence?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the missing Scene box.\nAnswer requirement: set \"answer\" to the missing count as an integer.\nExample JSON:\n{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+    "answer_only": "You are given an image with a horizontal row of Scene boxes, where one box is missing and marked with a question mark. Question: How many icons should be in the missing box to continue the sequence?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the missing count as an integer.\nExample JSON:\n{\"answer\":5}"
+  },
+  "task": "task_icons_sequence_missing_count",
+  "task_variant": "arithmetic_progression",
+  "trace_payload": {
+    "execution_trace": {
+      "cell_box_height_px": 125,
+      "cell_box_width_px": 123,
+      "full_sequence_counts": [
+        7,
+        6,
+        5,
+        4
+      ],
+      "missing_cell_index": 2,
+      "question_format": "infer_missing_sequence_count",
+      "scene_rotations_degrees_by_cell": [
+        [
+          90,
+          180,
+          90,
+          90,
+          0,
+          90,
+          0
+        ],
+        [
+          90,
+          180,
+          0,
+          270,
+          270,
+          180
+        ],
+        [],
+        [
+          90,
+          180,
+          270,
+          90
+        ]
+      ],
+      "scene_variant": "single_panel_sequence_row",
+      "sequence_icon_id": "gi-delapouite-porcupinefish",
+      "sequence_length": 4,
+      "sequence_length_probabilities": {
+        "4": 0.3333333333333333,
+        "5": 0.3333333333333333,
+        "6": 0.3333333333333333
+      },
+      "step_delta": -1,
+      "target_count": 5,
+      "target_count_probabilities": {
+        "0": 0.09090909090909091,
+        "1": 0.09090909090909091,
+        "10": 0.09090909090909091,
+        "2": 0.09090909090909091,
+        "3": 0.09090909090909091,
+        "4": 0.09090909090909091,
+        "5": 0.09090909090909091,
+        "6": 0.09090909090909091,
+        "7": 0.09090909090909091,
+        "8": 0.09090909090909091,
+        "9": 0.09090909090909091
+      },
+      "task_variant": "arithmetic_progression"
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          340,
+          87,
+          463,
+          212
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "cell_box_height_px": 125,
+        "cell_box_width_px": 123,
+        "missing_cell_index": 2,
+        "pool_manifest": "all_icons.txt",
+        "rotation_candidates_degrees": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "sequence_length": 4,
+        "sequence_length_probabilities": {
+          "4": 0.3333333333333333,
+          "5": 0.3333333333333333,
+          "6": 0.3333333333333333
+        },
+        "step_delta": -1,
+        "target_count": 5,
+        "target_count_probabilities": {
+          "0": 0.09090909090909091,
+          "1": 0.09090909090909091,
+          "10": 0.09090909090909091,
+          "2": 0.09090909090909091,
+          "3": 0.09090909090909091,
+          "4": 0.09090909090909091,
+          "5": 0.09090909090909091,
+          "6": 0.09090909090909091,
+          "7": 0.09090909090909091,
+          "8": 0.09090909090909091,
+          "9": 0.09090909090909091
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "icons_sequence_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the missing count as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the missing Scene box",
+          "json_example": "{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+          "json_example_answer_only": "{\"answer\":5}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a horizontal row of Scene boxes, where one box is missing and marked with a question mark",
+          "question_text": "How many icons should be in the missing box to continue the sequence?"
+        },
+        "task_family_key": "sequence_missing_count",
+        "task_family_variant_index": 0,
+        "task_key": "missing_count_query",
+        "task_variant_index": 1,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/sequence/icons_sequence_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:missing_count_query": 5,
+          "task_family:sequence_missing_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "icons_sequence_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the missing count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the missing Scene box",
+              "json_example": "{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+              "json_example_answer_only": "{\"answer\":5}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a horizontal row of Scene boxes, where one box is missing and marked with a question mark",
+              "question_text": "How many icons should be in the missing box to continue the sequence?"
+            },
+            "task_family_key": "sequence_missing_count",
+            "task_family_variant_index": 0,
+            "task_key": "missing_count_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/sequence/icons_sequence_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:missing_count_query": 5,
+              "task_family:sequence_missing_count": 5
+            }
+          },
+          "prompt": "You are given an image with a horizontal row of Scene boxes, where one box is missing and marked with a question mark. Question: How many icons should be in the missing box to continue the sequence?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the missing Scene box.\nAnswer requirement: set \"answer\" to the missing count as an integer.\nExample JSON:\n{\"evidence\":[[540,126,654,458]],\"answer\":5}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "icons_sequence_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the missing count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the missing Scene box",
+              "json_example": "{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+              "json_example_answer_only": "{\"answer\":5}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a horizontal row of Scene boxes, where one box is missing and marked with a question mark",
+              "question_text": "How many icons should be in the missing box to continue the sequence?"
+            },
+            "task_family_key": "sequence_missing_count",
+            "task_family_variant_index": 0,
+            "task_key": "missing_count_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/sequence/icons_sequence_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:missing_count_query": 5,
+              "task_family:sequence_missing_count": 5
+            }
+          },
+          "prompt": "You are given an image with a horizontal row of Scene boxes, where one box is missing and marked with a question mark. Question: How many icons should be in the missing box to continue the sequence?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the missing count as an integer.\nExample JSON:\n{\"answer\":5}"
+        }
+      },
+      "task_variant": "arithmetic_progression",
+      "template_id": "icons_sequence_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "missing_cell_bbox": [
+          340,
+          87,
+          463,
+          212
+        ]
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        660,
+        266
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          660,
+          266
+        ],
+        "scene_content_xyxy": [
+          44,
+          77,
+          616,
+          222
+        ],
+        "scene_panel_xyxy": [
+          24,
+          24,
+          636,
+          242
+        ]
+      },
+      "style": {
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "cell_box_height_range_px": [
+          96,
+          144
+        ],
+        "cell_box_width_range_px": [
+          112,
+          160
+        ],
+        "cell_corner_radius_px": 12,
+        "cell_icon_padding_px": 8,
+        "cell_padding_px": 10,
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "missing_mark_color_rgb": [
+          84,
+          96,
+          118
+        ],
+        "missing_mark_font_size_px": 56,
+        "palette_size_max": 1,
+        "palette_size_min": 1,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "reference_icon_size_max_px": 0,
+        "reference_icon_size_min_px": 0,
+        "reference_icon_size_px": 0,
+        "sampled_cell_box_size_px": [
+          123,
+          125
+        ],
+        "sampled_palette_rgb": [
+          [
+            167,
+            178,
+            49
+          ]
+        ],
+        "scene_icon_size_max_px": 40,
+        "scene_icon_size_min_px": 24,
+        "scene_max_overlap_fraction": 0.2,
+        "scene_placement_max_attempts": 160,
+        "scene_size_shrink_factor": 0.9,
+        "scene_size_shrink_rounds": 6
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "cell_bbox_xyxy": [
+            54,
+            87,
+            177,
+            212
+          ],
+          "cell_index": 0,
+          "entity_kind": "sequence_cell",
+          "is_missing": false,
+          "panel": "scene",
+          "rendered_icon_count": 7,
+          "target_icon_count": 7
+        },
+        {
+          "cell_bbox_xyxy": [
+            197,
+            87,
+            320,
+            212
+          ],
+          "cell_index": 1,
+          "entity_kind": "sequence_cell",
+          "is_missing": false,
+          "panel": "scene",
+          "rendered_icon_count": 6,
+          "target_icon_count": 6
+        },
+        {
+          "cell_bbox_xyxy": [
+            340,
+            87,
+            463,
+            212
+          ],
+          "cell_index": 2,
+          "entity_kind": "sequence_cell",
+          "is_missing": true,
+          "panel": "scene",
+          "rendered_icon_count": 0,
+          "target_icon_count": 5
+        },
+        {
+          "cell_bbox_xyxy": [
+            483,
+            87,
+            606,
+            212
+          ],
+          "cell_index": 3,
+          "entity_kind": "sequence_cell",
+          "is_missing": false,
+          "panel": "scene",
+          "rendered_icon_count": 4,
+          "target_icon_count": 4
+        },
+        {
+          "bbox_xyxy": [
+            71,
+            146,
+            96,
+            169
+          ],
+          "cell_bbox_xyxy": [
+            54,
+            87,
+            177,
+            212
+          ],
+          "cell_index": 0,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-porcupinefish",
+          "instance_id": "scene_cell_0_icon_0",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.874083
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "radius": 0.28516
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 3011368952637456,
+          "nominal_size_px": 25,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            167,
+            178,
+            49
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            128,
+            128,
+            165,
+            165
+          ],
+          "cell_bbox_xyxy": [
+            54,
+            87,
+            177,
+            212
+          ],
+          "cell_index": 0,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-porcupinefish",
+          "instance_id": "scene_cell_0_icon_1",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 8673109497213715,
+          "nominal_size_px": 39,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            167,
+            178,
+            49
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            107,
+            105,
+            136,
+            132
+          ],
+          "cell_bbox_xyxy": [
+            54,
+            87,
+            177,
+            212
+          ],
+          "cell_index": 0,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-porcupinefish",
+          "instance_id": "scene_cell_0_icon_2",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 8389968445766194,
+          "nominal_size_px": 29,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            167,
+            178,
+            49
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            104,
+            158,
+            129,
+            181
+          ],
+          "cell_bbox_xyxy": [
+            54,
+            87,
+            177,
+            212
+          ],
+          "cell_index": 0,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-porcupinefish",
+          "instance_id": "scene_cell_0_icon_3",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.91132
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 8425151426034212,
+          "nominal_size_px": 25,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            167,
+            178,
+            49
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            97,
+            123,
+            123,
+            151
+          ],
+          "cell_bbox_xyxy": [
+            54,
+            87,
+            177,
+            212
+          ],
+          "cell_index": 0,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-porcupinefish",
+          "instance_id": "scene_cell_0_icon_4",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 7062887764083923,
+          "nominal_size_px": 28,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            167,
+            178,
+            49
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            122,
+            166,
+            146,
+            188
+          ],
+          "cell_bbox_xyxy": [
+            54,
+            87,
+            177,
+            212
+          ],
+          "cell_index": 0,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-porcupinefish",
+          "instance_id": "scene_cell_0_icon_5",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 75.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "alpha": 0.032935
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 607168883262473,
+          "nominal_size_px": 24,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            167,
+            178,
+            49
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            65,
+            111,
+            97,
+            143
+          ],
+          "cell_bbox_xyxy": [
+            54,
+            87,
+            177,
+            212
+          ],
+          "cell_index": 0,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-porcupinefish",
+          "instance_id": "scene_cell_0_icon_6",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 5877172610192358,
+          "nominal_size_px": 34,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            167,
+            178,
+            49
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            287,
+            163,
+            311,
+            185
+          ],
+          "cell_bbox_xyxy": [
+            197,
+            87,
+            320,
+            212
+          ],
+          "cell_index": 1,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-porcupinefish",
+          "instance_id": "scene_cell_1_icon_0",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 7050268469232446,
+          "nominal_size_px": 24,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            167,
+            178,
+            49
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            217,
+            140,
+            244,
+            169
+          ],
+          "cell_bbox_xyxy": [
+            197,
+            87,
+            320,
+            212
+          ],
+          "cell_index": 1,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-porcupinefish",
+          "instance_id": "scene_cell_1_icon_1",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.035397
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 865785947551888,
+          "nominal_size_px": 29,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            167,
+            178,
+            49
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            253,
+            97,
+            283,
+            127
+          ],
+          "cell_bbox_xyxy": [
+            197,
+            87,
+            320,
+            212
+          ],
+          "cell_index": 1,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-porcupinefish",
+          "instance_id": "scene_cell_1_icon_2",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.28751
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 2940141224886992,
+          "nominal_size_px": 32,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            167,
+            178,
+            49
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            217,
+            173,
+            247,
+            201
+          ],
+          "cell_bbox_xyxy": [
+            197,
+            87,
+            320,
+            212
+          ],
+          "cell_index": 1,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-porcupinefish",
+          "instance_id": "scene_cell_1_icon_3",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 5255885685904707,
+          "nominal_size_px": 30,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            167,
+            178,
+            49
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            246,
+            128,
+            280,
+            162
+          ],
+          "cell_bbox_xyxy": [
+            197,
+            87,
+            320,
+            212
+          ],
+          "cell_index": 1,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-porcupinefish",
+          "instance_id": "scene_cell_1_icon_4",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.852187
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "radius": 0.521061
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 4879281900966657,
+          "nominal_size_px": 36,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            167,
+            178,
+            49
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            226,
+            103,
+            257,
+            134
+          ],
+          "cell_bbox_xyxy": [
+            197,
+            87,
+            320,
+            212
+          ],
+          "cell_index": 1,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-porcupinefish",
+          "instance_id": "scene_cell_1_icon_5",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.864482
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "alpha": 0.069817
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 2935110167853447,
+          "nominal_size_px": 33,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            167,
+            178,
+            49
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            533,
+            114,
+            566,
+            147
+          ],
+          "cell_bbox_xyxy": [
+            483,
+            87,
+            606,
+            212
+          ],
+          "cell_index": 3,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-porcupinefish",
+          "instance_id": "scene_cell_3_icon_0",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.880534
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 7826078615011940,
+          "nominal_size_px": 35,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            167,
+            178,
+            49
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            496,
+            146,
+            531,
+            181
+          ],
+          "cell_bbox_xyxy": [
+            483,
+            87,
+            606,
+            212
+          ],
+          "cell_index": 3,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-porcupinefish",
+          "instance_id": "scene_cell_3_icon_1",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.924684
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 8036302748473684,
+          "nominal_size_px": 37,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            167,
+            178,
+            49
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            511,
+            111,
+            536,
+            134
+          ],
+          "cell_bbox_xyxy": [
+            483,
+            87,
+            606,
+            212
+          ],
+          "cell_index": 3,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-porcupinefish",
+          "instance_id": "scene_cell_3_icon_2",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.583104
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 3844705322335214,
+          "nominal_size_px": 25,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            167,
+            178,
+            49
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            546,
+            156,
+            575,
+            183
+          ],
+          "cell_bbox_xyxy": [
+            483,
+            87,
+            606,
+            212
+          ],
+          "cell_index": 3,
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-porcupinefish",
+          "instance_id": "scene_cell_3_icon_3",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 1429652390600163,
+          "nominal_size_px": 29,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            167,
+            178,
+            49
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            660,
+            266
+          ],
+          "scene_content_xyxy": [
+            44,
+            77,
+            616,
+            222
+          ],
+          "scene_panel_xyxy": [
+            24,
+            24,
+            636,
+            242
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "full_sequence_counts": [
+          7,
+          6,
+          5,
+          4
+        ],
+        "missing_cell_index": 2,
+        "sequence_icon_id": "gi-delapouite-porcupinefish",
+        "sequence_rule": "arithmetic_progression",
+        "step_delta": -1
+      },
+      "scene_kind": "icons_sequence_missing_count"
+    },
+    "witness_symbolic": {
+      "full_sequence_counts": [
+        7,
+        6,
+        5,
+        4
+      ],
+      "missing_cell_index": 2,
+      "sequence_rule": "arithmetic_progression",
+      "step_delta": -1
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

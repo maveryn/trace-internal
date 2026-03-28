@@ -1,0 +1,413 @@
+{
+  "answer_gt": {
+    "type": "pi_expression",
+    "value": "136\u03c0"
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "GH": 17,
+      "GI": 15
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_2d_area/images/ellipse_derived/0018.png"
+  },
+  "instance_seed": 5083299041418023,
+  "prompt": "You are given an image showing a geometric shape with measurement annotations. The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in k\u03c0 form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, GI.\nAnswer field: set \"answer\" to the area value in the form k\u03c0 (for example 12\u03c0).\nExample JSON:\n{\"evidence\":{\"GH\":2,\"GI\":3},\"answer\":\"12\u03c0\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given an image showing a geometric shape with measurement annotations. The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in k\u03c0 form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, GI.\nAnswer field: set \"answer\" to the area value in the form k\u03c0 (for example 12\u03c0).\nExample JSON:\n{\"evidence\":{\"GH\":2,\"GI\":3},\"answer\":\"12\u03c0\"}",
+    "answer_only": "You are given an image showing a geometric shape with measurement annotations. The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in k\u03c0 form.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the area value in the form k\u03c0 (for example 12\u03c0).\nExample JSON:\n{\"answer\":\"12\u03c0\"}"
+  },
+  "task": "task_geometry_analytical_2d_area",
+  "task_variant": "ellipse_derived",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 2500,
+      "answer_min": 8,
+      "answer_scalar": 136,
+      "answer_type": "pi_expression",
+      "answer_value": "136\u03c0",
+      "case_id": "ellipse_derived",
+      "evidence_annotations": {
+        "a": "GH",
+        "c": "GI"
+      },
+      "evidence_ids": [
+        "GH",
+        "GI"
+      ],
+      "evidence_label_values": {
+        "a": 17,
+        "c": 15
+      },
+      "evidence_map": {
+        "GH": 17,
+        "GI": 15
+      },
+      "evidence_roles": [
+        "a",
+        "c"
+      ],
+      "formula_expression": "A = \u03c0 * a * sqrt(a^2 - c^2)",
+      "mode_probabilities": {
+        "derived": 0.5,
+        "explicit": 0.5
+      },
+      "reasoning_mode": "derived",
+      "required_annotations": [
+        "GH",
+        "GI"
+      ],
+      "shape_probabilities": {
+        "circle": 0.14285714285714285,
+        "ellipse": 0.14285714285714285,
+        "parallelogram": 0.14285714285714285,
+        "rectangle": 0.14285714285714285,
+        "rhombus": 0.14285714285714285,
+        "trapezoid": 0.14285714285714285,
+        "triangle": 0.14285714285714285
+      },
+      "shape_variant": "ellipse"
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "a": "GH",
+        "c": "GI"
+      },
+      "id_set": [
+        "GH",
+        "GI"
+      ],
+      "measurement_ref_map": {
+        "GH": 17,
+        "GI": 15
+      },
+      "pixel_annotation_centers": {
+        "GH": [
+          343.0,
+          370.0
+        ],
+        "GI": [
+          333.0,
+          426.0
+        ]
+      },
+      "pixel_point_set": [
+        [
+          343.0,
+          370.0
+        ],
+        [
+          333.0,
+          426.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 2500,
+        "answer_min": 8,
+        "mode_probabilities": {
+          "derived": 0.5,
+          "explicit": 0.5
+        },
+        "reasoning_mode": "derived",
+        "shape_probabilities": {
+          "circle": 0.14285714285714285,
+          "ellipse": 0.14285714285714285,
+          "parallelogram": 0.14285714285714285,
+          "rectangle": 0.14285714285714285,
+          "rhombus": 0.14285714285714285,
+          "trapezoid": 0.14285714285714285,
+          "triangle": 0.14285714285714285
+        },
+        "shape_variant": "ellipse"
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "geometry_analytical_area_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the area value in the form k\u03c0 (for example 12\u03c0)",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, GI",
+          "json_example": "{\"evidence\":{\"GH\":2,\"GI\":3},\"answer\":\"12\u03c0\"}",
+          "json_example_answer_only": "{\"answer\":\"12\u03c0\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a geometric shape with measurement annotations",
+          "question_text": "The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in k\u03c0 form."
+        },
+        "task_family_key": "analytical_single_shape",
+        "task_family_variant_index": 0,
+        "task_key": "analytical_area_query",
+        "task_variant_index": 0,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_2d/geometry_analytical_area_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_area_query": 5,
+          "task_family:analytical_single_shape": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "geometry_analytical_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the area value in the form k\u03c0 (for example 12\u03c0)",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, GI",
+              "json_example": "{\"evidence\":{\"GH\":2,\"GI\":3},\"answer\":\"12\u03c0\"}",
+              "json_example_answer_only": "{\"answer\":\"12\u03c0\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric shape with measurement annotations",
+              "question_text": "The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in k\u03c0 form."
+            },
+            "task_family_key": "analytical_single_shape",
+            "task_family_variant_index": 0,
+            "task_key": "analytical_area_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_area_query": 5,
+              "task_family:analytical_single_shape": 5
+            }
+          },
+          "prompt": "You are given an image showing a geometric shape with measurement annotations. The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in k\u03c0 form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, GI.\nAnswer field: set \"answer\" to the area value in the form k\u03c0 (for example 12\u03c0).\nExample JSON:\n{\"evidence\":{\"GH\":2,\"GI\":3},\"answer\":\"12\u03c0\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "geometry_analytical_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the area value in the form k\u03c0 (for example 12\u03c0)",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: GH, GI",
+              "json_example": "{\"evidence\":{\"GH\":2,\"GI\":3},\"answer\":\"12\u03c0\"}",
+              "json_example_answer_only": "{\"answer\":\"12\u03c0\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric shape with measurement annotations",
+              "question_text": "The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in k\u03c0 form."
+            },
+            "task_family_key": "analytical_single_shape",
+            "task_family_variant_index": 0,
+            "task_key": "analytical_area_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_area_query": 5,
+              "task_family:analytical_single_shape": 5
+            }
+          },
+          "prompt": "You are given an image showing a geometric shape with measurement annotations. The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in k\u03c0 form.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the area value in the form k\u03c0 (for example 12\u03c0).\nExample JSON:\n{\"answer\":\"12\u03c0\"}"
+        }
+      },
+      "task_variant": "ellipse_derived",
+      "template_id": "geometry_analytical_area_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "GH": [
+          343.0,
+          370.0
+        ],
+        "GI": [
+          333.0,
+          426.0
+        ]
+      },
+      "annotation_labels": {
+        "a": "GH",
+        "c": "GI"
+      },
+      "coord_space": "pixel",
+      "entity_id": "shape_1",
+      "instance_anchor": {
+        "bbox": [
+          88.0,
+          318.0,
+          428.0,
+          478.0
+        ],
+        "coord_space": "pixel",
+        "point": [
+          258.0,
+          398.0
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_cool",
+        "style_spec": {
+          "color": [
+            246,
+            248,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 578,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 6,
+        "full_cells_y": 6,
+        "origin_pixel": [
+          288,
+          288
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 83,
+        "target_cells_x": 7,
+        "target_cells_y": 7,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 6,
+        "full_cells_y": 6,
+        "partial_edge_cells": true,
+        "spacing_px": 83,
+        "target_cells_x": 7,
+        "target_cells_y": 7
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          20,
+          76,
+          19
+        ],
+        "label_stroke_color": [
+          249,
+          252,
+          253
+        ],
+        "line_color": [
+          20,
+          76,
+          19
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "area_pi_coefficient": 136,
+            "center": [
+              258.0,
+              398.0
+            ],
+            "focal_distance_units": 15,
+            "reasoning_mode": "derived",
+            "semi_axis_x_units": 17,
+            "semi_axis_y_units": 8,
+            "shape_variant": "ellipse"
+          },
+          "entity_id": "shape_1",
+          "entity_type": "ellipse"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            288,
+            288
+          ],
+          "spacing_px": 83,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_2d_analytical_area"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "GH",
+        "GI"
+      ],
+      "annotation_labels": {
+        "a": "GH",
+        "c": "GI"
+      },
+      "annotation_values": {
+        "GH": 17,
+        "GI": 15
+      },
+      "case_id": "ellipse_derived",
+      "formula_expression": "A = \u03c0 * a * sqrt(a^2 - c^2)",
+      "measurement_ref_map": {
+        "GH": 17,
+        "GI": 15
+      },
+      "reasoning_mode": "derived",
+      "shape_variant": "ellipse",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

@@ -1,0 +1,1143 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 6
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        713,
+        181,
+        794,
+        264
+      ],
+      [
+        339,
+        186,
+        378,
+        227
+      ],
+      [
+        542,
+        200,
+        581,
+        241
+      ],
+      [
+        767,
+        276,
+        811,
+        320
+      ],
+      [
+        819,
+        367,
+        872,
+        420
+      ],
+      [
+        712,
+        427,
+        766,
+        482
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_counting_attribute_binding/images/default/0003.png"
+  },
+  "instance_seed": 4950336964740785,
+  "prompt": "The image shows a Reference icon on the left and a Scene panel of icons on the right. Determine the answer: How many icons in the Scene panel match the Reference icon in icon type, color, and orientation all at once? Orientation refers to the icon's rotation.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all icons in the Scene panel that match the Reference icon in icon type, color, and orientation, sorted from top to bottom and then left to right.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[322,150,392,220],[584,320,654,390]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows a Reference icon on the left and a Scene panel of icons on the right. Determine the answer: How many icons in the Scene panel match the Reference icon in icon type, color, and orientation all at once? Orientation refers to the icon's rotation.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all icons in the Scene panel that match the Reference icon in icon type, color, and orientation, sorted from top to bottom and then left to right.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[322,150,392,220],[584,320,654,390]],\"answer\":2}",
+    "answer_only": "The image shows a Reference icon on the left and a Scene panel of icons on the right. Determine the answer: How many icons in the Scene panel match the Reference icon in icon type, color, and orientation all at once? Orientation refers to the icon's rotation.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_icons_counting_attribute_binding",
+  "task_variant": "attribute_binding_type_color_orientation",
+  "trace_payload": {
+    "execution_trace": {
+      "distractor_count": 6,
+      "distractor_count_probabilities": {
+        "1": 0.1,
+        "10": 0.1,
+        "2": 0.1,
+        "3": 0.1,
+        "4": 0.1,
+        "5": 0.1,
+        "6": 0.1,
+        "7": 0.1,
+        "8": 0.1,
+        "9": 0.1
+      },
+      "matching_scene_indices": [
+        3,
+        5,
+        6,
+        8,
+        9,
+        11
+      ],
+      "object_count": 12,
+      "object_count_probabilities": {
+        "10": 0.1,
+        "11": 0.1,
+        "12": 0.1,
+        "13": 0.1,
+        "14": 0.1,
+        "15": 0.1,
+        "16": 0.1,
+        "7": 0.1,
+        "8": 0.1,
+        "9": 0.1
+      },
+      "question_format": "count_reference_attribute_binding_matches",
+      "reference_icon_id": "gi-delapouite-pocket-radio",
+      "reference_rotation_degrees": 0,
+      "reference_tint_rgb": [
+        217,
+        160,
+        103
+      ],
+      "scene_attribute_match_categories": [
+        "no_queried_attributes",
+        "same_type_orientation",
+        "same_color_orientation",
+        "attribute_binding",
+        "same_color_only",
+        "attribute_binding",
+        "attribute_binding",
+        "no_queried_attributes",
+        "attribute_binding",
+        "attribute_binding",
+        "same_color_orientation",
+        "attribute_binding"
+      ],
+      "scene_icon_ids": [
+        "gi-delapouite-warhammer",
+        "gi-delapouite-pocket-radio",
+        "gi-lorc-fire-punch",
+        "gi-delapouite-pocket-radio",
+        "hero-document-currency-dollar",
+        "gi-delapouite-pocket-radio",
+        "gi-delapouite-pocket-radio",
+        "gi-lorc-zig-arrow",
+        "gi-delapouite-pocket-radio",
+        "gi-delapouite-pocket-radio",
+        "hero-megaphone",
+        "gi-delapouite-pocket-radio"
+      ],
+      "scene_rotations_degrees": [
+        270,
+        0,
+        0,
+        0,
+        270,
+        0,
+        0,
+        90,
+        0,
+        0,
+        0,
+        0
+      ],
+      "scene_tints_rgb": [
+        [
+          25,
+          162,
+          141
+        ],
+        [
+          172,
+          72,
+          215
+        ],
+        [
+          217,
+          160,
+          103
+        ],
+        [
+          217,
+          160,
+          103
+        ],
+        [
+          217,
+          160,
+          103
+        ],
+        [
+          217,
+          160,
+          103
+        ],
+        [
+          217,
+          160,
+          103
+        ],
+        [
+          25,
+          162,
+          141
+        ],
+        [
+          217,
+          160,
+          103
+        ],
+        [
+          217,
+          160,
+          103
+        ],
+        [
+          217,
+          160,
+          103
+        ],
+        [
+          217,
+          160,
+          103
+        ]
+      ],
+      "scene_variant": "reference_scene",
+      "target_count": 6,
+      "target_count_probabilities": {
+        "0": 0.09090909090909091,
+        "1": 0.09090909090909091,
+        "10": 0.09090909090909091,
+        "2": 0.09090909090909091,
+        "3": 0.09090909090909091,
+        "4": 0.09090909090909091,
+        "5": 0.09090909090909091,
+        "6": 0.09090909090909091,
+        "7": 0.09090909090909091,
+        "8": 0.09090909090909091,
+        "9": 0.09090909090909091
+      },
+      "task_variant": "attribute_binding_type_color_orientation"
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          713,
+          181,
+          794,
+          264
+        ],
+        [
+          339,
+          186,
+          378,
+          227
+        ],
+        [
+          542,
+          200,
+          581,
+          241
+        ],
+        [
+          767,
+          276,
+          811,
+          320
+        ],
+        [
+          819,
+          367,
+          872,
+          420
+        ],
+        [
+          712,
+          427,
+          766,
+          482
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "distractor_count": 6,
+        "distractor_count_probabilities": {
+          "1": 0.1,
+          "10": 0.1,
+          "2": 0.1,
+          "3": 0.1,
+          "4": 0.1,
+          "5": 0.1,
+          "6": 0.1,
+          "7": 0.1,
+          "8": 0.1,
+          "9": 0.1
+        },
+        "object_count": 12,
+        "object_count_probabilities": {
+          "10": 0.1,
+          "11": 0.1,
+          "12": 0.1,
+          "13": 0.1,
+          "14": 0.1,
+          "15": 0.1,
+          "16": 0.1,
+          "7": 0.1,
+          "8": 0.1,
+          "9": 0.1
+        },
+        "pool_manifest": "non_symmetry.txt",
+        "rotation_candidates_degrees": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "target_count": 6,
+        "target_count_probabilities": {
+          "0": 0.09090909090909091,
+          "1": 0.09090909090909091,
+          "10": 0.09090909090909091,
+          "2": 0.09090909090909091,
+          "3": 0.09090909090909091,
+          "4": 0.09090909090909091,
+          "5": 0.09090909090909091,
+          "6": 0.09090909090909091,
+          "7": 0.09090909090909091,
+          "8": 0.09090909090909091,
+          "9": 0.09090909090909091
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "icons_counting_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all icons in the Scene panel that match the Reference icon in icon type, color, and orientation, sorted from top to bottom and then left to right",
+          "json_example": "{\"evidence\":[[322,150,392,220],[584,320,654,390]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+          "question_text": "How many icons in the Scene panel match the Reference icon in icon type, color, and orientation all at once? Orientation refers to the icon's rotation."
+        },
+        "task_family_key": "reference_scene_counting",
+        "task_family_variant_index": 1,
+        "task_key": "counting_query",
+        "task_variant_index": 4,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/counting/icons_counting_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:counting_query": 5,
+          "task_family:reference_scene_counting": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "icons_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all icons in the Scene panel that match the Reference icon in icon type, color, and orientation, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[322,150,392,220],[584,320,654,390]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+              "question_text": "How many icons in the Scene panel match the Reference icon in icon type, color, and orientation all at once? Orientation refers to the icon's rotation."
+            },
+            "task_family_key": "reference_scene_counting",
+            "task_family_variant_index": 1,
+            "task_key": "counting_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/counting/icons_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:counting_query": 5,
+              "task_family:reference_scene_counting": 5
+            }
+          },
+          "prompt": "The image shows a Reference icon on the left and a Scene panel of icons on the right. Determine the answer: How many icons in the Scene panel match the Reference icon in icon type, color, and orientation all at once? Orientation refers to the icon's rotation.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all icons in the Scene panel that match the Reference icon in icon type, color, and orientation, sorted from top to bottom and then left to right.\nAnswer: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[322,150,392,220],[584,320,654,390]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "icons_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all icons in the Scene panel that match the Reference icon in icon type, color, and orientation, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[322,150,392,220],[584,320,654,390]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference icon on the left and a Scene panel of icons on the right",
+              "question_text": "How many icons in the Scene panel match the Reference icon in icon type, color, and orientation all at once? Orientation refers to the icon's rotation."
+            },
+            "task_family_key": "reference_scene_counting",
+            "task_family_variant_index": 1,
+            "task_key": "counting_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/counting/icons_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:counting_query": 5,
+              "task_family:reference_scene_counting": 5
+            }
+          },
+          "prompt": "The image shows a Reference icon on the left and a Scene panel of icons on the right. Determine the answer: How many icons in the Scene panel match the Reference icon in icon type, color, and orientation all at once? Orientation refers to the icon's rotation.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "attribute_binding_type_color_orientation",
+      "template_id": "icons_counting_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching_scene_boxes": [
+          [
+            713,
+            181,
+            794,
+            264
+          ],
+          [
+            339,
+            186,
+            378,
+            227
+          ],
+          [
+            542,
+            200,
+            581,
+            241
+          ],
+          [
+            767,
+            276,
+            811,
+            320
+          ],
+          [
+            819,
+            367,
+            872,
+            420
+          ],
+          [
+            712,
+            427,
+            766,
+            482
+          ]
+        ],
+        "reference_icon": {
+          "bbox_xyxy": [
+            86,
+            225,
+            210,
+            351
+          ],
+          "icon_id": "gi-delapouite-pocket-radio",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 1488550344077165,
+          "nominal_size_px": 136,
+          "panel": "reference",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            217,
+            160,
+            103
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        960,
+        544
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          960,
+          544
+        ],
+        "reference_content_xyxy": [
+          44,
+          77,
+          252,
+          500
+        ],
+        "reference_panel_xyxy": [
+          24,
+          24,
+          272,
+          520
+        ],
+        "scene_content_xyxy": [
+          316,
+          77,
+          916,
+          500
+        ],
+        "scene_panel_xyxy": [
+          296,
+          24,
+          936,
+          520
+        ]
+      },
+      "style": {
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "palette_size_max": 4,
+        "palette_size_min": 3,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "reference_icon_size_max_px": 136,
+        "reference_icon_size_min_px": 136,
+        "reference_icon_size_px": 136,
+        "sampled_palette_rgb": [
+          [
+            25,
+            162,
+            141
+          ],
+          [
+            172,
+            72,
+            215
+          ],
+          [
+            217,
+            160,
+            103
+          ]
+        ],
+        "scene_icon_size_max_px": 96,
+        "scene_icon_size_min_px": 40,
+        "scene_max_overlap_fraction": 0.1,
+        "scene_placement_max_attempts": 120,
+        "scene_size_shrink_factor": 0.9,
+        "scene_size_shrink_rounds": 6
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_xyxy": [
+            86,
+            225,
+            210,
+            351
+          ],
+          "icon_id": "gi-delapouite-pocket-radio",
+          "instance_id": "reference_icon",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 1488550344077165,
+          "nominal_size_px": 136,
+          "panel": "reference",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            217,
+            160,
+            103
+          ]
+        },
+        {
+          "attribute_match_category": "no_queried_attributes",
+          "bbox_xyxy": [
+            541,
+            352,
+            600,
+            409
+          ],
+          "icon_id": "gi-delapouite-warhammer",
+          "index": 0,
+          "instance_id": "scene_icon_0",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.927195
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "quality": 76.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 3471151791384642,
+          "nominal_size_px": 64,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "same_color_as_reference": false,
+          "same_orientation_as_reference": false,
+          "same_type_as_reference": false,
+          "tint_rgb": [
+            25,
+            162,
+            141
+          ]
+        },
+        {
+          "attribute_match_category": "same_type_orientation",
+          "bbox_xyxy": [
+            461,
+            445,
+            514,
+            498
+          ],
+          "icon_id": "gi-delapouite-pocket-radio",
+          "index": 1,
+          "instance_id": "scene_icon_1",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.928769
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 6335428686747363,
+          "nominal_size_px": 57,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "same_color_as_reference": false,
+          "same_orientation_as_reference": true,
+          "same_type_as_reference": true,
+          "tint_rgb": [
+            172,
+            72,
+            215
+          ]
+        },
+        {
+          "attribute_match_category": "same_color_orientation",
+          "bbox_xyxy": [
+            448,
+            164,
+            526,
+            241
+          ],
+          "icon_id": "gi-lorc-fire-punch",
+          "index": 2,
+          "instance_id": "scene_icon_2",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.538885
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "scale": 0.869813
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 35755355724372,
+          "nominal_size_px": 82,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "same_color_as_reference": true,
+          "same_orientation_as_reference": true,
+          "same_type_as_reference": false,
+          "tint_rgb": [
+            217,
+            160,
+            103
+          ]
+        },
+        {
+          "attribute_match_category": "attribute_binding",
+          "bbox_xyxy": [
+            713,
+            181,
+            794,
+            264
+          ],
+          "icon_id": "gi-delapouite-pocket-radio",
+          "index": 3,
+          "instance_id": "scene_icon_3",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 7237506045899518,
+          "nominal_size_px": 89,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "same_color_as_reference": true,
+          "same_orientation_as_reference": true,
+          "same_type_as_reference": true,
+          "tint_rgb": [
+            217,
+            160,
+            103
+          ]
+        },
+        {
+          "attribute_match_category": "same_color_only",
+          "bbox_xyxy": [
+            347,
+            418,
+            411,
+            468
+          ],
+          "icon_id": "hero-document-currency-dollar",
+          "index": 4,
+          "instance_id": "scene_icon_4",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 74.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 5024454241684217,
+          "nominal_size_px": 72,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "same_color_as_reference": true,
+          "same_orientation_as_reference": false,
+          "same_type_as_reference": false,
+          "tint_rgb": [
+            217,
+            160,
+            103
+          ]
+        },
+        {
+          "attribute_match_category": "attribute_binding",
+          "bbox_xyxy": [
+            339,
+            186,
+            378,
+            227
+          ],
+          "icon_id": "gi-delapouite-pocket-radio",
+          "index": 5,
+          "instance_id": "scene_icon_5",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.910676
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 8685279228393933,
+          "nominal_size_px": 43,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "same_color_as_reference": true,
+          "same_orientation_as_reference": true,
+          "same_type_as_reference": true,
+          "tint_rgb": [
+            217,
+            160,
+            103
+          ]
+        },
+        {
+          "attribute_match_category": "attribute_binding",
+          "bbox_xyxy": [
+            712,
+            427,
+            766,
+            482
+          ],
+          "icon_id": "gi-delapouite-pocket-radio",
+          "index": 6,
+          "instance_id": "scene_icon_6",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 6152661616564137,
+          "nominal_size_px": 59,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "same_color_as_reference": true,
+          "same_orientation_as_reference": true,
+          "same_type_as_reference": true,
+          "tint_rgb": [
+            217,
+            160,
+            103
+          ]
+        },
+        {
+          "attribute_match_category": "no_queried_attributes",
+          "bbox_xyxy": [
+            395,
+            330,
+            454,
+            409
+          ],
+          "icon_id": "gi-lorc-zig-arrow",
+          "index": 7,
+          "instance_id": "scene_icon_7",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.547124
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "quality": 73.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 569634765001956,
+          "nominal_size_px": 85,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "same_color_as_reference": false,
+          "same_orientation_as_reference": false,
+          "same_type_as_reference": false,
+          "tint_rgb": [
+            25,
+            162,
+            141
+          ]
+        },
+        {
+          "attribute_match_category": "attribute_binding",
+          "bbox_xyxy": [
+            767,
+            276,
+            811,
+            320
+          ],
+          "icon_id": "gi-delapouite-pocket-radio",
+          "index": 8,
+          "instance_id": "scene_icon_8",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.523598
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 6615009832137191,
+          "nominal_size_px": 48,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "same_color_as_reference": true,
+          "same_orientation_as_reference": true,
+          "same_type_as_reference": true,
+          "tint_rgb": [
+            217,
+            160,
+            103
+          ]
+        },
+        {
+          "attribute_match_category": "attribute_binding",
+          "bbox_xyxy": [
+            819,
+            367,
+            872,
+            420
+          ],
+          "icon_id": "gi-delapouite-pocket-radio",
+          "index": 9,
+          "instance_id": "scene_icon_9",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 3359219460744280,
+          "nominal_size_px": 57,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "same_color_as_reference": true,
+          "same_orientation_as_reference": true,
+          "same_type_as_reference": true,
+          "tint_rgb": [
+            217,
+            160,
+            103
+          ]
+        },
+        {
+          "attribute_match_category": "same_color_orientation",
+          "bbox_xyxy": [
+            460,
+            104,
+            517,
+            160
+          ],
+          "icon_id": "hero-megaphone",
+          "index": 10,
+          "instance_id": "scene_icon_10",
+          "is_match": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.04406
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "scale": 0.897957
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 1022727984454964,
+          "nominal_size_px": 69,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "same_color_as_reference": true,
+          "same_orientation_as_reference": true,
+          "same_type_as_reference": false,
+          "tint_rgb": [
+            217,
+            160,
+            103
+          ]
+        },
+        {
+          "attribute_match_category": "attribute_binding",
+          "bbox_xyxy": [
+            542,
+            200,
+            581,
+            241
+          ],
+          "icon_id": "gi-delapouite-pocket-radio",
+          "index": 11,
+          "instance_id": "scene_icon_11",
+          "is_match": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 84.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "radius": 0.261652
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 5835112220592134,
+          "nominal_size_px": 43,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "same_color_as_reference": true,
+          "same_orientation_as_reference": true,
+          "same_type_as_reference": true,
+          "tint_rgb": [
+            217,
+            160,
+            103
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            960,
+            544
+          ],
+          "reference_content_xyxy": [
+            44,
+            77,
+            252,
+            500
+          ],
+          "reference_panel_xyxy": [
+            24,
+            24,
+            272,
+            520
+          ],
+          "scene_content_xyxy": [
+            316,
+            77,
+            916,
+            500
+          ],
+          "scene_panel_xyxy": [
+            296,
+            24,
+            936,
+            520
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "binding_attributes": [
+          "icon_id",
+          "tint_rgb",
+          "rotation_degrees"
+        ],
+        "counting_target": "exact_reference_match",
+        "matching_scene_indices": [
+          3,
+          5,
+          6,
+          8,
+          9,
+          11
+        ],
+        "reference_icon_id": "gi-delapouite-pocket-radio",
+        "reference_rotation_degrees": 0,
+        "reference_tint_rgb": [
+          217,
+          160,
+          103
+        ]
+      },
+      "scene_kind": "icons_reference_counting_attribute_binding"
+    },
+    "witness_symbolic": {
+      "binding_attributes": [
+        "icon_id",
+        "tint_rgb",
+        "rotation_degrees"
+      ],
+      "matching_scene_indices": [
+        3,
+        5,
+        6,
+        8,
+        9,
+        11
+      ],
+      "reference_icon_id": "gi-delapouite-pocket-radio",
+      "reference_rotation_degrees": 0,
+      "reference_tint_rgb": [
+        217,
+        160,
+        103
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

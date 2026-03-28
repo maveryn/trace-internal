@@ -1,0 +1,552 @@
+{
+  "answer_gt": {
+    "type": "number",
+    "value": 1.0
+  },
+  "evidence_gt": {
+    "type": "graph_point",
+    "value": [
+      -1,
+      0
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_measurement_slope/images/line_slope/0000.png"
+  },
+  "instance_seed": 4338391602194087,
+  "prompt": "Use the graph-paper diagram showing a straight line. Determine the answer: What is the slope of the line?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to one graph-paper point [x, y] where the line crosses the x-axis.\nAnswer format: set \"answer\" to the slope value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[2,0],\"answer\":-1.5}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the graph-paper diagram showing a straight line. Determine the answer: What is the slope of the line?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to one graph-paper point [x, y] where the line crosses the x-axis.\nAnswer format: set \"answer\" to the slope value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[2,0],\"answer\":-1.5}",
+    "answer_only": "Use the graph-paper diagram showing a straight line. Determine the answer: What is the slope of the line?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the slope value rounded to one decimal place.\nExample JSON:\n{\"answer\":-1.5}"
+  },
+  "task": "task_geometry_measurement_slope",
+  "task_variant": "line_slope",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 1.0,
+      "feasible_answer_values": [
+        -1.0,
+        -0.5,
+        0.5,
+        1.0
+      ],
+      "graph_unit_bounds": {
+        "x_max": 2,
+        "x_min": -2,
+        "y_max": 2,
+        "y_min": -2
+      },
+      "lattice_point_graph": [
+        0,
+        1
+      ],
+      "question_format": "numeric_open",
+      "required_evidence_labels": [
+        "X"
+      ],
+      "slope_tenths": 10,
+      "slope_value": 1.0,
+      "task_variant": "line_slope",
+      "task_variant_probabilities": {
+        "line_slope": 1.0
+      },
+      "x_axis_crossing_graph": [
+        -1,
+        0
+      ]
+    },
+    "projected_evidence": {
+      "grid_point_map": {
+        "X": [
+          -1,
+          0
+        ]
+      },
+      "grid_point_path": [
+        [
+          -1,
+          0
+        ]
+      ],
+      "grid_point_set": [
+        [
+          -1,
+          0
+        ]
+      ],
+      "pixel_point_map": {
+        "X": [
+          209.0,
+          314.0
+        ]
+      },
+      "pixel_point_path": [
+        [
+          209.0,
+          314.0
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          209.0,
+          314.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_rounding": "one_decimal",
+        "slope_tenths": 10,
+        "slope_tenths_max": 40,
+        "slope_tenths_min": -40,
+        "slope_tenths_probabilities": {
+          "-1": 0.0,
+          "-10": 0.0,
+          "-11": 0.0,
+          "-12": 0.0,
+          "-13": 0.0,
+          "-14": 0.0,
+          "-15": 0.0,
+          "-16": 0.0,
+          "-17": 0.0,
+          "-18": 0.0,
+          "-19": 0.0,
+          "-2": 0.0,
+          "-20": 0.0,
+          "-21": 0.0,
+          "-22": 0.0,
+          "-23": 0.0,
+          "-24": 0.0,
+          "-25": 0.0,
+          "-26": 0.0,
+          "-27": 0.0,
+          "-28": 0.0,
+          "-29": 0.0,
+          "-3": 0.0,
+          "-30": 0.0,
+          "-31": 0.0,
+          "-32": 0.0,
+          "-33": 0.0,
+          "-34": 0.0,
+          "-35": 0.0,
+          "-36": 0.0,
+          "-37": 0.0,
+          "-38": 0.0,
+          "-39": 0.0,
+          "-4": 0.0,
+          "-40": 0.0,
+          "-5": 0.0,
+          "-6": 0.0,
+          "-7": 0.0,
+          "-8": 0.0,
+          "-9": 0.0,
+          "1": 0.0,
+          "10": 1.0,
+          "11": 0.0,
+          "12": 0.0,
+          "13": 0.0,
+          "14": 0.0,
+          "15": 0.0,
+          "16": 0.0,
+          "17": 0.0,
+          "18": 0.0,
+          "19": 0.0,
+          "2": 0.0,
+          "20": 0.0,
+          "21": 0.0,
+          "22": 0.0,
+          "23": 0.0,
+          "24": 0.0,
+          "25": 0.0,
+          "26": 0.0,
+          "27": 0.0,
+          "28": 0.0,
+          "29": 0.0,
+          "3": 0.0,
+          "30": 0.0,
+          "31": 0.0,
+          "32": 0.0,
+          "33": 0.0,
+          "34": 0.0,
+          "35": 0.0,
+          "36": 0.0,
+          "37": 0.0,
+          "38": 0.0,
+          "39": 0.0,
+          "4": 0.0,
+          "40": 0.0,
+          "5": 0.0,
+          "6": 0.0,
+          "7": 0.0,
+          "8": 0.0,
+          "9": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "geometry_measurement_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the slope value rounded to one decimal place",
+          "evidence_hint": "set \"evidence\" to one graph-paper point [x, y] where the line crosses the x-axis",
+          "json_example": "{\"evidence\":[2,0],\"answer\":-1.5}",
+          "json_example_answer_only": "{\"answer\":-1.5}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a straight line",
+          "question_text": "What is the slope of the line?"
+        },
+        "task_family_key": "measurement_single_object",
+        "task_family_variant_index": 3,
+        "task_key": "measurement_query",
+        "task_variant_index": 4,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/measurement/geometry_measurement_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:measurement_query": 5,
+          "task_family:measurement_single_object": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_measurement_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the slope value rounded to one decimal place",
+              "evidence_hint": "set \"evidence\" to one graph-paper point [x, y] where the line crosses the x-axis",
+              "json_example": "{\"evidence\":[2,0],\"answer\":-1.5}",
+              "json_example_answer_only": "{\"answer\":-1.5}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a straight line",
+              "question_text": "What is the slope of the line?"
+            },
+            "task_family_key": "measurement_single_object",
+            "task_family_variant_index": 3,
+            "task_key": "measurement_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/measurement/geometry_measurement_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:measurement_query": 5,
+              "task_family:measurement_single_object": 5
+            }
+          },
+          "prompt": "Use the graph-paper diagram showing a straight line. Determine the answer: What is the slope of the line?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to one graph-paper point [x, y] where the line crosses the x-axis.\nAnswer format: set \"answer\" to the slope value rounded to one decimal place.\nExample JSON:\n{\"evidence\":[2,0],\"answer\":-1.5}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "geometry_measurement_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the slope value rounded to one decimal place",
+              "evidence_hint": "set \"evidence\" to one graph-paper point [x, y] where the line crosses the x-axis",
+              "json_example": "{\"evidence\":[2,0],\"answer\":-1.5}",
+              "json_example_answer_only": "{\"answer\":-1.5}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a straight line",
+              "question_text": "What is the slope of the line?"
+            },
+            "task_family_key": "measurement_single_object",
+            "task_family_variant_index": 3,
+            "task_key": "measurement_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/measurement/geometry_measurement_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:measurement_query": 5,
+              "task_family:measurement_single_object": 5
+            }
+          },
+          "prompt": "Use the graph-paper diagram showing a straight line. Determine the answer: What is the slope of the line?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the slope value rounded to one decimal place.\nExample JSON:\n{\"answer\":-1.5}"
+        }
+      },
+      "task_variant": "line_slope",
+      "template_id": "geometry_measurement_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "target_line": {
+          "coord_space": "pixel",
+          "point": [
+            209.0,
+            314.0
+          ],
+          "polyline": [
+            [
+              115.83220965137096,
+              407.167790348629
+            ],
+            [
+              383.35805930769436,
+              139.64194069230567
+            ]
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "graph_paper",
+        "style_spec": {
+          "axis_arrow_size": 10,
+          "axis_arrows_enabled": true,
+          "axis_color": [
+            195,
+            200,
+            207
+          ],
+          "axis_darken_range": [
+            32,
+            48
+          ],
+          "axis_enabled": true,
+          "axis_line_width": 2,
+          "axis_scale_label_max_abs": 0,
+          "axis_scale_labels_enabled": true,
+          "base_color": [
+            255,
+            255,
+            255
+          ],
+          "base_color_jitter": [
+            0,
+            0
+          ],
+          "center_point_color": [
+            187,
+            192,
+            199
+          ],
+          "center_point_darken_extra_range": [
+            8,
+            14
+          ],
+          "center_point_enabled": true,
+          "center_point_radius": 2,
+          "color_variation_applied": true,
+          "color_variation_enabled": true,
+          "color_variation_sampled": {
+            "axis_darken": 34,
+            "base_color_delta": 0,
+            "center_point_darken_extra": 8,
+            "line_color_delta": 5,
+            "major_line_darken": 12,
+            "origin_label_darken_extra": 12
+          },
+          "kind": "grid",
+          "line_color": [
+            229,
+            234,
+            241
+          ],
+          "line_color_jitter": [
+            -5,
+            5
+          ],
+          "line_width": 1,
+          "major_every": 0,
+          "major_line_color": [
+            217,
+            222,
+            229
+          ],
+          "major_line_darken_range": [
+            6,
+            14
+          ],
+          "major_line_width": 1,
+          "origin_label_color": [
+            183,
+            188,
+            195
+          ],
+          "origin_label_darken_extra_range": [
+            6,
+            12
+          ],
+          "origin_label_enabled": false,
+          "origin_label_text": "0",
+          "outer_margin_px": 16,
+          "scene_supersample_scale": 3,
+          "spacing": 105,
+          "supersample_scale": 1
+        }
+      },
+      "canvas_size": 630,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 4,
+        "full_cells_y": 4,
+        "origin_pixel": [
+          314,
+          314
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 105,
+        "target_cells_x": 6,
+        "target_cells_y": 6,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 4,
+        "full_cells_y": 4,
+        "partial_edge_cells": true,
+        "spacing_px": 105,
+        "target_cells_x": 6,
+        "target_cells_y": 6
+      },
+      "line_style": {
+        "line_width_px": 4
+      },
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "scale": 0.940533
+            },
+            "type": "downsample"
+          }
+        ],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          41,
+          41,
+          159
+        ],
+        "label_stroke_color": [
+          250,
+          251,
+          248
+        ],
+        "line_color": [
+          41,
+          41,
+          159
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "axis_crossing_graph": [
+              -1,
+              0
+            ],
+            "lattice_point_graph": [
+              0,
+              1
+            ],
+            "line_endpoints_graph": [
+              [
+                -1.8873122890345622,
+                -0.8873122890345622
+              ],
+              [
+                0.6605529457875652,
+                1.6605529457875652
+              ]
+            ],
+            "line_endpoints_pixel": [
+              [
+                115.83220965137096,
+                407.167790348629
+              ],
+              [
+                383.35805930769436,
+                139.64194069230567
+              ]
+            ],
+            "slope_tenths": 10,
+            "slope_value": 1.0,
+            "slope_vector": [
+              1,
+              1
+            ]
+          },
+          "entity_id": "line_1",
+          "entity_type": "line"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            314,
+            314
+          ],
+          "spacing_px": 105,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_2d_slope_measurement"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "X"
+      ],
+      "type": "x_axis_crossing"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

@@ -1,0 +1,443 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 420
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "RS": 20,
+      "RT": 29
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_2d_area/images/rectangle_derived/0004.png"
+  },
+  "instance_seed": 8440448899977661,
+  "prompt": "You are given an image showing a geometric shape with measurement annotations. One side length and the diagonal of the rectangle are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, RT.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"RS\":2,\"RT\":3},\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given an image showing a geometric shape with measurement annotations. One side length and the diagonal of the rectangle are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, RT.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"RS\":2,\"RT\":3},\"answer\":8}",
+    "answer_only": "You are given an image showing a geometric shape with measurement annotations. One side length and the diagonal of the rectangle are annotated. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_geometry_analytical_2d_area",
+  "task_variant": "rectangle_derived",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 2500,
+      "answer_min": 8,
+      "answer_scalar": 420,
+      "answer_type": "integer",
+      "answer_value": 420,
+      "case_id": "rectangle_derived",
+      "evidence_annotations": {
+        "d": "RT",
+        "s": "RS"
+      },
+      "evidence_ids": [
+        "RS",
+        "RT"
+      ],
+      "evidence_label_values": {
+        "d": 29,
+        "s": 20
+      },
+      "evidence_map": {
+        "RS": 20,
+        "RT": 29
+      },
+      "evidence_roles": [
+        "s",
+        "d"
+      ],
+      "formula_expression": "A = s * sqrt(d^2 - s^2)",
+      "mode_probabilities": {
+        "derived": 0.5,
+        "explicit": 0.5
+      },
+      "reasoning_mode": "derived",
+      "required_annotations": [
+        "RS",
+        "RT"
+      ],
+      "shape_probabilities": {
+        "circle": 0.14285714285714285,
+        "ellipse": 0.14285714285714285,
+        "parallelogram": 0.14285714285714285,
+        "rectangle": 0.14285714285714285,
+        "rhombus": 0.14285714285714285,
+        "trapezoid": 0.14285714285714285,
+        "triangle": 0.14285714285714285
+      },
+      "shape_variant": "rectangle"
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "d": "RT",
+        "s": "RS"
+      },
+      "id_set": [
+        "RS",
+        "RT"
+      ],
+      "measurement_ref_map": {
+        "RS": 20,
+        "RT": 29
+      },
+      "pixel_annotation_centers": {
+        "RS": [
+          382.0,
+          244.0
+        ],
+        "RT": [
+          361.7241379310345,
+          396.3103448275862
+        ]
+      },
+      "pixel_point_set": [
+        [
+          382.0,
+          244.0
+        ],
+        [
+          361.7241379310345,
+          396.3103448275862
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 2500,
+        "answer_min": 8,
+        "mode_probabilities": {
+          "derived": 0.5,
+          "explicit": 0.5
+        },
+        "reasoning_mode": "derived",
+        "shape_probabilities": {
+          "circle": 0.14285714285714285,
+          "ellipse": 0.14285714285714285,
+          "parallelogram": 0.14285714285714285,
+          "rectangle": 0.14285714285714285,
+          "rhombus": 0.14285714285714285,
+          "trapezoid": 0.14285714285714285,
+          "triangle": 0.14285714285714285
+        },
+        "shape_variant": "rectangle"
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "geometry_analytical_area_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the area value as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, RT",
+          "json_example": "{\"evidence\":{\"RS\":2,\"RT\":3},\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a geometric shape with measurement annotations",
+          "question_text": "One side length and the diagonal of the rectangle are annotated. What is its area in square units?"
+        },
+        "task_family_key": "analytical_single_shape",
+        "task_family_variant_index": 0,
+        "task_key": "analytical_area_query",
+        "task_variant_index": 0,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_2d/geometry_analytical_area_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_area_query": 5,
+          "task_family:analytical_single_shape": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_analytical_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the area value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, RT",
+              "json_example": "{\"evidence\":{\"RS\":2,\"RT\":3},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric shape with measurement annotations",
+              "question_text": "One side length and the diagonal of the rectangle are annotated. What is its area in square units?"
+            },
+            "task_family_key": "analytical_single_shape",
+            "task_family_variant_index": 0,
+            "task_key": "analytical_area_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_area_query": 5,
+              "task_family:analytical_single_shape": 5
+            }
+          },
+          "prompt": "You are given an image showing a geometric shape with measurement annotations. One side length and the diagonal of the rectangle are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, RT.\nAnswer format: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"RS\":2,\"RT\":3},\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_analytical_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the area value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: RS, RT",
+              "json_example": "{\"evidence\":{\"RS\":2,\"RT\":3},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric shape with measurement annotations",
+              "question_text": "One side length and the diagonal of the rectangle are annotated. What is its area in square units?"
+            },
+            "task_family_key": "analytical_single_shape",
+            "task_family_variant_index": 0,
+            "task_key": "analytical_area_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_area_query": 5,
+              "task_family:analytical_single_shape": 5
+            }
+          },
+          "prompt": "You are given an image showing a geometric shape with measurement annotations. One side length and the diagonal of the rectangle are annotated. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "rectangle_derived",
+      "template_id": "geometry_analytical_area_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "RS": [
+          382.0,
+          244.0
+        ],
+        "RT": [
+          361.7241379310345,
+          396.3103448275862
+        ]
+      },
+      "annotation_labels": {
+        "d": "RT",
+        "s": "RS"
+      },
+      "coord_space": "pixel",
+      "entity_id": "shape_1",
+      "instance_anchor": {
+        "coord_space": "pixel",
+        "point": [
+          282.0,
+          272.0
+        ],
+        "polyline": [
+          [
+            282.0,
+            272.0
+          ],
+          [
+            482.0,
+            272.0
+          ],
+          [
+            482.0,
+            482.0
+          ],
+          [
+            282.0,
+            482.0
+          ],
+          [
+            282.0,
+            272.0
+          ]
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_offwhite",
+        "style_spec": {
+          "color": [
+            252,
+            252,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 584,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "origin_pixel": [
+          292,
+          292
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 49,
+        "target_cells_x": 12,
+        "target_cells_y": 12,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "partial_edge_cells": true,
+        "spacing_px": 49,
+        "target_cells_x": 12,
+        "target_cells_y": 12
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          138,
+          26,
+          26
+        ],
+        "label_stroke_color": [
+          254,
+          255,
+          252
+        ],
+        "line_color": [
+          138,
+          26,
+          26
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "area_square_units": 420,
+            "diagonal_units": 29,
+            "inferred_side_units": 21,
+            "known_side_units": 20,
+            "reasoning_mode": "derived",
+            "shape_variant": "rectangle",
+            "vertices": [
+              [
+                282.0,
+                272.0
+              ],
+              [
+                482.0,
+                272.0
+              ],
+              [
+                482.0,
+                482.0
+              ],
+              [
+                282.0,
+                482.0
+              ]
+            ]
+          },
+          "entity_id": "shape_1",
+          "entity_type": "rectangle"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            292,
+            292
+          ],
+          "spacing_px": 49,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_2d_analytical_area"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "RS",
+        "RT"
+      ],
+      "annotation_labels": {
+        "d": "RT",
+        "s": "RS"
+      },
+      "annotation_values": {
+        "RS": 20,
+        "RT": 29
+      },
+      "case_id": "rectangle_derived",
+      "formula_expression": "A = s * sqrt(d^2 - s^2)",
+      "measurement_ref_map": {
+        "RS": 20,
+        "RT": 29
+      },
+      "reasoning_mode": "derived",
+      "shape_variant": "rectangle",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

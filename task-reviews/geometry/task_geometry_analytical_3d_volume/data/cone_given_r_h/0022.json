@@ -1,0 +1,418 @@
+{
+  "answer_gt": {
+    "type": "pi_expression",
+    "value": "4096\u03c0"
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "XY": 16,
+      "ZX": 48
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_3d_volume/images/cone_given_r_h/0022.png"
+  },
+  "instance_seed": 6104212495335514,
+  "prompt": "Look at the annotated image showing an annotated 3D solid. Read the marked measurements and answer: The cone has an annotated radius and height. What is its volume? Express the result in k\u03c0 form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, ZX.\nAnswer requirement: set \"answer\" to the value in the form k\u03c0 (for example 12\u03c0).\nExample JSON:\n{\"evidence\":{\"XY\":2,\"ZX\":3},\"answer\":\"12\u03c0\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the annotated image showing an annotated 3D solid. Read the marked measurements and answer: The cone has an annotated radius and height. What is its volume? Express the result in k\u03c0 form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, ZX.\nAnswer requirement: set \"answer\" to the value in the form k\u03c0 (for example 12\u03c0).\nExample JSON:\n{\"evidence\":{\"XY\":2,\"ZX\":3},\"answer\":\"12\u03c0\"}",
+    "answer_only": "Look at the annotated image showing an annotated 3D solid. Read the marked measurements and answer: The cone has an annotated radius and height. What is its volume? Express the result in k\u03c0 form.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the value in the form k\u03c0 (for example 12\u03c0).\nExample JSON:\n{\"answer\":\"12\u03c0\"}"
+  },
+  "task": "task_geometry_analytical_3d_volume",
+  "task_variant": "cone_given_r_h",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 200000,
+      "answer_min": 8,
+      "answer_scalar": 4096,
+      "answer_type": "pi_expression",
+      "answer_value": "4096\u03c0",
+      "evidence_map": {
+        "XY": 16,
+        "ZX": 48
+      },
+      "evidence_role_tokens": {
+        "h": "ZX",
+        "r": "XY"
+      },
+      "evidence_role_values": {
+        "h": 48,
+        "r": 16
+      },
+      "evidence_roles": [
+        "r",
+        "h"
+      ],
+      "formula_expression": "V = (\u03c0 * r^2 * h) / 3",
+      "required_annotations": [
+        "XY",
+        "ZX"
+      ],
+      "task_variant": "cone_given_r_h",
+      "variant_probabilities": {
+        "cone_given_r_h": 0.16666666666666666,
+        "cylinder_given_r_h": 0.16666666666666666,
+        "rectangular_prism_given_lwh": 0.16666666666666666,
+        "sphere_given_r": 0.16666666666666666,
+        "square_pyramid_given_base_height": 0.16666666666666666,
+        "triangular_prism_given_b_h_l": 0.16666666666666666
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "h": "ZX",
+        "r": "XY"
+      },
+      "id_set": [
+        "XY",
+        "ZX"
+      ],
+      "measurement_ref_map": {
+        "XY": 16,
+        "ZX": 48
+      },
+      "pixel_annotation_centers": {
+        "XY": [
+          445.05263157894734,
+          432.88000000000005
+        ],
+        "ZX": [
+          389.5,
+          154.22210526315794
+        ]
+      },
+      "pixel_point_set": [
+        [
+          445.05263157894734,
+          432.88000000000005
+        ],
+        [
+          389.5,
+          154.22210526315794
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 200000,
+        "answer_min": 8,
+        "task_variant": "cone_given_r_h",
+        "variant_probabilities": {
+          "cone_given_r_h": 0.16666666666666666,
+          "cylinder_given_r_h": 0.16666666666666666,
+          "rectangular_prism_given_lwh": 0.16666666666666666,
+          "sphere_given_r": 0.16666666666666666,
+          "square_pyramid_given_base_height": 0.16666666666666666,
+          "triangular_prism_given_b_h_l": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "geometry_analytical_volume_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the value in the form k\u03c0 (for example 12\u03c0)",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, ZX",
+          "json_example": "{\"evidence\":{\"XY\":2,\"ZX\":3},\"answer\":\"12\u03c0\"}",
+          "json_example_answer_only": "{\"answer\":\"12\u03c0\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "an annotated 3D solid",
+          "question_text": "The cone has an annotated radius and height. What is its volume? Express the result in k\u03c0 form."
+        },
+        "task_family_key": "analytical_single_solid",
+        "task_family_variant_index": 2,
+        "task_key": "analytical_volume_query",
+        "task_variant_index": 3,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_3d/geometry_analytical_volume_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_volume_query": 5,
+          "task_family:analytical_single_solid": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "geometry_analytical_volume_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the value in the form k\u03c0 (for example 12\u03c0)",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, ZX",
+              "json_example": "{\"evidence\":{\"XY\":2,\"ZX\":3},\"answer\":\"12\u03c0\"}",
+              "json_example_answer_only": "{\"answer\":\"12\u03c0\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an annotated 3D solid",
+              "question_text": "The cone has an annotated radius and height. What is its volume? Express the result in k\u03c0 form."
+            },
+            "task_family_key": "analytical_single_solid",
+            "task_family_variant_index": 2,
+            "task_key": "analytical_volume_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_3d/geometry_analytical_volume_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_volume_query": 5,
+              "task_family:analytical_single_solid": 5
+            }
+          },
+          "prompt": "Look at the annotated image showing an annotated 3D solid. Read the marked measurements and answer: The cone has an annotated radius and height. What is its volume? Express the result in k\u03c0 form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, ZX.\nAnswer requirement: set \"answer\" to the value in the form k\u03c0 (for example 12\u03c0).\nExample JSON:\n{\"evidence\":{\"XY\":2,\"ZX\":3},\"answer\":\"12\u03c0\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "geometry_analytical_volume_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the value in the form k\u03c0 (for example 12\u03c0)",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: XY, ZX",
+              "json_example": "{\"evidence\":{\"XY\":2,\"ZX\":3},\"answer\":\"12\u03c0\"}",
+              "json_example_answer_only": "{\"answer\":\"12\u03c0\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an annotated 3D solid",
+              "question_text": "The cone has an annotated radius and height. What is its volume? Express the result in k\u03c0 form."
+            },
+            "task_family_key": "analytical_single_solid",
+            "task_family_variant_index": 2,
+            "task_key": "analytical_volume_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_3d/geometry_analytical_volume_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_volume_query": 5,
+              "task_family:analytical_single_solid": 5
+            }
+          },
+          "prompt": "Look at the annotated image showing an annotated 3D solid. Read the marked measurements and answer: The cone has an annotated radius and height. What is its volume? Express the result in k\u03c0 form.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the value in the form k\u03c0 (for example 12\u03c0).\nExample JSON:\n{\"answer\":\"12\u03c0\"}"
+        }
+      },
+      "task_variant": "cone_given_r_h",
+      "template_id": "geometry_analytical_volume_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "XY": [
+          445.05263157894734,
+          432.88000000000005
+        ],
+        "ZX": [
+          389.5,
+          154.22210526315794
+        ]
+      },
+      "annotation_labels": {
+        "h": "ZX",
+        "r": "XY"
+      },
+      "coord_space": "pixel",
+      "entity_id": "solid_1",
+      "instance_anchor": {
+        "coord_space": "pixel",
+        "point": [
+          361.5,
+          279.551052631579
+        ],
+        "polyline": [
+          [
+            361.5,
+            -96.43578947368417
+          ],
+          [
+            361.5,
+            404.88000000000005
+          ],
+          [
+            194.39473684210526,
+            404.88000000000005
+          ],
+          [
+            528.6052631578948,
+            404.88000000000005
+          ]
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_cool",
+        "style_spec": {
+          "color": [
+            246,
+            248,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 723,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "origin_pixel": [
+          361,
+          361
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 72,
+        "target_cells_x": 10,
+        "target_cells_y": 10,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "partial_edge_cells": true,
+        "spacing_px": 72,
+        "target_cells_x": 10,
+        "target_cells_y": 10
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          104,
+          44,
+          68
+        ],
+        "label_stroke_color": [
+          254,
+          252,
+          251
+        ],
+        "line_color": [
+          104,
+          44,
+          68
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "height_units": 48,
+            "points": {
+              "apex": [
+                361.5,
+                -96.43578947368417
+              ],
+              "base_center": [
+                361.5,
+                404.88000000000005
+              ],
+              "left_base": [
+                194.39473684210526,
+                404.88000000000005
+              ],
+              "right_base": [
+                528.6052631578948,
+                404.88000000000005
+              ]
+            },
+            "radius_units": 16,
+            "task_variant": "cone_given_r_h",
+            "volume_pi_coefficient": 4096
+          },
+          "entity_id": "solid_1",
+          "entity_type": "cone"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            361,
+            361
+          ],
+          "spacing_px": 72,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_3d_analytical_volume"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "XY",
+        "ZX"
+      ],
+      "annotation_labels": {
+        "h": "ZX",
+        "r": "XY"
+      },
+      "annotation_values": {
+        "XY": 16,
+        "ZX": 48
+      },
+      "formula_expression": "V = (\u03c0 * r^2 * h) / 3",
+      "measurement_ref_map": {
+        "XY": 16,
+        "ZX": 48
+      },
+      "task_variant": "cone_given_r_h",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

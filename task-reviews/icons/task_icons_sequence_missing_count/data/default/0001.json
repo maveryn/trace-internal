@@ -1,0 +1,1004 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 6
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        722,
+        87,
+        869,
+        216
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_sequence_missing_count/images/default/0001.png"
+  },
+  "instance_seed": 5572613047396236,
+  "prompt": "Look at the image with a horizontal row of Scene boxes, where one box is missing and marked with a question mark. Question: How many icons should be in the missing box to continue the sequence?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the missing Scene box.\nAnswer rule: set \"answer\" to the missing count as an integer.\nExample JSON:\n{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the image with a horizontal row of Scene boxes, where one box is missing and marked with a question mark. Question: How many icons should be in the missing box to continue the sequence?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the missing Scene box.\nAnswer rule: set \"answer\" to the missing count as an integer.\nExample JSON:\n{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+    "answer_only": "Look at the image with a horizontal row of Scene boxes, where one box is missing and marked with a question mark. Question: How many icons should be in the missing box to continue the sequence?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the missing count as an integer.\nExample JSON:\n{\"answer\":5}"
+  },
+  "task": "task_icons_sequence_missing_count",
+  "task_variant": "arithmetic_progression",
+  "trace_payload": {
+    "execution_trace": {
+      "cell_box_height_px": 129,
+      "cell_box_width_px": 147,
+      "full_sequence_counts": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "missing_cell_index": 4,
+      "question_format": "infer_missing_sequence_count",
+      "scene_rotations_degrees_by_cell": [
+        [
+          0,
+          270
+        ],
+        [
+          270,
+          180,
+          180
+        ],
+        [
+          270,
+          0,
+          270,
+          270
+        ],
+        [
+          0,
+          180,
+          0,
+          90,
+          90
+        ],
+        []
+      ],
+      "scene_variant": "single_panel_sequence_row",
+      "sequence_icon_id": "tabler-inner-shadow-bottom-right",
+      "sequence_length": 5,
+      "sequence_length_probabilities": {
+        "4": 0.3333333333333333,
+        "5": 0.3333333333333333,
+        "6": 0.3333333333333333
+      },
+      "step_delta": 1,
+      "target_count": 6,
+      "target_count_probabilities": {
+        "0": 0.09090909090909091,
+        "1": 0.09090909090909091,
+        "10": 0.09090909090909091,
+        "2": 0.09090909090909091,
+        "3": 0.09090909090909091,
+        "4": 0.09090909090909091,
+        "5": 0.09090909090909091,
+        "6": 0.09090909090909091,
+        "7": 0.09090909090909091,
+        "8": 0.09090909090909091,
+        "9": 0.09090909090909091
+      },
+      "task_variant": "arithmetic_progression"
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          722,
+          87,
+          869,
+          216
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "cell_box_height_px": 129,
+        "cell_box_width_px": 147,
+        "missing_cell_index": 4,
+        "pool_manifest": "all_icons.txt",
+        "rotation_candidates_degrees": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "sequence_length": 5,
+        "sequence_length_probabilities": {
+          "4": 0.3333333333333333,
+          "5": 0.3333333333333333,
+          "6": 0.3333333333333333
+        },
+        "step_delta": 1,
+        "target_count": 6,
+        "target_count_probabilities": {
+          "0": 0.09090909090909091,
+          "1": 0.09090909090909091,
+          "10": 0.09090909090909091,
+          "2": 0.09090909090909091,
+          "3": 0.09090909090909091,
+          "4": 0.09090909090909091,
+          "5": 0.09090909090909091,
+          "6": 0.09090909090909091,
+          "7": 0.09090909090909091,
+          "8": 0.09090909090909091,
+          "9": 0.09090909090909091
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "icons_sequence_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the missing count as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the missing Scene box",
+          "json_example": "{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+          "json_example_answer_only": "{\"answer\":5}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a horizontal row of Scene boxes, where one box is missing and marked with a question mark",
+          "question_text": "How many icons should be in the missing box to continue the sequence?"
+        },
+        "task_family_key": "sequence_missing_count",
+        "task_family_variant_index": 2,
+        "task_key": "missing_count_query",
+        "task_variant_index": 1,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/sequence/icons_sequence_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:missing_count_query": 5,
+          "task_family:sequence_missing_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "icons_sequence_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the missing count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the missing Scene box",
+              "json_example": "{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+              "json_example_answer_only": "{\"answer\":5}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a horizontal row of Scene boxes, where one box is missing and marked with a question mark",
+              "question_text": "How many icons should be in the missing box to continue the sequence?"
+            },
+            "task_family_key": "sequence_missing_count",
+            "task_family_variant_index": 2,
+            "task_key": "missing_count_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/sequence/icons_sequence_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:missing_count_query": 5,
+              "task_family:sequence_missing_count": 5
+            }
+          },
+          "prompt": "Look at the image with a horizontal row of Scene boxes, where one box is missing and marked with a question mark. Question: How many icons should be in the missing box to continue the sequence?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the missing Scene box.\nAnswer rule: set \"answer\" to the missing count as an integer.\nExample JSON:\n{\"evidence\":[[540,126,654,458]],\"answer\":5}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "icons_sequence_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the missing count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the missing Scene box",
+              "json_example": "{\"evidence\":[[540,126,654,458]],\"answer\":5}",
+              "json_example_answer_only": "{\"answer\":5}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a horizontal row of Scene boxes, where one box is missing and marked with a question mark",
+              "question_text": "How many icons should be in the missing box to continue the sequence?"
+            },
+            "task_family_key": "sequence_missing_count",
+            "task_family_variant_index": 2,
+            "task_key": "missing_count_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/sequence/icons_sequence_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:missing_count_query": 5,
+              "task_family:sequence_missing_count": 5
+            }
+          },
+          "prompt": "Look at the image with a horizontal row of Scene boxes, where one box is missing and marked with a question mark. Question: How many icons should be in the missing box to continue the sequence?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the missing count as an integer.\nExample JSON:\n{\"answer\":5}"
+        }
+      },
+      "task_variant": "arithmetic_progression",
+      "template_id": "icons_sequence_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "missing_cell_bbox": [
+          722,
+          87,
+          869,
+          216
+        ]
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        923,
+        270
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          923,
+          270
+        ],
+        "scene_content_xyxy": [
+          44,
+          77,
+          879,
+          226
+        ],
+        "scene_panel_xyxy": [
+          24,
+          24,
+          899,
+          246
+        ]
+      },
+      "style": {
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "cell_box_height_range_px": [
+          96,
+          144
+        ],
+        "cell_box_width_range_px": [
+          112,
+          160
+        ],
+        "cell_corner_radius_px": 12,
+        "cell_icon_padding_px": 8,
+        "cell_padding_px": 10,
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "missing_mark_color_rgb": [
+          84,
+          96,
+          118
+        ],
+        "missing_mark_font_size_px": 56,
+        "palette_size_max": 1,
+        "palette_size_min": 1,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "reference_icon_size_max_px": 0,
+        "reference_icon_size_min_px": 0,
+        "reference_icon_size_px": 0,
+        "sampled_cell_box_size_px": [
+          147,
+          129
+        ],
+        "sampled_palette_rgb": [
+          [
+            87,
+            71,
+            167
+          ]
+        ],
+        "scene_icon_size_max_px": 40,
+        "scene_icon_size_min_px": 24,
+        "scene_max_overlap_fraction": 0.2,
+        "scene_placement_max_attempts": 160,
+        "scene_size_shrink_factor": 0.9,
+        "scene_size_shrink_rounds": 6
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "cell_bbox_xyxy": [
+            54,
+            87,
+            201,
+            216
+          ],
+          "cell_index": 0,
+          "entity_kind": "sequence_cell",
+          "is_missing": false,
+          "panel": "scene",
+          "rendered_icon_count": 2,
+          "target_icon_count": 2
+        },
+        {
+          "cell_bbox_xyxy": [
+            221,
+            87,
+            368,
+            216
+          ],
+          "cell_index": 1,
+          "entity_kind": "sequence_cell",
+          "is_missing": false,
+          "panel": "scene",
+          "rendered_icon_count": 3,
+          "target_icon_count": 3
+        },
+        {
+          "cell_bbox_xyxy": [
+            388,
+            87,
+            535,
+            216
+          ],
+          "cell_index": 2,
+          "entity_kind": "sequence_cell",
+          "is_missing": false,
+          "panel": "scene",
+          "rendered_icon_count": 4,
+          "target_icon_count": 4
+        },
+        {
+          "cell_bbox_xyxy": [
+            555,
+            87,
+            702,
+            216
+          ],
+          "cell_index": 3,
+          "entity_kind": "sequence_cell",
+          "is_missing": false,
+          "panel": "scene",
+          "rendered_icon_count": 5,
+          "target_icon_count": 5
+        },
+        {
+          "cell_bbox_xyxy": [
+            722,
+            87,
+            869,
+            216
+          ],
+          "cell_index": 4,
+          "entity_kind": "sequence_cell",
+          "is_missing": true,
+          "panel": "scene",
+          "rendered_icon_count": 0,
+          "target_icon_count": 6
+        },
+        {
+          "bbox_xyxy": [
+            104,
+            109,
+            132,
+            137
+          ],
+          "cell_bbox_xyxy": [
+            54,
+            87,
+            201,
+            216
+          ],
+          "cell_index": 0,
+          "entity_kind": "scene_icon",
+          "icon_id": "tabler-inner-shadow-bottom-right",
+          "instance_id": "scene_cell_0_icon_0",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.873137
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "radius": 0.348075
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 3684864913438959,
+          "nominal_size_px": 32,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            87,
+            71,
+            167
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            65,
+            97,
+            87,
+            119
+          ],
+          "cell_bbox_xyxy": [
+            54,
+            87,
+            201,
+            216
+          ],
+          "cell_index": 0,
+          "entity_kind": "scene_icon",
+          "icon_id": "tabler-inner-shadow-bottom-right",
+          "instance_id": "scene_cell_0_icon_1",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.072123
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 3756517801310692,
+          "nominal_size_px": 26,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            87,
+            71,
+            167
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            294,
+            152,
+            324,
+            182
+          ],
+          "cell_bbox_xyxy": [
+            221,
+            87,
+            368,
+            216
+          ],
+          "cell_index": 1,
+          "entity_kind": "scene_icon",
+          "icon_id": "tabler-inner-shadow-bottom-right",
+          "instance_id": "scene_cell_1_icon_0",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.939795
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "radius": 0.349832
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 3556689593977515,
+          "nominal_size_px": 36,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            87,
+            71,
+            167
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            318,
+            132,
+            348,
+            162
+          ],
+          "cell_bbox_xyxy": [
+            221,
+            87,
+            368,
+            216
+          ],
+          "cell_index": 1,
+          "entity_kind": "scene_icon",
+          "icon_id": "tabler-inner-shadow-bottom-right",
+          "instance_id": "scene_cell_1_icon_1",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.065476
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "quality": 73.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 31430106548608,
+          "nominal_size_px": 36,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            87,
+            71,
+            167
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            258,
+            137,
+            281,
+            160
+          ],
+          "cell_bbox_xyxy": [
+            221,
+            87,
+            368,
+            216
+          ],
+          "cell_index": 1,
+          "entity_kind": "scene_icon",
+          "icon_id": "tabler-inner-shadow-bottom-right",
+          "instance_id": "scene_cell_1_icon_2",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.07576
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 1594273477681732,
+          "nominal_size_px": 27,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            87,
+            71,
+            167
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            504,
+            158,
+            524,
+            178
+          ],
+          "cell_bbox_xyxy": [
+            388,
+            87,
+            535,
+            216
+          ],
+          "cell_index": 2,
+          "entity_kind": "scene_icon",
+          "icon_id": "tabler-inner-shadow-bottom-right",
+          "instance_id": "scene_cell_2_icon_0",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 6398605416537846,
+          "nominal_size_px": 24,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            87,
+            71,
+            167
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            467,
+            139,
+            492,
+            164
+          ],
+          "cell_bbox_xyxy": [
+            388,
+            87,
+            535,
+            216
+          ],
+          "cell_index": 2,
+          "entity_kind": "scene_icon",
+          "icon_id": "tabler-inner-shadow-bottom-right",
+          "instance_id": "scene_cell_2_icon_1",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 2816425591782256,
+          "nominal_size_px": 29,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            87,
+            71,
+            167
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            441,
+            131,
+            464,
+            154
+          ],
+          "cell_bbox_xyxy": [
+            388,
+            87,
+            535,
+            216
+          ],
+          "cell_index": 2,
+          "entity_kind": "scene_icon",
+          "icon_id": "tabler-inner-shadow-bottom-right",
+          "instance_id": "scene_cell_2_icon_2",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.930811
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 4349373682570730,
+          "nominal_size_px": 27,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            87,
+            71,
+            167
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            486,
+            106,
+            516,
+            136
+          ],
+          "cell_bbox_xyxy": [
+            388,
+            87,
+            535,
+            216
+          ],
+          "cell_index": 2,
+          "entity_kind": "scene_icon",
+          "icon_id": "tabler-inner-shadow-bottom-right",
+          "instance_id": "scene_cell_2_icon_3",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 7205848131479418,
+          "nominal_size_px": 36,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            87,
+            71,
+            167
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            598,
+            118,
+            627,
+            147
+          ],
+          "cell_bbox_xyxy": [
+            555,
+            87,
+            702,
+            216
+          ],
+          "cell_index": 3,
+          "entity_kind": "scene_icon",
+          "icon_id": "tabler-inner-shadow-bottom-right",
+          "instance_id": "scene_cell_3_icon_0",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 8217538585882514,
+          "nominal_size_px": 33,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            87,
+            71,
+            167
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            643,
+            160,
+            668,
+            185
+          ],
+          "cell_bbox_xyxy": [
+            555,
+            87,
+            702,
+            216
+          ],
+          "cell_index": 3,
+          "entity_kind": "scene_icon",
+          "icon_id": "tabler-inner-shadow-bottom-right",
+          "instance_id": "scene_cell_3_icon_1",
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 8856028328303918,
+          "nominal_size_px": 29,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            87,
+            71,
+            167
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            577,
+            140,
+            608,
+            171
+          ],
+          "cell_bbox_xyxy": [
+            555,
+            87,
+            702,
+            216
+          ],
+          "cell_index": 3,
+          "entity_kind": "scene_icon",
+          "icon_id": "tabler-inner-shadow-bottom-right",
+          "instance_id": "scene_cell_3_icon_2",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.897135
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 5779779034028760,
+          "nominal_size_px": 35,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            87,
+            71,
+            167
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            595,
+            177,
+            619,
+            201
+          ],
+          "cell_bbox_xyxy": [
+            555,
+            87,
+            702,
+            216
+          ],
+          "cell_index": 3,
+          "entity_kind": "scene_icon",
+          "icon_id": "tabler-inner-shadow-bottom-right",
+          "instance_id": "scene_cell_3_icon_3",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.901347
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 7070466547908459,
+          "nominal_size_px": 28,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            87,
+            71,
+            167
+          ]
+        },
+        {
+          "bbox_xyxy": [
+            653,
+            115,
+            687,
+            149
+          ],
+          "cell_bbox_xyxy": [
+            555,
+            87,
+            702,
+            216
+          ],
+          "cell_index": 3,
+          "entity_kind": "scene_icon",
+          "icon_id": "tabler-inner-shadow-bottom-right",
+          "instance_id": "scene_cell_3_icon_4",
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 71.0
+              },
+              "type": "jpeg"
+            },
+            {
+              "params": {
+                "scale": 0.870413
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 5328058703857317,
+          "nominal_size_px": 40,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            87,
+            71,
+            167
+          ]
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            923,
+            270
+          ],
+          "scene_content_xyxy": [
+            44,
+            77,
+            879,
+            226
+          ],
+          "scene_panel_xyxy": [
+            24,
+            24,
+            899,
+            246
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "full_sequence_counts": [
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "missing_cell_index": 4,
+        "sequence_icon_id": "tabler-inner-shadow-bottom-right",
+        "sequence_rule": "arithmetic_progression",
+        "step_delta": 1
+      },
+      "scene_kind": "icons_sequence_missing_count"
+    },
+    "witness_symbolic": {
+      "full_sequence_counts": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "missing_cell_index": 4,
+      "sequence_rule": "arithmetic_progression",
+      "step_delta": 1
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

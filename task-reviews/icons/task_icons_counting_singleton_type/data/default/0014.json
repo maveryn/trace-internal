@@ -1,0 +1,798 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 1
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        732,
+        154,
+        772,
+        233
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "icons/task_icons_counting_singleton_type/images/default/0014.png"
+  },
+  "instance_seed": 2969989737356242,
+  "prompt": "Work from the image with a single Scene panel filled with icons. How many icons are of a type that appears exactly once in the image?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all singleton-type icons in the image, sorted from top to bottom and then left to right.\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[116,128,176,188],[634,302,704,372]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the image with a single Scene panel filled with icons. How many icons are of a type that appears exactly once in the image?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all singleton-type icons in the image, sorted from top to bottom and then left to right.\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[116,128,176,188],[634,302,704,372]],\"answer\":2}",
+    "answer_only": "Work from the image with a single Scene panel filled with icons. How many icons are of a type that appears exactly once in the image?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_icons_counting_singleton_type",
+  "task_variant": "singleton_type_count",
+  "trace_payload": {
+    "execution_trace": {
+      "distinct_type_count": 4,
+      "object_count": 11,
+      "question_format": "count_singleton_type_icons",
+      "repeated_type_count": 3,
+      "repeated_type_multiplicities": [
+        2,
+        4,
+        4
+      ],
+      "scene_icon_ids": [
+        "gi-delapouite-megaphone",
+        "tabler-speedboat",
+        "gi-delapouite-mighty-boosh",
+        "gi-delapouite-mighty-boosh",
+        "gi-delapouite-megaphone",
+        "gi-quoting-biplane",
+        "gi-quoting-biplane",
+        "gi-delapouite-mighty-boosh",
+        "gi-quoting-biplane",
+        "gi-delapouite-mighty-boosh",
+        "gi-quoting-biplane"
+      ],
+      "scene_rotations_degrees": [
+        0,
+        90,
+        0,
+        90,
+        180,
+        0,
+        270,
+        90,
+        270,
+        180,
+        180
+      ],
+      "scene_variant": "single_panel_scene",
+      "singleton_indices": [
+        1
+      ],
+      "target_count": 1,
+      "task_variant": "singleton_type_count",
+      "type_frequencies": {
+        "gi-delapouite-megaphone": 2,
+        "gi-delapouite-mighty-boosh": 4,
+        "gi-quoting-biplane": 4,
+        "tabler-speedboat": 1
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          732,
+          154,
+          772,
+          233
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "distinct_type_count": 4,
+        "object_count": 11,
+        "object_count_probabilities": {
+          "10": 0.1,
+          "11": 0.1,
+          "12": 0.1,
+          "13": 0.1,
+          "14": 0.1,
+          "15": 0.1,
+          "6": 0.1,
+          "7": 0.1,
+          "8": 0.1,
+          "9": 0.1
+        },
+        "pool_manifest": "all_icons.txt",
+        "repeated_type_count": 3,
+        "repeated_type_multiplicities": [
+          2,
+          4,
+          4
+        ],
+        "rotation_candidates_degrees": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "target_count": 1,
+        "target_count_probabilities": {
+          "0": 0.16666666666666666,
+          "1": 0.16666666666666666,
+          "2": 0.16666666666666666,
+          "3": 0.16666666666666666,
+          "4": 0.16666666666666666,
+          "5": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "icons_counting_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all singleton-type icons in the image, sorted from top to bottom and then left to right",
+          "json_example": "{\"evidence\":[[116,128,176,188],[634,302,704,372]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a single Scene panel filled with icons",
+          "question_text": "How many icons are of a type that appears exactly once in the image?"
+        },
+        "task_family_key": "single_scene_counting",
+        "task_family_variant_index": 4,
+        "task_key": "counting_query",
+        "task_variant_index": 0,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "icons/counting/icons_counting_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:counting_query": 5,
+          "task_family:single_scene_counting": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "icons_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all singleton-type icons in the image, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[116,128,176,188],[634,302,704,372]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a single Scene panel filled with icons",
+              "question_text": "How many icons are of a type that appears exactly once in the image?"
+            },
+            "task_family_key": "single_scene_counting",
+            "task_family_variant_index": 4,
+            "task_key": "counting_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/counting/icons_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:counting_query": 5,
+              "task_family:single_scene_counting": 5
+            }
+          },
+          "prompt": "Work from the image with a single Scene panel filled with icons. How many icons are of a type that appears exactly once in the image?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all singleton-type icons in the image, sorted from top to bottom and then left to right.\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[116,128,176,188],[634,302,704,372]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "icons_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of [x_min, y_min, x_max, y_max] boxes in image pixel coordinates for all singleton-type icons in the image, sorted from top to bottom and then left to right",
+              "json_example": "{\"evidence\":[[116,128,176,188],[634,302,704,372]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a single Scene panel filled with icons",
+              "question_text": "How many icons are of a type that appears exactly once in the image?"
+            },
+            "task_family_key": "single_scene_counting",
+            "task_family_variant_index": 4,
+            "task_key": "counting_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "icons/counting/icons_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:counting_query": 5,
+              "task_family:single_scene_counting": 5
+            }
+          },
+          "prompt": "Work from the image with a single Scene panel filled with icons. How many icons are of a type that appears exactly once in the image?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "singleton_type_count",
+      "template_id": "icons_counting_v1"
+    },
+    "render_map": {
+      "anchors": {},
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "canvas_size": [
+        960,
+        544
+      ],
+      "coord_space": "pixel",
+      "panel_geometry": {
+        "canvas_size": [
+          960,
+          544
+        ],
+        "scene_content_xyxy": [
+          44,
+          77,
+          916,
+          500
+        ],
+        "scene_panel_xyxy": [
+          24,
+          24,
+          936,
+          520
+        ]
+      },
+      "style": {
+        "background_color_rgb": [
+          247,
+          248,
+          251
+        ],
+        "color_channel_max": 220,
+        "color_channel_min": 24,
+        "color_distance_space": "lab",
+        "header_text_rgb": [
+          70,
+          78,
+          96
+        ],
+        "icon_noise_edit_count_range": [
+          0,
+          2
+        ],
+        "icon_noise_edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "icon_noise_value_ranges": {
+          "blur": {
+            "radius": [
+              0.2,
+              0.6
+            ]
+          },
+          "downsample": {
+            "scale": [
+              0.85,
+              0.95
+            ]
+          },
+          "jpeg": {
+            "quality": [
+              70.0,
+              90.0
+            ]
+          },
+          "noise": {
+            "alpha": [
+              0.03,
+              0.08
+            ]
+          }
+        },
+        "min_color_distance": 40.0,
+        "palette_size_max": 12,
+        "palette_size_min": 8,
+        "panel_border_rgb": [
+          205,
+          212,
+          224
+        ],
+        "panel_fill_rgb": [
+          255,
+          255,
+          255
+        ],
+        "reference_icon_size_max_px": 0,
+        "reference_icon_size_min_px": 0,
+        "reference_icon_size_px": 136,
+        "sampled_palette_rgb": [
+          [
+            213,
+            145,
+            217
+          ],
+          [
+            124,
+            216,
+            45
+          ],
+          [
+            37,
+            126,
+            92
+          ],
+          [
+            190,
+            66,
+            39
+          ],
+          [
+            62,
+            83,
+            197
+          ],
+          [
+            182,
+            181,
+            71
+          ],
+          [
+            167,
+            35,
+            191
+          ],
+          [
+            106,
+            79,
+            37
+          ]
+        ],
+        "scene_icon_size_max_px": 96,
+        "scene_icon_size_min_px": 40,
+        "scene_max_overlap_fraction": 0.1,
+        "scene_placement_max_attempts": 120,
+        "scene_size_shrink_factor": 0.9,
+        "scene_size_shrink_rounds": 6
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_xyxy": [
+            226,
+            181,
+            301,
+            233
+          ],
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-megaphone",
+          "index": 0,
+          "instance_id": "scene_icon_0",
+          "is_singleton_type": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.221115
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 7760919423928179,
+          "nominal_size_px": 86,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            124,
+            216,
+            45
+          ],
+          "type_frequency": 2
+        },
+        {
+          "bbox_xyxy": [
+            732,
+            154,
+            772,
+            233
+          ],
+          "entity_kind": "scene_icon",
+          "icon_id": "tabler-speedboat",
+          "index": 1,
+          "instance_id": "scene_icon_1",
+          "is_singleton_type": true,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.04408
+              },
+              "type": "noise"
+            },
+            {
+              "params": {
+                "quality": 89.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 8344734208997660,
+          "nominal_size_px": 85,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            213,
+            145,
+            217
+          ],
+          "type_frequency": 1
+        },
+        {
+          "bbox_xyxy": [
+            686,
+            416,
+            756,
+            489
+          ],
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-mighty-boosh",
+          "index": 2,
+          "instance_id": "scene_icon_2",
+          "is_singleton_type": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "quality": 81.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 4737990557043883,
+          "nominal_size_px": 82,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            106,
+            79,
+            37
+          ],
+          "type_frequency": 4
+        },
+        {
+          "bbox_xyxy": [
+            754,
+            417,
+            816,
+            477
+          ],
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-mighty-boosh",
+          "index": 3,
+          "instance_id": "scene_icon_3",
+          "is_singleton_type": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 7039258495551705,
+          "nominal_size_px": 70,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            167,
+            35,
+            191
+          ],
+          "type_frequency": 4
+        },
+        {
+          "bbox_xyxy": [
+            318,
+            180,
+            383,
+            225
+          ],
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-megaphone",
+          "index": 4,
+          "instance_id": "scene_icon_4",
+          "is_singleton_type": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "alpha": 0.056054
+              },
+              "type": "noise"
+            }
+          ],
+          "noise_seed": 120175716761816,
+          "nominal_size_px": 74,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            62,
+            83,
+            197
+          ],
+          "type_frequency": 2
+        },
+        {
+          "bbox_xyxy": [
+            274,
+            86,
+            363,
+            139
+          ],
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-quoting-biplane",
+          "index": 5,
+          "instance_id": "scene_icon_5",
+          "is_singleton_type": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.929408
+              },
+              "type": "downsample"
+            },
+            {
+              "params": {
+                "quality": 70.0
+              },
+              "type": "jpeg"
+            }
+          ],
+          "noise_seed": 4809057357939570,
+          "nominal_size_px": 93,
+          "panel": "scene",
+          "rotation_degrees": 0,
+          "tint_rgb": [
+            167,
+            35,
+            191
+          ],
+          "type_frequency": 4
+        },
+        {
+          "bbox_xyxy": [
+            46,
+            266,
+            70,
+            306
+          ],
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-quoting-biplane",
+          "index": 6,
+          "instance_id": "scene_icon_6",
+          "is_singleton_type": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 1607765710643969,
+          "nominal_size_px": 42,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            37,
+            126,
+            92
+          ],
+          "type_frequency": 4
+        },
+        {
+          "bbox_xyxy": [
+            57,
+            450,
+            98,
+            490
+          ],
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-mighty-boosh",
+          "index": 7,
+          "instance_id": "scene_icon_7",
+          "is_singleton_type": false,
+          "mirror_x": false,
+          "noise_edits": [],
+          "noise_seed": 3575888308664545,
+          "nominal_size_px": 46,
+          "panel": "scene",
+          "rotation_degrees": 90,
+          "tint_rgb": [
+            62,
+            83,
+            197
+          ],
+          "type_frequency": 4
+        },
+        {
+          "bbox_xyxy": [
+            771,
+            282,
+            799,
+            328
+          ],
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-quoting-biplane",
+          "index": 8,
+          "instance_id": "scene_icon_8",
+          "is_singleton_type": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "scale": 0.855759
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 5866959817704060,
+          "nominal_size_px": 48,
+          "panel": "scene",
+          "rotation_degrees": 270,
+          "tint_rgb": [
+            167,
+            35,
+            191
+          ],
+          "type_frequency": 4
+        },
+        {
+          "bbox_xyxy": [
+            636,
+            203,
+            691,
+            260
+          ],
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-delapouite-mighty-boosh",
+          "index": 9,
+          "instance_id": "scene_icon_9",
+          "is_singleton_type": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.576923
+              },
+              "type": "blur"
+            },
+            {
+              "params": {
+                "scale": 0.855106
+              },
+              "type": "downsample"
+            }
+          ],
+          "noise_seed": 2131978861304026,
+          "nominal_size_px": 64,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            190,
+            66,
+            39
+          ],
+          "type_frequency": 4
+        },
+        {
+          "bbox_xyxy": [
+            359,
+            365,
+            431,
+            407
+          ],
+          "entity_kind": "scene_icon",
+          "icon_id": "gi-quoting-biplane",
+          "index": 10,
+          "instance_id": "scene_icon_10",
+          "is_singleton_type": false,
+          "mirror_x": false,
+          "noise_edits": [
+            {
+              "params": {
+                "radius": 0.369227
+              },
+              "type": "blur"
+            }
+          ],
+          "noise_seed": 2807013955488542,
+          "nominal_size_px": 74,
+          "panel": "scene",
+          "rotation_degrees": 180,
+          "tint_rgb": [
+            182,
+            181,
+            71
+          ],
+          "type_frequency": 4
+        }
+      ],
+      "frames": {
+        "panels": {
+          "canvas_size": [
+            960,
+            544
+          ],
+          "scene_content_xyxy": [
+            44,
+            77,
+            916,
+            500
+          ],
+          "scene_panel_xyxy": [
+            24,
+            24,
+            936,
+            520
+          ]
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "counting_rule": "singleton_icon_type_frequency",
+        "repeated_icon_ids": [
+          "gi-delapouite-megaphone",
+          "gi-delapouite-mighty-boosh",
+          "gi-quoting-biplane"
+        ],
+        "singleton_icon_ids": [
+          "tabler-speedboat"
+        ],
+        "singleton_indices": [
+          1
+        ],
+        "type_frequencies": {
+          "gi-delapouite-megaphone": 2,
+          "gi-delapouite-mighty-boosh": 4,
+          "gi-quoting-biplane": 4,
+          "tabler-speedboat": 1
+        }
+      },
+      "scene_kind": "icons_singleton_type_counting"
+    },
+    "witness_symbolic": {
+      "singleton_icon_ids": [
+        "tabler-speedboat"
+      ],
+      "singleton_indices": [
+        1
+      ],
+      "type_frequencies": {
+        "gi-delapouite-megaphone": 2,
+        "gi-delapouite-mighty-boosh": 4,
+        "gi-quoting-biplane": 4,
+        "tabler-speedboat": 1
+      }
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

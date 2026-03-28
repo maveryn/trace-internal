@@ -1,0 +1,426 @@
+{
+  "answer_gt": {
+    "type": "pi_expression",
+    "value": "340\u03c0"
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "OP": 10,
+      "QP": 24
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_3d_surface_area/images/cone_given_r_slant_height/0009.png"
+  },
+  "instance_seed": 7725753229793248,
+  "prompt": "Look at the annotated image showing an annotated 3D solid. Based on the shown values, answer this question: The cone has an annotated radius and slant height. What is its total surface area? Express the result in k\u03c0 form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP, QP.\nAnswer: set \"answer\" to the value in the form k\u03c0 (for example 12\u03c0).\nExample JSON:\n{\"evidence\":{\"OP\":2,\"QP\":3},\"answer\":\"12\u03c0\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the annotated image showing an annotated 3D solid. Based on the shown values, answer this question: The cone has an annotated radius and slant height. What is its total surface area? Express the result in k\u03c0 form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP, QP.\nAnswer: set \"answer\" to the value in the form k\u03c0 (for example 12\u03c0).\nExample JSON:\n{\"evidence\":{\"OP\":2,\"QP\":3},\"answer\":\"12\u03c0\"}",
+    "answer_only": "Look at the annotated image showing an annotated 3D solid. Based on the shown values, answer this question: The cone has an annotated radius and slant height. What is its total surface area? Express the result in k\u03c0 form.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the value in the form k\u03c0 (for example 12\u03c0).\nExample JSON:\n{\"answer\":\"12\u03c0\"}"
+  },
+  "task": "task_geometry_analytical_3d_surface_area",
+  "task_variant": "cone_given_r_slant_height",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 200000,
+      "answer_min": 8,
+      "answer_scalar": 340,
+      "answer_type": "pi_expression",
+      "answer_value": "340\u03c0",
+      "evidence_map": {
+        "OP": 10,
+        "QP": 24
+      },
+      "evidence_role_tokens": {
+        "l": "QP",
+        "r": "OP"
+      },
+      "evidence_role_values": {
+        "l": 24,
+        "r": 10
+      },
+      "evidence_roles": [
+        "r",
+        "l"
+      ],
+      "formula_expression": "SA = \u03c0 * r * (r + l)",
+      "required_annotations": [
+        "OP",
+        "QP"
+      ],
+      "task_variant": "cone_given_r_slant_height",
+      "variant_probabilities": {
+        "cone_given_r_slant_height": 0.16666666666666666,
+        "cylinder_given_r_h": 0.16666666666666666,
+        "rectangular_prism_given_lwh": 0.16666666666666666,
+        "sphere_given_r": 0.16666666666666666,
+        "square_pyramid_given_base_side_slant_height": 0.16666666666666666,
+        "triangular_prism_given_a_b_c_l": 0.16666666666666666
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "l": "QP",
+        "r": "OP"
+      },
+      "id_set": [
+        "OP",
+        "QP"
+      ],
+      "measurement_ref_map": {
+        "OP": 10,
+        "QP": 24
+      },
+      "pixel_annotation_centers": {
+        "OP": [
+          385.8558398712011,
+          376.0
+        ],
+        "QP": [
+          412.1672332532066,
+          151.10810788384217
+        ]
+      },
+      "pixel_point_set": [
+        [
+          385.8558398712011,
+          376.0
+        ],
+        [
+          412.1672332532066,
+          151.10810788384217
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 200000,
+        "answer_min": 8,
+        "task_variant": "cone_given_r_slant_height",
+        "variant_probabilities": {
+          "cone_given_r_slant_height": 0.16666666666666666,
+          "cylinder_given_r_h": 0.16666666666666666,
+          "rectangular_prism_given_lwh": 0.16666666666666666,
+          "sphere_given_r": 0.16666666666666666,
+          "square_pyramid_given_base_side_slant_height": 0.16666666666666666,
+          "triangular_prism_given_a_b_c_l": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "geometry_analytical_surface_area_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the value in the form k\u03c0 (for example 12\u03c0)",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP, QP",
+          "json_example": "{\"evidence\":{\"OP\":2,\"QP\":3},\"answer\":\"12\u03c0\"}",
+          "json_example_answer_only": "{\"answer\":\"12\u03c0\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "an annotated 3D solid",
+          "question_text": "The cone has an annotated radius and slant height. What is its total surface area? Express the result in k\u03c0 form."
+        },
+        "task_family_key": "analytical_single_solid",
+        "task_family_variant_index": 2,
+        "task_key": "analytical_surface_area_query",
+        "task_variant_index": 4,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_3d/geometry_analytical_surface_area_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_surface_area_query": 5,
+          "task_family:analytical_single_solid": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_analytical_surface_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the value in the form k\u03c0 (for example 12\u03c0)",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP, QP",
+              "json_example": "{\"evidence\":{\"OP\":2,\"QP\":3},\"answer\":\"12\u03c0\"}",
+              "json_example_answer_only": "{\"answer\":\"12\u03c0\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an annotated 3D solid",
+              "question_text": "The cone has an annotated radius and slant height. What is its total surface area? Express the result in k\u03c0 form."
+            },
+            "task_family_key": "analytical_single_solid",
+            "task_family_variant_index": 2,
+            "task_key": "analytical_surface_area_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_3d/geometry_analytical_surface_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_surface_area_query": 5,
+              "task_family:analytical_single_solid": 5
+            }
+          },
+          "prompt": "Look at the annotated image showing an annotated 3D solid. Based on the shown values, answer this question: The cone has an annotated radius and slant height. What is its total surface area? Express the result in k\u03c0 form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP, QP.\nAnswer: set \"answer\" to the value in the form k\u03c0 (for example 12\u03c0).\nExample JSON:\n{\"evidence\":{\"OP\":2,\"QP\":3},\"answer\":\"12\u03c0\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "geometry_analytical_surface_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the value in the form k\u03c0 (for example 12\u03c0)",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: OP, QP",
+              "json_example": "{\"evidence\":{\"OP\":2,\"QP\":3},\"answer\":\"12\u03c0\"}",
+              "json_example_answer_only": "{\"answer\":\"12\u03c0\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an annotated 3D solid",
+              "question_text": "The cone has an annotated radius and slant height. What is its total surface area? Express the result in k\u03c0 form."
+            },
+            "task_family_key": "analytical_single_solid",
+            "task_family_variant_index": 2,
+            "task_key": "analytical_surface_area_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_3d/geometry_analytical_surface_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_surface_area_query": 5,
+              "task_family:analytical_single_solid": 5
+            }
+          },
+          "prompt": "Look at the annotated image showing an annotated 3D solid. Based on the shown values, answer this question: The cone has an annotated radius and slant height. What is its total surface area? Express the result in k\u03c0 form.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the value in the form k\u03c0 (for example 12\u03c0).\nExample JSON:\n{\"answer\":\"12\u03c0\"}"
+        }
+      },
+      "task_variant": "cone_given_r_slant_height",
+      "template_id": "geometry_analytical_surface_area_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "OP": [
+          385.8558398712011,
+          376.0
+        ],
+        "QP": [
+          412.1672332532066,
+          151.10810788384217
+        ]
+      },
+      "annotation_labels": {
+        "l": "QP",
+        "r": "OP"
+      },
+      "coord_space": "pixel",
+      "entity_id": "solid_1",
+      "instance_anchor": {
+        "coord_space": "pixel",
+        "point": [
+          300.0,
+          254.34233594848044
+        ],
+        "polyline": [
+          [
+            300.0,
+            -26.630656206078243
+          ],
+          [
+            300.0,
+            348.0
+          ],
+          [
+            128.28832025759777,
+            348.0
+          ],
+          [
+            471.7116797424022,
+            348.0
+          ]
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_cool",
+        "style_spec": {
+          "color": [
+            246,
+            248,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 600,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "origin_pixel": [
+          300,
+          300
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 67,
+        "target_cells_x": 9,
+        "target_cells_y": 9,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "partial_edge_cells": true,
+        "spacing_px": 67,
+        "target_cells_x": 9,
+        "target_cells_y": 9
+      },
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "quality": 93.0
+            },
+            "type": "jpeg"
+          }
+        ],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          16,
+          44,
+          54
+        ],
+        "label_stroke_color": [
+          254,
+          255,
+          249
+        ],
+        "line_color": [
+          16,
+          44,
+          54
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "height_units": 21.817424229271428,
+            "points": {
+              "apex": [
+                300.0,
+                -26.630656206078243
+              ],
+              "base_center": [
+                300.0,
+                348.0
+              ],
+              "left_base": [
+                128.28832025759777,
+                348.0
+              ],
+              "right_base": [
+                471.7116797424022,
+                348.0
+              ]
+            },
+            "radius_units": 10,
+            "slant_height_units": 24,
+            "surface_area_pi_coefficient": 340,
+            "task_variant": "cone_given_r_slant_height"
+          },
+          "entity_id": "solid_1",
+          "entity_type": "cone"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            300,
+            300
+          ],
+          "spacing_px": 67,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {},
+      "scene_kind": "geometry_3d_analytical_surface_area"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "OP",
+        "QP"
+      ],
+      "annotation_labels": {
+        "l": "QP",
+        "r": "OP"
+      },
+      "annotation_values": {
+        "OP": 10,
+        "QP": 24
+      },
+      "formula_expression": "SA = \u03c0 * r * (r + l)",
+      "measurement_ref_map": {
+        "OP": 10,
+        "QP": 24
+      },
+      "task_variant": "cone_given_r_slant_height",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

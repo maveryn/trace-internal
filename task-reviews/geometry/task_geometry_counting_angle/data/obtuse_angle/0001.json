@@ -1,0 +1,630 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 6
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "A",
+      "B",
+      "D",
+      "E",
+      "G",
+      "H"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_counting_angle/images/obtuse_angle/0001.png"
+  },
+  "instance_seed": 3537973043247638,
+  "prompt": "Use the diagram showing several labeled angles. How many labeled angles are obtuse angles?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a sorted JSON array of the labels of all angles that match the requested type.\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"D\"],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the diagram showing several labeled angles. How many labeled angles are obtuse angles?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a sorted JSON array of the labels of all angles that match the requested type.\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"D\"],\"answer\":2}",
+    "answer_only": "Use the diagram showing several labeled angles. How many labeled angles are obtuse angles?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_geometry_counting_angle",
+  "task_variant": "obtuse_angle",
+  "trace_payload": {
+    "execution_trace": {
+      "class_by_label": {
+        "A": "obtuse",
+        "B": "obtuse",
+        "C": "acute",
+        "D": "obtuse",
+        "E": "obtuse",
+        "F": "acute",
+        "G": "obtuse",
+        "H": "obtuse",
+        "I": "acute"
+      },
+      "counting_class": "obtuse",
+      "matching_labels": [
+        "A",
+        "B",
+        "D",
+        "E",
+        "G",
+        "H"
+      ],
+      "object_count": 9,
+      "object_count_probabilities": {
+        "10": 0.2,
+        "6": 0.2,
+        "7": 0.2,
+        "8": 0.2,
+        "9": 0.2
+      },
+      "object_labels": [
+        "C",
+        "D",
+        "E",
+        "G",
+        "I",
+        "H",
+        "F",
+        "B",
+        "A"
+      ],
+      "question_format": "count_matching_labeled_objects",
+      "scene_variant": "obtuse_angle",
+      "target_count": 6,
+      "target_count_probabilities": {
+        "1": 0.125,
+        "2": 0.125,
+        "3": 0.125,
+        "4": 0.125,
+        "5": 0.125,
+        "6": 0.125,
+        "7": 0.125,
+        "8": 0.125
+      },
+      "task_variant": "obtuse_angle"
+    },
+    "projected_evidence": {
+      "label_set": [
+        "A",
+        "B",
+        "D",
+        "E",
+        "G",
+        "H"
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "angle_step": 1,
+        "boundary_margin_degrees": 10.0,
+        "max_angle": 155,
+        "min_angle": 25,
+        "object_count": 9,
+        "object_count_probabilities": {
+          "10": 0.2,
+          "6": 0.2,
+          "7": 0.2,
+          "8": 0.2,
+          "9": 0.2
+        },
+        "target_count": 6,
+        "target_count_probabilities": {
+          "1": 0.125,
+          "2": 0.125,
+          "3": 0.125,
+          "4": 0.125,
+          "5": 0.125,
+          "6": 0.125,
+          "7": 0.125,
+          "8": 0.125
+        },
+        "task_variant": "obtuse_angle",
+        "variant_probabilities": {
+          "acute_angle": 0.3333333333333333,
+          "obtuse_angle": 0.3333333333333333,
+          "right_angle": 0.3333333333333333
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "geometry_counting_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all angles that match the requested type",
+          "json_example": "{\"evidence\":[\"B\",\"D\"],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "several labeled angles",
+          "question_text": "How many labeled angles are obtuse angles?"
+        },
+        "task_family_key": "counting_scene",
+        "task_family_variant_index": 3,
+        "task_key": "counting_query",
+        "task_variant_index": 0,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/counting/geometry_counting_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:counting_query": 5,
+          "task_family:counting_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all angles that match the requested type",
+              "json_example": "{\"evidence\":[\"B\",\"D\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled angles",
+              "question_text": "How many labeled angles are obtuse angles?"
+            },
+            "task_family_key": "counting_scene",
+            "task_family_variant_index": 3,
+            "task_key": "counting_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/counting/geometry_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:counting_query": 5,
+              "task_family:counting_scene": 5
+            }
+          },
+          "prompt": "Use the diagram showing several labeled angles. How many labeled angles are obtuse angles?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a sorted JSON array of the labels of all angles that match the requested type.\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"D\"],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "geometry_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all angles that match the requested type",
+              "json_example": "{\"evidence\":[\"B\",\"D\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled angles",
+              "question_text": "How many labeled angles are obtuse angles?"
+            },
+            "task_family_key": "counting_scene",
+            "task_family_variant_index": 3,
+            "task_key": "counting_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/counting/geometry_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:counting_query": 5,
+              "task_family:counting_scene": 5
+            }
+          },
+          "prompt": "Use the diagram showing several labeled angles. How many labeled angles are obtuse angles?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "obtuse_angle",
+      "template_id": "geometry_counting_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching": {
+          "matching_labels": [
+            "A",
+            "B",
+            "D",
+            "E",
+            "G",
+            "H"
+          ],
+          "task_variant": "obtuse_angle"
+        }
+      },
+      "image_id": "img0",
+      "object_label_centers": {
+        "A": [
+          228.22840405073745,
+          493.99137566613643
+        ],
+        "B": [
+          371.15678375915377,
+          495.5761441482006
+        ],
+        "C": [
+          587.376523022711,
+          213.74255096452006
+        ],
+        "D": [
+          484.83919064541186,
+          542.9874214435816
+        ],
+        "E": [
+          504.7662633057566,
+          196.6022438523145
+        ],
+        "F": [
+          119.62552590806762,
+          226.0620833401017
+        ],
+        "G": [
+          241.1464654202609,
+          226.80077736407716
+        ],
+        "H": [
+          91.7448804575587,
+          524.5650474291251
+        ],
+        "I": [
+          613.0174217373744,
+          497.5052728198088
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_cool",
+        "style_spec": {
+          "color": [
+            246,
+            248,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 721,
+      "coord_space": "pixel",
+      "layout_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 22,
+        "full_cells_y": 22,
+        "origin_pixel": [
+          360,
+          360
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 31,
+        "target_cells_x": 23,
+        "target_cells_y": 23,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "shape_style": {
+        "label_color": [
+          69,
+          72,
+          137
+        ],
+        "label_stroke_color": [
+          248,
+          252,
+          248
+        ],
+        "line_color": [
+          69,
+          72,
+          137
+        ]
+      },
+      "text_style": {
+        "font_size_px": 90,
+        "stroke_width_px": 6
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "angle_class": "acute",
+            "label": "C",
+            "points": {
+              "arm_a": [
+                670.0,
+                422.0
+              ],
+              "arm_b": [
+                670.0,
+                205.0
+              ],
+              "vertex": [
+                608.0,
+                205.0
+              ]
+            },
+            "raw_angle_degrees": 74.054604,
+            "target_angle_degrees": 74
+          },
+          "entity_id": "angle_C",
+          "entity_type": "angle"
+        },
+        {
+          "attrs": {
+            "angle_class": "obtuse",
+            "label": "D",
+            "points": {
+              "arm_a": [
+                670.0,
+                608.0
+              ],
+              "arm_b": [
+                484.0,
+                453.0
+              ],
+              "vertex": [
+                484.0,
+                515.0
+              ]
+            },
+            "raw_angle_degrees": 116.565051,
+            "target_angle_degrees": 117
+          },
+          "entity_id": "angle_D",
+          "entity_type": "angle"
+        },
+        {
+          "attrs": {
+            "angle_class": "obtuse",
+            "label": "E",
+            "points": {
+              "arm_a": [
+                236.0,
+                267.0
+              ],
+              "arm_b": [
+                484.0,
+                81.0
+              ],
+              "vertex": [
+                484.0,
+                205.0
+              ]
+            },
+            "raw_angle_degrees": 104.036243,
+            "target_angle_degrees": 104
+          },
+          "entity_id": "angle_E",
+          "entity_type": "angle"
+        },
+        {
+          "attrs": {
+            "angle_class": "obtuse",
+            "label": "G",
+            "points": {
+              "arm_a": [
+                391.0,
+                205.0
+              ],
+              "arm_b": [
+                112.0,
+                267.0
+              ],
+              "vertex": [
+                236.0,
+                205.0
+              ]
+            },
+            "raw_angle_degrees": 153.434949,
+            "target_angle_degrees": 153
+          },
+          "entity_id": "angle_G",
+          "entity_type": "angle"
+        },
+        {
+          "attrs": {
+            "angle_class": "acute",
+            "label": "I",
+            "points": {
+              "arm_a": [
+                391.0,
+                515.0
+              ],
+              "arm_b": [
+                360.0,
+                360.0
+              ],
+              "vertex": [
+                608.0,
+                515.0
+              ]
+            },
+            "raw_angle_degrees": 32.005383,
+            "target_angle_degrees": 32
+          },
+          "entity_id": "angle_I",
+          "entity_type": "angle"
+        },
+        {
+          "attrs": {
+            "angle_class": "obtuse",
+            "label": "H",
+            "points": {
+              "arm_a": [
+                360.0,
+                422.0
+              ],
+              "arm_b": [
+                112.0,
+                608.0
+              ],
+              "vertex": [
+                112.0,
+                515.0
+              ]
+            },
+            "raw_angle_degrees": 110.556045,
+            "target_angle_degrees": 111
+          },
+          "entity_id": "angle_H",
+          "entity_type": "angle"
+        },
+        {
+          "attrs": {
+            "angle_class": "acute",
+            "label": "F",
+            "points": {
+              "arm_a": [
+                174.0,
+                205.0
+              ],
+              "arm_b": [
+                298.0,
+                50.0
+              ],
+              "vertex": [
+                112.0,
+                205.0
+              ]
+            },
+            "raw_angle_degrees": 39.805571,
+            "target_angle_degrees": 40
+          },
+          "entity_id": "angle_F",
+          "entity_type": "angle"
+        },
+        {
+          "attrs": {
+            "angle_class": "obtuse",
+            "label": "B",
+            "points": {
+              "arm_a": [
+                360.0,
+                577.0
+              ],
+              "arm_b": [
+                143.0,
+                391.0
+              ],
+              "vertex": [
+                360.0,
+                515.0
+              ]
+            },
+            "raw_angle_degrees": 119.744881,
+            "target_angle_degrees": 120
+          },
+          "entity_id": "angle_B",
+          "entity_type": "angle"
+        },
+        {
+          "attrs": {
+            "angle_class": "obtuse",
+            "label": "A",
+            "points": {
+              "arm_a": [
+                174.0,
+                515.0
+              ],
+              "arm_b": [
+                453.0,
+                329.0
+              ],
+              "vertex": [
+                236.0,
+                515.0
+              ]
+            },
+            "raw_angle_degrees": 139.398705,
+            "target_angle_degrees": 139
+          },
+          "entity_id": "angle_A",
+          "entity_type": "angle"
+        }
+      ],
+      "frames": {
+        "layout_graph_unit": {
+          "origin_pixel": [
+            360,
+            360
+          ],
+          "spacing_px": 31,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "counting_target": "angle_class",
+        "matching_labels": [
+          "A",
+          "B",
+          "D",
+          "E",
+          "G",
+          "H"
+        ],
+        "task_variant": "obtuse_angle"
+      },
+      "scene_kind": "geometry_2d_angle_counting"
+    },
+    "witness_symbolic": {
+      "counting_class": "obtuse",
+      "matching_labels": [
+        "A",
+        "B",
+        "D",
+        "E",
+        "G",
+        "H"
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

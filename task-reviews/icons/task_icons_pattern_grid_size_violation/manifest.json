@@ -1,0 +1,11 @@
+{
+  "inspection_count": 25,
+  "task_id": "task_icons_pattern_grid_size_violation",
+  "variants": {
+    "": 25
+  },
+  "workbook": "icons/task_icons_pattern_grid_size_violation/task_icons_pattern_grid_size_violation.xlsx",
+  "workbook_sheets": {
+    "row_col_size_grid_violation": "row_col_size_grid_violation"
+  }
+}

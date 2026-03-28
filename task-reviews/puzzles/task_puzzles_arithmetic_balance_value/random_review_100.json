@@ -1,0 +1,181 @@
+{
+  "answer_distribution": {
+    "answer_type_counts": {
+      "integer": 100
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.13,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": 0.3,
+        "pass": null,
+        "status": "reported_not_gated_numeric_answers"
+      },
+      "min_unique_answers": {
+        "observed": 16,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": {
+      "bin_count": 5,
+      "bins": [
+        {
+          "bin_id": 0,
+          "count": 30,
+          "label": "[1, 4.8)"
+        },
+        {
+          "bin_id": 1,
+          "count": 28,
+          "label": "[4.8, 8.6)"
+        },
+        {
+          "bin_id": 2,
+          "count": 30,
+          "label": "[8.6, 12.4)"
+        },
+        {
+          "bin_id": 3,
+          "count": 7,
+          "label": "[12.4, 16.2)"
+        },
+        {
+          "bin_id": 4,
+          "count": 5,
+          "label": "[16.2, 20]"
+        }
+      ],
+      "max_bin_count": 30,
+      "max_bin_frequency": 0.3,
+      "range_max": 20.0,
+      "range_min": 1.0
+    },
+    "max_answer_count": 13,
+    "max_answer_frequency": 0.13,
+    "pass": true,
+    "sample_count": 100,
+    "top_answers": [
+      {
+        "answer_label": "2",
+        "count": 13
+      },
+      {
+        "answer_label": "10",
+        "count": 11
+      },
+      {
+        "answer_label": "12",
+        "count": 9
+      },
+      {
+        "answer_label": "6",
+        "count": 9
+      },
+      {
+        "answer_label": "4",
+        "count": 8
+      },
+      {
+        "answer_label": "5",
+        "count": 8
+      },
+      {
+        "answer_label": "8",
+        "count": 7
+      },
+      {
+        "answer_label": "9",
+        "count": 6
+      },
+      {
+        "answer_label": "1",
+        "count": 5
+      },
+      {
+        "answer_label": "11",
+        "count": 4
+      },
+      {
+        "answer_label": "14",
+        "count": 4
+      },
+      {
+        "answer_label": "18",
+        "count": 4
+      },
+      {
+        "answer_label": "3",
+        "count": 4
+      },
+      {
+        "answer_label": "7",
+        "count": 4
+      },
+      {
+        "answer_label": "16",
+        "count": 3
+      },
+      {
+        "answer_label": "20",
+        "count": 1
+      }
+    ],
+    "unique_answers": 16
+  },
+  "sample_count": 100,
+  "sampling_axes": {
+    "scene_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "balance_card": 0.3333333333333333,
+        "balance_outline": 0.3333333333333333,
+        "balance_strip": 0.3333333333333333
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.42,
+      "observed_counts": {
+        "balance_card": 42,
+        "balance_outline": 27,
+        "balance_strip": 31
+      },
+      "sample_count": 100
+    },
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "sum_pair_unknown": 0.3333333333333333,
+        "three_panel_chain_unknown": 0.3333333333333333,
+        "two_panel_chain_unknown": 0.3333333333333333
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.38,
+      "observed_counts": {
+        "sum_pair_unknown": 28,
+        "three_panel_chain_unknown": 38,
+        "two_panel_chain_unknown": 34
+      },
+      "sample_count": 100
+    }
+  },
+  "task_id": "task_puzzles_arithmetic_balance_value",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {
+      "sum_pair_unknown": 0.3333333333333333,
+      "three_panel_chain_unknown": 0.3333333333333333,
+      "two_panel_chain_unknown": 0.3333333333333333
+    },
+    "expected_source": "execution_trace",
+    "has_variants": true,
+    "observed_counts": {
+      "sum_pair_unknown": 28,
+      "three_panel_chain_unknown": 38,
+      "two_panel_chain_unknown": 34
+    },
+    "status": "reported"
+  }
+}

@@ -165,6 +165,10 @@ Use this checklist during implementation and refactor reviews.
 149. When a new table counting variant still answers with one integer row count and uses deterministic `bbox_set` witnesses over matching rows, prefer widening `task_tables_counting_value_count` instead of splitting out a sibling counting task id just because the predicate changes from one-column filtering to row-wise two-column comparison.
 150. When table task refactors merge or widen existing task families, update `skills/domain-tables/SKILL.md` and `skills/task-complexity/references/tables.md` in the same change; do not leave reusable guidance recommending retired task splits or stale complexity vocabularies.
 151. Keep task-review artifacts domain-scoped under `task-reviews/<domain>/<task_id>/`; when review tooling or docs change, do not reintroduce new flat `task-reviews/task_*` paths once the domain-aware layout exists.
+152. When activating the first task in a new domain, update the registry, prompt-system inventory, system-architecture inventory, domain setup/readme docs, shared-utilities inventory, and the domain complexity reference in the same patch; do not leave the new domain discoverable only through `STATUS.md`.
+153. For early puzzle arithmetic tasks with a one-box unknown-slot witness, prefer widening structural variety inside the same task (for example operand count, operator mix, unknown side) instead of splitting that contract into multiple near-duplicate mini-puzzle variants.
+154. For balance-style puzzle arithmetic tasks, keep prompt-facing evidence on one dedicated query box rather than widening it to all supporting balance panels; the panels may be the solver witness in trace, but the prompt contract should stay local and visually obvious.
+155. When a puzzle-family refactor retires old `task_variant` names, remove those retired keys from task docs, prompt/config examples, and behavior tests in the same patch; do not leave stale variant vocabularies alongside the active one-box evidence contract.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

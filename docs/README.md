@@ -21,12 +21,13 @@ Repo-local skills live under `skills/`, but skills are operational overlays. Can
 7. `docs/domains/CHART_TASK_SETUP.md` — concrete v1 contract for the first chart-domain task family.
 8. `docs/domains/TABLE_TASK_SETUP.md` — concrete v1 contract for the first tables-domain task family.
 9. `docs/domains/GRAPH_TASK_SETUP.md` — concrete v1 contract for the active graph-domain task families.
-10. `docs/core/PROMPT_SYSTEM.md` — prompt bundles, variants, and metadata.
-11. `docs/workflows/SHARED_UTILITIES.md` — helper placement and reuse rules.
-12. `docs/workflows/BUILD_VALIDATION.md` + `docs/workflows/VALIDATION_ERROR_CODES.md` — pre-finalize checks and error taxonomy.
-13. `docs/workflows/CODE_DOCUMENTATION.md` + `docs/workflows/CODE_REVIEW_GUIDELINES.md` — quality/process guidance.
-14. `docs/project/STATUS.md` + `docs/project/TODO.md` — current snapshot and backlog.
-15. `../task-reviews/README.md` — task-by-task review workflow and artifacts.
+10. `docs/domains/PUZZLE_TASK_SETUP.md` — concrete v1 setup for puzzle hidden-variable tasks.
+11. `docs/core/PROMPT_SYSTEM.md` — prompt bundles, variants, and metadata.
+12. `docs/workflows/SHARED_UTILITIES.md` — helper placement and reuse rules.
+13. `docs/workflows/BUILD_VALIDATION.md` + `docs/workflows/VALIDATION_ERROR_CODES.md` — pre-finalize checks and error taxonomy.
+14. `docs/workflows/CODE_DOCUMENTATION.md` + `docs/workflows/CODE_REVIEW_GUIDELINES.md` — quality/process guidance.
+15. `docs/project/STATUS.md` + `docs/project/TODO.md` — current snapshot and backlog.
+16. `../task-reviews/README.md` — task-by-task review workflow and artifacts.
 
 ## Task docs
 - Rules: `docs/tasks/README.md`

@@ -140,6 +140,9 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/graph/relation/reachable_count.py`
    - `trace/tasks/graph/relation/same_component_count.py`
    - `trace/tasks/graph/relation/unique_cycle_size.py`
+10. Puzzles:
+   - `trace/tasks/puzzles/arithmetic/equation_value.py`
+   - `trace/tasks/puzzles/arithmetic/balance_value.py`
 
 ## 5) Architecture invariants
 1. Determinism from config + seeds + versions.

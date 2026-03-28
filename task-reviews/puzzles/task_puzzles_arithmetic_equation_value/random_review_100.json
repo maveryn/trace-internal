@@ -1,0 +1,193 @@
+{
+  "answer_distribution": {
+    "answer_type_counts": {
+      "integer": 100
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.12,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": 0.39,
+        "pass": null,
+        "status": "reported_not_gated_numeric_answers"
+      },
+      "min_unique_answers": {
+        "observed": 20,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": {
+      "bin_count": 5,
+      "bins": [
+        {
+          "bin_id": 0,
+          "count": 39,
+          "label": "[1, 5.2)"
+        },
+        {
+          "bin_id": 1,
+          "count": 27,
+          "label": "[5.2, 9.4)"
+        },
+        {
+          "bin_id": 2,
+          "count": 21,
+          "label": "[9.4, 13.6)"
+        },
+        {
+          "bin_id": 3,
+          "count": 10,
+          "label": "[13.6, 17.8)"
+        },
+        {
+          "bin_id": 4,
+          "count": 3,
+          "label": "[17.8, 22]"
+        }
+      ],
+      "max_bin_count": 39,
+      "max_bin_frequency": 0.39,
+      "range_max": 22.0,
+      "range_min": 1.0
+    },
+    "max_answer_count": 12,
+    "max_answer_frequency": 0.12,
+    "pass": true,
+    "sample_count": 100,
+    "top_answers": [
+      {
+        "answer_label": "4",
+        "count": 12
+      },
+      {
+        "answer_label": "1",
+        "count": 10
+      },
+      {
+        "answer_label": "12",
+        "count": 9
+      },
+      {
+        "answer_label": "5",
+        "count": 8
+      },
+      {
+        "answer_label": "6",
+        "count": 8
+      },
+      {
+        "answer_label": "11",
+        "count": 7
+      },
+      {
+        "answer_label": "7",
+        "count": 7
+      },
+      {
+        "answer_label": "8",
+        "count": 7
+      },
+      {
+        "answer_label": "3",
+        "count": 5
+      },
+      {
+        "answer_label": "9",
+        "count": 5
+      },
+      {
+        "answer_label": "10",
+        "count": 4
+      },
+      {
+        "answer_label": "17",
+        "count": 4
+      },
+      {
+        "answer_label": "2",
+        "count": 4
+      },
+      {
+        "answer_label": "14",
+        "count": 2
+      },
+      {
+        "answer_label": "15",
+        "count": 2
+      },
+      {
+        "answer_label": "16",
+        "count": 2
+      },
+      {
+        "answer_label": "13",
+        "count": 1
+      },
+      {
+        "answer_label": "18",
+        "count": 1
+      },
+      {
+        "answer_label": "21",
+        "count": 1
+      },
+      {
+        "answer_label": "22",
+        "count": 1
+      }
+    ],
+    "unique_answers": 20
+  },
+  "sample_count": 100,
+  "sampling_axes": {
+    "scene_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "equation_card": 0.3333333333333333,
+        "equation_outline": 0.3333333333333333,
+        "equation_strip": 0.3333333333333333
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.38,
+      "observed_counts": {
+        "equation_card": 25,
+        "equation_outline": 38,
+        "equation_strip": 37
+      },
+      "sample_count": 100
+    },
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "operand_unknown": 0.5,
+        "result_unknown": 0.5
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.6,
+      "observed_counts": {
+        "operand_unknown": 60,
+        "result_unknown": 40
+      },
+      "sample_count": 100
+    }
+  },
+  "task_id": "task_puzzles_arithmetic_equation_value",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {
+      "operand_unknown": 0.5,
+      "result_unknown": 0.5
+    },
+    "expected_source": "execution_trace",
+    "has_variants": true,
+    "observed_counts": {
+      "operand_unknown": 60,
+      "result_unknown": 40
+    },
+    "status": "reported"
+  }
+}

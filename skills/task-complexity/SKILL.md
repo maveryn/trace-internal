@@ -41,6 +41,7 @@ Use this whenever a change touches `complexity_score`, `complexity_components`, 
 - Tile: `references/tile.md`
 - Charts: `references/charts.md`
 - Tables: `references/tables.md`
+- Puzzles: `references/puzzles.md`
 
 ## Update discipline
 - When adding a new domain or task family, add or update the corresponding domain reference in this skill in the same change.

@@ -101,6 +101,8 @@ Active bundles:
    - `prompts/tables/relation/tables_relation_v1.json`
    - `prompts/tables/ranking/tables_ranking_v1.json`
    - `prompts/tables/temporal/tables_temporal_v1.json`
+6. Puzzles:
+   - `prompts/puzzles/arithmetic/puzzles_arithmetic_v1.json`
 
 Active task-to-bundle mapping:
 1. Geometry comparison tasks (`task_geometry_comparison_angle|area|length|perimeter`) -> `geometry_comparison_v1`
@@ -150,3 +152,5 @@ Active task-to-bundle mapping:
    - `task_tables_relation_row_compare_label|extremum_transfer_value` -> `tables_relation_v1`
    - `task_tables_ranking_label` -> `tables_ranking_v1`
    - `task_tables_temporal_value` -> `tables_temporal_v1`
+10. Puzzles:
+   - `task_puzzles_arithmetic_equation_value|task_puzzles_arithmetic_balance_value` -> `puzzles_arithmetic_v1`

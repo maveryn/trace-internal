@@ -80,3 +80,5 @@ Current task docs:
 70. [task_graph_relation_unique_cycle_size.md](task_graph_relation_unique_cycle_size.md)
 71. [task_graph_path_shortest_path_length.md](task_graph_path_shortest_path_length.md)
 72. [task_graph_relation_reachable_count.md](task_graph_relation_reachable_count.md)
+73. [task_puzzles_arithmetic_equation_value.md](task_puzzles_arithmetic_equation_value.md)
+74. [task_puzzles_arithmetic_balance_value.md](task_puzzles_arithmetic_balance_value.md)

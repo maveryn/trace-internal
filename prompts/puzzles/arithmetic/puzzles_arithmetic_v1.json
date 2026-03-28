@@ -1,0 +1,108 @@
+{
+  "bundle_id": "puzzles_arithmetic_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "arithmetic_unknown_slot_puzzle": [
+      "The image shows {object_description}.",
+      "Look at the arithmetic puzzle in the image: {object_description}.",
+      "You are given {object_description}.",
+      "Work from the arithmetic puzzle shown in the image: {object_description}.",
+      "Use the boxed-number arithmetic puzzle in the image: {object_description}."
+    ],
+    "arithmetic_balance_query_puzzle": [
+      "The image shows {object_description}.",
+      "Look at the balance puzzle in the image: {object_description}.",
+      "You are given {object_description}.",
+      "Work from the balance-style arithmetic puzzle shown in the image: {object_description}.",
+      "Use the stacked balance panels in the image: {object_description}."
+    ]
+  },
+  "task_templates": {
+    "equation_value_query": [
+      "Use standard arithmetic to determine the missing number.",
+      "Solve the one-row arithmetic puzzle and report the missing integer.",
+      "Read the boxed expression and infer the missing value.",
+      "Use the boxed numbers and operators to solve for the question-mark slot.",
+      "Work from the shown arithmetic expression to find the missing number."
+    ],
+    "balance_value_query": [
+      "Use the balance panels to determine the value of the highlighted query symbol.",
+      "Solve the balance puzzle and report the integer value of the highlighted query box.",
+      "Infer the value represented by the symbol in the highlighted query box.",
+      "Work from the balance relations to find the value of the highlighted symbol.",
+      "Read the balance puzzle and determine the number that matches the highlighted query box."
+    ]
+  },
+  "task_variant_templates": {
+    "result_unknown": [
+      "What number should replace the question mark?",
+      "Find the missing result in the boxed equation.",
+      "Determine the value that belongs in the question-mark result box.",
+      "Solve the arithmetic puzzle. What is the missing result?",
+      "What integer completes the equation on the right side?"
+    ],
+    "operand_unknown": [
+      "What number should replace the question mark?",
+      "Find the missing left-side value in the boxed equation.",
+      "Determine the operand that belongs in the question-mark box.",
+      "Solve the equation and report the missing operand.",
+      "What integer completes the left side of the equation when placed in the question-mark box?"
+    ],
+    "sum_pair_unknown": [
+      "What is the value of the symbol in the highlighted query box?",
+      "Determine the value represented by the highlighted query symbol.",
+      "Which integer matches the highlighted query box?",
+      "Use the shown equalities to solve the highlighted query symbol.",
+      "What number belongs to the symbol in the highlighted query box?"
+    ],
+    "two_panel_chain_unknown": [
+      "What is the value of the symbol in the highlighted query box?",
+      "Use the two balance panels to determine the highlighted query value.",
+      "Determine the integer represented by the highlighted query symbol.",
+      "Solve the balance chain and report the highlighted query value.",
+      "What number matches the highlighted query box?"
+    ],
+    "three_panel_chain_unknown": [
+      "What is the value of the symbol in the highlighted query box?",
+      "Use all three balance panels to determine the highlighted query value.",
+      "Determine the integer represented by the highlighted query symbol.",
+      "Solve the full balance chain and report the highlighted query value.",
+      "What number matches the highlighted query box?"
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:arithmetic_unknown_slot_puzzle": [
+      "object_description"
+    ],
+    "task_family:arithmetic_balance_query_puzzle": [
+      "object_description"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

@@ -5,9 +5,12 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
+from PIL import Image, ImageDraw
+
 from ....core.seed import spawn_rng
 from ...shared.config_defaults import group_default, resolve_required_int_bounds
 from ...shared.deterministic_sampling import resolve_selection_index
+from ...shared.text_rendering import load_font
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from .arithmetic_scene import PuzzleArithmeticRenderParams, SUPPORTED_PUZZLE_ARITHMETIC_SCENE_VARIANTS
 
@@ -132,22 +135,32 @@ def adjust_render_params_for_equation_rows(
 ) -> PuzzleArithmeticRenderParams:
     """Widen the canvas when longer equation rows need more horizontal room."""
 
-    operator_width_estimate = max(40, int(round(0.95 * float(render_params.operator_font_size_px))))
+    probe_image = Image.new("RGB", (32, 32), color=(255, 255, 255))
+    probe_draw = ImageDraw.Draw(probe_image)
+    operator_font = load_font(int(render_params.operator_font_size_px), bold=True)
     max_row_width = 0
     for row in equation_rows:
-        token_widths = [
-            int(render_params.slot_width_px)
-            if str(token.get("kind")) == "slot"
-            else int(operator_width_estimate)
-            for token in row
-        ]
+        token_widths = []
+        for token in row:
+            if str(token.get("kind")) == "slot":
+                token_widths.append(int(render_params.slot_width_px))
+                continue
+            text_bbox = probe_draw.textbbox(
+                (0, 0),
+                str(token.get("text", "")),
+                font=operator_font,
+                stroke_width=1,
+            )
+            text_width = float(text_bbox[2] - text_bbox[0])
+            token_widths.append(int(max(float(text_width + 20.0), 40.0)))
         row_width = int(sum(token_widths) + max(0, len(token_widths) - 1) * int(render_params.token_gap_px))
         max_row_width = max(int(max_row_width), int(row_width))
+    horizontal_buffer = max(40, int(render_params.token_gap_px) + 16)
     required_width = int(
         max_row_width
         + int(render_params.scene_margin_left_px)
         + int(render_params.scene_margin_right_px)
-        + 24
+        + int(horizontal_buffer)
     )
     if int(required_width) <= int(render_params.canvas_width):
         return render_params

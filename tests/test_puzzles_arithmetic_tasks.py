@@ -61,6 +61,8 @@ def test_puzzle_arithmetic_equation_value_contract_matches_unknown_slot() -> Non
             assert str(execution["scene_variant"]) == str(scene_variant)
             assert str(render["scene_variant"]) == str(scene_variant)
             assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
+            assert all(float(bbox[0]) >= 0.0 for bbox in render_map["slot_bboxes_px"].values())
+            assert all(float(bbox[2]) <= float(render["canvas_width"]) for bbox in render_map["slot_bboxes_px"].values())
             assert list(execution["slot_count_range"]) == [3, 6]
             assert list(execution["operand_count_range"]) == [2, 5]
             assert 3 <= int(execution["slot_count"]) <= 6
@@ -86,6 +88,29 @@ def test_puzzle_arithmetic_equation_value_contract_matches_unknown_slot() -> Non
             )
             assert int(evaluated_result) == int(solver["result_value"])
             assert int(execution["slot_count"]) == int(execution["operand_count"]) + 1
+
+            slot_entities = [
+                entity
+                for entity in trace["scene_ir"]["entities"]
+                if str(entity.get("entity_type")) == "puzzle_slot"
+            ]
+            operator_entities = [
+                entity
+                for entity in trace["scene_ir"]["entities"]
+                if str(entity.get("entity_type")) == "puzzle_operator"
+            ]
+            slot_center_y_by_row = {}
+            for entity in slot_entities:
+                row_index = int(entity["attrs"]["row_index"])
+                bbox = [float(value) for value in entity["bbox_px"]]
+                slot_center_y_by_row.setdefault(row_index, []).append(0.5 * (bbox[1] + bbox[3]))
+            for entity in operator_entities:
+                row_index = int(entity["attrs"]["row_index"])
+                bbox = [float(value) for value in entity["bbox_px"]]
+                operator_center_y = 0.5 * (bbox[1] + bbox[3])
+                row_slot_centers = slot_center_y_by_row[row_index]
+                expected_center_y = sum(row_slot_centers) / len(row_slot_centers)
+                assert abs(operator_center_y - expected_center_y) <= 1.5
 
             if str(task_variant) == "result_unknown":
                 assert str(execution["query_slot_id"]) == "slot_result"
@@ -145,3 +170,23 @@ def test_puzzle_arithmetic_slot_count_varies_with_seed() -> None:
             slot_counts.add(int(out.trace_payload["execution_trace"]["slot_count"]))
         assert all(3 <= int(slot_count) <= 6 for slot_count in slot_counts)
         assert len(slot_counts) >= 2
+
+
+def test_puzzle_arithmetic_long_rows_fit_within_canvas() -> None:
+    task = PuzzlesArithmeticEquationValueTask()
+    out = task.generate(
+        23220,
+        params={
+            "task_variant": "operand_unknown",
+            "scene_variant": "equation_strip",
+            "operand_count_min": 5,
+            "operand_count_max": 5,
+        },
+        max_attempts=10,
+    )
+    render = out.trace_payload["render_spec"]
+    slot_bboxes = out.trace_payload["render_map"]["slot_bboxes_px"].values()
+
+    assert int(out.trace_payload["execution_trace"]["operand_count"]) == 5
+    assert int(out.trace_payload["execution_trace"]["slot_count"]) == 6
+    assert max(float(bbox[2]) for bbox in slot_bboxes) <= float(render["canvas_width"])

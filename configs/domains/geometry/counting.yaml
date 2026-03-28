@@ -207,3 +207,11 @@ prompt:
       answer_hint: set "answer" to the count as an integer
       json_example: '{"evidence":["B","D","G"],"answer":3}'
       json_example_answer_only: '{"answer":3}'
+
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.35
+      classification_reasoning: 0.35
+      ambiguity: 0.25
+      output_burden: 0.05

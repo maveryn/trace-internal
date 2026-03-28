@@ -40,6 +40,14 @@ def test_geometry_counting_angle_contract_matches_scene() -> None:
         assert execution["question_format"] == "count_matching_labeled_objects"
         assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_evidence"
         assert trace["scene_ir"]["scene_kind"] == "geometry_2d_angle_counting"
+        assert 0.0 <= float(out.complexity.complexity_score) <= 1.0
+        assert set(out.complexity.complexity_components.keys()) == {
+            "visual_scan",
+            "classification_reasoning",
+            "ambiguity",
+            "output_burden",
+        }
+        assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
 
         class_label = "acute" if variant == "acute_angle" else "right" if variant == "right_angle" else "obtuse"
         class_by_label = {str(key): str(value) for key, value in execution["class_by_label"].items()}

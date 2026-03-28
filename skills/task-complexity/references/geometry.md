@@ -52,6 +52,8 @@ output_burden: 0.05
 Measure:
 - object count,
 - class subtlety,
+- target-density balance,
+- evidence label-set burden,
 - boundary cases like overlapping school definitions or near-degenerate shapes.
 
 ### `analytical_2d` and `analytical_3d`

@@ -145,6 +145,114 @@ def geometry_comparison_reasoning_score(comparison_kind: str) -> float:
     return float(score_by_kind[normalized_kind])
 
 
+def geometry_counting_density_balance(*, target_count: int, object_count: int) -> float:
+    """Return one target-density factor that peaks near an even class split."""
+
+    if int(object_count) <= 0:
+        return 0.0
+    density = float(target_count) / float(max(1, int(object_count)))
+    return clamp_unit_interval(1.0 - abs((2.0 * density) - 1.0))
+
+
+def geometry_label_set_output_burden(*, target_count: int, object_count: int) -> float:
+    """Normalize output burden from label-set evidence size."""
+
+    max_targets = max(1, int(object_count) - 1)
+    return normalize_linear(
+        float(target_count),
+        min_value=1.0,
+        max_value=float(max_targets),
+    )
+
+
+def geometry_counting_classification_reasoning_score(*, task_kind: str, task_variant: str) -> float:
+    """Return normalized reasoning load for one geometry counting class."""
+
+    normalized_kind = str(task_kind).strip().lower()
+    normalized_variant = str(task_variant).strip().lower()
+    score_by_kind = {
+        "angle": {
+            "acute_angle": 0.30,
+            "right_angle": 0.55,
+            "obtuse_angle": 0.35,
+        },
+        "triangle": {
+            "equilateral_triangle": 0.30,
+            "isosceles_triangle": 0.80,
+            "scalene_triangle": 0.45,
+            "right_triangle": 0.55,
+            "acute_triangle": 0.65,
+            "obtuse_triangle": 0.60,
+        },
+        "quadrilateral": {
+            "square": 0.35,
+            "rectangle_non_square": 0.72,
+            "rhombus_non_square": 0.78,
+            "parallelogram_only": 0.88,
+        },
+        "shape_type": {
+            "triangle": 0.30,
+            "quadrilateral": 0.55,
+            "pentagon": 0.35,
+            "hexagon": 0.40,
+            "circle": 0.25,
+            "ellipse": 0.50,
+        },
+        "convexity": {
+            "convex_polygon": 0.70,
+            "concave_polygon": 0.50,
+        },
+    }
+    kind_scores = score_by_kind.get(normalized_kind)
+    if kind_scores is None or normalized_variant not in kind_scores:
+        raise ValueError(f"unsupported geometry counting task/variant: {task_kind} / {task_variant}")
+    return float(kind_scores[normalized_variant])
+
+
+def geometry_counting_variant_ambiguity_score(*, task_kind: str, task_variant: str) -> float:
+    """Return normalized per-variant ambiguity for one counting predicate."""
+
+    normalized_kind = str(task_kind).strip().lower()
+    normalized_variant = str(task_variant).strip().lower()
+    score_by_kind = {
+        "angle": {
+            "acute_angle": 0.30,
+            "right_angle": 0.65,
+            "obtuse_angle": 0.35,
+        },
+        "triangle": {
+            "equilateral_triangle": 0.25,
+            "isosceles_triangle": 0.85,
+            "scalene_triangle": 0.50,
+            "right_triangle": 0.60,
+            "acute_triangle": 0.72,
+            "obtuse_triangle": 0.68,
+        },
+        "quadrilateral": {
+            "square": 0.30,
+            "rectangle_non_square": 0.78,
+            "rhombus_non_square": 0.82,
+            "parallelogram_only": 0.92,
+        },
+        "shape_type": {
+            "triangle": 0.25,
+            "quadrilateral": 0.62,
+            "pentagon": 0.32,
+            "hexagon": 0.38,
+            "circle": 0.28,
+            "ellipse": 0.58,
+        },
+        "convexity": {
+            "convex_polygon": 0.74,
+            "concave_polygon": 0.52,
+        },
+    }
+    kind_scores = score_by_kind.get(normalized_kind)
+    if kind_scores is None or normalized_variant not in kind_scores:
+        raise ValueError(f"unsupported geometry counting task/variant: {task_kind} / {task_variant}")
+    return float(kind_scores[normalized_variant])
+
+
 def build_geometry_comparison_complexity(
     *,
     task_group_defaults: Mapping[str, Any],
@@ -180,13 +288,61 @@ def build_geometry_comparison_complexity(
     )
 
 
+def build_geometry_counting_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    object_count: int,
+    object_count_min: int,
+    object_count_max: int,
+    target_count: int,
+    task_kind: str,
+    task_variant: str,
+) -> TaskComplexity:
+    """Build one normalized counting-family complexity payload."""
+
+    weights = resolve_geometry_complexity_weights(task_group_defaults, task_id=task_id)
+    density_balance = geometry_counting_density_balance(
+        target_count=int(target_count),
+        object_count=int(object_count),
+    )
+    variant_ambiguity = geometry_counting_variant_ambiguity_score(
+        task_kind=str(task_kind),
+        task_variant=str(task_variant),
+    )
+    return build_geometry_task_complexity(
+        weights=weights,
+        components={
+            "visual_scan": geometry_visual_scan_score(
+                object_count=int(object_count),
+                object_count_min=int(object_count_min),
+                object_count_max=int(object_count_max),
+            ),
+            "classification_reasoning": geometry_counting_classification_reasoning_score(
+                task_kind=str(task_kind),
+                task_variant=str(task_variant),
+            ),
+            "ambiguity": clamp_unit_interval((0.55 * density_balance) + (0.45 * variant_ambiguity)),
+            "output_burden": geometry_label_set_output_burden(
+                target_count=int(target_count),
+                object_count=int(object_count),
+            ),
+        },
+    )
+
+
 __all__ = [
+    "build_geometry_counting_complexity",
     "build_geometry_comparison_complexity",
     "build_geometry_task_complexity",
     "clamp_unit_interval",
     "geometry_comparison_reasoning_score",
+    "geometry_counting_classification_reasoning_score",
+    "geometry_counting_density_balance",
+    "geometry_counting_variant_ambiguity_score",
     "geometry_gap_ambiguity_score",
     "geometry_graph_point_output_burden",
+    "geometry_label_set_output_burden",
     "geometry_visual_scan_score",
     "normalize_linear",
     "resolve_geometry_complexity_weights",

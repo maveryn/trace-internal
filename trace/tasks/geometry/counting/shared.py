@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ...shared.counting_sampling import (
-    counting_complexity_score,
     resolve_counting_cardinality_pair,
     resolve_counting_object_count,
     resolve_counting_target_count,
@@ -56,7 +55,6 @@ __all__ = [
     "COUNTING_LABEL_POOL",
     "assign_counting_labels",
     "bulky_counting_slot_centers_graph_units",
-    "counting_complexity_score",
     "resolve_counting_cardinality_pair",
     "resolve_counting_object_count",
     "resolve_counting_target_count",

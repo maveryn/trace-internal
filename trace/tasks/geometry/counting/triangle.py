@@ -21,6 +21,7 @@ from ...shared.prompt_variants import (
 )
 from ...shared.text_rendering import resolve_scene_label_font_size_px
 from ..shared.background_defaults import load_geometry_background_defaults
+from ..shared.complexity import build_geometry_counting_complexity
 from ..shared.graph_rendering import graph_units_to_pixel
 from ..shared.multi_polygon_scene import PolygonSceneObject, draw_polygon_objects
 from ..shared.noise_defaults import load_geometry_noise_defaults
@@ -35,12 +36,11 @@ from ..shared.single_object_scene import (
 from .defaults import COUNTING_SHARED_DEFAULTS
 from .shared import (
     assign_counting_labels,
-    counting_complexity_score,
     resolve_counting_cardinality_pair,
 )
 from ....core.seed import spawn_rng
 from ....core.task_group_config import get_task_group_defaults
-from ....core.types import TaskComplexity, TypedValue
+from ....core.types import TypedValue
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 
 _SUPPORTED_VARIANTS: Tuple[str, ...] = (
@@ -959,16 +959,15 @@ class GeometryCountingTriangleTask:
             image=image,
             image_id="img0",
             trace_payload=trace_payload,
-            complexity=TaskComplexity(
-                complexity_score=counting_complexity_score(
-                    object_count=int(object_count),
-                    target_count=int(target_count),
-                ),
-                complexity_components={
-                    "object_count": int(object_count),
-                    "target_count": int(target_count),
-                    "task_variant": str(task_variant),
-                },
+            complexity=build_geometry_counting_complexity(
+                task_group_defaults=_TASK_GROUP_DEFAULTS,
+                task_id=self.task_id,
+                object_count=int(object_count),
+                object_count_min=int(_GEN_DEFAULTS["object_count_min"]),
+                object_count_max=int(_GEN_DEFAULTS["object_count_max"]),
+                target_count=int(target_count),
+                task_kind="triangle",
+                task_variant=str(task_variant),
             ),
             task_versions=default_task_versions(),
             task_variant=str(task_variant),

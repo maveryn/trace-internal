@@ -274,7 +274,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
 30. **Graph relation unique-cycle size (`task_graph_relation_unique_cycle_size`)**
    - One single-panel labeled undirected node-link graph.
    - Query: `The graph contains exactly one cycle. How many nodes are in that cycle?`
-   - Graph contract: connected unicyclic graph with `5..10` nodes and unique-cycle-size support `3..10`.
+   - Graph contract: connected unicyclic graph with `5..10` nodes, unique-cycle-size support `3..7`, and at least one node outside the cycle.
    - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`), plus non-semantic label/shape/color/layout-transform diversity shared with the graph domain.
    - Answer type: integer count.
    - Evidence: `label_set` of all node labels in the unique cycle.

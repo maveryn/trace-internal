@@ -59,7 +59,7 @@ class _TaskDefaults:
     node_count_min: int = 5
     node_count_max: int = 10
     target_cycle_size_min: int = 3
-    target_cycle_size_max: int = 10
+    target_cycle_size_max: int = 7
     canvas_width: int = 864
     canvas_height: int = 640
     outer_margin_px: int = 28

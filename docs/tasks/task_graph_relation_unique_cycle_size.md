@@ -23,8 +23,8 @@
    - the prompt states `The graph contains exactly one cycle. How many nodes are in that cycle?`,
    - answer is the number of nodes on that unique cycle.
 7. Cycle policy:
-   - `target_cycle_size` is sampled from `3..10`,
-   - node count is chosen from the feasible support that can realize the requested cycle size,
+   - `target_cycle_size` is sampled from `3..7`,
+   - node count is chosen from the feasible support that can realize the requested cycle size while leaving at least one node outside the cycle,
    - generation constructs a unicyclic graph by design and verifies that the finalized graph still has exactly one cycle.
 8. Topology variation:
    - `topology_profile` values are `balanced`, `low_degree`, and `hub_heavy`,

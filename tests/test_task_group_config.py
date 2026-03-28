@@ -1729,7 +1729,7 @@ def test_graph_relation_defaults_loaded() -> None:
     assert int(cycle_generation_defaults["node_count_min"]) == 5
     assert int(cycle_generation_defaults["node_count_max"]) == 10
     assert int(cycle_generation_defaults["target_cycle_size_min"]) == 3
-    assert int(cycle_generation_defaults["target_cycle_size_max"]) == 10
+    assert int(cycle_generation_defaults["target_cycle_size_max"]) == 7
     assert int(cycle_rendering_defaults["canvas_width"]) > 0
     assert int(cycle_rendering_defaults["node_radius_min_px"]) > 0
     assert str(cycle_prompt_defaults["bundle_id"]).strip() == "graph_relation_v1"

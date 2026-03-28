@@ -679,7 +679,7 @@ def feasible_node_counts_for_unique_cycle_size(
     """Return node counts that can realize one unique-cycle-size query."""
 
     target_size = int(target_cycle_size)
-    minimum = max(int(node_count_min), 3, int(target_size))
+    minimum = max(int(node_count_min), 4, int(target_size) + 1)
     maximum = int(node_count_max)
     if int(minimum) > int(maximum):
         return ()

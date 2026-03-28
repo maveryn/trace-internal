@@ -142,8 +142,9 @@ def test_graph_relation_unique_cycle_size_balanced_sampling_defaults() -> None:
         layout_variants[str(execution["layout_variant_requested"])] += 1
         topology_profiles[str(execution["topology_profile"])] += 1
         assert 5 <= int(execution["node_count"]) <= 10
-        assert 3 <= int(execution["target_cycle_size"]) <= int(execution["node_count"])
-    assert set(target_sizes.keys()).issuperset({3, 4, 5, 6, 7, 8, 9, 10} & set(target_sizes.keys()))
+        assert 3 <= int(execution["target_cycle_size"]) <= 7
+        assert int(execution["target_cycle_size"]) <= int(execution["node_count"]) - 1
+    assert set(target_sizes.keys()).issuperset({3, 4, 5, 6, 7} & set(target_sizes.keys()))
     assert set(label_variants.keys()) == {"letters", "numbers"}
     assert set(node_shape_variants.keys()) == {"circle", "rounded_square", "hexagon"}
     assert set(layout_variants.keys()) == {"circular", "shell", "spring"}

@@ -60,8 +60,8 @@ Define the concrete v1 setup for the current graph-domain task families.
      - `The graph contains exactly one cycle. How many nodes are in that cycle?`
    - answer type: `integer`
    - evidence type: `label_set`
-   - default cycle-size support: `3..10`
-   - prompt/evidence contract: the graph is connected and unicyclic, and evidence contains every node in the unique cycle
+   - default cycle-size support: `3..7`
+   - prompt/evidence contract: the graph is connected and unicyclic, evidence contains every node in the unique cycle, and generation leaves at least one node outside the cycle
 5. `task_graph_comparison_largest_component_size`
    - ask:
      - `How many nodes are in the largest connected component?`

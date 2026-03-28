@@ -55,7 +55,7 @@ generation:
       node_count_min: 5
       node_count_max: 10
       target_cycle_size_min: 3
-      target_cycle_size_max: 10
+      target_cycle_size_max: 7
 
 rendering:
   shared:

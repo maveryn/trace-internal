@@ -29,6 +29,7 @@ Update this table after each review run.
 | task_icons_counting_color | task_icons_counting_color | alright_for_now | distribution pass |
 | task_icons_counting_attribute_binding | task_icons_counting_attribute_binding | alright_for_now | distribution pass |
 | task_icons_counting_size_relation | task_icons_counting_size_relation | alright_for_now | distribution pass |
+| task_icons_counting_singleton_type | task_icons_counting_singleton_type | alright_for_now | distribution pass |
 | task_icons_relation_relative_position_type | task_icons_relation_relative_position_type | alright_for_now | distribution pass |
 | task_icons_relation_occlusion_order | task_icons_relation_occlusion_order | alright_for_now | distribution pass |
 | task_icons_relation_between_two_anchors_count | task_icons_relation_between_two_anchors_count | alright_for_now | distribution pass |

@@ -37,6 +37,7 @@ Use for:
 - `task_icons_counting_orientation`
 - `task_icons_counting_size_relation`
 - `task_icons_counting_attribute_binding`
+- `task_icons_counting_singleton_type`
 
 What to measure:
 - icon count / cell count,
@@ -48,6 +49,7 @@ Specific notes:
 - `type` / `color` / `orientation` should keep `semantic_match` low-to-medium.
 - `attribute_binding` should push `semantic_match` and `ambiguity` high based on `2-of-3` / `1-of-3` distractor mix.
 - `size_relation` should raise `ambiguity` when the minimum size gap is small and clutter rises.
+- `singleton_type` should raise `ambiguity` with more distinct scene types and more repeated groups while keeping `semantic_match` low because the predicate still groups on icon identity alone.
 
 ### `relation`
 ```yaml

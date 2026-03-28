@@ -1372,6 +1372,7 @@ def test_icons_counting_defaults_loaded() -> None:
     assert "task_icons_counting_color" in cfg["generation"]["task_overrides"]
     assert "task_icons_counting_attribute_binding" in cfg["generation"]["task_overrides"]
     assert "task_icons_counting_size_relation" in cfg["generation"]["task_overrides"]
+    assert "task_icons_counting_singleton_type" in cfg["generation"]["task_overrides"]
     assert "task_icons_counting_type" in cfg["generation"]["task_overrides"]
     assert "task_icons_counting_orientation" in cfg["generation"]["task_overrides"]
 
@@ -1472,6 +1473,29 @@ def test_icons_counting_defaults_loaded() -> None:
     assert str(type_prompt["answer_hint"]).strip()
     assert str(type_prompt["json_example"]).strip()
     assert str(type_prompt["json_example_answer_only"]).strip()
+
+    singleton_generation, singleton_rendering, singleton_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_icons_counting_singleton_type",
+    )
+    assert str(singleton_generation["pool_manifest"]).strip() == "all_icons.txt"
+    assert int(singleton_generation["object_count_min"]) == 6
+    assert int(singleton_generation["object_count_max"]) == 15
+    assert int(singleton_generation["target_count_min"]) == 0
+    assert int(singleton_generation["target_count_max"]) == 5
+    assert int(singleton_generation["repeated_type_count_min"]) == 1
+    assert int(singleton_generation["repeated_type_count_max"]) == 4
+    assert int(singleton_generation["repeated_type_multiplicity_min"]) == 2
+    assert int(singleton_generation["repeated_type_multiplicity_max"]) == 4
+    assert int(singleton_rendering["canvas_width"]) > 0
+    assert int(singleton_rendering["canvas_height"]) > 0
+    assert str(singleton_prompt["task_family_key"]).strip() == "single_scene_counting"
+    assert str(singleton_prompt["object_description"]).strip()
+    assert str(singleton_prompt["question_text"]).strip()
+    assert str(singleton_prompt["evidence_hint"]).strip()
+    assert str(singleton_prompt["answer_hint"]).strip()
+    assert str(singleton_prompt["json_example"]).strip()
+    assert str(singleton_prompt["json_example_answer_only"]).strip()
 
     orientation_generation, orientation_rendering, orientation_prompt = split_generation_rendering_prompt_defaults(
         cfg,

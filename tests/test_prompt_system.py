@@ -230,6 +230,14 @@ def test_icons_pattern_bundle_supports_grid_rotation_violation_query() -> None:
     assert "numbered_grid_rotation_pattern" in bundle.task_family_templates
 
 
+def test_icons_counting_bundle_supports_single_scene_counting_family() -> None:
+    bundle = load_prompt_bundle("icons", "counting", "icons_counting_v1")
+    assert "reference_scene_counting" in bundle.task_family_templates
+    assert "single_scene_counting" in bundle.task_family_templates
+    assert len(bundle.task_templates["counting_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task:counting_query"]) == ["question_text"]
+
+
 def test_tile_reachability_bundle_supports_region_size_query() -> None:
     bundle = load_prompt_bundle("tile", "reachability", "tile_reachability_v1")
     assert len(bundle.task_templates["region_size_query"]) == REQUIRED_PROMPT_VARIANTS

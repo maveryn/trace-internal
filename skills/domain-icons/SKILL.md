@@ -44,6 +44,7 @@ Use this whenever the task lives under `domain=icons`.
   - `task_icons_counting_orientation`
   - `task_icons_counting_size_relation`
   - `task_icons_counting_attribute_binding`
+  - `task_icons_counting_singleton_type`
 - `relation`
   - `task_icons_relation_relative_position_type`
   - `task_icons_relation_between_two_anchors_count`
@@ -87,6 +88,7 @@ Use this whenever the task lives under `domain=icons`.
 - For rotation-bearing icon sequence tasks, use `non_symmetry.txt`, label visible cells directly in the row, and keep user-facing evidence on the violating/missing cell bbox rather than adding a separate option strip.
 - For 2D icon pattern-violation tasks, keep the semantic target on the violating cell bbox, use one numbered grid rather than an option strip, and reject any instance where another supported rule hypothesis would make a different violating cell plausible.
 - For 2D icon size-pattern tasks, define the rule over symbolic size levels first and only map those levels to pixel sizes after sampled cell geometry is known; this keeps ambiguity checks independent of the final rendered cell size.
+- For scene-internal icon frequency tasks, define grouping over `icon_id` only and let color/rotation vary independently; otherwise the task collapses into appearance matching instead of true type-frequency reasoning.
 
 ## Shared helpers to prefer
 - `trace/tasks/icons/shared/icon_assets.py`

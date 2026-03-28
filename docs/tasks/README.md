@@ -66,3 +66,4 @@ Current task docs:
 56. [task_icons_sequence_rotation_violation.md](task_icons_sequence_rotation_violation.md)
 57. [task_icons_pattern_grid_rotation_violation.md](task_icons_pattern_grid_rotation_violation.md)
 58. [task_icons_pattern_grid_size_violation.md](task_icons_pattern_grid_size_violation.md)
+59. [task_icons_counting_singleton_type.md](task_icons_counting_singleton_type.md)

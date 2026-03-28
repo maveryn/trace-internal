@@ -558,6 +558,60 @@ def build_icons_counting_size_relation_complexity(
     )
 
 
+def build_icons_counting_singleton_type_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    object_count: int,
+    target_count: int,
+    repeated_type_count: int,
+    distinct_type_count: int,
+    object_count_min: int,
+    object_count_max: int,
+    scene_instances: Sequence[Mapping[str, Any]],
+    render_params: Mapping[str, Any],
+) -> TaskComplexity:
+    """Build complexity for the scene-internal singleton-type counting task."""
+
+    visual_scan = icon_visual_scan_score(
+        object_count=int(object_count),
+        object_count_min=int(object_count_min),
+        object_count_max=int(object_count_max),
+    )
+    distinct_type_load = _normalize_linear(
+        float(distinct_type_count),
+        min_value=1.0,
+        max_value=9.0,
+    )
+    repeated_type_load = _normalize_linear(
+        float(repeated_type_count),
+        min_value=1.0,
+        max_value=4.0,
+    )
+    ambiguity = _clip01(
+        (0.45 * icon_target_density_balance(target_count=int(target_count), object_count=int(object_count)))
+        + (0.35 * distinct_type_load)
+        + (0.20 * repeated_type_load)
+    )
+    clutter = icon_scene_clutter_score(
+        scene_instances=scene_instances,
+        scene_icon_size_min_px=int(render_params["scene_icon_size_min_px"]),
+        scene_icon_size_max_px=int(render_params["scene_icon_size_max_px"]),
+        scene_max_overlap_fraction=float(render_params["scene_max_overlap_fraction"]),
+        noise_edit_count_range=render_params["icon_noise_edit_count_range"],
+    )
+    return build_icon_task_complexity(
+        task_group_defaults=task_group_defaults,
+        task_id=str(task_id),
+        criterion_values={
+            "visual_scan": float(visual_scan),
+            "semantic_match": float(icon_semantic_match_score(queried_attribute_count=1)),
+            "ambiguity": float(ambiguity),
+            "clutter": float(clutter),
+        },
+    )
+
+
 def build_icons_relation_relative_position_type_complexity(
     *,
     task_group_defaults: Mapping[str, Any],
@@ -1180,6 +1234,7 @@ __all__ = [
     "build_icons_counting_attribute_binding_complexity",
     "build_icons_counting_orientation_complexity",
     "build_icons_counting_size_relation_complexity",
+    "build_icons_counting_singleton_type_complexity",
     "build_icons_counting_type_complexity",
     "build_icons_pattern_grid_rotation_violation_complexity",
     "build_icons_pattern_grid_size_violation_complexity",

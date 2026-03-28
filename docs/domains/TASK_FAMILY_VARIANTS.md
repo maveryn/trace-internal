@@ -266,6 +266,13 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Answer type: integer box index.
    - Evidence: one-box `bbox_set` for the violating grid box in final image coordinates.
    - Ambiguity rule: reject any grid where more than one box index could plausibly be the unique violation under the supported row/column size-rule hypotheses.
+30. **Icons counting singleton type (`task_icons_counting_singleton_type`)**
+   - One single-panel image with `6..15` randomly placed Scene icons.
+   - Query: how many icons have a type that appears exactly once in the image.
+   - Frequency rule: counting is over icon type only; colors and rotations may vary per icon, but repeated `icon_id` values define the repeated groups and singleton `icon_id` values define the counted witnesses.
+   - Sampling rule: `target_count` in `0..5`; the remaining icons are partitioned into `1..4` repeated types with multiplicity `2..4` each, so at least one repeated type always remains in the scene.
+   - Answer type: integer count.
+   - Evidence: sorted `bbox_set` of the singleton-type icons in final image coordinates.
 
 ## Future polygon variants (deferred)
 1. Polygon diameter measurement.

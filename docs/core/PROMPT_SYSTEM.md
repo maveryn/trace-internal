@@ -109,7 +109,7 @@ Active task-to-bundle mapping:
    - `task_geometry_analytical_3d_volume` -> `geometry_analytical_volume_v1`
    - `task_geometry_analytical_3d_surface_area` -> `geometry_analytical_surface_area_v1`
 6. Icons:
-   - `task_icons_counting_type|orientation|color|attribute_binding|size_relation` -> `icons_counting_v1`
+   - `task_icons_counting_type|orientation|color|attribute_binding|size_relation|singleton_type` -> `icons_counting_v1`
    - `task_icons_pattern_grid_rotation_violation|task_icons_pattern_grid_size_violation` -> `icons_pattern_v1`
    - `task_icons_relation_relative_position_type|between_two_anchors_count|mirror_symmetry|occlusion_order` -> `icons_relation_v1`
    - `task_icons_sequence_missing_count|rotation_violation` -> `icons_sequence_v1`

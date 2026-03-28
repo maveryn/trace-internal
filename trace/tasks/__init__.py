@@ -25,6 +25,7 @@ from .icons.counting import color as _task_icons_counting_color
 from .icons.counting import attribute_binding as _task_icons_counting_attribute_binding
 from .icons.counting import orientation as _task_icons_counting_orientation
 from .icons.counting import size_relation as _task_icons_counting_size_relation
+from .icons.counting import singleton_type as _task_icons_counting_singleton_type
 from .icons.counting import type as _task_icons_counting_type
 from .icons.relation import between_two_anchors_count as _task_icons_relation_between_two_anchors_count
 from .icons.relation import mirror_symmetry as _task_icons_relation_mirror_symmetry

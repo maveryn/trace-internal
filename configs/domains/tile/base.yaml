@@ -16,6 +16,12 @@ rendering:
     placement_jitter_fraction_min: 0.02
     placement_jitter_fraction_max: 0.06
 
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.50
+      reasoning_load: 0.50
+
 visual:
   background:
     enabled: true

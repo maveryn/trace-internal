@@ -13,6 +13,21 @@ generation:
       target_largest_component_size_min: 2
       target_largest_component_size_max: 10
 
+complexity:
+  task_overrides:
+    task_tile_count_color_count:
+      criteria_weights:
+        visual_scan: 0.60
+        reasoning_load: 0.40
+    task_tile_count_color_components:
+      criteria_weights:
+        visual_scan: 0.45
+        reasoning_load: 0.55
+    task_tile_count_largest_component_size:
+      criteria_weights:
+        visual_scan: 0.40
+        reasoning_load: 0.60
+
 prompt:
   shared:
     bundle_id: tile_count_v1

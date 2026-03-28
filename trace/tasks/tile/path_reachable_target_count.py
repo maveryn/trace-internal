@@ -9,7 +9,7 @@ from PIL import ImageDraw
 
 from ...core.seed import spawn_rng
 from ...core.task_group_config import get_task_group_defaults
-from ...core.types import TaskComplexity, TypedValue
+from ...core.types import TypedValue
 from ...core.visual.background import make_background_canvas
 from ...core.visual.noise import apply_post_image_noise
 from ..base import TaskOutput
@@ -32,6 +32,12 @@ from ..shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from .shared.grid_graph import cell_id, coord_adjacency_to_cell_ids, open_grid_adjacency
+from .shared.complexity import (
+    build_tile_complexity,
+    normalize_float_with_bounds,
+    normalize_int_with_bounds,
+    resolve_tile_complexity_weights,
+)
 from .shared.reachability_board import sample_reachability_board
 from .shared.rectangular_board import (
     RectangularTileSpec,
@@ -83,6 +89,10 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 )
 POST_IMAGE_BACKGROUND_DEFAULTS = load_tile_background_defaults(task_group="path")
 POST_IMAGE_NOISE_DEFAULTS = load_tile_noise_defaults(task_group="path", apply_prob=0.0)
+_COMPLEXITY_WEIGHTS = resolve_tile_complexity_weights(
+    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, dict) else {},
+    task_id="task_tile_path_reachable_target_count",
+)
 
 
 def _sample_square_tile_spec(rng, *, short_side_px_min: int, short_side_px_max: int) -> RectangularTileSpec:
@@ -501,27 +511,37 @@ class TileReachableTargetCountTask:
 
         board_cell_count = int(rows) * int(cols)
         blocked_count = len(blocked_coords)
-        complexity = TaskComplexity(
-            complexity_score=min(
-                1.0,
-                max(
-                    0.0,
-                    (
-                        (float(board_cell_count) / 64.0)
-                        + float(realized_obstacle_fraction)
-                        + (float(total_target_count) / 8.0)
+        max_total_target_count = max(2, int(effective_target_reachable_target_count_max) + 1)
+        complexity = build_tile_complexity(
+            weights=_COMPLEXITY_WEIGHTS,
+            components={
+                "visual_scan": (
+                    0.55
+                    * normalize_float_with_bounds(
+                        float(realized_obstacle_fraction),
+                        (float(obstacle_prob_min), float(obstacle_prob_max)),
                     )
-                    / 3.0,
+                    + 0.45
+                    * normalize_int_with_bounds(
+                        int(total_target_count),
+                        (2, int(max_total_target_count)),
+                    )
                 ),
-            ),
-            complexity_components={
-                "rows": int(rows),
-                "cols": int(cols),
-                "blocked_count": int(blocked_count),
-                "target_count": int(total_target_count),
-                "reachable_target_count": int(answer_value),
-                "obstacle_fraction": float(realized_obstacle_fraction),
-                "reachable_fraction": float(reachable_fraction),
+                "reasoning_load": (
+                    0.65
+                    * normalize_int_with_bounds(
+                        int(answer_value),
+                        (
+                            int(target_reachable_target_count_min),
+                            int(effective_target_reachable_target_count_max),
+                        ),
+                    )
+                    + 0.35
+                    * normalize_float_with_bounds(
+                        1.0 - float(reachable_fraction),
+                        (1.0 - float(reachable_fraction_max), 1.0 - float(reachable_fraction_min)),
+                    )
+                ),
             },
         )
 

@@ -7,6 +7,18 @@ import json
 from trace.tasks.tile.transition_gravity_max_drop import TileGravityMaxDropTask
 
 
+def _assert_normalized_complexity(out: object) -> None:
+    complexity = out.complexity.to_dict()
+    assert 0.0 <= float(complexity["complexity_score"]) <= 1.0
+    assert set(complexity["complexity_components"].keys()) == {
+        "reasoning_load",
+        "visual_scan",
+    }
+    assert all(
+        0.0 <= float(value) <= 1.0 for value in complexity["complexity_components"].values()
+    )
+
+
 def _extract_prompt_json_example(prompt: str) -> dict:
     marker = "Example JSON:\n"
     assert marker in str(prompt)
@@ -71,6 +83,7 @@ def test_tile_gravity_max_drop_outputs_expected_contract() -> None:
         if bool(entity["attrs"].get("is_winning_path"))
     ]
     assert {str(entity["entity_id"]) for entity in winning_entities} == set(trace["witness_symbolic"]["ids"])
+    _assert_normalized_complexity(out)
 
 
 def test_tile_gravity_max_drop_caps_target_range_for_small_rows() -> None:
@@ -118,3 +131,35 @@ def test_tile_gravity_max_drop_prompt_example_matches_contract() -> None:
     out = task.generate(8829, params={}, max_attempts=40)
     example = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
     assert example == {"evidence": [[0, 1], [1, 1], [2, 1]], "answer": 2}
+
+
+def test_tile_transition_complexity_is_normalized_and_monotonic() -> None:
+    task = TileGravityMaxDropTask()
+    easy = task.generate(
+        8837,
+        params={
+            "rows_min": 7,
+            "rows_max": 7,
+            "cols_min": 4,
+            "cols_max": 4,
+            "_sampling_index": 0,
+        },
+        max_attempts=40,
+    )
+    hard = task.generate(
+        8837,
+        params={
+            "rows_min": 7,
+            "rows_max": 7,
+            "cols_min": 4,
+            "cols_max": 4,
+            "_sampling_index": 4,
+        },
+        max_attempts=40,
+    )
+    _assert_normalized_complexity(easy)
+    _assert_normalized_complexity(hard)
+    assert float(hard.complexity.complexity_components["reasoning_load"]) > float(
+        easy.complexity.complexity_components["reasoning_load"]
+    )
+    assert float(hard.complexity.complexity_score) > float(easy.complexity.complexity_score)

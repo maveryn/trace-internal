@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ...core.seed import spawn_rng
 from ...core.task_group_config import get_task_group_defaults
-from ...core.types import TaskComplexity, TypedValue
+from ...core.types import TypedValue
 from ..base import TaskOutput
 from ..registry import register_task
 from ..shared.bbox_projection import pixel_anchor_map_from_bboxes
@@ -27,6 +27,12 @@ from ..shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from .shared.grid_graph import cell_id
+from .shared.complexity import (
+    build_tile_complexity,
+    clamp_unit_interval,
+    normalize_int_with_bounds,
+    resolve_tile_complexity_weights,
+)
 from .shared.named_color_board import (
     Coord,
     RectangularNamedColorBoardTaskDefaults,
@@ -61,6 +67,10 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 )
 POST_IMAGE_BACKGROUND_DEFAULTS = load_tile_background_defaults(task_group="pattern")
 POST_IMAGE_NOISE_DEFAULTS = load_tile_noise_defaults(task_group="pattern", apply_prob=0.5)
+_COMPLEXITY_WEIGHTS = resolve_tile_complexity_weights(
+    _TASK_GROUP_DEFAULTS if isinstance(_TASK_GROUP_DEFAULTS, dict) else {},
+    task_id="task_tile_pattern_match3_run_count",
+)
 
 
 def _resolve_task_variant(*, params: Mapping[str, Any], instance_seed: int, task_id: str) -> str:
@@ -608,26 +618,44 @@ class TileMatch3RunCountTask:
         }
 
         line_capacity = _line_capacity(str(task_variant), rows=int(scene.rows), cols=int(scene.cols))
-        complexity = TaskComplexity(
-            complexity_score=min(
-                1.0,
-                max(
-                    0.0,
-                    (
-                        (float(int(scene.rows) * int(scene.cols)) / 49.0)
-                        + (float(int(scene.palette_size)) / 3.0)
-                        + (float(int(answer_value)) / float(max(1, int(line_capacity))))
+        min_board_cell_count = int(rows_min) * int(cols_min)
+        max_board_cell_count = int(rows_max) * int(cols_max)
+        min_line_capacity = _line_capacity(str(task_variant), rows=int(rows_min), cols=int(cols_min))
+        max_line_capacity = _line_capacity(str(task_variant), rows=int(rows_max), cols=int(cols_max))
+        complexity = build_tile_complexity(
+            weights=_COMPLEXITY_WEIGHTS,
+            components={
+                "visual_scan": (
+                    0.55
+                    * normalize_int_with_bounds(
+                        int(scene.rows) * int(scene.cols),
+                        (int(min_board_cell_count), int(max_board_cell_count)),
                     )
-                    / 3.0,
+                    + 0.20
+                    * normalize_int_with_bounds(
+                        int(line_capacity),
+                        (int(min_line_capacity), int(max_line_capacity)),
+                    )
+                    + 0.25
+                    * normalize_int_with_bounds(
+                        int(scene.palette_size),
+                        (int(palette_size_min), int(palette_size_max)),
+                    )
                 ),
-            ),
-            complexity_components={
-                "rows": int(scene.rows),
-                "cols": int(scene.cols),
-                "palette_size": int(scene.palette_size),
-                "run_length": int(run_length),
-                "answer_count": int(answer_value),
-                "line_capacity": int(line_capacity),
+                "reasoning_load": (
+                    0.70
+                    * normalize_int_with_bounds(
+                        int(answer_value),
+                        (
+                            int(target_qualifying_line_count_min),
+                            int(effective_target_qualifying_line_count_max),
+                        ),
+                    )
+                    + 0.30
+                    * clamp_unit_interval(
+                        float(answer_value) / float(max(1, int(line_capacity)))
+                    )
+                ),
             },
         )
 

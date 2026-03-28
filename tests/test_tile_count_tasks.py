@@ -9,6 +9,18 @@ from trace.tasks.tile.count_color_count import TileColorCountTask
 from trace.tasks.tile.count_largest_component_size import TileLargestComponentSizeTask
 
 
+def _assert_normalized_complexity(out: object) -> None:
+    complexity = out.complexity.to_dict()
+    assert 0.0 <= float(complexity["complexity_score"]) <= 1.0
+    assert set(complexity["complexity_components"].keys()) == {
+        "reasoning_load",
+        "visual_scan",
+    }
+    assert all(
+        0.0 <= float(value) <= 1.0 for value in complexity["complexity_components"].values()
+    )
+
+
 def _extract_prompt_json_example(prompt: str) -> dict:
     marker = "Example JSON:\n"
     assert marker in str(prompt)
@@ -313,3 +325,53 @@ def test_tile_largest_component_size_prompt_example_matches_contract() -> None:
     assert list(example.keys()) == ["evidence", "answer"]
     assert example["evidence"] == [[0, 0], [0, 1], [1, 1], [1, 2]]
     assert int(example["answer"]) == 4
+
+
+def test_tile_count_complexity_is_normalized_and_monotonic() -> None:
+    color_count_task = TileColorCountTask()
+    color_count = color_count_task.generate(6601, params={}, max_attempts=40)
+    _assert_normalized_complexity(color_count)
+
+    color_components_task = TileColorComponentsTask()
+    color_components = color_components_task.generate(6602, params={}, max_attempts=200)
+    _assert_normalized_complexity(color_components)
+
+    largest_task = TileLargestComponentSizeTask()
+    easy_largest = largest_task.generate(
+        6603,
+        params={
+            "rows_min": 7,
+            "rows_max": 7,
+            "cols_min": 7,
+            "cols_max": 7,
+            "palette_size_min": 3,
+            "palette_size_max": 3,
+            "target_largest_component_size_min": 2,
+            "target_largest_component_size_max": 10,
+            "_sampling_index": 0,
+        },
+        max_attempts=200,
+    )
+    hard_largest = largest_task.generate(
+        6603,
+        params={
+            "rows_min": 7,
+            "rows_max": 7,
+            "cols_min": 7,
+            "cols_max": 7,
+            "palette_size_min": 3,
+            "palette_size_max": 3,
+            "target_largest_component_size_min": 2,
+            "target_largest_component_size_max": 10,
+            "_sampling_index": 8,
+        },
+        max_attempts=200,
+    )
+    _assert_normalized_complexity(easy_largest)
+    _assert_normalized_complexity(hard_largest)
+    assert float(hard_largest.complexity.complexity_components["reasoning_load"]) > float(
+        easy_largest.complexity.complexity_components["reasoning_load"]
+    )
+    assert float(hard_largest.complexity.complexity_score) > float(
+        easy_largest.complexity.complexity_score
+    )

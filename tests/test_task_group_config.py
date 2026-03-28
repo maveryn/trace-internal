@@ -618,17 +618,24 @@ def test_tables_readout_defaults_loaded() -> None:
     prompt_shared = cfg["prompt"]["shared"]
     assert str(prompt_shared["bundle_id"]).strip() == "tables_readout_v1"
     assert str(prompt_shared["task_family_key"]).strip() == "styled_table_readout"
-    assert str(prompt_shared["task_key"]).strip() == "cell_value_query"
+    assert str(prompt_shared["task_key"]).strip() == "subset_value_query"
 
     generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_tables_readout_cell_value",
+        task_id="task_tables_readout_subset_value",
     )
-    assert sorted(generation_defaults["task_variant_weights"].keys()) == ["cell_lookup"]
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "cell_difference_two_abs",
+        "cell_lookup",
+        "cell_sum_two",
+    ]
     assert int(rendering_defaults["canvas_height"]) > 0
     assert str(prompt_defaults["bundle_id"]).strip() == "tables_readout_v1"
     assert str(prompt_defaults["evidence_hint_cell_lookup"]).strip()
+    assert str(prompt_defaults["evidence_hint_cell_sum_two"]).strip()
+    assert str(prompt_defaults["evidence_hint_cell_difference_two_abs"]).strip()
     assert str(prompt_defaults["json_example_cell_lookup"]).strip()
+    assert str(prompt_defaults["json_example_cell_sum_two"]).strip()
 
 
 def test_charts_multiseries_defaults_loaded() -> None:

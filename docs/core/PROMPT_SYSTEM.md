@@ -131,4 +131,4 @@ Active task-to-bundle mapping:
 9. Tables:
    - `task_tables_statistics_summary_label|summary_value|row_summary_value` -> `tables_statistics_v1`
    - `task_tables_counting_value_count` -> `tables_counting_v1`
-   - `task_tables_readout_cell_value` -> `tables_readout_v1`
+   - `task_tables_readout_subset_value` -> `tables_readout_v1`

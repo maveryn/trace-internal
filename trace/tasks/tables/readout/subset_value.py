@@ -1,4 +1,4 @@
-"""Table readout task that returns the exact numeric value of one queried cell."""
+"""Table readout task that returns one queried cell value or a simple two-cell arithmetic result."""
 
 from __future__ import annotations
 
@@ -20,18 +20,17 @@ from ...shared.prompt_variants import (
 from ..shared.table_common import (
     SUPPORTED_TABLE_SCENE_VARIANTS,
     TableDefaults,
-    build_readout_cell_dataset,
+    build_readout_subset_dataset_for_variant,
     projected_table_bbox_evidence,
     resolve_table_axis_variant,
     resolve_table_render_params,
-    table_value_cell_id,
 )
 from ..shared.table_scene import render_table_scene
 from ..shared.visual_defaults import load_table_background_defaults, load_table_noise_defaults
 
 
-TASK_ID = "task_tables_readout_cell_value"
-_SUPPORTED_TASK_VARIANTS: Tuple[str, ...] = ("cell_lookup",)
+TASK_ID = "task_tables_readout_subset_value"
+_SUPPORTED_TASK_VARIANTS: Tuple[str, ...] = ("cell_lookup", "cell_sum_two", "cell_difference_two_abs")
 
 _DEFAULTS = TableDefaults()
 _TASK_GROUP_DEFAULTS = get_task_group_defaults("tables", "readout")
@@ -76,8 +75,8 @@ def _resolve_scene_variant(params: Mapping[str, Any], *, instance_seed: int) -> 
 
 
 @register_task
-class TablesReadoutCellValueTask:
-    """Return the exact integer stored in one named row/column cell."""
+class TablesReadoutSubsetValueTask:
+    """Return one named cell value or a simple arithmetic result over two named cells."""
 
     task_id = TASK_ID
     domain = "tables"
@@ -87,7 +86,8 @@ class TablesReadoutCellValueTask:
         del max_attempts
         task_variant, task_variant_probabilities = _resolve_task_variant(params, instance_seed=int(instance_seed))
         scene_variant, scene_variant_probabilities = _resolve_scene_variant(params, instance_seed=int(instance_seed))
-        dataset = build_readout_cell_dataset(
+        dataset = build_readout_subset_dataset_for_variant(
+            task_variant=str(task_variant),
             params=params,
             instance_seed=int(instance_seed),
             gen_defaults=_GEN_DEFAULTS,
@@ -136,15 +136,37 @@ class TablesReadoutCellValueTask:
                 "object_description_ledger",
                 "object_description_card_table",
                 "evidence_hint_cell_lookup",
+                "evidence_hint_cell_sum_two",
+                "evidence_hint_cell_difference_two_abs",
                 "json_example_cell_lookup",
+                "json_example_cell_sum_two",
+                "json_example_cell_difference_two_abs",
                 "json_example_answer_only_cell_lookup",
+                "json_example_answer_only_cell_sum_two",
+                "json_example_answer_only_cell_difference_two_abs",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
         object_description = str(prompt_defaults[f"object_description_{str(scene_variant)}"])
-        evidence_hint = str(prompt_defaults["evidence_hint_cell_lookup"])
-        json_example = str(prompt_defaults["json_example_cell_lookup"])
-        json_example_answer_only = str(prompt_defaults["json_example_answer_only_cell_lookup"])
+        evidence_hint = str(prompt_defaults[f"evidence_hint_{str(task_variant)}"])
+        json_example = str(prompt_defaults[f"json_example_{str(task_variant)}"])
+        json_example_answer_only = str(prompt_defaults[f"json_example_answer_only_{str(task_variant)}"])
+
+        query_cells = [dict(cell) for cell in dataset["query_cells"]]
+        prompt_slots: Dict[str, Any] = {
+            "object_description": str(object_description),
+            "json_output_contract": str(prompt_defaults["json_output_contract"]),
+            "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
+            "evidence_hint": str(evidence_hint),
+            "answer_hint": str(prompt_defaults["answer_hint"]),
+            "json_example": str(json_example),
+            "json_example_answer_only": str(json_example_answer_only),
+            "query_row_label_1": str(query_cells[0]["row_label"]),
+            "query_column_1": str(query_cells[0]["column"]),
+        }
+        if len(query_cells) >= 2:
+            prompt_slots["query_row_label_2"] = str(query_cells[1]["row_label"])
+            prompt_slots["query_column_2"] = str(query_cells[1]["column"])
 
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
@@ -154,26 +176,13 @@ class TablesReadoutCellValueTask:
             task_key=str(prompt_defaults["task_key"]),
             task_variant_key=str(task_variant),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(object_description),
-                "query_row_label": str(dataset["query_row_label"]),
-                "query_column": str(dataset["query_column"]),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "evidence_hint": str(evidence_hint),
-                "answer_hint": str(prompt_defaults["answer_hint"]),
-                "json_example": str(json_example),
-                "json_example_answer_only": str(json_example_answer_only),
-            },
+            slots=dict(prompt_slots),
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-        evidence_cell_id = table_value_cell_id(
-            data_row_index=int(dataset["query_row_index"]),
-            numeric_column_index=int(dataset["query_column_index"]),
-        )
-        evidence_projection = projected_table_bbox_evidence(rendered_scene, [str(evidence_cell_id)])
+        evidence_cell_ids = [str(cell["cell_id"]) for cell in query_cells]
+        evidence_projection = projected_table_bbox_evidence(rendered_scene, evidence_cell_ids)
         evidence_bboxes = [
             [round(float(value), 3) for value in bbox]
             for bbox in evidence_projection["bbox_set"]
@@ -200,10 +209,9 @@ class TablesReadoutCellValueTask:
                 "relations": {
                     "task_variant": str(task_variant),
                     "scene_variant": str(scene_variant),
-                    "query_row_label": str(dataset["query_row_label"]),
-                    "query_column": str(dataset["query_column"]),
                     "answer_value": int(answer_value),
-                    "evidence_cell_id": str(evidence_cell_id),
+                    "query_cells": [dict(cell) for cell in query_cells],
+                    "supporting_cell_ids": [str(cell_id) for cell_id in evidence_cell_ids],
                 },
             },
             "query_spec": {
@@ -215,8 +223,7 @@ class TablesReadoutCellValueTask:
                 "params": {
                     "task_variant": str(task_variant),
                     "scene_variant": str(scene_variant),
-                    "query_row_label": str(dataset["query_row_label"]),
-                    "query_column": str(dataset["query_column"]),
+                    "query_cells": [dict(cell) for cell in query_cells],
                     "task_variant_probabilities": dict(task_variant_probabilities),
                     "scene_variant_probabilities": dict(scene_variant_probabilities),
                     "row_count": int(dataset["row_count"]),
@@ -252,10 +259,7 @@ class TablesReadoutCellValueTask:
             "execution_trace": {
                 "task_variant": str(task_variant),
                 "scene_variant": str(scene_variant),
-                "query_row_label": str(dataset["query_row_label"]),
-                "query_row_index": int(dataset["query_row_index"]),
-                "query_column": str(dataset["query_column"]),
-                "query_column_index": int(dataset["query_column_index"]),
+                "query_cells": [dict(cell) for cell in query_cells],
                 "answer_value": int(answer_value),
                 "row_labels": [str(label) for label in dataset["row_labels"]],
                 "column_headers": [str(header) for header in dataset["column_headers"]],
@@ -267,8 +271,8 @@ class TablesReadoutCellValueTask:
                 "value_range": list(dataset["value_range"]),
                 "task_variant_probabilities": dict(task_variant_probabilities),
                 "scene_variant_probabilities": dict(scene_variant_probabilities),
-                "question_format": "cell_value_lookup",
-                "supporting_cell_id": str(evidence_cell_id),
+                "question_format": str(task_variant),
+                "supporting_cell_ids": [str(cell_id) for cell_id in evidence_cell_ids],
             },
             "witness_symbolic": {
                 "type": "bbox_set",
@@ -284,12 +288,18 @@ class TablesReadoutCellValueTask:
                 0.12
                 + (0.02 * int(dataset["row_count"]))
                 + (0.015 * int(dataset["numeric_column_count"]))
+                + {
+                    "cell_lookup": 0.0,
+                    "cell_sum_two": 0.07,
+                    "cell_difference_two_abs": 0.09,
+                }[str(task_variant)]
             ),
             complexity_components={
                 "task_variant": str(task_variant),
                 "scene_variant": str(scene_variant),
                 "row_count": int(dataset["row_count"]),
                 "numeric_column_count": int(dataset["numeric_column_count"]),
+                "query_cell_count": int(len(query_cells)),
             },
         )
         return TaskOutput(
@@ -305,5 +315,4 @@ class TablesReadoutCellValueTask:
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
-
-__all__ = ["TablesReadoutCellValueTask"]
+__all__ = ["TablesReadoutSubsetValueTask"]

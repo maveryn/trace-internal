@@ -785,15 +785,19 @@ def build_counting_value_dataset_for_variant(
     }
 
 
-def build_readout_cell_dataset(
+def build_readout_subset_dataset_for_variant(
     *,
+    task_variant: str,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
     defaults: TableDefaults,
     task_id: str,
 ) -> Dict[str, Any]:
-    """Construct one deterministic table dataset for exact cell-value lookup."""
+    """Construct one deterministic table dataset for single-cell or two-cell readout queries."""
+
+    if str(task_variant) not in {"cell_lookup", "cell_sum_two", "cell_difference_two_abs"}:
+        raise ValueError(f"unsupported table readout variant: {task_variant}")
 
     base = _resolve_base_table_schema(
         params=params,
@@ -807,17 +811,8 @@ def build_readout_cell_dataset(
     numeric_column_count = int(base["numeric_column_count"])
     row_labels = list(base["row_labels"])
     column_headers = list(base["column_headers"])
-    query_col_index = int(base["query_column_index"])
-    query_column = str(base["query_column"])
     value_min = int(base["value_min"])
     value_max = int(base["value_max"])
-    query_row_index = int(resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{task_id}:query_row",
-    )) % int(row_count)
-    query_row_label = str(row_labels[int(query_row_index)])
-    answer_value = int(rng.randint(int(value_min), int(value_max)))
 
     values_by_row = _build_values_by_row(
         row_labels=row_labels,
@@ -826,7 +821,84 @@ def build_readout_cell_dataset(
         value_min=int(value_min),
         value_max=int(value_max),
     )
-    values_by_row[str(query_row_label)][str(query_column)] = int(answer_value)
+
+    query_cells: List[Dict[str, Any]] = []
+    if str(task_variant) == "cell_lookup":
+        query_row_index = int(
+            resolve_selection_index(
+                params=params,
+                instance_seed=int(instance_seed),
+                namespace=f"{task_id}:query_row",
+            )
+        ) % int(row_count)
+        query_column_index = int(base["query_column_index"])
+        query_value = int(rng.randint(int(value_min), int(value_max)))
+        query_row_label = str(row_labels[int(query_row_index)])
+        query_column = str(column_headers[int(query_column_index)])
+        values_by_row[str(query_row_label)][str(query_column)] = int(query_value)
+        query_cells.append(
+            {
+                "row_label": str(query_row_label),
+                "row_index": int(query_row_index),
+                "column": str(query_column),
+                "column_index": int(query_column_index),
+                "cell_id": table_value_cell_id(
+                    data_row_index=int(query_row_index),
+                    numeric_column_index=int(query_column_index),
+                ),
+                "value": int(query_value),
+            }
+        )
+        answer_value = int(query_value)
+    else:
+        total_numeric_cells = int(row_count * numeric_column_count)
+        first_position = int(rng.randint(0, int(total_numeric_cells) - 1))
+        second_position = int(rng.randint(0, int(total_numeric_cells) - 2))
+        if int(second_position) >= int(first_position):
+            second_position += 1
+        ordered_positions = [int(first_position), int(second_position)]
+
+        if str(task_variant) == "cell_sum_two":
+            target_sum = int(rng.randint(int(value_min * 2), int(value_max * 2)))
+            query_values = _sample_values_with_total(
+                count=2,
+                target_total=int(target_sum),
+                min_value=int(value_min),
+                max_value=int(value_max),
+                rng=rng,
+            )
+            answer_value = int(target_sum)
+        else:
+            if int(value_max) <= int(value_min):
+                raise ValueError("table value range must support a positive absolute difference")
+            target_difference = int(rng.randint(1, int(value_max - value_min)))
+            lower_value = int(rng.randint(int(value_min), int(value_max - target_difference)))
+            higher_value = int(lower_value + target_difference)
+            query_values = [int(lower_value), int(higher_value)]
+            rng.shuffle(query_values)
+            answer_value = int(target_difference)
+
+        for index, linear_position in enumerate(ordered_positions):
+            row_index = int(linear_position // int(numeric_column_count))
+            column_index = int(linear_position % int(numeric_column_count))
+            row_label = str(row_labels[int(row_index)])
+            column = str(column_headers[int(column_index)])
+            cell_value = int(query_values[int(index)])
+            values_by_row[str(row_label)][str(column)] = int(cell_value)
+            query_cells.append(
+                {
+                    "row_label": str(row_label),
+                    "row_index": int(row_index),
+                    "column": str(column),
+                    "column_index": int(column_index),
+                    "cell_id": table_value_cell_id(
+                        data_row_index=int(row_index),
+                        numeric_column_index=int(column_index),
+                    ),
+                    "value": int(cell_value),
+                }
+            )
+
     return {
         "row_count": int(row_count),
         "numeric_column_count": int(numeric_column_count),
@@ -835,11 +907,8 @@ def build_readout_cell_dataset(
         "value_range": list(base["value_range"]),
         "row_labels": [str(label) for label in row_labels],
         "column_headers": [str(header) for header in column_headers],
-        "query_row_label": str(query_row_label),
-        "query_row_index": int(query_row_index),
-        "query_column": str(query_column),
-        "query_column_index": int(query_col_index),
         "values_by_row": dict(values_by_row),
+        "query_cells": [dict(cell) for cell in query_cells],
         "answer_value": int(answer_value),
     }
 
@@ -902,7 +971,7 @@ __all__ = [
     "SUPPORTED_TABLE_SCENE_VARIANTS",
     "TableDefaults",
     "build_counting_value_dataset_for_variant",
-    "build_readout_cell_dataset",
+    "build_readout_subset_dataset_for_variant",
     "build_row_summary_value_dataset_for_variant",
     "build_summary_label_dataset_for_variant",
     "build_summary_value_dataset_for_variant",

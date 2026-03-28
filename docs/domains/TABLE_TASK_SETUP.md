@@ -10,7 +10,7 @@ This document defines the concrete v1 tables-domain contract.
    - `task_tables_statistics_summary_value`
    - `task_tables_statistics_row_summary_value`
    - `task_tables_counting_value_count`
-   - `task_tables_readout_cell_value`
+   - `task_tables_readout_subset_value`
 
 ## 2) Active task contracts
 1. `task_tables_statistics_summary_label`
@@ -33,8 +33,8 @@ This document defines the concrete v1 tables-domain contract.
    - `scene_variant`: `spreadsheet|zebra|ledger|card_table`
    - `answer_gt.type`: `integer`
    - `evidence_gt.type`: `bbox_set`
-5. `task_tables_readout_cell_value`
-   - `task_variant`: `cell_lookup`
+5. `task_tables_readout_subset_value`
+   - `task_variant`: `cell_lookup|cell_sum_two|cell_difference_two_abs`
    - `scene_variant`: `spreadsheet|zebra|ledger|card_table`
    - `answer_gt.type`: `integer`
    - `evidence_gt.type`: `bbox_set`
@@ -48,7 +48,7 @@ This document defines the concrete v1 tables-domain contract.
 6. Summary-value tasks query one numeric column and ask for a numeric summary over that column.
 7. Row-summary-value tasks query one visible row label and ask for a numeric summary over that row's numeric cells.
 8. Counting tasks query one numeric column plus a threshold/interval predicate and count matching rows.
-9. Readout tasks query one row label plus one numeric column and ask for the exact cell value.
+9. Readout tasks query one visible cell or an ordered pair of visible cells and ask for an exact integer readout, sum, or absolute difference.
 10. Row-name answers are visible row-name strings from the table, not option letters.
 
 ## 4) Evidence policy
@@ -58,7 +58,7 @@ This document defines the concrete v1 tables-domain contract.
 4. For `task_tables_statistics_summary_value`, evidence is exactly one bbox for the supporting queried-column data region.
 5. For `task_tables_statistics_row_summary_value`, evidence is exactly one bbox for the supporting queried-row data region.
 6. For `task_tables_counting_value_count`, evidence is the ordered set of supporting queried-column value-cell bboxes in top-to-bottom row order.
-7. For `task_tables_readout_cell_value`, evidence is exactly one bbox for the queried supporting cell.
+7. For `task_tables_readout_subset_value`, evidence is one queried value-cell bbox for `cell_lookup` and an ordered pair of queried value-cell bboxes for the two-cell arithmetic variants.
 8. Prompt wording should explicitly say whether the evidence is a supporting value cell, a set of matching value cells, a supporting row region, or a supporting column region.
 
 ## 5) Visual policy
@@ -89,6 +89,6 @@ This document defines the concrete v1 tables-domain contract.
    - `summary_value_query`
    - `summary_row_value_query`
    - `value_count_query`
-   - `cell_value_query`
-4. Prompts must name the queried numeric column explicitly for column-summary/counting tasks, the queried row explicitly for row-summary tasks, and the queried row+column explicitly for readout tasks.
-5. Prompts must describe the evidence as the bbox of the supporting value cell, the ordered set of matching value cells, the supporting row region, or the supporting column region, depending on the task.
+   - `subset_value_query`
+4. Prompts must name the queried numeric column explicitly for column-summary/counting tasks, the queried row explicitly for row-summary tasks, and the queried row+column cell coordinates explicitly for each readout query cell.
+5. Prompts must describe the evidence as the bbox of the supporting value cell, the ordered set of matching value cells, the supporting row region, the supporting column region, or the ordered queried-cell pair, depending on the task.

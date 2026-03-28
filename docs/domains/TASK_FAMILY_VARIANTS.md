@@ -62,11 +62,11 @@ Define how we split tasks into reusable families so each dataset slice stays com
 4. `task_tables_statistics_summary_value` uses semantic `task_variant` values `column_sum`, `column_mean`, and `column_median`.
 5. `task_tables_statistics_row_summary_value` uses semantic `task_variant` values `row_sum` and `row_mean`.
 6. `task_tables_counting_value_count` uses semantic `task_variant` values `above_threshold`, `below_threshold`, and `in_interval`.
-7. `task_tables_readout_cell_value` uses semantic `task_variant` value `cell_lookup`.
-7. All active table tasks use `scene_variant` values `spreadsheet`, `zebra`, `ledger`, and `card_table`.
-6. Table row labels should use short visible human-style names rather than single letters when the answer is a row identity.
-7. Table tasks use one fixed prompt-facing evidence type in v1: `bbox_set`.
-8. Evidence boxes should mark the minimal supporting table region(s): one decisive numeric cell bbox for `task_tables_statistics_summary_label`, one queried-column region bbox for `task_tables_statistics_summary_value`, one queried-row region bbox for `task_tables_statistics_row_summary_value`, one ordered set of matching value-cell bboxes for `task_tables_counting_value_count`, and one queried value-cell bbox for `task_tables_readout_cell_value`.
+7. `task_tables_readout_subset_value` uses semantic `task_variant` values `cell_lookup`, `cell_sum_two`, and `cell_difference_two_abs`.
+8. All active table tasks use `scene_variant` values `spreadsheet`, `zebra`, `ledger`, and `card_table`.
+9. Table row labels should use short visible human-style names rather than single letters when the answer is a row identity.
+10. Table tasks use one fixed prompt-facing evidence type in v1: `bbox_set`.
+11. Evidence boxes should mark the minimal supporting table region(s): one decisive numeric cell bbox for `task_tables_statistics_summary_label`, one queried-column region bbox for `task_tables_statistics_summary_value`, one queried-row region bbox for `task_tables_statistics_row_summary_value`, one ordered set of matching value-cell bboxes for `task_tables_counting_value_count`, and one queried value-cell bbox or ordered queried-cell pair for `task_tables_readout_subset_value`.
 
 ## Planned geometry measurement variants
 1. **Angle measurement**

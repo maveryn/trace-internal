@@ -17,6 +17,13 @@
       "Use the table values to count the rows that match the filter.",
       "Find the number of rows whose queried values satisfy the condition.",
       "Read the table and count the matching rows."
+    ],
+    "column_pair_count_query": [
+      "Answer this question.",
+      "Determine how many table rows satisfy the requested comparison between two columns.",
+      "Use the table values to count rows where the first named column relation holds against the second.",
+      "Find the number of rows whose two queried column values satisfy the comparison.",
+      "Read the table and count the rows where the requested two-column relation is true."
     ]
   },
   "task_variant_templates": {
@@ -40,6 +47,20 @@
       "How many entries in the {query_column} column lie between {interval_min} and {interval_max}, inclusive?",
       "Determine how many rows show {query_column} within the inclusive range [{interval_min}, {interval_max}].",
       "Find the number of rows with {query_column} values in [{interval_min}, {interval_max}], inclusive."
+    ],
+    "col_a_gt_col_b": [
+      "How many rows have {query_column_a} greater than {query_column_b}?",
+      "Count the rows whose {query_column_a} value is greater than their {query_column_b} value.",
+      "How many rows show {query_column_a} > {query_column_b}?",
+      "Determine how many rows have a larger value in {query_column_a} than in {query_column_b}.",
+      "Find the number of rows where the {query_column_a} entry exceeds the {query_column_b} entry."
+    ],
+    "col_a_lt_col_b": [
+      "How many rows have {query_column_a} less than {query_column_b}?",
+      "Count the rows whose {query_column_a} value is less than their {query_column_b} value.",
+      "How many rows show {query_column_a} < {query_column_b}?",
+      "Determine how many rows have a smaller value in {query_column_a} than in {query_column_b}.",
+      "Find the number of rows where the {query_column_a} entry is below the {query_column_b} entry."
     ]
   },
   "required_slots_by_key": {
@@ -58,6 +79,14 @@
       "query_column",
       "interval_min",
       "interval_max"
+    ],
+    "task_variant:col_a_gt_col_b": [
+      "query_column_a",
+      "query_column_b"
+    ],
+    "task_variant:col_a_lt_col_b": [
+      "query_column_a",
+      "query_column_b"
     ],
     "answer_or_evidence:answer_only": [
       "json_output_contract_answer_only",

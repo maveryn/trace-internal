@@ -65,3 +65,4 @@ Current task docs:
 55. [task_tables_readout_subset_value.md](task_tables_readout_subset_value.md)
 56. [task_tables_statistics_row_summary_value.md](task_tables_statistics_row_summary_value.md)
 57. [task_tables_relation_row_compare_label.md](task_tables_relation_row_compare_label.md)
+58. [task_tables_counting_column_pair_count.md](task_tables_counting_column_pair_count.md)

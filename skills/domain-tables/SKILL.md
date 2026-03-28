@@ -31,6 +31,7 @@ Use this whenever the task lives under `domain=tables`.
 - If a task has multiple disjoint decisive regions, use multiple boxes in deterministic order rather than inventing a new evidence type.
 - For table readout tasks that query multiple cells, keep bbox evidence in the same order the cells are named in the prompt and record that ordered query-cell metadata in trace.
 - For pairwise table comparison tasks, keep evidence as the ordered pair of compared value-cell bboxes rather than only the winning cell so the comparison witness remains explicit.
+- For counting tasks that compare two columns row-by-row, keep evidence row-major and preserve prompt column order within each matching row's bbox pair.
 
 ## Design heuristics
 - Treat table style as presentation only. `spreadsheet`, `zebra`, `ledger`, and `card_table` should not change the reasoning contract.

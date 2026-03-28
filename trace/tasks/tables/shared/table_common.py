@@ -876,6 +876,106 @@ def build_counting_value_dataset_for_variant(
     }
 
 
+def build_counting_column_pair_dataset_for_variant(
+    *,
+    task_variant: str,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    gen_defaults: Mapping[str, Any],
+    defaults: TableDefaults,
+    task_id: str,
+) -> Dict[str, Any]:
+    """Construct one deterministic table dataset for row-wise comparison between two columns."""
+
+    supported_variants = {"col_a_gt_col_b", "col_a_lt_col_b"}
+    if str(task_variant) not in supported_variants:
+        raise ValueError(f"unsupported table column-pair counting variant: {task_variant}")
+
+    base = _resolve_base_table_schema(
+        params=params,
+        instance_seed=int(instance_seed),
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        task_id=task_id,
+    )
+    rng = base["rng"]
+    row_count = int(base["row_count"])
+    numeric_column_count = int(base["numeric_column_count"])
+    row_labels = list(base["row_labels"])
+    column_headers = list(base["column_headers"])
+    query_col_a_index = int(base["query_column_index"])
+    query_col_a = str(base["query_column"])
+    if int(numeric_column_count) < 2:
+        raise ValueError("table column-pair counting tasks require at least two numeric columns")
+    second_index = int(
+        resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}:query_column_b",
+        )
+    ) % int(numeric_column_count - 1)
+    if int(second_index) >= int(query_col_a_index):
+        second_index += 1
+    query_col_b_index = int(second_index)
+    query_col_b = str(column_headers[int(query_col_b_index)])
+    value_min = int(base["value_min"])
+    value_max = int(base["value_max"])
+    target_count = int(
+        resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}:target_count",
+        )
+    ) % int(row_count + 1)
+
+    values_by_row = _build_values_by_row(
+        row_labels=row_labels,
+        column_headers=column_headers,
+        rng=rng,
+        value_min=int(value_min),
+        value_max=int(value_max),
+    )
+
+    matching_row_indices = sorted(int(index) for index in rng.sample(range(int(row_count)), int(target_count)))
+    matching_index_set = set(int(index) for index in matching_row_indices)
+    for row_index, row_label in enumerate(row_labels):
+        if str(task_variant) == "col_a_gt_col_b":
+            if int(row_index) in matching_index_set:
+                b_value = int(rng.randint(int(value_min), int(value_max - 1)))
+                a_value = int(rng.randint(int(b_value + 1), int(value_max)))
+            else:
+                a_value = int(rng.randint(int(value_min), int(value_max - 1)))
+                b_value = int(rng.randint(int(a_value + 1), int(value_max)))
+        else:
+            if int(row_index) in matching_index_set:
+                a_value = int(rng.randint(int(value_min), int(value_max - 1)))
+                b_value = int(rng.randint(int(a_value + 1), int(value_max)))
+            else:
+                b_value = int(rng.randint(int(value_min), int(value_max - 1)))
+                a_value = int(rng.randint(int(b_value + 1), int(value_max)))
+        values_by_row[str(row_label)][str(query_col_a)] = int(a_value)
+        values_by_row[str(row_label)][str(query_col_b)] = int(b_value)
+
+    matching_row_labels = [str(row_labels[int(row_index)]) for row_index in matching_row_indices]
+    return {
+        "row_count": int(row_count),
+        "numeric_column_count": int(numeric_column_count),
+        "row_count_range": list(base["row_count_range"]),
+        "numeric_column_count_range": list(base["numeric_column_count_range"]),
+        "value_range": list(base["value_range"]),
+        "row_labels": [str(label) for label in row_labels],
+        "column_headers": [str(header) for header in column_headers],
+        "query_column_a": str(query_col_a),
+        "query_column_a_index": int(query_col_a_index),
+        "query_column_b": str(query_col_b),
+        "query_column_b_index": int(query_col_b_index),
+        "values_by_row": dict(values_by_row),
+        "answer_value": int(target_count),
+        "matching_row_indices": [int(row_index) for row_index in matching_row_indices],
+        "matching_row_labels": [str(label) for label in matching_row_labels],
+    }
+
+
 def build_readout_subset_dataset_for_variant(
     *,
     task_variant: str,
@@ -1061,6 +1161,7 @@ def projected_table_region_bbox_evidence(
 __all__ = [
     "SUPPORTED_TABLE_SCENE_VARIANTS",
     "TableDefaults",
+    "build_counting_column_pair_dataset_for_variant",
     "build_counting_value_dataset_for_variant",
     "build_relation_row_compare_label_dataset_for_variant",
     "build_readout_subset_dataset_for_variant",

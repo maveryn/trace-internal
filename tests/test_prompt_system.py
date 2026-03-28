@@ -342,6 +342,17 @@ def test_tables_relation_bundle_supports_row_compare_variants() -> None:
     ]
 
 
+def test_tables_counting_bundle_supports_column_pair_variants() -> None:
+    bundle = load_prompt_bundle("tables", "counting", "tables_counting_v1")
+    assert len(bundle.task_templates["column_pair_count_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["col_a_gt_col_b"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["col_a_lt_col_b"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_variant:col_a_gt_col_b"]) == [
+        "query_column_a",
+        "query_column_b",
+    ]
+
+
 def test_geometry_task_templates_avoid_awkward_comma_question_prefixes() -> None:
     bundle_coords = (
         ("geometry", "measurement", "geometry_measurement_v1", "measurement_query"),

@@ -122,6 +122,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/tables/statistics/summary_value.py`
    - `trace/tasks/tables/statistics/row_summary_value.py`
    - `trace/tasks/tables/counting/value_count.py`
+   - `trace/tasks/tables/counting/column_pair_count.py`
    - `trace/tasks/tables/readout/subset_value.py`
    - `trace/tasks/tables/relation/row_compare_label.py`
 

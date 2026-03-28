@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Tuple
 
@@ -166,6 +167,16 @@ def _resolve_named_variant(
         sampling_namespace=f"{TASK_ID}:{str(namespace)}",
     )
     return str(variant), {str(key): float(value) for key, value in sorted(probabilities.items())}
+
+
+def _build_prompt_json_examples(*, label_variant: str) -> Tuple[str, str]:
+    """Return prompt examples that match the active node-label format."""
+
+    example_evidence = ["2", "7"] if str(label_variant) == "numbers" else ["B", "F"]
+    return (
+        json.dumps({"evidence": example_evidence, "answer": 2}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
+        json.dumps({"answer": 2}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
+    )
 
 
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
@@ -628,6 +639,10 @@ class GraphCountingDegreeCountTask:
             ),
             context=f"prompt defaults for {self.task_id}",
         )
+        prompt_json_example, prompt_json_example_answer_only = _build_prompt_json_examples(
+            label_variant=str(query.label_variant)
+        )
+
         prompt_selection = render_task_prompt_variants(
             domain=self.domain,
             task_group=self.task_group,
@@ -654,8 +669,8 @@ class GraphCountingDegreeCountTask:
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "evidence_hint": str(prompt_defaults["evidence_hint"]),
                 "answer_hint": str(prompt_defaults["answer_hint"]),
-                "json_example": str(prompt_defaults["json_example"]),
-                "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
+                "json_example": str(prompt_json_example),
+                "json_example_answer_only": str(prompt_json_example_answer_only),
             },
             instance_seed=int(instance_seed),
         )

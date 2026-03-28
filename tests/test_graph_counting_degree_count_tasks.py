@@ -142,6 +142,9 @@ def test_graph_counting_degree_count_supports_numeric_labels_and_named_colors() 
     assert execution["node_color_name"] == "orange"
     assert trace["render_spec"]["style"]["node_shape_variant"] == "hexagon"
     assert tuple(trace["render_spec"]["style"]["node_fill_rgb"]) == tuple(named_color("orange"))
+    prompt_example = _extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    assert prompt_example["evidence"] == ["2", "7"]
+    assert prompt_example["answer"] == 2
 
 
 def test_graph_counting_degree_count_fits_numeric_labels_to_node_glyphs() -> None:

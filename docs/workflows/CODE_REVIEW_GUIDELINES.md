@@ -131,6 +131,7 @@ Use this checklist during implementation and refactor reviews.
 115. When a domain currently uses one stable presentation contract (for example tile boards), do not add a representation-load criterion just to mirror another domain; keep only criteria with real within-task ordering signal.
 116. When a domain grows multiple task groups that share the same non-task-specific generation/rendering defaults, promote those shared defaults into `configs/domains/<domain>/base.yaml` instead of copying the same values into each task-group YAML.
 117. When a table readout task broadens from one exact cell to one-or-more queried cells with arithmetic, rename the task/module/docs to the broader subset concept and keep multi-cell `bbox_set` evidence ordered exactly as the prompt names the queried cells.
+118. For table pairwise comparison tasks whose answer is one visible row label, keep evidence as the ordered pair of compared value-cell bboxes rather than collapsing evidence to the winning cell; the loser cell is part of the proof.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

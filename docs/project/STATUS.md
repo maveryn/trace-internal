@@ -68,6 +68,7 @@ Date: 2026-03-27
 57. Tables now also includes `task_tables_counting_value_count`, the first `counting` task under `domain=tables`, with semantic `task_variant` values `above_threshold|below_threshold|in_interval`, visual `scene_variant` values `spreadsheet|zebra|ledger|card_table`, integer answers, and `bbox_set` evidence over the matching queried-column value cells in top-to-bottom row order. The count answer is sampled from the feasible `0..row_count` support before the queried column is constructed, `above_threshold` and `below_threshold` use strict inequalities, and `in_interval` uses an inclusive interval.
 58. Tables now also includes `task_tables_readout_subset_value`, the active `readout` task under `domain=tables`, with semantic `task_variant` values `cell_lookup|cell_sum_two|cell_difference_two_abs`, visual `scene_variant` values `spreadsheet|zebra|ledger|card_table`, integer answers, and `bbox_set` evidence over the exact queried supporting cell or ordered queried-cell pair. The queried row labels and numeric columns are named explicitly in the prompt and recorded in trace, while the queried cell values are set explicitly to keep direct-cell and two-cell arithmetic readout answer diversity healthy.
 59. Tables now also includes `task_tables_statistics_row_summary_value`, a row-wise `statistics` companion task under `domain=tables`, with semantic `task_variant` values `row_sum|row_mean`, visual `scene_variant` values `spreadsheet|zebra|ledger|card_table`, integer answers, and `bbox_set` evidence over the supporting queried-row region. `row_mean` is constructed to stay integral, while `row_sum` and `row_mean` both reuse the same styled-table schema and short-name row-label pool as the other active tables tasks.
+60. Tables now also includes `task_tables_relation_row_compare_label`, the first `relation` task under `domain=tables`, with semantic `task_variant` values `higher_of_two_rows|lower_of_two_rows`, visual `scene_variant` values `spreadsheet|zebra|ledger|card_table`, string row-label answers, and `bbox_set` evidence over the ordered pair of compared queried-column value cells. The two queried row labels and one queried numeric column are named explicitly in the prompt and recorded in trace, and the compared values are always distinct so the winning row label is unique by construction.
 
 ## Active tasks
 1. `task_tile_count_color_count` (`domain=tile`, `task_group=count`)
@@ -126,12 +127,13 @@ Date: 2026-03-27
 54. `task_tables_statistics_row_summary_value` (`domain=tables`, `task_group=statistics`)
 55. `task_tables_counting_value_count` (`domain=tables`, `task_group=counting`)
 56. `task_tables_readout_subset_value` (`domain=tables`, `task_group=readout`)
+57. `task_tables_relation_row_compare_label` (`domain=tables`, `task_group=relation`)
 
 ## Current quality baseline
 1. Tests are required to pass before finalize.
 2. Distribution QA uses `scripts/check_task_answer_distribution.py` with per-variant answer-only checks (`unique_answers >= 5`, `max_answer_frequency < 25%`) and multithreaded sample generation (`--workers`); numeric 5-bin summaries remain reported for review but are not hard pass/fail gates.
 3. Task-review tooling writes per-task artifacts under `task-reviews/<task_id>/`, including one inspection workbook named `<task_id>.xlsx` with one sheet per task variant.
-4. The current active reviewed task set (10 tile tasks + 20 geometry tasks + 11 reviewed icons tasks + 10 charts tasks + 5 table tasks) passes distribution review under the active gates.
+4. The current active reviewed task set (10 tile tasks + 20 geometry tasks + 11 reviewed icons tasks + 10 charts tasks + 6 table tasks) passes distribution review under the active gates.
 
 ## Next priorities
 1. Extend icons beyond the current counting/transformation/relation/sequence set using the curated Prism asset pipeline (`comparison` and richer relation/transformation variants are the next natural families).

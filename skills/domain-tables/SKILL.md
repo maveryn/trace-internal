@@ -30,6 +30,7 @@ Use this whenever the task lives under `domain=tables`.
 - For column-filter counting tasks, use one bbox per matching queried-column value cell in deterministic top-to-bottom row order.
 - If a task has multiple disjoint decisive regions, use multiple boxes in deterministic order rather than inventing a new evidence type.
 - For table readout tasks that query multiple cells, keep bbox evidence in the same order the cells are named in the prompt and record that ordered query-cell metadata in trace.
+- For pairwise table comparison tasks, keep evidence as the ordered pair of compared value-cell bboxes rather than only the winning cell so the comparison witness remains explicit.
 
 ## Design heuristics
 - Treat table style as presentation only. `spreadsheet`, `zebra`, `ledger`, and `card_table` should not change the reasoning contract.
@@ -45,6 +46,7 @@ Use this whenever the task lives under `domain=tables`.
 ## Schema lessons learned
 - Row-name answers can be real visible strings; they do not need to be forced into `option_letter`.
 - The evidence contract is cleaner if the answer is the row label and the evidence is the decisive supporting cell/region bbox.
+- For row-comparison tasks, a row-label answer plus the ordered pair of compared cells is cleaner than trying to invent a new pairwise evidence type.
 - The prompt should always name the queried column or row explicitly so the evidence region is obvious.
 - Table tasks are a strong fit for `scene_variant` expansion because table styling can vary widely while the cell geometry contract stays stable.
 

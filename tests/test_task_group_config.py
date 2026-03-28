@@ -638,6 +638,31 @@ def test_tables_readout_defaults_loaded() -> None:
     assert str(prompt_defaults["json_example_cell_sum_two"]).strip()
 
 
+def test_tables_relation_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("tables", "relation")
+    for section in ("generation", "rendering", "prompt"):
+        assert isinstance(cfg.get(section), dict)
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "tables_relation_v1"
+    assert str(prompt_shared["task_family_key"]).strip() == "styled_table_relation"
+    assert str(prompt_shared["task_key"]).strip() == "row_compare_label_query"
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_tables_relation_row_compare_label",
+    )
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "higher_of_two_rows",
+        "lower_of_two_rows",
+    ]
+    assert int(rendering_defaults["canvas_height"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip() == "tables_relation_v1"
+    assert str(prompt_defaults["evidence_hint_higher_of_two_rows"]).strip()
+    assert str(prompt_defaults["evidence_hint_lower_of_two_rows"]).strip()
+    assert str(prompt_defaults["json_example_higher_of_two_rows"]).strip()
+
+
 def test_charts_multiseries_defaults_loaded() -> None:
     cfg = get_task_group_defaults("charts", "multiseries")
     for section in ("generation", "rendering", "prompt", "complexity"):

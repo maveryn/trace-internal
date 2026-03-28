@@ -161,6 +161,7 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
         ("icons", "sequence", "icons_sequence_v1"),
         ("icons", "transformation", "icons_transformation_v1"),
         ("tables", "readout", "tables_readout_v1"),
+        ("tables", "relation", "tables_relation_v1"),
         ("tables", "statistics", "tables_statistics_v1"),
         ("tile", "count", "tile_count_v1"),
         ("tile", "pattern", "tile_pattern_v1"),
@@ -325,6 +326,19 @@ def test_tables_readout_bundle_supports_subset_value_variants() -> None:
         "query_column_1",
         "query_row_label_2",
         "query_column_2",
+    ]
+
+
+def test_tables_relation_bundle_supports_row_compare_variants() -> None:
+    bundle = load_prompt_bundle("tables", "relation", "tables_relation_v1")
+    assert len(bundle.task_templates["row_compare_label_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["higher_of_two_rows"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["lower_of_two_rows"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_family:styled_table_relation"]) == ["object_description"]
+    assert list(bundle.required_slots_by_key["task_variant:higher_of_two_rows"]) == [
+        "query_row_label_a",
+        "query_row_label_b",
+        "query_column",
     ]
 
 

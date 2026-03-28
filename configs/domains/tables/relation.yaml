@@ -1,0 +1,21 @@
+generation:
+  task_overrides:
+    task_tables_relation_row_compare_label:
+      task_variant_weights:
+        higher_of_two_rows: 1.0
+        lower_of_two_rows: 1.0
+
+prompt:
+  shared:
+    bundle_id: tables_relation_v1
+    task_family_key: styled_table_relation
+    task_key: row_compare_label_query
+    answer_hint: set "answer" to the row label with the requested higher or lower value
+  task_overrides:
+    task_tables_relation_row_compare_label:
+      evidence_hint_higher_of_two_rows: set "evidence" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two compared value cells in the prompt
+      evidence_hint_lower_of_two_rows: set "evidence" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two compared value cells in the prompt
+      json_example_higher_of_two_rows: '{"evidence":[[260,180,372,236],[260,238,372,294]],"answer":"Ava"}'
+      json_example_lower_of_two_rows: '{"evidence":[[260,180,372,236],[260,238,372,294]],"answer":"Milo"}'
+      json_example_answer_only_higher_of_two_rows: '{"answer":"Ava"}'
+      json_example_answer_only_lower_of_two_rows: '{"answer":"Milo"}'

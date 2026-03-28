@@ -476,9 +476,9 @@
           32,
           104
         ],
-        "edge_weight_label_font_size_px": 14,
-        "edge_weight_label_offset_px": 14,
-        "edge_weight_label_padding_px": 4,
+        "edge_weight_label_font_size_px": 17,
+        "edge_weight_label_offset_px": 16,
+        "edge_weight_label_padding_px": 5,
         "edge_width_px": 4,
         "label_font_size_px": 20,
         "label_stroke_rgb": [
@@ -735,10 +735,10 @@
           ],
           "weight": 7,
           "weight_label_bbox_xyxy": [
-            422,
+            420,
             567,
-            442,
-            587
+            444,
+            591
           ]
         },
         {
@@ -760,10 +760,10 @@
           ],
           "weight": 4,
           "weight_label_bbox_xyxy": [
-            328,
+            325,
             452,
-            348,
-            472
+            349,
+            476
           ]
         },
         {
@@ -785,10 +785,10 @@
           ],
           "weight": 1,
           "weight_label_bbox_xyxy": [
-            145,
-            203,
+            141,
+            200,
             165,
-            223
+            224
           ]
         },
         {
@@ -810,10 +810,10 @@
           ],
           "weight": 5,
           "weight_label_bbox_xyxy": [
-            517,
+            515,
             452,
-            537,
-            472
+            539,
+            476
           ]
         },
         {
@@ -835,10 +835,10 @@
           ],
           "weight": 2,
           "weight_label_bbox_xyxy": [
-            145,
-            448,
+            141,
+            447,
             165,
-            468
+            471
           ]
         },
         {
@@ -861,9 +861,9 @@
           "weight": 6,
           "weight_label_bbox_xyxy": [
             433,
-            334,
-            453,
-            354
+            333,
+            457,
+            357
           ]
         },
         {
@@ -885,10 +885,10 @@
           ],
           "weight": 3,
           "weight_label_bbox_xyxy": [
-            677,
-            220,
+            673,
+            219,
             697,
-            240
+            243
           ]
         }
       ],

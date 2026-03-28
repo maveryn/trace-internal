@@ -433,9 +433,9 @@
           98,
           19
         ],
-        "edge_weight_label_font_size_px": 14,
-        "edge_weight_label_offset_px": 14,
-        "edge_weight_label_padding_px": 4,
+        "edge_weight_label_font_size_px": 17,
+        "edge_weight_label_offset_px": 16,
+        "edge_weight_label_padding_px": 5,
         "edge_width_px": 4,
         "label_font_size_px": 20,
         "label_stroke_rgb": [
@@ -658,10 +658,10 @@
           ],
           "weight": 1,
           "weight_label_bbox_xyxy": [
-            500,
-            461,
-            520,
-            481
+            499,
+            458,
+            523,
+            482
           ]
         },
         {
@@ -683,10 +683,10 @@
           ],
           "weight": 3,
           "weight_label_bbox_xyxy": [
-            422,
+            420,
             564,
-            442,
-            584
+            444,
+            588
           ]
         },
         {
@@ -708,8 +708,8 @@
           ],
           "weight": 9,
           "weight_label_bbox_xyxy": [
-            309,
-            243,
+            305,
+            239,
             329,
             263
           ]
@@ -733,10 +733,10 @@
           ],
           "weight": 8,
           "weight_label_bbox_xyxy": [
-            422,
+            420,
             414,
-            442,
-            434
+            444,
+            438
           ]
         },
         {
@@ -758,10 +758,10 @@
           ],
           "weight": 7,
           "weight_label_bbox_xyxy": [
-            512,
+            508,
             258,
             532,
-            278
+            282
           ]
         }
       ],

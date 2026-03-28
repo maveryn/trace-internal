@@ -501,9 +501,9 @@
           39,
           49
         ],
-        "edge_weight_label_font_size_px": 14,
-        "edge_weight_label_offset_px": 14,
-        "edge_weight_label_padding_px": 4,
+        "edge_weight_label_font_size_px": 17,
+        "edge_weight_label_offset_px": 16,
+        "edge_weight_label_padding_px": 5,
         "edge_width_px": 4,
         "label_font_size_px": 20,
         "label_stroke_rgb": [
@@ -782,10 +782,10 @@
           ],
           "weight": 2,
           "weight_label_bbox_xyxy": [
-            586,
+            584,
             399,
-            606,
-            419
+            608,
+            423
           ]
         },
         {
@@ -807,10 +807,10 @@
           ],
           "weight": 3,
           "weight_label_bbox_xyxy": [
-            225,
+            224,
             470,
-            245,
-            490
+            248,
+            494
           ]
         },
         {
@@ -832,10 +832,10 @@
           ],
           "weight": 8,
           "weight_label_bbox_xyxy": [
-            370,
-            326,
+            366,
+            324,
             390,
-            346
+            348
           ]
         },
         {
@@ -857,9 +857,9 @@
           ],
           "weight": 5,
           "weight_label_bbox_xyxy": [
-            586,
-            252,
-            606,
+            584,
+            248,
+            608,
             272
           ]
         },
@@ -882,10 +882,10 @@
           ],
           "weight": 1,
           "weight_label_bbox_xyxy": [
-            492,
-            326,
+            488,
+            324,
             512,
-            346
+            348
           ]
         },
         {
@@ -908,9 +908,9 @@
           "weight": 6,
           "weight_label_bbox_xyxy": [
             458,
-            375,
-            478,
-            395
+            373,
+            482,
+            397
           ]
         },
         {
@@ -932,10 +932,10 @@
           ],
           "weight": 7,
           "weight_label_bbox_xyxy": [
-            224,
+            221,
             208,
-            244,
-            228
+            245,
+            232
           ]
         }
       ],

@@ -442,9 +442,9 @@
           133,
           54
         ],
-        "edge_weight_label_font_size_px": 14,
-        "edge_weight_label_offset_px": 14,
-        "edge_weight_label_padding_px": 4,
+        "edge_weight_label_font_size_px": 17,
+        "edge_weight_label_offset_px": 16,
+        "edge_weight_label_padding_px": 5,
         "edge_width_px": 4,
         "label_font_size_px": 20,
         "label_stroke_rgb": [
@@ -673,10 +673,10 @@
           ],
           "weight": 5,
           "weight_label_bbox_xyxy": [
-            425,
+            423,
             408,
-            445,
-            428
+            447,
+            432
           ]
         },
         {
@@ -698,8 +698,8 @@
           ],
           "weight": 1,
           "weight_label_bbox_xyxy": [
-            631,
-            427,
+            627,
+            423,
             651,
             447
           ]
@@ -723,8 +723,8 @@
           ],
           "weight": 2,
           "weight_label_bbox_xyxy": [
-            279,
-            272,
+            275,
+            268,
             299,
             292
           ]
@@ -748,9 +748,9 @@
           ],
           "weight": 8,
           "weight_label_bbox_xyxy": [
-            285,
-            130,
-            305,
+            282,
+            126,
+            306,
             150
           ]
         },
@@ -773,10 +773,10 @@
           ],
           "weight": 9,
           "weight_label_bbox_xyxy": [
-            285,
+            282,
             521,
-            305,
-            541
+            306,
+            545
           ]
         },
         {
@@ -798,10 +798,10 @@
           ],
           "weight": 3,
           "weight_label_bbox_xyxy": [
-            56,
-            326,
+            52,
+            324,
             76,
-            346
+            348
           ]
         }
       ],

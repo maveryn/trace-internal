@@ -510,9 +510,9 @@
           39,
           49
         ],
-        "edge_weight_label_font_size_px": 14,
-        "edge_weight_label_offset_px": 14,
-        "edge_weight_label_padding_px": 4,
+        "edge_weight_label_font_size_px": 17,
+        "edge_weight_label_offset_px": 16,
+        "edge_weight_label_padding_px": 5,
         "edge_width_px": 4,
         "label_font_size_px": 20,
         "label_stroke_rgb": [
@@ -797,10 +797,10 @@
           ],
           "weight": 7,
           "weight_label_bbox_xyxy": [
-            201,
-            476,
-            221,
-            496
+            200,
+            473,
+            224,
+            497
           ]
         },
         {
@@ -823,9 +823,9 @@
           "weight": 6,
           "weight_label_bbox_xyxy": [
             82,
-            326,
-            102,
-            346
+            324,
+            106,
+            348
           ]
         },
         {
@@ -847,10 +847,10 @@
           ],
           "weight": 9,
           "weight_label_bbox_xyxy": [
-            424,
+            422,
             390,
-            444,
-            410
+            446,
+            414
           ]
         },
         {
@@ -872,10 +872,10 @@
           ],
           "weight": 1,
           "weight_label_bbox_xyxy": [
-            201,
-            175,
-            221,
-            195
+            200,
+            174,
+            224,
+            198
           ]
         },
         {
@@ -897,9 +897,9 @@
           ],
           "weight": 8,
           "weight_label_bbox_xyxy": [
-            555,
-            200,
-            575,
+            554,
+            196,
+            578,
             220
           ]
         },
@@ -922,10 +922,10 @@
           ],
           "weight": 3,
           "weight_label_bbox_xyxy": [
-            477,
+            474,
             135,
-            497,
-            155
+            498,
+            159
           ]
         },
         {
@@ -947,9 +947,9 @@
           ],
           "weight": 5,
           "weight_label_bbox_xyxy": [
-            477,
-            516,
-            497,
+            474,
+            512,
+            498,
             536
           ]
         },
@@ -973,9 +973,9 @@
           "weight": 2,
           "weight_label_bbox_xyxy": [
             717,
-            425,
-            737,
-            445
+            424,
+            741,
+            448
           ]
         }
       ],

@@ -15,12 +15,13 @@ Use this whenever the task lives under `domain=graph`.
 5. `docs/workflows/SHARED_UTILITIES.md`
 
 ## V1 graph-domain policy
-- Keep graphs simple, undirected, and unweighted unless a task explicitly extends the contract.
+- Keep graphs simple and unweighted by default; directionality should be an explicit task/task-variant contract rather than an implicit renderer detail.
 - Node labels are the canonical prompt-facing identities for this domain.
 - Layout is visual variation, not semantics.
 - Questions should be answerable from adjacency/topology alone even if the layout changes.
 - Prefer one graph per image in v1.
 - Whole-image visual diversity such as label format, node glyph style, named node color, or global layout transform is encouraged as long as it remains non-semantic for the task.
+- If a graph task mixes undirected and directed variants, make the prompt wording, trace metadata, and rendered edge treatment explicit (`degree` vs `in-degree` vs `out-degree`, arrowheads for directed edges, and a recorded `graph_directionality` field).
 
 ## Evidence heuristics
 - Use `label_set` for node witness sets.

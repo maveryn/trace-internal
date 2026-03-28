@@ -68,11 +68,12 @@ Define how we split tasks into reusable families so each dataset slice stays com
 8. Evidence boxes should mark the minimal supporting table region(s): one decisive numeric cell bbox for `task_tables_statistics_summary_label`, one queried-column region bbox for `task_tables_statistics_summary_value`, one ordered set of matching value-cell bboxes for `task_tables_counting_value_count`, and one queried value-cell bbox for `task_tables_readout_cell_value`.
 
 ## Graph direction (current)
-1. Graph tasks use one simple undirected unweighted node-link graph per image in v1.
+1. Graph tasks use one simple unweighted node-link graph per image in v1; directionality is an explicit task/task-variant contract rather than an implicit renderer choice.
 2. `task_group` should encode the reasoning family (for example `counting`, `relation`, `path`), while graph layout stays a visual `scene_variant` or trace-only sampling axis inside a task.
 3. Node labels are the canonical prompt-facing identities; prefer `label_set` evidence when the witness unit is one or more nodes.
 4. Layout variation should change readability only, not semantics; graph answers must come from adjacency/topology rather than absolute node position.
 5. Keep graph sampling variation split between topology families and layout families so graph semantics remain stable while scenes still vary visually.
+6. If a graph task supports directed variants, make the prompt wording, trace metadata, and rendered arrowheads explicit; do not reuse plain `degree` wording for directed in-/out-degree queries.
 
 ## Planned geometry measurement variants
 1. **Angle measurement**
@@ -244,11 +245,11 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Evidence: sorted `label_set` of the matching Scene cell labels.
 26. **Graph counting degree count (`task_graph_counting_degree_count`)**
    - One single-panel labeled node-link graph.
-   - Query: `How many nodes have degree k?`
-   - Graph contract: simple undirected unweighted graph with `5..10` nodes labeled from `A..J`.
+   - Query variants: `How many nodes have degree k?`, `How many nodes have in-degree k?`, and `How many nodes have out-degree k?`
+   - Graph contract: simple unweighted graph with `5..10` nodes labeled from `A..J` or `1..10`; the directed variants render arrowheads and reject reciprocal edge pairs for readability.
    - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`).
    - Answer type: integer count.
-   - Evidence: sorted `label_set` of the node labels whose degree equals `k`.
+   - Evidence: sorted `label_set` of the node labels whose asked degree measure equals `k`.
 26. **Icons sequence missing count (`task_icons_sequence_missing_count`)**
    - One single-panel image with a horizontal row of `4..6` Scene boxes.
    - Query: how many icons should appear in the missing Scene box to continue the sequence.

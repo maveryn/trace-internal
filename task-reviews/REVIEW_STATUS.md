@@ -40,4 +40,4 @@ Update this table after each review run.
 | task_icons_sequence_rotation_violation | task_icons_sequence_rotation_violation | alright_for_now | distribution pass |
 | task_icons_transformation_pair_count | task_icons_transformation_pair_count | alright_for_now | distribution pass |
 | task_tile_path_shortest_path |  |  |  |
-| task_graph_counting_degree_count | task_graph_counting_degree_count | alright_for_now | distribution pass |
+| task_graph_counting_degree_count | task_graph_counting_degree_count | alright_for_now | distribution pass (degree/in-degree/out-degree variants) |

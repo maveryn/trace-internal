@@ -1570,8 +1570,11 @@ def test_graph_counting_defaults_loaded() -> None:
     assert str(prompt_shared["task_key"]).strip()
     assert str(prompt_shared["json_output_contract"]).strip()
     assert str(prompt_shared["json_output_contract_answer_only"]).strip()
-    assert str(prompt_shared["object_description"]).strip()
-    assert str(prompt_shared["question_text"]).strip()
+    assert str(prompt_shared["object_description_undirected"]).strip()
+    assert str(prompt_shared["object_description_directed"]).strip()
+    assert str(prompt_shared["question_text_degree_count"]).strip()
+    assert str(prompt_shared["question_text_in_degree_count"]).strip()
+    assert str(prompt_shared["question_text_out_degree_count"]).strip()
     assert str(prompt_shared["evidence_hint"]).strip()
     assert str(prompt_shared["answer_hint"]).strip()
     assert str(prompt_shared["json_example"]).strip()
@@ -1589,16 +1592,28 @@ def test_graph_counting_defaults_loaded() -> None:
         cfg,
         task_id="task_graph_counting_degree_count",
     )
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "degree_count",
+        "in_degree_count",
+        "out_degree_count",
+    ]
     assert int(generation_defaults["node_count_min"]) == 5
     assert int(generation_defaults["node_count_max"]) == 10
     assert int(generation_defaults["query_degree_min"]) == 0
     assert int(generation_defaults["query_degree_max"]) == 4
+    assert int(generation_defaults["directed_degree_sequence_max_degree"]) == 4
     assert int(rendering_defaults["canvas_width"]) > 0
     assert int(rendering_defaults["node_radius_min_px"]) > 0
+    assert int(rendering_defaults["arrow_length_px"]) > 0
+    assert int(rendering_defaults["arrow_width_px"]) > 0
     assert str(prompt_defaults["bundle_id"]).strip() == "graph_counting_v1"
     assert str(prompt_defaults["task_family_key"]).strip() == "single_graph_counting"
     assert str(prompt_defaults["task_key"]).strip() == "degree_count_query"
-    assert str(prompt_defaults["question_text"]).strip()
+    assert str(prompt_defaults["object_description_undirected"]).strip()
+    assert str(prompt_defaults["object_description_directed"]).strip()
+    assert str(prompt_defaults["question_text_degree_count"]).strip()
+    assert str(prompt_defaults["question_text_in_degree_count"]).strip()
+    assert str(prompt_defaults["question_text_out_degree_count"]).strip()
 
 
 def test_icons_transformation_defaults_loaded() -> None:

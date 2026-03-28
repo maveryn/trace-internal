@@ -182,12 +182,12 @@
       "expected_source": "query_params",
       "max_observed_frequency": 0.23,
       "observed_counts": {
-        "10": 19,
-        "5": 13,
-        "6": 17,
+        "10": 22,
+        "5": 12,
+        "6": 18,
         "7": 11,
         "8": 23,
-        "9": 17
+        "9": 14
       },
       "sample_count": 100
     },
@@ -251,11 +251,17 @@
     },
     "task_variant": {
       "expected_conflict": false,
-      "expected_probabilities": {},
-      "expected_source": "",
-      "max_observed_frequency": 1.0,
+      "expected_probabilities": {
+        "degree_count": 0.3333333333333333,
+        "in_degree_count": 0.3333333333333333,
+        "out_degree_count": 0.3333333333333333
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.42,
       "observed_counts": {
-        "degree_count": 100
+        "degree_count": 42,
+        "in_degree_count": 22,
+        "out_degree_count": 36
       },
       "sample_count": 100
     },
@@ -279,12 +285,18 @@
   "task_id": "task_graph_counting_degree_count",
   "task_variant_distribution": {
     "expected_conflict": false,
-    "expected_probabilities": {},
-    "expected_source": "",
-    "has_variants": false,
-    "observed_counts": {
-      "degree_count": 100
+    "expected_probabilities": {
+      "degree_count": 0.3333333333333333,
+      "in_degree_count": 0.3333333333333333,
+      "out_degree_count": 0.3333333333333333
     },
-    "status": "skipped_no_variants"
+    "expected_source": "query_params",
+    "has_variants": true,
+    "observed_counts": {
+      "degree_count": 42,
+      "in_degree_count": 22,
+      "out_degree_count": 36
+    },
+    "status": "reported"
   }
 }

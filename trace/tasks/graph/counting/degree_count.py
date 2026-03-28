@@ -28,10 +28,13 @@ from ..shared.complexity import (
     resolve_graph_complexity_weights,
 )
 from ..shared.graph_sampling import (
+    SUPPORTED_DEGREE_TASK_VARIANTS,
     SUPPORTED_LABEL_VARIANTS,
     SUPPORTED_LAYOUT_VARIANTS,
     SUPPORTED_TOPOLOGY_PROFILES,
     feasible_node_counts_for_degree_count,
+    graph_degree_mode_for_task_variant,
+    graph_directionality_for_task_variant,
     graph_label_sort_key,
     sample_degree_count_graph,
 )
@@ -59,6 +62,7 @@ class _TaskDefaults:
     target_count_min: int = 0
     target_count_max: int = 5
     degree_sequence_max_degree: int = 5
+    directed_degree_sequence_max_degree: int = 4
     graph_search_attempts: int = 600
     canvas_width: int = 864
     canvas_height: int = 640
@@ -70,6 +74,8 @@ class _TaskDefaults:
     node_radius_min_px: int = 18
     node_radius_max_px: int = 24
     edge_width_px: int = 4
+    arrow_length_px: int = 12
+    arrow_width_px: int = 7
     node_border_width_px: int = 2
     label_font_size_px: int = 20
     label_variant: str = "letters"
@@ -90,6 +96,9 @@ class _TaskDefaults:
 class _ResolvedQuery:
     """Resolved graph-query support for one degree-count instance."""
 
+    task_variant: str
+    graph_directionality: str
+    degree_mode: str
     node_count: int
     query_degree: int
     target_count: int
@@ -99,6 +108,7 @@ class _ResolvedQuery:
     node_shape_variant: str
     layout_transform_variant: str
     node_color_name: str
+    task_variant_probabilities: Dict[str, float]
     node_count_probabilities: Dict[str, float]
     query_degree_probabilities: Dict[str, float]
     target_count_probabilities: Dict[str, float]
@@ -160,6 +170,20 @@ def _resolve_named_variant(
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
     """Resolve balanced node-count / degree-query support for one instance."""
 
+    variant_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.task_variant")
+    task_variant, task_variant_probabilities = _resolve_named_variant(
+        variant_rng,
+        params=params,
+        explicit_key="task_variant",
+        weights_key="task_variant_weights",
+        balance_flag_key="balanced_task_variant_sampling",
+        supported=SUPPORTED_DEGREE_TASK_VARIANTS,
+        instance_seed=int(instance_seed),
+        namespace="task_variant",
+    )
+    graph_directionality = str(graph_directionality_for_task_variant(str(task_variant)))
+    degree_mode = str(graph_degree_mode_for_task_variant(str(task_variant)))
+
     node_count_min = int(params.get("node_count_min", group_default(_GEN_DEFAULTS, "node_count_min", _DEFAULTS.node_count_min)))
     node_count_max = int(params.get("node_count_max", group_default(_GEN_DEFAULTS, "node_count_max", _DEFAULTS.node_count_max)))
     query_degree_min = int(
@@ -174,9 +198,11 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     target_count_max = int(
         params.get("target_count_max", group_default(_GEN_DEFAULTS, "target_count_max", _DEFAULTS.target_count_max))
     )
-    max_degree = int(
-        params.get("degree_sequence_max_degree", group_default(_GEN_DEFAULTS, "degree_sequence_max_degree", _DEFAULTS.degree_sequence_max_degree))
+    max_degree_key = "directed_degree_sequence_max_degree" if str(graph_directionality) == "directed" else "degree_sequence_max_degree"
+    max_degree_fallback = (
+        _DEFAULTS.directed_degree_sequence_max_degree if str(graph_directionality) == "directed" else _DEFAULTS.degree_sequence_max_degree
     )
+    max_degree = int(params.get(max_degree_key, group_default(_GEN_DEFAULTS, max_degree_key, max_degree_fallback)))
 
     target_support = tuple(range(int(target_count_min), int(target_count_max) + 1))
     degree_support = tuple(range(int(query_degree_min), int(query_degree_max) + 1))
@@ -210,6 +236,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         raise ValueError("query_degree is outside configured support")
 
     feasible_node_support = feasible_node_counts_for_degree_count(
+        task_variant=str(task_variant),
         query_degree=int(query_degree),
         target_count=int(target_count),
         node_count_min=int(node_count_min),
@@ -295,6 +322,9 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     )
 
     return _ResolvedQuery(
+        task_variant=str(task_variant),
+        graph_directionality=str(graph_directionality),
+        degree_mode=str(degree_mode),
         node_count=int(node_count),
         query_degree=int(query_degree),
         target_count=int(target_count),
@@ -304,6 +334,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         node_shape_variant=str(node_shape_variant),
         layout_transform_variant=str(layout_transform_variant),
         node_color_name=str(node_color_name),
+        task_variant_probabilities=dict(task_variant_probabilities),
         node_count_probabilities=dict(
             uniform_probability_map(
                 tuple(int(value) for value in feasible_node_support),
@@ -359,6 +390,8 @@ def _resolve_render_params(
         node_shape_variant=str(node_shape_variant),
         node_radius_px=int(node_radius),
         edge_width_px=int(params.get("edge_width_px", group_default(_RENDER_DEFAULTS, "edge_width_px", _DEFAULTS.edge_width_px))),
+        arrow_length_px=int(params.get("arrow_length_px", group_default(_RENDER_DEFAULTS, "arrow_length_px", _DEFAULTS.arrow_length_px))),
+        arrow_width_px=int(params.get("arrow_width_px", group_default(_RENDER_DEFAULTS, "arrow_width_px", _DEFAULTS.arrow_width_px))),
         node_border_width_px=int(
             params.get("node_border_width_px", group_default(_RENDER_DEFAULTS, "node_border_width_px", _DEFAULTS.node_border_width_px))
         ),
@@ -440,23 +473,29 @@ def _build_complexity(
 
     node_count = int(query.node_count)
     edge_count = int(graph_sample.edge_count)
-    max_edges = int(node_count * (node_count - 1) // 2)
+    max_edges = int(node_count * (node_count - 1))
+    if str(query.graph_directionality) == "undirected":
+        max_edges = int(max_edges // 2)
     degree_support = (group_default(_GEN_DEFAULTS, "query_degree_min", _DEFAULTS.query_degree_min), group_default(_GEN_DEFAULTS, "query_degree_max", _DEFAULTS.query_degree_max))
     degree_values = list(int(value) for value in graph_sample.degrees_by_label.values())
     near_miss_count = sum(1 for degree in degree_values if abs(int(degree) - int(query.query_degree)) == 1)
     edge_density = 0.0 if int(max_edges) <= 0 else float(edge_count) / float(max_edges)
     crossing_norm = normalize_float_with_bounds(float(rendered_scene.crossing_count), (0.0, max(1.0, float(max_edges))))
+    directionality_bonus = 1.0 if str(query.graph_directionality) == "directed" else 0.0
 
     components = {
         "visual_scan": (0.6 * normalize_int_with_bounds(int(node_count), (_DEFAULTS.node_count_min, _DEFAULTS.node_count_max)))
-        + (0.4 * normalize_float_with_bounds(float(edge_density), (0.0, 1.0))),
+        + (0.3 * normalize_float_with_bounds(float(edge_density), (0.0, 1.0)))
+        + (0.1 * float(directionality_bonus)),
         "topology_reasoning": (0.7 * normalize_int_with_bounds(int(query.query_degree), degree_support))
-        + (0.3 * normalize_int_with_bounds(len(set(degree_values)), (1, min(node_count, _DEFAULTS.degree_sequence_max_degree + 1)))),
+        + (0.2 * normalize_int_with_bounds(len(set(degree_values)), (1, min(node_count, _DEFAULTS.degree_sequence_max_degree + 1))))
+        + (0.1 * float(directionality_bonus)),
         "ambiguity": (0.6 * normalize_int_with_bounds(int(near_miss_count), (0, int(node_count))))
         + (0.4 * normalize_int_with_bounds(int(query.target_count), (_DEFAULTS.target_count_min, _DEFAULTS.target_count_max))),
         "clutter": (0.55 * normalize_float_with_bounds(float(edge_density), (0.0, 1.0)))
         + (0.25 * crossing_norm)
-        + (0.20 * normalize_int_with_bounds(int(render_params.node_radius_px), (_DEFAULTS.node_radius_min_px, _DEFAULTS.node_radius_max_px))),
+        + (0.10 * normalize_int_with_bounds(int(render_params.node_radius_px), (_DEFAULTS.node_radius_min_px, _DEFAULTS.node_radius_max_px)))
+        + (0.10 * float(directionality_bonus)),
     }
     return build_graph_complexity(weights=_COMPLEXITY_WEIGHTS, components=components)
 
@@ -479,9 +518,11 @@ class GraphCountingDegreeCountTask:
             node_color_name=str(query.node_color_name),
             node_shape_variant=str(query.node_shape_variant),
         )
-        max_degree = int(
-            params.get("degree_sequence_max_degree", group_default(_GEN_DEFAULTS, "degree_sequence_max_degree", _DEFAULTS.degree_sequence_max_degree))
+        max_degree_key = "directed_degree_sequence_max_degree" if str(query.graph_directionality) == "directed" else "degree_sequence_max_degree"
+        max_degree_fallback = (
+            _DEFAULTS.directed_degree_sequence_max_degree if str(query.graph_directionality) == "directed" else _DEFAULTS.degree_sequence_max_degree
         )
+        max_degree = int(params.get(max_degree_key, group_default(_GEN_DEFAULTS, max_degree_key, max_degree_fallback)))
         search_attempts = int(params.get("graph_search_attempts", group_default(_GEN_DEFAULTS, "graph_search_attempts", _DEFAULTS.graph_search_attempts)))
 
         graph_rng = spawn_rng(int(instance_seed), "graph_structure")
@@ -492,6 +533,7 @@ class GraphCountingDegreeCountTask:
             try:
                 graph_sample = sample_degree_count_graph(
                     graph_rng,
+                    task_variant=str(query.task_variant),
                     node_count=int(query.node_count),
                     query_degree=int(query.query_degree),
                     target_count=int(query.target_count),
@@ -513,7 +555,8 @@ class GraphCountingDegreeCountTask:
                     layout_transform_variant=str(query.layout_transform_variant),
                     render_params=render_params,
                     layout_seed=int(instance_seed + attempt),
-                    scene_title="Graph",
+                    scene_title="Directed Graph" if str(query.graph_directionality) == "directed" else "Graph",
+                    directed=bool(query.graph_directionality == "directed"),
                     base_image=background,
                 )
                 image, post_noise_meta = apply_post_image_noise(
@@ -537,8 +580,11 @@ class GraphCountingDegreeCountTask:
                 "task_key",
                 "json_output_contract",
                 "json_output_contract_answer_only",
-                "object_description",
-                "question_text",
+                "object_description_undirected",
+                "object_description_directed",
+                "question_text_degree_count",
+                "question_text_in_degree_count",
+                "question_text_out_degree_count",
                 "evidence_hint",
                 "answer_hint",
                 "json_example",
@@ -554,8 +600,20 @@ class GraphCountingDegreeCountTask:
             task_key=str(prompt_defaults["task_key"]),
             answer_or_evidence_keys=PROMPT_OUTPUT_MODES,
             slots={
-                "object_description": str(prompt_defaults["object_description"]),
-                "question_text": str(prompt_defaults["question_text"]).format(query_degree=int(query.query_degree)),
+                "object_description": str(
+                    prompt_defaults["object_description_directed"]
+                    if str(query.graph_directionality) == "directed"
+                    else prompt_defaults["object_description_undirected"]
+                ),
+                "question_text": str(
+                    prompt_defaults[
+                        {
+                            "degree_count": "question_text_degree_count",
+                            "in_degree_count": "question_text_in_degree_count",
+                            "out_degree_count": "question_text_out_degree_count",
+                        }[str(query.task_variant)]
+                    ]
+                ).format(query_degree=int(query.query_degree)),
                 "json_output_contract": str(prompt_defaults["json_output_contract"]),
                 "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
                 "evidence_hint": str(prompt_defaults["evidence_hint"]),
@@ -577,6 +635,8 @@ class GraphCountingDegreeCountTask:
                 "label": str(node.label),
                 "degree": int(node.degree),
                 "neighbors": list(node.neighbors),
+                "successors": list(node.successors),
+                "predecessors": list(node.predecessors),
                 "center_px": list(node.center_xy),
                 "bbox_xyxy": list(node.bbox_xyxy),
             }
@@ -588,6 +648,7 @@ class GraphCountingDegreeCountTask:
                 "entity_kind": "graph_edge",
                 "node_u_label": str(edge.node_u_label),
                 "node_v_label": str(edge.node_v_label),
+                "directed": bool(edge.directed),
                 "segment_px": [list(edge.segment_px[0]), list(edge.segment_px[1])],
             }
             for edge in rendered_scene.edges
@@ -612,11 +673,17 @@ class GraphCountingDegreeCountTask:
                 "scene_kind": "graph_degree_counting",
                 "entities": [*node_entities, *edge_entities],
                 "relations": {
-                    "counting_rule": "node_degree_equals_query_degree",
+                    "counting_rule": f"node_{str(query.degree_mode)}_equals_query_degree",
+                    "graph_directionality": str(query.graph_directionality),
+                    "degree_mode": str(query.degree_mode),
                     "query_degree": int(query.query_degree),
                     "matching_labels": list(evidence_labels),
+                    "successors_by_label": {str(key): list(values) for key, values in graph_sample.successors_by_label.items()},
+                    "predecessors_by_label": {str(key): list(values) for key, values in graph_sample.predecessors_by_label.items()},
                     "adjacency_by_label": {str(key): list(values) for key, values in graph_sample.adjacency_by_label.items()},
                     "degrees_by_label": {str(key): int(value) for key, value in graph_sample.degrees_by_label.items()},
+                    "in_degrees_by_label": {str(key): int(value) for key, value in graph_sample.in_degrees_by_label.items()},
+                    "out_degrees_by_label": {str(key): int(value) for key, value in graph_sample.out_degrees_by_label.items()},
                     "edge_labels": [list(edge) for edge in graph_sample.edge_labels],
                 },
                 "frames": {
@@ -625,12 +692,15 @@ class GraphCountingDegreeCountTask:
                 },
             },
             "query_spec": {
-                "task_variant": "degree_count",
+                "task_variant": str(query.task_variant),
                 "template_id": str(prompt_defaults["bundle_id"]),
                 "prompt_variant": dict(prompt_artifacts.prompt_variant),
                 "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
                 "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
                 "params": {
+                    "graph_directionality": str(query.graph_directionality),
+                    "degree_mode": str(query.degree_mode),
+                    "task_variant_probabilities": dict(query.task_variant_probabilities),
                     "node_count": int(query.node_count),
                     "edge_count": int(graph_sample.edge_count),
                     "query_degree": int(query.query_degree),
@@ -650,7 +720,7 @@ class GraphCountingDegreeCountTask:
                     "layout_transform_variant_probabilities": dict(query.layout_transform_variant_probabilities),
                     "node_color_name": str(query.node_color_name),
                     "node_color_name_probabilities": dict(query.node_color_name_probabilities),
-                    "degree_sequence_max_degree": int(max_degree),
+                    str(max_degree_key): int(max_degree),
                 },
             },
             "render_spec": {
@@ -671,6 +741,8 @@ class GraphCountingDegreeCountTask:
                     "node_shape_variant": str(render_params.node_shape_variant),
                     "node_radius_px": int(render_params.node_radius_px),
                     "edge_width_px": int(render_params.edge_width_px),
+                    "arrow_length_px": int(render_params.arrow_length_px),
+                    "arrow_width_px": int(render_params.arrow_width_px),
                     "node_border_width_px": int(render_params.node_border_width_px),
                     "label_font_size_px": int(render_params.label_font_size_px),
                     "resolved_label_font_size_px": int(rendered_scene.resolved_label_font_size_px),
@@ -684,16 +756,25 @@ class GraphCountingDegreeCountTask:
                 "anchors": {},
             },
             "execution_trace": {
+                "task_variant": str(query.task_variant),
                 "scene_variant": str(rendered_scene.layout_variant),
-                "question_format": "count_nodes_with_degree",
+                "question_format": f"count_nodes_with_{str(query.degree_mode)}",
+                "graph_directionality": str(query.graph_directionality),
+                "degree_mode": str(query.degree_mode),
                 "node_count": int(query.node_count),
                 "edge_count": int(graph_sample.edge_count),
                 "query_degree": int(query.query_degree),
                 "target_count": int(query.target_count),
                 "matching_labels": list(evidence_labels),
                 "degrees_by_label": {str(key): int(value) for key, value in graph_sample.degrees_by_label.items()},
+                "in_degrees_by_label": {str(key): int(value) for key, value in graph_sample.in_degrees_by_label.items()},
+                "out_degrees_by_label": {str(key): int(value) for key, value in graph_sample.out_degrees_by_label.items()},
                 "adjacency_by_label": {str(key): list(values) for key, values in graph_sample.adjacency_by_label.items()},
+                "successors_by_label": {str(key): list(values) for key, values in graph_sample.successors_by_label.items()},
+                "predecessors_by_label": {str(key): list(values) for key, values in graph_sample.predecessors_by_label.items()},
                 "degree_sequence": list(graph_sample.degree_sequence),
+                "in_degree_sequence": list(graph_sample.in_degree_sequence),
+                "out_degree_sequence": list(graph_sample.out_degree_sequence),
                 "topology_profile": str(graph_sample.topology_profile),
                 "label_variant": str(graph_sample.label_variant),
                 "node_shape_variant": str(render_params.node_shape_variant),
@@ -706,6 +787,7 @@ class GraphCountingDegreeCountTask:
             "witness_symbolic": {
                 "type": "label_set",
                 "label_set": list(evidence_labels),
+                "degree_mode": str(query.degree_mode),
                 "query_degree": int(query.query_degree),
             },
             "projected_evidence": {
@@ -725,6 +807,6 @@ class GraphCountingDegreeCountTask:
             trace_payload=trace_payload,
             complexity=complexity,
             task_versions=default_task_versions(),
-            task_variant="degree_count",
+            task_variant=str(query.task_variant),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
         )

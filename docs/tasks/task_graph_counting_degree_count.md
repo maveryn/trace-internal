@@ -4,28 +4,32 @@
 1. Domain: `graph`
 2. Task group: `counting`
 3. Task id: `task_graph_counting_degree_count`
-4. Objective: count how many labeled graph nodes have a queried degree.
+4. Objective: count how many labeled graph nodes have a queried degree measure.
 
 ## 2) Scene + task contract
-1. Supported `task_variant` values: `degree_count`
+1. Supported `task_variant` values: `degree_count`, `in_degree_count`, `out_degree_count`
 2. Supported `scene_variant` values: `circular`, `shell`, `spring`
 3. `answer_gt.type`: `integer`
 4. `evidence_gt.type`: `label_set`
 5. Scene contract:
    - one single-panel labeled node-link graph per image,
-   - simple undirected unweighted graph only,
+   - simple unweighted graph only,
    - no self-loops,
    - no multi-edges,
+   - directed variants also reject reciprocal edge pairs so arrowheads stay readable,
    - visible node labels use one whole-image label format (`A..J` or `1..10`),
    - node count sampled from `5..10`.
 6. Query contract:
-   - ask for one queried degree `k`,
+   - `degree_count`: ask for one queried degree `k` in an undirected graph,
+   - `in_degree_count`: ask for one queried in-degree `k` in a directed graph,
+   - `out_degree_count`: ask for one queried out-degree `k` in a directed graph,
    - default `query_degree` support is `0..4`,
-   - answer is the number of nodes whose degree equals `k`.
+   - answer is the number of nodes whose queried degree measure equals `k`.
 7. Count policy:
    - `target_count` is sampled from `0..5`,
    - node count is chosen from the feasible support that can realize the requested `(query_degree, target_count)` pair,
-   - the graph sampler constructs a simple graph with exactly that many degree-`k` nodes.
+   - the graph sampler constructs a simple graph with exactly that many matching nodes,
+   - directed variants use a lower default max degree cap so arrowed scenes stay readable.
 8. Topology variation:
    - `topology_profile` values are `balanced`, `low_degree`, and `hub_heavy`,
    - topology profile affects the degree-sequence search distribution only,
@@ -63,12 +67,14 @@
    - neighbors,
    - node center,
    - node bbox.
-4. `scene_ir.relations` stores one edge relation per undirected edge.
+4. `scene_ir.relations` stores one edge relation per graph edge and records both graph directionality and the active degree mode.
 5. `projected_evidence` includes:
    - `label_set`
    - `bbox_set`
 6. `execution_trace` records:
    - `task_variant`
+   - `graph_directionality`
+   - `degree_mode`
    - `scene_variant`
    - `query_degree`
    - `target_count`
@@ -81,7 +87,8 @@
 1. Background and post-image noise use the merged graph-domain visual defaults from `configs/domains/graph/base.yaml`.
 2. V1 graphs use a single rounded light panel on a light solid background.
 3. Node labels are rendered inside the nodes and stay visually stable across layout, label-format, shape, and color variants.
-4. Layout and styling are allowed to vary for readability and diversity, but the prompt never refers to node position, node color, or node shape as the semantic source of truth.
+4. Directed variants render arrowheads and fit labels to the available glyph interior so numeric labels remain readable inside compact nodes.
+5. Layout and styling are allowed to vary for readability and diversity, but the prompt never refers to node position, node color, or node shape as the semantic source of truth.
 
 ## 6) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.

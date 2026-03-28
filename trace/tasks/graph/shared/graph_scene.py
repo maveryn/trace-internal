@@ -39,6 +39,8 @@ class GraphRenderParams:
     node_shape_variant: str
     node_radius_px: int
     edge_width_px: int
+    arrow_length_px: int
+    arrow_width_px: int
     node_border_width_px: int
     label_font_size_px: int
     background_color_rgb: Tuple[int, int, int]
@@ -61,6 +63,8 @@ class RenderedGraphNode:
     center_xy: Point
     bbox_xyxy: BBox
     neighbors: Tuple[str, ...]
+    successors: Tuple[str, ...] = ()
+    predecessors: Tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -70,6 +74,7 @@ class RenderedGraphEdge:
     edge_id: str
     node_u_label: str
     node_v_label: str
+    directed: bool
     segment_px: Tuple[Point, Point]
 
 
@@ -396,6 +401,73 @@ def _draw_node_shape(
     return bbox
 
 
+def _draw_edge(
+    draw: ImageDraw.ImageDraw,
+    *,
+    start: Point,
+    end: Point,
+    node_radius_px: int,
+    edge_width_px: int,
+    edge_color_rgb: Sequence[int],
+    directed: bool,
+    arrow_length_px: int,
+    arrow_width_px: int,
+) -> Tuple[Point, Point]:
+    """Draw one graph edge and return the visible line segment endpoints."""
+
+    x0, y0 = float(start[0]), float(start[1])
+    x1, y1 = float(end[0]), float(end[1])
+    dx = float(x1 - x0)
+    dy = float(y1 - y0)
+    norm = float(math.hypot(dx, dy))
+    if norm <= 1e-6:
+        return (start, end)
+    ux = float(dx / norm)
+    uy = float(dy / norm)
+    radius = float(max(1, int(node_radius_px)))
+    line_start = (float(x0 + (ux * radius)), float(y0 + (uy * radius)))
+    tip = (float(x1 - (ux * radius)), float(y1 - (uy * radius)))
+    if bool(directed):
+        line_end = (
+            float(tip[0] - (ux * max(4, int(arrow_length_px) - 1))),
+            float(tip[1] - (uy * max(4, int(arrow_length_px) - 1))),
+        )
+    else:
+        line_end = tip
+    draw.line(
+        (line_start[0], line_start[1], line_end[0], line_end[1]),
+        fill=tuple(int(v) for v in edge_color_rgb),
+        width=max(1, int(edge_width_px)),
+    )
+    if bool(directed):
+        perp_x = float(-uy)
+        perp_y = float(ux)
+        base = (
+            float(tip[0] - (ux * int(arrow_length_px))),
+            float(tip[1] - (uy * int(arrow_length_px))),
+        )
+        left = (
+            float(base[0] + (perp_x * int(arrow_width_px))),
+            float(base[1] + (perp_y * int(arrow_width_px))),
+        )
+        right = (
+            float(base[0] - (perp_x * int(arrow_width_px))),
+            float(base[1] - (perp_y * int(arrow_width_px))),
+        )
+        draw.polygon(
+            [
+                (int(round(tip[0])), int(round(tip[1]))),
+                (int(round(left[0])), int(round(left[1]))),
+                (int(round(right[0])), int(round(right[1]))),
+            ],
+            fill=tuple(int(v) for v in edge_color_rgb),
+        )
+    return (
+        (int(round(line_start[0])), int(round(line_start[1]))),
+        (int(round(line_end[0])), int(round(line_end[1]))),
+    )
+
+
 def _node_label_box(
     *,
     radius: int,
@@ -457,6 +529,7 @@ def render_graph_scene(
     render_params: GraphRenderParams,
     layout_seed: int,
     scene_title: str = "Graph",
+    directed: bool = False,
     base_image: Image.Image | None = None,
 ) -> RenderedGraphScene:
     """Render one labeled single-panel node-link graph scene."""
@@ -500,18 +573,25 @@ def render_graph_scene(
         right_node = int(label_to_node[str(right_label)])
         start = tuple(int(value) for value in positions[left_node])
         end = tuple(int(value) for value in positions[right_node])
-        draw.line(
-            (start[0], start[1], end[0], end[1]),
-            fill=tuple(int(v) for v in render_params.edge_color_rgb),
-            width=int(render_params.edge_width_px),
+        segment = _draw_edge(
+            draw,
+            start=start,
+            end=end,
+            node_radius_px=int(render_params.node_radius_px),
+            edge_width_px=int(render_params.edge_width_px),
+            edge_color_rgb=tuple(int(v) for v in render_params.edge_color_rgb),
+            directed=bool(directed),
+            arrow_length_px=int(render_params.arrow_length_px),
+            arrow_width_px=int(render_params.arrow_width_px),
         )
-        edge_segments.append(((str(left_label), str(right_label)), (start, end)))
+        edge_segments.append(((str(left_label), str(right_label)), segment))
         rendered_edges.append(
             RenderedGraphEdge(
                 edge_id=f"edge_{str(left_label)}_{str(right_label)}",
                 node_u_label=str(left_label),
                 node_v_label=str(right_label),
-                segment_px=(start, end),
+                directed=bool(directed),
+                segment_px=segment,
             )
         )
 
@@ -549,6 +629,8 @@ def render_graph_scene(
                 center_xy=center,
                 bbox_xyxy=tuple(int(value) for value in bbox),
                 neighbors=tuple(str(value) for value in graph_sample.adjacency_by_label[str(label)]),
+                successors=tuple(str(value) for value in graph_sample.successors_by_label[str(label)]),
+                predecessors=tuple(str(value) for value in graph_sample.predecessors_by_label[str(label)]),
             )
         )
 

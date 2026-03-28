@@ -11,16 +11,20 @@ Define the concrete v1 setup for the first graph-domain task family.
    - `task_graph_counting_degree_count`
 
 ## Scene contract
-1. Use one simple undirected unweighted node-link graph per image.
+1. Use one simple unweighted node-link graph per image.
 2. Keep node labels visible and canonical; v1 uses labels from `A..J`.
 3. Node count support for the first task is `5..10`.
 4. No self-loops or multi-edges.
-5. Layout is visual variation only; the task semantics come from adjacency.
-6. V1 graph scenes may vary whole-image node label format (`letters|numbers`), node glyph style (`circle|rounded_square|hexagon`), named node color, and global layout transform, but those axes stay non-semantic unless a future task explicitly queries them.
+5. Directed variants also reject reciprocal edge pairs by default so arrowheads remain readable.
+6. Layout is visual variation only; the task semantics come from adjacency.
+7. V1 graph scenes may vary whole-image node label format (`letters|numbers`), node glyph style (`circle|rounded_square|hexagon`), named node color, and global layout transform, but those axes stay non-semantic unless a future task explicitly queries them.
 
 ## First task contract
 1. `task_graph_counting_degree_count`
-   - ask: `How many nodes have degree k?`
+   - ask one of:
+     - `How many nodes have degree k?`
+     - `How many nodes have in-degree k?`
+     - `How many nodes have out-degree k?`
    - answer type: `integer`
    - evidence type: `label_set`
    - default `query_degree` support: `0..4`
@@ -34,6 +38,8 @@ Define the concrete v1 setup for the first graph-domain task family.
 ## Variation axes
 1. `task_variant`
    - `degree_count`
+   - `in_degree_count`
+   - `out_degree_count`
 2. `topology_profile`
    - `balanced`
    - `low_degree`
@@ -46,7 +52,8 @@ Define the concrete v1 setup for the first graph-domain task family.
 ## Rendering policy
 1. Use a clean single-panel light-background graph scene in v1.
 2. Keep node labels inside the nodes and make them readable at all supported graph sizes.
-3. Prefer lower-crossing or roomier layouts, but never let layout position define the answer.
+3. Directed variants should keep edge density lower than the undirected ceiling and render clear arrowheads without reciprocal-pair clutter.
+4. Prefer lower-crossing or roomier layouts, but never let layout position define the answer.
 
 ## Evidence policy
 1. Use `label_set` when the witness unit is one or more nodes.

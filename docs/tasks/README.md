@@ -70,3 +70,5 @@ Current task docs:
 60. [task_graph_counting_degree_count.md](task_graph_counting_degree_count.md)
 61. [task_graph_relation_same_component_count.md](task_graph_relation_same_component_count.md)
 62. [task_graph_comparison_largest_component_size.md](task_graph_comparison_largest_component_size.md)
+63. [task_graph_counting_articulation_point_count.md](task_graph_counting_articulation_point_count.md)
+64. [task_graph_relation_unique_cycle_size.md](task_graph_relation_unique_cycle_size.md)

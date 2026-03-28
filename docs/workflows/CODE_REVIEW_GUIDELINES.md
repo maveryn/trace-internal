@@ -151,6 +151,8 @@ Use this checklist during implementation and refactor reviews.
 134. For graph tasks where the queried node belongs in the witness set, review that inclusion explicitly across prompt wording, answer semantics, evidence labels, and trace fields; do not rely on graph-theory convention alone to imply whether the queried node counts toward the answer.
 135. For graph tasks that expose a single “largest” connected component as evidence, review uniqueness explicitly: the sampler should reject ties for the largest component size instead of relying on label order, layout, or hidden tie-break rules to pick one witness set.
 136. For graph tasks, review `label_set` evidence as an unordered semantic set: implementations may canonicalize label order internally for determinism, but prompts/docs should not imply that witness order matters unless the task uses an ordered path-specific evidence contract.
+137. For graph tasks that assume exactly one cycle, review uniqueness from the finalized adjacency map, not just the intended topology recipe: the sampler should verify the graph is truly unicyclic after all attachments and any topology-profile decoration before exposing cycle-node evidence.
+138. For graph articulation-point tasks, review the final cut-vertex computation directly from the emitted adjacency map; do not assume a path/tree/blob construction preserved the requested articulation-point count without recomputing it on the final graph.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

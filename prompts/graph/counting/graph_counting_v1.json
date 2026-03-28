@@ -17,6 +17,13 @@
       "Task: {question_text}",
       "Answer this question: {question_text}",
       "Determine the answer: {question_text}"
+    ],
+    "articulation_point_count_query": [
+      "{question_text}",
+      "Question: {question_text}",
+      "Task: {question_text}",
+      "Answer this question: {question_text}",
+      "Determine the answer: {question_text}"
     ]
   },
   "required_slots_by_key": {
@@ -24,6 +31,9 @@
       "object_description"
     ],
     "task:degree_count_query": [
+      "question_text"
+    ],
+    "task:articulation_point_count_query": [
       "question_text"
     ],
     "answer_or_evidence:answer_only": [

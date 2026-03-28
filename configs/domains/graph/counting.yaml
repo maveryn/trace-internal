@@ -54,6 +54,14 @@ generation:
     balanced_node_shape_variant_sampling: true
     balanced_layout_transform_variant_sampling: true
     balanced_node_color_name_sampling: true
+  task_overrides:
+    task_graph_counting_articulation_point_count:
+      task_variant_weights:
+        articulation_point_count: 1.0
+      node_count_min: 5
+      node_count_max: 10
+      target_count_min: 0
+      target_count_max: 8
 
 rendering:
   shared:
@@ -91,7 +99,16 @@ prompt:
     question_text_degree_count: How many nodes have degree {query_degree}?
     question_text_in_degree_count: How many nodes have in-degree {query_degree}?
     question_text_out_degree_count: How many nodes have out-degree {query_degree}?
-    evidence_hint: set "evidence" to an array containing the labels of all nodes whose asked degree equals the queried value, sorted in ascending label order
+    evidence_hint: set "evidence" to an array containing the labels of all nodes whose asked degree equals the queried value
     answer_hint: set "answer" to the count of matching nodes as an integer
     json_example: '{"evidence":["B","F"],"answer":2}'
     json_example_answer_only: '{"answer":2}'
+  task_overrides:
+    task_graph_counting_articulation_point_count:
+      task_key: articulation_point_count_query
+      object_description_undirected: a labeled undirected graph
+      question_text_articulation_point_count: How many nodes are articulation points?
+      evidence_hint: set "evidence" to an array containing the labels of all articulation-point nodes
+      answer_hint: set "answer" to the count of articulation-point nodes as an integer
+      json_example: '{"evidence":["B","D","G"],"answer":3}'
+      json_example_answer_only: '{"answer":3}'

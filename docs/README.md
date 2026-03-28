@@ -20,7 +20,7 @@ Repo-local skills live under `skills/`, but skills are operational overlays. Can
 6. `docs/domains/CHART_DOMAIN_PLAN.md` — chart-type universe under consideration and the first chart-family rollout plan.
 7. `docs/domains/CHART_TASK_SETUP.md` — concrete v1 contract for the first chart-domain task family.
 8. `docs/domains/TABLE_TASK_SETUP.md` — concrete v1 contract for the first tables-domain task family.
-9. `docs/domains/GRAPH_TASK_SETUP.md` — concrete v1 contract for the first graph-domain task family.
+9. `docs/domains/GRAPH_TASK_SETUP.md` — concrete v1 contract for the active graph-domain task families.
 10. `docs/core/PROMPT_SYSTEM.md` — prompt bundles, variants, and metadata.
 11. `docs/workflows/SHARED_UTILITIES.md` — helper placement and reuse rules.
 12. `docs/workflows/BUILD_VALIDATION.md` + `docs/workflows/VALIDATION_ERROR_CODES.md` — pre-finalize checks and error taxonomy.

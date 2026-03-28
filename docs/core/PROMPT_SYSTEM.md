@@ -119,9 +119,9 @@ Active task-to-bundle mapping:
    - `task_icons_sequence_missing_count|rotation_violation` -> `icons_sequence_v1`
    - `task_icons_transformation_pair_count` -> `icons_transformation_v1`
 7. Graph:
-   - `task_graph_counting_degree_count` -> `graph_counting_v1`
+   - `task_graph_counting_degree_count|articulation_point_count` -> `graph_counting_v1`
    - `task_graph_comparison_largest_component_size` -> `graph_comparison_v1`
-   - `task_graph_relation_same_component_count` -> `graph_relation_v1`
+   - `task_graph_relation_same_component_count|unique_cycle_size` -> `graph_relation_v1`
 8. Tile:
    - `task_tile_count_color_count|color_components|largest_component_size` -> `tile_count_v1`
    - `task_tile_path_shortest_path|reachable_target_count` -> `tile_path_v1`

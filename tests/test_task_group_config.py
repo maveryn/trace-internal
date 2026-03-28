@@ -1616,6 +1616,24 @@ def test_graph_counting_defaults_loaded() -> None:
     assert str(prompt_defaults["question_text_in_degree_count"]).strip()
     assert str(prompt_defaults["question_text_out_degree_count"]).strip()
 
+    articulation_generation_defaults, articulation_rendering_defaults, articulation_prompt_defaults = (
+        split_generation_rendering_prompt_defaults(
+            cfg,
+            task_id="task_graph_counting_articulation_point_count",
+        )
+    )
+    assert "articulation_point_count" in articulation_generation_defaults["task_variant_weights"]
+    assert int(articulation_generation_defaults["node_count_min"]) == 5
+    assert int(articulation_generation_defaults["node_count_max"]) == 10
+    assert int(articulation_generation_defaults["target_count_min"]) == 0
+    assert int(articulation_generation_defaults["target_count_max"]) == 8
+    assert int(articulation_rendering_defaults["canvas_width"]) > 0
+    assert int(articulation_rendering_defaults["node_radius_min_px"]) > 0
+    assert str(articulation_prompt_defaults["bundle_id"]).strip() == "graph_counting_v1"
+    assert str(articulation_prompt_defaults["task_family_key"]).strip() == "single_graph_counting"
+    assert str(articulation_prompt_defaults["task_key"]).strip() == "articulation_point_count_query"
+    assert str(articulation_prompt_defaults["question_text_articulation_point_count"]).strip()
+
 
 def test_graph_relation_defaults_loaded() -> None:
     cfg = get_task_group_defaults("graph", "relation")
@@ -1702,6 +1720,22 @@ def test_graph_relation_defaults_loaded() -> None:
     assert str(prompt_defaults["task_family_key"]).strip() == "single_graph_relation"
     assert str(prompt_defaults["task_key"]).strip() == "same_component_count_query"
     assert str(prompt_defaults["question_text_same_component_count"]).strip()
+
+    cycle_generation_defaults, cycle_rendering_defaults, cycle_prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_graph_relation_unique_cycle_size",
+    )
+    assert "unique_cycle_size" in cycle_generation_defaults["task_variant_weights"]
+    assert int(cycle_generation_defaults["node_count_min"]) == 5
+    assert int(cycle_generation_defaults["node_count_max"]) == 10
+    assert int(cycle_generation_defaults["target_cycle_size_min"]) == 3
+    assert int(cycle_generation_defaults["target_cycle_size_max"]) == 10
+    assert int(cycle_rendering_defaults["canvas_width"]) > 0
+    assert int(cycle_rendering_defaults["node_radius_min_px"]) > 0
+    assert str(cycle_prompt_defaults["bundle_id"]).strip() == "graph_relation_v1"
+    assert str(cycle_prompt_defaults["task_family_key"]).strip() == "single_graph_relation"
+    assert str(cycle_prompt_defaults["task_key"]).strip() == "unique_cycle_size_query"
+    assert str(cycle_prompt_defaults["question_text_unique_cycle_size"]).strip()
 
 
 def test_graph_comparison_defaults_loaded() -> None:

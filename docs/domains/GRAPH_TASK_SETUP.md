@@ -1,7 +1,7 @@
 # Graph Task Setup
 
 ## Purpose
-Define the concrete v1 setup for the first graph-domain task families.
+Define the concrete v1 setup for the current graph-domain task families.
 
 ## V1 scope
 1. `domain = graph`
@@ -9,10 +9,12 @@ Define the concrete v1 setup for the first graph-domain task families.
    - `counting`
    - `comparison`
    - `relation`
-3. First concrete tasks:
+3. Current concrete tasks:
    - `task_graph_counting_degree_count`
+   - `task_graph_counting_articulation_point_count`
    - `task_graph_comparison_largest_component_size`
    - `task_graph_relation_same_component_count`
+   - `task_graph_relation_unique_cycle_size`
 
 ## Scene contract
 1. Use one simple unweighted node-link graph per image.
@@ -46,7 +48,21 @@ Define the concrete v1 setup for the first graph-domain task families.
    - default connected-component count support: `2..4`
    - default queried component-size support: `1..6`
    - prompt/evidence contract: the queried node itself is included in both the count and the evidence label set
-3. `task_graph_comparison_largest_component_size`
+3. `task_graph_counting_articulation_point_count`
+   - ask:
+     - `How many nodes are articulation points?`
+   - answer type: `integer`
+   - evidence type: `label_set`
+   - default articulation-point-count support: `0..8`
+   - prompt/evidence contract: evidence contains every articulation-point node in the graph
+4. `task_graph_relation_unique_cycle_size`
+   - ask:
+     - `The graph contains exactly one cycle. How many nodes are in that cycle?`
+   - answer type: `integer`
+   - evidence type: `label_set`
+   - default cycle-size support: `3..10`
+   - prompt/evidence contract: the graph is connected and unicyclic, and evidence contains every node in the unique cycle
+5. `task_graph_comparison_largest_component_size`
    - ask:
      - `How many nodes are in the largest connected component?`
    - answer type: `integer`
@@ -61,6 +77,8 @@ Define the concrete v1 setup for the first graph-domain task families.
    - `in_degree_count`
    - `out_degree_count`
    - `same_component_count`
+   - `articulation_point_count`
+   - `unique_cycle_size`
    - `largest_component_size`
 2. `topology_profile`
    - `balanced`
@@ -83,4 +101,5 @@ Define the concrete v1 setup for the first graph-domain task families.
 3. Keep pixel-space node boxes in projected trace metadata for review overlays rather than as the primary user-facing evidence contract.
 4. For same-component queries, make the prompt explicit when the queried node itself is included in both the answer and the evidence set.
 5. For largest-component comparison queries, enforce a unique largest component by construction before exposing a single `label_set` witness set.
-6. If a future graph task needs ordered path evidence, define that as a separate graph-native label/path contract rather than forcing it into `label_set` or bbox-only evidence.
+6. For unique-cycle queries, build a connected unicyclic graph by construction and verify the final graph still has exactly one cycle before exposing the witness set.
+7. If a future graph task needs ordered path evidence, define that as a separate graph-native label/path contract rather than forcing it into `label_set` or bbox-only evidence.

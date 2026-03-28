@@ -246,11 +246,25 @@ def test_graph_counting_bundle_supports_degree_count_query() -> None:
     assert list(bundle.required_slots_by_key["task:degree_count_query"]) == ["question_text"]
 
 
+def test_graph_counting_bundle_supports_articulation_point_count_query() -> None:
+    bundle = load_prompt_bundle("graph", "counting", "graph_counting_v1")
+    assert "single_graph_counting" in bundle.task_family_templates
+    assert len(bundle.task_templates["articulation_point_count_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task:articulation_point_count_query"]) == ["question_text"]
+
+
 def test_graph_relation_bundle_supports_same_component_count_query() -> None:
     bundle = load_prompt_bundle("graph", "relation", "graph_relation_v1")
     assert "single_graph_relation" in bundle.task_family_templates
     assert len(bundle.task_templates["same_component_count_query"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["task:same_component_count_query"]) == ["question_text"]
+
+
+def test_graph_relation_bundle_supports_unique_cycle_size_query() -> None:
+    bundle = load_prompt_bundle("graph", "relation", "graph_relation_v1")
+    assert "single_graph_relation" in bundle.task_family_templates
+    assert len(bundle.task_templates["unique_cycle_size_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task:unique_cycle_size_query"]) == ["question_text"]
 
 
 def test_graph_comparison_bundle_supports_largest_component_size_query() -> None:

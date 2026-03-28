@@ -52,8 +52,10 @@ Use this whenever the task lives under `domain=graph`.
   - `task_graph_comparison_largest_component_size`
 - `counting`
   - `task_graph_counting_degree_count`
+  - `task_graph_counting_articulation_point_count`
 - `relation`
   - `task_graph_relation_same_component_count`
+  - `task_graph_relation_unique_cycle_size`
 
 ## Shared helpers to prefer
 - `trace/tasks/graph/shared/graph_sampling.py`

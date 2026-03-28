@@ -38,7 +38,7 @@ clutter: 0.10
 
 Measure:
 - connected-component count and visible graph size,
-- how much topology tracing the query requires beyond a local neighborhood,
+- how much topology tracing the query requires beyond a local neighborhood (for example same-component traversal or isolating the unique cycle),
 - whether other components have the same or nearly the same size as the queried component,
 - readability pressure from crossings, tight layouts, or small nodes.
 

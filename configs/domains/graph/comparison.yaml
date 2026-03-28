@@ -82,7 +82,7 @@ prompt:
     json_output_contract_answer_only: Return a valid JSON object with key "answer".
     object_description: a labeled undirected graph
     question_text_largest_component_size: How many nodes are in the largest connected component?
-    evidence_hint: set "evidence" to an array containing the labels of all nodes in the unique largest connected component, sorted in ascending label order
+    evidence_hint: set "evidence" to an array containing the labels of all nodes in the unique largest connected component
     answer_hint: set "answer" to the size of that connected component as an integer
     json_example: '{"evidence":["B","D","H","J"],"answer":4}'
     json_example_answer_only: '{"answer":4}'

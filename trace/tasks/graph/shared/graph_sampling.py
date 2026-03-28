@@ -16,7 +16,9 @@ SUPPORTED_LAYOUT_VARIANTS: Tuple[str, ...] = ("circular", "shell", "spring")
 SUPPORTED_TOPOLOGY_PROFILES: Tuple[str, ...] = ("balanced", "low_degree", "hub_heavy")
 SUPPORTED_LABEL_VARIANTS: Tuple[str, ...] = ("letters", "numbers")
 SUPPORTED_DEGREE_TASK_VARIANTS: Tuple[str, ...] = ("degree_count", "in_degree_count", "out_degree_count")
+SUPPORTED_ARTICULATION_TASK_VARIANTS: Tuple[str, ...] = ("articulation_point_count",)
 SUPPORTED_COMPONENT_TASK_VARIANTS: Tuple[str, ...] = ("same_component_count",)
+SUPPORTED_CYCLE_TASK_VARIANTS: Tuple[str, ...] = ("unique_cycle_size",)
 SUPPORTED_COMPONENT_COMPARISON_TASK_VARIANTS: Tuple[str, ...] = ("largest_component_size",)
 LABEL_POOL_1_12: Tuple[str, ...] = tuple(str(value) for value in range(1, 13))
 
@@ -73,6 +75,23 @@ class GraphLargestComponentSample(GraphTopologySample):
     component_sizes: Tuple[int, ...]
     component_count: int
     target_largest_component_size: int
+
+
+@dataclass(frozen=True)
+class GraphUniqueCycleSample(GraphTopologySample):
+    """Trace-ready unicyclic graph sample for unique-cycle tasks."""
+
+    target_labels: Tuple[str, ...]
+    target_cycle_size: int
+    attachment_count: int
+
+
+@dataclass(frozen=True)
+class GraphArticulationPointSample(GraphTopologySample):
+    """Trace-ready graph sample for articulation-point counting tasks."""
+
+    target_labels: Tuple[str, ...]
+    target_count: int
 
 
 def graph_label_sort_key(label: str) -> Tuple[int, int | str]:
@@ -651,6 +670,42 @@ def feasible_node_counts_for_unique_largest_component(
     return tuple(range(int(minimum), int(maximum) + 1))
 
 
+def feasible_node_counts_for_unique_cycle_size(
+    *,
+    target_cycle_size: int,
+    node_count_min: int,
+    node_count_max: int,
+) -> Tuple[int, ...]:
+    """Return node counts that can realize one unique-cycle-size query."""
+
+    target_size = int(target_cycle_size)
+    minimum = max(int(node_count_min), 3, int(target_size))
+    maximum = int(node_count_max)
+    if int(minimum) > int(maximum):
+        return ()
+    return tuple(range(int(minimum), int(maximum) + 1))
+
+
+def feasible_node_counts_for_articulation_point_count(
+    *,
+    target_count: int,
+    node_count_min: int,
+    node_count_max: int,
+) -> Tuple[int, ...]:
+    """Return node counts that can realize one articulation-point count query."""
+
+    target_int = int(target_count)
+    if int(target_int) < 0:
+        return ()
+    minimum = int(node_count_min)
+    if int(target_int) > 0:
+        minimum = max(int(minimum), int(target_int) + 2)
+    maximum = int(node_count_max)
+    if int(minimum) > int(maximum):
+        return ()
+    return tuple(range(int(minimum), int(maximum) + 1))
+
+
 def _random_positive_composition(
     rng: random.Random,
     *,
@@ -730,6 +785,146 @@ def _add_random_non_edges(
     rng.shuffle(non_edges)
     for left, right in non_edges[: max(0, int(extra_edges))]:
         graph.add_edge(int(left), int(right))
+
+
+def _choose_attachment_parent(
+    rng: random.Random,
+    *,
+    graph: nx.Graph,
+    topology_profile: str,
+) -> int:
+    """Choose one attachment parent under the requested topology profile."""
+
+    nodes = [int(node) for node in graph.nodes()]
+    if not nodes:
+        raise ValueError("attachment parent sampling requires at least one node")
+    profile = str(topology_profile)
+    if profile == "hub_heavy":
+        weights = [float(graph.degree(int(node)) + 1) ** 2 for node in nodes]
+    elif profile == "low_degree":
+        weights = [1.0 / float(graph.degree(int(node)) + 1) for node in nodes]
+    else:
+        weights = [1.0 for _ in nodes]
+    return int(rng.choices(nodes, weights=weights, k=1)[0])
+
+
+def _sample_unicyclic_graph(
+    rng: random.Random,
+    *,
+    node_count: int,
+    cycle_size: int,
+    topology_profile: str,
+) -> nx.Graph:
+    """Return one connected unicyclic graph with the requested unique cycle size."""
+
+    node_count_int = int(node_count)
+    cycle_size_int = int(cycle_size)
+    if int(cycle_size_int) < 3 or int(cycle_size_int) > int(node_count_int):
+        raise ValueError("cycle size must lie in [3, node_count] for unicyclic sampling")
+
+    graph = nx.cycle_graph(int(cycle_size_int))
+    next_node = int(cycle_size_int)
+    while int(next_node) < int(node_count_int):
+        parent = _choose_attachment_parent(
+            rng,
+            graph=graph,
+            topology_profile=str(topology_profile),
+        )
+        graph.add_node(int(next_node))
+        graph.add_edge(int(parent), int(next_node))
+        next_node += 1
+
+    cycle_basis = nx.cycle_basis(graph)
+    if len(cycle_basis) != 1 or len(cycle_basis[0]) != int(cycle_size_int):
+        raise ValueError("unicyclic sampler failed to preserve the requested unique cycle")
+    return graph
+
+
+def _sample_zero_articulation_graph(
+    rng: random.Random,
+    *,
+    node_count: int,
+    topology_profile: str,
+) -> nx.Graph:
+    """Return one simple graph with zero articulation points."""
+
+    node_count_int = int(node_count)
+    if int(node_count_int) < 3:
+        raise ValueError("zero-articulation sampling requires at least three nodes")
+    graph = nx.cycle_graph(int(node_count_int))
+    profile = str(topology_profile)
+    if profile != "low_degree":
+        max_extra = max(0, min(int(node_count_int // 2), ((node_count_int * (node_count_int - 1)) // 2) - int(node_count_int)))
+        extra_edges = int(rng.randint(0, max_extra))
+        _add_random_non_edges(graph, rng, extra_edges=int(extra_edges))
+    if any(True for _ in nx.articulation_points(graph)):
+        raise ValueError("zero-articulation sampler produced an articulation point")
+    return graph
+
+
+def _edge_weight_for_profile(
+    graph: nx.Graph,
+    *,
+    edge: Tuple[int, int],
+    topology_profile: str,
+) -> float:
+    """Return one edge-selection weight for articulation-preserving expansion."""
+
+    left, right = int(edge[0]), int(edge[1])
+    profile = str(topology_profile)
+    degree_sum = float(graph.degree(left) + graph.degree(right))
+    if profile == "hub_heavy":
+        return float((degree_sum + 2.0) ** 2)
+    if profile == "low_degree":
+        return 1.0 / float(degree_sum + 2.0)
+    return 1.0
+
+
+def _sample_articulation_graph(
+    rng: random.Random,
+    *,
+    node_count: int,
+    target_count: int,
+    topology_profile: str,
+    attempts: int = 200,
+) -> nx.Graph:
+    """Return one graph with the requested articulation-point count."""
+
+    node_count_int = int(node_count)
+    target_count_int = int(target_count)
+    if int(target_count_int) < 0 or int(target_count_int) > max(0, int(node_count_int) - 2):
+        raise ValueError("target articulation count is outside feasible bounds")
+    if int(target_count_int) == 0:
+        return _sample_zero_articulation_graph(
+            rng,
+            node_count=int(node_count_int),
+            topology_profile=str(topology_profile),
+        )
+
+    for _ in range(max(1, int(attempts))):
+        graph = nx.path_graph(int(target_count_int) + 2)
+        next_node = int(target_count_int) + 2
+        while int(next_node) < int(node_count_int):
+            edges = [(int(left), int(right)) for left, right in graph.edges()]
+            if not edges:
+                break
+            weights = [
+                _edge_weight_for_profile(
+                    graph,
+                    edge=(int(left), int(right)),
+                    topology_profile=str(topology_profile),
+                )
+                for left, right in edges
+            ]
+            left, right = rng.choices(edges, weights=weights, k=1)[0]
+            graph.add_node(int(next_node))
+            graph.add_edge(int(next_node), int(left))
+            graph.add_edge(int(next_node), int(right))
+            next_node += 1
+        articulation_nodes = tuple(sorted((int(node) for node in nx.articulation_points(graph))))
+        if len(articulation_nodes) == int(target_count_int):
+            return graph
+    raise ValueError("failed to sample the requested articulation-point support")
 
 
 def _sample_connected_component_graph(
@@ -953,25 +1148,143 @@ def sample_largest_component_size_graph(
     )
 
 
+def sample_unique_cycle_graph(
+    rng: random.Random,
+    *,
+    node_count: int,
+    target_cycle_size: int,
+    topology_profile: str,
+    label_variant: str,
+) -> GraphUniqueCycleSample:
+    """Construct one connected unicyclic graph for unique-cycle-size queries."""
+
+    feasible_node_support = feasible_node_counts_for_unique_cycle_size(
+        target_cycle_size=int(target_cycle_size),
+        node_count_min=int(node_count),
+        node_count_max=int(node_count),
+    )
+    if int(node_count) not in feasible_node_support:
+        raise ValueError("node_count is outside feasible support for the requested unique-cycle query")
+
+    graph = _sample_unicyclic_graph(
+        rng,
+        node_count=int(node_count),
+        cycle_size=int(target_cycle_size),
+        topology_profile=str(topology_profile),
+    )
+    topology_sample, label_by_node = _build_labeled_graph_topology_sample(
+        rng,
+        graph=graph,
+        directed=False,
+        topology_profile=str(topology_profile),
+        label_variant=str(label_variant),
+    )
+    cycle_basis = nx.cycle_basis(graph)
+    if len(cycle_basis) != 1:
+        raise ValueError("unique-cycle sampler failed to produce exactly one cycle")
+    cycle_nodes = tuple(int(node) for node in cycle_basis[0])
+    target_labels = tuple(sorted((str(label_by_node[int(node)]) for node in cycle_nodes), key=graph_label_sort_key))
+    return GraphUniqueCycleSample(
+        graph=topology_sample.graph,
+        directed=False,
+        node_labels=tuple(str(label) for label in topology_sample.node_labels),
+        edge_labels=tuple((str(left), str(right)) for left, right in topology_sample.edge_labels),
+        degrees_by_label={str(key): int(value) for key, value in topology_sample.degrees_by_label.items()},
+        in_degrees_by_label={str(key): int(value) for key, value in topology_sample.in_degrees_by_label.items()},
+        out_degrees_by_label={str(key): int(value) for key, value in topology_sample.out_degrees_by_label.items()},
+        adjacency_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.adjacency_by_label.items()},
+        successors_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.successors_by_label.items()},
+        predecessors_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.predecessors_by_label.items()},
+        edge_count=int(topology_sample.edge_count),
+        topology_profile=str(topology_sample.topology_profile),
+        label_variant=str(topology_sample.label_variant),
+        target_labels=tuple(str(label) for label in target_labels),
+        target_cycle_size=int(target_cycle_size),
+        attachment_count=int(node_count) - int(target_cycle_size),
+    )
+
+
+def sample_articulation_point_count_graph(
+    rng: random.Random,
+    *,
+    node_count: int,
+    target_count: int,
+    topology_profile: str,
+    label_variant: str,
+    attempts: int = 200,
+) -> GraphArticulationPointSample:
+    """Construct one graph with the requested articulation-point count."""
+
+    feasible_node_support = feasible_node_counts_for_articulation_point_count(
+        target_count=int(target_count),
+        node_count_min=int(node_count),
+        node_count_max=int(node_count),
+    )
+    if int(node_count) not in feasible_node_support:
+        raise ValueError("node_count is outside feasible support for the requested articulation query")
+
+    graph = _sample_articulation_graph(
+        rng,
+        node_count=int(node_count),
+        target_count=int(target_count),
+        topology_profile=str(topology_profile),
+        attempts=int(attempts),
+    )
+    topology_sample, label_by_node = _build_labeled_graph_topology_sample(
+        rng,
+        graph=graph,
+        directed=False,
+        topology_profile=str(topology_profile),
+        label_variant=str(label_variant),
+    )
+    articulation_nodes = tuple(int(node) for node in nx.articulation_points(graph))
+    target_labels = tuple(sorted((str(label_by_node[int(node)]) for node in articulation_nodes), key=graph_label_sort_key))
+    return GraphArticulationPointSample(
+        graph=topology_sample.graph,
+        directed=False,
+        node_labels=tuple(str(label) for label in topology_sample.node_labels),
+        edge_labels=tuple((str(left), str(right)) for left, right in topology_sample.edge_labels),
+        degrees_by_label={str(key): int(value) for key, value in topology_sample.degrees_by_label.items()},
+        in_degrees_by_label={str(key): int(value) for key, value in topology_sample.in_degrees_by_label.items()},
+        out_degrees_by_label={str(key): int(value) for key, value in topology_sample.out_degrees_by_label.items()},
+        adjacency_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.adjacency_by_label.items()},
+        successors_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.successors_by_label.items()},
+        predecessors_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.predecessors_by_label.items()},
+        edge_count=int(topology_sample.edge_count),
+        topology_profile=str(topology_sample.topology_profile),
+        label_variant=str(topology_sample.label_variant),
+        target_labels=tuple(str(label) for label in target_labels),
+        target_count=int(target_count),
+    )
+
+
 __all__ = [
+    "GraphArticulationPointSample",
     "GraphComponentSample",
     "GraphCountSample",
     "GraphLargestComponentSample",
     "GraphTopologySample",
+    "GraphUniqueCycleSample",
     "LABEL_POOL_1_12",
+    "SUPPORTED_ARTICULATION_TASK_VARIANTS",
     "SUPPORTED_COMPONENT_TASK_VARIANTS",
     "SUPPORTED_COMPONENT_COMPARISON_TASK_VARIANTS",
+    "SUPPORTED_CYCLE_TASK_VARIANTS",
     "SUPPORTED_DEGREE_TASK_VARIANTS",
     "SUPPORTED_LAYOUT_VARIANTS",
     "SUPPORTED_LABEL_VARIANTS",
     "SUPPORTED_TOPOLOGY_PROFILES",
+    "feasible_node_counts_for_articulation_point_count",
     "feasible_node_counts_for_component_query",
     "feasible_node_counts_for_degree_count",
+    "feasible_node_counts_for_unique_cycle_size",
     "feasible_node_counts_for_unique_largest_component",
     "graph_degree_mode_for_task_variant",
     "graph_directionality_for_task_variant",
     "graph_label_sort_key",
+    "sample_articulation_point_count_graph",
     "sample_component_count_graph",
     "sample_degree_count_graph",
     "sample_largest_component_size_graph",
+    "sample_unique_cycle_graph",
 ]

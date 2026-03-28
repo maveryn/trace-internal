@@ -328,6 +328,38 @@ def _segments_intersect(left: Tuple[Point, Point], right: Tuple[Point, Point]) -
     return bool(o1 != o2 and o3 != o4)
 
 
+def _point_in_bbox(point: Point, bbox: BBox) -> bool:
+    """Return whether one pixel point lies inside one axis-aligned bbox."""
+
+    x, y = int(point[0]), int(point[1])
+    x0, y0, x1, y1 = [int(value) for value in bbox]
+    return bool(x0 <= x <= x1 and y0 <= y <= y1)
+
+
+def _bbox_intersects_bbox(left: BBox, right: BBox) -> bool:
+    """Return whether two axis-aligned bboxes overlap."""
+
+    lx0, ly0, lx1, ly1 = [int(value) for value in left]
+    rx0, ry0, rx1, ry1 = [int(value) for value in right]
+    return not (lx1 < rx0 or rx1 < lx0 or ly1 < ry0 or ry1 < ly0)
+
+
+def _segment_intersects_bbox(segment: Tuple[Point, Point], bbox: BBox) -> bool:
+    """Return whether one line segment intersects one axis-aligned bbox."""
+
+    start, end = segment
+    if _point_in_bbox(start, bbox) or _point_in_bbox(end, bbox):
+        return True
+    x0, y0, x1, y1 = [int(value) for value in bbox]
+    box_edges = (
+        ((int(x0), int(y0)), (int(x1), int(y0))),
+        ((int(x1), int(y0)), (int(x1), int(y1))),
+        ((int(x1), int(y1)), (int(x0), int(y1))),
+        ((int(x0), int(y1)), (int(x0), int(y0))),
+    )
+    return any(_segments_intersect(segment, edge) for edge in box_edges)
+
+
 def _count_edge_crossings(segments: Sequence[Tuple[Tuple[str, str], Tuple[Point, Point]]]) -> int:
     """Count strict edge crossings, ignoring edges that share endpoints."""
 
@@ -473,17 +505,54 @@ def _draw_edge(
 def _draw_edge_weight_label(
     draw: ImageDraw.ImageDraw,
     *,
+    box: BBox,
+    weight: int,
+    font_size_px: int,
+    box_fill_rgb: Sequence[int],
+    box_border_rgb: Sequence[int],
+    text_rgb: Sequence[int],
+) -> BBox:
+    """Draw one boxed edge-weight label inside the provided bbox."""
+
+    font = load_font(max(14, int(font_size_px)), bold=True)
+    resolved_font_size = float(getattr(font, "size", font_size_px))
+    stroke_width = max(1, int(round(resolved_font_size * 0.12)))
+    center = (0.5 * float(box[0] + box[2]), 0.5 * float(box[1] + box[3]))
+    text = str(int(weight))
+    draw.rounded_rectangle(
+        box,
+        radius=max(6, int(round((min(int(box[2] - box[0]), int(box[3] - box[1])) * 0.22)))),
+        fill=tuple(int(value) for value in box_fill_rgb),
+        outline=tuple(int(value) for value in box_border_rgb),
+        width=max(2, int(round(resolved_font_size * 0.10))),
+    )
+    draw_text_centered(
+        draw,
+        text=text,
+        center=center,
+        font=font,
+        fill=tuple(int(value) for value in text_rgb),
+        stroke_fill=tuple(int(value) for value in box_fill_rgb),
+        stroke_width=int(stroke_width),
+    )
+    return tuple(int(value) for value in box)
+
+
+def _resolve_edge_weight_label_box(
+    draw: ImageDraw.ImageDraw,
+    *,
     segment: Tuple[Point, Point],
     weight: int,
     font_size_px: int,
     offset_px: int,
     padding_px: int,
-    box_fill_rgb: Sequence[int],
-    box_border_rgb: Sequence[int],
-    text_rgb: Sequence[int],
-    side_sign: int,
+    content_bbox: BBox,
+    other_segments: Sequence[Tuple[Point, Point]],
+    reserved_boxes: Sequence[BBox],
+    node_bboxes: Sequence[BBox],
+    side_seed: int,
 ) -> BBox:
-    """Draw one small boxed edge-weight label near the segment midpoint."""
+    """Choose one readable weight-label bbox that avoids edge and node collisions."""
 
     start, end = segment
     x0, y0 = float(start[0]), float(start[1])
@@ -498,40 +567,67 @@ def _draw_edge_weight_label(
     else:
         norm_x = float(-dy / norm)
         norm_y = float(dx / norm)
-    sign = 1.0 if int(side_sign) >= 0 else -1.0
-    center = (
-        float(mid_x + (sign * float(norm_x) * float(offset_px))),
-        float(mid_y + (sign * float(norm_y) * float(offset_px))),
-    )
-    font = load_font(max(10, int(font_size_px)), bold=True)
+
+    font = load_font(max(14, int(font_size_px)), bold=True)
     text = str(int(weight))
-    raw_bbox = draw.textbbox((0, 0), text, font=font, stroke_width=1)
+    stroke_width = max(1, int(round(float(getattr(font, "size", font_size_px)) * 0.10)))
+    raw_bbox = draw.textbbox((0, 0), text, font=font, stroke_width=int(stroke_width))
     text_width = max(1, int(raw_bbox[2] - raw_bbox[0]))
     text_height = max(1, int(raw_bbox[3] - raw_bbox[1]))
     pad = max(2, int(padding_px))
-    box = (
-        int(round(center[0] - ((text_width / 2.0) + pad))),
-        int(round(center[1] - ((text_height / 2.0) + pad))),
-        int(round(center[0] + ((text_width / 2.0) + pad))),
-        int(round(center[1] + ((text_height / 2.0) + pad))),
-    )
-    draw.rounded_rectangle(
-        box,
-        radius=max(4, int(round(float(pad) * 1.2))),
-        fill=tuple(int(value) for value in box_fill_rgb),
-        outline=tuple(int(value) for value in box_border_rgb),
-        width=1,
-    )
-    draw_text_centered(
-        draw,
-        text=text,
-        center=center,
-        font=font,
-        fill=tuple(int(value) for value in text_rgb),
-        stroke_fill=tuple(int(value) for value in box_fill_rgb),
-        stroke_width=1,
-    )
-    return tuple(int(value) for value in box)
+    half_w = float((text_width / 2.0) + pad)
+    half_h = float((text_height / 2.0) + pad)
+    required_clearance = float(abs(norm_x) * half_w) + float(abs(norm_y) * half_h) + float(max(4, pad))
+
+    preferred_signs = (1, -1) if int(side_seed) % 2 == 0 else (-1, 1)
+    t_positions = (0.50, 0.42, 0.58, 0.34, 0.66, 0.26, 0.74)
+    offset_scales = (1.0, 1.35, 1.7, 2.1, 2.5, 3.0)
+    content = tuple(int(value) for value in content_bbox)
+
+    best_box: BBox | None = None
+    best_score: tuple[float, float, float, float, float] | None = None
+    for sign_value in preferred_signs:
+        sign = float(sign_value)
+        for offset_scale in offset_scales:
+            for t_value in t_positions:
+                base_x = float(x0 + (float(dx) * float(t_value)))
+                base_y = float(y0 + (float(dy) * float(t_value)))
+                normal_distance = max(float(offset_px) * float(offset_scale), float(required_clearance))
+                center = (
+                    float(base_x + (sign * float(norm_x) * float(normal_distance))),
+                    float(base_y + (sign * float(norm_y) * float(normal_distance))),
+                )
+                box = (
+                    int(round(center[0] - half_w)),
+                    int(round(center[1] - half_h)),
+                    int(round(center[0] + half_w)),
+                    int(round(center[1] + half_h)),
+                )
+                out_of_bounds = (
+                    max(0, int(content[0] - box[0]))
+                    + max(0, int(content[1] - box[1]))
+                    + max(0, int(box[2] - content[2]))
+                    + max(0, int(box[3] - content[3]))
+                )
+                own_segment_crossings = int(_segment_intersects_bbox(segment, box))
+                segment_crossings = sum(1 for other_segment in other_segments if _segment_intersects_bbox(other_segment, box))
+                node_overlaps = sum(1 for node_bbox in node_bboxes if _bbox_intersects_bbox(node_bbox, box))
+                label_overlaps = sum(1 for reserved in reserved_boxes if _bbox_intersects_bbox(reserved, box))
+                score = (
+                    float(own_segment_crossings),
+                    float(segment_crossings),
+                    float(node_overlaps + label_overlaps),
+                    float(out_of_bounds),
+                    float(normal_distance + abs(float(t_value) - 0.5)),
+                )
+                if best_score is None or score < best_score:
+                    best_score = score
+                    best_box = tuple(int(value) for value in box)
+                    if score[:4] == (0.0, 0.0, 0.0, 0.0):
+                        return tuple(int(value) for value in best_box)
+    if best_box is None:
+        raise ValueError("failed to resolve one edge-weight label box")
+    return tuple(int(value) for value in best_box)
 
 
 def _node_label_box(
@@ -640,6 +736,15 @@ def render_graph_scene(
         (str(left), str(right)): int(weight)
         for (left, right), weight in (edge_weights_by_label or {}).items()
     }
+    node_bbox_lookup = {
+        str(label): (
+            int(positions[int(node)][0] - int(render_params.node_radius_px)),
+            int(positions[int(node)][1] - int(render_params.node_radius_px)),
+            int(positions[int(node)][0] + int(render_params.node_radius_px)),
+            int(positions[int(node)][1] + int(render_params.node_radius_px)),
+        )
+        for node, label in zip(graph_sample.graph.nodes(), graph_sample.node_labels)
+    }
     edge_segments: List[Tuple[Tuple[str, str], Tuple[Point, Point]]] = []
     rendered_edges: List[RenderedGraphEdge] = []
     for left_label, right_label in graph_sample.edge_labels:
@@ -659,26 +764,6 @@ def render_graph_scene(
             arrow_width_px=int(render_params.arrow_width_px),
         )
         edge_segments.append(((str(left_label), str(right_label)), segment))
-        weight_label_bbox = None
-        edge_weight = edge_weight_lookup.get((str(left_label), str(right_label)))
-        if edge_weight is not None:
-            side_sign = 1 if (sum(ord(char) for char in f"{left_label}-{right_label}") % 2 == 0) else -1
-            weight_label_bbox = _draw_edge_weight_label(
-                draw,
-                segment=segment,
-                weight=int(edge_weight),
-                font_size_px=int(
-                    edge_weight_label_font_size_px
-                    if edge_weight_label_font_size_px is not None
-                    else max(11, int(render_params.label_font_size_px) - 6)
-                ),
-                offset_px=int(edge_weight_label_offset_px),
-                padding_px=int(edge_weight_label_padding_px),
-                box_fill_rgb=tuple(int(v) for v in render_params.panel_fill_rgb),
-                box_border_rgb=tuple(int(v) for v in render_params.panel_border_rgb),
-                text_rgb=tuple(int(v) for v in render_params.title_color_rgb),
-                side_sign=int(side_sign),
-            )
         rendered_edges.append(
             RenderedGraphEdge(
                 edge_id=f"edge_{str(left_label)}_{str(right_label)}",
@@ -686,10 +771,62 @@ def render_graph_scene(
                 node_v_label=str(right_label),
                 directed=bool(directed),
                 segment_px=segment,
+            )
+        )
+
+    reserved_weight_boxes: List[BBox] = []
+    weighted_edges: List[RenderedGraphEdge] = []
+    all_segments = [tuple(segment) for _, segment in edge_segments]
+    for edge in rendered_edges:
+        edge_weight = edge_weight_lookup.get((str(edge.node_u_label), str(edge.node_v_label)))
+        weight_label_bbox = None
+        if edge_weight is not None:
+            side_seed = sum(ord(char) for char in f"{edge.node_u_label}-{edge.node_v_label}")
+            weight_label_bbox = _resolve_edge_weight_label_box(
+                draw,
+                segment=tuple(edge.segment_px),
+                weight=int(edge_weight),
+                font_size_px=int(
+                    edge_weight_label_font_size_px
+                    if edge_weight_label_font_size_px is not None
+                    else max(12, int(render_params.label_font_size_px) - 4)
+                ),
+                offset_px=int(edge_weight_label_offset_px),
+                padding_px=int(edge_weight_label_padding_px),
+                content_bbox=content_bbox,
+                other_segments=tuple(
+                    segment for segment in all_segments if tuple(segment) != tuple(edge.segment_px)
+                ),
+                reserved_boxes=tuple(reserved_weight_boxes),
+                node_bboxes=tuple(node_bbox_lookup.values()),
+                side_seed=int(side_seed),
+            )
+            reserved_weight_boxes.append(tuple(int(value) for value in weight_label_bbox))
+            _draw_edge_weight_label(
+                draw,
+                box=tuple(int(value) for value in weight_label_bbox),
+                weight=int(edge_weight),
+                font_size_px=int(
+                    edge_weight_label_font_size_px
+                    if edge_weight_label_font_size_px is not None
+                    else max(12, int(render_params.label_font_size_px) - 4)
+                ),
+                box_fill_rgb=tuple(int(v) for v in render_params.panel_fill_rgb),
+                box_border_rgb=tuple(int(v) for v in render_params.panel_border_rgb),
+                text_rgb=tuple(int(v) for v in render_params.title_color_rgb),
+            )
+        weighted_edges.append(
+            RenderedGraphEdge(
+                edge_id=str(edge.edge_id),
+                node_u_label=str(edge.node_u_label),
+                node_v_label=str(edge.node_v_label),
+                directed=bool(edge.directed),
+                segment_px=tuple(edge.segment_px),
                 weight=int(edge_weight) if edge_weight is not None else None,
                 weight_label_bbox_xyxy=tuple(int(value) for value in weight_label_bbox) if weight_label_bbox is not None else None,
             )
         )
+    rendered_edges = weighted_edges
 
     label_font, label_stroke_width = _resolve_node_label_font(
         draw,

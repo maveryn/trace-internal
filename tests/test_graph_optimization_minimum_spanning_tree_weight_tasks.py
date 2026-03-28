@@ -11,6 +11,7 @@ from trace.core.seed import hash64
 from trace.tasks.graph.optimization.minimum_spanning_tree_weight import (
     GraphOptimizationMinimumSpanningTreeWeightTask,
 )
+from trace.tasks.graph.shared.graph_scene import _segment_intersects_bbox
 from trace.tasks.shared.named_colors import named_color
 
 
@@ -178,3 +179,32 @@ def test_graph_optimization_minimum_spanning_tree_weight_balanced_sampling_defau
         "magenta",
         "maroon",
     }
+
+
+def test_graph_optimization_minimum_spanning_tree_weight_weight_labels_avoid_edge_crossings() -> None:
+    task = GraphOptimizationMinimumSpanningTreeWeightTask()
+    out = task.generate(
+        5710676742424900,
+        params={
+            "node_count": 8,
+            "extra_edge_count": 2,
+            "layout_variant": "shell",
+            "topology_profile": "hub_heavy",
+            "label_variant": "letters",
+            "node_shape_variant": "circle",
+            "layout_transform_variant": "rotate_180",
+            "node_color_name": "green",
+        },
+        max_attempts=80,
+    )
+    edge_entities = [entity for entity in out.trace_payload["scene_ir"]["entities"] if entity["entity_kind"] == "graph_edge"]
+    assert edge_entities
+    for edge_entity in edge_entities:
+        label_box = edge_entity["weight_label_bbox_xyxy"]
+        assert label_box is not None
+        for other_edge_entity in edge_entities:
+            other_segment = (
+                tuple(int(value) for value in other_edge_entity["segment_px"][0]),
+                tuple(int(value) for value in other_edge_entity["segment_px"][1]),
+            )
+            assert not _segment_intersects_bbox(other_segment, tuple(int(value) for value in label_box))

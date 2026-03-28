@@ -442,9 +442,9 @@
           133,
           54
         ],
-        "edge_weight_label_font_size_px": 17,
-        "edge_weight_label_offset_px": 16,
-        "edge_weight_label_padding_px": 5,
+        "edge_weight_label_font_size_px": 20,
+        "edge_weight_label_offset_px": 20,
+        "edge_weight_label_padding_px": 6,
         "edge_width_px": 4,
         "label_font_size_px": 20,
         "label_stroke_rgb": [
@@ -673,10 +673,10 @@
           ],
           "weight": 5,
           "weight_label_bbox_xyxy": [
-            423,
-            408,
-            447,
-            432
+            422,
+            413,
+            452,
+            444
           ]
         },
         {
@@ -698,10 +698,10 @@
           ],
           "weight": 1,
           "weight_label_bbox_xyxy": [
-            627,
-            423,
-            651,
-            447
+            617,
+            411,
+            647,
+            442
           ]
         },
         {
@@ -723,10 +723,10 @@
           ],
           "weight": 2,
           "weight_label_bbox_xyxy": [
-            275,
-            268,
-            299,
-            292
+            265,
+            256,
+            295,
+            287
           ]
         },
         {
@@ -748,10 +748,10 @@
           ],
           "weight": 8,
           "weight_label_bbox_xyxy": [
-            282,
-            126,
-            306,
-            150
+            278,
+            115,
+            308,
+            146
           ]
         },
         {
@@ -773,10 +773,10 @@
           ],
           "weight": 9,
           "weight_label_bbox_xyxy": [
-            282,
-            521,
-            306,
-            545
+            278,
+            525,
+            308,
+            556
           ]
         },
         {
@@ -798,10 +798,10 @@
           ],
           "weight": 3,
           "weight_label_bbox_xyxy": [
-            52,
-            324,
-            76,
-            348
+            86,
+            320,
+            116,
+            351
           ]
         }
       ],

@@ -74,9 +74,9 @@ class _TaskDefaults:
     arrow_width_px: int = 7
     node_border_width_px: int = 2
     label_font_size_px: int = 20
-    edge_weight_label_font_size_px: int = 17
-    edge_weight_label_offset_px: int = 16
-    edge_weight_label_padding_px: int = 5
+    edge_weight_label_font_size_px: int = 20
+    edge_weight_label_offset_px: int = 20
+    edge_weight_label_padding_px: int = 6
 
 
 @dataclass(frozen=True)

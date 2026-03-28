@@ -23,6 +23,7 @@ from .geometry.measurement import perimeter as _task_geometry_measurement_perime
 from .geometry.measurement import slope as _task_geometry_measurement_slope
 from .graph.comparison import largest_component_size as _task_graph_comparison_largest_component_size
 from .graph.counting import articulation_point_count as _task_graph_counting_articulation_point_count
+from .graph.counting import bridge_count as _task_graph_counting_bridge_count
 from .graph.counting import degree_count as _task_graph_counting_degree_count
 from .graph.path import shortest_path_length as _task_graph_path_shortest_path_length
 from .graph.relation import reachable_count as _task_graph_relation_reachable_count

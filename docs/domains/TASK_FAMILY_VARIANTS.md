@@ -288,21 +288,28 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`), plus non-semantic label/shape/color/layout-transform diversity shared with the graph domain.
    - Answer type: integer count.
    - Evidence: `label_set` of all articulation-point nodes.
-30. **Graph relation unique-cycle size (`task_graph_relation_unique_cycle_size`)**
+30. **Graph counting bridge count (`task_graph_counting_bridge_count`)**
+   - One single-panel labeled undirected node-link graph.
+   - Query: `How many edges are bridges?`
+   - Graph contract: simple connected undirected graph with `5..10` nodes and bridge-count support `0..8`.
+   - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`), plus non-semantic label/shape/color/layout-transform diversity shared with the graph domain.
+   - Answer type: integer count.
+   - Evidence: `edge_set` of all bridge edges, represented as unordered endpoint-label pairs.
+31. **Graph relation unique-cycle size (`task_graph_relation_unique_cycle_size`)**
    - One single-panel labeled undirected node-link graph.
    - Query: `The graph contains exactly one cycle. How many nodes are in that cycle?`
    - Graph contract: connected unicyclic graph with `5..10` nodes, unique-cycle-size support `3..7`, and at least one node outside the cycle.
    - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`), plus non-semantic label/shape/color/layout-transform diversity shared with the graph domain.
    - Answer type: integer count.
    - Evidence: `label_set` of all node labels in the unique cycle.
-31. **Graph path shortest-path length (`task_graph_path_shortest_path_length`)**
+32. **Graph path shortest-path length (`task_graph_path_shortest_path_length`)**
    - One single-panel labeled node-link graph.
    - Query: `The graph has a unique shortest path from node X to node Y. How many edges are in that path?` or `The directed graph has a unique shortest path from node X to node Y, following the direction of the arrows. How many edges are in that path?`
    - Graph contract: connected simple graph, shortest-path-length support `1..5`, at least one node outside the witness path, undirected node counts in `5..10`, directed node counts in `5..9`, and exactly one shortest witness path between the queried endpoints.
    - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`), plus non-semantic label/shape/color/layout-transform diversity shared with the graph domain.
    - Answer type: integer count.
    - Evidence: ordered `label_path` of all node labels on the unique shortest path from the queried source node to the queried goal node, including both endpoints.
-32. **Graph relation reachable count (`task_graph_relation_reachable_count`)**
+33. **Graph relation reachable count (`task_graph_relation_reachable_count`)**
    - One single-panel labeled directed node-link graph.
    - Query: `How many nodes, including node X itself, are reachable from X by following the direction of the arrows?`
    - Graph contract: simple directed graph with `5..9` nodes, reachable-count support `1..7`, at least one unreachable node, and traversal semantics defined only by directed successor adjacency.
@@ -360,3 +367,4 @@ Define how we split tasks into reusable families so each dataset slice stays com
 4. For counting families with object labels, prefer `label_set` evidence over geometric coordinates so multi-object grounding stays compact and readable.
 5. For reference+scene icon tasks, prefer `bbox_set` evidence over labels so grounding stays tied to visible scene instances rather than hidden asset ids.
 6. For graph path families, prefer an ordered graph-native witness type such as `label_path` instead of overloading unordered `label_set`.
+7. For graph edge-counting families, use one graph-native edge witness type such as `edge_set` rather than collapsing bridge-like witnesses onto nodes or pixel boxes.

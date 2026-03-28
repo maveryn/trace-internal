@@ -8,7 +8,7 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_graph_relation_reachable_count"
+      "task_graph_counting_bridge_count"
     ],
     "workers": 16
   },
@@ -22,17 +22,17 @@
       "distribution_pass": true,
       "domain": "graph",
       "inspection_count": 25,
-      "inspection_workbook": "graph/task_graph_relation_reachable_count/task_graph_relation_reachable_count.xlsx",
+      "inspection_workbook": "graph/task_graph_counting_bridge_count/task_graph_counting_bridge_count.xlsx",
       "inspection_workbook_sheets": {
-        "reachable_count": "reachable_count"
+        "bridge_count": "bridge_count"
       },
       "reports": {
-        "distribution_review": "graph/task_graph_relation_reachable_count/distribution_review.json",
-        "inspection_manifest": "graph/task_graph_relation_reachable_count/manifest.json",
-        "random_review": "graph/task_graph_relation_reachable_count/random_review_100.json"
+        "distribution_review": "graph/task_graph_counting_bridge_count/distribution_review.json",
+        "inspection_manifest": "graph/task_graph_counting_bridge_count/manifest.json",
+        "random_review": "graph/task_graph_counting_bridge_count/random_review_100.json"
       },
-      "task_group": "relation",
-      "task_id": "task_graph_relation_reachable_count"
+      "task_group": "counting",
+      "task_id": "task_graph_counting_bridge_count"
     }
   ]
 }

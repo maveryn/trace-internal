@@ -105,6 +105,31 @@ def _extract_bboxes(value: Any) -> List[Tuple[float, float, float, float]]:
     return []
 
 
+def _extract_edge_segments(value: Any) -> List[Tuple[Tuple[float, float], Tuple[float, float]]]:
+    """Extract edge-segment payloads from one evidence structure."""
+
+    def _parse_segment(item: Any) -> Tuple[Tuple[float, float], Tuple[float, float]] | None:
+        if not isinstance(item, (list, tuple)) or len(item) != 2:
+            return None
+        left = _parse_point(item[0])
+        right = _parse_point(item[1])
+        if left is None or right is None:
+            return None
+        return (left, right)
+
+    segment = _parse_segment(value)
+    if segment is not None:
+        return [segment]
+    if isinstance(value, list):
+        out: List[Tuple[Tuple[float, float], Tuple[float, float]]] = []
+        for item in value:
+            parsed = _parse_segment(item)
+            if parsed is not None:
+                out.append(parsed)
+        return out
+    return []
+
+
 def resolve_overlay_evidence(
     *,
     evidence_type: str,
@@ -140,6 +165,8 @@ def resolve_overlay_evidence(
             return "pixel_point_map", projected.get("pixel_point_map")
     if str(evidence_type) == "label_path" and "pixel_point_path" in projected:
         return "pixel_point_path", projected.get("pixel_point_path")
+    if str(evidence_type) == "edge_set" and "pixel_edge_set" in projected:
+        return "pixel_edge_set", projected.get("pixel_edge_set")
     if str(evidence_type) in {"integer", "integer_list"}:
         if "bbox_set" in projected:
             return "bbox_set", projected.get("bbox_set")
@@ -191,6 +218,20 @@ def render_evidence_overlay(source: PILImage.Image, *, evidence_type: str, evide
                 outline=(0, 0, 0, 255),
                 width=3,
             )
+        return image
+
+    if evidence_kind in {"edge_set", "pixel_edge_set"}:
+        edge_segments = _extract_edge_segments(evidence_value)
+        for idx, (left, right) in enumerate(edge_segments):
+            color = _EVIDENCE_COLORS[idx % len(_EVIDENCE_COLORS)]
+            draw.line([left, right], fill=(color[0], color[1], color[2], 220), width=line_width)
+            for x, y in (left, right):
+                draw.ellipse(
+                    [x - radius, y - radius, x + radius, y + radius],
+                    fill=(color[0], color[1], color[2], 255),
+                    outline=(0, 0, 0, 255),
+                    width=2,
+                )
         return image
 
     if evidence_kind in {"bbox", "bbox_set"}:

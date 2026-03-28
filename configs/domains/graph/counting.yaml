@@ -62,6 +62,13 @@ generation:
       node_count_max: 10
       target_count_min: 0
       target_count_max: 8
+    task_graph_counting_bridge_count:
+      task_variant_weights:
+        bridge_count: 1.0
+      node_count_min: 5
+      node_count_max: 10
+      target_count_min: 0
+      target_count_max: 8
 
 rendering:
   shared:
@@ -112,3 +119,11 @@ prompt:
       answer_hint: set "answer" to the count of articulation-point nodes as an integer
       json_example: '{"evidence":["B","D","G"],"answer":3}'
       json_example_answer_only: '{"answer":3}'
+    task_graph_counting_bridge_count:
+      task_key: bridge_count_query
+      object_description_undirected: a labeled undirected graph
+      question_text_bridge_count: How many edges are bridges?
+      evidence_hint: set "evidence" to an array of two-label arrays naming the endpoints of all bridge edges
+      answer_hint: set "answer" to the count of bridge edges as an integer
+      json_example: '{"evidence":[["B","D"],["D","G"]],"answer":2}'
+      json_example_answer_only: '{"answer":2}'

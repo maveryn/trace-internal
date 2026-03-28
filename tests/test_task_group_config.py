@@ -1859,6 +1859,24 @@ def test_graph_counting_defaults_loaded() -> None:
     assert str(articulation_prompt_defaults["task_key"]).strip() == "articulation_point_count_query"
     assert str(articulation_prompt_defaults["question_text_articulation_point_count"]).strip()
 
+    bridge_generation_defaults, bridge_rendering_defaults, bridge_prompt_defaults = (
+        split_generation_rendering_prompt_defaults(
+            cfg,
+            task_id="task_graph_counting_bridge_count",
+        )
+    )
+    assert "bridge_count" in bridge_generation_defaults["task_variant_weights"]
+    assert int(bridge_generation_defaults["node_count_min"]) == 5
+    assert int(bridge_generation_defaults["node_count_max"]) == 10
+    assert int(bridge_generation_defaults["target_count_min"]) == 0
+    assert int(bridge_generation_defaults["target_count_max"]) == 8
+    assert int(bridge_rendering_defaults["canvas_width"]) > 0
+    assert int(bridge_rendering_defaults["node_radius_min_px"]) > 0
+    assert str(bridge_prompt_defaults["bundle_id"]).strip() == "graph_counting_v1"
+    assert str(bridge_prompt_defaults["task_family_key"]).strip() == "single_graph_counting"
+    assert str(bridge_prompt_defaults["task_key"]).strip() == "bridge_count_query"
+    assert str(bridge_prompt_defaults["question_text_bridge_count"]).strip()
+
 
 def test_graph_relation_defaults_loaded() -> None:
     cfg = get_task_group_defaults("graph", "relation")

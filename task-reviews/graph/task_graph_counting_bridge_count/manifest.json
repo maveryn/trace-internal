@@ -1,0 +1,11 @@
+{
+  "inspection_count": 25,
+  "task_id": "task_graph_counting_bridge_count",
+  "variants": {
+    "": 25
+  },
+  "workbook": "graph/task_graph_counting_bridge_count/task_graph_counting_bridge_count.xlsx",
+  "workbook_sheets": {
+    "bridge_count": "bridge_count"
+  }
+}

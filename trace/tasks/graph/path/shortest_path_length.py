@@ -33,6 +33,7 @@ from ..shared.graph_sampling import (
     SUPPORTED_LAYOUT_VARIANTS,
     SUPPORTED_PATH_TASK_VARIANTS,
     SUPPORTED_TOPOLOGY_PROFILES,
+    canonicalize_graph_edge_label,
     feasible_node_counts_for_shortest_path_length,
     graph_directionality_for_task_variant,
     graph_label_sort_key,
@@ -514,9 +515,11 @@ class GraphPathShortestPathLengthTask:
         answer_gt = TypedValue(type="integer", value=int(len(evidence_labels) - 1))
         evidence_gt = TypedValue(type="label_path", value=list(evidence_labels))
         path_edge_labels = tuple(
-            (str(left), str(right))
-            if str(query.graph_directionality) == "directed"
-            else tuple(sorted((str(left), str(right)), key=graph_label_sort_key))
+            canonicalize_graph_edge_label(
+                str(left),
+                str(right),
+                directed=bool(str(query.graph_directionality) == "directed"),
+            )
             for left, right in zip(evidence_labels[:-1], evidence_labels[1:])
         )
         path_label_set = {str(label) for label in evidence_labels}
@@ -547,10 +550,10 @@ class GraphPathShortestPathLengthTask:
                 "directed": bool(edge.directed),
                 "segment_px": [list(edge.segment_px[0]), list(edge.segment_px[1])],
                 "is_on_shortest_path": bool(
-                    (
-                        (str(edge.node_u_label), str(edge.node_v_label))
-                        if str(query.graph_directionality) == "directed"
-                        else tuple(sorted((str(edge.node_u_label), str(edge.node_v_label)), key=graph_label_sort_key))
+                    canonicalize_graph_edge_label(
+                        str(edge.node_u_label),
+                        str(edge.node_v_label),
+                        directed=bool(str(query.graph_directionality) == "directed"),
                     )
                     in path_edge_set
                 ),

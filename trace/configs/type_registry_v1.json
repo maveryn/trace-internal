@@ -24,6 +24,7 @@
     "integer_list",
     "measurement_ref_map",
     "label_set",
-    "label_path"
+    "label_path",
+    "edge_set"
   ]
 }

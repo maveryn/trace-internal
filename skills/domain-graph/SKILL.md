@@ -26,8 +26,10 @@ Use this whenever the task lives under `domain=graph`.
 
 ## Evidence heuristics
 - Use `label_set` for unordered node witness sets.
+- Use `edge_set` for unordered edge witness sets.
 - Use `label_path` for ordered node-path witnesses.
 - Treat `label_set` as unordered semantically; canonicalize it internally for determinism, but do not present ordering as part of the task unless the task truly depends on order.
+- Treat `edge_set` as an unordered semantic set of unordered endpoint pairs; canonicalize each pair and the outer set internally only for determinism.
 - Treat `label_path` as ordered semantically; preserve source-to-goal order and include endpoints whenever the path contract names them explicitly.
 - Use one label answer or ordered label path only when the semantics truly require it.
 - Keep node/edge pixel geometry in trace for reviews and overlays, but do not force bbox evidence when labels already provide the natural witness contract.
@@ -56,6 +58,7 @@ Use this whenever the task lives under `domain=graph`.
 - `counting`
   - `task_graph_counting_degree_count`
   - `task_graph_counting_articulation_point_count`
+  - `task_graph_counting_bridge_count`
 - `path`
   - `task_graph_path_shortest_path_length`
 - `relation`

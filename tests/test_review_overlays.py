@@ -69,8 +69,42 @@ def test_resolve_overlay_evidence_uses_bbox_projection_for_integer() -> None:
     assert evidence_value == [[10.0, 20.0, 30.0, 40.0]]
 
 
+def test_resolve_overlay_evidence_uses_pixel_projection_for_edge_set() -> None:
+    evidence_type, evidence_value = resolve_overlay_evidence(
+        evidence_type="edge_set",
+        evidence_value=[["A", "B"]],
+        trace_payload={
+            "projected_evidence": {
+                "pixel_edge_set": [
+                    [[10.0, 20.0], [30.0, 40.0]],
+                    [[50.0, 60.0], [70.0, 80.0]],
+                ],
+            }
+        },
+    )
+    assert evidence_type == "pixel_edge_set"
+    assert evidence_value == [
+        [[10.0, 20.0], [30.0, 40.0]],
+        [[50.0, 60.0], [70.0, 80.0]],
+    ]
+
+
 def test_render_evidence_overlay_draws_visible_marker_with_expanded_radius() -> None:
     source = PILImage.new("RGB", (100, 100), color=(255, 255, 255))
     overlay = render_evidence_overlay(source, evidence_type="point", evidence_value=[50, 50])
     assert overlay.getpixel((50, 50)) != (255, 255, 255)
     assert overlay.getpixel((56, 50)) != (255, 255, 255)
+
+
+def test_render_evidence_overlay_draws_visible_edge_segments() -> None:
+    source = PILImage.new("RGB", (100, 100), color=(255, 255, 255))
+    overlay = render_evidence_overlay(
+        source,
+        evidence_type="pixel_edge_set",
+        evidence_value=[
+            [[10, 10], [90, 10]],
+            [[10, 30], [90, 70]],
+        ],
+    )
+    assert overlay.getpixel((50, 10)) != (255, 255, 255)
+    assert overlay.getpixel((50, 50)) != (255, 255, 255)

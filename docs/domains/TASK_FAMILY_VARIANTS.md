@@ -284,6 +284,13 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`), plus non-semantic label/shape/color/layout-transform diversity shared with the graph domain.
    - Answer type: integer count.
    - Evidence: `label_set` of all node labels in the unique cycle.
+31. **Graph path shortest-path length (`task_graph_path_shortest_path_length`)**
+   - One single-panel labeled node-link graph.
+   - Query: `The graph has a unique shortest path from node X to node Y. How many edges are in that path?` or `The directed graph has a unique shortest path from node X to node Y, following the direction of the arrows. How many edges are in that path?`
+   - Graph contract: connected simple graph, shortest-path-length support `1..5`, at least one node outside the witness path, undirected node counts in `5..10`, directed node counts in `5..9`, and exactly one shortest witness path between the queried endpoints.
+   - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`), plus non-semantic label/shape/color/layout-transform diversity shared with the graph domain.
+   - Answer type: integer count.
+   - Evidence: ordered `label_path` of all node labels on the unique shortest path from the queried source node to the queried goal node, including both endpoints.
 31. **Icons sequence missing count (`task_icons_sequence_missing_count`)**
    - One single-panel image with a horizontal row of `4..6` Scene boxes.
    - Query: how many icons should appear in the missing Scene box to continue the sequence.
@@ -334,3 +341,4 @@ Define how we split tasks into reusable families so each dataset slice stays com
 3. Evidence schema must be declared in each task contract and remain stable for verifier compatibility.
 4. For counting families with object labels, prefer `label_set` evidence over geometric coordinates so multi-object grounding stays compact and readable.
 5. For reference+scene icon tasks, prefer `bbox_set` evidence over labels so grounding stays tied to visible scene instances rather than hidden asset ids.
+6. For graph path families, prefer an ordered graph-native witness type such as `label_path` instead of overloading unordered `label_set`.

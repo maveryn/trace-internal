@@ -56,6 +56,21 @@ Measure:
 - whether runner-up components are close in size to the unique largest component,
 - readability pressure from crossings, tight layouts, or small nodes.
 
+### `path`
+```yaml
+topology_reasoning: 0.50
+visual_scan: 0.20
+ambiguity: 0.20
+clutter: 0.10
+```
+
+Measure:
+- visible graph size and edge load,
+- shortest-path length and how much tracing beyond local inspection is required,
+- how many off-path branches or safe off-path cycles create near-path distractor structure even when the shortest path remains unique,
+- whether the task is directed or undirected, since directed path tracing adds extra control-flow burden even at the same witness length,
+- readability pressure from crossings, tight layouts, or small nodes.
+
 ## Notes
 - Keep graph-domain criteria broad at domain scope; `topology_reasoning` belongs at task-group scope unless every graph family needs it.
 - Do not let layout choice define difficulty directly unless the task truly depends on layout semantics; layout should usually feed `clutter` or `ambiguity`, not replace topology reasoning.

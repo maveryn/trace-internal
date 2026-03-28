@@ -9,6 +9,7 @@ from typing import Dict, Mapping, Sequence, Tuple
 
 import networkx as nx
 
+from ...shared.graph_algorithms import bfs_dist_count_by_adjacency, reconstruct_unique_shortest_path_by_adjacency
 from ...shared.labeling import LABEL_POOL_A_L, assign_shuffled_labels
 
 
@@ -20,6 +21,7 @@ SUPPORTED_ARTICULATION_TASK_VARIANTS: Tuple[str, ...] = ("articulation_point_cou
 SUPPORTED_COMPONENT_TASK_VARIANTS: Tuple[str, ...] = ("same_component_count",)
 SUPPORTED_CYCLE_TASK_VARIANTS: Tuple[str, ...] = ("unique_cycle_size",)
 SUPPORTED_COMPONENT_COMPARISON_TASK_VARIANTS: Tuple[str, ...] = ("largest_component_size",)
+SUPPORTED_PATH_TASK_VARIANTS: Tuple[str, ...] = ("shortest_path_length", "directed_shortest_path_length")
 LABEL_POOL_1_12: Tuple[str, ...] = tuple(str(value) for value in range(1, 13))
 
 
@@ -87,6 +89,18 @@ class GraphUniqueCycleSample(GraphTopologySample):
 
 
 @dataclass(frozen=True)
+class GraphShortestPathSample(GraphTopologySample):
+    """Trace-ready graph sample for unique shortest-path tasks."""
+
+    source_label: str
+    goal_label: str
+    target_labels: Tuple[str, ...]
+    target_shortest_path_length: int
+    attachment_count: int
+    extra_edge_count: int
+
+
+@dataclass(frozen=True)
 class GraphArticulationPointSample(GraphTopologySample):
     """Trace-ready graph sample for articulation-point counting tasks."""
 
@@ -107,7 +121,7 @@ def graph_directionality_for_task_variant(task_variant: str) -> str:
     """Return the graph directionality implied by one task variant."""
 
     variant = str(task_variant)
-    if variant in {"in_degree_count", "out_degree_count"}:
+    if variant in {"in_degree_count", "out_degree_count", "directed_shortest_path_length"}:
         return "directed"
     return "undirected"
 
@@ -432,6 +446,33 @@ def _build_labeled_graph_topology_sample(
     return topology, label_by_node
 
 
+def _graph_adjacency_by_node(graph: nx.Graph) -> Dict[int, Tuple[int, ...]]:
+    """Return a deterministic undirected adjacency mapping keyed by node id."""
+
+    return {
+        int(node): tuple(sorted((int(neighbor) for neighbor in graph.neighbors(int(node)))))
+        for node in sorted((int(value) for value in graph.nodes()))
+    }
+
+
+def _digraph_successor_adjacency_by_node(graph: nx.DiGraph) -> Dict[int, Tuple[int, ...]]:
+    """Return a deterministic directed successor adjacency keyed by node id."""
+
+    return {
+        int(node): tuple(sorted((int(neighbor) for neighbor in graph.successors(int(node)))))
+        for node in sorted((int(value) for value in graph.nodes()))
+    }
+
+
+def _digraph_predecessor_adjacency_by_node(graph: nx.DiGraph) -> Dict[int, Tuple[int, ...]]:
+    """Return a deterministic directed predecessor adjacency keyed by node id."""
+
+    return {
+        int(node): tuple(sorted((int(neighbor) for neighbor in graph.predecessors(int(node)))))
+        for node in sorted((int(value) for value in graph.nodes()))
+    }
+
+
 def _has_reciprocal_edges(graph: nx.DiGraph) -> bool:
     """Return whether one directed graph contains any reciprocal edge pair."""
 
@@ -686,6 +727,22 @@ def feasible_node_counts_for_unique_cycle_size(
     return tuple(range(int(minimum), int(maximum) + 1))
 
 
+def feasible_node_counts_for_shortest_path_length(
+    *,
+    target_shortest_path_length: int,
+    node_count_min: int,
+    node_count_max: int,
+) -> Tuple[int, ...]:
+    """Return node counts that can realize one unique shortest-path query."""
+
+    target_length = int(target_shortest_path_length)
+    minimum = max(int(node_count_min), 5, int(target_length) + 2)
+    maximum = int(node_count_max)
+    if int(target_length) < 1 or int(minimum) > int(maximum):
+        return ()
+    return tuple(range(int(minimum), int(maximum) + 1))
+
+
 def feasible_node_counts_for_articulation_point_count(
     *,
     target_count: int,
@@ -838,6 +895,214 @@ def _sample_unicyclic_graph(
     if len(cycle_basis) != 1 or len(cycle_basis[0]) != int(cycle_size_int):
         raise ValueError("unicyclic sampler failed to preserve the requested unique cycle")
     return graph
+
+
+def _sample_unique_shortest_path_graph(
+    rng: random.Random,
+    *,
+    node_count: int,
+    target_shortest_path_length: int,
+    topology_profile: str,
+) -> Tuple[nx.Graph, Tuple[int, ...], int]:
+    """Return one connected graph with a unique shortest path of the requested length.
+
+    The construction starts from a backbone path of the requested edge length,
+    attaches at least one off-path node, and optionally adds cycle-forming
+    non-edges inside the same branch anchor so the unique shortest path between
+    the two backbone endpoints remains unchanged.
+    """
+
+    node_count_int = int(node_count)
+    target_length_int = int(target_shortest_path_length)
+    feasible_node_support = feasible_node_counts_for_shortest_path_length(
+        target_shortest_path_length=int(target_length_int),
+        node_count_min=int(node_count_int),
+        node_count_max=int(node_count_int),
+    )
+    if int(node_count_int) not in feasible_node_support:
+        raise ValueError("node_count is outside feasible support for the requested shortest-path query")
+
+    path_nodes = tuple(range(int(target_length_int) + 1))
+    graph = nx.path_graph(path_nodes)
+    anchor_by_node = {int(node): int(node) for node in path_nodes}
+
+    next_node = int(target_length_int) + 1
+    while int(next_node) < int(node_count_int):
+        parent = _choose_attachment_parent(
+            rng,
+            graph=graph,
+            topology_profile=str(topology_profile),
+        )
+        graph.add_node(int(next_node))
+        graph.add_edge(int(parent), int(next_node))
+        anchor_by_node[int(next_node)] = int(anchor_by_node[int(parent)])
+        next_node += 1
+
+    source_node = int(path_nodes[0])
+    goal_node = int(path_nodes[-1])
+    adjacency = _graph_adjacency_by_node(graph)
+    dist_start, count_start = bfs_dist_count_by_adjacency(adjacency, start=int(source_node))
+    dist_goal, _ = bfs_dist_count_by_adjacency(adjacency, start=int(goal_node))
+    unique_path = reconstruct_unique_shortest_path_by_adjacency(
+        adjacency,
+        start=int(source_node),
+        goal=int(goal_node),
+        dist_start=dist_start,
+        dist_goal=dist_goal,
+    )
+    if unique_path is None or tuple(int(node) for node in unique_path) != tuple(int(node) for node in path_nodes):
+        raise ValueError("backbone construction failed to preserve the requested unique shortest path")
+
+    extra_edge_candidates = [
+        (int(left), int(right))
+        for left, right in nx.non_edges(graph)
+        if int(anchor_by_node[int(left)]) == int(anchor_by_node[int(right)])
+        and not (int(left) in path_nodes and int(right) in path_nodes)
+    ]
+    rng.shuffle(extra_edge_candidates)
+    if str(topology_profile) == "hub_heavy":
+        extra_edge_budget = min(3, len(extra_edge_candidates))
+    elif str(topology_profile) == "balanced":
+        extra_edge_budget = min(2, len(extra_edge_candidates))
+    else:
+        extra_edge_budget = min(1, len(extra_edge_candidates))
+
+    extra_edges_kept = 0
+    for left, right in extra_edge_candidates:
+        if int(extra_edges_kept) >= int(extra_edge_budget):
+            break
+        graph.add_edge(int(left), int(right))
+        adjacency = _graph_adjacency_by_node(graph)
+        dist_start, count_start = bfs_dist_count_by_adjacency(adjacency, start=int(source_node))
+        if int(dist_start.get(int(goal_node), -1)) != int(target_length_int) or int(count_start.get(int(goal_node), 0)) != 1:
+            graph.remove_edge(int(left), int(right))
+            continue
+        dist_goal, _ = bfs_dist_count_by_adjacency(adjacency, start=int(goal_node))
+        unique_path = reconstruct_unique_shortest_path_by_adjacency(
+            adjacency,
+            start=int(source_node),
+            goal=int(goal_node),
+            dist_start=dist_start,
+            dist_goal=dist_goal,
+        )
+        if unique_path is None or tuple(int(node) for node in unique_path) != tuple(int(node) for node in path_nodes):
+            graph.remove_edge(int(left), int(right))
+            continue
+        extra_edges_kept += 1
+
+    return graph, tuple(int(node) for node in path_nodes), int(extra_edges_kept)
+
+
+def _sample_unique_shortest_path_digraph(
+    rng: random.Random,
+    *,
+    node_count: int,
+    target_shortest_path_length: int,
+    topology_profile: str,
+) -> Tuple[nx.DiGraph, Tuple[int, ...], int]:
+    """Return one directed graph with a unique shortest directed path of the requested length.
+
+    The source-to-goal witness path is realized by one directed backbone chain.
+    Off-path nodes attach as incoming or outgoing branches, and optional extra
+    off-path edges are only retained when they preserve the unique directed
+    shortest path between the backbone endpoints.
+    """
+
+    node_count_int = int(node_count)
+    target_length_int = int(target_shortest_path_length)
+    feasible_node_support = feasible_node_counts_for_shortest_path_length(
+        target_shortest_path_length=int(target_length_int),
+        node_count_min=int(node_count_int),
+        node_count_max=int(node_count_int),
+    )
+    if int(node_count_int) not in feasible_node_support:
+        raise ValueError("node_count is outside feasible support for the requested directed shortest-path query")
+
+    path_nodes = tuple(range(int(target_length_int) + 1))
+    graph = nx.DiGraph()
+    graph.add_nodes_from(path_nodes)
+    graph.add_edges_from((int(left), int(right)) for left, right in zip(path_nodes[:-1], path_nodes[1:]))
+    anchor_by_node = {int(node): int(node) for node in path_nodes}
+
+    profile = str(topology_profile)
+    next_node = int(target_length_int) + 1
+    while int(next_node) < int(node_count_int):
+        parent = _choose_attachment_parent(
+            rng,
+            graph=graph,
+            topology_profile=profile,
+        )
+        graph.add_node(int(next_node))
+        branch_direction = str(
+            rng.choices(
+                ("out", "in"),
+                weights=(2.0, 1.0) if profile == "hub_heavy" else (1.0, 1.0),
+                k=1,
+            )[0]
+        )
+        if branch_direction == "out":
+            graph.add_edge(int(parent), int(next_node))
+        else:
+            graph.add_edge(int(next_node), int(parent))
+        anchor_by_node[int(next_node)] = int(anchor_by_node[int(parent)])
+        next_node += 1
+
+    source_node = int(path_nodes[0])
+    goal_node = int(path_nodes[-1])
+    successors = _digraph_successor_adjacency_by_node(graph)
+    predecessors = _digraph_predecessor_adjacency_by_node(graph)
+    dist_start, count_start = bfs_dist_count_by_adjacency(successors, start=int(source_node))
+    dist_goal, _ = bfs_dist_count_by_adjacency(predecessors, start=int(goal_node))
+    unique_path = reconstruct_unique_shortest_path_by_adjacency(
+        successors,
+        start=int(source_node),
+        goal=int(goal_node),
+        dist_start=dist_start,
+        dist_goal=dist_goal,
+    )
+    if unique_path is None or tuple(int(node) for node in unique_path) != tuple(int(node) for node in path_nodes):
+        raise ValueError("directed backbone construction failed to preserve the requested unique shortest path")
+
+    extra_edge_candidates = [
+        (int(left), int(right))
+        for left, right in nx.non_edges(graph)
+        if int(anchor_by_node[int(left)]) == int(anchor_by_node[int(right)])
+        and not (int(left) in path_nodes and int(right) in path_nodes)
+        and not graph.has_edge(int(right), int(left))
+    ]
+    rng.shuffle(extra_edge_candidates)
+    if profile == "hub_heavy":
+        extra_edge_budget = min(1, len(extra_edge_candidates))
+    elif profile == "balanced":
+        extra_edge_budget = min(1, len(extra_edge_candidates))
+    else:
+        extra_edge_budget = 0
+
+    extra_edges_kept = 0
+    for left, right in extra_edge_candidates:
+        if int(extra_edges_kept) >= int(extra_edge_budget):
+            break
+        graph.add_edge(int(left), int(right))
+        successors = _digraph_successor_adjacency_by_node(graph)
+        predecessors = _digraph_predecessor_adjacency_by_node(graph)
+        dist_start, count_start = bfs_dist_count_by_adjacency(successors, start=int(source_node))
+        if int(dist_start.get(int(goal_node), -1)) != int(target_length_int) or int(count_start.get(int(goal_node), 0)) != 1:
+            graph.remove_edge(int(left), int(right))
+            continue
+        dist_goal, _ = bfs_dist_count_by_adjacency(predecessors, start=int(goal_node))
+        unique_path = reconstruct_unique_shortest_path_by_adjacency(
+            successors,
+            start=int(source_node),
+            goal=int(goal_node),
+            dist_start=dist_start,
+            dist_goal=dist_goal,
+        )
+        if unique_path is None or tuple(int(node) for node in unique_path) != tuple(int(node) for node in path_nodes):
+            graph.remove_edge(int(left), int(right))
+            continue
+        extra_edges_kept += 1
+
+    return graph, tuple(int(node) for node in path_nodes), int(extra_edges_kept)
 
 
 def _sample_zero_articulation_graph(
@@ -1204,6 +1469,76 @@ def sample_unique_cycle_graph(
     )
 
 
+def sample_shortest_path_length_graph(
+    rng: random.Random,
+    *,
+    task_variant: str,
+    node_count: int,
+    target_shortest_path_length: int,
+    topology_profile: str,
+    label_variant: str,
+) -> GraphShortestPathSample:
+    """Construct one connected graph with a unique shortest path of the requested length."""
+
+    feasible_node_support = feasible_node_counts_for_shortest_path_length(
+        target_shortest_path_length=int(target_shortest_path_length),
+        node_count_min=int(node_count),
+        node_count_max=int(node_count),
+    )
+    if int(node_count) not in feasible_node_support:
+        raise ValueError("node_count is outside feasible support for the requested shortest-path query")
+
+    graph_directionality = str(graph_directionality_for_task_variant(str(task_variant)))
+    if graph_directionality == "directed":
+        graph, path_nodes, extra_edge_count = _sample_unique_shortest_path_digraph(
+            rng,
+            node_count=int(node_count),
+            target_shortest_path_length=int(target_shortest_path_length),
+            topology_profile=str(topology_profile),
+        )
+    else:
+        graph, path_nodes, extra_edge_count = _sample_unique_shortest_path_graph(
+            rng,
+            node_count=int(node_count),
+            target_shortest_path_length=int(target_shortest_path_length),
+            topology_profile=str(topology_profile),
+        )
+    topology_sample, label_by_node = _build_labeled_graph_topology_sample(
+        rng,
+        graph=graph,
+        directed=bool(graph_directionality == "directed"),
+        topology_profile=str(topology_profile),
+        label_variant=str(label_variant),
+    )
+
+    source_node = int(path_nodes[0])
+    goal_node = int(path_nodes[-1])
+    source_label = str(label_by_node[int(source_node)])
+    goal_label = str(label_by_node[int(goal_node)])
+    target_labels = tuple(str(label_by_node[int(node)]) for node in path_nodes)
+    return GraphShortestPathSample(
+        graph=topology_sample.graph,
+        directed=bool(topology_sample.directed),
+        node_labels=tuple(str(label) for label in topology_sample.node_labels),
+        edge_labels=tuple((str(left), str(right)) for left, right in topology_sample.edge_labels),
+        degrees_by_label={str(key): int(value) for key, value in topology_sample.degrees_by_label.items()},
+        in_degrees_by_label={str(key): int(value) for key, value in topology_sample.in_degrees_by_label.items()},
+        out_degrees_by_label={str(key): int(value) for key, value in topology_sample.out_degrees_by_label.items()},
+        adjacency_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.adjacency_by_label.items()},
+        successors_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.successors_by_label.items()},
+        predecessors_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.predecessors_by_label.items()},
+        edge_count=int(topology_sample.edge_count),
+        topology_profile=str(topology_sample.topology_profile),
+        label_variant=str(topology_sample.label_variant),
+        source_label=str(source_label),
+        goal_label=str(goal_label),
+        target_labels=tuple(str(label) for label in target_labels),
+        target_shortest_path_length=int(target_shortest_path_length),
+        attachment_count=max(0, int(node_count) - len(path_nodes)),
+        extra_edge_count=int(extra_edge_count),
+    )
+
+
 def sample_articulation_point_count_graph(
     rng: random.Random,
     *,
@@ -1263,6 +1598,7 @@ __all__ = [
     "GraphComponentSample",
     "GraphCountSample",
     "GraphLargestComponentSample",
+    "GraphShortestPathSample",
     "GraphTopologySample",
     "GraphUniqueCycleSample",
     "LABEL_POOL_1_12",
@@ -1273,10 +1609,12 @@ __all__ = [
     "SUPPORTED_DEGREE_TASK_VARIANTS",
     "SUPPORTED_LAYOUT_VARIANTS",
     "SUPPORTED_LABEL_VARIANTS",
+    "SUPPORTED_PATH_TASK_VARIANTS",
     "SUPPORTED_TOPOLOGY_PROFILES",
     "feasible_node_counts_for_articulation_point_count",
     "feasible_node_counts_for_component_query",
     "feasible_node_counts_for_degree_count",
+    "feasible_node_counts_for_shortest_path_length",
     "feasible_node_counts_for_unique_cycle_size",
     "feasible_node_counts_for_unique_largest_component",
     "graph_degree_mode_for_task_variant",
@@ -1286,5 +1624,6 @@ __all__ = [
     "sample_component_count_graph",
     "sample_degree_count_graph",
     "sample_largest_component_size_graph",
+    "sample_shortest_path_length_graph",
     "sample_unique_cycle_graph",
 ]

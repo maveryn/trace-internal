@@ -76,6 +76,7 @@ Active bundles:
 3. Graph:
    - `prompts/graph/counting/graph_counting_v1.json`
    - `prompts/graph/comparison/graph_comparison_v1.json`
+   - `prompts/graph/path/graph_path_v1.json`
    - `prompts/graph/relation/graph_relation_v1.json`
 4. Tile:
    - `prompts/tile/count/tile_count_v1.json`
@@ -124,6 +125,7 @@ Active task-to-bundle mapping:
 7. Graph:
    - `task_graph_counting_degree_count|articulation_point_count` -> `graph_counting_v1`
    - `task_graph_comparison_largest_component_size` -> `graph_comparison_v1`
+   - `task_graph_path_shortest_path_length` -> `graph_path_v1`
    - `task_graph_relation_same_component_count|unique_cycle_size` -> `graph_relation_v1`
 8. Tile:
    - `task_tile_count_color_count|color_components|largest_component_size` -> `tile_count_v1`

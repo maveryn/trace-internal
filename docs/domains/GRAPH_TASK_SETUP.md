@@ -8,11 +8,13 @@ Define the concrete v1 setup for the current graph-domain task families.
 2. Active `task_group`s:
    - `counting`
    - `comparison`
+   - `path`
    - `relation`
 3. Current concrete tasks:
    - `task_graph_counting_degree_count`
    - `task_graph_counting_articulation_point_count`
    - `task_graph_comparison_largest_component_size`
+   - `task_graph_path_shortest_path_length`
    - `task_graph_relation_same_component_count`
    - `task_graph_relation_unique_cycle_size`
 
@@ -70,6 +72,15 @@ Define the concrete v1 setup for the current graph-domain task families.
    - default connected-component count support: `2..4`
    - default unique-largest-component-size support: `2..6`
    - prompt/evidence contract: evidence contains every node in the unique largest connected component, and generation rejects ties for largest component size
+6. `task_graph_path_shortest_path_length`
+   - ask:
+     - `The graph has a unique shortest path from node X to node Y. How many edges are in that path?`
+     - `The directed graph has a unique shortest path from node X to node Y, following the direction of the arrows. How many edges are in that path?`
+   - answer type: `integer`
+   - evidence type: `label_path`
+   - default node-count support: `5..10` for undirected, `5..9` for directed
+   - default shortest-path-length support: `1..5`
+   - prompt/evidence contract: evidence is the ordered node-label path from source to goal, includes both queried endpoints, and answer equals `len(path) - 1`
 
 ## Variation axes
 1. `task_variant`
@@ -80,6 +91,8 @@ Define the concrete v1 setup for the current graph-domain task families.
    - `articulation_point_count`
    - `unique_cycle_size`
    - `largest_component_size`
+   - `shortest_path_length`
+   - `directed_shortest_path_length`
 2. `topology_profile`
    - `balanced`
    - `low_degree`
@@ -98,8 +111,11 @@ Define the concrete v1 setup for the current graph-domain task families.
 ## Evidence policy
 1. Use `label_set` when the witness unit is one or more nodes.
 2. Treat `label_set` as an unordered semantic set; canonicalize it internally for deterministic serialization, but do not imply that witness order matters unless the task explicitly asks for an ordered path/sequence.
-3. Keep pixel-space node boxes in projected trace metadata for review overlays rather than as the primary user-facing evidence contract.
-4. For same-component queries, make the prompt explicit when the queried node itself is included in both the answer and the evidence set.
-5. For largest-component comparison queries, enforce a unique largest component by construction before exposing a single `label_set` witness set.
-6. For unique-cycle queries, build a connected unicyclic graph by construction and verify the final graph still has exactly one cycle before exposing the witness set.
-7. If a future graph task needs ordered path evidence, define that as a separate graph-native label/path contract rather than forcing it into `label_set` or bbox-only evidence.
+3. Use `label_path` when the witness unit is an ordered node path.
+4. `label_path` is ordered semantically; preserve source-to-goal order and include both endpoints when the prompt asks about one path between two queried nodes.
+5. Keep pixel-space node boxes or centers in projected trace metadata for review overlays rather than as the primary user-facing evidence contract.
+6. For same-component queries, make the prompt explicit when the queried node itself is included in both the answer and the evidence set.
+7. For largest-component comparison queries, enforce a unique largest component by construction before exposing a single `label_set` witness set.
+8. For unique-cycle queries, build a connected unicyclic graph by construction and verify the final graph still has exactly one cycle before exposing the witness set.
+9. For shortest-path queries, verify the finalized adjacency still has exactly one shortest path between the queried endpoints before exposing a `label_path` witness.
+10. For directed shortest-path queries, compute forward distances over successor adjacency and reverse distances over predecessor adjacency before reconstructing the ordered witness path.

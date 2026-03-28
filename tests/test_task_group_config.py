@@ -1959,6 +1959,91 @@ def test_graph_comparison_defaults_loaded() -> None:
     assert str(prompt_defaults["question_text_largest_component_size"]).strip()
 
 
+def test_graph_path_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("graph", "path")
+    for section in ("generation", "rendering", "prompt", "visual", "complexity"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["node_count_min"]) == 5
+    assert int(generation_shared["node_count_max"]) == 10
+    assert int(generation_shared["directed_node_count_max"]) == 9
+    assert int(generation_shared["target_shortest_path_length_min"]) == 1
+    assert int(generation_shared["target_shortest_path_length_max"]) == 5
+    assert set(generation_shared["topology_profile_weights"].keys()) == {"balanced", "hub_heavy", "low_degree"}
+    assert set(generation_shared["label_variant_weights"].keys()) == {"letters", "numbers"}
+    assert set(generation_shared["layout_variant_weights"].keys()) == {"circular", "shell", "spring"}
+    assert set(generation_shared["node_shape_variant_weights"].keys()) == {"circle", "rounded_square", "hexagon"}
+    assert set(generation_shared["layout_transform_variant_weights"].keys()) == {
+        "identity",
+        "rotate_90",
+        "rotate_180",
+        "rotate_270",
+        "mirror_left_right",
+        "mirror_up_down",
+    }
+    assert set(generation_shared["node_color_name_weights"].keys()) == {
+        "red",
+        "blue",
+        "green",
+        "yellow",
+        "orange",
+        "purple",
+        "brown",
+        "cyan",
+        "magenta",
+        "maroon",
+    }
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_width"]) > 0
+    assert int(render_shared["canvas_height"]) > 0
+    assert int(render_shared["node_radius_min_px"]) > 0
+    assert int(render_shared["node_radius_max_px"]) >= int(render_shared["node_radius_min_px"])
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "graph_path_v1"
+    assert str(prompt_shared["task_family_key"]).strip() == "single_graph_path"
+    assert str(prompt_shared["task_key"]).strip() == "shortest_path_length_query"
+    assert str(prompt_shared["object_description"]).strip()
+    assert str(prompt_shared["object_description_directed"]).strip()
+    assert str(prompt_shared["question_text_shortest_path_length"]).strip()
+    assert str(prompt_shared["question_text_directed_shortest_path_length"]).strip()
+    assert str(prompt_shared["evidence_hint"]).strip()
+    assert str(prompt_shared["answer_hint"]).strip()
+    assert str(prompt_shared["json_example"]).strip()
+    assert str(prompt_shared["json_example_answer_only"]).strip()
+
+    complexity_shared = cfg["complexity"]["shared"]
+    assert dict(complexity_shared["criteria_weights"]) == {
+        "topology_reasoning": 0.50,
+        "visual_scan": 0.20,
+        "ambiguity": 0.20,
+        "clutter": 0.10,
+    }
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_graph_path_shortest_path_length",
+    )
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "directed_shortest_path_length",
+        "shortest_path_length",
+    ]
+    assert int(generation_defaults["node_count_min"]) == 5
+    assert int(generation_defaults["node_count_max"]) == 10
+    assert int(generation_defaults["directed_node_count_max"]) == 9
+    assert int(generation_defaults["target_shortest_path_length_min"]) == 1
+    assert int(generation_defaults["target_shortest_path_length_max"]) == 5
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert int(rendering_defaults["node_radius_min_px"]) > 0
+    assert str(prompt_defaults["bundle_id"]).strip() == "graph_path_v1"
+    assert str(prompt_defaults["task_family_key"]).strip() == "single_graph_path"
+    assert str(prompt_defaults["task_key"]).strip() == "shortest_path_length_query"
+    assert str(prompt_defaults["question_text_shortest_path_length"]).strip()
+    assert str(prompt_defaults["question_text_directed_shortest_path_length"]).strip()
+
+
 def test_icons_transformation_defaults_loaded() -> None:
     cfg = get_task_group_defaults("icons", "transformation")
     for section in ("generation", "rendering", "prompt", "visual", "complexity"):

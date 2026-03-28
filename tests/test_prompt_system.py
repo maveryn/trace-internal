@@ -157,6 +157,7 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
         ("geometry", "measurement", "geometry_angle_measure_v1"),
         ("geometry", "measurement", "geometry_measurement_v1"),
         ("graph", "counting", "graph_counting_v1"),
+        ("graph", "path", "graph_path_v1"),
         ("icons", "counting", "icons_counting_v1"),
         ("icons", "pattern", "icons_pattern_v1"),
         ("icons", "relation", "icons_relation_v1"),
@@ -275,6 +276,13 @@ def test_graph_comparison_bundle_supports_largest_component_size_query() -> None
     assert "single_graph_comparison" in bundle.task_family_templates
     assert len(bundle.task_templates["largest_component_size_query"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["task:largest_component_size_query"]) == ["question_text"]
+
+
+def test_graph_path_bundle_supports_shortest_path_length_query() -> None:
+    bundle = load_prompt_bundle("graph", "path", "graph_path_v1")
+    assert "single_graph_path" in bundle.task_family_templates
+    assert len(bundle.task_templates["shortest_path_length_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task:shortest_path_length_query"]) == ["question_text"]
 
 
 def test_tile_reachability_bundle_supports_region_size_query() -> None:

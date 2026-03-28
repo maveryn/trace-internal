@@ -201,6 +201,7 @@ Prompt wording rule:
 - if a graph task exposes one “largest” or otherwise globally maximal witness component via a single `label_set`, enforce that winner’s uniqueness by construction; ties should be rejected rather than broken implicitly by label order or layout.
 - if a graph task assumes exactly one cycle, construct a unicyclic graph by design and verify the finalized adjacency still has one cycle before exposing answer/evidence; do not infer uniqueness from a partial construction recipe alone.
 - for graph tasks, treat `label_set` evidence as unordered semantically and canonicalize it internally only for determinism; only path-like tasks should require an explicitly ordered label sequence.
+- for graph path tasks, use an ordered graph-native contract such as `label_path` only when node order is truly semantic, and say explicitly whether the path includes both queried endpoints.
 - when a task renders text inside compact glyphs or cells, fit the font against the available box instead of assuming one fixed font size will work for every label variant; multi-character labels and alternate glyph shapes should stay readable without overflowing the witness object.
 
 Use `--mode inspection` when only visual/prompt inspection is needed and distribution checks should be skipped.

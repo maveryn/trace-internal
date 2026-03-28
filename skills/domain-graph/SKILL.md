@@ -22,10 +22,13 @@ Use this whenever the task lives under `domain=graph`.
 - Prefer one graph per image in v1.
 - Whole-image visual diversity such as label format, node glyph style, named node color, or global layout transform is encouraged as long as it remains non-semantic for the task.
 - If a graph task mixes undirected and directed variants, make the prompt wording, trace metadata, and rendered edge treatment explicit (`degree` vs `in-degree` vs `out-degree`, arrowheads for directed edges, and a recorded `graph_directionality` field).
+- For directed path tasks, follow arrow direction semantically and verify witness uniqueness with successor adjacency plus reverse-distance checks from the goal.
 
 ## Evidence heuristics
-- Use `label_set` for node witness sets.
-- Treat `label_set` as an unordered witness set semantically; canonicalize it internally for determinism, but do not present ordering as part of the task unless the task truly depends on order.
+- Use `label_set` for unordered node witness sets.
+- Use `label_path` for ordered node-path witnesses.
+- Treat `label_set` as unordered semantically; canonicalize it internally for determinism, but do not present ordering as part of the task unless the task truly depends on order.
+- Treat `label_path` as ordered semantically; preserve source-to-goal order and include endpoints whenever the path contract names them explicitly.
 - Use one label answer or ordered label path only when the semantics truly require it.
 - Keep node/edge pixel geometry in trace for reviews and overlays, but do not force bbox evidence when labels already provide the natural witness contract.
 - When labels are numeric, keep evidence in ascending numeric label order rather than raw lexicographic string order.
@@ -53,6 +56,8 @@ Use this whenever the task lives under `domain=graph`.
 - `counting`
   - `task_graph_counting_degree_count`
   - `task_graph_counting_articulation_point_count`
+- `path`
+  - `task_graph_path_shortest_path_length`
 - `relation`
   - `task_graph_relation_same_component_count`
   - `task_graph_relation_unique_cycle_size`

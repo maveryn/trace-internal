@@ -43,5 +43,6 @@ Update this table after each review run.
 | task_graph_counting_degree_count | task_graph_counting_degree_count | alright_for_now | distribution pass (degree/in-degree/out-degree variants) |
 | task_graph_counting_articulation_point_count | task_graph_counting_articulation_point_count | alright_for_now | distribution pass |
 | task_graph_comparison_largest_component_size | task_graph_comparison_largest_component_size | alright_for_now | distribution pass |
+| task_graph_path_shortest_path_length | task_graph_path_shortest_path_length | alright_for_now | distribution pass |
 | task_graph_relation_same_component_count | task_graph_relation_same_component_count | alright_for_now | distribution pass |
 | task_graph_relation_unique_cycle_size | task_graph_relation_unique_cycle_size | alright_for_now | distribution pass |

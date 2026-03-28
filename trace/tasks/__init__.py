@@ -46,6 +46,7 @@ from .tables.counting import value_count as _task_tables_counting_value_count
 from .tables.counting import column_pair_count as _task_tables_counting_column_pair_count
 from .tables.relation import row_compare_label as _task_tables_relation_row_compare_label
 from .tables.readout import subset_value as _task_tables_readout_subset_value
+from .tables.statistics import row_summary_label as _task_tables_statistics_row_summary_label
 from .tables.statistics import summary_label as _task_tables_statistics_summary_label
 from .tables.statistics import row_summary_value as _task_tables_statistics_row_summary_value
 from .tables.statistics import summary_value as _task_tables_statistics_summary_value

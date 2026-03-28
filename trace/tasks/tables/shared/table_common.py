@@ -719,6 +719,93 @@ def build_row_summary_value_dataset_for_variant(
     }
 
 
+def build_row_summary_label_dataset_for_variant(
+    *,
+    task_variant: str,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    gen_defaults: Mapping[str, Any],
+    defaults: TableDefaults,
+    task_id: str,
+) -> Dict[str, Any]:
+    """Construct one deterministic table dataset for row-summary winner-label queries."""
+
+    if str(task_variant) not in {"row_sum_argmax", "row_sum_argmin"}:
+        raise ValueError(f"unsupported table row-summary-label variant: {task_variant}")
+
+    base = _resolve_base_table_schema(
+        params=params,
+        instance_seed=int(instance_seed),
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        task_id=task_id,
+    )
+    rng = base["rng"]
+    row_count = int(base["row_count"])
+    numeric_column_count = int(base["numeric_column_count"])
+    row_labels = list(base["row_labels"])
+    column_headers = list(base["column_headers"])
+    value_min = int(base["value_min"])
+    value_max = int(base["value_max"])
+    answer_row_index = int(
+        resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}:answer_row",
+        )
+    ) % int(row_count)
+    answer_row_label = str(row_labels[int(answer_row_index)])
+
+    min_total = int(numeric_column_count * value_min)
+    max_total = int(numeric_column_count * value_max)
+    if int(max_total) - int(min_total) + 1 < int(row_count):
+        raise ValueError("row-summary label tasks require enough total range for unique winning rows")
+    unique_totals = list(rng.sample(range(int(min_total), int(max_total) + 1), int(row_count)))
+    winning_total = max(unique_totals) if str(task_variant) == "row_sum_argmax" else min(unique_totals)
+    remaining_totals = [int(value) for value in unique_totals if int(value) != int(winning_total)]
+    rng.shuffle(remaining_totals)
+
+    totals_by_row: Dict[str, int] = {str(answer_row_label): int(winning_total)}
+    remaining_rows = [str(label) for label in row_labels if str(label) != str(answer_row_label)]
+    for row_label, total in zip(remaining_rows, remaining_totals):
+        totals_by_row[str(row_label)] = int(total)
+
+    values_by_row = _build_values_by_row(
+        row_labels=row_labels,
+        column_headers=column_headers,
+        rng=rng,
+        value_min=int(value_min),
+        value_max=int(value_max),
+    )
+    for row_label in row_labels:
+        row_values = _sample_values_with_total(
+            count=int(numeric_column_count),
+            target_total=int(totals_by_row[str(row_label)]),
+            min_value=int(value_min),
+            max_value=int(value_max),
+            rng=rng,
+        )
+        values_by_row[str(row_label)] = {
+            str(header): int(row_values[int(column_index)])
+            for column_index, header in enumerate(column_headers)
+        }
+
+    answer_value = int(sum(int(values_by_row[str(answer_row_label)][str(header)]) for header in column_headers))
+    return {
+        "row_count": int(row_count),
+        "numeric_column_count": int(numeric_column_count),
+        "row_count_range": list(base["row_count_range"]),
+        "numeric_column_count_range": list(base["numeric_column_count_range"]),
+        "value_range": list(base["value_range"]),
+        "row_labels": [str(label) for label in row_labels],
+        "column_headers": [str(header) for header in column_headers],
+        "values_by_row": dict(values_by_row),
+        "answer_row_label": str(answer_row_label),
+        "answer_row_index": int(answer_row_index),
+        "answer_value": int(answer_value),
+    }
+
+
 def build_counting_value_dataset_for_variant(
     *,
     task_variant: str,
@@ -1165,6 +1252,7 @@ __all__ = [
     "build_counting_value_dataset_for_variant",
     "build_relation_row_compare_label_dataset_for_variant",
     "build_readout_subset_dataset_for_variant",
+    "build_row_summary_label_dataset_for_variant",
     "build_row_summary_value_dataset_for_variant",
     "build_summary_label_dataset_for_variant",
     "build_summary_value_dataset_for_variant",

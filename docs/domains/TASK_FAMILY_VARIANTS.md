@@ -250,6 +250,14 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Answer type: integer box index.
    - Evidence: one-box `bbox_set` for the violating Scene box in final image coordinates.
    - Ambiguity rule: reject any row where more than one box index could plausibly be the unique violation under the supported constant-step hypotheses.
+28. **Icons pattern grid rotation violation (`task_icons_pattern_grid_rotation_violation`)**
+   - One single-panel image with a numbered `3 x 3` grid of Scene boxes, each containing exactly one icon.
+   - Query: which numbered box breaks the 2D rotation pattern.
+   - Pattern rule: the clean grid follows one row/column offset rule `rotation[row, col] = base + row * row_step + col * col_step (mod 360)` using rotations `{0, 90, 180, 270}` and row/column step supports `{90, 180, 270}`.
+   - Visual rule: all Scene icons keep one shared icon type and tint from the curated asymmetric icon subset, use the larger `48..72` px size band, and the final canvas is fit to sampled square-friendly grid cell geometry.
+   - Answer type: integer box index.
+   - Evidence: one-box `bbox_set` for the violating grid box in final image coordinates.
+   - Ambiguity rule: reject any grid where more than one box index could plausibly be the unique violation under the supported row/column rule hypotheses.
 
 ## Future polygon variants (deferred)
 1. Polygon diameter measurement.

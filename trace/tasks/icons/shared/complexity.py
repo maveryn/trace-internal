@@ -1009,6 +1009,92 @@ def build_icons_sequence_rotation_violation_complexity(
     )
 
 
+def _grid_center_position_load(*, cell_index: int, grid_rows: int, grid_cols: int) -> float:
+    """Return one normalized centrality score for a row-major grid cell index."""
+
+    rows = max(1, int(grid_rows))
+    cols = max(1, int(grid_cols))
+    index = max(0, min((rows * cols) - 1, int(cell_index)))
+    row = int(index // cols)
+    col = int(index % cols)
+    center_row = 0.5 * float(rows - 1)
+    center_col = 0.5 * float(cols - 1)
+    max_distance = max(1.0, abs(center_row) + abs(center_col))
+    distance = abs(float(row) - center_row) + abs(float(col) - center_col)
+    return _clip01(1.0 - (distance / max_distance))
+
+
+def build_icons_pattern_grid_rotation_violation_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    grid_rows: int,
+    grid_cols: int,
+    row_step_degrees: int,
+    col_step_degrees: int,
+    distinct_expected_rotation_count: int,
+    plausible_rule_count: int,
+    total_rule_support: int,
+    violation_cell_index: int,
+    violation_rotation_difference_degrees: int,
+    scene_icon_instances: Sequence[Mapping[str, Any]],
+    render_params: Mapping[str, Any],
+) -> TaskComplexity:
+    """Build complexity for the 2D icon grid rotation-violation pattern task."""
+
+    cell_count = max(1, int(grid_rows) * int(grid_cols))
+    visual_scan = _normalize_linear(
+        float(cell_count),
+        min_value=4.0,
+        max_value=9.0,
+    )
+    distinct_rotation_load = _normalize_linear(
+        float(distinct_expected_rotation_count),
+        min_value=2.0,
+        max_value=4.0,
+    )
+    multi_axis_load = 1.0 if int(row_step_degrees) % 360 != int(col_step_degrees) % 360 else 0.55
+    rule_inference = _clip01((0.65 * distinct_rotation_load) + (0.35 * multi_axis_load))
+
+    subtle_violation_load = 1.0 - _normalize_linear(
+        float(violation_rotation_difference_degrees),
+        min_value=90.0,
+        max_value=180.0,
+    )
+    interior_position_load = _grid_center_position_load(
+        cell_index=int(violation_cell_index),
+        grid_rows=int(grid_rows),
+        grid_cols=int(grid_cols),
+    )
+    plausible_rule_load = _normalize_linear(
+        float(plausible_rule_count),
+        min_value=1.0,
+        max_value=float(max(1, int(total_rule_support))),
+    )
+    ambiguity = _clip01(
+        (0.45 * subtle_violation_load)
+        + (0.35 * interior_position_load)
+        + (0.20 * plausible_rule_load)
+    )
+    clutter = icon_scene_clutter_score(
+        scene_instances=scene_icon_instances,
+        scene_icon_size_min_px=int(render_params["scene_icon_size_min_px"]),
+        scene_icon_size_max_px=int(render_params["scene_icon_size_max_px"]),
+        scene_max_overlap_fraction=float(render_params["scene_max_overlap_fraction"]),
+        noise_edit_count_range=render_params["icon_noise_edit_count_range"],
+    )
+    return build_icon_task_complexity(
+        task_group_defaults=task_group_defaults,
+        task_id=str(task_id),
+        criterion_values={
+            "visual_scan": float(visual_scan),
+            "rule_inference": float(rule_inference),
+            "ambiguity": float(ambiguity),
+            "clutter": float(clutter),
+        },
+    )
+
+
 __all__ = [
     "build_icon_task_complexity",
     "build_icons_counting_color_complexity",
@@ -1016,6 +1102,7 @@ __all__ = [
     "build_icons_counting_orientation_complexity",
     "build_icons_counting_size_relation_complexity",
     "build_icons_counting_type_complexity",
+    "build_icons_pattern_grid_rotation_violation_complexity",
     "build_icons_relation_between_two_anchors_count_complexity",
     "build_icons_relation_mirror_symmetry_complexity",
     "build_icons_relation_occlusion_order_complexity",

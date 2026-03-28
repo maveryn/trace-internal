@@ -105,6 +105,7 @@ clutter: 0.10
 
 Use for:
 - `task_icons_sequence_missing_count`
+- `task_icons_sequence_rotation_violation`
 
 What to measure:
 - row length,
@@ -112,6 +113,23 @@ What to measure:
 - missing-position difficulty (interior > end),
 - step-size difficulty (`1` harder than `3`),
 - per-cell clutter.
+
+### `pattern`
+```yaml
+rule_inference: 0.45
+visual_scan: 0.25
+ambiguity: 0.20
+clutter: 0.10
+```
+
+Use for:
+- `task_icons_pattern_grid_rotation_violation`
+
+What to measure:
+- grid size / visible cell inventory,
+- rule richness (for example how many distinct rotations appear and whether row/column steps differ),
+- violating-cell ambiguity,
+- per-cell readability.
 
 ## Practical normalization hints
 - `visual_scan`

@@ -64,3 +64,4 @@ Current task docs:
 54. [task_tables_counting_value_count.md](task_tables_counting_value_count.md)
 55. [task_tables_readout_cell_value.md](task_tables_readout_cell_value.md)
 56. [task_icons_sequence_rotation_violation.md](task_icons_sequence_rotation_violation.md)
+57. [task_icons_pattern_grid_rotation_violation.md](task_icons_pattern_grid_rotation_violation.md)

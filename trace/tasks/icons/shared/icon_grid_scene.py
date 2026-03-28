@@ -8,6 +8,23 @@ from typing import List, Tuple
 BBox = Tuple[int, int, int, int]
 
 
+def centered_square_bbox(bbox: BBox) -> BBox:
+    """Return the largest centered square fully contained in `bbox`."""
+
+    x0, y0, x1, y1 = [int(value) for value in bbox]
+    width = max(1, int(x1 - x0))
+    height = max(1, int(y1 - y0))
+    side = int(max(1, min(width, height)))
+    dx = int((width - side) // 2)
+    dy = int((height - side) // 2)
+    return (
+        int(x0 + dx),
+        int(y0 + dy),
+        int(x0 + dx + side),
+        int(y0 + dy + side),
+    )
+
+
 def resolve_compact_grid_shape(cell_count: int) -> Tuple[int, int]:
     """Return a compact `(rows, cols)` grid for a requested labeled cell count."""
 
@@ -90,4 +107,9 @@ def resolve_horizontal_row_slots(
     return slots
 
 
-__all__ = ["resolve_compact_grid_shape", "resolve_grid_cell_slots", "resolve_horizontal_row_slots"]
+__all__ = [
+    "centered_square_bbox",
+    "resolve_compact_grid_shape",
+    "resolve_grid_cell_slots",
+    "resolve_horizontal_row_slots",
+]

@@ -56,7 +56,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
 2. `trace/tasks/base.py` — task protocol and `TaskOutput`.
 3. `trace/tasks/shared/*` — reusable query/layout/evidence/config/prompt helpers.
 4. `trace/tasks/<domain>/<task_group>/*.py` — concrete tasks plus reusable task-group bases by default (for example `trace/tasks/geometry/measurement/shape_measure_base.py`); tile is the current exception and keeps concrete task modules flat under `trace/tasks/tile/<task_group>_<task_name>.py` with shared helpers in `trace/tasks/tile/shared/`.
-5. `trace/tasks/icons/shared/*` — icon-domain shared asset loading, shared two-panel render/default/noise helpers, cell-grid/row scene renderers, and icon transform utilities.
+5. `trace/tasks/icons/shared/*` — icon-domain shared asset loading, shared two-panel render/default/noise helpers, cell-grid/row/single-panel labeled-grid scene renderers, and icon transform utilities.
 
 ## 4) Current active tasks
 1. Tile:
@@ -100,11 +100,13 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/icons/counting/color.py`
    - `trace/tasks/icons/counting/attribute_binding.py`
    - `trace/tasks/icons/counting/size_relation.py`
+   - `trace/tasks/icons/pattern/grid_rotation_violation.py`
    - `trace/tasks/icons/relation/relative_position_type.py`
    - `trace/tasks/icons/relation/between_two_anchors_count.py`
    - `trace/tasks/icons/relation/mirror_symmetry.py`
    - `trace/tasks/icons/relation/occlusion_order.py`
    - `trace/tasks/icons/sequence/missing_count.py`
+   - `trace/tasks/icons/sequence/rotation_violation.py`
    - `trace/tasks/icons/transformation/pair_count.py`
 7. Charts:
    - `trace/tasks/charts/statistics/summary_value.py`

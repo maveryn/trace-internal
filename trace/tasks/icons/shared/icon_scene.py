@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, List, Sequence, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageColor, ImageDraw
 
@@ -263,7 +263,7 @@ def _grid_slots(content_bbox: BBox, *, rows: int, cols: int, inner_padding_px: i
     return slots
 
 
-def _centered_paste_bbox(
+def centered_paste_bbox(
     *,
     sprite_size: Tuple[int, int],
     slot_bbox: BBox,
@@ -354,6 +354,39 @@ def sort_bboxes_reading_order(bboxes: Iterable[Sequence[int | float]]) -> List[L
         list(box)
         for box in sorted(normalized, key=lambda item: (int(item[1]), int(item[0]), int(item[3]), int(item[2])))
     ]
+
+
+def serialize_rendered_icon_instance(
+    instance: RenderedIconInstance,
+    *,
+    entity_kind: str,
+    extra_fields: Mapping[str, Any] | None = None,
+) -> Dict[str, Any]:
+    """Serialize one rendered icon instance into a trace-ready mapping."""
+
+    payload: Dict[str, Any] = {
+        "entity_kind": str(entity_kind),
+        "instance_id": str(instance.instance_id),
+        "icon_id": str(instance.icon_id),
+        "panel": str(instance.panel),
+        "bbox_xyxy": [int(value) for value in instance.bbox_xyxy],
+        "nominal_size_px": int(instance.nominal_size_px),
+        "rotation_degrees": int(instance.rotation_degrees),
+        "mirror_x": bool(instance.mirror_x),
+        "tint_rgb": [int(value) for value in instance.tint_rgb],
+        "noise_edits": [dict(edit) for edit in instance.noise_edits],
+        "noise_seed": None if instance.noise_seed is None else int(instance.noise_seed),
+    }
+    if extra_fields:
+        for key, value in extra_fields.items():
+            if isinstance(value, (list, tuple)):
+                payload[str(key)] = [
+                    int(item) if isinstance(item, (int, float)) and not isinstance(item, bool) else item
+                    for item in value
+                ]
+            else:
+                payload[str(key)] = value
+    return payload
 
 
 def render_two_panel_icon_scene(
@@ -551,6 +584,7 @@ __all__ = [
     "SingleIconPanelLayout",
     "RenderedIconInstance",
     "RenderedIconScene",
+    "centered_paste_bbox",
     "draw_single_panel",
     "draw_two_panel_panels",
     "max_overlap_with_existing",
@@ -560,6 +594,7 @@ __all__ = [
     "render_two_panel_icon_scene",
     "resolve_single_panel_layout",
     "resolve_two_panel_layout",
+    "serialize_rendered_icon_instance",
     "single_panel_geometry_to_trace",
     "sort_bboxes_reading_order",
 ]

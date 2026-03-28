@@ -252,13 +252,13 @@ def resolve_icon_render_params(
     }
 
 
-def resolve_icon_sequence_render_params(
+def resolve_icon_cell_render_params(
     *,
     params: Mapping[str, Any],
     render_defaults: Mapping[str, Any],
     fallback_defaults: Any,
 ) -> Dict[str, Any]:
-    """Resolve shared render params for icon sequence-row tasks."""
+    """Resolve shared render params for icon tasks built from labeled cells."""
 
     render_params = resolve_icon_render_params(
         params=params,
@@ -361,6 +361,36 @@ def resolve_icon_sequence_render_params(
             ),
         )
     )
+    render_params["scene_content_side_padding_px"] = int(
+        params.get(
+            "scene_content_side_padding_px",
+            group_default(
+                render_defaults,
+                "scene_content_side_padding_px",
+                getattr(fallback_defaults, "scene_content_side_padding_px", 12),
+            ),
+        )
+    )
+    render_params["scene_content_bottom_padding_px"] = int(
+        params.get(
+            "scene_content_bottom_padding_px",
+            group_default(
+                render_defaults,
+                "scene_content_bottom_padding_px",
+                getattr(fallback_defaults, "scene_content_bottom_padding_px", 12),
+            ),
+        )
+    )
+    render_params["scene_content_top_offset_px"] = int(
+        params.get(
+            "scene_content_top_offset_px",
+            group_default(
+                render_defaults,
+                "scene_content_top_offset_px",
+                getattr(fallback_defaults, "scene_content_top_offset_px", 40),
+            ),
+        )
+    )
     render_params["missing_mark_font_size_px"] = int(
         params.get(
             "missing_mark_font_size_px",
@@ -448,7 +478,7 @@ def sample_icon_instance_noise(
 
 __all__ = [
     "icon_render_style_trace",
+    "resolve_icon_cell_render_params",
     "resolve_icon_render_params",
-    "resolve_icon_sequence_render_params",
     "sample_icon_instance_noise",
 ]

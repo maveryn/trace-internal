@@ -140,6 +140,7 @@ Use this checklist during implementation and refactor reviews.
 124. When a domain grows multiple task groups that share the same non-task-specific generation/rendering defaults, promote those shared defaults into `configs/domains/<domain>/base.yaml` instead of copying the same values into each task-group YAML.
 125. For analytical tasks with multiple semantic variant axes (for example `shape_variant` plus `reasoning_mode`), keep one shared analytical family weighting policy and fold the extra axis into the normalized `analytical_reasoning`/`ambiguity` measurements; do not reintroduce separate task-local scalar formulas just because one sibling task has an extra variant dimension.
 126. For icon sequence tasks that ask for a position/index rather than a count, label the visible cells directly in the scene and keep user-facing evidence on the violating/missing cell bbox; do not add a separate option strip when the row itself already grounds the answer.
+127. For 2D icon pattern-violation tasks, reject any instance where multiple supported rule hypotheses point to different unique violating cells; a numbered grid only gives strong `bbox_set` evidence when the violating index is unique under the whole supported rule family, not just under the intended sampled rule.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

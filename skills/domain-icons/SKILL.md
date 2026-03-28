@@ -49,6 +49,8 @@ Use this whenever the task lives under `domain=icons`.
   - `task_icons_relation_between_two_anchors_count`
   - `task_icons_relation_occlusion_order`
   - `task_icons_relation_mirror_symmetry`
+- `pattern`
+  - `task_icons_pattern_grid_rotation_violation`
 - `transformation`
   - `task_icons_transformation_pair_count`
 - `sequence`
@@ -82,6 +84,7 @@ Use this whenever the task lives under `domain=icons`.
   - reject accidental extra-axis symmetries.
 - For row/cell sequence tasks, derive the canvas from sampled cell geometry rather than stretching cells into one fixed canvas.
 - For rotation-bearing icon sequence tasks, use `non_symmetry.txt`, label visible cells directly in the row, and keep user-facing evidence on the violating/missing cell bbox rather than adding a separate option strip.
+- For 2D icon pattern-violation tasks, keep the semantic target on the violating cell bbox, use one numbered grid rather than an option strip, and reject any instance where another supported rule hypothesis would make a different violating cell plausible.
 
 ## Shared helpers to prefer
 - `trace/tasks/icons/shared/icon_assets.py`
@@ -91,6 +94,7 @@ Use this whenever the task lives under `domain=icons`.
 - `trace/tasks/icons/shared/icon_transform.py`
 - `trace/tasks/icons/shared/icon_grid_scene.py`
 - `trace/tasks/icons/shared/icon_sequence_scene.py`
+- `trace/tasks/icons/shared/icon_single_panel_labeled_grid_scene.py`
 - `trace/tasks/icons/shared/icon_pair_grid_scene.py`
 - `trace/tasks/icons/shared/icon_overlap_grid_scene.py`
 - `trace/tasks/icons/shared/icon_labeled_grid_scene.py`

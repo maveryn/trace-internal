@@ -25,23 +25,24 @@ from ...shared.prompt_variants import (
 )
 from ..shared.defaults import ICON_SHARED_DEFAULTS
 from ..shared.icon_assets import resolve_icon_pool
-from ..shared.icon_scene import single_panel_geometry_to_trace, sort_bboxes_reading_order
+from ..shared.icon_scene import (
+    IconInstanceSpec,
+    serialize_rendered_icon_instance,
+    single_panel_geometry_to_trace,
+    sort_bboxes_reading_order,
+)
 from ..shared.complexity import build_icons_sequence_missing_count_complexity
 from ..shared.icon_sequence_scene import (
     IconSequenceCellSpec,
     render_icon_sequence_scene,
     resolve_sequence_canvas_size,
-    serialize_rendered_sequence_icon_instance,
 )
 from ..shared.icon_style import sample_single_icon_tint
 from ..shared.icon_task_rendering import (
     icon_render_style_trace,
-    resolve_icon_sequence_render_params,
+    resolve_icon_cell_render_params,
     sample_icon_instance_noise,
 )
-from ..shared.icon_scene import IconInstanceSpec
-
-
 @dataclass(frozen=True)
 class _TaskDefaults:
     """Stable fallback defaults for icon sequence missing-count scenes."""
@@ -346,11 +347,13 @@ def _sample_scene(
         )
         for instance in rendered_cell.icon_instances:
             scene_icon_instances.append(
-                serialize_rendered_sequence_icon_instance(
+                serialize_rendered_icon_instance(
                     instance,
                     entity_kind="scene_icon",
-                    cell_index=int(rendered_cell.cell_index),
-                    cell_bbox_xyxy=cell_bbox,
+                    extra_fields={
+                        "cell_index": int(rendered_cell.cell_index),
+                        "cell_bbox_xyxy": list(cell_bbox),
+                    },
                 )
             )
     if missing_cell_bbox is None:
@@ -387,7 +390,7 @@ class IconsSequenceMissingCountTask:
 
         scene_rng = spawn_rng(int(instance_seed), "scene")
         sequence_spec = _resolve_sequence_spec(instance_seed=int(instance_seed), params=params)
-        render_params = resolve_icon_sequence_render_params(
+        render_params = resolve_icon_cell_render_params(
             params=params,
             render_defaults=_RENDER_DEFAULTS,
             fallback_defaults=_DEFAULTS,

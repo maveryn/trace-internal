@@ -1,0 +1,82 @@
+generation:
+  shared:
+    grid_rows: 3
+    grid_cols: 3
+    answer_index_min: 1
+    answer_index_max: 9
+    balanced_sampling: true
+  task_overrides:
+    task_icons_pattern_grid_rotation_violation:
+      pool_manifest: non_symmetry.txt
+      rotation_candidates_degrees: [0, 90, 180, 270]
+      row_step_candidates_degrees: [90, 180, 270]
+      col_step_candidates_degrees: [90, 180, 270]
+
+rendering:
+  shared:
+    outer_margin_px: 24
+    panel_padding_px: 20
+    panel_corner_radius_px: 18
+    scene_icon_size_min_px: 48
+    scene_icon_size_max_px: 72
+    cell_box_width_min_px: 104
+    cell_box_width_max_px: 140
+    cell_box_height_min_px: 104
+    cell_box_height_max_px: 140
+    scene_max_overlap_fraction: 0.20
+    scene_placement_max_attempts: 80
+    scene_size_shrink_rounds: 6
+    scene_size_shrink_factor: 0.90
+    palette_size_min: 1
+    palette_size_max: 1
+    color_channel_min: 24
+    color_channel_max: 220
+    min_color_distance: 40.0
+    color_distance_space: lab
+    panel_title_font_size_px: 24
+    background_color_rgb: [247, 248, 251]
+    panel_fill_rgb: [255, 255, 255]
+    panel_border_rgb: [205, 212, 224]
+    header_text_rgb: [70, 78, 96]
+    icon_noise_edit_types: [blur, downsample, jpeg, noise]
+    icon_noise_edit_count_range: [0, 2]
+    icon_noise_value_ranges:
+      blur:
+        radius: [0.2, 0.6]
+      downsample:
+        scale: [0.85, 0.95]
+      jpeg:
+        quality: [70, 90]
+      noise:
+        alpha: [0.03, 0.08]
+    cell_padding_px: 10
+    cell_icon_padding_px: 10
+    cell_corner_radius_px: 12
+    cell_border_rgb: [218, 223, 233]
+    cell_label_font_size_px: 22
+    cell_label_color_rgb: [52, 60, 77]
+    scene_content_side_padding_px: 10
+    scene_content_bottom_padding_px: 10
+    scene_content_top_offset_px: 40
+
+prompt:
+  shared:
+    bundle_id: icons_pattern_v1
+    task_family_key: numbered_grid_rotation_pattern
+    task_key: grid_rotation_violation_query
+  task_overrides:
+    task_icons_pattern_grid_rotation_violation:
+      object_description: a 3 by 3 grid of numbered boxes, each containing one icon
+      question_text: Which numbered box breaks the 2D rotation pattern?
+      evidence_hint: set "evidence" to a JSON array containing exactly one [x_min, y_min, x_max, y_max] box in image pixel coordinates for the violating grid box
+      answer_hint: set "answer" to the violating box index as an integer
+      json_example: '{"evidence":[[540,126,654,458]],"answer":5}'
+      json_example_answer_only: '{"answer":5}'
+
+complexity:
+  shared:
+    criteria_weights:
+      rule_inference: 0.45
+      visual_scan: 0.25
+      ambiguity: 0.20
+      clutter: 0.10

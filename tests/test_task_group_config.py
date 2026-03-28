@@ -1793,6 +1793,63 @@ def test_icons_sequence_defaults_loaded() -> None:
     assert str(prompt["question_text"]).strip()
 
 
+def test_icons_pattern_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("icons", "pattern")
+    for section in ("generation", "rendering", "prompt", "visual", "complexity"):
+        assert isinstance(cfg.get(section), dict)
+
+    complexity_shared = cfg["complexity"]["shared"]
+    assert dict(complexity_shared["criteria_weights"]) == {
+        "visual_scan": 0.25,
+        "ambiguity": 0.20,
+        "clutter": 0.10,
+        "rule_inference": 0.45,
+    }
+
+    generation_shared = cfg["generation"]["shared"]
+    assert int(generation_shared["grid_rows"]) == 3
+    assert int(generation_shared["grid_cols"]) == 3
+    assert int(generation_shared["answer_index_min"]) == 1
+    assert int(generation_shared["answer_index_max"]) == 9
+    assert bool(generation_shared["balanced_sampling"]) is True
+    assert "task_icons_pattern_grid_rotation_violation" in cfg["generation"]["task_overrides"]
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["scene_icon_size_min_px"]) == 48
+    assert int(render_shared["scene_icon_size_max_px"]) == 72
+    assert int(render_shared["cell_box_width_min_px"]) == 104
+    assert int(render_shared["cell_box_width_max_px"]) == 140
+    assert int(render_shared["cell_box_height_min_px"]) == 104
+    assert int(render_shared["cell_box_height_max_px"]) == 140
+    assert int(render_shared["scene_content_side_padding_px"]) == 10
+    assert int(render_shared["scene_content_bottom_padding_px"]) == 10
+    assert int(render_shared["scene_content_top_offset_px"]) == 40
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "icons_pattern_v1"
+    assert str(prompt_shared["task_family_key"]).strip() == "numbered_grid_rotation_pattern"
+    assert str(prompt_shared["task_key"]).strip() == "grid_rotation_violation_query"
+    assert str(prompt_shared["json_output_contract"]).strip()
+    assert str(prompt_shared["json_output_contract_answer_only"]).strip()
+
+    generation, rendering, prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_icons_pattern_grid_rotation_violation",
+    )
+    assert str(generation["pool_manifest"]).strip() == "non_symmetry.txt"
+    assert list(generation["rotation_candidates_degrees"]) == [0, 90, 180, 270]
+    assert list(generation["row_step_candidates_degrees"]) == [90, 180, 270]
+    assert list(generation["col_step_candidates_degrees"]) == [90, 180, 270]
+    assert int(rendering["scene_icon_size_min_px"]) == 48
+    assert int(rendering["scene_icon_size_max_px"]) == 72
+    assert str(prompt["object_description"]).strip()
+    assert str(prompt["question_text"]).strip()
+    assert str(prompt["evidence_hint"]).strip()
+    assert str(prompt["answer_hint"]).strip()
+    assert str(prompt["json_example"]).strip()
+    assert str(prompt["json_example_answer_only"]).strip()
+
+
 def test_tile_path_defaults_loaded() -> None:
     cfg = get_task_group_defaults("tile", "path")
     for section in ("generation", "rendering", "prompt", "visual", "complexity"):

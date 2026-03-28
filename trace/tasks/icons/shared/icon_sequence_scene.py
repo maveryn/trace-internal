@@ -77,39 +77,6 @@ def resolve_sequence_canvas_size(
     canvas_height = int(panel_height + (2 * outer_margin_px))
     return canvas_width, canvas_height
 
-
-def serialize_rendered_sequence_icon_instance(
-    instance: RenderedIconInstance,
-    *,
-    entity_kind: str,
-    cell_index: int | None = None,
-    cell_bbox_xyxy: Sequence[int] | None = None,
-    cell_label_text: str | None = None,
-) -> Dict[str, Any]:
-    """Serialize one rendered sequence icon instance into a trace-ready mapping."""
-
-    payload: Dict[str, Any] = {
-        "entity_kind": str(entity_kind),
-        "instance_id": str(instance.instance_id),
-        "icon_id": str(instance.icon_id),
-        "panel": str(instance.panel),
-        "bbox_xyxy": [int(value) for value in instance.bbox_xyxy],
-        "nominal_size_px": int(instance.nominal_size_px),
-        "rotation_degrees": int(instance.rotation_degrees),
-        "mirror_x": bool(instance.mirror_x),
-        "tint_rgb": [int(value) for value in instance.tint_rgb],
-        "noise_edits": [dict(edit) for edit in instance.noise_edits],
-        "noise_seed": None if instance.noise_seed is None else int(instance.noise_seed),
-    }
-    if cell_index is not None:
-        payload["cell_index"] = int(cell_index)
-    if cell_bbox_xyxy is not None:
-        payload["cell_bbox_xyxy"] = [int(value) for value in cell_bbox_xyxy]
-    if cell_label_text is not None:
-        payload["cell_label_text"] = str(cell_label_text)
-    return payload
-
-
 def render_icon_sequence_scene(
     *,
     rng,
@@ -326,5 +293,4 @@ __all__ = [
     "RenderedSequenceCell",
     "render_icon_sequence_scene",
     "resolve_sequence_canvas_size",
-    "serialize_rendered_sequence_icon_instance",
 ]

@@ -69,6 +69,7 @@ Active bundles:
    - `prompts/geometry/analytical_3d/geometry_analytical_surface_area_v1.json`
 2. Icons:
    - `prompts/icons/counting/icons_counting_v1.json`
+   - `prompts/icons/pattern/icons_pattern_v1.json`
    - `prompts/icons/relation/icons_relation_v1.json`
    - `prompts/icons/sequence/icons_sequence_v1.json`
    - `prompts/icons/transformation/icons_transformation_v1.json`
@@ -109,8 +110,9 @@ Active task-to-bundle mapping:
    - `task_geometry_analytical_3d_surface_area` -> `geometry_analytical_surface_area_v1`
 6. Icons:
    - `task_icons_counting_type|orientation|color|attribute_binding|size_relation` -> `icons_counting_v1`
+   - `task_icons_pattern_grid_rotation_violation` -> `icons_pattern_v1`
    - `task_icons_relation_relative_position_type|between_two_anchors_count|mirror_symmetry|occlusion_order` -> `icons_relation_v1`
-   - `task_icons_sequence_missing_count` -> `icons_sequence_v1`
+   - `task_icons_sequence_missing_count|rotation_violation` -> `icons_sequence_v1`
    - `task_icons_transformation_pair_count` -> `icons_transformation_v1`
 7. Tile:
    - `task_tile_count_color_count|color_components|largest_component_size` -> `tile_count_v1`

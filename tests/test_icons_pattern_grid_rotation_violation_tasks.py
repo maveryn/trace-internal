@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from collections import Counter
+from statistics import mean
 
 from trace.core.seed import hash64
 from trace.tasks.icons.pattern.grid_rotation_violation import IconsPatternGridRotationViolationTask
@@ -81,6 +82,24 @@ def test_icons_pattern_grid_rotation_violation_contract_matches_scene() -> None:
     assert len(icon_entities) == 9
     assert 104 <= int(execution["cell_box_width_px"]) <= 140
     assert 104 <= int(execution["cell_box_height_px"]) <= 140
+    row_counts = Counter(int(entity["grid_row"]) for entity in cell_entities)
+    col_counts = Counter(int(entity["grid_col"]) for entity in cell_entities)
+    assert row_counts == {0: 3, 1: 3, 2: 3}
+    assert col_counts == {0: 3, 1: 3, 2: 3}
+    row_centers = {
+        int(row): mean(
+            [(float(entity["cell_bbox_xyxy"][1]) + float(entity["cell_bbox_xyxy"][3])) * 0.5 for entity in cell_entities if int(entity["grid_row"]) == row]
+        )
+        for row in row_counts
+    }
+    col_centers = {
+        int(col): mean(
+            [(float(entity["cell_bbox_xyxy"][0]) + float(entity["cell_bbox_xyxy"][2])) * 0.5 for entity in cell_entities if int(entity["grid_col"]) == col]
+        )
+        for col in col_counts
+    }
+    assert row_centers[0] < row_centers[1] < row_centers[2]
+    assert col_centers[0] < col_centers[1] < col_centers[2]
 
     exact_match, plausible_indices = _plausible_violation_indices(
         list(execution["observed_grid_rotations_degrees"]),

@@ -8,7 +8,7 @@ from typing import Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import load_font
-from .icon_grid_scene import centered_square_bbox, resolve_grid_cell_slots
+from .icon_grid_scene import centered_square_bbox, resolve_fixed_grid_cell_slots
 from .icon_scene import SingleIconPanelLayout, draw_single_panel, resolve_single_panel_layout
 
 
@@ -63,6 +63,8 @@ def resolve_single_panel_labeled_grid_canvas_size(
 def prepare_single_panel_labeled_grid_scene(
     *,
     scene_labels: Sequence[str],
+    grid_rows: int,
+    grid_cols: int,
     canvas_width: int,
     canvas_height: int,
     outer_margin_px: int,
@@ -89,6 +91,10 @@ def prepare_single_panel_labeled_grid_scene(
     labels = [str(value) for value in scene_labels]
     if not labels:
         raise ValueError("scene_labels must contain at least one label")
+    if int(grid_rows) <= 0 or int(grid_cols) <= 0:
+        raise ValueError("grid_rows and grid_cols must be positive")
+    if len(labels) != int(grid_rows) * int(grid_cols):
+        raise ValueError("scene_labels must match the explicit grid_rows * grid_cols layout")
 
     layout = resolve_single_panel_layout(
         canvas_width=int(canvas_width),
@@ -112,9 +118,10 @@ def prepare_single_panel_labeled_grid_scene(
 
     draw = ImageDraw.Draw(image)
     label_font = load_font(int(cell_label_font_size_px), bold=True)
-    scene_cell_slots = resolve_grid_cell_slots(
+    scene_cell_slots = resolve_fixed_grid_cell_slots(
         tuple(int(value) for value in layout.scene_content_xyxy),
-        cell_count=len(labels),
+        rows=int(grid_rows),
+        cols=int(grid_cols),
         cell_padding_px=int(cell_padding_px),
     )
     scene_cells = []

@@ -42,17 +42,34 @@ def resolve_grid_cell_slots(content_bbox: BBox, *, cell_count: int, cell_padding
     """Return row-major grid slots inside one content rectangle."""
 
     rows, cols = resolve_compact_grid_shape(int(cell_count))
+    return resolve_fixed_grid_cell_slots(
+        content_bbox,
+        rows=int(rows),
+        cols=int(cols),
+        cell_padding_px=int(cell_padding_px),
+    )[: int(cell_count)]
+
+
+def resolve_fixed_grid_cell_slots(
+    content_bbox: BBox,
+    *,
+    rows: int,
+    cols: int,
+    cell_padding_px: int,
+) -> List[BBox]:
+    """Return row-major grid slots for one explicit `(rows, cols)` layout."""
+
+    rows_i = max(1, int(rows))
+    cols_i = max(1, int(cols))
     x0, y0, x1, y1 = content_bbox
     width = max(1, int(x1 - x0))
     height = max(1, int(y1 - y0))
-    cell_w = width / float(cols)
-    cell_h = height / float(rows)
+    cell_w = width / float(cols_i)
+    cell_h = height / float(rows_i)
     pad = max(0, int(cell_padding_px))
     slots: List[BBox] = []
-    for row in range(rows):
-        for col in range(cols):
-            if len(slots) >= int(cell_count):
-                return slots
+    for row in range(rows_i):
+        for col in range(cols_i):
             slot_x0 = int(round(float(x0) + (float(col) * cell_w))) + pad
             slot_y0 = int(round(float(y0) + (float(row) * cell_h))) + pad
             slot_x1 = int(round(float(x0) + (float(col + 1) * cell_w))) - pad
@@ -110,6 +127,7 @@ def resolve_horizontal_row_slots(
 __all__ = [
     "centered_square_bbox",
     "resolve_compact_grid_shape",
+    "resolve_fixed_grid_cell_slots",
     "resolve_grid_cell_slots",
     "resolve_horizontal_row_slots",
 ]

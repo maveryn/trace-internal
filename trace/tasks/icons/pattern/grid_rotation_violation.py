@@ -459,6 +459,8 @@ def _sample_scene(
     scene_labels = [str(index + 1) for index in range(int(pattern_spec.grid_rows * pattern_spec.grid_cols))]
     prepared = prepare_single_panel_labeled_grid_scene(
         scene_labels=scene_labels,
+        grid_rows=int(pattern_spec.grid_rows),
+        grid_cols=int(pattern_spec.grid_cols),
         canvas_width=int(canvas_width),
         canvas_height=int(canvas_height),
         outer_margin_px=int(render_params["outer_margin_px"]),

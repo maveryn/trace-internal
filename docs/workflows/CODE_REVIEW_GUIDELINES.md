@@ -149,6 +149,7 @@ Use this checklist during implementation and refactor reviews.
 132. For tasks that render text inside compact glyphs or cells, review the fitted text box rather than only the nominal font size: multi-character labels and alternate glyph shapes should still fit inside the witness object with a stroke that remains readable after rendering, not just in the default one-character case.
 133. For graph tasks that support both undirected and directed variants, review directionality as an explicit contract surface: prompt wording, trace fields, edge entities, and rendered arrowheads should all agree on whether the queried measure is `degree`, `in-degree`, or `out-degree`, and directed scenes should avoid reciprocal-edge clutter unless the task explicitly reasons about it.
 134. For graph tasks where the queried node belongs in the witness set, review that inclusion explicitly across prompt wording, answer semantics, evidence labels, and trace fields; do not rely on graph-theory convention alone to imply whether the queried node counts toward the answer.
+135. For graph tasks that expose a single “largest” connected component as evidence, review uniqueness explicitly: the sampler should reject ties for the largest component size instead of relying on label order, layout, or hidden tie-break rules to pick one witness set.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

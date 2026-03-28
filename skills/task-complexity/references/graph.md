@@ -42,6 +42,20 @@ Measure:
 - whether other components have the same or nearly the same size as the queried component,
 - readability pressure from crossings, tight layouts, or small nodes.
 
+### `comparison`
+```yaml
+topology_reasoning: 0.45
+visual_scan: 0.20
+ambiguity: 0.25
+clutter: 0.10
+```
+
+Measure:
+- connected-component count and visible graph size,
+- how much whole-graph comparison is required beyond inspecting one anchored component,
+- whether runner-up components are close in size to the unique largest component,
+- readability pressure from crossings, tight layouts, or small nodes.
+
 ## Notes
 - Keep graph-domain criteria broad at domain scope; `topology_reasoning` belongs at task-group scope unless every graph family needs it.
 - Do not let layout choice define difficulty directly unless the task truly depends on layout semantics; layout should usually feed `clutter` or `ambiguity`, not replace topology reasoning.

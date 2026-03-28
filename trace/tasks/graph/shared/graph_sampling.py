@@ -17,6 +17,7 @@ SUPPORTED_TOPOLOGY_PROFILES: Tuple[str, ...] = ("balanced", "low_degree", "hub_h
 SUPPORTED_LABEL_VARIANTS: Tuple[str, ...] = ("letters", "numbers")
 SUPPORTED_DEGREE_TASK_VARIANTS: Tuple[str, ...] = ("degree_count", "in_degree_count", "out_degree_count")
 SUPPORTED_COMPONENT_TASK_VARIANTS: Tuple[str, ...] = ("same_component_count",)
+SUPPORTED_COMPONENT_COMPARISON_TASK_VARIANTS: Tuple[str, ...] = ("largest_component_size",)
 LABEL_POOL_1_12: Tuple[str, ...] = tuple(str(value) for value in range(1, 13))
 
 
@@ -61,6 +62,17 @@ class GraphComponentSample(GraphTopologySample):
     component_sizes: Tuple[int, ...]
     component_count: int
     target_component_size: int
+
+
+@dataclass(frozen=True)
+class GraphLargestComponentSample(GraphTopologySample):
+    """Trace-ready disconnected graph sample for largest-component tasks."""
+
+    target_labels: Tuple[str, ...]
+    components_by_label: Tuple[Tuple[str, ...], ...]
+    component_sizes: Tuple[int, ...]
+    component_count: int
+    target_largest_component_size: int
 
 
 def graph_label_sort_key(label: str) -> Tuple[int, int | str]:
@@ -619,6 +631,26 @@ def feasible_node_counts_for_component_query(
     return tuple(range(int(minimum), int(maximum) + 1))
 
 
+def feasible_node_counts_for_unique_largest_component(
+    *,
+    target_largest_component_size: int,
+    component_count: int,
+    node_count_min: int,
+    node_count_max: int,
+) -> Tuple[int, ...]:
+    """Return node counts that can realize one unique-largest-component query."""
+
+    target_size = int(target_largest_component_size)
+    components = int(component_count)
+    if int(target_size) <= 1 or int(components) <= 1:
+        return ()
+    minimum = max(int(node_count_min), int(target_size) + int(components) - 1)
+    maximum = min(int(node_count_max), int(target_size) + ((int(components) - 1) * (int(target_size) - 1)))
+    if int(minimum) > int(maximum):
+        return ()
+    return tuple(range(int(minimum), int(maximum) + 1))
+
+
 def _random_positive_composition(
     rng: random.Random,
     *,
@@ -639,6 +671,41 @@ def _random_positive_composition(
         buckets[int(rng.randrange(int(parts)))] += 1
     rng.shuffle(buckets)
     return tuple(int(value) for value in buckets)
+
+
+def _random_bounded_positive_composition(
+    rng: random.Random,
+    *,
+    total: int,
+    parts: int,
+    max_value: int,
+    attempts: int = 200,
+) -> Tuple[int, ...] | None:
+    """Split ``total`` into bounded positive integers when possible."""
+
+    total_int = int(total)
+    parts_int = int(parts)
+    max_value_int = int(max_value)
+    if int(parts_int) <= 0:
+        return () if int(total_int) == 0 else None
+    if int(total_int) < int(parts_int) or int(max_value_int) <= 0:
+        return None
+    if int(total_int) > int(parts_int * max_value_int):
+        return None
+    for _ in range(max(1, int(attempts))):
+        values = [1] * int(parts_int)
+        remaining = int(total_int - parts_int)
+        while int(remaining) > 0:
+            adjustable = [index for index, value in enumerate(values) if int(value) < int(max_value_int)]
+            if not adjustable:
+                break
+            index = int(rng.choice(adjustable))
+            values[index] += 1
+            remaining -= 1
+        if int(remaining) == 0:
+            rng.shuffle(values)
+            return tuple(int(value) for value in values)
+    return None
 
 
 def _random_tree_graph(rng: random.Random, *, size: int) -> nx.Graph:
@@ -698,6 +765,42 @@ def _sample_connected_component_graph(
     return graph
 
 
+def _build_disconnected_component_graph(
+    rng: random.Random,
+    *,
+    component_sizes: Sequence[int],
+    topology_profile: str,
+    label_variant: str,
+) -> Tuple[GraphTopologySample, Dict[int, str], Tuple[Tuple[int, ...], ...]]:
+    """Build one labeled disconnected graph from explicit component sizes."""
+
+    graph = nx.Graph()
+    component_nodes: list[Tuple[int, ...]] = []
+    node_offset = 0
+    for size in component_sizes:
+        component_graph = _sample_connected_component_graph(
+            rng,
+            size=int(size),
+            topology_profile=str(topology_profile),
+        )
+        mapping = {int(node): int(node + node_offset) for node in component_graph.nodes()}
+        component_graph = nx.relabel_nodes(component_graph, mapping, copy=True)
+        graph.add_nodes_from(component_graph.nodes())
+        graph.add_edges_from(component_graph.edges())
+        ordered_nodes = tuple(sorted((int(node) for node in component_graph.nodes())))
+        component_nodes.append(ordered_nodes)
+        node_offset += int(size)
+
+    topology_sample, label_by_node = _build_labeled_graph_topology_sample(
+        rng,
+        graph=graph,
+        directed=False,
+        topology_profile=str(topology_profile),
+        label_variant=str(label_variant),
+    )
+    return topology_sample, label_by_node, tuple(component_nodes)
+
+
 def sample_component_count_graph(
     rng: random.Random,
     *,
@@ -737,27 +840,9 @@ def sample_component_count_graph(
         else:
             component_sizes.append(int(other_sizes.pop()))
 
-    graph = nx.Graph()
-    component_nodes: list[Tuple[int, ...]] = []
-    node_offset = 0
-    for size in component_sizes:
-        component_graph = _sample_connected_component_graph(
-            rng,
-            size=int(size),
-            topology_profile=str(topology_profile),
-        )
-        mapping = {int(node): int(node + node_offset) for node in component_graph.nodes()}
-        component_graph = nx.relabel_nodes(component_graph, mapping, copy=True)
-        graph.add_nodes_from(component_graph.nodes())
-        graph.add_edges_from(component_graph.edges())
-        ordered_nodes = tuple(sorted((int(node) for node in component_graph.nodes())))
-        component_nodes.append(ordered_nodes)
-        node_offset += int(size)
-
-    topology_sample, label_by_node = _build_labeled_graph_topology_sample(
+    topology_sample, label_by_node, component_nodes = _build_disconnected_component_graph(
         rng,
-        graph=graph,
-        directed=False,
+        component_sizes=tuple(int(size) for size in component_sizes),
         topology_profile=str(topology_profile),
         label_variant=str(label_variant),
     )
@@ -792,21 +877,101 @@ def sample_component_count_graph(
     )
 
 
+def sample_largest_component_size_graph(
+    rng: random.Random,
+    *,
+    node_count: int,
+    target_largest_component_size: int,
+    component_count: int,
+    topology_profile: str,
+    label_variant: str,
+) -> GraphLargestComponentSample:
+    """Construct one disconnected undirected graph with a unique largest component."""
+
+    node_count_int = int(node_count)
+    target_size_int = int(target_largest_component_size)
+    component_count_int = int(component_count)
+    feasible_node_support = feasible_node_counts_for_unique_largest_component(
+        target_largest_component_size=int(target_size_int),
+        component_count=int(component_count_int),
+        node_count_min=int(node_count_int),
+        node_count_max=int(node_count_int),
+    )
+    if int(node_count_int) not in feasible_node_support:
+        raise ValueError("node_count is outside feasible support for the requested largest-component query")
+
+    target_component_index = int(rng.randrange(int(component_count_int)))
+    other_sizes = _random_bounded_positive_composition(
+        rng,
+        total=int(node_count_int - target_size_int),
+        parts=int(component_count_int - 1),
+        max_value=int(target_size_int - 1),
+    )
+    if other_sizes is None:
+        raise ValueError("failed to sample a bounded positive component-size partition")
+
+    component_sizes = []
+    other_sizes_list = list(int(size) for size in other_sizes)
+    for component_index in range(int(component_count_int)):
+        if int(component_index) == int(target_component_index):
+            component_sizes.append(int(target_size_int))
+        else:
+            component_sizes.append(int(other_sizes_list.pop()))
+
+    topology_sample, label_by_node, component_nodes = _build_disconnected_component_graph(
+        rng,
+        component_sizes=tuple(int(size) for size in component_sizes),
+        topology_profile=str(topology_profile),
+        label_variant=str(label_variant),
+    )
+    component_labels = [
+        tuple(sorted((str(label_by_node[int(node)]) for node in nodes), key=graph_label_sort_key))
+        for nodes in component_nodes
+    ]
+    component_labels = sorted(component_labels, key=lambda labels: graph_label_sort_key(labels[0]) if labels else (0, ""))
+    target_nodes = tuple(int(node) for node in component_nodes[int(target_component_index)])
+    target_labels = tuple(sorted((str(label_by_node[int(node)]) for node in target_nodes), key=graph_label_sort_key))
+    return GraphLargestComponentSample(
+        graph=topology_sample.graph,
+        directed=False,
+        node_labels=tuple(str(label) for label in topology_sample.node_labels),
+        edge_labels=tuple((str(left), str(right)) for left, right in topology_sample.edge_labels),
+        degrees_by_label={str(key): int(value) for key, value in topology_sample.degrees_by_label.items()},
+        in_degrees_by_label={str(key): int(value) for key, value in topology_sample.in_degrees_by_label.items()},
+        out_degrees_by_label={str(key): int(value) for key, value in topology_sample.out_degrees_by_label.items()},
+        adjacency_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.adjacency_by_label.items()},
+        successors_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.successors_by_label.items()},
+        predecessors_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.predecessors_by_label.items()},
+        edge_count=int(topology_sample.edge_count),
+        topology_profile=str(topology_sample.topology_profile),
+        label_variant=str(topology_sample.label_variant),
+        target_labels=tuple(str(label) for label in target_labels),
+        components_by_label=tuple(tuple(str(label) for label in labels) for labels in component_labels),
+        component_sizes=tuple(int(len(labels)) for labels in component_labels),
+        component_count=int(component_count_int),
+        target_largest_component_size=int(target_size_int),
+    )
+
+
 __all__ = [
     "GraphComponentSample",
     "GraphCountSample",
+    "GraphLargestComponentSample",
     "GraphTopologySample",
     "LABEL_POOL_1_12",
     "SUPPORTED_COMPONENT_TASK_VARIANTS",
+    "SUPPORTED_COMPONENT_COMPARISON_TASK_VARIANTS",
     "SUPPORTED_DEGREE_TASK_VARIANTS",
     "SUPPORTED_LAYOUT_VARIANTS",
     "SUPPORTED_LABEL_VARIANTS",
     "SUPPORTED_TOPOLOGY_PROFILES",
     "feasible_node_counts_for_component_query",
     "feasible_node_counts_for_degree_count",
+    "feasible_node_counts_for_unique_largest_component",
     "graph_degree_mode_for_task_variant",
     "graph_directionality_for_task_variant",
     "graph_label_sort_key",
     "sample_component_count_graph",
     "sample_degree_count_graph",
+    "sample_largest_component_size_graph",
 ]

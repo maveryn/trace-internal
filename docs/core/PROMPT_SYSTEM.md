@@ -75,6 +75,8 @@ Active bundles:
    - `prompts/icons/transformation/icons_transformation_v1.json`
 3. Graph:
    - `prompts/graph/counting/graph_counting_v1.json`
+   - `prompts/graph/comparison/graph_comparison_v1.json`
+   - `prompts/graph/relation/graph_relation_v1.json`
 4. Tile:
    - `prompts/tile/count/tile_count_v1.json`
    - `prompts/tile/path/tile_path_v1.json`
@@ -118,6 +120,8 @@ Active task-to-bundle mapping:
    - `task_icons_transformation_pair_count` -> `icons_transformation_v1`
 7. Graph:
    - `task_graph_counting_degree_count` -> `graph_counting_v1`
+   - `task_graph_comparison_largest_component_size` -> `graph_comparison_v1`
+   - `task_graph_relation_same_component_count` -> `graph_relation_v1`
 8. Tile:
    - `task_tile_count_color_count|color_components|largest_component_size` -> `tile_count_v1`
    - `task_tile_path_shortest_path|reachable_target_count` -> `tile_path_v1`

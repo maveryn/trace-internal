@@ -47,6 +47,8 @@ Use this whenever the task lives under `domain=graph`.
 - Make sure layout choice does not leak the answer or change the node labels.
 
 ## Current graph coverage
+- `comparison`
+  - `task_graph_comparison_largest_component_size`
 - `counting`
   - `task_graph_counting_degree_count`
 - `relation`

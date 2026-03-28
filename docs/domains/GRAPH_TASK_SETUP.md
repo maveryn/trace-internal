@@ -7,9 +7,11 @@ Define the concrete v1 setup for the first graph-domain task families.
 1. `domain = graph`
 2. Active `task_group`s:
    - `counting`
+   - `comparison`
    - `relation`
 3. First concrete tasks:
    - `task_graph_counting_degree_count`
+   - `task_graph_comparison_largest_component_size`
    - `task_graph_relation_same_component_count`
 
 ## Scene contract
@@ -44,6 +46,14 @@ Define the concrete v1 setup for the first graph-domain task families.
    - default connected-component count support: `2..4`
    - default queried component-size support: `1..6`
    - prompt/evidence contract: the queried node itself is included in both the count and the evidence label set
+3. `task_graph_comparison_largest_component_size`
+   - ask:
+     - `How many nodes are in the largest connected component?`
+   - answer type: `integer`
+   - evidence type: `label_set`
+   - default connected-component count support: `2..4`
+   - default unique-largest-component-size support: `2..6`
+   - prompt/evidence contract: evidence contains every node in the unique largest connected component, and generation rejects ties for largest component size
 
 ## Variation axes
 1. `task_variant`
@@ -51,6 +61,7 @@ Define the concrete v1 setup for the first graph-domain task families.
    - `in_degree_count`
    - `out_degree_count`
    - `same_component_count`
+   - `largest_component_size`
 2. `topology_profile`
    - `balanced`
    - `low_degree`
@@ -70,4 +81,5 @@ Define the concrete v1 setup for the first graph-domain task families.
 1. Use `label_set` when the witness unit is one or more nodes.
 2. Keep pixel-space node boxes in projected trace metadata for review overlays rather than as the primary user-facing evidence contract.
 3. For same-component queries, make the prompt explicit when the queried node itself is included in both the answer and the evidence set.
-4. If a future graph task needs ordered path evidence, define that as a separate graph-native label/path contract rather than forcing it into bbox-only evidence.
+4. For largest-component comparison queries, enforce a unique largest component by construction before exposing a single `label_set` witness set.
+5. If a future graph task needs ordered path evidence, define that as a separate graph-native label/path contract rather than forcing it into bbox-only evidence.

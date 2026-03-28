@@ -128,6 +128,8 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/tables/readout/cell_value.py`
 9. Graph:
    - `trace/tasks/graph/counting/degree_count.py`
+   - `trace/tasks/graph/comparison/largest_component_size.py`
+   - `trace/tasks/graph/relation/same_component_count.py`
 
 ## 5) Architecture invariants
 1. Determinism from config + seeds + versions.

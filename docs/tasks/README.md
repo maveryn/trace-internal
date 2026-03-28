@@ -69,3 +69,4 @@ Current task docs:
 59. [task_icons_counting_singleton_type.md](task_icons_counting_singleton_type.md)
 60. [task_graph_counting_degree_count.md](task_graph_counting_degree_count.md)
 61. [task_graph_relation_same_component_count.md](task_graph_relation_same_component_count.md)
+62. [task_graph_comparison_largest_component_size.md](task_graph_comparison_largest_component_size.md)

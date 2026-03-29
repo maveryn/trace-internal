@@ -8,7 +8,7 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_geometry_transformation_match"
+      "task_geometry_similarity_count"
     ],
     "workers": 16
   },
@@ -21,20 +21,19 @@
     {
       "distribution_pass": true,
       "domain": "geometry",
-      "inspection_count": 75,
-      "inspection_workbook": "geometry/task_geometry_transformation_match/task_geometry_transformation_match.xlsx",
+      "inspection_count": 50,
+      "inspection_workbook": "geometry/task_geometry_similarity_count/task_geometry_similarity_count.xlsx",
       "inspection_workbook_sheets": {
-        "reflection_match": "reflection_match",
-        "rotation_match": "rotation_match",
-        "translation_match": "translation_match"
+        "congruent_count": "congruent_count",
+        "similar_count": "similar_count"
       },
       "reports": {
-        "distribution_review": "geometry/task_geometry_transformation_match/distribution_review.json",
-        "inspection_manifest": "geometry/task_geometry_transformation_match/manifest.json",
-        "random_review": "geometry/task_geometry_transformation_match/random_review_100.json"
+        "distribution_review": "geometry/task_geometry_similarity_count/distribution_review.json",
+        "inspection_manifest": "geometry/task_geometry_similarity_count/manifest.json",
+        "random_review": "geometry/task_geometry_similarity_count/random_review_100.json"
       },
-      "task_group": "transformation",
-      "task_id": "task_geometry_transformation_match"
+      "task_group": "similarity",
+      "task_id": "task_geometry_similarity_count"
     }
   ]
 }

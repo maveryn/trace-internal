@@ -6,6 +6,7 @@ from .geometry.analytical_3d import value as _task_geometry_analytical_3d_value
 from .geometry.comparison import value as _task_geometry_comparison_label
 from .geometry.counting import value as _task_geometry_counting_value
 from .geometry.measurement import value as _task_geometry_measurement_value
+from .geometry.similarity import count as _task_geometry_similarity_count
 from .geometry.transformation import match as _task_geometry_transformation_match
 from .graph.comparison import largest_component_size as _task_graph_comparison_largest_component_size
 from .graph.counting import articulation_point_count as _task_graph_counting_articulation_point_count

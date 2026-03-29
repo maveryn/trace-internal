@@ -189,6 +189,7 @@ Use this checklist during implementation and refactor reviews.
 171. When a domain is over-split into many near-duplicate task ids, prefer consolidating it into fewer task ids with explicit `scene_variant` and `query_variant` axes rather than keeping one task id per predicate; only keep separate task ids when the visual scaffold or answer/evidence contract materially changes.
 172. When a consolidated wrapper task remaps legacy task variants onto a new `query_variant` surface, rewrite every task-review-facing variant field to the new surface in the emitted trace (`task_variant`, `task_variant_probabilities`, and `query_spec.params.variant_probabilities`) and accept `task_variant` as an alias for `query_variant` during regeneration; otherwise review tooling will silently collect legacy variants or fail to rebuild inspection samples.
 173. When a second domain needs the same low-level drawing primitive (for example dashed lines or arrows), promote it out of a domain-local `shared/` module into `trace/tasks/shared/` in the same patch; keep any old domain wrapper as a thin re-export only if compatibility requires it.
+174. For geometry families that share the same graph-paper `Reference` + candidate-polygon scaffold, promote graph-unit projection, polygon visibility checks, and `Reference` label drawing into `trace/tasks/geometry/shared/` instead of copying those render helpers into each task.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

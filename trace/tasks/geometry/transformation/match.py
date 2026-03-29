@@ -20,16 +20,22 @@ from ...shared.drawing import draw_arrow, draw_dashed_line
 from ..comparison.shared import COMPARISON_ANSWER_LABEL_POOL, resolve_comparison_winner_label
 from ..shared.background_defaults import load_geometry_background_defaults
 from ..shared.complexity import build_geometry_transformation_complexity
-from ..shared.graph_rendering import graph_paper_grid_from_frame, graph_units_to_pixel, scale_point
+from ..shared.graph_rendering import graph_paper_grid_from_frame, scale_point
 from ..shared.labeled_point_evidence import graph_point_set_evidence_artifacts
 from ..shared.multi_polygon_scene import PolygonSceneObject, draw_polygon_objects
 from ..shared.noise_defaults import load_geometry_noise_defaults
 from ..shared.point_labels import draw_labeled_points
+from ..shared.polygon_scene_helpers import (
+    draw_reference_polygon,
+    graph_polygon_inside_canvas,
+    pixel_point_from_graph_units,
+    pixel_polygon_from_graph_units,
+)
 from ..shared.polygon_transformations import (
     Polygon,
+    RIGID_TRANSFORM_RECIPE_IDS,
+    apply_rigid_transform_recipe,
     ordered_vertex_label_map,
-    reflect_polygon,
-    rotate_polygon_quarter_turns,
     sample_asymmetric_polygon_template,
     translate_polygon,
 )
@@ -63,14 +69,7 @@ _TRANSFORM_RECIPE_ROTATE_90_CW = "rotate_90_cw"
 _TRANSFORM_RECIPE_ROTATE_90_CCW = "rotate_90_ccw"
 _TRANSFORM_RECIPE_ROTATE_180 = "rotate_180"
 
-_LOCAL_TRANSFORM_RECIPES: Tuple[str, ...] = (
-    _TRANSFORM_RECIPE_IDENTITY,
-    _TRANSFORM_RECIPE_REFLECT_VERTICAL,
-    _TRANSFORM_RECIPE_REFLECT_HORIZONTAL,
-    _TRANSFORM_RECIPE_ROTATE_90_CW,
-    _TRANSFORM_RECIPE_ROTATE_90_CCW,
-    _TRANSFORM_RECIPE_ROTATE_180,
-)
+_LOCAL_TRANSFORM_RECIPES: Tuple[str, ...] = tuple(RIGID_TRANSFORM_RECIPE_IDS)
 
 
 @dataclass(frozen=True)
@@ -201,39 +200,9 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_p
 )
 
 
-def _pixel_point_from_graph_units(point: Point, *, context: GraphSceneContext) -> Point:
-    """Project one lattice graph point into canonical pixel coordinates."""
-
-    return graph_units_to_pixel(
-        (int(round(float(point[0]))), int(round(float(point[1])))),
-        graph_origin=context.graph_origin,
-        spacing=int(context.graph_spacing),
-    )
-
-
-def _pixel_polygon_from_graph_units(vertices: Sequence[Point], *, context: GraphSceneContext) -> Polygon:
-    """Project one lattice polygon into canonical pixel coordinates."""
-
-    return tuple(_pixel_point_from_graph_units(point, context=context) for point in vertices)
-
-
 def _apply_local_transform(template: Polygon, *, recipe: str) -> Polygon:
     """Apply one local rigid transform recipe around the origin."""
-
-    normalized = str(recipe).strip().lower()
-    if normalized == _TRANSFORM_RECIPE_IDENTITY:
-        return tuple((float(x_value), float(y_value)) for x_value, y_value in template)
-    if normalized == _TRANSFORM_RECIPE_REFLECT_VERTICAL:
-        return reflect_polygon(template, axis_kind="vertical")
-    if normalized == _TRANSFORM_RECIPE_REFLECT_HORIZONTAL:
-        return reflect_polygon(template, axis_kind="horizontal")
-    if normalized == _TRANSFORM_RECIPE_ROTATE_90_CW:
-        return rotate_polygon_quarter_turns(template, quarter_turns=1)
-    if normalized == _TRANSFORM_RECIPE_ROTATE_90_CCW:
-        return rotate_polygon_quarter_turns(template, quarter_turns=3)
-    if normalized == _TRANSFORM_RECIPE_ROTATE_180:
-        return rotate_polygon_quarter_turns(template, quarter_turns=2)
-    raise ValueError(f"unsupported local transform recipe: {recipe}")
+    return apply_rigid_transform_recipe(template, recipe=str(recipe))
 
 
 def _winner_recipe_for_query(*, query_variant: str, rotation_mode: _RotationMode | None) -> str:
@@ -305,67 +274,6 @@ def _candidate_slot_support(params: Mapping[str, Any]) -> Tuple[Tuple[int, int],
     return tuple(slots)
 
 
-def _graph_polygon_inside_canvas(
-    vertices_graph: Sequence[Point],
-    *,
-    context: GraphSceneContext,
-    padding_px: float,
-) -> bool:
-    """Return whether all graph vertices stay inside the visible graph-paper canvas."""
-
-    for point in vertices_graph:
-        pixel_point = _pixel_point_from_graph_units(point, context=context)
-        if not point_inside_square_canvas(
-            pixel_point,
-            canvas_size=int(context.canvas_size),
-            padding=float(padding_px),
-        ):
-            return False
-    return True
-
-
-def _draw_reference_polygon(
-    draw,
-    *,
-    vertices_px: Sequence[Point],
-    center_px: Point,
-    scene_scale: int,
-    line_width: int,
-    label_font_size_px: int,
-    label_stroke_width: int,
-    label_gap_px: float,
-    render_canvas_size: int,
-    line_color: Sequence[int],
-    label_color: Sequence[int],
-    label_stroke_color: Sequence[int],
-) -> None:
-    """Draw the reference polygon plus its `Reference` label."""
-
-    scaled_vertices = [scale_point(point, int(scene_scale)) for point in vertices_px]
-    draw.line(
-        [*scaled_vertices, scaled_vertices[0]],
-        fill=tuple(int(value) for value in line_color),
-        width=max(1, int(line_width)),
-        joint="curve",
-    )
-    min_y = min(float(point[1]) for point in scaled_vertices)
-    avg_x = sum(float(point[0]) for point in scaled_vertices) / float(len(scaled_vertices))
-    label_center = (
-        float(avg_x),
-        max(float(label_font_size_px), float(min_y - (float(label_gap_px) * float(scene_scale)))),
-    )
-    font = load_font(int(label_font_size_px), bold=True)
-    draw_text_centered(
-        draw,
-        text="Reference",
-        center=label_center,
-        font=font,
-        fill=tuple(int(value) for value in label_color),
-        stroke_fill=tuple(int(value) for value in label_stroke_color),
-        stroke_width=int(label_stroke_width),
-    )
-
-
 def _draw_translation_cue(
     draw,
     *,
@@ -384,8 +292,8 @@ def _draw_translation_cue(
         int(vector_anchor[0]) + int(translation_vector[0]),
         int(vector_anchor[1]) + int(translation_vector[1]),
     )
-    start_px = scale_point(_pixel_point_from_graph_units(start_graph, context=context), int(context.scene_scale))
-    end_px = scale_point(_pixel_point_from_graph_units(end_graph, context=context), int(context.scene_scale))
+    start_px = scale_point(pixel_point_from_graph_units(start_graph, context=context), int(context.scene_scale))
+    end_px = scale_point(pixel_point_from_graph_units(end_graph, context=context), int(context.scene_scale))
     draw_arrow(
         draw,
         start=start_px,
@@ -426,8 +334,8 @@ def _draw_reflection_cue(
 
     start_graph = (int(axis_x), int(y_min))
     end_graph = (int(axis_x), int(y_max))
-    start_px = scale_point(_pixel_point_from_graph_units(start_graph, context=context), int(context.scene_scale))
-    end_px = scale_point(_pixel_point_from_graph_units(end_graph, context=context), int(context.scene_scale))
+    start_px = scale_point(pixel_point_from_graph_units(start_graph, context=context), int(context.scene_scale))
+    end_px = scale_point(pixel_point_from_graph_units(end_graph, context=context), int(context.scene_scale))
     draw_dashed_line(
         draw,
         start=start_px,
@@ -476,7 +384,7 @@ def _draw_rotation_cue(
     """Draw the rotation-center point `O` and return trace metadata."""
 
     center_graph = (0, 0)
-    center_px = _pixel_point_from_graph_units(center_graph, context=context)
+    center_px = pixel_point_from_graph_units(center_graph, context=context)
     scaled_center = scale_point(center_px, int(context.scene_scale))
     draw_labeled_points(
         draw,
@@ -591,7 +499,7 @@ def _sample_transformation_scene(
                 )
                 if float(candidate_reference[0]) > -2.0:
                     continue
-                if not _graph_polygon_inside_canvas(
+                if not graph_polygon_inside_canvas(
                     translate_polygon(template, dx=int(candidate_reference[0]), dy=int(candidate_reference[1])),
                     context=context,
                     padding_px=float(padding_px),
@@ -607,7 +515,7 @@ def _sample_transformation_scene(
                 cue_end = (int(cue_start[0]) + int(dx), int(cue_start[1]) + int(dy))
                 cue_points_ok = all(
                     point_inside_square_canvas(
-                        _pixel_point_from_graph_units(point, context=context),
+                        pixel_point_from_graph_units(point, context=context),
                         canvas_size=int(context.canvas_size),
                         padding=float(padding_px),
                     )
@@ -634,7 +542,7 @@ def _sample_transformation_scene(
                 dx=int(candidate_reference[0]),
                 dy=int(candidate_reference[1]),
             )
-            if _graph_polygon_inside_canvas(reference_vertices_graph, context=context, padding_px=float(padding_px)):
+            if graph_polygon_inside_canvas(reference_vertices_graph, context=context, padding_px=float(padding_px)):
                 winner_slot_index = int(slot_index)
                 reference_center_graph = candidate_reference
                 break
@@ -656,7 +564,7 @@ def _sample_transformation_scene(
                     dx=int(candidate_reference[0]),
                     dy=int(candidate_reference[1]),
                 )
-                if _graph_polygon_inside_canvas(reference_vertices_graph, context=context, padding_px=float(padding_px)):
+                if graph_polygon_inside_canvas(reference_vertices_graph, context=context, padding_px=float(padding_px)):
                     winner_slot_index = int(slot_index)
                     reference_center_graph = candidate_reference
                     rotation_mode = mode
@@ -671,7 +579,7 @@ def _sample_transformation_scene(
         dx=int(reference_center_graph[0]),
         dy=int(reference_center_graph[1]),
     )
-    reference_vertices_px = _pixel_polygon_from_graph_units(reference_vertices_graph, context=context)
+    reference_vertices_px = pixel_polygon_from_graph_units(reference_vertices_graph, context=context)
 
     winner_recipe = _winner_recipe_for_query(query_variant=str(query.query_variant), rotation_mode=rotation_mode)
     distractor_recipes = list(_local_distractor_recipes(winner_recipe=str(winner_recipe)))
@@ -714,18 +622,18 @@ def _sample_transformation_scene(
             dx=int(slot_center[0]),
             dy=int(slot_center[1]),
         )
-        if not _graph_polygon_inside_canvas(candidate_vertices_graph, context=context, padding_px=float(padding_px)):
+        if not graph_polygon_inside_canvas(candidate_vertices_graph, context=context, padding_px=float(padding_px)):
             raise ValueError("candidate polygon fell outside the graph-paper canvas")
-        candidate_vertices_px = _pixel_polygon_from_graph_units(candidate_vertices_graph, context=context)
+        candidate_vertices_px = pixel_polygon_from_graph_units(candidate_vertices_graph, context=context)
         candidate_vertices_graph_by_label[str(label)] = tuple(candidate_vertices_graph)
         candidate_vertices_px_by_label[str(label)] = tuple(candidate_vertices_px)
         candidate_centers_graph_by_label[str(label)] = (float(slot_center[0]), float(slot_center[1]))
-        candidate_centers_px_by_label[str(label)] = _pixel_point_from_graph_units(slot_center, context=context)
+        candidate_centers_px_by_label[str(label)] = pixel_point_from_graph_units(slot_center, context=context)
         objects.append(
             PolygonSceneObject(
                 label=str(label),
                 vertices=tuple(candidate_vertices_px),
-                center=_pixel_point_from_graph_units(slot_center, context=context),
+                center=pixel_point_from_graph_units(slot_center, context=context),
             )
         )
         scene_entities.append(
@@ -750,16 +658,14 @@ def _sample_transformation_scene(
         render_canvas_size=int(render_canvas_size),
         shape_style=shape_style,
     )
-    _draw_reference_polygon(
+    draw_reference_polygon(
         draw,
         vertices_px=reference_vertices_px,
-        center_px=_pixel_point_from_graph_units(reference_center_graph, context=context),
         scene_scale=int(context.scene_scale),
         line_width=int(line_width),
         label_font_size_px=int(label_font_size_px),
         label_stroke_width=int(label_stroke_width),
         label_gap_px=float(reference_label_gap_px),
-        render_canvas_size=int(render_canvas_size),
         line_color=shape_style.line_color,
         label_color=shape_style.label_color,
         label_stroke_color=shape_style.label_stroke_color,

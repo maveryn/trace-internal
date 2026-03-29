@@ -61,6 +61,7 @@ Active bundles:
    - `prompts/geometry/counting/geometry_counting_v1.json`
    - `prompts/geometry/measurement/geometry_angle_measure_v1.json`
    - `prompts/geometry/measurement/geometry_measurement_v1.json`
+   - `prompts/geometry/similarity/geometry_similarity_v1.json`
    - `prompts/geometry/transformation/geometry_transformation_v1.json`
    - `prompts/geometry/analytical_2d/geometry_analytical_area_v1.json`
    - `prompts/geometry/analytical_2d/geometry_analytical_composite_area_v1.json`
@@ -129,13 +130,14 @@ Active task-to-bundle mapping:
    - `geometry_analytical_volume_v1`
    - `geometry_analytical_surface_area_v1`
 6. Geometry transformation task (`task_geometry_transformation_match`) delegates to `geometry_transformation_v1`
-7. Icons:
+7. Geometry similarity task (`task_geometry_similarity_count`) delegates to `geometry_similarity_v1`
+8. Icons:
    - `task_icons_counting_type|orientation|color|attribute_binding|size_relation|singleton_type` -> `icons_counting_v1`
    - `task_icons_pattern_grid_rotation_violation|task_icons_pattern_grid_size_violation` -> `icons_pattern_v1`
    - `task_icons_relation_relative_position_type|between_two_anchors_count|mirror_symmetry|occlusion_order` -> `icons_relation_v1`
    - `task_icons_sequence_missing_count|rotation_violation` -> `icons_sequence_v1`
    - `task_icons_transformation_pair_count` -> `icons_transformation_v1`
-8. Graph:
+9. Graph:
    - `task_graph_counting_degree_count|articulation_point_count|bridge_count` -> `graph_counting_v1`
    - `task_graph_comparison_largest_component_size` -> `graph_comparison_v1`
    - `task_graph_order_topological_position` -> `graph_order_v1`

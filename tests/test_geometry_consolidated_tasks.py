@@ -12,6 +12,7 @@ from trace.tasks.geometry.analytical_3d.value import GeometryAnalytical3DValueTa
 from trace.tasks.geometry.comparison.value import GeometryComparisonValueTask
 from trace.tasks.geometry.counting.value import GeometryCountingValueTask
 from trace.tasks.geometry.measurement.value import GeometryMeasurementValueTask
+from trace.tasks.geometry.similarity.count import GeometrySimilarityCountTask, _resolve_axes as _resolve_similarity_axes
 from trace.tasks.geometry.transformation.match import GeometryTransformationMatchTask, _resolve_axes
 from trace.tasks import TASK_REGISTRY
 
@@ -22,6 +23,7 @@ EXPECTED_GEOMETRY_TASKS = {
     "task_geometry_counting_value",
     "task_geometry_analytical_2d_value",
     "task_geometry_analytical_3d_value",
+    "task_geometry_similarity_count",
     "task_geometry_transformation_match",
 }
 
@@ -194,6 +196,41 @@ def test_geometry_transformation_match_tracks_scene_and_query_variants(
         assert trace["execution_trace"]["translation_vector"]
 
 
+@pytest.mark.parametrize(
+    ("scene_variant", "query_variant", "target_count"),
+    (
+        ("triangle", "congruent_count", 2),
+        ("quadrilateral", "similar_count", 3),
+        ("triangle", "similar_count", 0),
+        ("quadrilateral", "congruent_count", 5),
+    ),
+)
+def test_geometry_similarity_count_tracks_scene_and_query_variants(
+    scene_variant: str,
+    query_variant: str,
+    target_count: int,
+) -> None:
+    task = GeometrySimilarityCountTask()
+    out = task.generate(
+        23071,
+        params={"scene_variant": scene_variant, "query_variant": query_variant, "target_count": target_count},
+        max_attempts=30,
+    )
+    trace = out.trace_payload
+    assert out.answer_gt.type == "integer"
+    assert out.evidence_gt.type == "label_set"
+    assert int(out.answer_gt.value) == int(target_count)
+    assert len(out.evidence_gt.value) == int(target_count)
+    assert out.task_variant == query_variant
+    assert trace["execution_trace"]["scene_variant"] == scene_variant
+    assert trace["execution_trace"]["query_variant"] == query_variant
+    assert trace["execution_trace"]["task_variant"] == query_variant
+    assert trace["execution_trace"]["target_count"] == target_count
+    assert trace["execution_trace"]["task_variant_probabilities"] == trace["execution_trace"]["query_variant_probabilities"]
+    assert trace["query_spec"]["params"]["variant_probabilities"] == trace["query_spec"]["params"]["query_variant_probabilities"]
+    assert trace["scene_ir"]["relations"]["matching_labels"] == list(out.evidence_gt.value)
+
+
 def test_geometry_transformation_match_balances_winner_labels_across_review_seed_stream() -> None:
     per_variant_labels: dict[str, Counter[str]] = {
         "translation_match": Counter(),
@@ -221,3 +258,30 @@ def test_geometry_transformation_match_balances_winner_labels_across_review_seed
     for query_variant, counts in per_variant_labels.items():
         assert set(counts.keys()) == {"A", "B", "C", "D", "E", "F"}
         assert max(counts.values()) < 25, query_variant
+
+
+def test_geometry_similarity_count_balances_target_counts_across_review_seed_stream() -> None:
+    per_variant_counts: dict[str, Counter[int]] = {
+        "congruent_count": Counter(),
+        "similar_count": Counter(),
+    }
+    collected_counts = {key: 0 for key in per_variant_counts}
+
+    for index in range(10_000):
+        if all(int(value) >= 100 for value in collected_counts.values()):
+            break
+        instance_seed = hash64(0, "task_geometry_similarity_count", index)
+        resolved = _resolve_similarity_axes(int(instance_seed), params={})
+        query_variant = str(resolved.query_variant)
+        if int(collected_counts[query_variant]) >= 100:
+            continue
+        collected_counts[query_variant] += 1
+        per_variant_counts[query_variant][int(resolved.target_count)] += 1
+
+    assert collected_counts == {
+        "congruent_count": 100,
+        "similar_count": 100,
+    }
+    for query_variant, counts in per_variant_counts.items():
+        assert set(counts.keys()) == {0, 1, 2, 3, 4, 5}
+        assert max(counts.values()) <= 25, query_variant

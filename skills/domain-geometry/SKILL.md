@@ -14,7 +14,7 @@ Use this whenever the task lives under `domain=geometry`.
 4. `docs/workflows/SHARED_UTILITIES.md`
 
 ## Geometry-domain rules
-- Geometry currently uses five consolidated value tasks plus one distinct transformation task: `task_geometry_measurement_value`, `task_geometry_comparison_value`, `task_geometry_counting_value`, `task_geometry_analytical_2d_value`, `task_geometry_analytical_3d_value`, and `task_geometry_transformation_match`.
+- Geometry currently uses five consolidated value tasks plus two distinct visual families: `task_geometry_measurement_value`, `task_geometry_comparison_value`, `task_geometry_counting_value`, `task_geometry_analytical_2d_value`, `task_geometry_analytical_3d_value`, `task_geometry_transformation_match`, and `task_geometry_similarity_count`.
 - Active geometry tasks follow a chart-style two-axis contract: `scene_variant` names the geometric scene family, while `query_variant` names the requested question type.
 - Measurement tasks use graph-paper-style coordinate grounding and geometry shared helpers.
 - Analytical 2D / 3D tasks use structured `measurement_ref_map` evidence.
@@ -27,7 +27,7 @@ Use this whenever the task lives under `domain=geometry`.
 - Reuse existing scene samplers/renderers before introducing a new object-family stack.
 - Keep label placement collision-aware and matched to the object footprint.
 - If sibling geometry objectives reuse the same scene/prompt/trace flow, factor that into shared helpers instead of copying task-local logic.
-- When refactoring geometry coverage, prefer widening `query_variant` or `scene_variant` support inside the existing geometry surface before adding new geometry task ids; add a fresh task id only when the visual scaffold or answer/evidence contract materially changes (as with the new transformation family).
+- When refactoring geometry coverage, prefer widening `query_variant` or `scene_variant` support inside the existing geometry surface before adding new geometry task ids; add a fresh task id only when the visual scaffold or answer/evidence contract materially changes (as with the new transformation and similarity families).
 
 ## Coverage reference
 For current geometry coverage and active task families, use:

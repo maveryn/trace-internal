@@ -451,6 +451,60 @@ def build_geometry_transformation_complexity(
     )
 
 
+def geometry_similarity_reasoning_score(*, query_variant: str, scene_variant: str) -> float:
+    """Return normalized reasoning load for one similarity-counting query."""
+
+    base_by_query = {
+        "congruent_count": 0.44,
+        "similar_count": 0.72,
+    }
+    query_key = str(query_variant).strip().lower()
+    scene_key = str(scene_variant).strip().lower()
+    if query_key not in base_by_query:
+        raise ValueError(f"unsupported geometry similarity query_variant: {query_variant}")
+    scene_bonus = {
+        "triangle": 0.00,
+        "quadrilateral": 0.08,
+    }.get(scene_key)
+    if scene_bonus is None:
+        raise ValueError(f"unsupported geometry similarity scene_variant: {scene_variant}")
+    return clamp_unit_interval(float(base_by_query[query_key]) + float(scene_bonus))
+
+
+def build_geometry_similarity_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    scene_variant: str,
+    query_variant: str,
+    object_count: int,
+    target_count: int,
+) -> TaskComplexity:
+    """Build one normalized similarity-family complexity payload."""
+
+    weights = resolve_geometry_complexity_weights(task_group_defaults, task_id=task_id)
+    density_balance = geometry_counting_density_balance(
+        target_count=int(target_count),
+        object_count=int(object_count),
+    )
+    visual_scan = 0.58 + (0.06 if str(scene_variant) == "quadrilateral" else 0.0)
+    return build_geometry_task_complexity(
+        weights=weights,
+        components={
+            "visual_scan": clamp_unit_interval(float(visual_scan)),
+            "similarity_reasoning": geometry_similarity_reasoning_score(
+                query_variant=str(query_variant),
+                scene_variant=str(scene_variant),
+            ),
+            "ambiguity": clamp_unit_interval((0.55 * float(density_balance)) + (0.20 if str(query_variant) == "similar_count" else 0.10)),
+            "output_burden": geometry_label_set_output_burden(
+                target_count=int(target_count),
+                object_count=int(object_count),
+            ),
+        },
+    )
+
+
 def geometry_analytical_reasoning_score(*, task_kind: str, task_variant: str) -> float:
     """Return normalized reasoning load for one analytical geometry variant."""
 
@@ -635,6 +689,7 @@ __all__ = [
     "build_geometry_counting_complexity",
     "build_geometry_comparison_complexity",
     "build_geometry_measurement_complexity",
+    "build_geometry_similarity_complexity",
     "build_geometry_transformation_complexity",
     "build_geometry_task_complexity",
     "clamp_unit_interval",
@@ -650,6 +705,7 @@ __all__ = [
     "geometry_graph_point_output_burden",
     "geometry_label_set_output_burden",
     "geometry_measurement_output_burden",
+    "geometry_similarity_reasoning_score",
     "geometry_transformation_reasoning_score",
     "geometry_visual_scan_score",
     "normalize_linear",

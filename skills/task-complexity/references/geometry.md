@@ -87,6 +87,21 @@ Measure:
 - scene-family bonus when the polygon has more vertices,
 - winning-polygon graph-point evidence burden (`3` vs `4` points).
 
+### `similarity`
+```yaml
+visual_scan: 0.25
+similarity_reasoning: 0.35
+ambiguity: 0.25
+output_burden: 0.15
+```
+
+Measure:
+- candidate-scan load across the five labeled polygons plus the visible `Reference`,
+- predicate difficulty (`congruent_count` < `similar_count`),
+- scene-family bonus when the polygon has more vertices,
+- target-density balance over the matching subset,
+- unordered `label_set` evidence burden (`0..4` labels).
+
 ## Notes
 - Domain-level criteria must apply to every geometry task; keep `measurement_precision`, `comparison_reasoning`, `classification_reasoning`, and `analytical_reasoning` at task-group scope rather than forcing them onto unrelated families.
 - Geometry usually wants criterion values from explicit `scene_variant` / `query_variant` structure, not from answer magnitude alone.
@@ -94,3 +109,4 @@ Measure:
 - For analytical geometry, prefer annotation-count, formula-family, and answer-format signals over raw answer magnitude; answer size alone is usually a poor proxy for derivation difficulty.
 - In the consolidated geometry surface, use the broad task group to choose the criteria vocabulary, then let `scene_variant` and `query_variant` determine the per-instance component values.
 - Geometry transformation tasks should stay evidence-first: if a variant’s cue changes the winning object but not the witness format, keep one family weighting policy and vary only `transformation_reasoning` / `ambiguity` from the resolved cue type.
+- Geometry similarity tasks should stay evidence-first too: prefer count/list questions whose witness is the matching candidate-label subset, and keep scale/shape-family difficulty inside `similarity_reasoning` / `ambiguity` rather than splitting the family into separate tiny weight tables.

@@ -121,12 +121,13 @@ Define how we split tasks into reusable families so each dataset slice stays com
 15. For milestone-timeline tasks, keep evidence on visible event cards rather than the full axis or connector lines, even when the answer depends on temporal order across multiple events.
 
 ## Geometry direction (current)
-1. Geometry now exposes six active task ids:
+1. Geometry now exposes seven active task ids:
    - `task_geometry_measurement_value`
    - `task_geometry_comparison_value`
    - `task_geometry_counting_value`
    - `task_geometry_analytical_2d_value`
    - `task_geometry_analytical_3d_value`
+   - `task_geometry_similarity_count`
    - `task_geometry_transformation_match`
 2. Geometry follows a chart-style two-axis policy:
    - `scene_variant` identifies the geometric scene family / object family,
@@ -156,7 +157,11 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - uses scene variants `triangle|quadrilateral`
    - uses query variants `translation_match|reflection_match|rotation_match`
    - keeps `option_letter` answers with winning-polygon `graph_point_set` evidence
-10. For the five consolidated value tasks, `execution_trace`, `query_spec.params`, and `scene_ir.relations` should expose the consolidated `scene_variant` / `query_variant` pair, while preserving `legacy_task_id` and other `legacy_*` trace slots for auditability.
+10. `task_geometry_similarity_count`
+   - uses scene variants `triangle|quadrilateral`
+   - uses query variants `congruent_count|similar_count`
+   - keeps integer answers with unordered `label_set` evidence over the matching candidate labels
+11. For the five consolidated value tasks, `execution_trace`, `query_spec.params`, and `scene_ir.relations` should expose the consolidated `scene_variant` / `query_variant` pair, while preserving `legacy_task_id` and other `legacy_*` trace slots for auditability.
 16. **Icons counting type (`task_icons_counting_type`)**
    - One two-panel image with a `Reference` icon and a `Scene` panel of icons.
    - Query: how many scene icons have the same icon type as the reference.

@@ -1,0 +1,661 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 0
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": []
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_similarity_count/images/congruent_count/0004.png"
+  },
+  "instance_seed": 4266535808124936,
+  "prompt": "Work from the graph-paper diagram showing a Reference polygon and five labeled candidate polygons A through E. Use the full graph-paper scene to answer the question. Among the labeled polygons, how many are congruent to the Reference?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of every labeled polygon that matches the Reference among A through E.\nAnswer requirement: set \"answer\" to the integer count of the matching labeled polygons.\nExample JSON:\n{\"evidence\":[],\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the graph-paper diagram showing a Reference polygon and five labeled candidate polygons A through E. Use the full graph-paper scene to answer the question. Among the labeled polygons, how many are congruent to the Reference?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of every labeled polygon that matches the Reference among A through E.\nAnswer requirement: set \"answer\" to the integer count of the matching labeled polygons.\nExample JSON:\n{\"evidence\":[],\"answer\":8}",
+    "answer_only": "Work from the graph-paper diagram showing a Reference polygon and five labeled candidate polygons A through E. Use the full graph-paper scene to answer the question. Among the labeled polygons, how many are congruent to the Reference?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the integer count of the matching labeled polygons.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_geometry_similarity_count",
+  "task_variant": "congruent_count",
+  "trace_payload": {
+    "execution_trace": {
+      "matching_labels": [],
+      "query_variant": "congruent_count",
+      "query_variant_probabilities": {
+        "congruent_count": 1.0,
+        "similar_count": 0.0
+      },
+      "question_format": "count_matching_labels",
+      "reference_center_graph": [
+        -11,
+        1
+      ],
+      "scene_variant": "triangle",
+      "scene_variant_probabilities": {
+        "quadrilateral": 0.5,
+        "triangle": 0.5
+      },
+      "target_count": 0,
+      "target_count_probabilities": {
+        "0": 0.16666666666666666,
+        "1": 0.16666666666666666,
+        "2": 0.16666666666666666,
+        "3": 0.16666666666666666,
+        "4": 0.16666666666666666,
+        "5": 0.16666666666666666
+      },
+      "task_variant": "congruent_count",
+      "task_variant_probabilities": {
+        "congruent_count": 1.0,
+        "similar_count": 0.0
+      }
+    },
+    "projected_evidence": {
+      "label_set": [],
+      "pixel_bbox_set": [],
+      "pixel_point_set": [],
+      "type": "label_set"
+    },
+    "query_spec": {
+      "params": {
+        "candidate_label_pool": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E"
+        ],
+        "query_variant": "congruent_count",
+        "query_variant_probabilities": {
+          "congruent_count": 1.0,
+          "similar_count": 0.0
+        },
+        "scene_variant": "triangle",
+        "scene_variant_probabilities": {
+          "quadrilateral": 0.5,
+          "triangle": 0.5
+        },
+        "target_count": 0,
+        "target_count_probabilities": {
+          "0": 0.16666666666666666,
+          "1": 0.16666666666666666,
+          "2": 0.16666666666666666,
+          "3": 0.16666666666666666,
+          "4": 0.16666666666666666,
+          "5": 0.16666666666666666
+        },
+        "task_variant": "congruent_count",
+        "variant_probabilities": {
+          "congruent_count": 1.0,
+          "similar_count": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "geometry_similarity_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the integer count of the matching labeled polygons",
+          "evidence_hint": "set \"evidence\" to an array of every labeled polygon that matches the Reference among A through E",
+          "json_example": "{\"evidence\":[],\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Reference polygon and five labeled candidate polygons A through E"
+        },
+        "task_family_key": "similarity_graph_scene",
+        "task_family_variant_index": 3,
+        "task_key": "similarity_count_query",
+        "task_variant_index": 1,
+        "task_variant_key": "congruent_count",
+        "task_variant_template_index": 3,
+        "template_paths": [
+          "geometry/similarity/geometry_similarity_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:similarity_count_query": 5,
+          "task_family:similarity_graph_scene": 5,
+          "task_variant:congruent_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "geometry_similarity_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the integer count of the matching labeled polygons",
+              "evidence_hint": "set \"evidence\" to an array of every labeled polygon that matches the Reference among A through E",
+              "json_example": "{\"evidence\":[],\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference polygon and five labeled candidate polygons A through E"
+            },
+            "task_family_key": "similarity_graph_scene",
+            "task_family_variant_index": 3,
+            "task_key": "similarity_count_query",
+            "task_variant_index": 1,
+            "task_variant_key": "congruent_count",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "geometry/similarity/geometry_similarity_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:similarity_count_query": 5,
+              "task_family:similarity_graph_scene": 5,
+              "task_variant:congruent_count": 5
+            }
+          },
+          "prompt": "Work from the graph-paper diagram showing a Reference polygon and five labeled candidate polygons A through E. Use the full graph-paper scene to answer the question. Among the labeled polygons, how many are congruent to the Reference?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of every labeled polygon that matches the Reference among A through E.\nAnswer requirement: set \"answer\" to the integer count of the matching labeled polygons.\nExample JSON:\n{\"evidence\":[],\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_similarity_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the integer count of the matching labeled polygons",
+              "evidence_hint": "set \"evidence\" to an array of every labeled polygon that matches the Reference among A through E",
+              "json_example": "{\"evidence\":[],\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference polygon and five labeled candidate polygons A through E"
+            },
+            "task_family_key": "similarity_graph_scene",
+            "task_family_variant_index": 3,
+            "task_key": "similarity_count_query",
+            "task_variant_index": 1,
+            "task_variant_key": "congruent_count",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "geometry/similarity/geometry_similarity_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:similarity_count_query": 5,
+              "task_family:similarity_graph_scene": 5,
+              "task_variant:congruent_count": 5
+            }
+          },
+          "prompt": "Work from the graph-paper diagram showing a Reference polygon and five labeled candidate polygons A through E. Use the full graph-paper scene to answer the question. Among the labeled polygons, how many are congruent to the Reference?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the integer count of the matching labeled polygons.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "congruent_count",
+      "template_id": "geometry_similarity_v1"
+    },
+    "render_map": {
+      "candidate_centers_graph_by_label": {
+        "A": [
+          4.0,
+          7.0
+        ],
+        "B": [
+          10.0,
+          7.0
+        ],
+        "C": [
+          16.0,
+          7.0
+        ],
+        "D": [
+          7.0,
+          -3.0
+        ],
+        "E": [
+          13.0,
+          -3.0
+        ]
+      },
+      "candidate_vertices_graph_by_label": {
+        "A": [
+          [
+            0,
+            6
+          ],
+          [
+            6,
+            5
+          ],
+          [
+            4,
+            9
+          ]
+        ],
+        "B": [
+          [
+            8,
+            9
+          ],
+          [
+            11,
+            11
+          ],
+          [
+            10,
+            3
+          ]
+        ],
+        "C": [
+          [
+            14,
+            11
+          ],
+          [
+            12,
+            5
+          ],
+          [
+            20,
+            7
+          ]
+        ],
+        "D": [
+          [
+            11,
+            -4
+          ],
+          [
+            5,
+            -5
+          ],
+          [
+            7,
+            -1
+          ]
+        ],
+        "E": [
+          [
+            9,
+            -4
+          ],
+          [
+            15,
+            -5
+          ],
+          [
+            13,
+            -1
+          ]
+        ]
+      },
+      "image_id": "img0",
+      "matching_labels": [],
+      "object_label_centers": {
+        "A": [
+          478.98573815745993,
+          200.152271183135
+        ],
+        "B": [
+          634.3726334339191,
+          231.02713986199694
+        ],
+        "C": [
+          738.4258118693783,
+          219.95094736093714
+        ],
+        "D": [
+          535.4974719813744,
+          482.3613865851858
+        ],
+        "E": [
+          669.9204487355688,
+          445.1750376952152
+        ]
+      },
+      "reference_vertices_graph": [
+        [
+          -13,
+          0
+        ],
+        [
+          -10,
+          -1
+        ],
+        [
+          -11,
+          3
+        ]
+      ]
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "graph_paper",
+        "style_spec": {
+          "axis_arrow_size": 10,
+          "axis_arrows_enabled": true,
+          "axis_color": [
+            182,
+            187,
+            194
+          ],
+          "axis_darken_range": [
+            32,
+            48
+          ],
+          "axis_enabled": true,
+          "axis_line_width": 2,
+          "axis_scale_label_max_abs": 0,
+          "axis_scale_labels_enabled": true,
+          "base_color": [
+            255,
+            255,
+            255
+          ],
+          "base_color_jitter": [
+            0,
+            0
+          ],
+          "center_point_color": [
+            172,
+            177,
+            184
+          ],
+          "center_point_darken_extra_range": [
+            8,
+            14
+          ],
+          "center_point_enabled": true,
+          "center_point_radius": 2,
+          "color_variation_applied": true,
+          "color_variation_enabled": true,
+          "color_variation_sampled": {
+            "axis_darken": 45,
+            "base_color_delta": 0,
+            "center_point_darken_extra": 10,
+            "line_color_delta": 3,
+            "major_line_darken": 9,
+            "origin_label_darken_extra": 8
+          },
+          "kind": "grid",
+          "line_color": [
+            227,
+            232,
+            239
+          ],
+          "line_color_jitter": [
+            -5,
+            5
+          ],
+          "line_width": 1,
+          "major_every": 0,
+          "major_line_color": [
+            218,
+            223,
+            230
+          ],
+          "major_line_darken_range": [
+            6,
+            14
+          ],
+          "major_line_width": 1,
+          "origin_label_color": [
+            174,
+            179,
+            186
+          ],
+          "origin_label_darken_extra_range": [
+            6,
+            12
+          ],
+          "origin_label_enabled": false,
+          "origin_label_text": "0",
+          "outer_margin_px": 16,
+          "scene_supersample_scale": 3,
+          "spacing": 18,
+          "supersample_scale": 1
+        }
+      },
+      "canvas_size": 758,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 40,
+        "full_cells_y": 40,
+        "origin_pixel": [
+          378,
+          378
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 18,
+        "target_cells_x": 42,
+        "target_cells_y": 42,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 40,
+        "full_cells_y": 40,
+        "partial_edge_cells": true,
+        "spacing_px": 18,
+        "target_cells_x": 42,
+        "target_cells_y": 42
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "scene_variant": "triangle",
+      "shape_style": {
+        "label_color": [
+          98,
+          145,
+          49
+        ],
+        "label_stroke_color": [
+          254,
+          248,
+          251
+        ],
+        "line_color": [
+          98,
+          145,
+          49
+        ]
+      },
+      "text_style": {
+        "font_size_px": 84,
+        "stroke_width_px": 3
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "center_graph": [
+            -11,
+            1
+          ],
+          "entity_id": "reference_polygon",
+          "entity_type": "reference_polygon",
+          "scene_variant": "triangle",
+          "vertices_graph": [
+            [
+              -13,
+              0
+            ],
+            [
+              -10,
+              -1
+            ],
+            [
+              -11,
+              3
+            ]
+          ]
+        },
+        {
+          "center_graph": [
+            4,
+            7
+          ],
+          "entity_id": "candidate_A",
+          "entity_type": "candidate_polygon",
+          "label": "A",
+          "matches_query": false,
+          "scene_variant": "triangle",
+          "vertices_graph": [
+            [
+              0,
+              6
+            ],
+            [
+              6,
+              5
+            ],
+            [
+              4,
+              9
+            ]
+          ]
+        },
+        {
+          "center_graph": [
+            10,
+            7
+          ],
+          "entity_id": "candidate_B",
+          "entity_type": "candidate_polygon",
+          "label": "B",
+          "matches_query": false,
+          "scene_variant": "triangle",
+          "vertices_graph": [
+            [
+              8,
+              9
+            ],
+            [
+              11,
+              11
+            ],
+            [
+              10,
+              3
+            ]
+          ]
+        },
+        {
+          "center_graph": [
+            16,
+            7
+          ],
+          "entity_id": "candidate_C",
+          "entity_type": "candidate_polygon",
+          "label": "C",
+          "matches_query": false,
+          "scene_variant": "triangle",
+          "vertices_graph": [
+            [
+              14,
+              11
+            ],
+            [
+              12,
+              5
+            ],
+            [
+              20,
+              7
+            ]
+          ]
+        },
+        {
+          "center_graph": [
+            7,
+            -3
+          ],
+          "entity_id": "candidate_D",
+          "entity_type": "candidate_polygon",
+          "label": "D",
+          "matches_query": false,
+          "scene_variant": "triangle",
+          "vertices_graph": [
+            [
+              11,
+              -4
+            ],
+            [
+              5,
+              -5
+            ],
+            [
+              7,
+              -1
+            ]
+          ]
+        },
+        {
+          "center_graph": [
+            13,
+            -3
+          ],
+          "entity_id": "candidate_E",
+          "entity_type": "candidate_polygon",
+          "label": "E",
+          "matches_query": false,
+          "scene_variant": "triangle",
+          "vertices_graph": [
+            [
+              9,
+              -4
+            ],
+            [
+              15,
+              -5
+            ],
+            [
+              13,
+              -1
+            ]
+          ]
+        }
+      ],
+      "relations": {
+        "matching_labels": [],
+        "query_variant": "congruent_count",
+        "scene_variant": "triangle",
+        "target_count": 0,
+        "task_variant": "congruent_count"
+      },
+      "scene_kind": "geometry_similarity_count"
+    },
+    "witness_symbolic": {
+      "label_set": [],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

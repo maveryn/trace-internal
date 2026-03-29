@@ -92,6 +92,17 @@ Define how we split tasks into reusable families so each dataset slice stays com
 8. The active balance-scene grammar uses `2..3` stacked balance panels with boxed symbols and numbers plus one highlighted query box below the panels.
 9. Prompt-facing arithmetic evidence should stay as one-box `bbox_set` grounding on the queried unknown slot or highlighted query box; do not widen to explanatory multi-box evidence unless a later family truly needs ordered witnesses.
 
+## Temporal direction (current)
+1. Temporal tasks should group by visual time artifact (`clock`, `calendar`, `schedule`, `timeline`) rather than by one exact question stem.
+2. The first active temporal family is `clock`.
+3. `task_temporal_clock_readout` uses semantic `task_variant` values `shown_time`, `minutes_after`, and `minutes_before`.
+4. `task_temporal_clock_compare` uses semantic `task_variant` values `earliest_time` and `latest_time`.
+5. The active clock tasks use visual `scene_variant` values `classic`, `minimal`, and `outline`.
+6. The active clock tasks also use non-semantic visual axes `style_variant=studio|accented|marker` and `accent_color_name` from the shared named-color palette; these axes should change styling only, never the prompt contract.
+7. `task_temporal_clock_readout` uses two-hand `bbox_set` evidence over the hour and minute hands, while `task_temporal_clock_compare` uses a one-box `bbox_set` over the winning clock face.
+8. Early temporal tasks should prefer local prompt-facing evidence on the queried artifact itself (for example hand bboxes, winning clock faces, date-cell bboxes) instead of wide scene evidence.
+9. For temporal offset variants, keep the displayed scene fixed and let the prompt carry the offset; prompt JSON examples must match the active offset semantics rather than reusing the direct-readout example answer.
+
 ## Planned geometry measurement variants
 1. **Angle measurement**
    - One angle per image.

@@ -1,0 +1,13 @@
+{
+  "inspection_count": 50,
+  "task_id": "task_temporal_clock_compare",
+  "variants": {
+    "earliest_time": 25,
+    "latest_time": 25
+  },
+  "workbook": "temporal/task_temporal_clock_compare/task_temporal_clock_compare.xlsx",
+  "workbook_sheets": {
+    "earliest_time": "earliest_time",
+    "latest_time": "latest_time"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "inspection_count": 75,
+  "task_id": "task_temporal_clock_readout",
+  "variants": {
+    "minutes_after": 25,
+    "minutes_before": 25,
+    "shown_time": 25
+  },
+  "workbook": "temporal/task_temporal_clock_readout/task_temporal_clock_readout.xlsx",
+  "workbook_sheets": {
+    "minutes_after": "minutes_after",
+    "minutes_before": "minutes_before",
+    "shown_time": "shown_time"
+  }
+}

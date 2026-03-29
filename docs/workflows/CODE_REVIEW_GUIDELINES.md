@@ -172,6 +172,9 @@ Use this checklist during implementation and refactor reviews.
 154. For early puzzle arithmetic tasks with a one-box unknown-slot witness, prefer widening structural variety inside the same task (for example operand count, operator mix, unknown side) instead of splitting that contract into multiple near-duplicate mini-puzzle variants.
 155. For balance-style puzzle arithmetic tasks, keep prompt-facing evidence on one dedicated query box rather than widening it to all supporting balance panels; the panels may be the solver witness in trace, but the prompt contract should stay local and visually obvious.
 156. When a puzzle-family refactor retires old `task_variant` names, remove those retired keys from task docs, prompt/config examples, and behavior tests in the same patch; do not leave stale variant vocabularies alongside the active one-box evidence contract.
+157. For temporal clock tasks whose variants apply minute offsets to the same displayed clock, review prompt JSON examples against the active offset semantics; do not reuse the direct shown-time example answer under `minutes_after` or `minutes_before`, because that silently makes the example inconsistent with the rendered question.
+158. For temporal tasks that add non-semantic visual style axes (for example named accent colors or bezel/tick styles), keep those axes recorded in trace/render metadata and review artifacts, but do not let prompt wording or answer semantics start depending on them unless the task is explicitly about color/style.
+159. For temporal compare tasks that answer with one visible clock label, keep the visible label support broad enough to satisfy review diversity on its own (for example at least five labeled clocks or another equally broad label pool); do not ship a label-answer task with only two-to-four feasible labels and hope cross-variant mixing will rescue the answer distribution.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

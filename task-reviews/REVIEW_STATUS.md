@@ -50,3 +50,5 @@ Update this table after each review run.
 | task_graph_relation_reachable_count | task_graph_relation_reachable_count | alright_for_now | distribution pass |
 | task_graph_relation_same_component_count | task_graph_relation_same_component_count | alright_for_now | distribution pass |
 | task_graph_relation_unique_cycle_size | task_graph_relation_unique_cycle_size | alright_for_now | distribution pass |
+| task_temporal_clock_readout | task_temporal_clock_readout | alright_for_now | distribution pass |
+| task_temporal_clock_compare | task_temporal_clock_compare | alright_for_now | distribution pass |

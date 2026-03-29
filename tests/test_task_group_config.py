@@ -3298,3 +3298,100 @@ def test_resolve_numeric_bounds_helpers() -> None:
             fallback_max=1.0,
             context="test",
         )
+
+
+def test_temporal_clock_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("temporal", "clock")
+    for section in ("generation", "rendering", "prompt", "complexity"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_shared = cfg["generation"]["shared"]
+    assert sorted(generation_shared["scene_variant_weights"].keys()) == ["classic", "minimal", "outline"]
+    assert sorted(generation_shared["style_variant_weights"].keys()) == ["accented", "marker", "studio"]
+    assert sorted(generation_shared["accent_color_name_weights"].keys()) == [
+        "blue",
+        "brown",
+        "cyan",
+        "green",
+        "magenta",
+        "maroon",
+        "orange",
+        "purple",
+        "red",
+        "yellow",
+    ]
+    assert bool(generation_shared["balanced_scene_variant_sampling"]) is True
+    assert bool(generation_shared["balanced_style_variant_sampling"]) is True
+    assert bool(generation_shared["balanced_accent_color_name_sampling"]) is True
+    assert int(generation_shared["hour_min"]) == 1
+    assert int(generation_shared["hour_max"]) == 12
+    assert int(generation_shared["minute_step"]) == 5
+    assert float(generation_shared["min_hand_angle_gap_deg"]) == 10.0
+
+    render_shared = cfg["rendering"]["shared"]
+    assert int(render_shared["canvas_width"]) == 640
+    assert int(render_shared["canvas_height"]) == 640
+    assert int(render_shared["face_radius_px"]) > 0
+    assert int(render_shared["hour_hand_width_px"]) > int(render_shared["minute_hand_width_px"])
+    assert int(render_shared["minor_tick_dot_radius_px"]) >= 2
+    assert int(render_shared["inner_ring_inset_px"]) > 0
+    assert int(render_shared["inner_ring_width_px"]) > 0
+
+    complexity_shared = cfg["complexity"]["shared"]
+    assert dict(complexity_shared["criteria_weights"]) == {
+        "time_reading": 0.55,
+        "visual_scan": 0.20,
+        "ambiguity": 0.15,
+        "clutter": 0.10,
+    }
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "temporal_clock_v1"
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_temporal_clock_readout",
+    )
+    assert int(generation_defaults["hour_min"]) == 1
+    assert int(generation_defaults["hour_max"]) == 12
+    assert int(generation_defaults["minute_step"]) == 5
+    assert list(generation_defaults["delta_minutes_support"]) == [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "minutes_after",
+        "minutes_before",
+        "shown_time",
+    ]
+    assert bool(generation_defaults["balanced_task_variant_sampling"]) is True
+    assert int(rendering_defaults["canvas_width"]) == 640
+    assert str(prompt_defaults["bundle_id"]).strip() == "temporal_clock_v1"
+    assert str(prompt_defaults["task_family_key"]).strip() == "single_analog_clock"
+    assert str(prompt_defaults["task_key"]).strip() == "clock_readout_query"
+    assert str(prompt_defaults["object_description_classic"]).strip()
+    assert str(prompt_defaults["evidence_hint"]).strip()
+    assert str(prompt_defaults["answer_hint"]).strip()
+
+
+def test_temporal_clock_compare_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("temporal", "clock")
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_temporal_clock_compare",
+    )
+
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == ["earliest_time", "latest_time"]
+    assert bool(generation_defaults["balanced_task_variant_sampling"]) is True
+    assert list(generation_defaults["clock_label_support"]) == ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
+    assert list(generation_defaults["clock_count_support"]) == [5, 6, 7, 8, 9]
+    assert int(generation_defaults["min_compare_gap_minutes"]) == 15
+
+    assert int(rendering_defaults["canvas_width"]) == 960
+    assert int(rendering_defaults["canvas_height"]) == 760
+    assert int(rendering_defaults["face_radius_px"]) == 84
+    assert int(rendering_defaults["label_font_size_px"]) == 28
+
+    assert str(prompt_defaults["bundle_id"]).strip() == "temporal_clock_v1"
+    assert str(prompt_defaults["task_family_key"]).strip() == "multi_analog_clock"
+    assert str(prompt_defaults["task_key"]).strip() == "clock_compare_query"
+    assert str(prompt_defaults["object_description_classic"]).strip()
+    assert str(prompt_defaults["evidence_hint"]).strip()
+    assert str(prompt_defaults["answer_hint"]).strip()

@@ -8,7 +8,7 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_graph_order_topological_position"
+      "task_temporal_clock_compare"
     ],
     "workers": 16
   },
@@ -20,19 +20,20 @@
   "tasks": [
     {
       "distribution_pass": true,
-      "domain": "graph",
-      "inspection_count": 25,
-      "inspection_workbook": "graph/task_graph_order_topological_position/task_graph_order_topological_position.xlsx",
+      "domain": "temporal",
+      "inspection_count": 50,
+      "inspection_workbook": "temporal/task_temporal_clock_compare/task_temporal_clock_compare.xlsx",
       "inspection_workbook_sheets": {
-        "topological_position": "topological_position"
+        "earliest_time": "earliest_time",
+        "latest_time": "latest_time"
       },
       "reports": {
-        "distribution_review": "graph/task_graph_order_topological_position/distribution_review.json",
-        "inspection_manifest": "graph/task_graph_order_topological_position/manifest.json",
-        "random_review": "graph/task_graph_order_topological_position/random_review_100.json"
+        "distribution_review": "temporal/task_temporal_clock_compare/distribution_review.json",
+        "inspection_manifest": "temporal/task_temporal_clock_compare/manifest.json",
+        "random_review": "temporal/task_temporal_clock_compare/random_review_100.json"
       },
-      "task_group": "order",
-      "task_id": "task_graph_order_topological_position"
+      "task_group": "clock",
+      "task_id": "task_temporal_clock_compare"
     }
   ]
 }

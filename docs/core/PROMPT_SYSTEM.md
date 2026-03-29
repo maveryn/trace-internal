@@ -103,7 +103,9 @@ Active bundles:
    - `prompts/tables/relation/tables_relation_v1.json`
    - `prompts/tables/ranking/tables_ranking_v1.json`
    - `prompts/tables/temporal/tables_temporal_v1.json`
-6. Puzzles:
+7. Temporal:
+   - `prompts/temporal/clock/temporal_clock_v1.json`
+8. Puzzles:
    - `prompts/puzzles/arithmetic/puzzles_arithmetic_v1.json`
 
 Active task-to-bundle mapping:
@@ -133,7 +135,9 @@ Active task-to-bundle mapping:
    - `task_graph_optimization_minimum_spanning_tree_weight` -> `graph_optimization_v1`
    - `task_graph_path_shortest_path_length` -> `graph_path_v1`
    - `task_graph_relation_same_component_count|reachable_count|unique_cycle_size` -> `graph_relation_v1`
-8. Tile:
+8. Temporal:
+   - `task_temporal_clock_readout|task_temporal_clock_compare` -> `temporal_clock_v1`
+9. Tile:
    - `task_tile_count_color_count|color_components|largest_component_size` -> `tile_count_v1`
    - `task_tile_path_shortest_path|reachable_target_count` -> `tile_path_v1`
    - `task_tile_pattern_match3_run_count` -> `tile_pattern_v1`
@@ -141,7 +145,7 @@ Active task-to-bundle mapping:
    - `task_tile_relation_min_distance` -> `tile_relation_v1`
    - `task_tile_symmetry_violation_count` -> `tile_symmetry_v1`
    - `task_tile_transition_gravity_max_drop` -> `tile_transition_v1`
-9. Charts:
+10. Charts:
    - `task_charts_statistics_summary_value|summary_label` -> `charts_statistics_v1`
    - `task_charts_counting_value_count` -> `charts_counting_v1`
    - `task_charts_readout_subset_value` -> `charts_readout_v1`
@@ -149,12 +153,12 @@ Active task-to-bundle mapping:
    - `task_charts_distribution_histogram_count|boxplot_label|density_label` -> `charts_distribution_v1`
    - `task_charts_trend_structure_value` -> `charts_trend_v1`
    - `task_charts_composition_subset_value` -> `charts_composition_v1`
-10. Tables:
+11. Tables:
    - `task_tables_statistics_summary_label|summary_value|filtered_subset_value|filtered_subset_label` -> `tables_statistics_v1`
    - `task_tables_counting_value_count` -> `tables_counting_v1`
    - `task_tables_readout_subset_value` -> `tables_readout_v1`
    - `task_tables_relation_row_compare_label|extremum_transfer_value` -> `tables_relation_v1`
    - `task_tables_ranking_label` -> `tables_ranking_v1`
    - `task_tables_temporal_value` -> `tables_temporal_v1`
-10. Puzzles:
+12. Puzzles:
    - `task_puzzles_arithmetic_equation_value|task_puzzles_arithmetic_balance_value` -> `puzzles_arithmetic_v1`

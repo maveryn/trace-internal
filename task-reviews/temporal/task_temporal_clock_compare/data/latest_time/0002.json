@@ -1,0 +1,1037 @@
+{
+  "answer_gt": {
+    "type": "string",
+    "value": "G"
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        396.0,
+        195.0,
+        564.0,
+        363.0
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "temporal/task_temporal_clock_compare/images/latest_time/0002.png"
+  },
+  "instance_seed": 2046818741962890,
+  "prompt": "Work from the labeled clocks shown in the image. Use the labeled clocks to answer the question. Which labeled clock shows the latest time? Answer with the single clock label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the winning clock face.\nAnswer requirement: set \"answer\" to the single winning clock label as a string.\nExample JSON:\n{\"evidence\":[[368,94,552,278]],\"answer\":\"E\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the labeled clocks shown in the image. Use the labeled clocks to answer the question. Which labeled clock shows the latest time? Answer with the single clock label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the winning clock face.\nAnswer requirement: set \"answer\" to the single winning clock label as a string.\nExample JSON:\n{\"evidence\":[[368,94,552,278]],\"answer\":\"E\"}",
+    "answer_only": "Work from the labeled clocks shown in the image. Use the labeled clocks to answer the question. Which labeled clock shows the latest time? Answer with the single clock label.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the single winning clock label as a string.\nExample JSON:\n{\"answer\":\"E\"}"
+  },
+  "task": "task_temporal_clock_compare",
+  "task_variant": "latest_time",
+  "trace_payload": {
+    "execution_trace": {
+      "accent_color_name": "maroon",
+      "accent_color_name_probabilities": {
+        "blue": 0.1,
+        "brown": 0.1,
+        "cyan": 0.1,
+        "green": 0.1,
+        "magenta": 0.1,
+        "maroon": 0.1,
+        "orange": 0.1,
+        "purple": 0.1,
+        "red": 0.1,
+        "yellow": 0.1
+      },
+      "clock_count": 6,
+      "clock_label_pool": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I"
+      ],
+      "clock_labels": [
+        "E",
+        "G",
+        "I",
+        "B",
+        "H",
+        "F"
+      ],
+      "hour_support": [
+        1,
+        12
+      ],
+      "min_compare_gap_minutes": 15,
+      "minute_support": [
+        0,
+        55,
+        5
+      ],
+      "question_format": "latest_time",
+      "scene_variant": "classic",
+      "scene_variant_probabilities": {
+        "classic": 0.3333333333333333,
+        "minimal": 0.3333333333333333,
+        "outline": 0.3333333333333333
+      },
+      "shown_time_text_by_label": {
+        "B": "02:55",
+        "E": "12:30",
+        "F": "05:30",
+        "G": "07:00",
+        "H": "03:45",
+        "I": "02:45"
+      },
+      "shown_total_minutes_by_label": {
+        "B": 175,
+        "E": 30,
+        "F": 330,
+        "G": 420,
+        "H": 225,
+        "I": 165
+      },
+      "style_variant": "studio",
+      "style_variant_probabilities": {
+        "accented": 0.3333333333333333,
+        "marker": 0.3333333333333333,
+        "studio": 0.3333333333333333
+      },
+      "supporting_parts": [
+        "winning_clock_face"
+      ],
+      "task_variant": "latest_time",
+      "task_variant_probabilities": {
+        "earliest_time": 0.0,
+        "latest_time": 1.0
+      },
+      "winner_label": "G",
+      "winner_time_text": "07:00",
+      "winner_total_minutes": 420
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          396.0,
+          195.0,
+          564.0,
+          363.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "accent_color_name": "maroon",
+        "accent_color_name_probabilities": {
+          "blue": 0.1,
+          "brown": 0.1,
+          "cyan": 0.1,
+          "green": 0.1,
+          "magenta": 0.1,
+          "maroon": 0.1,
+          "orange": 0.1,
+          "purple": 0.1,
+          "red": 0.1,
+          "yellow": 0.1
+        },
+        "clock_count": 6,
+        "clock_count_support": [
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "clock_label_pool": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H",
+          "I"
+        ],
+        "clock_labels": [
+          "E",
+          "G",
+          "I",
+          "B",
+          "H",
+          "F"
+        ],
+        "hour_support": [
+          1,
+          12
+        ],
+        "min_compare_gap_minutes": 15,
+        "minute_support": [
+          0,
+          55,
+          5
+        ],
+        "scene_variant": "classic",
+        "scene_variant_probabilities": {
+          "classic": 0.3333333333333333,
+          "minimal": 0.3333333333333333,
+          "outline": 0.3333333333333333
+        },
+        "style_variant": "studio",
+        "style_variant_probabilities": {
+          "accented": 0.3333333333333333,
+          "marker": 0.3333333333333333,
+          "studio": 0.3333333333333333
+        },
+        "task_variant": "latest_time",
+        "task_variant_probabilities": {
+          "earliest_time": 0.0,
+          "latest_time": 1.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "temporal_clock_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the single winning clock label as a string",
+          "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the winning clock face",
+          "json_example": "{\"evidence\":[[368,94,552,278]],\"answer\":\"E\"}",
+          "json_example_answer_only": "{\"answer\":\"E\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "five to nine labeled analog clocks arranged in a centered multi-row grid, each with hour numerals, minute ticks, and two visible hands"
+        },
+        "task_family_key": "multi_analog_clock",
+        "task_family_variant_index": 3,
+        "task_key": "clock_compare_query",
+        "task_variant_index": 1,
+        "task_variant_key": "latest_time",
+        "task_variant_template_index": 0,
+        "template_paths": [
+          "temporal/clock/temporal_clock_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:clock_compare_query": 5,
+          "task_family:multi_analog_clock": 5,
+          "task_variant:latest_time": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "temporal_clock_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single winning clock label as a string",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the winning clock face",
+              "json_example": "{\"evidence\":[[368,94,552,278]],\"answer\":\"E\"}",
+              "json_example_answer_only": "{\"answer\":\"E\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "five to nine labeled analog clocks arranged in a centered multi-row grid, each with hour numerals, minute ticks, and two visible hands"
+            },
+            "task_family_key": "multi_analog_clock",
+            "task_family_variant_index": 3,
+            "task_key": "clock_compare_query",
+            "task_variant_index": 1,
+            "task_variant_key": "latest_time",
+            "task_variant_template_index": 0,
+            "template_paths": [
+              "temporal/clock/temporal_clock_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:clock_compare_query": 5,
+              "task_family:multi_analog_clock": 5,
+              "task_variant:latest_time": 5
+            }
+          },
+          "prompt": "Work from the labeled clocks shown in the image. Use the labeled clocks to answer the question. Which labeled clock shows the latest time? Answer with the single clock label.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the winning clock face.\nAnswer requirement: set \"answer\" to the single winning clock label as a string.\nExample JSON:\n{\"evidence\":[[368,94,552,278]],\"answer\":\"E\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "temporal_clock_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single winning clock label as a string",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the winning clock face",
+              "json_example": "{\"evidence\":[[368,94,552,278]],\"answer\":\"E\"}",
+              "json_example_answer_only": "{\"answer\":\"E\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "five to nine labeled analog clocks arranged in a centered multi-row grid, each with hour numerals, minute ticks, and two visible hands"
+            },
+            "task_family_key": "multi_analog_clock",
+            "task_family_variant_index": 3,
+            "task_key": "clock_compare_query",
+            "task_variant_index": 1,
+            "task_variant_key": "latest_time",
+            "task_variant_template_index": 0,
+            "template_paths": [
+              "temporal/clock/temporal_clock_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:clock_compare_query": 5,
+              "task_family:multi_analog_clock": 5,
+              "task_variant:latest_time": 5
+            }
+          },
+          "prompt": "Work from the labeled clocks shown in the image. Use the labeled clocks to answer the question. Which labeled clock shows the latest time? Answer with the single clock label.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the single winning clock label as a string.\nExample JSON:\n{\"answer\":\"E\"}"
+        }
+      },
+      "task_variant": "latest_time",
+      "template_id": "temporal_clock_v1"
+    },
+    "render_map": {
+      "clocks_by_label": {
+        "B": {
+          "center_px": [
+            282.0,
+            529.0
+          ],
+          "clock_label": "B",
+          "face_bbox_px": [
+            198.0,
+            445.0,
+            366.0,
+            613.0
+          ],
+          "hour_hand_bbox_px": [
+            273.0,
+            517.985,
+            337.156,
+            538.0
+          ],
+          "hour_hand_tip_px": [
+            328.156,
+            526.985
+          ],
+          "minute_hand_bbox_px": [
+            239.56,
+            461.348,
+            290.0,
+            537.0
+          ],
+          "minute_hand_tip_px": [
+            247.56,
+            469.348
+          ],
+          "shown_time_text": "02:55",
+          "shown_total_minutes": 175
+        },
+        "E": {
+          "center_px": [
+            282.0,
+            279.0
+          ],
+          "clock_label": "E",
+          "face_bbox_px": [
+            198.0,
+            195.0,
+            366.0,
+            363.0
+          ],
+          "hour_hand_bbox_px": [
+            273.0,
+            225.374,
+            302.957,
+            288.0
+          ],
+          "hour_hand_tip_px": [
+            293.957,
+            234.374
+          ],
+          "minute_hand_bbox_px": [
+            274.0,
+            271.0,
+            290.0,
+            355.88
+          ],
+          "minute_hand_tip_px": [
+            282.0,
+            347.88
+          ],
+          "shown_time_text": "12:30",
+          "shown_total_minutes": 30
+        },
+        "F": {
+          "center_px": [
+            678.0,
+            529.0
+          ],
+          "clock_label": "F",
+          "face_bbox_px": [
+            594.0,
+            445.0,
+            762.0,
+            613.0
+          ],
+          "hour_hand_bbox_px": [
+            669.0,
+            520.0,
+            698.957,
+            582.626
+          ],
+          "hour_hand_tip_px": [
+            689.957,
+            573.626
+          ],
+          "minute_hand_bbox_px": [
+            670.0,
+            521.0,
+            686.0,
+            605.88
+          ],
+          "minute_hand_tip_px": [
+            678.0,
+            597.88
+          ],
+          "shown_time_text": "05:30",
+          "shown_total_minutes": 330
+        },
+        "G": {
+          "center_px": [
+            480.0,
+            279.0
+          ],
+          "clock_label": "G",
+          "face_bbox_px": [
+            396.0,
+            195.0,
+            564.0,
+            363.0
+          ],
+          "hour_hand_bbox_px": [
+            447.9,
+            270.0,
+            489.0,
+            328.01
+          ],
+          "hour_hand_tip_px": [
+            456.9,
+            319.01
+          ],
+          "minute_hand_bbox_px": [
+            472.0,
+            202.12,
+            488.0,
+            287.0
+          ],
+          "minute_hand_tip_px": [
+            480.0,
+            210.12
+          ],
+          "shown_time_text": "07:00",
+          "shown_total_minutes": 420
+        },
+        "H": {
+          "center_px": [
+            480.0,
+            529.0
+          ],
+          "clock_label": "H",
+          "face_bbox_px": [
+            396.0,
+            445.0,
+            564.0,
+            613.0
+          ],
+          "hour_hand_bbox_px": [
+            471.0,
+            520.0,
+            531.683,
+            555.68
+          ],
+          "hour_hand_tip_px": [
+            522.683,
+            546.68
+          ],
+          "minute_hand_bbox_px": [
+            403.12,
+            521.0,
+            488.0,
+            537.0
+          ],
+          "minute_hand_tip_px": [
+            411.12,
+            529.0
+          ],
+          "shown_time_text": "03:45",
+          "shown_total_minutes": 225
+        },
+        "I": {
+          "center_px": [
+            678.0,
+            279.0
+          ],
+          "clock_label": "I",
+          "face_bbox_px": [
+            594.0,
+            195.0,
+            762.0,
+            363.0
+          ],
+          "hour_hand_bbox_px": [
+            669.0,
+            263.97,
+            732.805,
+            288.0
+          ],
+          "hour_hand_tip_px": [
+            723.805,
+            272.97
+          ],
+          "minute_hand_bbox_px": [
+            601.12,
+            271.0,
+            686.0,
+            287.0
+          ],
+          "minute_hand_tip_px": [
+            609.12,
+            279.0
+          ],
+          "shown_time_text": "02:45",
+          "shown_total_minutes": 165
+        }
+      },
+      "image_id": "img0",
+      "scene_bbox_px": [
+        198.0,
+        195.0,
+        762.0,
+        613.0
+      ],
+      "winning_clock_bbox_px": [
+        396.0,
+        195.0,
+        564.0,
+        363.0
+      ],
+      "winning_label": "G"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 760,
+      "canvas_width": 960,
+      "clock_style": {
+        "accent_color_name": "maroon",
+        "bezel_width_px": 8,
+        "clock_count": 6,
+        "face_radius_px": 84,
+        "grid_col_gap_px": 30,
+        "grid_row_gap_px": 34,
+        "hour_hand_width_px": 8,
+        "label_font_size_px": 28,
+        "label_gap_px": 20,
+        "minor_tick_mode": "line",
+        "minute_hand_width_px": 6,
+        "numeral_font_size_px": 18,
+        "resolved_colors_rgb": {
+          "center_dot": [
+            150,
+            54,
+            68
+          ],
+          "face_fill": [
+            255,
+            255,
+            255
+          ],
+          "face_outline": [
+            174,
+            158,
+            160
+          ],
+          "hour_hand": [
+            42,
+            48,
+            58
+          ],
+          "minute_hand": [
+            150,
+            54,
+            68
+          ],
+          "numerals": [
+            63,
+            23,
+            29
+          ],
+          "ticks": [
+            87,
+            31,
+            39
+          ]
+        },
+        "row_lengths": [
+          3,
+          3
+        ],
+        "style_variant": "studio"
+      },
+      "coord_space": "pixel",
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_bbox_px": [
+        198.0,
+        195.0,
+        762.0,
+        613.0
+      ],
+      "scene_variant": "classic"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "accent_color_name": "maroon",
+            "clock_label": "E",
+            "scene_variant": "classic",
+            "shown_time_text": "12:30",
+            "shown_total_minutes": 30,
+            "style_variant": "studio"
+          },
+          "bbox_px": [
+            198.0,
+            195.0,
+            366.0,
+            363.0
+          ],
+          "entity_id": "clock_e_clock_face",
+          "entity_kind": "clock_face"
+        },
+        {
+          "attrs": {
+            "angle_deg": -75.0,
+            "center_px": [
+              282.0,
+              279.0
+            ],
+            "hand_kind": "hour",
+            "tip_px": [
+              293.95743988373647,
+              234.37422682544505
+            ]
+          },
+          "bbox_px": [
+            273.0,
+            225.37422682544505,
+            302.95743988373647,
+            288.0
+          ],
+          "entity_id": "clock_e_hour_hand",
+          "entity_kind": "clock_hand"
+        },
+        {
+          "attrs": {
+            "angle_deg": 90.0,
+            "center_px": [
+              282.0,
+              279.0
+            ],
+            "hand_kind": "minute",
+            "tip_px": [
+              282.0,
+              347.88
+            ]
+          },
+          "bbox_px": [
+            274.0,
+            271.0,
+            290.0,
+            355.88
+          ],
+          "entity_id": "clock_e_minute_hand",
+          "entity_kind": "clock_hand"
+        },
+        {
+          "attrs": {
+            "accent_color_name": "maroon",
+            "clock_label": "G",
+            "scene_variant": "classic",
+            "shown_time_text": "07:00",
+            "shown_total_minutes": 420,
+            "style_variant": "studio"
+          },
+          "bbox_px": [
+            396.0,
+            195.0,
+            564.0,
+            363.0
+          ],
+          "entity_id": "clock_g_clock_face",
+          "entity_kind": "clock_face"
+        },
+        {
+          "attrs": {
+            "angle_deg": 120.0,
+            "center_px": [
+              480.0,
+              279.0
+            ],
+            "hand_kind": "hour",
+            "tip_px": [
+              456.90000000000003,
+              319.0103736548411
+            ]
+          },
+          "bbox_px": [
+            447.90000000000003,
+            270.0,
+            489.0,
+            328.0103736548411
+          ],
+          "entity_id": "clock_g_hour_hand",
+          "entity_kind": "clock_hand"
+        },
+        {
+          "attrs": {
+            "angle_deg": -90.0,
+            "center_px": [
+              480.0,
+              279.0
+            ],
+            "hand_kind": "minute",
+            "tip_px": [
+              480.0,
+              210.12
+            ]
+          },
+          "bbox_px": [
+            472.0,
+            202.12,
+            488.0,
+            287.0
+          ],
+          "entity_id": "clock_g_minute_hand",
+          "entity_kind": "clock_hand"
+        },
+        {
+          "attrs": {
+            "accent_color_name": "maroon",
+            "clock_label": "I",
+            "scene_variant": "classic",
+            "shown_time_text": "02:45",
+            "shown_total_minutes": 165,
+            "style_variant": "studio"
+          },
+          "bbox_px": [
+            594.0,
+            195.0,
+            762.0,
+            363.0
+          ],
+          "entity_id": "clock_i_clock_face",
+          "entity_kind": "clock_face"
+        },
+        {
+          "attrs": {
+            "angle_deg": -7.5,
+            "center_px": [
+              678.0,
+              279.0
+            ],
+            "hand_kind": "hour",
+            "tip_px": [
+              723.8047525954701,
+              272.9696899194336
+            ]
+          },
+          "bbox_px": [
+            669.0,
+            263.9696899194336,
+            732.8047525954701,
+            288.0
+          ],
+          "entity_id": "clock_i_hour_hand",
+          "entity_kind": "clock_hand"
+        },
+        {
+          "attrs": {
+            "angle_deg": 180.0,
+            "center_px": [
+              678.0,
+              279.0
+            ],
+            "hand_kind": "minute",
+            "tip_px": [
+              609.12,
+              279.0
+            ]
+          },
+          "bbox_px": [
+            601.12,
+            271.0,
+            686.0,
+            287.0
+          ],
+          "entity_id": "clock_i_minute_hand",
+          "entity_kind": "clock_hand"
+        },
+        {
+          "attrs": {
+            "accent_color_name": "maroon",
+            "clock_label": "B",
+            "scene_variant": "classic",
+            "shown_time_text": "02:55",
+            "shown_total_minutes": 175,
+            "style_variant": "studio"
+          },
+          "bbox_px": [
+            198.0,
+            445.0,
+            366.0,
+            613.0
+          ],
+          "entity_id": "clock_b_clock_face",
+          "entity_kind": "clock_face"
+        },
+        {
+          "attrs": {
+            "angle_deg": -2.5,
+            "center_px": [
+              282.0,
+              529.0
+            ],
+            "hand_kind": "hour",
+            "tip_px": [
+              328.15602783708187,
+              526.9847843037214
+            ]
+          },
+          "bbox_px": [
+            273.0,
+            517.9847843037214,
+            337.15602783708187,
+            538.0
+          ],
+          "entity_id": "clock_b_hour_hand",
+          "entity_kind": "clock_hand"
+        },
+        {
+          "attrs": {
+            "angle_deg": 240.0,
+            "center_px": [
+              282.0,
+              529.0
+            ],
+            "hand_kind": "minute",
+            "tip_px": [
+              247.55999999999997,
+              469.34817018732787
+            ]
+          },
+          "bbox_px": [
+            239.55999999999997,
+            461.34817018732787,
+            290.0,
+            537.0
+          ],
+          "entity_id": "clock_b_minute_hand",
+          "entity_kind": "clock_hand"
+        },
+        {
+          "attrs": {
+            "accent_color_name": "maroon",
+            "clock_label": "H",
+            "scene_variant": "classic",
+            "shown_time_text": "03:45",
+            "shown_total_minutes": 225,
+            "style_variant": "studio"
+          },
+          "bbox_px": [
+            396.0,
+            445.0,
+            564.0,
+            613.0
+          ],
+          "entity_id": "clock_h_clock_face",
+          "entity_kind": "clock_face"
+        },
+        {
+          "attrs": {
+            "angle_deg": 22.5,
+            "center_px": [
+              480.0,
+              529.0
+            ],
+            "hand_kind": "hour",
+            "tip_px": [
+              522.6832344020214,
+              546.6799745752671
+            ]
+          },
+          "bbox_px": [
+            471.0,
+            520.0,
+            531.6832344020214,
+            555.6799745752671
+          ],
+          "entity_id": "clock_h_hour_hand",
+          "entity_kind": "clock_hand"
+        },
+        {
+          "attrs": {
+            "angle_deg": 180.0,
+            "center_px": [
+              480.0,
+              529.0
+            ],
+            "hand_kind": "minute",
+            "tip_px": [
+              411.12,
+              529.0
+            ]
+          },
+          "bbox_px": [
+            403.12,
+            521.0,
+            488.0,
+            537.0
+          ],
+          "entity_id": "clock_h_minute_hand",
+          "entity_kind": "clock_hand"
+        },
+        {
+          "attrs": {
+            "accent_color_name": "maroon",
+            "clock_label": "F",
+            "scene_variant": "classic",
+            "shown_time_text": "05:30",
+            "shown_total_minutes": 330,
+            "style_variant": "studio"
+          },
+          "bbox_px": [
+            594.0,
+            445.0,
+            762.0,
+            613.0
+          ],
+          "entity_id": "clock_f_clock_face",
+          "entity_kind": "clock_face"
+        },
+        {
+          "attrs": {
+            "angle_deg": 75.0,
+            "center_px": [
+              678.0,
+              529.0
+            ],
+            "hand_kind": "hour",
+            "tip_px": [
+              689.9574398837365,
+              573.625773174555
+            ]
+          },
+          "bbox_px": [
+            669.0,
+            520.0,
+            698.9574398837365,
+            582.625773174555
+          ],
+          "entity_id": "clock_f_hour_hand",
+          "entity_kind": "clock_hand"
+        },
+        {
+          "attrs": {
+            "angle_deg": 90.0,
+            "center_px": [
+              678.0,
+              529.0
+            ],
+            "hand_kind": "minute",
+            "tip_px": [
+              678.0,
+              597.88
+            ]
+          },
+          "bbox_px": [
+            670.0,
+            521.0,
+            686.0,
+            605.88
+          ],
+          "entity_id": "clock_f_minute_hand",
+          "entity_kind": "clock_hand"
+        }
+      ],
+      "relations": {
+        "accent_color_name": "maroon",
+        "clock_count": 6,
+        "clock_labels": [
+          "E",
+          "G",
+          "I",
+          "B",
+          "H",
+          "F"
+        ],
+        "scene_variant": "classic",
+        "style_variant": "studio",
+        "task_variant": "latest_time",
+        "winner_label": "G",
+        "winner_time_text": "07:00"
+      },
+      "scene_kind": "temporal_clock_collection"
+    },
+    "witness_symbolic": {
+      "type": "bbox_set",
+      "value": [
+        [
+          396.0,
+          195.0,
+          564.0,
+          363.0
+        ]
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

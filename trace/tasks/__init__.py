@@ -68,6 +68,8 @@ from .tables.statistics import summary_value as _task_tables_statistics_summary_
 from .tables.temporal import value as _task_tables_temporal_value
 from .puzzles.arithmetic import balance_value as _task_puzzles_arithmetic_balance_value
 from .puzzles.arithmetic import equation_value as _task_puzzles_arithmetic_equation_value
+from .temporal.clock import compare as _task_temporal_clock_compare
+from .temporal.clock import readout as _task_temporal_clock_readout
 from .tile import count_color_components as _task_tile_count_color_components
 from .tile import count_color_count as _task_tile_count_color_count
 from .tile import count_largest_component_size as _task_tile_count_largest_component_size

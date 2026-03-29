@@ -56,7 +56,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
 2. `trace/tasks/base.py` — task protocol and `TaskOutput`.
 3. `trace/tasks/shared/*` — reusable query/layout/evidence/config/prompt helpers.
 4. `trace/tasks/<domain>/<task_group>/*.py` — concrete tasks plus reusable task-group bases by default (for example `trace/tasks/geometry/measurement/shape_measure_base.py`); tile is the current exception and keeps concrete task modules flat under `trace/tasks/tile/<task_group>_<task_name>.py` with shared helpers in `trace/tasks/tile/shared/`.
-5. `trace/tasks/<domain>/shared/*` — domain/task-family shared helpers (for example `trace/tasks/icons/shared/*` for curated icon scenes and `trace/tasks/graph/shared/*` for labeled node-link graph sampling/rendering).
+5. `trace/tasks/<domain>/shared/*` — domain/task-family shared helpers (for example `trace/tasks/icons/shared/*` for curated icon scenes, `trace/tasks/graph/shared/*` for labeled node-link graph sampling/rendering, and `trace/tasks/temporal/shared/*` for time-format/clock rendering helpers).
 
 ## 4) Current active tasks
 1. Tile:
@@ -142,7 +142,10 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/graph/relation/reachable_count.py`
    - `trace/tasks/graph/relation/same_component_count.py`
    - `trace/tasks/graph/relation/unique_cycle_size.py`
-10. Puzzles:
+10. Temporal:
+   - `trace/tasks/temporal/clock/readout.py`
+   - `trace/tasks/temporal/clock/compare.py`
+11. Puzzles:
    - `trace/tasks/puzzles/arithmetic/equation_value.py`
    - `trace/tasks/puzzles/arithmetic/balance_value.py`
 

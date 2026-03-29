@@ -85,3 +85,5 @@ Current task docs:
 75. [task_graph_counting_bridge_count.md](task_graph_counting_bridge_count.md)
 76. [task_graph_optimization_minimum_spanning_tree_weight.md](task_graph_optimization_minimum_spanning_tree_weight.md)
 77. [task_graph_order_topological_position.md](task_graph_order_topological_position.md)
+78. [task_temporal_clock_readout.md](task_temporal_clock_readout.md)
+79. [task_temporal_clock_compare.md](task_temporal_clock_compare.md)

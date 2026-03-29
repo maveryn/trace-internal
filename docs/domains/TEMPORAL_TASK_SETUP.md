@@ -1,0 +1,103 @@
+# Temporal Task Setup
+
+## Purpose
+Capture the active v1 contract for the `temporal` domain.
+
+## Active family
+1. Current active `task_group`: `clock`
+2. Current active tasks:
+   - `task_temporal_clock_readout`
+   - `task_temporal_clock_compare`
+
+## Family contract
+1. Temporal tasks use familiar time-structured visual artifacts rather than generic tables or charts.
+2. Early temporal tasks should prefer displays with one visually obvious queried object so prompt-facing evidence can stay local and reviewable.
+3. The active clock family now covers both one-clock readout and multi-clock comparison while keeping one stable analog-clock grammar shared across the task group.
+
+## `task_temporal_clock_readout`
+1. Supported `task_variant` values:
+   - `shown_time`
+   - `minutes_after`
+   - `minutes_before`
+2. Supported `scene_variant` values:
+   - `classic`
+   - `minimal`
+   - `outline`
+3. Supported non-semantic visual axes:
+   - `style_variant`: `studio|accented|marker`
+   - `accent_color_name`: shared named-color palette
+4. Answer contract:
+   - `answer_gt.type = string`
+   - prompt-facing answer format is strict `HH:MM` in 12-hour time with leading zeros
+5. Evidence contract:
+   - `evidence_gt.type = bbox_set`
+   - exactly two hand bboxes: hour hand + minute hand
+6. Scene contract:
+   - one analog 12-hour clock per image,
+   - no seconds hand,
+   - visible hour numerals `1..12`,
+   - shown minutes stay on a 5-minute grid in v1,
+   - shown times with nearly overlapping hour/minute hands are filtered out by a minimum hand-angle-gap rule,
+   - `minutes_after` and `minutes_before` use minute offsets sampled from the configured support and keep the displayed clock itself unchanged.
+7. Trace contract:
+   - `scene_ir.entities` includes the clock face plus one entity per hand,
+   - `render_map.hand_bboxes_px` stores both hand bboxes keyed by hand kind,
+   - `render_map.hand_tips_px` stores both hand tips in pixel space,
+   - `execution_trace` records the shown time, offset minutes when present, answer time text, the active support ranges, and the sampled `style_variant` + `accent_color_name`,
+   - prompt-facing evidence is projected from the recorded hand geometry, not inferred from pixels.
+
+## Prompt contract
+1. Bundle: `temporal_clock_v1`
+2. `task_temporal_clock_readout` uses `task_family_key=single_analog_clock` and `task_key=clock_readout_query`.
+3. `task_temporal_clock_compare` uses `task_family_key=multi_analog_clock` and `task_key=clock_compare_query`.
+4. `task_variant_key` values stay task-specific:
+   - `shown_time|minutes_after|minutes_before` for readout
+   - `earliest_time|latest_time` for compare
+5. Required slots:
+   - task-family: `object_description`
+   - task-variant: `delta_minutes` for the readout offset variants only
+   - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
+   - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
+6. Prompt-facing examples must match the active query semantics; for readout offset variants, do not reuse the shown-time example answer unchanged.
+
+## Visual policy
+1. Temporal clocks use the same light solid background baseline as the other clean synthetic domains.
+2. `classic`, `minimal`, and `outline` vary bezel/tick styling only; they do not change the underlying time semantics.
+3. `style_variant` and `accent_color_name` add extra non-semantic clock-face diversity while keeping the same answer/evidence contract.
+4. The two hands must remain visually separable at all supported times, which is why the generation support filters out near-overlap times up front.
+
+## Determinism + review
+1. Deterministic generation/rendering from `instance_seed`.
+2. `task_variant` and `scene_variant` are sampled independently at the task policy level.
+3. No semantic auto-relaxation: the answer always comes from the same shown time and offset recorded in trace.
+4. Review/sample overlays should use the recorded hand bboxes/tips rather than guessing clock geometry from pixels.
+
+## `task_temporal_clock_compare`
+1. Supported `task_variant` values:
+   - `earliest_time`
+   - `latest_time`
+2. Supported `scene_variant` values:
+   - `classic`
+   - `minimal`
+   - `outline`
+3. Supported non-semantic visual axes:
+   - `style_variant`: `studio|accented|marker`
+   - `accent_color_name`: shared named-color palette
+4. Answer contract:
+   - `answer_gt.type = string`
+   - prompt-facing answer is one visible clock label such as `A` or `F`
+5. Evidence contract:
+   - `evidence_gt.type = bbox_set`
+   - exactly one winning clock-face bbox
+6. Scene contract:
+   - `5..9` labeled analog clocks in a centered multi-row grid,
+   - visible labels are sampled from the global pool `A..I`,
+   - no seconds hands,
+   - visible hour numerals `1..12`,
+   - shown minutes stay on a 5-minute grid in v1,
+   - the earliest/latest winner is unique by construction and separated from the nearest competitor by a minimum comparison gap,
+   - the winner label is sampled from the full label pool before the remaining visible labels are chosen so the answer support stays broad across `5..9` visible clocks.
+7. Trace contract:
+   - `render_map.clocks_by_label` stores one face bbox plus both hand bboxes/tips for every visible clock,
+   - `render_map.winning_clock_bbox_px` stores the prompt-facing witness,
+   - `execution_trace` records `clock_count`, the full label pool, the shown time for every visible label, and the unique winning label.

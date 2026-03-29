@@ -8,6 +8,7 @@ Define the concrete v1 setup for the current graph-domain task families.
 2. Active `task_group`s:
    - `counting`
    - `comparison`
+   - `order`
    - `optimization`
    - `path`
    - `relation`
@@ -16,6 +17,7 @@ Define the concrete v1 setup for the current graph-domain task families.
    - `task_graph_counting_articulation_point_count`
    - `task_graph_counting_bridge_count`
    - `task_graph_comparison_largest_component_size`
+   - `task_graph_order_topological_position`
    - `task_graph_optimization_minimum_spanning_tree_weight`
    - `task_graph_path_shortest_path_length`
    - `task_graph_relation_reachable_count`
@@ -109,6 +111,14 @@ Define the concrete v1 setup for the current graph-domain task families.
    - default extra-edge-count support: `1..2`
    - default edge-weight support: distinct integers in `1..9`
    - prompt/evidence contract: evidence contains every MST edge as an unordered endpoint pair, and answer equals the sum of the weights on those edges
+10. `task_graph_order_topological_position`
+   - ask:
+     - `What is the position of node X in the unique topological order, counting from 1?`
+   - answer type: `integer`
+   - evidence type: `label_sequence`
+   - default node-count support: `5..7`
+   - default target-position support: `1..7`
+   - prompt/evidence contract: evidence contains every node label in the unique topological order from first to last, and answer equals the 1-based position of the queried node inside that ordered sequence
 
 ## Variation axes
 1. `task_variant`
@@ -120,6 +130,7 @@ Define the concrete v1 setup for the current graph-domain task families.
    - `bridge_count`
    - `unique_cycle_size`
    - `largest_component_size`
+   - `topological_position`
    - `minimum_spanning_tree_weight`
    - `shortest_path_length`
    - `directed_shortest_path_length`
@@ -147,10 +158,13 @@ Define the concrete v1 setup for the current graph-domain task families.
 4. Treat `edge_set` as an unordered semantic set of unordered endpoint pairs; canonicalize endpoint order and outer list order internally only for deterministic serialization.
 5. Use `label_path` when the witness unit is an ordered node path.
 6. `label_path` is ordered semantically; preserve source-to-goal order and include both endpoints when the prompt asks about one path between two queried nodes.
-7. Keep pixel-space node or edge geometry in projected trace metadata for review overlays rather than as the primary user-facing evidence contract.
-8. For same-component queries, make the prompt explicit when the queried node itself is included in both the answer and the evidence set.
-9. For largest-component comparison queries, enforce a unique largest component by construction before exposing a single `label_set` witness set.
-10. For unique-cycle queries, build a connected unicyclic graph by construction and verify the final graph still has exactly one cycle before exposing the witness set.
-11. For shortest-path queries, verify the finalized adjacency still has exactly one shortest path between the queried endpoints before exposing a `label_path` witness.
-12. For directed shortest-path queries, compute forward distances over successor adjacency and reverse distances over predecessor adjacency before reconstructing the ordered witness path.
-13. For weighted edge-optimization queries, keep prompt-facing evidence on the selected edge set itself; vertex-only evidence is not sufficient when the answer depends on chosen edges and their weights.
+7. Use `label_sequence` when the witness unit is an ordered node list that is not itself a graph path.
+8. `label_sequence` shares the same ordered-label-list JSON shape as `label_path`, but verifier semantics come from task-specific ordering rules rather than edge adjacency between consecutive labels.
+9. Keep pixel-space node or edge geometry in projected trace metadata for review overlays rather than as the primary user-facing evidence contract.
+10. For same-component queries, make the prompt explicit when the queried node itself is included in both the answer and the evidence set.
+11. For largest-component comparison queries, enforce a unique largest component by construction before exposing a single `label_set` witness set.
+12. For unique-cycle queries, build a connected unicyclic graph by construction and verify the final graph still has exactly one cycle before exposing the witness set.
+13. For shortest-path queries, verify the finalized adjacency still has exactly one shortest path between the queried endpoints before exposing a `label_path` witness.
+14. For directed shortest-path queries, compute forward distances over successor adjacency and reverse distances over predecessor adjacency before reconstructing the ordered witness path.
+15. For unique topological-order queries, verify the finalized successor adjacency still admits exactly one valid topological order before exposing a `label_sequence` witness.
+16. For weighted edge-optimization queries, keep prompt-facing evidence on the selected edge set itself; vertex-only evidence is not sufficient when the answer depends on chosen edges and their weights.

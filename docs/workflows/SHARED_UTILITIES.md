@@ -32,6 +32,7 @@ Promote helpers when a second consumer appears.
 2. `trace/tasks/shared/bbox_projection.py`
 3. `trace/tasks/shared/graph_algorithms.py`
    - `reconstruct_unique_shortest_path_by_adjacency(...)` is the canonical ordered-path reconstruction helper when tasks already have finalized adjacency plus BFS distance maps.
+   - `unique_topological_order_by_adjacency(...)` is the canonical uniqueness checker for directed graph tasks that reason over one full topological order from finalized successor adjacency.
 4. `trace/tasks/shared/config_defaults.py`
    - Resolves effective `generation`/`rendering`/`prompt` defaults from task-group config by merging section `shared` + `task_overrides.<task_id>`.
    - `required_group_default` / `required_group_defaults` are the canonical fail-fast helpers for required config keys (avoid hardcoded in-code fallback literals for required prompt/config slots).

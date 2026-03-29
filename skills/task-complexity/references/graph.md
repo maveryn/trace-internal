@@ -71,6 +71,21 @@ Measure:
 - whether the task is directed or undirected, since directed path tracing adds extra control-flow burden even at the same witness length,
 - readability pressure from crossings, tight layouts, or small nodes.
 
+### `order`
+```yaml
+topology_reasoning: 0.50
+visual_scan: 0.20
+ambiguity: 0.20
+clutter: 0.10
+```
+
+Measure:
+- visible node/edge load in the directed graph,
+- how much global precedence tracing the order query requires beyond local edge inspection,
+- whether the queried node sits near the middle of the unique order or near an easy boundary position,
+- how many extra forward edges enrich the DAG while preserving the same unique order,
+- readability pressure from crossings, tight layouts, or small nodes.
+
 ### `optimization`
 ```yaml
 topology_reasoning: 0.50

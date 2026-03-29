@@ -26,6 +26,7 @@ from .graph.counting import articulation_point_count as _task_graph_counting_art
 from .graph.counting import bridge_count as _task_graph_counting_bridge_count
 from .graph.counting import degree_count as _task_graph_counting_degree_count
 from .graph.optimization import minimum_spanning_tree_weight as _task_graph_optimization_minimum_spanning_tree_weight
+from .graph.order import topological_position as _task_graph_order_topological_position
 from .graph.path import shortest_path_length as _task_graph_path_shortest_path_length
 from .graph.relation import reachable_count as _task_graph_relation_reachable_count
 from .graph.relation import same_component_count as _task_graph_relation_same_component_count

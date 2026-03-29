@@ -163,7 +163,7 @@ def resolve_overlay_evidence(
             return "bbox_set", projected.get("bbox_set")
         if "pixel_point_map" in projected:
             return "pixel_point_map", projected.get("pixel_point_map")
-    if str(evidence_type) == "label_path" and "pixel_point_path" in projected:
+    if str(evidence_type) in {"label_path", "label_sequence"} and "pixel_point_path" in projected:
         return "pixel_point_path", projected.get("pixel_point_path")
     if str(evidence_type) == "edge_set" and "pixel_edge_set" in projected:
         return "pixel_edge_set", projected.get("pixel_edge_set")

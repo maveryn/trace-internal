@@ -25,6 +25,7 @@ SUPPORTED_REACHABLE_TASK_VARIANTS: Tuple[str, ...] = ("reachable_count",)
 SUPPORTED_CYCLE_TASK_VARIANTS: Tuple[str, ...] = ("unique_cycle_size",)
 SUPPORTED_COMPONENT_COMPARISON_TASK_VARIANTS: Tuple[str, ...] = ("largest_component_size",)
 SUPPORTED_PATH_TASK_VARIANTS: Tuple[str, ...] = ("shortest_path_length", "directed_shortest_path_length")
+SUPPORTED_ORDER_TASK_VARIANTS: Tuple[str, ...] = ("topological_position",)
 LABEL_POOL_1_12: Tuple[str, ...] = tuple(str(value) for value in range(1, 13))
 
 
@@ -141,6 +142,16 @@ class GraphMinimumSpanningTreeSample(GraphTopologySample):
     extra_edge_count: int
 
 
+@dataclass(frozen=True)
+class GraphTopologicalOrderSample(GraphTopologySample):
+    """Trace-ready directed graph sample for unique topological-order tasks."""
+
+    query_label: str
+    target_labels: Tuple[str, ...]
+    target_position: int
+    extra_edge_count: int
+
+
 def graph_label_sort_key(label: str) -> Tuple[int, int | str]:
     """Return one natural sort key for graph node labels."""
 
@@ -188,7 +199,7 @@ def graph_directionality_for_task_variant(task_variant: str) -> str:
     """Return the graph directionality implied by one task variant."""
 
     variant = str(task_variant)
-    if variant in {"in_degree_count", "out_degree_count", "directed_shortest_path_length"}:
+    if variant in {"in_degree_count", "out_degree_count", "directed_shortest_path_length", "topological_position"}:
         return "directed"
     return "undirected"
 
@@ -832,6 +843,22 @@ def feasible_node_counts_for_shortest_path_length(
     return tuple(range(int(minimum), int(maximum) + 1))
 
 
+def feasible_node_counts_for_topological_position(
+    *,
+    target_position: int,
+    node_count_min: int,
+    node_count_max: int,
+) -> Tuple[int, ...]:
+    """Return node counts that can realize a queried topological position."""
+
+    target_position_int = int(target_position)
+    minimum = max(int(node_count_min), 5, int(target_position_int))
+    maximum = int(node_count_max)
+    if int(target_position_int) < 1 or int(minimum) > int(maximum):
+        return ()
+    return tuple(range(int(minimum), int(maximum) + 1))
+
+
 def feasible_node_counts_for_articulation_point_count(
     *,
     target_count: int,
@@ -1257,6 +1284,51 @@ def _sample_unique_shortest_path_digraph(
         extra_edges_kept += 1
 
     return graph, tuple(int(node) for node in path_nodes), int(extra_edges_kept)
+
+
+def _sample_unique_topological_order_digraph(
+    rng: random.Random,
+    *,
+    node_count: int,
+    topology_profile: str,
+) -> Tuple[nx.DiGraph, Tuple[int, ...], int]:
+    """Return one DAG whose topological order is unique by construction."""
+
+    node_count_int = int(node_count)
+    if int(node_count_int) < 2:
+        raise ValueError("topological-order sampling requires at least two nodes")
+
+    order_nodes = tuple(range(int(node_count_int)))
+    graph = nx.DiGraph()
+    graph.add_nodes_from(order_nodes)
+    graph.add_edges_from((int(left), int(right)) for left, right in zip(order_nodes[:-1], order_nodes[1:]))
+
+    candidate_edges = [
+        (int(left), int(right))
+        for left in order_nodes
+        for right in order_nodes
+        if int(left) < int(right) - 1 and not graph.has_edge(int(left), int(right))
+    ]
+    profile = str(topology_profile)
+    if profile == "hub_heavy":
+        ordered_candidates = sorted(candidate_edges, key=lambda pair: (int(pair[0]), -(int(pair[1]) - int(pair[0]))))
+        extra_edge_budget = min(len(ordered_candidates), max(2, min(6, int(node_count_int) - 2)))
+    elif profile == "low_degree":
+        ordered_candidates = sorted(candidate_edges, key=lambda pair: (int(pair[1]) - int(pair[0]), int(pair[0]), int(pair[1])))
+        extra_edge_budget = min(len(ordered_candidates), max(1, min(2, int(node_count_int) - 3)))
+    else:
+        ordered_candidates = list(candidate_edges)
+        rng.shuffle(ordered_candidates)
+        extra_edge_budget = min(len(ordered_candidates), max(1, min(4, int(node_count_int) - 2)))
+
+    extra_edges_kept = 0
+    for left, right in ordered_candidates:
+        if int(extra_edges_kept) >= int(extra_edge_budget):
+            break
+        graph.add_edge(int(left), int(right))
+        extra_edges_kept += 1
+
+    return graph, tuple(int(node) for node in order_nodes), int(extra_edges_kept)
 
 
 def _sample_zero_articulation_graph(
@@ -2309,6 +2381,59 @@ def sample_minimum_spanning_tree_weight_graph(
     )
 
 
+def sample_topological_position_graph(
+    rng: random.Random,
+    *,
+    node_count: int,
+    target_position: int,
+    topology_profile: str,
+    label_variant: str,
+) -> GraphTopologicalOrderSample:
+    """Construct one directed DAG with a unique topological order."""
+
+    feasible_node_support = feasible_node_counts_for_topological_position(
+        target_position=int(target_position),
+        node_count_min=int(node_count),
+        node_count_max=int(node_count),
+    )
+    if int(node_count) not in feasible_node_support:
+        raise ValueError("node_count is outside feasible support for the requested topological-position query")
+
+    graph, order_nodes, extra_edge_count = _sample_unique_topological_order_digraph(
+        rng,
+        node_count=int(node_count),
+        topology_profile=str(topology_profile),
+    )
+    topology_sample, label_by_node = _build_labeled_graph_topology_sample(
+        rng,
+        graph=graph,
+        directed=True,
+        topology_profile=str(topology_profile),
+        label_variant=str(label_variant),
+    )
+    query_node = int(order_nodes[int(target_position) - 1])
+    target_labels = tuple(str(label_by_node[int(node)]) for node in order_nodes)
+    return GraphTopologicalOrderSample(
+        graph=topology_sample.graph,
+        directed=True,
+        node_labels=tuple(str(label) for label in topology_sample.node_labels),
+        edge_labels=tuple((str(left), str(right)) for left, right in topology_sample.edge_labels),
+        degrees_by_label={str(key): int(value) for key, value in topology_sample.degrees_by_label.items()},
+        in_degrees_by_label={str(key): int(value) for key, value in topology_sample.in_degrees_by_label.items()},
+        out_degrees_by_label={str(key): int(value) for key, value in topology_sample.out_degrees_by_label.items()},
+        adjacency_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.adjacency_by_label.items()},
+        successors_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.successors_by_label.items()},
+        predecessors_by_label={str(key): tuple(str(value) for value in values) for key, values in topology_sample.predecessors_by_label.items()},
+        edge_count=int(topology_sample.edge_count),
+        topology_profile=str(topology_sample.topology_profile),
+        label_variant=str(topology_sample.label_variant),
+        query_label=str(label_by_node[int(query_node)]),
+        target_labels=tuple(str(label) for label in target_labels),
+        target_position=int(target_position),
+        extra_edge_count=int(extra_edge_count),
+    )
+
+
 __all__ = [
     "GraphArticulationPointSample",
     "GraphBridgeSample",
@@ -2318,6 +2443,7 @@ __all__ = [
     "GraphMinimumSpanningTreeSample",
     "GraphReachableSample",
     "GraphShortestPathSample",
+    "GraphTopologicalOrderSample",
     "GraphTopologySample",
     "GraphUniqueCycleSample",
     "LABEL_POOL_1_12",
@@ -2330,6 +2456,7 @@ __all__ = [
     "SUPPORTED_LAYOUT_VARIANTS",
     "SUPPORTED_LABEL_VARIANTS",
     "SUPPORTED_OPTIMIZATION_TASK_VARIANTS",
+    "SUPPORTED_ORDER_TASK_VARIANTS",
     "SUPPORTED_REACHABLE_TASK_VARIANTS",
     "SUPPORTED_PATH_TASK_VARIANTS",
     "SUPPORTED_TOPOLOGY_PROFILES",
@@ -2341,6 +2468,7 @@ __all__ = [
     "feasible_extra_edge_counts_for_minimum_spanning_tree",
     "feasible_node_counts_for_reachable_count",
     "feasible_node_counts_for_shortest_path_length",
+    "feasible_node_counts_for_topological_position",
     "feasible_node_counts_for_unique_cycle_size",
     "feasible_node_counts_for_unique_largest_component",
     "graph_degree_mode_for_task_variant",
@@ -2354,6 +2482,7 @@ __all__ = [
     "sample_minimum_spanning_tree_weight_graph",
     "sample_reachable_count_graph",
     "sample_shortest_path_length_graph",
+    "sample_topological_position_graph",
     "sort_graph_edge_labels",
     "sample_unique_cycle_graph",
 ]

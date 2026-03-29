@@ -157,6 +157,7 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
         ("geometry", "measurement", "geometry_angle_measure_v1"),
         ("geometry", "measurement", "geometry_measurement_v1"),
         ("graph", "counting", "graph_counting_v1"),
+        ("graph", "order", "graph_order_v1"),
         ("graph", "optimization", "graph_optimization_v1"),
         ("graph", "path", "graph_path_v1"),
         ("icons", "counting", "icons_counting_v1"),
@@ -299,6 +300,13 @@ def test_graph_path_bundle_supports_shortest_path_length_query() -> None:
     assert "single_graph_path" in bundle.task_family_templates
     assert len(bundle.task_templates["shortest_path_length_query"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["task:shortest_path_length_query"]) == ["question_text"]
+
+
+def test_graph_order_bundle_supports_topological_position_query() -> None:
+    bundle = load_prompt_bundle("graph", "order", "graph_order_v1")
+    assert "single_graph_order" in bundle.task_family_templates
+    assert len(bundle.task_templates["topological_position_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task:topological_position_query"]) == ["question_text"]
 
 
 def test_graph_optimization_bundle_supports_minimum_spanning_tree_weight_query() -> None:

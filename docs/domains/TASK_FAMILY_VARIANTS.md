@@ -323,6 +323,13 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`), plus non-semantic label/shape/color/layout-transform diversity shared with the graph domain.
    - Answer type: integer total weight.
    - Evidence: `edge_set` of all MST edges, represented as unordered endpoint-label pairs.
+35. **Graph order topological position (`task_graph_order_topological_position`)**
+   - One single-panel labeled directed acyclic graph.
+   - Query: `What is the position of node X in the unique topological order, counting from 1?`
+   - Graph contract: simple DAG with `5..7` nodes, a unique topological order by construction, and target-position support `1..7`.
+   - Variation axes: `topology_profile` (`balanced|low_degree|hub_heavy`) and `scene_variant` (`circular|shell|spring`), plus non-semantic label/shape/color/layout-transform diversity shared with the graph domain.
+   - Answer type: integer position.
+   - Evidence: ordered `label_sequence` of all node labels in the unique topological order from first to last.
 31. **Icons sequence missing count (`task_icons_sequence_missing_count`)**
    - One single-panel image with a horizontal row of `4..6` Scene boxes.
    - Query: how many icons should appear in the missing Scene box to continue the sequence.
@@ -375,3 +382,4 @@ Define how we split tasks into reusable families so each dataset slice stays com
 5. For reference+scene icon tasks, prefer `bbox_set` evidence over labels so grounding stays tied to visible scene instances rather than hidden asset ids.
 6. For graph path families, prefer an ordered graph-native witness type such as `label_path` instead of overloading unordered `label_set`.
 7. For graph edge-witness families, use one graph-native edge witness type such as `edge_set` rather than collapsing bridge- or MST-like witnesses onto nodes or pixel boxes.
+8. For graph ordered-but-nonpath families, use an ordered label-sequence witness such as `label_sequence`; keep the ordered JSON shape, but do not imply that consecutive labels must be adjacent in the graph.

@@ -45,6 +45,7 @@ Update this table after each review run.
 | task_graph_counting_bridge_count | task_graph_counting_bridge_count | alright_for_now | distribution pass |
 | task_graph_comparison_largest_component_size | task_graph_comparison_largest_component_size | alright_for_now | distribution pass |
 | task_graph_optimization_minimum_spanning_tree_weight | task_graph_optimization_minimum_spanning_tree_weight | alright_for_now | distribution pass |
+| task_graph_order_topological_position | task_graph_order_topological_position | alright_for_now | distribution pass |
 | task_graph_path_shortest_path_length | task_graph_path_shortest_path_length | alright_for_now | distribution pass |
 | task_graph_relation_reachable_count | task_graph_relation_reachable_count | alright_for_now | distribution pass |
 | task_graph_relation_same_component_count | task_graph_relation_same_component_count | alright_for_now | distribution pass |

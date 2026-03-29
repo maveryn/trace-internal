@@ -28,9 +28,11 @@ Use this whenever the task lives under `domain=graph`.
 - Use `label_set` for unordered node witness sets.
 - Use `edge_set` for unordered edge witness sets.
 - Use `label_path` for ordered node-path witnesses.
+- Use `label_sequence` for ordered node witnesses that are not graph paths.
 - Treat `label_set` as unordered semantically; canonicalize it internally for determinism, but do not present ordering as part of the task unless the task truly depends on order.
 - Treat `edge_set` as an unordered semantic set of unordered endpoint pairs; canonicalize each pair and the outer set internally only for determinism.
 - Treat `label_path` as ordered semantically; preserve source-to-goal order and include endpoints whenever the path contract names them explicitly.
+- Treat `label_sequence` as ordered semantically; keep the same ordered-label-list JSON shape, but verify it against the task’s ordering rule rather than edge adjacency between consecutive labels.
 - Use one label answer or ordered label path only when the semantics truly require it.
 - Keep node/edge pixel geometry in trace for reviews and overlays, but do not force bbox evidence when labels already provide the natural witness contract.
 - When labels are numeric, keep evidence in ascending numeric label order rather than raw lexicographic string order.
@@ -63,6 +65,8 @@ Use this whenever the task lives under `domain=graph`.
   - `task_graph_path_shortest_path_length`
 - `optimization`
   - `task_graph_optimization_minimum_spanning_tree_weight`
+- `order`
+  - `task_graph_order_topological_position`
 - `relation`
   - `task_graph_relation_reachable_count`
   - `task_graph_relation_same_component_count`

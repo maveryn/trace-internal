@@ -89,6 +89,20 @@ def test_resolve_overlay_evidence_uses_pixel_projection_for_edge_set() -> None:
     ]
 
 
+def test_resolve_overlay_evidence_uses_pixel_projection_for_label_sequence() -> None:
+    evidence_type, evidence_value = resolve_overlay_evidence(
+        evidence_type="label_sequence",
+        evidence_value=["A", "C", "F"],
+        trace_payload={
+            "projected_evidence": {
+                "pixel_point_path": [[10.0, 20.0], [30.0, 40.0], [50.0, 60.0]],
+            }
+        },
+    )
+    assert evidence_type == "pixel_point_path"
+    assert evidence_value == [[10.0, 20.0], [30.0, 40.0], [50.0, 60.0]]
+
+
 def test_render_evidence_overlay_draws_visible_marker_with_expanded_radius() -> None:
     source = PILImage.new("RGB", (100, 100), color=(255, 255, 255))
     overlay = render_evidence_overlay(source, evidence_type="point", evidence_value=[50, 50])

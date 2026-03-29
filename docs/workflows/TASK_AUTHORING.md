@@ -205,6 +205,7 @@ Prompt wording rule:
 - for graph edge-witness tasks, use a graph-native `edge_set` contract where each witness is a two-label endpoint pair; treat both the endpoint pair and the outer witness set as unordered semantically, and keep `pixel_edge_set` only in projected trace metadata for review overlays.
 - for weighted graph tasks, render edge-weight labels from the same canonical edge-to-weight map used in trace/verifier logic; do not let the renderer invent a separate edge ordering or duplicate weight assignment path.
 - for graph path tasks, use an ordered graph-native contract such as `label_path` only when node order is truly semantic, and say explicitly whether the path includes both queried endpoints.
+- for graph ordered-but-nonpath tasks, use an ordered graph-native contract such as `label_sequence` rather than overloading `label_path`; the JSON shape may stay the same ordered label list, but verifier semantics must come from the task-specific ordering rule instead of edge adjacency between consecutive labels.
 - when a task renders text inside compact glyphs or cells, fit the font against the available box instead of assuming one fixed font size will work for every label variant; multi-character labels and alternate glyph shapes should stay readable without overflowing the witness object.
 
 Use `--mode inspection` when only visual/prompt inspection is needed and distribution checks should be skipped.

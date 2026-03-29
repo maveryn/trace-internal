@@ -8,7 +8,7 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_graph_optimization_minimum_spanning_tree_weight"
+      "task_graph_order_topological_position"
     ],
     "workers": 16
   },
@@ -22,17 +22,17 @@
       "distribution_pass": true,
       "domain": "graph",
       "inspection_count": 25,
-      "inspection_workbook": "graph/task_graph_optimization_minimum_spanning_tree_weight/task_graph_optimization_minimum_spanning_tree_weight.xlsx",
+      "inspection_workbook": "graph/task_graph_order_topological_position/task_graph_order_topological_position.xlsx",
       "inspection_workbook_sheets": {
-        "minimum_spanning_tree_weight": "minimum_spanning_tree_weight"
+        "topological_position": "topological_position"
       },
       "reports": {
-        "distribution_review": "graph/task_graph_optimization_minimum_spanning_tree_weight/distribution_review.json",
-        "inspection_manifest": "graph/task_graph_optimization_minimum_spanning_tree_weight/manifest.json",
-        "random_review": "graph/task_graph_optimization_minimum_spanning_tree_weight/random_review_100.json"
+        "distribution_review": "graph/task_graph_order_topological_position/distribution_review.json",
+        "inspection_manifest": "graph/task_graph_order_topological_position/manifest.json",
+        "random_review": "graph/task_graph_order_topological_position/random_review_100.json"
       },
-      "task_group": "optimization",
-      "task_id": "task_graph_optimization_minimum_spanning_tree_weight"
+      "task_group": "order",
+      "task_id": "task_graph_order_topological_position"
     }
   ]
 }

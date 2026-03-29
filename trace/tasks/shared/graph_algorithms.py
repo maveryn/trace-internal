@@ -109,8 +109,43 @@ def connected_components_by_adjacency(
     return components
 
 
+def unique_topological_order_by_adjacency(
+    successors: Mapping[NodeT, Sequence[NodeT]],
+    *,
+    node_order: Sequence[NodeT] | None = None,
+) -> List[NodeT] | None:
+    """Return the unique topological order when exactly one order exists.
+
+    The input is a directed successor adjacency mapping. The function returns
+    ``None`` when the graph contains a cycle or when more than one valid
+    topological ordering exists.
+    """
+
+    ordered_nodes = list(node_order) if node_order is not None else list(successors.keys())
+    indegree: Dict[NodeT, int] = {node: 0 for node in ordered_nodes}
+    for node in ordered_nodes:
+        for neighbor in successors.get(node, ()):
+            indegree[neighbor] = int(indegree.get(neighbor, 0) + 1)
+
+    zero_indegree: List[NodeT] = [node for node in ordered_nodes if int(indegree.get(node, 0)) == 0]
+    ordering: List[NodeT] = []
+    while zero_indegree:
+        if len(zero_indegree) != 1:
+            return None
+        node = zero_indegree.pop()
+        ordering.append(node)
+        for neighbor in successors.get(node, ()):
+            indegree[neighbor] = int(indegree.get(neighbor, 0) - 1)
+            if int(indegree[neighbor]) == 0:
+                zero_indegree.append(neighbor)
+    if len(ordering) != len(indegree):
+        return None
+    return ordering
+
+
 __all__ = [
     "bfs_dist_count_by_adjacency",
     "connected_components_by_adjacency",
     "reconstruct_unique_shortest_path_by_adjacency",
+    "unique_topological_order_by_adjacency",
 ]

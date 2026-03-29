@@ -116,6 +116,20 @@ Measure:
 - scene-family bonus when the task requires strict interior lattice counting inside a polygon instead of plain quadrant membership,
 - witness burden from either matching-segment endpoint coordinates, collinear graph-point sets, same-quadrant graph-point sets, or interior graph-point sets.
 
+### `solid`
+```yaml
+visual_scan: 0.24
+projection_reasoning: 0.46
+ambiguity: 0.20
+output_burden: 0.10
+```
+
+Measure:
+- total cube count plus stack height / occlusion load,
+- query-view difficulty (`top_view_visible_count` < `front_view_visible_count` ≈ `right_view_visible_count`),
+- how much the requested view hides compared with the full cube count,
+- prompt-facing `bbox_set` burden from the number of filled query-grid cells.
+
 ## Notes
 - Domain-level criteria must apply to every geometry task; keep `measurement_precision`, `comparison_reasoning`, `classification_reasoning`, and `analytical_reasoning` at task-group scope rather than forcing them onto unrelated families.
 - Geometry usually wants criterion values from explicit `scene_variant` / `query_variant` structure, not from answer magnitude alone.
@@ -125,3 +139,4 @@ Measure:
 - Geometry transformation tasks should stay evidence-first: if a variant’s cue changes the winning object but not the witness format, keep one family weighting policy and vary only `transformation_reasoning` / `ambiguity` from the resolved cue type.
 - Geometry similarity tasks should stay evidence-first too: prefer count/list questions whose witness is the matching candidate-label subset, and keep scale/shape-family difficulty inside `similarity_reasoning` / `ambiguity` rather than splitting the family into separate tiny weight tables.
 - Geometry coordinate-relation tasks should keep the evidence contract aligned to the queried object type: segment-count variants should expose coordinate-grounded endpoint evidence for every matching segment, while point-membership/count variants should expose graph-point evidence whenever the visible witness is an unlabeled point set rather than a label identity problem.
+- Geometry solid-view tasks should keep difficulty tied to hidden-cube/projection reasoning rather than answer magnitude alone; if the orthographic witness stays the same query-grid `bbox_set`, widen view variants inside the same family instead of splitting one task id per view direction.

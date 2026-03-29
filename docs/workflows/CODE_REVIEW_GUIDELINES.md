@@ -195,6 +195,9 @@ Use this checklist during implementation and refactor reviews.
 172. When a consolidated wrapper task remaps legacy task variants onto a new `query_variant` surface, rewrite every task-review-facing variant field to the new surface in the emitted trace (`task_variant`, `task_variant_probabilities`, and `query_spec.params.variant_probabilities`) and accept `task_variant` as an alias for `query_variant` during regeneration; otherwise review tooling will silently collect legacy variants or fail to rebuild inspection samples.
 173. When a second domain needs the same low-level drawing primitive (for example dashed lines or arrows), promote it out of a domain-local `shared/` module into `trace/tasks/shared/` in the same patch; keep any old domain wrapper as a thin re-export only if compatibility requires it.
 174. For geometry families that share the same graph-paper `Reference` + candidate-polygon scaffold, promote graph-unit projection, polygon visibility checks, and `Reference` label drawing into `trace/tasks/geometry/shared/` instead of copying those render helpers into each task.
+175. For geometry solid-view tasks whose answer depends on an implied orthographic projection, keep a visible query-view panel in the scene and place prompt-facing `bbox_set` evidence on the query-panel cells rather than inventing synthetic labels or hiding the witness entirely off-scene.
+176. For orthographic query panels derived from a latent 3D scene, crop the panel grid to the tight occupied support of the requested projection; do not preserve decorative empty rows or columns that come only from unused latent footprint padding.
+177. For geometry solid-view count tasks, reject queried projections that completely fill their cropped orthographic grid by default; keep at least one empty cell so the task tests silhouette reasoning instead of only bounding-box size.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

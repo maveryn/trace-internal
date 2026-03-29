@@ -1,0 +1,630 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 5
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        647.875,
+        325.5,
+        711.0,
+        388.625
+      ],
+      [
+        458.5,
+        388.625,
+        521.625,
+        451.75
+      ],
+      [
+        521.625,
+        388.625,
+        584.75,
+        451.75
+      ],
+      [
+        584.75,
+        388.625,
+        647.875,
+        451.75
+      ],
+      [
+        647.875,
+        388.625,
+        711.0,
+        451.75
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_solid_view_count/images/front_view_visible_count/0019.png"
+  },
+  "instance_seed": 1761842879623263,
+  "prompt": "You are given a solid-view scene with a cube stack on the left and one empty orthographic query grid on the right. Determine the answer from the solid-view scene. How many unit squares should be filled in the Front view grid?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of the bounding boxes of all query-grid cells that should be filled.\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[2.5,3.5,4,5.5],[3.5,4.5,5.5,6.5],[4.5,5.5,6.5,7.5],[5.5,6.5,7.5,8.5],[6.5,7.5,8,9.5]],\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given a solid-view scene with a cube stack on the left and one empty orthographic query grid on the right. Determine the answer from the solid-view scene. How many unit squares should be filled in the Front view grid?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of the bounding boxes of all query-grid cells that should be filled.\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[2.5,3.5,4,5.5],[3.5,4.5,5.5,6.5],[4.5,5.5,6.5,7.5],[5.5,6.5,7.5,8.5],[6.5,7.5,8,9.5]],\"answer\":8}",
+    "answer_only": "You are given a solid-view scene with a cube stack on the left and one empty orthographic query grid on the right. Determine the answer from the solid-view scene. How many unit squares should be filled in the Front view grid?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_geometry_solid_view_count",
+  "task_variant": "front_view_visible_count",
+  "trace_payload": {
+    "execution_trace": {
+      "cube_count": 6,
+      "projection_cells": [
+        [
+          3,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          1
+        ]
+      ],
+      "query_variant": "front_view_visible_count",
+      "query_variant_probabilities": {
+        "front_view_visible_count": 1.0,
+        "right_view_visible_count": 0.0,
+        "top_view_visible_count": 0.0
+      },
+      "question_format": "count_projection_cells",
+      "scene_variant": "cube_stack",
+      "scene_variant_probabilities": {
+        "cube_stack": 1.0
+      },
+      "stack_depth": 3,
+      "stack_heights": [
+        {
+          "height": 1,
+          "x": 0,
+          "y": 2
+        },
+        {
+          "height": 1,
+          "x": 1,
+          "y": 2
+        },
+        {
+          "height": 1,
+          "x": 2,
+          "y": 2
+        },
+        {
+          "height": 2,
+          "x": 3,
+          "y": 1
+        },
+        {
+          "height": 1,
+          "x": 3,
+          "y": 2
+        }
+      ],
+      "stack_max_height": 2,
+      "stack_width": 4,
+      "target_count": 5,
+      "target_count_probabilities": {
+        "2": 0.16666666666666666,
+        "3": 0.16666666666666666,
+        "4": 0.16666666666666666,
+        "5": 0.16666666666666666,
+        "6": 0.16666666666666666,
+        "7": 0.16666666666666666
+      },
+      "task_variant": "front_view_visible_count",
+      "task_variant_probabilities": {
+        "front_view_visible_count": 1.0,
+        "right_view_visible_count": 0.0,
+        "top_view_visible_count": 0.0
+      },
+      "visible_counts_by_query": {
+        "front_view_visible_count": 5,
+        "right_view_visible_count": 3,
+        "top_view_visible_count": 5
+      }
+    },
+    "projected_evidence": {
+      "pixel_bbox_set": [
+        [
+          647.875,
+          325.5,
+          711.0,
+          388.625
+        ],
+        [
+          458.5,
+          388.625,
+          521.625,
+          451.75
+        ],
+        [
+          521.625,
+          388.625,
+          584.75,
+          451.75
+        ],
+        [
+          584.75,
+          388.625,
+          647.875,
+          451.75
+        ],
+        [
+          647.875,
+          388.625,
+          711.0,
+          451.75
+        ]
+      ],
+      "projection_cells": [
+        [
+          3,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          1
+        ]
+      ],
+      "query_grid_bbox": [
+        458.5,
+        325.5,
+        711.0,
+        451.75
+      ],
+      "query_grid_dimensions": [
+        4,
+        2
+      ],
+      "query_panel_bbox": [
+        442.5,
+        28.0,
+        727.0,
+        727.0
+      ],
+      "type": "bbox_set"
+    },
+    "query_spec": {
+      "params": {
+        "query_variant": "front_view_visible_count",
+        "query_variant_probabilities": {
+          "front_view_visible_count": 1.0,
+          "right_view_visible_count": 0.0,
+          "top_view_visible_count": 0.0
+        },
+        "scene_variant": "cube_stack",
+        "scene_variant_probabilities": {
+          "cube_stack": 1.0
+        },
+        "target_count": 5,
+        "target_count_probabilities": {
+          "2": 0.16666666666666666,
+          "3": 0.16666666666666666,
+          "4": 0.16666666666666666,
+          "5": 0.16666666666666666,
+          "6": 0.16666666666666666,
+          "7": 0.16666666666666666
+        },
+        "task_variant": "front_view_visible_count",
+        "variant_probabilities": {
+          "front_view_visible_count": 1.0,
+          "right_view_visible_count": 0.0,
+          "top_view_visible_count": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "geometry_solid_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON array of the bounding boxes of all query-grid cells that should be filled",
+          "json_example": "{\"evidence\":[[2.5,3.5,4,5.5],[3.5,4.5,5.5,6.5],[4.5,5.5,6.5,7.5],[5.5,6.5,7.5,8.5],[6.5,7.5,8,9.5]],\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a cube stack on the left and one empty orthographic query grid on the right"
+        },
+        "task_family_key": "solid_view_scene",
+        "task_family_variant_index": 4,
+        "task_key": "solid_view_query",
+        "task_variant_index": 4,
+        "task_variant_key": "front_view_visible_count",
+        "task_variant_template_index": 0,
+        "template_paths": [
+          "geometry/solid/geometry_solid_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:solid_view_query": 5,
+          "task_family:solid_view_scene": 5,
+          "task_variant:front_view_visible_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_solid_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of the bounding boxes of all query-grid cells that should be filled",
+              "json_example": "{\"evidence\":[[2.5,3.5,4,5.5],[3.5,4.5,5.5,6.5],[4.5,5.5,6.5,7.5],[5.5,6.5,7.5,8.5],[6.5,7.5,8,9.5]],\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a cube stack on the left and one empty orthographic query grid on the right"
+            },
+            "task_family_key": "solid_view_scene",
+            "task_family_variant_index": 4,
+            "task_key": "solid_view_query",
+            "task_variant_index": 4,
+            "task_variant_key": "front_view_visible_count",
+            "task_variant_template_index": 0,
+            "template_paths": [
+              "geometry/solid/geometry_solid_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:solid_view_query": 5,
+              "task_family:solid_view_scene": 5,
+              "task_variant:front_view_visible_count": 5
+            }
+          },
+          "prompt": "You are given a solid-view scene with a cube stack on the left and one empty orthographic query grid on the right. Determine the answer from the solid-view scene. How many unit squares should be filled in the Front view grid?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON array of the bounding boxes of all query-grid cells that should be filled.\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[[2.5,3.5,4,5.5],[3.5,4.5,5.5,6.5],[4.5,5.5,6.5,7.5],[5.5,6.5,7.5,8.5],[6.5,7.5,8,9.5]],\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "geometry_solid_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON array of the bounding boxes of all query-grid cells that should be filled",
+              "json_example": "{\"evidence\":[[2.5,3.5,4,5.5],[3.5,4.5,5.5,6.5],[4.5,5.5,6.5,7.5],[5.5,6.5,7.5,8.5],[6.5,7.5,8,9.5]],\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a cube stack on the left and one empty orthographic query grid on the right"
+            },
+            "task_family_key": "solid_view_scene",
+            "task_family_variant_index": 4,
+            "task_key": "solid_view_query",
+            "task_variant_index": 4,
+            "task_variant_key": "front_view_visible_count",
+            "task_variant_template_index": 0,
+            "template_paths": [
+              "geometry/solid/geometry_solid_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:solid_view_query": 5,
+              "task_family:solid_view_scene": 5,
+              "task_variant:front_view_visible_count": 5
+            }
+          },
+          "prompt": "You are given a solid-view scene with a cube stack on the left and one empty orthographic query grid on the right. Determine the answer from the solid-view scene. How many unit squares should be filled in the Front view grid?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "front_view_visible_count",
+      "template_id": "geometry_solid_v1"
+    },
+    "render_map": {
+      "image_id": "img0",
+      "projection_cell_bboxes": [
+        [
+          647.875,
+          325.5,
+          711.0,
+          388.625
+        ],
+        [
+          458.5,
+          388.625,
+          521.625,
+          451.75
+        ],
+        [
+          521.625,
+          388.625,
+          584.75,
+          451.75
+        ],
+        [
+          584.75,
+          388.625,
+          647.875,
+          451.75
+        ],
+        [
+          647.875,
+          388.625,
+          711.0,
+          451.75
+        ]
+      ],
+      "projection_cells": [
+        [
+          3,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          1
+        ]
+      ],
+      "query_grid_bbox": [
+        458.5,
+        325.5,
+        711.0,
+        451.75
+      ],
+      "query_grid_dimensions": [
+        4,
+        2
+      ],
+      "query_panel_bbox": [
+        442.5,
+        28.0,
+        727.0,
+        727.0
+      ],
+      "query_view_title": "Front view",
+      "stack_depth": 3,
+      "stack_heights": [
+        {
+          "height": 1,
+          "x": 0,
+          "y": 2
+        },
+        {
+          "height": 1,
+          "x": 1,
+          "y": 2
+        },
+        {
+          "height": 1,
+          "x": 2,
+          "y": 2
+        },
+        {
+          "height": 2,
+          "x": 3,
+          "y": 1
+        },
+        {
+          "height": 1,
+          "x": 3,
+          "y": 2
+        }
+      ],
+      "stack_panel_bbox": [
+        28.0,
+        28.0,
+        420.5,
+        727.0
+      ],
+      "stack_width": 4
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 2,
+        "selected_style": "solid_cool",
+        "style_spec": {
+          "color": [
+            245,
+            248,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 755,
+      "coord_space": "pixel",
+      "line_width_px": 2,
+      "panel_title_font_size_px": 19,
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "scene_scale": 2,
+      "scene_variant": "cube_stack",
+      "shape_style": {
+        "label_color": [
+          153,
+          83,
+          62
+        ],
+        "label_stroke_color": [
+          251,
+          253,
+          253
+        ],
+        "line_color": [
+          153,
+          83,
+          62
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "cell": [
+            3,
+            1,
+            0
+          ],
+          "entity_id": "cube_00",
+          "type": "cube"
+        },
+        {
+          "cell": [
+            0,
+            2,
+            0
+          ],
+          "entity_id": "cube_01",
+          "type": "cube"
+        },
+        {
+          "cell": [
+            1,
+            2,
+            0
+          ],
+          "entity_id": "cube_02",
+          "type": "cube"
+        },
+        {
+          "cell": [
+            2,
+            2,
+            0
+          ],
+          "entity_id": "cube_03",
+          "type": "cube"
+        },
+        {
+          "cell": [
+            3,
+            2,
+            0
+          ],
+          "entity_id": "cube_04",
+          "type": "cube"
+        },
+        {
+          "cell": [
+            3,
+            1,
+            1
+          ],
+          "entity_id": "cube_05",
+          "type": "cube"
+        },
+        {
+          "bbox": [
+            442.5,
+            28.0,
+            727.0,
+            727.0
+          ],
+          "entity_id": "query_panel",
+          "grid_dimensions": [
+            4,
+            2
+          ],
+          "query_variant": "front_view_visible_count",
+          "type": "projection_panel"
+        }
+      ],
+      "relations": {
+        "query_variant": "front_view_visible_count",
+        "scene_variant": "cube_stack",
+        "target_count": 5,
+        "task_variant": "front_view_visible_count",
+        "visible_counts_by_query": {
+          "front_view_visible_count": 5,
+          "right_view_visible_count": 3,
+          "top_view_visible_count": 5
+        }
+      },
+      "scene_kind": "geometry_solid_view_count"
+    },
+    "witness_symbolic": {
+      "cells": [
+        [
+          3,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          1
+        ]
+      ],
+      "type": "projection_cell_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

@@ -14,6 +14,7 @@ from trace.tasks.geometry.coordinate.relation import GeometryCoordinateRelationT
 from trace.tasks.geometry.counting.value import GeometryCountingValueTask
 from trace.tasks.geometry.measurement.value import GeometryMeasurementValueTask
 from trace.tasks.geometry.similarity.count import GeometrySimilarityCountTask, _resolve_axes as _resolve_similarity_axes
+from trace.tasks.geometry.solid.view_count import GeometrySolidViewCountTask, _resolve_axes as _resolve_solid_axes
 from trace.tasks.geometry.transformation.match import GeometryTransformationMatchTask, _resolve_axes
 from trace.tasks import TASK_REGISTRY
 
@@ -26,11 +27,12 @@ EXPECTED_GEOMETRY_TASKS = {
     "task_geometry_analytical_2d_value",
     "task_geometry_analytical_3d_value",
     "task_geometry_similarity_count",
+    "task_geometry_solid_view_count",
     "task_geometry_transformation_match",
 }
 
 
-def test_geometry_registry_includes_consolidated_value_tasks_plus_transformation() -> None:
+def test_geometry_registry_includes_consolidated_value_tasks_plus_new_visual_families() -> None:
     geometry_tasks = {task_id for task_id in TASK_REGISTRY if task_id.startswith("task_geometry_")}
     assert geometry_tasks == EXPECTED_GEOMETRY_TASKS
 
@@ -233,6 +235,38 @@ def test_geometry_similarity_count_tracks_scene_and_query_variants(
     assert trace["scene_ir"]["relations"]["matching_labels"] == list(out.evidence_gt.value)
 
 
+@pytest.mark.parametrize(
+    ("query_variant", "target_count"),
+    (
+        ("top_view_visible_count", 3),
+        ("front_view_visible_count", 4),
+        ("right_view_visible_count", 5),
+    ),
+)
+def test_geometry_solid_view_count_tracks_scene_and_query_variants(
+    query_variant: str,
+    target_count: int,
+) -> None:
+    task = GeometrySolidViewCountTask()
+    out = task.generate(
+        23091,
+        params={"scene_variant": "cube_stack", "query_variant": query_variant, "target_count": target_count},
+        max_attempts=60,
+    )
+    trace = out.trace_payload
+    assert out.answer_gt.type == "integer"
+    assert out.evidence_gt.type == "bbox_set"
+    assert int(out.answer_gt.value) == int(target_count)
+    assert len(out.evidence_gt.value) == int(target_count)
+    assert out.task_variant == query_variant
+    assert trace["execution_trace"]["scene_variant"] == "cube_stack"
+    assert trace["execution_trace"]["query_variant"] == query_variant
+    assert trace["execution_trace"]["task_variant"] == query_variant
+    assert trace["execution_trace"]["target_count"] == int(target_count)
+    assert trace["execution_trace"]["task_variant_probabilities"] == trace["execution_trace"]["query_variant_probabilities"]
+    assert trace["query_spec"]["params"]["variant_probabilities"] == trace["query_spec"]["params"]["query_variant_probabilities"]
+
+
 def test_geometry_transformation_match_balances_winner_labels_across_review_seed_stream() -> None:
     per_variant_labels: dict[str, Counter[str]] = {
         "translation_match": Counter(),
@@ -287,6 +321,18 @@ def test_geometry_similarity_count_balances_target_counts_across_review_seed_str
     for query_variant, counts in per_variant_counts.items():
         assert set(counts.keys()) == {0, 1, 2, 3, 4, 5}
         assert max(counts.values()) <= 25, query_variant
+
+
+def test_geometry_solid_view_count_balances_target_counts_across_review_seed_stream() -> None:
+    target_counts = Counter()
+
+    for index in range(250):
+        instance_seed = hash64(0, "task_geometry_solid_view_count", index)
+        resolved = _resolve_solid_axes(int(instance_seed), params={})
+        target_counts[int(resolved.target_count)] += 1
+
+    assert set(target_counts.keys()) == {2, 3, 4, 5, 6, 7}
+    assert min(target_counts.values()) >= 30
 
 
 @pytest.mark.parametrize(

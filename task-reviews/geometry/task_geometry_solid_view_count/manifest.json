@@ -1,0 +1,15 @@
+{
+  "inspection_count": 30,
+  "task_id": "task_geometry_solid_view_count",
+  "variants": {
+    "front_view_visible_count": 10,
+    "right_view_visible_count": 10,
+    "top_view_visible_count": 10
+  },
+  "workbook": "geometry/task_geometry_solid_view_count/task_geometry_solid_view_count.xlsx",
+  "workbook_sheets": {
+    "front_view_visible_count": "front_view_visible_count",
+    "right_view_visible_count": "right_view_visible_count",
+    "top_view_visible_count": "top_view_visible_count"
+  }
+}

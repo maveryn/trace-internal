@@ -75,3 +75,4 @@ Generated task-doc index for all registered TRACE tasks.
 71. [task_tile_relation_min_distance.md](task_tile_relation_min_distance.md)
 72. [task_tile_symmetry_violation_count.md](task_tile_symmetry_violation_count.md)
 73. [task_tile_transition_gravity_max_drop.md](task_tile_transition_gravity_max_drop.md)
+74. [task_geometry_solid_view_count.md](task_geometry_solid_view_count.md)

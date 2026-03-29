@@ -1,16 +1,16 @@
 {
   "config": {
     "count_per_variant": 100,
-    "inspection_count_per_variant": 25,
+    "inspection_count_per_variant": 10,
     "max_attempts_per_instance": 200,
     "max_total_samples_per_task": 30000,
-    "mode": "full",
+    "mode": "inspection",
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_geometry_coordinate_relation"
+      "task_geometry_solid_view_count"
     ],
-    "workers": 16
+    "workers": 1
   },
   "summary": {
     "distribution_tasks_failed": 0,
@@ -19,24 +19,19 @@
   },
   "tasks": [
     {
-      "distribution_pass": true,
       "domain": "geometry",
-      "inspection_count": 125,
-      "inspection_workbook": "geometry/task_geometry_coordinate_relation/task_geometry_coordinate_relation.xlsx",
+      "inspection_count": 30,
+      "inspection_workbook": "geometry/task_geometry_solid_view_count/task_geometry_solid_view_count.xlsx",
       "inspection_workbook_sheets": {
-        "collinear_count": "collinear_count",
-        "parallel_count": "parallel_count",
-        "perpendicular_count": "perpendicular_count",
-        "point_in_shape_count": "point_in_shape_count",
-        "same_quadrant_count": "same_quadrant_count"
+        "front_view_visible_count": "front_view_visible_count",
+        "right_view_visible_count": "right_view_visible_count",
+        "top_view_visible_count": "top_view_visible_count"
       },
       "reports": {
-        "distribution_review": "geometry/task_geometry_coordinate_relation/distribution_review.json",
-        "inspection_manifest": "geometry/task_geometry_coordinate_relation/manifest.json",
-        "random_review": "geometry/task_geometry_coordinate_relation/random_review_100.json"
+        "inspection_manifest": "geometry/task_geometry_solid_view_count/manifest.json"
       },
-      "task_group": "coordinate",
-      "task_id": "task_geometry_coordinate_relation"
+      "task_group": "solid",
+      "task_id": "task_geometry_solid_view_count"
     }
   ]
 }

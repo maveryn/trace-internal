@@ -1,0 +1,77 @@
+{
+  "bundle_id": "geometry_solid_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "solid_view_scene": [
+      "The picture shows {object_description}.",
+      "Look at the solid-view scene showing {object_description}.",
+      "Use the solid-view scene with {object_description}.",
+      "Work from the solid-view picture showing {object_description}.",
+      "You are given a solid-view scene with {object_description}."
+    ]
+  },
+  "task_templates": {
+    "solid_view_query": [
+      "Answer the question using the full solid-view scene.",
+      "Use the cube stack and the query grid to answer the question.",
+      "Read the cube stack carefully, then answer the question.",
+      "Work from the full cube-stack scene to answer the question.",
+      "Determine the answer from the solid-view scene."
+    ]
+  },
+  "task_variant_templates": {
+    "top_view_visible_count": [
+      "How many unit squares should be filled in the Top view grid?",
+      "If you look from directly above, how many query-grid cells should be filled?",
+      "Count the occupied unit squares that belong in the Top view grid.",
+      "Using the cube stack, how many cells should be filled in the Top view panel?",
+      "How many unit cells would be occupied in the Top view grid?"
+    ],
+    "front_view_visible_count": [
+      "How many unit squares should be filled in the Front view grid? Here, Front view means looking straight at the left vertical face of the drawn stack.",
+      "If you look from the front — straight at the left vertical face of the stack as drawn — how many query-grid cells should be filled?",
+      "Count the occupied unit squares that belong in the Front view grid. Front view here means the left vertical face of the drawn stack.",
+      "Using the cube stack, how many cells should be filled in the Front view panel? Treat Front view as looking straight at the left vertical face.",
+      "How many unit cells would be occupied in the Front view grid, where Front view means the left vertical face of the drawn stack?"
+    ],
+    "right_view_visible_count": [
+      "How many unit squares should be filled in the Right view grid? Here, Right view means looking straight at the right vertical face of the drawn stack.",
+      "If you look from the right side — straight at the right vertical face of the stack as drawn — how many query-grid cells should be filled?",
+      "Count the occupied unit squares that belong in the Right view grid. Right view here means the right vertical face of the drawn stack.",
+      "Using the cube stack, how many cells should be filled in the Right view panel? Treat Right view as looking straight at the right vertical face.",
+      "How many unit cells would be occupied in the Right view grid, where Right view means the right vertical face of the drawn stack?"
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:solid_view_scene": [
+      "object_description"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

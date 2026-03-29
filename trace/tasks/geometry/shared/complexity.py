@@ -604,6 +604,62 @@ def build_geometry_coordinate_relation_complexity(
     )
 
 
+def geometry_solid_view_reasoning_score(*, query_variant: str, max_height: int) -> float:
+    """Return normalized reasoning load for one solid-view query."""
+
+    normalized_query = str(query_variant).strip().lower()
+    base_by_query = {
+        "top_view_visible_count": 0.34,
+        "front_view_visible_count": 0.56,
+        "right_view_visible_count": 0.58,
+    }
+    if normalized_query not in base_by_query:
+        raise ValueError(f"unsupported geometry solid-view query_variant: {query_variant}")
+    height_bonus = normalize_linear(float(max_height), min_value=2.0, max_value=3.0) * 0.12
+    return clamp_unit_interval(float(base_by_query[normalized_query]) + float(height_bonus))
+
+
+def build_geometry_solid_view_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    query_variant: str,
+    cube_count: int,
+    max_height: int,
+    target_count: int,
+    evidence_count: int,
+) -> TaskComplexity:
+    """Build one normalized complexity payload for cube-stack view counting."""
+
+    weights = resolve_geometry_complexity_weights(task_group_defaults, task_id=task_id)
+    visual_scan = clamp_unit_interval(
+        (0.65 * normalize_linear(float(cube_count), min_value=4.0, max_value=8.0))
+        + (0.35 * normalize_linear(float(max_height), min_value=2.0, max_value=3.0))
+    )
+    ambiguity = clamp_unit_interval(
+        (0.50 * normalize_linear(float(target_count), min_value=2.0, max_value=7.0))
+        + (0.30 * normalize_linear(float(cube_count - target_count), min_value=0.0, max_value=5.0))
+        + (0.12 if str(query_variant) != "top_view_visible_count" else 0.0)
+    )
+    output_burden = normalize_linear(
+        float(evidence_count),
+        min_value=2.0,
+        max_value=7.0,
+    )
+    return build_geometry_task_complexity(
+        weights=weights,
+        components={
+            "visual_scan": float(visual_scan),
+            "projection_reasoning": geometry_solid_view_reasoning_score(
+                query_variant=str(query_variant),
+                max_height=int(max_height),
+            ),
+            "ambiguity": float(ambiguity),
+            "output_burden": float(output_burden),
+        },
+    )
+
+
 def geometry_analytical_reasoning_score(*, task_kind: str, task_variant: str) -> float:
     """Return normalized reasoning load for one analytical geometry variant."""
 

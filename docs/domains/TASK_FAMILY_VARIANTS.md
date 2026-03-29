@@ -121,13 +121,14 @@ Define how we split tasks into reusable families so each dataset slice stays com
 15. For milestone-timeline tasks, keep evidence on visible event cards rather than the full axis or connector lines, even when the answer depends on temporal order across multiple events.
 
 ## Geometry direction (current)
-1. Geometry now exposes eight active task ids:
+1. Geometry now exposes nine active task ids:
    - `task_geometry_measurement_value`
    - `task_geometry_comparison_value`
    - `task_geometry_counting_value`
    - `task_geometry_analytical_2d_value`
    - `task_geometry_analytical_3d_value`
    - `task_geometry_coordinate_relation`
+   - `task_geometry_solid_view_count`
    - `task_geometry_similarity_count`
    - `task_geometry_transformation_match`
 2. Geometry follows a chart-style two-axis policy:
@@ -170,7 +171,12 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - keeps segment scenes on centered `20 x 20` graph paper and samples the target plus candidate segments anywhere in the window as long as their endpoints stay off the border and no segments intersect
    - uses integer answers plus unordered `graph_point_set` evidence for `same_quadrant_count`, where the witness is the set of dot-point coordinates in the same quadrant as the X-marked reference point
    - uses integer answers plus `graph_point_set` evidence for `point_in_shape_count`, where the witness is the set of integer lattice points strictly inside the polygon
-12. For the five consolidated value tasks, `execution_trace`, `query_spec.params`, and `scene_ir.relations` should expose the consolidated `scene_variant` / `query_variant` pair, while preserving `legacy_task_id` and other `legacy_*` trace slots for auditability.
+12. `task_geometry_solid_view_count`
+   - uses scene variant `cube_stack`
+   - uses query variants `top_view_visible_count|front_view_visible_count|right_view_visible_count`
+   - uses a two-panel cube-stack + blank query-grid scaffold rather than graph paper
+   - keeps integer answers with prompt-facing `bbox_set` evidence on the query-grid cells that should be filled in the requested orthographic view
+13. For the five consolidated value tasks, `execution_trace`, `query_spec.params`, and `scene_ir.relations` should expose the consolidated `scene_variant` / `query_variant` pair, while preserving `legacy_task_id` and other `legacy_*` trace slots for auditability.
 16. **Icons counting type (`task_icons_counting_type`)**
    - One two-panel image with a `Reference` icon and a `Scene` panel of icons.
    - Query: how many scene icons have the same icon type as the reference.

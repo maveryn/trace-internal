@@ -103,12 +103,18 @@ def _pi_expression(value: int) -> str:
     return f"{int(coefficient)}π"
 
 
-def _iso_project(point_3d: Point3) -> Point:
+def iso_project_point_3d(point_3d: Point3) -> Point:
     """Project one 3D point to an isometric 2D plane."""
     x_value, y_value, z_value = float(point_3d[0]), float(point_3d[1]), float(point_3d[2])
     projected_x = (float(x_value) - float(y_value)) * 0.8660254
     projected_y = ((float(x_value) + float(y_value)) * 0.5) - float(z_value)
     return (float(projected_x), float(projected_y))
+
+
+def _iso_project(point_3d: Point3) -> Point:
+    """Backward-compatible private alias for the shared 3D isometric projection."""
+
+    return iso_project_point_3d(point_3d)
 
 
 def _fit_projected_points(
@@ -118,7 +124,7 @@ def _fit_projected_points(
     margin_px: float,
 ) -> Dict[str, Point]:
     """Project and fit one 3D point map into a square canvas."""
-    raw_points = {str(key): _iso_project(point) for key, point in points_3d.items()}
+    raw_points = {str(key): iso_project_point_3d(point) for key, point in points_3d.items()}
     x_values = [float(point[0]) for point in raw_points.values()]
     y_values = [float(point[1]) for point in raw_points.values()]
     min_x, max_x = min(x_values), max(x_values)

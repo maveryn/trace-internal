@@ -8,6 +8,7 @@ from .geometry.coordinate import relation as _task_geometry_coordinate_relation
 from .geometry.counting import value as _task_geometry_counting_value
 from .geometry.measurement import value as _task_geometry_measurement_value
 from .geometry.similarity import count as _task_geometry_similarity_count
+from .geometry.solid import view_count as _task_geometry_solid_view_count
 from .geometry.transformation import match as _task_geometry_transformation_match
 from .graph.comparison import largest_component_size as _task_graph_comparison_largest_component_size
 from .graph.counting import articulation_point_count as _task_graph_counting_articulation_point_count

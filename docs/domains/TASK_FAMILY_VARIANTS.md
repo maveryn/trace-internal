@@ -90,10 +90,10 @@ Define how we split tasks into reusable families so each dataset slice stays com
 14. `task_puzzles_logic_grid_completion_label` uses visual `scene_variant` values `logic_strip`, `logic_card`, and `logic_outline`.
 15. The active logic-grid grammar uses one square `3x3` through `5x5` board with one explicit `?` cell and exactly six labeled image options.
 16. Prompt-facing logic evidence should stay as one-box `bbox_set` grounding on the winning option panel; keep the query interaction stable as option selection even when later logic families vary the rule structure.
-17. `task_puzzles_spatial_cube_view_label` uses semantic `task_variant` values `same_cube_view` and `impossible_cube_view`.
-18. `task_puzzles_spatial_cube_view_label` uses visual `scene_variant` values `cube_strip`, `cube_card`, and `cube_outline`.
-19. The active cube-view grammar uses one reference cube, three explicit opposite-face hint pairs, and exactly six labeled option cubes.
-20. Prompt-facing spatial evidence should stay as one-box `bbox_set` grounding on the winning option panel; do not widen v1 cube-view evidence to multi-face explanations.
+17. `task_puzzles_spatial_fold_hole_label` uses semantic `task_variant` values `single_fold_single_hole`, `single_fold_two_holes`, and `double_fold_single_hole`.
+18. `task_puzzles_spatial_fold_hole_label` uses visual `scene_variant` values `fold_strip`, `fold_card`, and `fold_outline`.
+19. The active spatial fold-hole grammar uses three reference step panels above exactly six labeled unfolded-paper options; keep the fold directions explicit in the step panels rather than implicit in the final packet alone.
+20. Prompt-facing spatial evidence should stay as one-box `bbox_set` grounding on the winning option panel; do not widen early option-based spatial tasks to multi-region explanatory evidence.
 
 ## Planned geometry measurement variants
 1. **Angle measurement**

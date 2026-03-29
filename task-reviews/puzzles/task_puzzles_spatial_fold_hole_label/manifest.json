@@ -1,0 +1,15 @@
+{
+  "inspection_count": 75,
+  "task_id": "task_puzzles_spatial_fold_hole_label",
+  "variants": {
+    "double_fold_single_hole": 25,
+    "single_fold_single_hole": 25,
+    "single_fold_two_holes": 25
+  },
+  "workbook": "puzzles/task_puzzles_spatial_fold_hole_label/task_puzzles_spatial_fold_hole_label.xlsx",
+  "workbook_sheets": {
+    "double_fold_single_hole": "double_fold_single_hole",
+    "single_fold_single_hole": "single_fold_single_hole",
+    "single_fold_two_holes": "single_fold_two_holes"
+  }
+}

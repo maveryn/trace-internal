@@ -30,7 +30,7 @@ Use this whenever the task lives under `domain=puzzles`.
 ## Early-family guidance
 - `arithmetic`: visual equations, balance/weight puzzles, digit-placement puzzles, number-grid puzzles with explicit unknowns.
 - `logic`: option filtering under placement/adjacency/consistency constraints.
-- `spatial`: cube views/nets, block stacks, assembly/cut-and-build puzzles.
+- `spatial`: fold/hole-punch puzzles, cube views/nets, block stacks, assembly/cut-and-build puzzles.
 - `topology`: equivalence under deformation, region/inside-outside reasoning, connected-structure invariants.
 - `symbolic` later: letter/word/path puzzles and symbol-mapping tasks once text-rendering needs are clear.
 
@@ -65,9 +65,9 @@ Use this whenever the task lives under `domain=puzzles`.
 - For early logic families, make the semantic rule vary inside `task_variant` (for example row uniqueness vs column uniqueness vs both) before creating new task ids for near-identical board-and-options layouts.
 
 ## Early spatial lessons
-- For early single-reference cube tasks, do not ask the model to reason about hidden faces the image never reveals.
-- If a cube-view task needs full-cube view consistency rather than only visible-corner order, expose the hidden-face structure explicitly in the image first (for example opposite-face hint pairs) before asking about candidate views.
-- For option-based spatial puzzles, keep `answer_gt.type = option_letter` and ground prompt-facing evidence on the winning option panel bbox, not on multiple cube faces.
+- For early spatial puzzles, prefer benchmark-like fold/hole or other explicit step-diagram tasks over hidden spatial conventions that the image does not make clear.
+- For fold-hole tasks, keep the fold direction explicit in the image with visible fold lines and arrows instead of expecting the solver to infer an arbitrary folding convention.
+- For option-based spatial puzzles, keep `answer_gt.type = option_letter` and ground prompt-facing evidence on the winning option panel bbox, not on many explanatory regions.
 - When a second puzzle family needs labeled image options, reuse shared puzzle option-panel chrome instead of copying panel/label/content-box layout into another scene renderer.
 
 ## Benchmark alignment

@@ -453,12 +453,13 @@ def test_puzzles_logic_bundle_supports_grid_completion_variants() -> None:
     ]
 
 
-def test_puzzles_spatial_bundle_supports_cube_view_variants() -> None:
+def test_puzzles_spatial_bundle_supports_fold_hole_variants() -> None:
     bundle = load_prompt_bundle("puzzles", "spatial", "puzzles_spatial_v1")
-    assert len(bundle.task_templates["cube_view_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_variant_templates["same_cube_view"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_variant_templates["impossible_cube_view"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["task_family:spatial_cube_view_puzzle"]) == [
+    assert len(bundle.task_templates["unfold_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["single_fold_single_hole"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["single_fold_two_holes"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["double_fold_single_hole"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_family:spatial_fold_hole_puzzle"]) == [
         "object_description",
     ]
 

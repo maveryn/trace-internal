@@ -2,41 +2,48 @@
   "bundle_id": "puzzles_spatial_v1",
   "schema_version": "v1",
   "task_family_templates": {
-    "spatial_cube_view_puzzle": [
+    "spatial_fold_hole_puzzle": [
       "The image shows {object_description}.",
-      "Look at the cube-view puzzle in the image: {object_description}.",
+      "Look at the folded-paper puzzle in the image: {object_description}.",
       "You are given {object_description}.",
-      "Work from the spatial puzzle shown in the image: {object_description}.",
-      "Use the reference cube, opposite-face hints, and labeled image options in the image: {object_description}."
+      "Work from the fold-and-hole puzzle shown in the image: {object_description}.",
+      "Use the folded-paper diagram and labeled options in the image: {object_description}."
     ]
   },
   "task_templates": {
-    "cube_view_query": [
-      "Choose the correct labeled option cube.",
-      "Determine which labeled option cube is correct.",
-      "Use the reference cube and opposite-face hints to identify the correct image option.",
-      "Find the labeled option cube that satisfies the question.",
-      "Work from the reference cube plus the opposite-face hints and choose the correct option."
+    "unfold_query": [
+      "Choose the correct unfolded-paper option.",
+      "Determine which labeled option is correct after the paper is unfolded.",
+      "Use the fold steps to identify the correct image option.",
+      "Find the labeled option that shows the unfolded paper.",
+      "Work from the fold diagram and choose the correct option."
     ]
   },
   "task_variant_templates": {
-    "same_cube_view": [
-      "Which option could be another view of the same cube? Answer with the option letter.",
-      "Select the labeled option that could show the same cube from another viewpoint. Answer with the option letter.",
-      "Which labeled option is a possible view of the same cube? Answer with the option letter.",
-      "Choose the option that could be the same cube seen from a different angle. Answer with the option letter.",
-      "Which option can represent another valid view of the reference cube? Answer with the option letter."
+    "single_fold_single_hole": [
+      "Which option shows the paper after it is unfolded? Answer with the option letter.",
+      "Select the labeled option that matches the unfolded paper. Answer with the option letter.",
+      "Which labeled option is the correct unfolded result? Answer with the option letter.",
+      "Choose the option that shows the unfolded paper after the fold and punch. Answer with the option letter.",
+      "Which option gives the correct unfolded hole pattern? Answer with the option letter."
     ],
-    "impossible_cube_view": [
-      "Which option cannot be a view of the same cube? Answer with the option letter.",
-      "Select the labeled option that is impossible for the reference cube. Answer with the option letter.",
-      "Which labeled option is not a possible view of the same cube? Answer with the option letter.",
-      "Choose the option that cannot match the reference cube from any viewpoint. Answer with the option letter.",
-      "Which option is inconsistent with the reference cube? Answer with the option letter."
+    "single_fold_two_holes": [
+      "Which option shows the paper after it is unfolded? Answer with the option letter.",
+      "Select the labeled option that matches the unfolded paper. Answer with the option letter.",
+      "Which labeled option is the correct unfolded result? Answer with the option letter.",
+      "Choose the option that shows the unfolded paper after the fold and punches. Answer with the option letter.",
+      "Which option gives the correct unfolded hole pattern? Answer with the option letter."
+    ],
+    "double_fold_single_hole": [
+      "Which option shows the paper after it is unfolded? Answer with the option letter.",
+      "Select the labeled option that matches the unfolded paper. Answer with the option letter.",
+      "Which labeled option is the correct unfolded result? Answer with the option letter.",
+      "Choose the option that shows the unfolded paper after both folds are reversed. Answer with the option letter.",
+      "Which option gives the correct unfolded hole pattern? Answer with the option letter."
     ]
   },
   "required_slots_by_key": {
-    "task_family:spatial_cube_view_puzzle": [
+    "task_family:spatial_fold_hole_puzzle": [
       "object_description"
     ],
     "answer_or_evidence:answer_only": [

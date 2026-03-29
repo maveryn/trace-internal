@@ -1,0 +1,768 @@
+{
+  "answer_gt": {
+    "type": "option_letter",
+    "value": "C"
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        473.0,
+        616.0,
+        621.0,
+        804.0
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "puzzles/task_puzzles_spatial_fold_hole_label/images/single_fold_single_hole/0022.png"
+  },
+  "instance_seed": 576096183932150,
+  "prompt": "The image shows a card-style folded-paper hole-punch puzzle with three fold steps above six labeled unfolded-paper options. Find the labeled option that shows the unfolded paper. Which option gives the correct unfolded hole pattern? Answer with the option letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel.\nAnswer: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"evidence\":[[333,616,481,804]],\"answer\":\"B\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows a card-style folded-paper hole-punch puzzle with three fold steps above six labeled unfolded-paper options. Find the labeled option that shows the unfolded paper. Which option gives the correct unfolded hole pattern? Answer with the option letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel.\nAnswer: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"evidence\":[[333,616,481,804]],\"answer\":\"B\"}",
+    "answer_only": "The image shows a card-style folded-paper hole-punch puzzle with three fold steps above six labeled unfolded-paper options. Find the labeled option that shows the unfolded paper. Which option gives the correct unfolded hole pattern? Answer with the option letter.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"answer\":\"B\"}"
+  },
+  "task": "task_puzzles_spatial_fold_hole_label",
+  "task_variant": "single_fold_single_hole",
+  "trace_payload": {
+    "answer_gt": {
+      "type": "option_letter",
+      "value": "C"
+    },
+    "complexity": {
+      "complexity_components": {
+        "reasoning_load": 0.26,
+        "scene_variant_load": 0.2,
+        "visual_scan": 0.275
+      },
+      "complexity_score": 0.251
+    },
+    "evidence_gt": {
+      "type": "bbox_set",
+      "value": [
+        [
+          473.0,
+          616.0,
+          621.0,
+          804.0
+        ]
+      ]
+    },
+    "execution_trace": {
+      "answer_option_label": "C",
+      "correct_option_index": 2,
+      "correct_option_panel_id": "option_panel_C",
+      "fold_axes": [
+        "vertical"
+      ],
+      "fold_mode": "single",
+      "folded_hole_cells": [
+        [
+          2,
+          1
+        ]
+      ],
+      "grid_size": 6,
+      "option_count": 6,
+      "option_specs": [
+        {
+          "hole_cells": [
+            [
+              2,
+              1
+            ]
+          ],
+          "is_correct": false,
+          "option_label": "A",
+          "option_panel_id": "option_panel_A"
+        },
+        {
+          "hole_cells": [
+            [
+              2,
+              1
+            ],
+            [
+              2,
+              4
+            ]
+          ],
+          "is_correct": false,
+          "option_label": "B",
+          "option_panel_id": "option_panel_B"
+        },
+        {
+          "hole_cells": [
+            [
+              2,
+              1
+            ],
+            [
+              3,
+              1
+            ]
+          ],
+          "is_correct": true,
+          "option_label": "C",
+          "option_panel_id": "option_panel_C"
+        },
+        {
+          "hole_cells": [
+            [
+              2,
+              1
+            ],
+            [
+              3,
+              1
+            ],
+            [
+              2,
+              4
+            ]
+          ],
+          "is_correct": false,
+          "option_label": "D",
+          "option_panel_id": "option_panel_D"
+        },
+        {
+          "hole_cells": [
+            [
+              2,
+              4
+            ],
+            [
+              3,
+              4
+            ]
+          ],
+          "is_correct": false,
+          "option_label": "E",
+          "option_panel_id": "option_panel_E"
+        },
+        {
+          "hole_cells": [
+            [
+              1,
+              2
+            ],
+            [
+              1,
+              3
+            ]
+          ],
+          "is_correct": false,
+          "option_label": "F",
+          "option_panel_id": "option_panel_F"
+        }
+      ],
+      "punch_count": 1,
+      "question_format": "fold_hole_mcq",
+      "scene_variant": "fold_card",
+      "solver_trace": {
+        "correct_option_index": 2,
+        "correct_option_label": "C",
+        "unfolded_hole_cells": [
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ]
+        ]
+      },
+      "supporting_option_panel_ids": [
+        "option_panel_C"
+      ],
+      "task_variant": "single_fold_single_hole",
+      "unfolded_hole_cells": [
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          1
+        ]
+      ],
+      "view_family": "fold_hole_unfold_mcq"
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          473.0,
+          616.0,
+          621.0,
+          804.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "grid_size": 6,
+        "option_count": 6,
+        "punch_count": 1,
+        "scene_variant": "fold_card",
+        "scene_variant_probabilities": {
+          "fold_card": 0.3333333333333333,
+          "fold_outline": 0.3333333333333333,
+          "fold_strip": 0.3333333333333333
+        },
+        "task_variant": "single_fold_single_hole",
+        "task_variant_probabilities": {
+          "double_fold_single_hole": 0.0,
+          "single_fold_single_hole": 1.0,
+          "single_fold_two_holes": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "puzzles_spatial_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the exact option letter of the correct image option",
+          "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel",
+          "json_example": "{\"evidence\":[[333,616,481,804]],\"answer\":\"B\"}",
+          "json_example_answer_only": "{\"answer\":\"B\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a card-style folded-paper hole-punch puzzle with three fold steps above six labeled unfolded-paper options"
+        },
+        "task_family_key": "spatial_fold_hole_puzzle",
+        "task_family_variant_index": 0,
+        "task_key": "unfold_query",
+        "task_variant_index": 3,
+        "task_variant_key": "single_fold_single_hole",
+        "task_variant_template_index": 4,
+        "template_paths": [
+          "puzzles/spatial/puzzles_spatial_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:unfold_query": 5,
+          "task_family:spatial_fold_hole_puzzle": 5,
+          "task_variant:single_fold_single_hole": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "puzzles_spatial_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact option letter of the correct image option",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel",
+              "json_example": "{\"evidence\":[[333,616,481,804]],\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a card-style folded-paper hole-punch puzzle with three fold steps above six labeled unfolded-paper options"
+            },
+            "task_family_key": "spatial_fold_hole_puzzle",
+            "task_family_variant_index": 0,
+            "task_key": "unfold_query",
+            "task_variant_index": 3,
+            "task_variant_key": "single_fold_single_hole",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "puzzles/spatial/puzzles_spatial_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:unfold_query": 5,
+              "task_family:spatial_fold_hole_puzzle": 5,
+              "task_variant:single_fold_single_hole": 5
+            }
+          },
+          "prompt": "The image shows a card-style folded-paper hole-punch puzzle with three fold steps above six labeled unfolded-paper options. Find the labeled option that shows the unfolded paper. Which option gives the correct unfolded hole pattern? Answer with the option letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel.\nAnswer: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"evidence\":[[333,616,481,804]],\"answer\":\"B\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "puzzles_spatial_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact option letter of the correct image option",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel",
+              "json_example": "{\"evidence\":[[333,616,481,804]],\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a card-style folded-paper hole-punch puzzle with three fold steps above six labeled unfolded-paper options"
+            },
+            "task_family_key": "spatial_fold_hole_puzzle",
+            "task_family_variant_index": 0,
+            "task_key": "unfold_query",
+            "task_variant_index": 3,
+            "task_variant_key": "single_fold_single_hole",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "puzzles/spatial/puzzles_spatial_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:unfold_query": 5,
+              "task_family:spatial_fold_hole_puzzle": 5,
+              "task_variant:single_fold_single_hole": 5
+            }
+          },
+          "prompt": "The image shows a card-style folded-paper hole-punch puzzle with three fold steps above six labeled unfolded-paper options. Find the labeled option that shows the unfolded paper. Which option gives the correct unfolded hole pattern? Answer with the option letter.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"answer\":\"B\"}"
+        }
+      },
+      "task_variant": "single_fold_single_hole",
+      "template_id": "puzzles_spatial_v1"
+    },
+    "render_map": {
+      "image_id": "img0",
+      "option_panel_bboxes_px": {
+        "option_panel_A": [
+          141.0,
+          616.0,
+          289.0,
+          804.0
+        ],
+        "option_panel_B": [
+          307.0,
+          616.0,
+          455.0,
+          804.0
+        ],
+        "option_panel_C": [
+          473.0,
+          616.0,
+          621.0,
+          804.0
+        ],
+        "option_panel_D": [
+          639.0,
+          616.0,
+          787.0,
+          804.0
+        ],
+        "option_panel_E": [
+          805.0,
+          616.0,
+          953.0,
+          804.0
+        ],
+        "option_panel_F": [
+          971.0,
+          616.0,
+          1119.0,
+          804.0
+        ]
+      },
+      "reference_panel_bbox_px": [
+        64.0,
+        56.0,
+        1196.0,
+        568.0
+      ],
+      "scene_bbox_px": [
+        64.0,
+        56.0,
+        1196.0,
+        804.0
+      ],
+      "step_panel_bboxes_px": {
+        "step_panel_1": [
+          290.0,
+          84.0,
+          498.0,
+          292.0
+        ],
+        "step_panel_2": [
+          526.0,
+          84.0,
+          734.0,
+          292.0
+        ],
+        "step_panel_3": [
+          762.0,
+          84.0,
+          970.0,
+          292.0
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 860,
+      "canvas_width": 1260,
+      "coord_space": "pixel",
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_bbox_px": [
+        64.0,
+        56.0,
+        1196.0,
+        804.0
+      ],
+      "scene_variant": "fold_card",
+      "text_style": {
+        "option_label_font_size_px": 30
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "step_index": 1
+          },
+          "bbox_px": [
+            290.0,
+            84.0,
+            498.0,
+            292.0
+          ],
+          "entity_id": "step_panel_1",
+          "entity_type": "puzzle_fold_step_panel"
+        },
+        {
+          "attrs": {
+            "step_index": 2
+          },
+          "bbox_px": [
+            526.0,
+            84.0,
+            734.0,
+            292.0
+          ],
+          "entity_id": "step_panel_2",
+          "entity_type": "puzzle_fold_step_panel"
+        },
+        {
+          "attrs": {
+            "paper_state": "folded_packet",
+            "step_index": 3
+          },
+          "bbox_px": [
+            887.613,
+            146.4,
+            897.613,
+            156.4
+          ],
+          "entity_id": "step_panel_3_hole_1",
+          "entity_type": "puzzle_fold_hole"
+        },
+        {
+          "attrs": {
+            "step_index": 3
+          },
+          "bbox_px": [
+            762.0,
+            84.0,
+            970.0,
+            292.0
+          ],
+          "entity_id": "step_panel_3",
+          "entity_type": "puzzle_fold_step_panel"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "A"
+          },
+          "bbox_px": [
+            141.0,
+            616.0,
+            289.0,
+            804.0
+          ],
+          "entity_id": "option_panel_A",
+          "entity_type": "puzzle_option_panel"
+        },
+        {
+          "attrs": {
+            "is_correct_option": false,
+            "option_label": "A"
+          },
+          "bbox_px": [
+            204.357,
+            706.91,
+            214.357,
+            716.91
+          ],
+          "entity_id": "option_panel_A_hole_1",
+          "entity_type": "puzzle_fold_hole"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "B"
+          },
+          "bbox_px": [
+            307.0,
+            616.0,
+            455.0,
+            804.0
+          ],
+          "entity_id": "option_panel_B",
+          "entity_type": "puzzle_option_panel"
+        },
+        {
+          "attrs": {
+            "is_correct_option": false,
+            "option_label": "B"
+          },
+          "bbox_px": [
+            370.357,
+            706.91,
+            380.357,
+            716.91
+          ],
+          "entity_id": "option_panel_B_hole_1",
+          "entity_type": "puzzle_fold_hole"
+        },
+        {
+          "attrs": {
+            "is_correct_option": false,
+            "option_label": "B"
+          },
+          "bbox_px": [
+            370.357,
+            740.77,
+            380.357,
+            750.77
+          ],
+          "entity_id": "option_panel_B_hole_2",
+          "entity_type": "puzzle_fold_hole"
+        },
+        {
+          "attrs": {
+            "is_correct": true,
+            "option_label": "C"
+          },
+          "bbox_px": [
+            473.0,
+            616.0,
+            621.0,
+            804.0
+          ],
+          "entity_id": "option_panel_C",
+          "entity_type": "puzzle_option_panel"
+        },
+        {
+          "attrs": {
+            "is_correct_option": true,
+            "option_label": "C"
+          },
+          "bbox_px": [
+            536.357,
+            706.91,
+            546.357,
+            716.91
+          ],
+          "entity_id": "option_panel_C_hole_1",
+          "entity_type": "puzzle_fold_hole"
+        },
+        {
+          "attrs": {
+            "is_correct_option": true,
+            "option_label": "C"
+          },
+          "bbox_px": [
+            547.643,
+            706.91,
+            557.643,
+            716.91
+          ],
+          "entity_id": "option_panel_C_hole_2",
+          "entity_type": "puzzle_fold_hole"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "D"
+          },
+          "bbox_px": [
+            639.0,
+            616.0,
+            787.0,
+            804.0
+          ],
+          "entity_id": "option_panel_D",
+          "entity_type": "puzzle_option_panel"
+        },
+        {
+          "attrs": {
+            "is_correct_option": false,
+            "option_label": "D"
+          },
+          "bbox_px": [
+            702.357,
+            706.91,
+            712.357,
+            716.91
+          ],
+          "entity_id": "option_panel_D_hole_1",
+          "entity_type": "puzzle_fold_hole"
+        },
+        {
+          "attrs": {
+            "is_correct_option": false,
+            "option_label": "D"
+          },
+          "bbox_px": [
+            713.643,
+            706.91,
+            723.643,
+            716.91
+          ],
+          "entity_id": "option_panel_D_hole_2",
+          "entity_type": "puzzle_fold_hole"
+        },
+        {
+          "attrs": {
+            "is_correct_option": false,
+            "option_label": "D"
+          },
+          "bbox_px": [
+            702.357,
+            740.77,
+            712.357,
+            750.77
+          ],
+          "entity_id": "option_panel_D_hole_3",
+          "entity_type": "puzzle_fold_hole"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "E"
+          },
+          "bbox_px": [
+            805.0,
+            616.0,
+            953.0,
+            804.0
+          ],
+          "entity_id": "option_panel_E",
+          "entity_type": "puzzle_option_panel"
+        },
+        {
+          "attrs": {
+            "is_correct_option": false,
+            "option_label": "E"
+          },
+          "bbox_px": [
+            868.357,
+            740.77,
+            878.357,
+            750.77
+          ],
+          "entity_id": "option_panel_E_hole_1",
+          "entity_type": "puzzle_fold_hole"
+        },
+        {
+          "attrs": {
+            "is_correct_option": false,
+            "option_label": "E"
+          },
+          "bbox_px": [
+            879.643,
+            740.77,
+            889.643,
+            750.77
+          ],
+          "entity_id": "option_panel_E_hole_2",
+          "entity_type": "puzzle_fold_hole"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "F"
+          },
+          "bbox_px": [
+            971.0,
+            616.0,
+            1119.0,
+            804.0
+          ],
+          "entity_id": "option_panel_F",
+          "entity_type": "puzzle_option_panel"
+        },
+        {
+          "attrs": {
+            "is_correct_option": false,
+            "option_label": "F"
+          },
+          "bbox_px": [
+            1023.07,
+            718.197,
+            1033.07,
+            728.197
+          ],
+          "entity_id": "option_panel_F_hole_1",
+          "entity_type": "puzzle_fold_hole"
+        },
+        {
+          "attrs": {
+            "is_correct_option": false,
+            "option_label": "F"
+          },
+          "bbox_px": [
+            1023.07,
+            729.483,
+            1033.07,
+            739.483
+          ],
+          "entity_id": "option_panel_F_hole_2",
+          "entity_type": "puzzle_fold_hole"
+        }
+      ],
+      "relations": {
+        "answer_option_label": "C",
+        "correct_option_panel_id": "option_panel_C",
+        "scene_variant": "fold_card",
+        "task_variant": "single_fold_single_hole",
+        "view_family": "fold_hole_unfold_mcq"
+      },
+      "scene_kind": "puzzle_spatial_fold_card"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

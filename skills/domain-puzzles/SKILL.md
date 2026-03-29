@@ -41,6 +41,7 @@ Use this whenever the task lives under `domain=puzzles`.
 - Only use multi-box evidence when the task genuinely needs multiple ordered witnesses and the order can be defined cleanly in the prompt.
 - Design early puzzle tasks so the evidence can stay local and visually obvious; avoid families whose first version would need long derived witness sets.
 - When a topology puzzle asks for a count of valid options rather than one winning option, order the supporting option-image bboxes in normal reading order and keep the rule text explicit enough that reflection ambiguity cannot creep in.
+- When a puzzle's answer depends on color identity, do not rely on hand-picked RGB labels alone; sample or validate the active colors with Lab-distance constraints so visually adjacent colors are not accidentally used as distinct reasoning tokens.
 
 ## Design heuristics
 - Start with puzzle tasks that expose an explicit queried slot, missing value, or named option. They are easier to verify and keep evidence clean.
@@ -77,6 +78,7 @@ Use this whenever the task lives under `domain=puzzles`.
 ## Early topology lessons
 - For first topology tasks, prefer bead-loop or similar closed-curve puzzles where the invariant can be stated exactly in the prompt.
 - Make the allowed transformations explicit. A good default is: smooth deformation and cyclic rotation are allowed, but cutting, bead crossing, and flipping/reflection are not.
+- For topology bead-loop puzzles with color-bearing variants, keep the active per-instance colors distinct in Lab space; a good default floor is `ΔE*ab >= 50`.
 - When the task asks for the number of valid options, keep the answer as an integer and ground evidence on the valid option images in reading order rather than inventing a new evidence type.
 
 ## Benchmark alignment

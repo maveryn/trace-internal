@@ -136,7 +136,7 @@ def _draw_bead(
             fill_rgb=fill_rgb,
             outline_rgb=outline_rgb,
             width=max(2, int(render_params.border_width_px)),
-            inset_px=float(min(8.0, 0.20 * bead_size_px)),
+            inset_px=float(max(0.0, render_params.shape_bead_inset_px)),
         )
     return _round_bbox(bead_bbox)
 

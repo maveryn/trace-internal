@@ -105,7 +105,9 @@
         5,
         6
       ],
+      "color_distance_space": "lab",
       "equivalence_rule": "same_cyclic_order_up_to_rotation_no_reflection",
+      "min_color_distance": 50.0,
       "option_count": 6,
       "option_count_range": [
         6,
@@ -456,7 +458,9 @@
       ],
       "scene_variant": "loop_card",
       "solver_trace": {
+        "color_distance_space": "lab",
         "equivalence_rule": "same_cyclic_order_up_to_rotation_no_reflection",
+        "min_color_distance": 50.0,
         "reference_token_sequence": [
           "triangle",
           "diamond",
@@ -548,6 +552,8 @@
     "query_spec": {
       "params": {
         "bead_count": 6,
+        "color_distance_space": "lab",
+        "min_color_distance": 50.0,
         "option_count": 6,
         "scene_variant": "loop_card",
         "scene_variant_probabilities": {

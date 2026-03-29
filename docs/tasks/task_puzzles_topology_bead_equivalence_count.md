@@ -26,7 +26,8 @@
 6. Generation guarantees:
    - option count defaults to `6..7`,
    - valid option count defaults to `1..5`,
-   - bead count defaults to `5..7` (`shape_cycle_count` caps at `6` because the shape pool has six distinct symbols),
+   - bead count defaults to `4..6`,
+   - color-bearing variants (`color_cycle_count` and `mixed_cycle_count`) use distinct colors with minimum Lab separation `ΔE*ab >= 50`,
    - all valid options preserve the same cyclic order as the reference loop up to rotation,
    - all invalid options break that cyclic order by construction.
 
@@ -87,8 +88,9 @@
 ## 5) Visual policy
 1. Background and post-image noise use the merged puzzles-domain visual defaults from `configs/domains/puzzles/base.yaml`.
 2. V1 topology scenes use clean light backgrounds and simple loop outlines so the bead order remains the salient signal.
-3. Scene variants change outer reference-panel chrome while preserving the same reference-plus-options grammar.
-4. Option letters appear below the loop images; the answer is still an integer count, not an option letter.
+3. Shape and mixed-symbol beads now use a much smaller shape inset so the rendered symbols occupy a little more than twice the previous glyph area inside each bead slot.
+4. Scene variants change outer reference-panel chrome while preserving the same reference-plus-options grammar.
+5. Option letters appear below the loop images; the answer is still an integer count, not an option letter.
 
 ## 6) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.

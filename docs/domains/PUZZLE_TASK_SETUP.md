@@ -216,6 +216,8 @@ Capture the active v1 contract for the `puzzles` domain.
    - the prompt explicitly allows rotation and smooth deformation but forbids cutting, bead crossing, and flipping the loop over,
    - option counts default to `6..7`,
    - valid-option counts default to `1..5`,
+   - bead counts default to `4..6`,
+   - color-bearing variants use distinct colors with minimum Lab separation `ΔE*ab >= 50`,
    - the answer is the number of valid option loops as an integer.
 6. Trace contract:
    - `scene_ir.entities` includes `puzzle_topology_reference_panel`, `puzzle_topology_reference_label`, `puzzle_topology_reference_loop`, `puzzle_topology_reference_bead`, `puzzle_topology_option_choice`, `puzzle_topology_option_label`, `puzzle_topology_option_loop`, and `puzzle_topology_option_bead` entities,

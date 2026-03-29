@@ -99,7 +99,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
 23. Prompt-facing spatial evidence should stay as one-box `bbox_set` grounding on the winning option image for fold-result tasks or as the ordered two-box structure pair `[original left, remaining right]` for cube-removal tasks; do not invent fake per-missing-cube bboxes.
 24. `task_puzzles_topology_bead_equivalence_count` uses semantic `task_variant` values `color_cycle_count`, `shape_cycle_count`, and `mixed_cycle_count`.
 25. `task_puzzles_topology_bead_equivalence_count` uses visual `scene_variant` values `loop_strip`, `loop_card`, and `loop_outline`.
-26. The active topology bead-loop grammar uses one reference loop above `6..7` labeled option loops and counts the options whose bead order matches the reference up to cyclic rotation only; prompt-facing evidence should be the ordered set of valid option-image bboxes, and the prompt must explicitly say that flipping/reflection is not allowed.
+26. The active topology bead-loop grammar uses one reference loop above `6..7` labeled option loops, `4..6` beads per loop, and counts the options whose bead order matches the reference up to cyclic rotation only; color-bearing variants should use Lab-separated colors, prompt-facing evidence should be the ordered set of valid option-image bboxes, and the prompt must explicitly say that flipping/reflection is not allowed.
 
 ## Planned geometry measurement variants
 1. **Angle measurement**

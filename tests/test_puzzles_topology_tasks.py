@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from itertools import combinations
+
+from trace.tasks.shared.color_distance import color_distance
 from trace.tasks.puzzles.shared.bead_loop_common import bead_sequences_are_rotation_equivalent
 from trace.tasks.puzzles.topology.bead_equivalence_count import PuzzlesTopologyBeadEquivalenceCountTask
 from tests.helpers import extract_prompt_json_example
@@ -48,7 +51,10 @@ def test_puzzle_topology_bead_equivalence_count_contract_matches_valid_options()
             assert list(execution["valid_option_count_range"]) == [1, 5]
             assert int(execution["option_count"]) in {6, 7}
             assert 1 <= int(execution["valid_option_count"]) <= 5
-            assert 5 <= int(execution["bead_count"]) <= 7
+            assert 4 <= int(execution["bead_count"]) <= 6
+            assert 4 <= int(execution["bead_count_range"][0]) <= int(execution["bead_count_range"][1]) <= 6
+            assert int(execution["bead_count"]) >= int(execution["bead_count_range"][0])
+            assert int(execution["bead_count"]) <= int(execution["bead_count_range"][1])
             assert str(execution["question_format"]) == "bead_equivalence_count"
             assert str(execution["view_family"]) == "topology_loop_option_count"
             assert str(execution["equivalence_rule"]) == "same_cyclic_order_up_to_rotation_no_reflection"
@@ -84,6 +90,19 @@ def test_puzzle_topology_bead_equivalence_count_contract_matches_valid_options()
             assert [str(value) for value in execution["valid_option_choice_ids"]] == [
                 str(value) for value in solver["valid_option_choice_ids"]
             ]
+
+            if str(task_variant) in {"color_cycle_count", "mixed_cycle_count"}:
+                distinct_colors = sorted(
+                    {
+                        tuple(int(channel) for channel in bead_spec["fill_rgb"])
+                        for bead_spec in option_specs[0]["bead_specs"]
+                    }
+                )
+                assert len(distinct_colors) == int(execution["bead_count"])
+                assert float(execution["min_color_distance"]) == 50.0
+                assert str(execution["color_distance_space"]) == "lab"
+                for color_a, color_b in combinations(distinct_colors, 2):
+                    assert float(color_distance(color_a, color_b, distance_space="lab")) >= 50.0
 
 
 def test_puzzle_topology_prompt_examples_match_selected_variants() -> None:

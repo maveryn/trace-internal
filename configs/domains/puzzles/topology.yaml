@@ -5,8 +5,10 @@ generation:
       option_count_max: 7
       valid_option_count_min: 1
       valid_option_count_max: 5
-      bead_count_min: 5
-      bead_count_max: 7
+      bead_count_min: 4
+      bead_count_max: 6
+      min_color_distance: 50.0
+      color_distance_space: lab
       balanced_task_variant_sampling: true
       balanced_scene_variant_sampling: true
       task_variant_weights:
@@ -43,6 +45,7 @@ rendering:
       border_width_px: 3
       loop_stroke_width_px: 5
       bead_size_px: 30
+      shape_bead_inset_px: 2
       panel_fill_rgb: [248, 249, 252]
       instruction_fill_rgb: [240, 244, 250]
       border_color_rgb: [86, 94, 108]

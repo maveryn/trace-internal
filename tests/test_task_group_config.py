@@ -1003,9 +1003,14 @@ def test_puzzles_topology_bead_equivalence_defaults_loaded() -> None:
     assert int(generation_defaults["option_count_max"]) == 7
     assert int(generation_defaults["valid_option_count_min"]) == 1
     assert int(generation_defaults["valid_option_count_max"]) == 5
+    assert int(generation_defaults["bead_count_min"]) == 4
+    assert int(generation_defaults["bead_count_max"]) == 6
+    assert float(generation_defaults["min_color_distance"]) == 50.0
+    assert str(generation_defaults["color_distance_space"]) == "lab"
     assert int(rendering_defaults["canvas_width"]) > 0
     assert int(rendering_defaults["reference_panel_height_px"]) > 0
     assert int(rendering_defaults["option_image_width_px"]) > 0
+    assert int(rendering_defaults["shape_bead_inset_px"]) == 2
     assert str(prompt_defaults["evidence_hint_color_cycle_count"]).strip()
     assert str(prompt_defaults["json_example_mixed_cycle_count"]).strip()
 

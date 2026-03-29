@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from itertools import combinations
 from typing import Any, Dict, List, Mapping, MutableSequence, Sequence, Tuple
 
 from ....core.seed import spawn_rng
+from ...shared.color_distance import color_distance
 from ...shared.config_defaults import group_default
 from ...shared.deterministic_sampling import resolve_selection_index
 from .common import resolve_puzzle_axis_variant
@@ -23,14 +25,14 @@ SUPPORTED_PUZZLE_BEAD_LOOP_TASK_VARIANTS: Tuple[str, ...] = (
     "mixed_cycle_count",
 )
 BEAD_COLOR_SPECS: Tuple[Tuple[str, Tuple[int, int, int]], ...] = (
-    ("blue", (74, 127, 214)),
-    ("orange", (214, 130, 74)),
-    ("green", (64, 164, 108)),
-    ("red", (196, 90, 100)),
-    ("purple", (136, 100, 196)),
-    ("gold", (205, 162, 62)),
-    ("teal", (69, 164, 176)),
-    ("pink", (214, 118, 162)),
+    ("sky", (64, 175, 225)),
+    ("forest", (46, 95, 60)),
+    ("violet", (83, 54, 154)),
+    ("lime", (185, 225, 30)),
+    ("sand", (208, 144, 98)),
+    ("magenta", (205, 85, 138)),
+    ("mint", (86, 225, 142)),
+    ("crimson", (222, 42, 33)),
 )
 LOOP_SHAPE_VARIANTS: Tuple[str, ...] = (
     "circle",
@@ -38,6 +40,8 @@ LOOP_SHAPE_VARIANTS: Tuple[str, ...] = (
     "tall",
 )
 LOOP_START_ANGLES_DEG: Tuple[int, ...] = (-90, -45, 0, 45, 90, 135, 180)
+BEAD_COLOR_DISTANCE_SPACE = "lab"
+BEAD_COLOR_MIN_DISTANCE = 50.0
 
 
 def _resolve_int_param(
@@ -59,9 +63,11 @@ class PuzzleBeadLoopDefaults:
     option_count_max: int = 7
     valid_option_count_min: int = 1
     valid_option_count_max: int = 5
-    bead_count_min: int = 5
-    bead_count_max: int = 7
+    bead_count_min: int = 4
+    bead_count_max: int = 6
     shape_bead_count_max: int = 6
+    min_color_distance: float = 50.0
+    color_distance_space: str = "lab"
 
 
 @dataclass(frozen=True)
@@ -90,6 +96,7 @@ class PuzzleBeadLoopRenderParams:
     border_width_px: int
     loop_stroke_width_px: int
     bead_size_px: int
+    shape_bead_inset_px: int
     panel_fill_rgb: Tuple[int, int, int]
     instruction_fill_rgb: Tuple[int, int, int]
     border_color_rgb: Tuple[int, int, int]
@@ -173,6 +180,7 @@ def resolve_bead_loop_render_params(
         border_width_px=int(_resolve_int_param(params, render_defaults, "border_width_px", 3)),
         loop_stroke_width_px=int(_resolve_int_param(params, render_defaults, "loop_stroke_width_px", 5)),
         bead_size_px=int(_resolve_int_param(params, render_defaults, "bead_size_px", 30)),
+        shape_bead_inset_px=int(_resolve_int_param(params, render_defaults, "shape_bead_inset_px", 2)),
         panel_fill_rgb=tuple(int(v) for v in render_defaults.get("panel_fill_rgb", (248, 249, 252))),
         instruction_fill_rgb=tuple(int(v) for v in render_defaults.get("instruction_fill_rgb", (240, 244, 250))),
         border_color_rgb=tuple(int(v) for v in render_defaults.get("border_color_rgb", (86, 94, 108))),
@@ -239,12 +247,27 @@ def _token_catalog_for_variant(
     task_variant: str,
     *,
     bead_count: int,
+    min_color_distance: float,
+    color_distance_space: str,
     rng,
 ) -> Dict[str, Dict[str, Any]]:
     """Build the token catalog for one variant."""
 
+    def _sample_distinct_color_specs() -> List[Tuple[str, Tuple[int, int, int]]]:
+        shuffled = list(BEAD_COLOR_SPECS)
+        rng.shuffle(shuffled)
+        for candidate_specs in combinations(shuffled, int(bead_count)):
+            if all(
+                float(color_distance(color_a, color_b, distance_space=str(color_distance_space))) >= float(min_color_distance)
+                for (_, color_a), (_, color_b) in combinations(candidate_specs, 2)
+            ):
+                selected = list(candidate_specs)
+                rng.shuffle(selected)
+                return selected
+        raise RuntimeError("no bead-color subset satisfied the required Lab-distance separation")
+
     if str(task_variant) == "color_cycle_count":
-        colors = rng.sample(list(BEAD_COLOR_SPECS), int(bead_count))
+        colors = _sample_distinct_color_specs()
         return {
             str(color_name): {
                 "token_label": str(color_name),
@@ -266,12 +289,8 @@ def _token_catalog_for_variant(
             for shape in shapes
         }
 
-    all_pairs = [
-        (str(shape), str(color_name), tuple(int(value) for value in color_rgb))
-        for shape in PUZZLE_OBJECT_TYPES
-        for color_name, color_rgb in BEAD_COLOR_SPECS
-    ]
-    chosen_pairs = rng.sample(all_pairs, int(bead_count))
+    colors = _sample_distinct_color_specs()
+    shapes = rng.sample(list(PUZZLE_OBJECT_TYPES), int(bead_count))
     return {
         f"{shape}:{color_name}": {
             "token_label": f"{shape}:{color_name}",
@@ -279,7 +298,7 @@ def _token_catalog_for_variant(
             "object_type": str(shape),
             "fill_rgb": tuple(int(value) for value in color_rgb),
         }
-        for shape, color_name, color_rgb in chosen_pairs
+        for shape, (color_name, color_rgb) in zip(shapes, colors)
     }
 
 
@@ -351,6 +370,18 @@ def build_bead_equivalence_dataset_for_variant(
         bead_count_max=int(bead_count_max),
         defaults=defaults,
     )
+    min_color_distance = float(
+        params.get(
+            "min_color_distance",
+            group_default(gen_defaults, "min_color_distance", float(defaults.min_color_distance)),
+        )
+    )
+    color_distance_space = str(
+        params.get(
+            "color_distance_space",
+            group_default(gen_defaults, "color_distance_space", str(defaults.color_distance_space)),
+        )
+    ).strip().lower()
 
     valid_support = list(range(int(valid_option_count_min), int(valid_option_count_max) + 1))
     valid_selection_index = int(
@@ -361,6 +392,9 @@ def build_bead_equivalence_dataset_for_variant(
         )
     )
     valid_option_count = int(valid_support[int(valid_selection_index) % len(valid_support)])
+    bead_count_min = max(int(bead_count_min), int(valid_option_count))
+    if int(bead_count_min) > int(bead_count_max):
+        raise ValueError("bead_count_max must allow at least as many unique rotations as the valid option support")
 
     min_option_count = max(int(option_count_min), int(valid_option_count) + 1)
     if int(min_option_count) > int(option_count_max):
@@ -371,6 +405,8 @@ def build_bead_equivalence_dataset_for_variant(
     token_catalog = _token_catalog_for_variant(
         selected_variant,
         bead_count=int(bead_count),
+        min_color_distance=float(min_color_distance),
+        color_distance_space=str(color_distance_space),
         rng=rng,
     )
     reference_tokens = tuple(str(token) for token in rng.sample(list(token_catalog.keys()), int(bead_count)))
@@ -450,6 +486,8 @@ def build_bead_equivalence_dataset_for_variant(
         "bead_count": int(bead_count),
         "bead_count_range": [int(bead_count_min), int(bead_count_max)],
         "equivalence_rule": "same_cyclic_order_up_to_rotation_no_reflection",
+        "color_distance_space": str(color_distance_space),
+        "min_color_distance": float(min_color_distance),
         "question_format": "bead_equivalence_count",
         "view_family": "topology_loop_option_count",
         "solver_trace": {
@@ -457,6 +495,8 @@ def build_bead_equivalence_dataset_for_variant(
             "valid_option_labels": [str(value) for value in valid_option_labels],
             "valid_option_choice_ids": [str(value) for value in valid_option_choice_ids],
             "equivalence_rule": "same_cyclic_order_up_to_rotation_no_reflection",
+            "color_distance_space": str(color_distance_space),
+            "min_color_distance": float(min_color_distance),
             "rotation_allowed": True,
             "reflection_allowed": False,
         },

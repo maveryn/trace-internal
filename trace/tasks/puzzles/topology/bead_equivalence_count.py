@@ -219,6 +219,8 @@ class PuzzlesTopologyBeadEquivalenceCountTask:
                     "option_count": int(dataset["option_count"]),
                     "bead_count": int(dataset["bead_count"]),
                     "valid_option_count": int(dataset["valid_option_count"]),
+                    "min_color_distance": float(dataset["min_color_distance"]),
+                    "color_distance_space": str(dataset["color_distance_space"]),
                 },
             },
             "render_spec": {
@@ -257,6 +259,8 @@ class PuzzlesTopologyBeadEquivalenceCountTask:
                 "valid_option_choice_ids": list(valid_option_choice_ids),
                 "valid_option_labels": [str(value) for value in dataset["valid_option_labels"]],
                 "supporting_option_choice_ids": list(valid_option_choice_ids),
+                "min_color_distance": float(dataset["min_color_distance"]),
+                "color_distance_space": str(dataset["color_distance_space"]),
                 "answer_value": int(answer_value),
                 "solver_trace": dict(dataset["solver_trace"]),
             },

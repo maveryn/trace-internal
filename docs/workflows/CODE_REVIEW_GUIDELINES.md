@@ -156,6 +156,7 @@ Use this checklist during implementation and refactor reviews.
 138. For option-based puzzle tasks, do not default to boxed option cards if they make the candidate images too small; when the benchmark pattern is better read as bare image choices with labels underneath, project evidence from the option image bbox and keep the label outside the image region.
 139. For puzzle tasks that ask how many cubes were removed between two visible block structures, ground prompt-facing `bbox_set` evidence on the ordered pair of visible structures `[original, remaining]` instead of inventing image-space bboxes for the missing cubes.
 140. For topology bead-loop puzzles, make the equivalence rule explicit in both prompt text and generation: if flipping/reflection is disallowed, valid options must match the reference only up to cyclic rotation, and the prompt should say so directly instead of leaving reflection ambiguous.
+141. Whenever a task's reasoning depends on color identity, enforce or validate per-instance color separation in Lab space through the shared color-distance utilities; do not assume a hand-picked RGB palette is distinct enough by inspection.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

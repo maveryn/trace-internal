@@ -13,10 +13,10 @@
         502.0
       ],
       [
-        614.0,
-        348.0,
-        786.0,
-        502.0
+        414.0,
+        578.0,
+        586.0,
+        732.0
       ]
     ]
   },
@@ -55,21 +55,23 @@
           502.0
         ],
         [
-          614.0,
-          348.0,
-          786.0,
-          502.0
+          414.0,
+          578.0,
+          586.0,
+          732.0
         ]
       ]
     },
     "execution_trace": {
       "answer_value": 2,
-      "bead_count": 5,
+      "bead_count": 4,
       "bead_count_range": [
-        5,
-        7
+        4,
+        6
       ],
+      "color_distance_space": "lab",
       "equivalence_rule": "same_cyclic_order_up_to_rotation_no_reflection",
+      "min_color_distance": 50.0,
       "option_count": 7,
       "option_count_range": [
         6,
@@ -80,53 +82,43 @@
           "bead_specs": [
             {
               "fill_rgb": [
-                136,
-                100,
-                196
-              ],
-              "object_type": "square",
-              "render_mode": "mixed",
-              "token_label": "square:purple"
-            },
-            {
-              "fill_rgb": [
-                214,
-                130,
-                74
+                46,
+                95,
+                60
               ],
               "object_type": "triangle",
               "render_mode": "mixed",
-              "token_label": "triangle:orange"
-            },
-            {
-              "fill_rgb": [
-                196,
-                90,
-                100
-              ],
-              "object_type": "circle",
-              "render_mode": "mixed",
-              "token_label": "circle:red"
+              "token_label": "triangle:forest"
             },
             {
               "fill_rgb": [
                 205,
-                162,
-                62
+                85,
+                138
               ],
               "object_type": "square",
               "render_mode": "mixed",
-              "token_label": "square:gold"
+              "token_label": "square:magenta"
             },
             {
               "fill_rgb": [
-                64,
-                164,
-                108
+                208,
+                144,
+                98
+              ],
+              "object_type": "circle",
+              "render_mode": "mixed",
+              "token_label": "circle:sand"
+            },
+            {
+              "fill_rgb": [
+                86,
+                225,
+                142
               ],
               "object_type": "diamond",
               "render_mode": "mixed",
-              "token_label": "diamond:green"
+              "token_label": "diamond:mint"
             }
           ],
           "is_valid": true,
@@ -134,203 +126,170 @@
           "option_choice_id": "option_1",
           "option_index": 0,
           "option_label": "A",
-          "rotation_offset": 1,
-          "start_angle_deg": 180,
+          "rotation_offset": 0,
+          "start_angle_deg": 45,
           "token_sequence": [
-            "square:purple",
-            "triangle:orange",
-            "circle:red",
-            "square:gold",
-            "diamond:green"
+            "triangle:forest",
+            "square:magenta",
+            "circle:sand",
+            "diamond:mint"
           ]
         },
         {
           "bead_specs": [
             {
               "fill_rgb": [
-                205,
-                162,
-                62
-              ],
-              "object_type": "square",
-              "render_mode": "mixed",
-              "token_label": "square:gold"
-            },
-            {
-              "fill_rgb": [
-                196,
-                90,
-                100
-              ],
-              "object_type": "circle",
-              "render_mode": "mixed",
-              "token_label": "circle:red"
-            },
-            {
-              "fill_rgb": [
-                214,
-                130,
-                74
+                46,
+                95,
+                60
               ],
               "object_type": "triangle",
               "render_mode": "mixed",
-              "token_label": "triangle:orange"
+              "token_label": "triangle:forest"
             },
             {
               "fill_rgb": [
-                136,
-                100,
-                196
+                205,
+                85,
+                138
               ],
               "object_type": "square",
               "render_mode": "mixed",
-              "token_label": "square:purple"
+              "token_label": "square:magenta"
             },
             {
               "fill_rgb": [
-                64,
-                164,
-                108
+                86,
+                225,
+                142
               ],
               "object_type": "diamond",
               "render_mode": "mixed",
-              "token_label": "diamond:green"
+              "token_label": "diamond:mint"
+            },
+            {
+              "fill_rgb": [
+                208,
+                144,
+                98
+              ],
+              "object_type": "circle",
+              "render_mode": "mixed",
+              "token_label": "circle:sand"
             }
           ],
           "is_valid": false,
-          "loop_shape_variant": "wide",
+          "loop_shape_variant": "circle",
           "option_choice_id": "option_2",
           "option_index": 1,
           "option_label": "B",
           "rotation_offset": null,
-          "start_angle_deg": 90,
+          "start_angle_deg": -45,
           "token_sequence": [
-            "square:gold",
-            "circle:red",
-            "triangle:orange",
-            "square:purple",
-            "diamond:green"
+            "triangle:forest",
+            "square:magenta",
+            "diamond:mint",
+            "circle:sand"
           ]
         },
         {
           "bead_specs": [
             {
               "fill_rgb": [
-                214,
-                130,
-                74
+                86,
+                225,
+                142
               ],
-              "object_type": "triangle",
+              "object_type": "diamond",
               "render_mode": "mixed",
-              "token_label": "triangle:orange"
+              "token_label": "diamond:mint"
             },
             {
               "fill_rgb": [
-                196,
-                90,
-                100
+                208,
+                144,
+                98
               ],
               "object_type": "circle",
               "render_mode": "mixed",
-              "token_label": "circle:red"
+              "token_label": "circle:sand"
             },
             {
               "fill_rgb": [
                 205,
-                162,
-                62
+                85,
+                138
               ],
               "object_type": "square",
               "render_mode": "mixed",
-              "token_label": "square:gold"
+              "token_label": "square:magenta"
             },
             {
               "fill_rgb": [
-                64,
-                164,
-                108
+                46,
+                95,
+                60
               ],
-              "object_type": "diamond",
+              "object_type": "triangle",
               "render_mode": "mixed",
-              "token_label": "diamond:green"
-            },
-            {
-              "fill_rgb": [
-                136,
-                100,
-                196
-              ],
-              "object_type": "square",
-              "render_mode": "mixed",
-              "token_label": "square:purple"
+              "token_label": "triangle:forest"
             }
           ],
-          "is_valid": true,
+          "is_valid": false,
           "loop_shape_variant": "tall",
           "option_choice_id": "option_3",
           "option_index": 2,
           "option_label": "C",
-          "rotation_offset": 2,
-          "start_angle_deg": 0,
+          "rotation_offset": null,
+          "start_angle_deg": 135,
           "token_sequence": [
-            "triangle:orange",
-            "circle:red",
-            "square:gold",
-            "diamond:green",
-            "square:purple"
+            "diamond:mint",
+            "circle:sand",
+            "square:magenta",
+            "triangle:forest"
           ]
         },
         {
           "bead_specs": [
             {
               "fill_rgb": [
-                136,
-                100,
-                196
-              ],
-              "object_type": "square",
-              "render_mode": "mixed",
-              "token_label": "square:purple"
-            },
-            {
-              "fill_rgb": [
-                64,
-                164,
-                108
+                86,
+                225,
+                142
               ],
               "object_type": "diamond",
               "render_mode": "mixed",
-              "token_label": "diamond:green"
-            },
-            {
-              "fill_rgb": [
-                214,
-                130,
-                74
-              ],
-              "object_type": "triangle",
-              "render_mode": "mixed",
-              "token_label": "triangle:orange"
-            },
-            {
-              "fill_rgb": [
-                196,
-                90,
-                100
-              ],
-              "object_type": "circle",
-              "render_mode": "mixed",
-              "token_label": "circle:red"
+              "token_label": "diamond:mint"
             },
             {
               "fill_rgb": [
                 205,
-                162,
-                62
+                85,
+                138
               ],
               "object_type": "square",
               "render_mode": "mixed",
-              "token_label": "square:gold"
+              "token_label": "square:magenta"
+            },
+            {
+              "fill_rgb": [
+                208,
+                144,
+                98
+              ],
+              "object_type": "circle",
+              "render_mode": "mixed",
+              "token_label": "circle:sand"
+            },
+            {
+              "fill_rgb": [
+                46,
+                95,
+                60
+              ],
+              "object_type": "triangle",
+              "render_mode": "mixed",
+              "token_label": "triangle:forest"
             }
           ],
           "is_valid": false,
@@ -339,66 +298,55 @@
           "option_index": 3,
           "option_label": "D",
           "rotation_offset": null,
-          "start_angle_deg": -45,
+          "start_angle_deg": 135,
           "token_sequence": [
-            "square:purple",
-            "diamond:green",
-            "triangle:orange",
-            "circle:red",
-            "square:gold"
+            "diamond:mint",
+            "square:magenta",
+            "circle:sand",
+            "triangle:forest"
           ]
         },
         {
           "bead_specs": [
             {
               "fill_rgb": [
-                64,
-                164,
-                108
-              ],
-              "object_type": "diamond",
-              "render_mode": "mixed",
-              "token_label": "diamond:green"
-            },
-            {
-              "fill_rgb": [
-                214,
-                130,
-                74
+                46,
+                95,
+                60
               ],
               "object_type": "triangle",
               "render_mode": "mixed",
-              "token_label": "triangle:orange"
+              "token_label": "triangle:forest"
             },
             {
               "fill_rgb": [
-                136,
-                100,
-                196
-              ],
-              "object_type": "square",
-              "render_mode": "mixed",
-              "token_label": "square:purple"
-            },
-            {
-              "fill_rgb": [
-                196,
-                90,
-                100
+                208,
+                144,
+                98
               ],
               "object_type": "circle",
               "render_mode": "mixed",
-              "token_label": "circle:red"
+              "token_label": "circle:sand"
             },
             {
               "fill_rgb": [
                 205,
-                162,
-                62
+                85,
+                138
               ],
               "object_type": "square",
               "render_mode": "mixed",
-              "token_label": "square:gold"
+              "token_label": "square:magenta"
+            },
+            {
+              "fill_rgb": [
+                86,
+                225,
+                142
+              ],
+              "object_type": "diamond",
+              "render_mode": "mixed",
+              "token_label": "diamond:mint"
             }
           ],
           "is_valid": false,
@@ -407,191 +355,168 @@
           "option_index": 4,
           "option_label": "E",
           "rotation_offset": null,
-          "start_angle_deg": -90,
+          "start_angle_deg": 180,
           "token_sequence": [
-            "diamond:green",
-            "triangle:orange",
-            "square:purple",
-            "circle:red",
-            "square:gold"
+            "triangle:forest",
+            "circle:sand",
+            "square:magenta",
+            "diamond:mint"
           ]
         },
         {
           "bead_specs": [
             {
               "fill_rgb": [
-                64,
-                164,
-                108
+                208,
+                144,
+                98
+              ],
+              "object_type": "circle",
+              "render_mode": "mixed",
+              "token_label": "circle:sand"
+            },
+            {
+              "fill_rgb": [
+                86,
+                225,
+                142
               ],
               "object_type": "diamond",
               "render_mode": "mixed",
-              "token_label": "diamond:green"
+              "token_label": "diamond:mint"
             },
             {
               "fill_rgb": [
-                136,
-                100,
-                196
-              ],
-              "object_type": "square",
-              "render_mode": "mixed",
-              "token_label": "square:purple"
-            },
-            {
-              "fill_rgb": [
-                214,
-                130,
-                74
+                46,
+                95,
+                60
               ],
               "object_type": "triangle",
               "render_mode": "mixed",
-              "token_label": "triangle:orange"
+              "token_label": "triangle:forest"
             },
             {
               "fill_rgb": [
                 205,
-                162,
-                62
+                85,
+                138
               ],
               "object_type": "square",
               "render_mode": "mixed",
-              "token_label": "square:gold"
-            },
-            {
-              "fill_rgb": [
-                196,
-                90,
-                100
-              ],
-              "object_type": "circle",
-              "render_mode": "mixed",
-              "token_label": "circle:red"
+              "token_label": "square:magenta"
             }
           ],
-          "is_valid": false,
-          "loop_shape_variant": "tall",
+          "is_valid": true,
+          "loop_shape_variant": "circle",
           "option_choice_id": "option_6",
           "option_index": 5,
           "option_label": "F",
-          "rotation_offset": null,
+          "rotation_offset": 2,
           "start_angle_deg": 45,
           "token_sequence": [
-            "diamond:green",
-            "square:purple",
-            "triangle:orange",
-            "square:gold",
-            "circle:red"
+            "circle:sand",
+            "diamond:mint",
+            "triangle:forest",
+            "square:magenta"
           ]
         },
         {
           "bead_specs": [
             {
               "fill_rgb": [
-                64,
-                164,
-                108
-              ],
-              "object_type": "diamond",
-              "render_mode": "mixed",
-              "token_label": "diamond:green"
-            },
-            {
-              "fill_rgb": [
-                136,
-                100,
-                196
+                205,
+                85,
+                138
               ],
               "object_type": "square",
               "render_mode": "mixed",
-              "token_label": "square:purple"
+              "token_label": "square:magenta"
             },
             {
               "fill_rgb": [
-                196,
-                90,
-                100
-              ],
-              "object_type": "circle",
-              "render_mode": "mixed",
-              "token_label": "circle:red"
-            },
-            {
-              "fill_rgb": [
-                214,
-                130,
-                74
+                46,
+                95,
+                60
               ],
               "object_type": "triangle",
               "render_mode": "mixed",
-              "token_label": "triangle:orange"
+              "token_label": "triangle:forest"
             },
             {
               "fill_rgb": [
-                205,
-                162,
-                62
+                208,
+                144,
+                98
               ],
-              "object_type": "square",
+              "object_type": "circle",
               "render_mode": "mixed",
-              "token_label": "square:gold"
+              "token_label": "circle:sand"
+            },
+            {
+              "fill_rgb": [
+                86,
+                225,
+                142
+              ],
+              "object_type": "diamond",
+              "render_mode": "mixed",
+              "token_label": "diamond:mint"
             }
           ],
           "is_valid": false,
-          "loop_shape_variant": "tall",
+          "loop_shape_variant": "circle",
           "option_choice_id": "option_7",
           "option_index": 6,
           "option_label": "G",
           "rotation_offset": null,
-          "start_angle_deg": -90,
+          "start_angle_deg": 135,
           "token_sequence": [
-            "diamond:green",
-            "square:purple",
-            "circle:red",
-            "triangle:orange",
-            "square:gold"
+            "square:magenta",
+            "triangle:forest",
+            "circle:sand",
+            "diamond:mint"
           ]
         }
       ],
       "question_format": "bead_equivalence_count",
-      "reference_loop_shape_variant": "tall",
+      "reference_loop_shape_variant": "circle",
       "reference_start_angle_deg": -90,
       "reference_token_sequence": [
-        "diamond:green",
-        "square:purple",
-        "triangle:orange",
-        "circle:red",
-        "square:gold"
+        "triangle:forest",
+        "square:magenta",
+        "circle:sand",
+        "diamond:mint"
       ],
       "scene_variant": "loop_strip",
       "solver_trace": {
+        "color_distance_space": "lab",
         "equivalence_rule": "same_cyclic_order_up_to_rotation_no_reflection",
+        "min_color_distance": 50.0,
         "reference_token_sequence": [
-          "diamond:green",
-          "square:purple",
-          "triangle:orange",
-          "circle:red",
-          "square:gold"
+          "triangle:forest",
+          "square:magenta",
+          "circle:sand",
+          "diamond:mint"
         ],
         "reflection_allowed": false,
         "rotation_allowed": true,
         "valid_option_choice_ids": [
           "option_1",
-          "option_3"
+          "option_6"
         ],
         "valid_option_labels": [
           "A",
-          "C"
+          "F"
         ]
       },
       "supporting_option_choice_ids": [
         "option_1",
-        "option_3"
+        "option_6"
       ],
       "task_variant": "mixed_cycle_count",
       "valid_option_choice_ids": [
         "option_1",
-        "option_3"
+        "option_6"
       ],
       "valid_option_count": 2,
       "valid_option_count_range": [
@@ -600,7 +525,7 @@
       ],
       "valid_option_labels": [
         "A",
-        "C"
+        "F"
       ],
       "view_family": "topology_loop_option_count"
     },
@@ -613,16 +538,18 @@
           502.0
         ],
         [
-          614.0,
-          348.0,
-          786.0,
-          502.0
+          414.0,
+          578.0,
+          586.0,
+          732.0
         ]
       ]
     },
     "query_spec": {
       "params": {
-        "bead_count": 5,
+        "bead_count": 4,
+        "color_distance_space": "lab",
+        "min_color_distance": 50.0,
         "option_count": 7,
         "scene_variant": "loop_strip",
         "scene_variant_probabilities": {
@@ -787,10 +714,10 @@
         ]
       },
       "reference_loop_bbox_px": [
-        496.76,
-        128.7,
-        703.24,
-        261.3
+        478.96,
+        137.2,
+        721.04,
+        252.8
       ],
       "scene_bbox_px": [
         64.0,
@@ -872,30 +799,30 @@
         },
         {
           "attrs": {
-            "bead_count": 5,
-            "loop_shape_variant": "tall",
+            "bead_count": 4,
+            "loop_shape_variant": "circle",
             "start_angle_deg": -90
           },
           "bbox_px": [
-            496.76,
-            128.7,
-            703.24,
-            261.3
+            478.96,
+            137.2,
+            721.04,
+            252.8
           ],
           "entity_id": "reference_loop",
           "entity_type": "puzzle_topology_reference_loop"
         },
         {
           "attrs": {
-            "object_type": "diamond",
+            "object_type": "triangle",
             "render_mode": "mixed",
-            "token_label": "diamond:green"
+            "token_label": "triangle:forest"
           },
           "bbox_px": [
             585.0,
-            113.7,
+            122.2,
             615.0,
-            143.7
+            152.2
           ],
           "entity_id": "reference_loop_bead_1",
           "entity_type": "puzzle_topology_reference_bead"
@@ -904,60 +831,45 @@
           "attrs": {
             "object_type": "square",
             "render_mode": "mixed",
-            "token_label": "square:purple"
+            "token_label": "square:magenta"
           },
           "bbox_px": [
-            486.813,
-            159.512,
-            516.813,
-            189.512
+            463.96,
+            180.0,
+            493.96,
+            210.0
           ],
           "entity_id": "reference_loop_bead_2",
           "entity_type": "puzzle_topology_reference_bead"
         },
         {
           "attrs": {
-            "object_type": "triangle",
+            "object_type": "circle",
             "render_mode": "mixed",
-            "token_label": "triangle:orange"
+            "token_label": "circle:sand"
           },
           "bbox_px": [
-            524.317,
-            233.638,
-            554.317,
-            263.638
+            585.0,
+            237.8,
+            615.0,
+            267.8
           ],
           "entity_id": "reference_loop_bead_3",
           "entity_type": "puzzle_topology_reference_bead"
         },
         {
           "attrs": {
-            "object_type": "circle",
+            "object_type": "diamond",
             "render_mode": "mixed",
-            "token_label": "circle:red"
+            "token_label": "diamond:mint"
           },
           "bbox_px": [
-            645.683,
-            233.638,
-            675.683,
-            263.638
+            706.04,
+            180.0,
+            736.04,
+            210.0
           ],
           "entity_id": "reference_loop_bead_4",
-          "entity_type": "puzzle_topology_reference_bead"
-        },
-        {
-          "attrs": {
-            "object_type": "square",
-            "render_mode": "mixed",
-            "token_label": "square:gold"
-          },
-          "bbox_px": [
-            683.187,
-            159.512,
-            713.187,
-            189.512
-          ],
-          "entity_id": "reference_loop_bead_5",
           "entity_type": "puzzle_topology_reference_bead"
         },
         {
@@ -976,9 +888,9 @@
         },
         {
           "attrs": {
-            "bead_count": 5,
+            "bead_count": 4,
             "loop_shape_variant": "tall",
-            "start_angle_deg": 180
+            "start_angle_deg": 45
           },
           "bbox_px": [
             250.12,
@@ -991,30 +903,30 @@
         },
         {
           "attrs": {
-            "object_type": "square",
+            "object_type": "triangle",
             "render_mode": "mixed",
-            "token_label": "square:purple"
+            "token_label": "triangle:forest"
           },
           "bbox_px": [
-            235.12,
-            410.0,
-            265.12,
-            440.0
+            320.27,
+            452.469,
+            350.27,
+            482.469
           ],
           "entity_id": "option_1_loop_bead_1",
           "entity_type": "puzzle_topology_option_bead"
         },
         {
           "attrs": {
-            "object_type": "triangle",
+            "object_type": "square",
             "render_mode": "mixed",
-            "token_label": "triangle:orange"
+            "token_label": "square:magenta"
           },
           "bbox_px": [
-            269.586,
-            467.12,
-            299.586,
-            497.12
+            320.27,
+            367.531,
+            350.27,
+            397.531
           ],
           "entity_id": "option_1_loop_bead_2",
           "entity_type": "puzzle_topology_option_bead"
@@ -1023,45 +935,30 @@
           "attrs": {
             "object_type": "circle",
             "render_mode": "mixed",
-            "token_label": "circle:red"
+            "token_label": "circle:sand"
           },
           "bbox_px": [
-            325.354,
-            445.302,
-            355.354,
-            475.302
+            249.73,
+            367.531,
+            279.73,
+            397.531
           ],
           "entity_id": "option_1_loop_bead_3",
           "entity_type": "puzzle_topology_option_bead"
         },
         {
           "attrs": {
-            "object_type": "square",
-            "render_mode": "mixed",
-            "token_label": "square:gold"
-          },
-          "bbox_px": [
-            325.354,
-            374.698,
-            355.354,
-            404.698
-          ],
-          "entity_id": "option_1_loop_bead_4",
-          "entity_type": "puzzle_topology_option_bead"
-        },
-        {
-          "attrs": {
             "object_type": "diamond",
             "render_mode": "mixed",
-            "token_label": "diamond:green"
+            "token_label": "diamond:mint"
           },
           "bbox_px": [
-            269.586,
-            352.88,
-            299.586,
-            382.88
+            249.73,
+            452.469,
+            279.73,
+            482.469
           ],
-          "entity_id": "option_1_loop_bead_5",
+          "entity_id": "option_1_loop_bead_4",
           "entity_type": "puzzle_topology_option_bead"
         },
         {
@@ -1093,92 +990,77 @@
         },
         {
           "attrs": {
-            "bead_count": 5,
-            "loop_shape_variant": "wide",
-            "start_angle_deg": 90
+            "bead_count": 4,
+            "loop_shape_variant": "circle",
+            "start_angle_deg": -45
           },
           "bbox_px": [
-            434.64,
-            381.88,
-            565.36,
-            468.12
+            441.52,
+            372.64,
+            558.48,
+            477.36
           ],
           "entity_id": "option_2_loop",
           "entity_type": "puzzle_topology_option_loop"
         },
         {
           "attrs": {
-            "object_type": "square",
+            "object_type": "triangle",
             "render_mode": "mixed",
-            "token_label": "square:gold"
+            "token_label": "triangle:forest"
           },
           "bbox_px": [
-            485.0,
-            453.12,
-            515.0,
-            483.12
+            526.352,
+            372.976,
+            556.352,
+            402.976
           ],
           "entity_id": "option_2_loop_bead_1",
           "entity_type": "puzzle_topology_option_bead"
         },
         {
           "attrs": {
-            "object_type": "circle",
+            "object_type": "square",
             "render_mode": "mixed",
-            "token_label": "circle:red"
+            "token_label": "square:magenta"
           },
           "bbox_px": [
-            547.161,
-            423.325,
-            577.161,
-            453.325
+            443.648,
+            372.976,
+            473.648,
+            402.976
           ],
           "entity_id": "option_2_loop_bead_2",
           "entity_type": "puzzle_topology_option_bead"
         },
         {
           "attrs": {
-            "object_type": "triangle",
+            "object_type": "diamond",
             "render_mode": "mixed",
-            "token_label": "triangle:orange"
+            "token_label": "diamond:mint"
           },
           "bbox_px": [
-            523.418,
-            375.115,
-            553.418,
-            405.115
+            443.648,
+            447.024,
+            473.648,
+            477.024
           ],
           "entity_id": "option_2_loop_bead_3",
           "entity_type": "puzzle_topology_option_bead"
         },
         {
           "attrs": {
-            "object_type": "square",
+            "object_type": "circle",
             "render_mode": "mixed",
-            "token_label": "square:purple"
+            "token_label": "circle:sand"
           },
           "bbox_px": [
-            446.582,
-            375.115,
-            476.582,
-            405.115
+            526.352,
+            447.024,
+            556.352,
+            477.024
           ],
           "entity_id": "option_2_loop_bead_4",
-          "entity_type": "puzzle_topology_option_bead"
-        },
-        {
-          "attrs": {
-            "object_type": "diamond",
-            "render_mode": "mixed",
-            "token_label": "diamond:green"
-          },
-          "bbox_px": [
-            422.839,
-            423.325,
-            452.839,
-            453.325
-          ],
-          "entity_id": "option_2_loop_bead_5",
           "entity_type": "puzzle_topology_option_bead"
         },
         {
@@ -1196,7 +1078,7 @@
         },
         {
           "attrs": {
-            "is_valid": true,
+            "is_valid": false,
             "option_label": "C"
           },
           "bbox_px": [
@@ -1210,9 +1092,9 @@
         },
         {
           "attrs": {
-            "bead_count": 5,
+            "bead_count": 4,
             "loop_shape_variant": "tall",
-            "start_angle_deg": 0
+            "start_angle_deg": 135
           },
           "bbox_px": [
             650.12,
@@ -1225,15 +1107,15 @@
         },
         {
           "attrs": {
-            "object_type": "triangle",
+            "object_type": "diamond",
             "render_mode": "mixed",
-            "token_label": "triangle:orange"
+            "token_label": "diamond:mint"
           },
           "bbox_px": [
-            734.88,
-            410.0,
-            764.88,
-            440.0
+            649.73,
+            452.469,
+            679.73,
+            482.469
           ],
           "entity_id": "option_3_loop_bead_1",
           "entity_type": "puzzle_topology_option_bead"
@@ -1242,13 +1124,13 @@
           "attrs": {
             "object_type": "circle",
             "render_mode": "mixed",
-            "token_label": "circle:red"
+            "token_label": "circle:sand"
           },
           "bbox_px": [
-            700.414,
-            352.88,
-            730.414,
-            382.88
+            720.27,
+            452.469,
+            750.27,
+            482.469
           ],
           "entity_id": "option_3_loop_bead_2",
           "entity_type": "puzzle_topology_option_bead"
@@ -1257,45 +1139,30 @@
           "attrs": {
             "object_type": "square",
             "render_mode": "mixed",
-            "token_label": "square:gold"
+            "token_label": "square:magenta"
           },
           "bbox_px": [
-            644.646,
-            374.698,
-            674.646,
-            404.698
+            720.27,
+            367.531,
+            750.27,
+            397.531
           ],
           "entity_id": "option_3_loop_bead_3",
           "entity_type": "puzzle_topology_option_bead"
         },
         {
           "attrs": {
-            "object_type": "diamond",
+            "object_type": "triangle",
             "render_mode": "mixed",
-            "token_label": "diamond:green"
+            "token_label": "triangle:forest"
           },
           "bbox_px": [
-            644.646,
-            445.302,
-            674.646,
-            475.302
+            649.73,
+            367.531,
+            679.73,
+            397.531
           ],
           "entity_id": "option_3_loop_bead_4",
-          "entity_type": "puzzle_topology_option_bead"
-        },
-        {
-          "attrs": {
-            "object_type": "square",
-            "render_mode": "mixed",
-            "token_label": "square:purple"
-          },
-          "bbox_px": [
-            700.414,
-            467.12,
-            730.414,
-            497.12
-          ],
-          "entity_id": "option_3_loop_bead_5",
           "entity_type": "puzzle_topology_option_bead"
         },
         {
@@ -1327,9 +1194,9 @@
         },
         {
           "attrs": {
-            "bead_count": 5,
+            "bead_count": 4,
             "loop_shape_variant": "wide",
-            "start_angle_deg": -45
+            "start_angle_deg": 135
           },
           "bbox_px": [
             834.64,
@@ -1342,9 +1209,39 @@
         },
         {
           "attrs": {
+            "object_type": "diamond",
+            "render_mode": "mixed",
+            "token_label": "diamond:mint"
+          },
+          "bbox_px": [
+            838.784,
+            440.49,
+            868.784,
+            470.49
+          ],
+          "entity_id": "option_4_loop_bead_1",
+          "entity_type": "puzzle_topology_option_bead"
+        },
+        {
+          "attrs": {
             "object_type": "square",
             "render_mode": "mixed",
-            "token_label": "square:purple"
+            "token_label": "square:magenta"
+          },
+          "bbox_px": [
+            931.216,
+            440.49,
+            961.216,
+            470.49
+          ],
+          "entity_id": "option_4_loop_bead_2",
+          "entity_type": "puzzle_topology_option_bead"
+        },
+        {
+          "attrs": {
+            "object_type": "circle",
+            "render_mode": "mixed",
+            "token_label": "circle:sand"
           },
           "bbox_px": [
             931.216,
@@ -1352,67 +1249,22 @@
             961.216,
             409.51
           ],
-          "entity_id": "option_4_loop_bead_1",
-          "entity_type": "puzzle_topology_option_bead"
-        },
-        {
-          "attrs": {
-            "object_type": "diamond",
-            "render_mode": "mixed",
-            "token_label": "diamond:green"
-          },
-          "bbox_px": [
-            855.327,
-            371.58,
-            885.327,
-            401.58
-          ],
-          "entity_id": "option_4_loop_bead_2",
+          "entity_id": "option_4_loop_bead_3",
           "entity_type": "puzzle_topology_option_bead"
         },
         {
           "attrs": {
             "object_type": "triangle",
             "render_mode": "mixed",
-            "token_label": "triangle:orange"
+            "token_label": "triangle:forest"
           },
           "bbox_px": [
-            820.445,
-            416.745,
-            850.445,
-            446.745
-          ],
-          "entity_id": "option_4_loop_bead_3",
-          "entity_type": "puzzle_topology_option_bead"
-        },
-        {
-          "attrs": {
-            "object_type": "circle",
-            "render_mode": "mixed",
-            "token_label": "circle:red"
-          },
-          "bbox_px": [
-            874.775,
-            452.589,
-            904.775,
-            482.589
+            838.784,
+            379.51,
+            868.784,
+            409.51
           ],
           "entity_id": "option_4_loop_bead_4",
-          "entity_type": "puzzle_topology_option_bead"
-        },
-        {
-          "attrs": {
-            "object_type": "square",
-            "render_mode": "mixed",
-            "token_label": "square:gold"
-          },
-          "bbox_px": [
-            943.236,
-            429.576,
-            973.236,
-            459.576
-          ],
-          "entity_id": "option_4_loop_bead_5",
           "entity_type": "puzzle_topology_option_bead"
         },
         {
@@ -1444,9 +1296,9 @@
         },
         {
           "attrs": {
-            "bead_count": 5,
+            "bead_count": 4,
             "loop_shape_variant": "wide",
-            "start_angle_deg": -90
+            "start_angle_deg": 180
           },
           "bbox_px": [
             234.64,
@@ -1459,30 +1311,30 @@
         },
         {
           "attrs": {
-            "object_type": "diamond",
+            "object_type": "triangle",
             "render_mode": "mixed",
-            "token_label": "diamond:green"
+            "token_label": "triangle:forest"
           },
           "bbox_px": [
-            285.0,
-            596.88,
-            315.0,
-            626.88
+            219.64,
+            640.0,
+            249.64,
+            670.0
           ],
           "entity_id": "option_5_loop_bead_1",
           "entity_type": "puzzle_topology_option_bead"
         },
         {
           "attrs": {
-            "object_type": "triangle",
+            "object_type": "circle",
             "render_mode": "mixed",
-            "token_label": "triangle:orange"
+            "token_label": "circle:sand"
           },
           "bbox_px": [
-            222.839,
-            626.675,
-            252.839,
-            656.675
+            285.0,
+            683.12,
+            315.0,
+            713.12
           ],
           "entity_id": "option_5_loop_bead_2",
           "entity_type": "puzzle_topology_option_bead"
@@ -1491,45 +1343,30 @@
           "attrs": {
             "object_type": "square",
             "render_mode": "mixed",
-            "token_label": "square:purple"
+            "token_label": "square:magenta"
           },
           "bbox_px": [
-            246.582,
-            674.885,
-            276.582,
-            704.885
+            350.36,
+            640.0,
+            380.36,
+            670.0
           ],
           "entity_id": "option_5_loop_bead_3",
           "entity_type": "puzzle_topology_option_bead"
         },
         {
           "attrs": {
-            "object_type": "circle",
+            "object_type": "diamond",
             "render_mode": "mixed",
-            "token_label": "circle:red"
+            "token_label": "diamond:mint"
           },
           "bbox_px": [
-            323.418,
-            674.885,
-            353.418,
-            704.885
+            285.0,
+            596.88,
+            315.0,
+            626.88
           ],
           "entity_id": "option_5_loop_bead_4",
-          "entity_type": "puzzle_topology_option_bead"
-        },
-        {
-          "attrs": {
-            "object_type": "square",
-            "render_mode": "mixed",
-            "token_label": "square:gold"
-          },
-          "bbox_px": [
-            347.161,
-            626.675,
-            377.161,
-            656.675
-          ],
-          "entity_id": "option_5_loop_bead_5",
           "entity_type": "puzzle_topology_option_bead"
         },
         {
@@ -1547,7 +1384,7 @@
         },
         {
           "attrs": {
-            "is_valid": false,
+            "is_valid": true,
             "option_label": "F"
           },
           "bbox_px": [
@@ -1561,45 +1398,45 @@
         },
         {
           "attrs": {
-            "bead_count": 5,
-            "loop_shape_variant": "tall",
+            "bead_count": 4,
+            "loop_shape_variant": "circle",
             "start_angle_deg": 45
           },
           "bbox_px": [
-            450.12,
-            594.94,
-            549.88,
-            715.06
+            441.52,
+            602.64,
+            558.48,
+            707.36
           ],
           "entity_id": "option_6_loop",
           "entity_type": "puzzle_topology_option_loop"
         },
         {
           "attrs": {
-            "object_type": "diamond",
+            "object_type": "circle",
             "render_mode": "mixed",
-            "token_label": "diamond:green"
+            "token_label": "circle:sand"
           },
           "bbox_px": [
-            520.27,
-            682.469,
-            550.27,
-            712.469
+            526.352,
+            677.024,
+            556.352,
+            707.024
           ],
           "entity_id": "option_6_loop_bead_1",
           "entity_type": "puzzle_topology_option_bead"
         },
         {
           "attrs": {
-            "object_type": "square",
+            "object_type": "diamond",
             "render_mode": "mixed",
-            "token_label": "square:purple"
+            "token_label": "diamond:mint"
           },
           "bbox_px": [
-            529.443,
-            612.733,
-            559.443,
-            642.733
+            526.352,
+            602.976,
+            556.352,
+            632.976
           ],
           "entity_id": "option_6_loop_bead_2",
           "entity_type": "puzzle_topology_option_bead"
@@ -1608,13 +1445,13 @@
           "attrs": {
             "object_type": "triangle",
             "render_mode": "mixed",
-            "token_label": "triangle:orange"
+            "token_label": "triangle:forest"
           },
           "bbox_px": [
-            477.197,
-            580.679,
-            507.197,
-            610.679
+            443.648,
+            602.976,
+            473.648,
+            632.976
           ],
           "entity_id": "option_6_loop_bead_3",
           "entity_type": "puzzle_topology_option_bead"
@@ -1623,30 +1460,15 @@
           "attrs": {
             "object_type": "square",
             "render_mode": "mixed",
-            "token_label": "square:gold"
+            "token_label": "square:magenta"
           },
           "bbox_px": [
-            435.734,
-            630.605,
-            465.734,
-            660.605
+            443.648,
+            677.024,
+            473.648,
+            707.024
           ],
           "entity_id": "option_6_loop_bead_4",
-          "entity_type": "puzzle_topology_option_bead"
-        },
-        {
-          "attrs": {
-            "object_type": "circle",
-            "render_mode": "mixed",
-            "token_label": "circle:red"
-          },
-          "bbox_px": [
-            462.355,
-            693.514,
-            492.355,
-            723.514
-          ],
-          "entity_id": "option_6_loop_bead_5",
           "entity_type": "puzzle_topology_option_bead"
         },
         {
@@ -1678,45 +1500,45 @@
         },
         {
           "attrs": {
-            "bead_count": 5,
-            "loop_shape_variant": "tall",
-            "start_angle_deg": -90
+            "bead_count": 4,
+            "loop_shape_variant": "circle",
+            "start_angle_deg": 135
           },
           "bbox_px": [
-            650.12,
-            594.94,
-            749.88,
-            715.06
+            641.52,
+            602.64,
+            758.48,
+            707.36
           ],
           "entity_id": "option_7_loop",
           "entity_type": "puzzle_topology_option_loop"
         },
         {
           "attrs": {
-            "object_type": "diamond",
+            "object_type": "square",
             "render_mode": "mixed",
-            "token_label": "diamond:green"
+            "token_label": "square:magenta"
           },
           "bbox_px": [
-            685.0,
-            579.94,
-            715.0,
-            609.94
+            643.648,
+            677.024,
+            673.648,
+            707.024
           ],
           "entity_id": "option_7_loop_bead_1",
           "entity_type": "puzzle_topology_option_bead"
         },
         {
           "attrs": {
-            "object_type": "square",
+            "object_type": "triangle",
             "render_mode": "mixed",
-            "token_label": "square:purple"
+            "token_label": "triangle:forest"
           },
           "bbox_px": [
-            637.561,
-            621.44,
-            667.561,
-            651.44
+            726.352,
+            677.024,
+            756.352,
+            707.024
           ],
           "entity_id": "option_7_loop_bead_2",
           "entity_type": "puzzle_topology_option_bead"
@@ -1725,45 +1547,30 @@
           "attrs": {
             "object_type": "circle",
             "render_mode": "mixed",
-            "token_label": "circle:red"
+            "token_label": "circle:sand"
           },
           "bbox_px": [
-            655.681,
-            688.59,
-            685.681,
-            718.59
+            726.352,
+            602.976,
+            756.352,
+            632.976
           ],
           "entity_id": "option_7_loop_bead_3",
           "entity_type": "puzzle_topology_option_bead"
         },
         {
           "attrs": {
-            "object_type": "triangle",
+            "object_type": "diamond",
             "render_mode": "mixed",
-            "token_label": "triangle:orange"
+            "token_label": "diamond:mint"
           },
           "bbox_px": [
-            714.319,
-            688.59,
-            744.319,
-            718.59
+            643.648,
+            602.976,
+            673.648,
+            632.976
           ],
           "entity_id": "option_7_loop_bead_4",
-          "entity_type": "puzzle_topology_option_bead"
-        },
-        {
-          "attrs": {
-            "object_type": "square",
-            "render_mode": "mixed",
-            "token_label": "square:gold"
-          },
-          "bbox_px": [
-            732.439,
-            621.44,
-            762.439,
-            651.44
-          ],
-          "entity_id": "option_7_loop_bead_5",
           "entity_type": "puzzle_topology_option_bead"
         },
         {
@@ -1787,7 +1594,7 @@
         "task_variant": "mixed_cycle_count",
         "valid_option_choice_ids": [
           "option_1",
-          "option_3"
+          "option_6"
         ]
       },
       "scene_kind": "puzzle_topology_loop_strip"
@@ -1802,10 +1609,10 @@
           502.0
         ],
         [
-          614.0,
-          348.0,
-          786.0,
-          502.0
+          414.0,
+          578.0,
+          586.0,
+          732.0
         ]
       ]
     }

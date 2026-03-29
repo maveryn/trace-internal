@@ -58,6 +58,12 @@ Use this whenever the task lives under `domain=puzzles`.
 - When an arithmetic unknown-slot family starts feeling too tiny, increase structural variety inside that same one-box contract first: vary operand count, operator mix, and whether the unknown is on the left or right before inventing a new task id.
 - Avoid early arithmetic tasks like “largest possible number” or broad expression ranking unless the evidence contract is already well-defined and locally grounded.
 
+## Early logic lessons
+- For early logic puzzles, MCQ-style image options are often cleaner than open-vocabulary answers like `"triangle"` or `"red"`.
+- If a logic task uses option panels, keep the answer format as `option_letter` and ground prompt-facing evidence on the winning option panel bbox.
+- Prefer logic boards with one explicit `?` cell and a stable set of labeled option panels so the user interaction stays consistent even when the hidden rule changes across variants.
+- For early logic families, make the semantic rule vary inside `task_variant` (for example row uniqueness vs column uniqueness vs both) before creating new task ids for near-identical board-and-options layouts.
+
 ## Benchmark alignment
 - MathVision-style useful puzzle coverage includes arithmetic, logic, spatial, topology, and competition-style visual problem solving.
 - MathVista-style useful puzzle coverage includes IQ-test / puzzle-figure reasoning, but prefer variants that are structurally distinct from existing icon tasks.

@@ -1,0 +1,2 @@
+"""Puzzle logic task group."""
+

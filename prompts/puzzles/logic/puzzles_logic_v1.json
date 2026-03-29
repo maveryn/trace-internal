@@ -1,0 +1,77 @@
+{
+  "bundle_id": "puzzles_logic_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "logic_option_completion_puzzle": [
+      "The image shows {object_description}.",
+      "Look at the logic puzzle in the image: {object_description}.",
+      "You are given {object_description}.",
+      "Work from the shape-logic puzzle shown in the image: {object_description}.",
+      "Use the puzzle grid and labeled image options in the image: {object_description}."
+    ]
+  },
+  "task_templates": {
+    "grid_completion_query": [
+      "Choose the option that correctly completes the puzzle grid.",
+      "Determine which labeled option belongs in the question-mark cell.",
+      "Use the puzzle rules to identify the correct image option.",
+      "Find the labeled option that should replace the question mark.",
+      "Work from the puzzle grid and choose the correct option."
+    ]
+  },
+  "task_variant_templates": {
+    "row_uniqueness": [
+      "Each row should contain each visible symbol exactly once. Which option correctly completes the question-mark cell? Answer with the option letter.",
+      "Use the rule that every row contains one of each symbol. Which labeled option fits the question-mark cell? Answer with the option letter.",
+      "Every row should use each symbol once. Which option belongs in the missing cell? Answer with the option letter.",
+      "Complete the puzzle so that each row contains each symbol exactly once. Which labeled option is correct? Answer with the option letter.",
+      "Which option correctly fills the question-mark cell if each row must contain one of each symbol? Answer with the option letter."
+    ],
+    "column_uniqueness": [
+      "Each column should contain each visible symbol exactly once. Which option correctly completes the question-mark cell? Answer with the option letter.",
+      "Use the rule that every column contains one of each symbol. Which labeled option fits the question-mark cell? Answer with the option letter.",
+      "Every column should use each symbol once. Which option belongs in the missing cell? Answer with the option letter.",
+      "Complete the puzzle so that each column contains each symbol exactly once. Which labeled option is correct? Answer with the option letter.",
+      "Which option correctly fills the question-mark cell if each column must contain one of each symbol? Answer with the option letter."
+    ],
+    "row_and_column_uniqueness": [
+      "Each row and each column should contain each visible symbol exactly once. Which option correctly completes the question-mark cell? Answer with the option letter.",
+      "Use the rule that every row and every column contains one of each symbol. Which labeled option fits the question-mark cell? Answer with the option letter.",
+      "Every row and column should use each symbol once. Which option belongs in the missing cell? Answer with the option letter.",
+      "Complete the puzzle so that each row and each column contains each symbol exactly once. Which labeled option is correct? Answer with the option letter.",
+      "Which option correctly fills the question-mark cell if both the rows and columns must contain one of each symbol? Answer with the option letter."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:logic_option_completion_puzzle": [
+      "object_description"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

@@ -1,0 +1,984 @@
+{
+  "answer_gt": {
+    "type": "option_letter",
+    "value": "D"
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        610.0,
+        564.0,
+        754.0,
+        736.0
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "puzzles/task_puzzles_logic_grid_completion_label/images/row_and_column_uniqueness/0006.png"
+  },
+  "instance_seed": 6091847394739564,
+  "prompt": "Use the puzzle grid and labeled image options in the image: an outline-style shape-logic puzzle grid with one question-mark cell and six labeled image options underneath. Choose the option that correctly completes the puzzle grid. Each row and each column should contain each visible symbol exactly once. Which option correctly completes the question-mark cell? Answer with the option letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel.\nAnswer format: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"evidence\":[[504,650,648,822]],\"answer\":\"B\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the puzzle grid and labeled image options in the image: an outline-style shape-logic puzzle grid with one question-mark cell and six labeled image options underneath. Choose the option that correctly completes the puzzle grid. Each row and each column should contain each visible symbol exactly once. Which option correctly completes the question-mark cell? Answer with the option letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel.\nAnswer format: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"evidence\":[[504,650,648,822]],\"answer\":\"B\"}",
+    "answer_only": "Use the puzzle grid and labeled image options in the image: an outline-style shape-logic puzzle grid with one question-mark cell and six labeled image options underneath. Choose the option that correctly completes the puzzle grid. Each row and each column should contain each visible symbol exactly once. Which option correctly completes the question-mark cell? Answer with the option letter.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"answer\":\"B\"}"
+  },
+  "task": "task_puzzles_logic_grid_completion_label",
+  "task_variant": "row_and_column_uniqueness",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_object_type": "triangle",
+      "answer_option_label": "D",
+      "board_size": 3,
+      "board_size_range": [
+        3,
+        5
+      ],
+      "board_values": [
+        [
+          "diamond",
+          "hexagon",
+          "triangle"
+        ],
+        [
+          "hexagon",
+          "triangle",
+          "diamond"
+        ],
+        [
+          "triangle",
+          "diamond",
+          "hexagon"
+        ]
+      ],
+      "cell_count": 9,
+      "cell_count_range": [
+        9,
+        25
+      ],
+      "correct_option_index": 3,
+      "correct_option_panel_id": "option_D",
+      "grid_rows": [
+        [
+          {
+            "cell_id": "cell_0_0",
+            "col_index": 0,
+            "is_unknown": false,
+            "object_type": "diamond",
+            "row_index": 0
+          },
+          {
+            "cell_id": "cell_0_1",
+            "col_index": 1,
+            "is_unknown": false,
+            "object_type": "hexagon",
+            "row_index": 0
+          },
+          {
+            "cell_id": "cell_0_2",
+            "col_index": 2,
+            "is_unknown": true,
+            "object_type": null,
+            "row_index": 0
+          }
+        ],
+        [
+          {
+            "cell_id": "cell_1_0",
+            "col_index": 0,
+            "is_unknown": false,
+            "object_type": "hexagon",
+            "row_index": 1
+          },
+          {
+            "cell_id": "cell_1_1",
+            "col_index": 1,
+            "is_unknown": false,
+            "object_type": "triangle",
+            "row_index": 1
+          },
+          {
+            "cell_id": "cell_1_2",
+            "col_index": 2,
+            "is_unknown": false,
+            "object_type": "diamond",
+            "row_index": 1
+          }
+        ],
+        [
+          {
+            "cell_id": "cell_2_0",
+            "col_index": 0,
+            "is_unknown": false,
+            "object_type": "triangle",
+            "row_index": 2
+          },
+          {
+            "cell_id": "cell_2_1",
+            "col_index": 1,
+            "is_unknown": false,
+            "object_type": "diamond",
+            "row_index": 2
+          },
+          {
+            "cell_id": "cell_2_2",
+            "col_index": 2,
+            "is_unknown": false,
+            "object_type": "hexagon",
+            "row_index": 2
+          }
+        ]
+      ],
+      "option_count": 6,
+      "option_specs": [
+        {
+          "is_correct": false,
+          "object_type": "circle",
+          "option_index": 0,
+          "option_label": "A",
+          "option_panel_id": "option_A"
+        },
+        {
+          "is_correct": false,
+          "object_type": "diamond",
+          "option_index": 1,
+          "option_label": "B",
+          "option_panel_id": "option_B"
+        },
+        {
+          "is_correct": false,
+          "object_type": "square",
+          "option_index": 2,
+          "option_label": "C",
+          "option_panel_id": "option_C"
+        },
+        {
+          "is_correct": true,
+          "object_type": "triangle",
+          "option_index": 3,
+          "option_label": "D",
+          "option_panel_id": "option_D"
+        },
+        {
+          "is_correct": false,
+          "object_type": "star",
+          "option_index": 4,
+          "option_label": "E",
+          "option_panel_id": "option_E"
+        },
+        {
+          "is_correct": false,
+          "object_type": "hexagon",
+          "option_index": 5,
+          "option_label": "F",
+          "option_panel_id": "option_F"
+        }
+      ],
+      "query_cell_id": "cell_0_2",
+      "query_col_index": 2,
+      "query_row_index": 0,
+      "question_format": "logic_grid_mcq",
+      "scene_variant": "logic_outline",
+      "scene_variant_probabilities": {
+        "logic_card": 0.3333333333333333,
+        "logic_outline": 0.3333333333333333,
+        "logic_strip": 0.3333333333333333
+      },
+      "solver_trace": {
+        "column_missing_symbol": "triangle",
+        "correct_option_index": 3,
+        "correct_option_label": "D",
+        "option_object_types": [
+          "circle",
+          "diamond",
+          "square",
+          "triangle",
+          "star",
+          "hexagon"
+        ],
+        "row_missing_symbol": "triangle",
+        "rule_type": "row_and_column_uniqueness",
+        "symbol_pool": [
+          "diamond",
+          "triangle",
+          "hexagon"
+        ]
+      },
+      "supporting_option_panel_ids": [
+        "option_D"
+      ],
+      "symbol_pool": [
+        "diamond",
+        "triangle",
+        "hexagon"
+      ],
+      "task_variant": "row_and_column_uniqueness",
+      "task_variant_probabilities": {
+        "column_uniqueness": 0.0,
+        "row_and_column_uniqueness": 1.0,
+        "row_uniqueness": 0.0
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          610.0,
+          564.0,
+          754.0,
+          736.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "board_size": 3,
+        "board_size_range": [
+          3,
+          5
+        ],
+        "cell_count": 9,
+        "cell_count_range": [
+          9,
+          25
+        ],
+        "option_count": 6,
+        "scene_variant": "logic_outline",
+        "scene_variant_probabilities": {
+          "logic_card": 0.3333333333333333,
+          "logic_outline": 0.3333333333333333,
+          "logic_strip": 0.3333333333333333
+        },
+        "task_variant": "row_and_column_uniqueness",
+        "task_variant_probabilities": {
+          "column_uniqueness": 0.0,
+          "row_and_column_uniqueness": 1.0,
+          "row_uniqueness": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "puzzles_logic_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the exact option letter of the correct image option",
+          "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel",
+          "json_example": "{\"evidence\":[[504,650,648,822]],\"answer\":\"B\"}",
+          "json_example_answer_only": "{\"answer\":\"B\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "an outline-style shape-logic puzzle grid with one question-mark cell and six labeled image options underneath"
+        },
+        "task_family_key": "logic_option_completion_puzzle",
+        "task_family_variant_index": 4,
+        "task_key": "grid_completion_query",
+        "task_variant_index": 0,
+        "task_variant_key": "row_and_column_uniqueness",
+        "task_variant_template_index": 0,
+        "template_paths": [
+          "puzzles/logic/puzzles_logic_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:grid_completion_query": 5,
+          "task_family:logic_option_completion_puzzle": 5,
+          "task_variant:row_and_column_uniqueness": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "puzzles_logic_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact option letter of the correct image option",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel",
+              "json_example": "{\"evidence\":[[504,650,648,822]],\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an outline-style shape-logic puzzle grid with one question-mark cell and six labeled image options underneath"
+            },
+            "task_family_key": "logic_option_completion_puzzle",
+            "task_family_variant_index": 4,
+            "task_key": "grid_completion_query",
+            "task_variant_index": 0,
+            "task_variant_key": "row_and_column_uniqueness",
+            "task_variant_template_index": 0,
+            "template_paths": [
+              "puzzles/logic/puzzles_logic_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:grid_completion_query": 5,
+              "task_family:logic_option_completion_puzzle": 5,
+              "task_variant:row_and_column_uniqueness": 5
+            }
+          },
+          "prompt": "Use the puzzle grid and labeled image options in the image: an outline-style shape-logic puzzle grid with one question-mark cell and six labeled image options underneath. Choose the option that correctly completes the puzzle grid. Each row and each column should contain each visible symbol exactly once. Which option correctly completes the question-mark cell? Answer with the option letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel.\nAnswer format: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"evidence\":[[504,650,648,822]],\"answer\":\"B\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "puzzles_logic_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact option letter of the correct image option",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel",
+              "json_example": "{\"evidence\":[[504,650,648,822]],\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an outline-style shape-logic puzzle grid with one question-mark cell and six labeled image options underneath"
+            },
+            "task_family_key": "logic_option_completion_puzzle",
+            "task_family_variant_index": 4,
+            "task_key": "grid_completion_query",
+            "task_variant_index": 0,
+            "task_variant_key": "row_and_column_uniqueness",
+            "task_variant_template_index": 0,
+            "template_paths": [
+              "puzzles/logic/puzzles_logic_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:grid_completion_query": 5,
+              "task_family:logic_option_completion_puzzle": 5,
+              "task_variant:row_and_column_uniqueness": 5
+            }
+          },
+          "prompt": "Use the puzzle grid and labeled image options in the image: an outline-style shape-logic puzzle grid with one question-mark cell and six labeled image options underneath. Choose the option that correctly completes the puzzle grid. Each row and each column should contain each visible symbol exactly once. Which option correctly completes the question-mark cell? Answer with the option letter.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"answer\":\"B\"}"
+        }
+      },
+      "task_variant": "row_and_column_uniqueness",
+      "template_id": "puzzles_logic_v1"
+    },
+    "render_map": {
+      "cell_bboxes_px": {
+        "cell_0_0": [
+          438.0,
+          184.0,
+          534.0,
+          280.0
+        ],
+        "cell_0_1": [
+          552.0,
+          184.0,
+          648.0,
+          280.0
+        ],
+        "cell_0_2": [
+          666.0,
+          184.0,
+          762.0,
+          280.0
+        ],
+        "cell_1_0": [
+          438.0,
+          298.0,
+          534.0,
+          394.0
+        ],
+        "cell_1_1": [
+          552.0,
+          298.0,
+          648.0,
+          394.0
+        ],
+        "cell_1_2": [
+          666.0,
+          298.0,
+          762.0,
+          394.0
+        ],
+        "cell_2_0": [
+          438.0,
+          412.0,
+          534.0,
+          508.0
+        ],
+        "cell_2_1": [
+          552.0,
+          412.0,
+          648.0,
+          508.0
+        ],
+        "cell_2_2": [
+          666.0,
+          412.0,
+          762.0,
+          508.0
+        ]
+      },
+      "image_id": "img0",
+      "option_panel_bboxes_px": {
+        "option_A": [
+          118.0,
+          564.0,
+          262.0,
+          736.0
+        ],
+        "option_B": [
+          282.0,
+          564.0,
+          426.0,
+          736.0
+        ],
+        "option_C": [
+          446.0,
+          564.0,
+          590.0,
+          736.0
+        ],
+        "option_D": [
+          610.0,
+          564.0,
+          754.0,
+          736.0
+        ],
+        "option_E": [
+          774.0,
+          564.0,
+          918.0,
+          736.0
+        ],
+        "option_F": [
+          938.0,
+          564.0,
+          1082.0,
+          736.0
+        ]
+      },
+      "scene_bbox_px": [
+        92.0,
+        158.0,
+        1108.0,
+        762.0
+      ]
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 920,
+      "canvas_width": 1200,
+      "coord_space": "pixel",
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_bbox_px": [
+        92.0,
+        158.0,
+        1108.0,
+        762.0
+      ],
+      "scene_variant": "logic_outline",
+      "text_style": {
+        "option_label_font_size_px": 30,
+        "value_font_size_px": 46
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "panel_role": "board",
+            "scene_variant": "logic_outline"
+          },
+          "bbox_px": [
+            412.0,
+            158.0,
+            788.0,
+            534.0
+          ],
+          "entity_id": "logic_board_panel",
+          "entity_type": "puzzle_logic_panel"
+        },
+        {
+          "attrs": {
+            "panel_role": "options",
+            "scene_variant": "logic_outline"
+          },
+          "bbox_px": [
+            92.0,
+            538.0,
+            1108.0,
+            762.0
+          ],
+          "entity_id": "logic_options_panel",
+          "entity_type": "puzzle_logic_panel"
+        },
+        {
+          "attrs": {
+            "col_index": 0,
+            "is_unknown": false,
+            "object_type": "diamond",
+            "row_index": 0
+          },
+          "bbox_px": [
+            438.0,
+            184.0,
+            534.0,
+            280.0
+          ],
+          "entity_id": "cell_0_0",
+          "entity_type": "puzzle_logic_cell"
+        },
+        {
+          "attrs": {
+            "col_index": 1,
+            "is_unknown": false,
+            "object_type": "hexagon",
+            "row_index": 0
+          },
+          "bbox_px": [
+            552.0,
+            184.0,
+            648.0,
+            280.0
+          ],
+          "entity_id": "cell_0_1",
+          "entity_type": "puzzle_logic_cell"
+        },
+        {
+          "attrs": {
+            "col_index": 2,
+            "is_unknown": true,
+            "object_type": null,
+            "row_index": 0
+          },
+          "bbox_px": [
+            666.0,
+            184.0,
+            762.0,
+            280.0
+          ],
+          "entity_id": "cell_0_2",
+          "entity_type": "puzzle_logic_cell"
+        },
+        {
+          "attrs": {
+            "col_index": 0,
+            "is_unknown": false,
+            "object_type": "hexagon",
+            "row_index": 1
+          },
+          "bbox_px": [
+            438.0,
+            298.0,
+            534.0,
+            394.0
+          ],
+          "entity_id": "cell_1_0",
+          "entity_type": "puzzle_logic_cell"
+        },
+        {
+          "attrs": {
+            "col_index": 1,
+            "is_unknown": false,
+            "object_type": "triangle",
+            "row_index": 1
+          },
+          "bbox_px": [
+            552.0,
+            298.0,
+            648.0,
+            394.0
+          ],
+          "entity_id": "cell_1_1",
+          "entity_type": "puzzle_logic_cell"
+        },
+        {
+          "attrs": {
+            "col_index": 2,
+            "is_unknown": false,
+            "object_type": "diamond",
+            "row_index": 1
+          },
+          "bbox_px": [
+            666.0,
+            298.0,
+            762.0,
+            394.0
+          ],
+          "entity_id": "cell_1_2",
+          "entity_type": "puzzle_logic_cell"
+        },
+        {
+          "attrs": {
+            "col_index": 0,
+            "is_unknown": false,
+            "object_type": "triangle",
+            "row_index": 2
+          },
+          "bbox_px": [
+            438.0,
+            412.0,
+            534.0,
+            508.0
+          ],
+          "entity_id": "cell_2_0",
+          "entity_type": "puzzle_logic_cell"
+        },
+        {
+          "attrs": {
+            "col_index": 1,
+            "is_unknown": false,
+            "object_type": "diamond",
+            "row_index": 2
+          },
+          "bbox_px": [
+            552.0,
+            412.0,
+            648.0,
+            508.0
+          ],
+          "entity_id": "cell_2_1",
+          "entity_type": "puzzle_logic_cell"
+        },
+        {
+          "attrs": {
+            "col_index": 2,
+            "is_unknown": false,
+            "object_type": "hexagon",
+            "row_index": 2
+          },
+          "bbox_px": [
+            666.0,
+            412.0,
+            762.0,
+            508.0
+          ],
+          "entity_id": "cell_2_2",
+          "entity_type": "puzzle_logic_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "object_type": "circle",
+            "option_index": 0,
+            "option_label": "A"
+          },
+          "bbox_px": [
+            118.0,
+            564.0,
+            262.0,
+            736.0
+          ],
+          "entity_id": "option_A",
+          "entity_type": "puzzle_logic_option_panel"
+        },
+        {
+          "attrs": {
+            "option_index": 0,
+            "option_label": "A"
+          },
+          "bbox_px": [
+            177.0,
+            580.0,
+            203.0,
+            604.0
+          ],
+          "entity_id": "option_A_label",
+          "entity_type": "puzzle_logic_option_label"
+        },
+        {
+          "attrs": {
+            "object_type": "circle",
+            "option_index": 0,
+            "option_label": "A"
+          },
+          "bbox_px": [
+            144.0,
+            620.0,
+            236.0,
+            712.0
+          ],
+          "entity_id": "option_A_symbol_box",
+          "entity_type": "puzzle_logic_option_symbol_box"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "object_type": "diamond",
+            "option_index": 1,
+            "option_label": "B"
+          },
+          "bbox_px": [
+            282.0,
+            564.0,
+            426.0,
+            736.0
+          ],
+          "entity_id": "option_B",
+          "entity_type": "puzzle_logic_option_panel"
+        },
+        {
+          "attrs": {
+            "option_index": 1,
+            "option_label": "B"
+          },
+          "bbox_px": [
+            341.5,
+            580.0,
+            366.5,
+            604.0
+          ],
+          "entity_id": "option_B_label",
+          "entity_type": "puzzle_logic_option_label"
+        },
+        {
+          "attrs": {
+            "object_type": "diamond",
+            "option_index": 1,
+            "option_label": "B"
+          },
+          "bbox_px": [
+            308.0,
+            620.0,
+            400.0,
+            712.0
+          ],
+          "entity_id": "option_B_symbol_box",
+          "entity_type": "puzzle_logic_option_symbol_box"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "object_type": "square",
+            "option_index": 2,
+            "option_label": "C"
+          },
+          "bbox_px": [
+            446.0,
+            564.0,
+            590.0,
+            736.0
+          ],
+          "entity_id": "option_C",
+          "entity_type": "puzzle_logic_option_panel"
+        },
+        {
+          "attrs": {
+            "option_index": 2,
+            "option_label": "C"
+          },
+          "bbox_px": [
+            506.0,
+            580.0,
+            530.0,
+            604.0
+          ],
+          "entity_id": "option_C_label",
+          "entity_type": "puzzle_logic_option_label"
+        },
+        {
+          "attrs": {
+            "object_type": "square",
+            "option_index": 2,
+            "option_label": "C"
+          },
+          "bbox_px": [
+            472.0,
+            620.0,
+            564.0,
+            712.0
+          ],
+          "entity_id": "option_C_symbol_box",
+          "entity_type": "puzzle_logic_option_symbol_box"
+        },
+        {
+          "attrs": {
+            "is_correct": true,
+            "object_type": "triangle",
+            "option_index": 3,
+            "option_label": "D"
+          },
+          "bbox_px": [
+            610.0,
+            564.0,
+            754.0,
+            736.0
+          ],
+          "entity_id": "option_D",
+          "entity_type": "puzzle_logic_option_panel"
+        },
+        {
+          "attrs": {
+            "option_index": 3,
+            "option_label": "D"
+          },
+          "bbox_px": [
+            668.5,
+            580.0,
+            695.5,
+            604.0
+          ],
+          "entity_id": "option_D_label",
+          "entity_type": "puzzle_logic_option_label"
+        },
+        {
+          "attrs": {
+            "object_type": "triangle",
+            "option_index": 3,
+            "option_label": "D"
+          },
+          "bbox_px": [
+            636.0,
+            620.0,
+            728.0,
+            712.0
+          ],
+          "entity_id": "option_D_symbol_box",
+          "entity_type": "puzzle_logic_option_symbol_box"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "object_type": "star",
+            "option_index": 4,
+            "option_label": "E"
+          },
+          "bbox_px": [
+            774.0,
+            564.0,
+            918.0,
+            736.0
+          ],
+          "entity_id": "option_E",
+          "entity_type": "puzzle_logic_option_panel"
+        },
+        {
+          "attrs": {
+            "option_index": 4,
+            "option_label": "E"
+          },
+          "bbox_px": [
+            834.5,
+            580.0,
+            857.5,
+            604.0
+          ],
+          "entity_id": "option_E_label",
+          "entity_type": "puzzle_logic_option_label"
+        },
+        {
+          "attrs": {
+            "object_type": "star",
+            "option_index": 4,
+            "option_label": "E"
+          },
+          "bbox_px": [
+            800.0,
+            620.0,
+            892.0,
+            712.0
+          ],
+          "entity_id": "option_E_symbol_box",
+          "entity_type": "puzzle_logic_option_symbol_box"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "object_type": "hexagon",
+            "option_index": 5,
+            "option_label": "F"
+          },
+          "bbox_px": [
+            938.0,
+            564.0,
+            1082.0,
+            736.0
+          ],
+          "entity_id": "option_F",
+          "entity_type": "puzzle_logic_option_panel"
+        },
+        {
+          "attrs": {
+            "option_index": 5,
+            "option_label": "F"
+          },
+          "bbox_px": [
+            998.5,
+            580.0,
+            1021.5,
+            604.0
+          ],
+          "entity_id": "option_F_label",
+          "entity_type": "puzzle_logic_option_label"
+        },
+        {
+          "attrs": {
+            "object_type": "hexagon",
+            "option_index": 5,
+            "option_label": "F"
+          },
+          "bbox_px": [
+            964.0,
+            620.0,
+            1056.0,
+            712.0
+          ],
+          "entity_id": "option_F_symbol_box",
+          "entity_type": "puzzle_logic_option_symbol_box"
+        }
+      ],
+      "relations": {
+        "answer_option_label": "D",
+        "correct_option_panel_id": "option_D",
+        "query_cell_id": "cell_0_2",
+        "scene_variant": "logic_outline",
+        "task_variant": "row_and_column_uniqueness"
+      },
+      "scene_kind": "puzzle_logic_logic_outline"
+    },
+    "witness_symbolic": {
+      "type": "bbox_set",
+      "value": [
+        [
+          610.0,
+          564.0,
+          754.0,
+          736.0
+        ]
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

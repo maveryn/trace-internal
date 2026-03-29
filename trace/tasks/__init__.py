@@ -55,6 +55,7 @@ from .tables.temporal import value as _task_tables_temporal_value
 from .puzzles.arithmetic import balance_value as _task_puzzles_arithmetic_balance_value
 from .puzzles.arithmetic import equation_value as _task_puzzles_arithmetic_equation_value
 from .puzzles.arithmetic import grid_value as _task_puzzles_arithmetic_grid_value
+from .puzzles.logic import grid_completion_label as _task_puzzles_logic_grid_completion_label
 from .tile import count_color_components as _task_tile_count_color_components
 from .tile import count_color_count as _task_tile_count_color_count
 from .tile import count_largest_component_size as _task_tile_count_largest_component_size

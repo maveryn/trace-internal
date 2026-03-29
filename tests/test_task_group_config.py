@@ -841,6 +841,54 @@ def test_puzzles_arithmetic_defaults_loaded() -> None:
     assert str(balance_prompt["json_example_answer_only_sum_pair_unknown"]).strip()
 
 
+def test_puzzles_logic_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("puzzles", "logic")
+    for section in ("generation", "rendering", "prompt", "complexity"):
+        assert isinstance(cfg.get(section), dict)
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "puzzles_logic_v1"
+    assert str(prompt_shared["answer_hint"]).strip()
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_puzzles_logic_grid_completion_label",
+    )
+    assert str(prompt_defaults["task_family_key"]).strip() == "logic_option_completion_puzzle"
+    assert str(prompt_defaults["task_key"]).strip() == "grid_completion_query"
+    assert str(prompt_defaults["object_description_logic_strip"]).strip()
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "column_uniqueness",
+        "row_and_column_uniqueness",
+        "row_uniqueness",
+    ]
+    assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
+        "logic_card",
+        "logic_outline",
+        "logic_strip",
+    ]
+    assert int(generation_defaults["board_size_min"]) == 3
+    assert int(generation_defaults["board_size_max"]) == 5
+    assert int(generation_defaults["option_count"]) == 6
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert int(rendering_defaults["option_panel_width_px"]) > 0
+    assert str(prompt_defaults["evidence_hint_row_uniqueness"]).strip()
+    assert str(prompt_defaults["evidence_hint_column_uniqueness"]).strip()
+    assert str(prompt_defaults["json_example_row_and_column_uniqueness"]).strip()
+    assert str(prompt_defaults["json_example_answer_only_column_uniqueness"]).strip()
+
+    logic_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_puzzles_logic_grid_completion_label",
+    )
+    assert logic_complexity["criteria_weights"] == {
+        "visual_scan": pytest.approx(0.34),
+        "reasoning_load": pytest.approx(0.33),
+        "scene_variant_load": pytest.approx(0.33),
+    }
+
+
 def test_charts_multiseries_defaults_loaded() -> None:
     cfg = get_task_group_defaults("charts", "multiseries")
     for section in ("generation", "rendering", "prompt", "complexity"):

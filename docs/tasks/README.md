@@ -72,3 +72,4 @@ Current task docs:
 62. [task_puzzles_arithmetic_equation_value.md](task_puzzles_arithmetic_equation_value.md)
 63. [task_puzzles_arithmetic_balance_value.md](task_puzzles_arithmetic_balance_value.md)
 64. [task_puzzles_arithmetic_grid_value.md](task_puzzles_arithmetic_grid_value.md)
+65. [task_puzzles_logic_grid_completion_label.md](task_puzzles_logic_grid_completion_label.md)

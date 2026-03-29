@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import math
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import load_font
+from .symbol_rendering import PUZZLE_OBJECT_COLOR_BY_TYPE, draw_puzzle_shape_icon
 
 
 SUPPORTED_PUZZLE_BALANCE_SCENE_VARIANTS: Tuple[str, ...] = (
@@ -16,16 +16,6 @@ SUPPORTED_PUZZLE_BALANCE_SCENE_VARIANTS: Tuple[str, ...] = (
     "balance_card",
     "balance_outline",
 )
-
-_OBJECT_COLOR_BY_TYPE: Dict[str, Tuple[int, int, int]] = {
-    "circle": (74, 127, 214),
-    "triangle": (214, 130, 74),
-    "diamond": (64, 164, 108),
-    "square": (196, 90, 100),
-    "hexagon": (136, 100, 196),
-    "star": (205, 162, 62),
-}
-
 
 @dataclass(frozen=True)
 class PuzzleBalanceRenderParams:
@@ -91,61 +81,6 @@ def _rounded_rect(
         outline=tuple(int(value) for value in outline),
         width=int(width),
     )
-
-
-def _draw_shape_icon(
-    draw: ImageDraw.ImageDraw,
-    *,
-    bbox: Tuple[float, float, float, float],
-    object_type: str,
-    fill_rgb: Sequence[int],
-    outline_rgb: Sequence[int],
-    width: int,
-) -> None:
-    """Draw one simple symbolic shape inside a box."""
-
-    left, top, right, bottom = [float(value) for value in bbox]
-    inset = 16.0
-    x0, y0, x1, y1 = left + inset, top + inset, right - inset, bottom - inset
-    cx = 0.5 * (x0 + x1)
-    cy = 0.5 * (y0 + y1)
-    w = x1 - x0
-    h = y1 - y0
-    kind = str(object_type)
-    fill = tuple(int(value) for value in fill_rgb)
-    outline = tuple(int(value) for value in outline_rgb)
-    stroke = max(1, int(width))
-
-    if kind == "circle":
-        draw.ellipse((x0, y0, x1, y1), fill=fill, outline=outline, width=stroke)
-        return
-    if kind == "square":
-        draw.rectangle((x0, y0, x1, y1), fill=fill, outline=outline, width=stroke)
-        return
-    if kind == "triangle":
-        points = [(cx, y0), (x1, y1), (x0, y1)]
-    elif kind == "diamond":
-        points = [(cx, y0), (x1, cy), (cx, y1), (x0, cy)]
-    elif kind == "hexagon":
-        points = [
-            (x0 + 0.22 * w, y0),
-            (x1 - 0.22 * w, y0),
-            (x1, cy),
-            (x1 - 0.22 * w, y1),
-            (x0 + 0.22 * w, y1),
-            (x0, cy),
-        ]
-    elif kind == "star":
-        outer = 0.5 * min(w, h)
-        inner = 0.45 * outer
-        points = []
-        for index in range(10):
-            radius = outer if index % 2 == 0 else inner
-            angle = -math.pi / 2.0 + (index * math.pi / 5.0)
-            points.append((cx + radius * math.cos(angle), cy + radius * math.sin(angle)))
-    else:
-        raise ValueError(f"unsupported balance object_type: {object_type}")
-    draw.polygon(points, fill=fill, outline=outline, width=stroke)
 
 
 def _draw_centered_text(
@@ -378,8 +313,8 @@ def render_puzzle_balance_scene(
                 )
                 if str(item.get("kind")) == "object":
                     object_type = str(item["object_type"])
-                    color_rgb = _OBJECT_COLOR_BY_TYPE.get(object_type, render_params.accent_color_rgb)
-                    _draw_shape_icon(
+                    color_rgb = PUZZLE_OBJECT_COLOR_BY_TYPE.get(object_type, render_params.accent_color_rgb)
+                    draw_puzzle_shape_icon(
                         draw,
                         bbox=bbox,
                         object_type=object_type,
@@ -506,8 +441,8 @@ def render_puzzle_balance_scene(
         outline=render_params.border_color_rgb,
         width=int(render_params.border_width_px),
     )
-    query_color_rgb = _OBJECT_COLOR_BY_TYPE.get(query_object_type, render_params.accent_color_rgb)
-    _draw_shape_icon(
+    query_color_rgb = PUZZLE_OBJECT_COLOR_BY_TYPE.get(query_object_type, render_params.accent_color_rgb)
+    draw_puzzle_shape_icon(
         draw,
         bbox=query_object_bbox,
         object_type=query_object_type,

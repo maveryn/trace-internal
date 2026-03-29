@@ -3,17 +3,21 @@
 ## Purpose
 Capture the active v1 contract for the `puzzles` domain.
 
-## Active family
-1. Current active `task_group`: `arithmetic`
+## Active families
+1. Current active `task_group` values:
+   - `arithmetic`
+   - `logic`
 2. Current active tasks:
    - `task_puzzles_arithmetic_equation_value`
    - `task_puzzles_arithmetic_balance_value`
    - `task_puzzles_arithmetic_grid_value`
+   - `task_puzzles_logic_grid_completion_label`
 
 ## Family contract
 1. Puzzle families are hidden-rule / hidden-variable reasoning families, not generic icon grids or mini tables.
 2. The active arithmetic family centers on explicit local query targets so the prompt-facing evidence can stay local and simple.
-3. Arithmetic puzzle variants should widen `task_variant` before creating a new task id when the same scene grammar and one-box evidence contract still hold.
+3. The active logic family currently centers on one missing grid cell plus six labeled image options, so the answer format can stay `option_letter` while the evidence stays local to one option panel.
+4. Puzzle variants should widen `task_variant` before creating a new task id when the same scene grammar and evidence contract still hold.
 
 ## `task_puzzles_arithmetic_equation_value`
 1. Supported `task_variant` values:
@@ -99,7 +103,35 @@ Capture the active v1 contract for the `puzzles` domain.
    - `execution_trace` stores `grid_rows`, `row_values`, `visible_example_rows`, `solver_trace`, `query_cell_id`, `query_row_index`, `query_col_index`, `row_count`, `row_count_range`, `cell_count`, and `cell_count_range`,
    - prompt-facing evidence is projected from `query_cell_id`, not inferred from pixels.
 
-## Prompt contract
+## `task_puzzles_logic_grid_completion_label`
+1. Supported `task_variant` values:
+   - `row_uniqueness`
+   - `column_uniqueness`
+   - `row_and_column_uniqueness`
+2. Supported `scene_variant` values:
+   - `logic_strip`
+   - `logic_card`
+   - `logic_outline`
+3. Answer contract:
+   - `answer_gt.type = option_letter`
+4. Evidence contract:
+   - `evidence_gt.type = bbox_set`
+   - exactly one bbox for the winning option panel
+5. Scene contract:
+   - one square logic grid per image,
+   - board size ranges from `3x3` through `5x5`,
+   - exactly one board cell shows `?`,
+   - exactly six labeled image options (`A..F`) appear below the board,
+   - each option panel contains one candidate shape,
+   - the answer is the option letter, not the shape name.
+6. Trace contract:
+   - `scene_ir.entities` includes `puzzle_logic_cell`, `puzzle_logic_option_panel`, `puzzle_logic_option_label`, and `puzzle_logic_option_symbol_box` entities,
+   - `render_map.cell_bboxes_px` stores each board-cell bbox keyed by `cell_id`,
+   - `render_map.option_panel_bboxes_px` stores each option-panel bbox keyed by `option_panel_id`,
+   - `execution_trace` stores `board_values`, `grid_rows`, `symbol_pool`, `query_cell_id`, `query_row_index`, `query_col_index`, `answer_object_type`, `answer_option_label`, `correct_option_index`, `correct_option_panel_id`, `option_specs`, `board_size`, `board_size_range`, `cell_count`, `cell_count_range`, `option_count`, and `solver_trace`,
+   - prompt-facing evidence is projected from `correct_option_panel_id`, not inferred from pixels.
+
+## Prompt contract for `task_puzzles_arithmetic_equation_value`
 1. Bundle: `puzzles_arithmetic_v1`
 2. `task_family_key`: `arithmetic_unknown_slot_puzzle`
 3. `task_key`: `equation_value_query`
@@ -132,10 +164,21 @@ Capture the active v1 contract for the `puzzles` domain.
    - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
 6. Prompt-facing evidence wording should always make the one-box contract explicit: the returned bbox is the question-mark grid cell.
 
+## Prompt contract for `task_puzzles_logic_grid_completion_label`
+1. Bundle: `puzzles_logic_v1`
+2. `task_family_key`: `logic_option_completion_puzzle`
+3. `task_key`: `grid_completion_query`
+4. `task_variant_key`: `row_uniqueness|column_uniqueness|row_and_column_uniqueness`
+5. Required slots:
+   - task-family: `object_description`
+   - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
+   - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
+6. Prompt-facing evidence wording should always make the one-box contract explicit: the returned bbox is the winning option panel.
+
 ## Visual policy
 1. Puzzles use the same light solid background baseline as the other clean synthetic domains.
 2. Arithmetic scene variants vary panel chrome and outline treatment, not the semantic layouts of the equation row, equality panels, or arithmetic grids.
-3. The equation unknown slot, equality query answer box, and arithmetic-grid question-mark cell should stay visually salient relative to the other boxes.
+3. The equation unknown slot, equality query answer box, arithmetic-grid question-mark cell, and logic-grid winning option panels should stay visually salient relative to the other boxes.
 
 ## Determinism + review
 1. Deterministic generation/rendering from `instance_seed`.

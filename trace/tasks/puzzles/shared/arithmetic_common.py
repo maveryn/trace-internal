@@ -7,13 +7,13 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ....core.seed import spawn_rng
 from ...shared.config_defaults import group_default, resolve_required_int_bounds
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.text_rendering import load_font
-from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
+from .common import projected_puzzle_bbox_evidence, resolve_puzzle_axis_variant
 from .arithmetic_scene import PuzzleArithmeticRenderParams, SUPPORTED_PUZZLE_ARITHMETIC_SCENE_VARIANTS
 from .grid_scene import PuzzleGridRenderParams, SUPPORTED_PUZZLE_GRID_SCENE_VARIANTS
+from ....core.seed import spawn_rng
 
 
 _OPERATOR_DISPLAY_CHOICES: Tuple[str, ...] = ("+", "+", "-", "-", "×")
@@ -78,45 +78,6 @@ class PuzzleArithmeticGridDefaults:
     value_font_size_px: int = 46
     balanced_task_variant_sampling: bool = True
     balanced_scene_variant_sampling: bool = True
-
-
-def resolve_puzzle_axis_variant(
-    *,
-    params: Mapping[str, Any],
-    gen_defaults: Mapping[str, Any],
-    instance_seed: int,
-    supported_variants: Sequence[str],
-    task_id: str,
-    explicit_key: str,
-    weights_key: str,
-    balance_flag_key: str,
-    axis_namespace: str,
-) -> Tuple[str, Dict[str, float]]:
-    """Resolve one semantic or visual puzzle axis with deterministic balancing."""
-
-    rng = spawn_rng(int(instance_seed), f"{task_id}.{axis_namespace}")
-    selected_variant, probabilities = resolve_variant(
-        rng,
-        params=params,
-        gen_defaults=gen_defaults,
-        supported_variants=[str(item) for item in supported_variants],
-        explicit_key=str(explicit_key),
-        weights_key=str(weights_key),
-    )
-    balanced = apply_balanced_variant_sampling(
-        instance_seed=int(instance_seed),
-        params=params,
-        gen_defaults=gen_defaults,
-        selected_variant=str(selected_variant),
-        variant_probabilities=probabilities,
-        supported_variants=[str(item) for item in supported_variants],
-        balance_flag_key=str(balance_flag_key),
-        explicit_key=str(explicit_key),
-        weights_key=str(weights_key),
-        sampling_namespace=f"{task_id}:{axis_namespace}",
-    )
-    return str(balanced), {str(key): float(value) for key, value in probabilities.items()}
-
 
 def resolve_arithmetic_render_params(
     params: Mapping[str, Any],
@@ -754,22 +715,6 @@ def build_arithmetic_grid_dataset_for_variant(
             "complete_rows_unique_operator": True,
         },
     }
-
-
-def projected_puzzle_bbox_evidence(
-    bbox_map: Mapping[str, Sequence[float]],
-    item_ids: Sequence[str],
-) -> Dict[str, Any]:
-    """Project ordered puzzle item ids into prompt-facing `bbox_set` evidence."""
-
-    return {
-        "bbox_set": [
-            list(bbox_map[str(item_id)])
-            for item_id in [str(item) for item in item_ids]
-            if str(item_id) in bbox_map
-        ]
-    }
-
 
 __all__ = [
     "PuzzleArithmeticDefaults",

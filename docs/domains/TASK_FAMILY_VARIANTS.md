@@ -86,6 +86,10 @@ Define how we split tasks into reusable families so each dataset slice stays com
 10. The active balance-scene grammar uses `2..3` stacked equality panels with boxed symbols and numbers, explicit `+` and `=` signs, and a final query row shaped like `symbol = ?`.
 11. The active arithmetic-grid grammar uses `3..5` rows, exactly `3` columns, no headers, and a repeated hidden row rule `a op b = c` with one explicit `?` cell.
 12. Prompt-facing arithmetic evidence should stay as one-box `bbox_set` grounding on the queried unknown slot, final question-mark query box, or question-mark grid cell; do not widen to explanatory multi-box evidence unless a later family truly needs ordered witnesses.
+13. `task_puzzles_logic_grid_completion_label` uses semantic `task_variant` values `row_uniqueness`, `column_uniqueness`, and `row_and_column_uniqueness`.
+14. `task_puzzles_logic_grid_completion_label` uses visual `scene_variant` values `logic_strip`, `logic_card`, and `logic_outline`.
+15. The active logic-grid grammar uses one square `3x3` through `5x5` board with one explicit `?` cell and exactly six labeled image options.
+16. Prompt-facing logic evidence should stay as one-box `bbox_set` grounding on the winning option panel; keep the query interaction stable as option selection even when later logic families vary the rule structure.
 
 ## Planned geometry measurement variants
 1. **Angle measurement**

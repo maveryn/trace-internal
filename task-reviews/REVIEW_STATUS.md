@@ -53,3 +53,4 @@ Update this table after each review run.
 | task_temporal_clock_readout | task_temporal_clock_readout | alright_for_now | distribution pass |
 | task_temporal_clock_compare | task_temporal_clock_compare | alright_for_now | distribution pass |
 | task_temporal_calendar_month_view | task_temporal_calendar_month_view | alright_for_now | distribution pass |
+| task_temporal_schedule_day_planner | task_temporal_schedule_day_planner | alright_for_now | distribution pass |

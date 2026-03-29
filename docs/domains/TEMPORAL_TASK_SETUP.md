@@ -7,16 +7,19 @@ Capture the active v1 contract for the `temporal` domain.
 1. Current active `task_group` values:
    - `clock`
    - `calendar`
+   - `schedule`
 2. Current active tasks:
    - `task_temporal_clock_readout`
    - `task_temporal_clock_compare`
    - `task_temporal_calendar_month_view`
+   - `task_temporal_schedule_day_planner`
 
 ## Family contract
 1. Temporal tasks use familiar time-structured visual artifacts rather than generic tables or charts.
 2. Early temporal tasks should prefer displays with one visually obvious queried object so prompt-facing evidence can stay local and reviewable.
 3. The active clock family now covers both one-clock readout and multi-clock comparison while keeping one stable analog-clock grammar shared across the task group.
 4. The active calendar family now uses one stable month-view scaffold and widens question diversity through `task_variant` rather than changing the calendar scene grammar itself.
+5. The active schedule family now uses one stable single-day planner scaffold and widens question diversity through `task_variant` rather than forking separate schedule task ids for overlap, duration, and optimization questions.
 
 ## `task_temporal_clock_readout`
 1. Supported `task_variant` values:
@@ -54,32 +57,35 @@ Capture the active v1 contract for the `temporal` domain.
 1. Bundles:
    - `temporal_clock_v1`
    - `temporal_calendar_v1`
+   - `temporal_schedule_v1`
 2. `task_temporal_clock_readout` uses `task_family_key=single_analog_clock` and `task_key=clock_readout_query`.
 3. `task_temporal_clock_compare` uses `task_family_key=multi_analog_clock` and `task_key=clock_compare_query`.
 4. `task_temporal_calendar_month_view` uses `task_family_key=month_calendar` and `task_key=calendar_month_query`.
-5. `task_variant_key` values stay task-specific:
+5. `task_temporal_schedule_day_planner` uses `task_family_key=day_schedule` and `task_key=schedule_day_query`.
+6. `task_variant_key` values stay task-specific:
    - `shown_time|minutes_after|minutes_before` for readout
    - `earliest_time|latest_time` for compare
    - `date_of_weekday_occurrence|count_marked_weekend_days|days_between_marked_dates` for calendar
-6. Required slots:
+   - `overlap_count|longer_than_reference_count|maximum_non_overlapping_count` for schedule
+7. Required slots:
    - task-family: `object_description`
    - task-variant: `delta_minutes` for the readout offset variants only
    - task-variant: `ordinal`, `weekday_name` for `date_of_weekday_occurrence`
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
    - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
-7. Prompt-facing examples must match the active query semantics; for readout offset variants, do not reuse the shown-time example answer unchanged.
+8. Prompt-facing examples must match the active query semantics; for readout offset variants, do not reuse the shown-time example answer unchanged.
 
 ## Visual policy
-1. Temporal clocks use the same light solid background baseline as the other clean synthetic domains.
-2. `classic`, `minimal`, and `outline` vary bezel/tick styling only; they do not change the underlying time semantics.
-3. `style_variant` and `accent_color_name` add extra non-semantic clock-face diversity while keeping the same answer/evidence contract.
-4. The two hands must remain visually separable at all supported times, which is why the generation support filters out near-overlap times up front.
+1. Temporal tasks use the same light solid background baseline as the other clean synthetic domains.
+2. `classic`, `minimal`, and `outline` vary artifact chrome only; they do not change the underlying time semantics.
+3. `style_variant` and `accent_color_name` add extra non-semantic temporal diversity while keeping the same answer/evidence contract.
+4. The queried witness should stay visually separable in every active family, which is why clocks filter near-overlap hand placements, calendars keep evidence on date cells, and schedules keep evidence on event blocks.
 
 ## Determinism + review
 1. Deterministic generation/rendering from `instance_seed`.
 2. `task_variant` and `scene_variant` are sampled independently at the task policy level.
-3. No semantic auto-relaxation: the answer always comes from the same shown time and offset recorded in trace.
-4. Review/sample overlays should use the recorded hand bboxes/tips rather than guessing clock geometry from pixels.
+3. No semantic auto-relaxation: the answer always comes from the same finalized artifact metadata recorded in trace.
+4. Review/sample overlays should use recorded witness geometry (for example hand bboxes/tips, date-cell bboxes, or event-block bboxes) rather than guessing geometry from pixels.
 
 ## `task_temporal_clock_compare`
 1. Supported `task_variant` values:
@@ -138,3 +144,32 @@ Capture the active v1 contract for the `temporal` domain.
    - `render_map.date_cells_by_day` stores the pixel bbox for every valid day in the month,
    - `render_map.marked_dates` stores the marked date numbers when present,
    - `execution_trace` records the month/year metadata, the sampled row count, the marked/evidence dates, and any query-specific fields such as nth-weekday metadata or the targeted day gap.
+
+## `task_temporal_schedule_day_planner`
+1. Supported `task_variant` values:
+   - `overlap_count`
+   - `longer_than_reference_count`
+   - `maximum_non_overlapping_count`
+2. Supported `scene_variant` values:
+   - `classic`
+   - `minimal`
+   - `outline`
+3. Supported non-semantic visual axes:
+   - `style_variant`: `studio|accented|marker`
+   - `accent_color_name`: shared named-color palette
+4. Answer contract:
+   - `answer_gt.type = integer`
+5. Evidence contract:
+   - `evidence_gt.type = bbox_set`
+   - one or more event-block bboxes depending on the active variant
+6. Scene contract:
+   - one single-day planner per image,
+   - one vertical time axis with scheduled event blocks rendered in overlapping lanes when necessary,
+   - a highlighted reference event for the first two variants only,
+   - the optimization variant uses the same planner scaffold without a reference event,
+   - prompt-facing evidence stays on event blocks rather than widening to empty schedule regions or header chrome.
+7. Trace contract:
+   - `render_map.event_bboxes_by_id` stores one bbox per event block,
+   - `render_map.answer_event_ids` stores the witness event ids,
+   - `execution_trace.events` records the start/end slot, start/end time text, lane index, duration, and reference flag for every event,
+   - `execution_trace.answer_event_ids` records the exact event subset used for answer/evidence.

@@ -33,10 +33,10 @@ Use this whenever the task lives under `domain=temporal`.
   - `task_temporal_clock_compare`
 - `calendar`
   - `task_temporal_calendar_month_view`
+- `schedule`
+  - `task_temporal_schedule_day_planner`
 
 ## Planned near-term coverage
-- `schedule`
-  - `task_temporal_schedule`
 - `timeline`
   - `task_temporal_timeline`
 
@@ -44,6 +44,7 @@ Use this whenever the task lives under `domain=temporal`.
 - `trace/tasks/temporal/shared/time_format.py`
 - `trace/tasks/temporal/shared/calendar_scene.py`
 - `trace/tasks/temporal/shared/clock_scene.py`
+- `trace/tasks/temporal/shared/schedule_scene.py`
 - `trace/tasks/temporal/shared/style.py`
 - `trace/tasks/temporal/shared/task_support.py`
 - `trace/tasks/temporal/shared/visual_defaults.py`

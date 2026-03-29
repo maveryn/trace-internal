@@ -1,0 +1,77 @@
+{
+  "bundle_id": "temporal_schedule_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "day_schedule": [
+      "The image shows {object_description}.",
+      "Look at the single-day schedule in the image. It shows {object_description}.",
+      "You are given an image with {object_description}.",
+      "Work from the day planner shown in the image: {object_description}.",
+      "Use the schedule in the image. It shows {object_description}."
+    ]
+  },
+  "task_templates": {
+    "schedule_day_query": [
+      "Answer the question using the schedule.",
+      "Use the day planner to answer the question.",
+      "Read the schedule carefully and answer the question.",
+      "Work from the full schedule view to answer the question.",
+      "Determine the answer from the shown schedule."
+    ]
+  },
+  "task_variant_templates": {
+    "overlap_count": [
+      "How many scheduled events overlap the highlighted reference event?",
+      "Count the events that overlap the highlighted reference event.",
+      "Among the scheduled events, how many overlap the highlighted reference event?",
+      "How many event blocks overlap the highlighted reference event?",
+      "Count the scheduled events that intersect the highlighted reference event."
+    ],
+    "longer_than_reference_count": [
+      "How many scheduled events are longer than the highlighted reference event?",
+      "Count the events whose duration is longer than the highlighted reference event.",
+      "Among the scheduled events, how many last longer than the highlighted reference event?",
+      "How many event blocks are longer than the highlighted reference event?",
+      "Count the scheduled events with a longer duration than the highlighted reference event."
+    ],
+    "maximum_non_overlapping_count": [
+      "What is the maximum number of scheduled events that can be selected without any overlap?",
+      "Choose the largest possible set of non-overlapping scheduled events. How many events can it contain?",
+      "How many scheduled events can be selected at most so that none overlap?",
+      "Find the maximum-size set of non-overlapping scheduled events. What is its size?",
+      "What is the greatest number of scheduled events that can be chosen with no overlaps?"
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:day_schedule": [
+      "object_description"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

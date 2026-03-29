@@ -1,4 +1,4 @@
-"""Shared temporal-domain visual-theme helpers for clocks and calendars."""
+"""Shared temporal-domain visual-theme helpers for clocks, calendars, and schedules."""
 
 from __future__ import annotations
 
@@ -54,6 +54,28 @@ class TemporalCalendarTheme:
     marker_outline_rgb: Color
     marker_text_rgb: Color
     marker_kind: str
+
+
+@dataclass(frozen=True)
+class TemporalScheduleTheme:
+    """Resolved per-instance day-planner theme derived from one named accent color."""
+
+    accent_color_name: str
+    style_variant: str
+    panel_fill_rgb: Color
+    panel_outline_rgb: Color
+    header_fill_rgb: Color
+    header_text_rgb: Color
+    grid_line_rgb: Color
+    minor_grid_line_rgb: Color
+    time_text_rgb: Color
+    event_fill_rgb: Color
+    event_outline_rgb: Color
+    event_text_rgb: Color
+    reference_fill_rgb: Color
+    reference_outline_rgb: Color
+    reference_text_rgb: Color
+    header_kind: str
 
 
 def _blend_with_white(color: Sequence[int], *, color_weight: float) -> Color:
@@ -197,6 +219,79 @@ def build_temporal_calendar_theme(accent_color_name: str, style_variant: str) ->
     )
 
 
+def build_temporal_schedule_theme(accent_color_name: str, style_variant: str) -> TemporalScheduleTheme:
+    """Resolve one readable day-planner theme from a named accent color and style."""
+
+    accent_rgb = tuple(int(channel) for channel in named_color(str(accent_color_name)))
+    accent_dark_rgb = darken_color(accent_rgb, factor=0.58)
+    accent_deep_rgb = darken_color(accent_rgb, factor=0.42)
+    neutral_dark_rgb = (46, 52, 62)
+
+    variant = str(style_variant)
+    panel_fill_rgb = (255, 255, 255)
+    panel_outline_rgb = _blend_with_white(accent_deep_rgb, color_weight=0.30)
+    header_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.14)
+    header_text_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+    grid_line_rgb = _blend_with_white(accent_deep_rgb, color_weight=0.18)
+    minor_grid_line_rgb = _blend_with_white(accent_dark_rgb, color_weight=0.10)
+    time_text_rgb = tuple(int(channel) for channel in neutral_dark_rgb)
+    event_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.20)
+    event_outline_rgb = tuple(int(channel) for channel in accent_dark_rgb)
+    event_text_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+    reference_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.42)
+    reference_outline_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+    reference_text_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+    header_kind = "fill"
+
+    if variant == "accented":
+        panel_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.06)
+        panel_outline_rgb = tuple(int(channel) for channel in accent_dark_rgb)
+        header_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.26)
+        header_text_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+        grid_line_rgb = _blend_with_white(accent_dark_rgb, color_weight=0.22)
+        minor_grid_line_rgb = _blend_with_white(accent_dark_rgb, color_weight=0.14)
+        event_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.30)
+        event_outline_rgb = tuple(int(channel) for channel in accent_dark_rgb)
+        event_text_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+        reference_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.52)
+        reference_outline_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+        reference_text_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+    elif variant == "marker":
+        panel_fill_rgb = (255, 255, 255)
+        panel_outline_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+        header_fill_rgb = (255, 255, 255)
+        header_text_rgb = tuple(int(channel) for channel in accent_dark_rgb)
+        grid_line_rgb = _blend_with_white(accent_dark_rgb, color_weight=0.22)
+        minor_grid_line_rgb = _blend_with_white(accent_dark_rgb, color_weight=0.12)
+        time_text_rgb = tuple(int(channel) for channel in accent_dark_rgb)
+        event_fill_rgb = (255, 255, 255)
+        event_outline_rgb = tuple(int(channel) for channel in accent_dark_rgb)
+        event_text_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+        reference_fill_rgb = (255, 255, 255)
+        reference_outline_rgb = tuple(int(channel) for channel in accent_rgb)
+        reference_text_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+        header_kind = "line"
+
+    return TemporalScheduleTheme(
+        accent_color_name=str(accent_color_name),
+        style_variant=variant,
+        panel_fill_rgb=tuple(int(channel) for channel in panel_fill_rgb),
+        panel_outline_rgb=tuple(int(channel) for channel in panel_outline_rgb),
+        header_fill_rgb=tuple(int(channel) for channel in header_fill_rgb),
+        header_text_rgb=tuple(int(channel) for channel in header_text_rgb),
+        grid_line_rgb=tuple(int(channel) for channel in grid_line_rgb),
+        minor_grid_line_rgb=tuple(int(channel) for channel in minor_grid_line_rgb),
+        time_text_rgb=tuple(int(channel) for channel in time_text_rgb),
+        event_fill_rgb=tuple(int(channel) for channel in event_fill_rgb),
+        event_outline_rgb=tuple(int(channel) for channel in event_outline_rgb),
+        event_text_rgb=tuple(int(channel) for channel in event_text_rgb),
+        reference_fill_rgb=tuple(int(channel) for channel in reference_fill_rgb),
+        reference_outline_rgb=tuple(int(channel) for channel in reference_outline_rgb),
+        reference_text_rgb=tuple(int(channel) for channel in reference_text_rgb),
+        header_kind=str(header_kind),
+    )
+
+
 __all__ = [
     "SUPPORTED_TEMPORAL_COLOR_NAMES",
     "SUPPORTED_TEMPORAL_STYLE_VARIANTS",
@@ -204,6 +299,8 @@ __all__ = [
     "SUPPORTED_TEMPORAL_CLOCK_STYLE_VARIANTS",
     "TemporalCalendarTheme",
     "TemporalClockTheme",
+    "TemporalScheduleTheme",
     "build_temporal_calendar_theme",
     "build_temporal_clock_theme",
+    "build_temporal_schedule_theme",
 ]

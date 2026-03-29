@@ -1,0 +1,15 @@
+{
+  "inspection_count": 75,
+  "task_id": "task_temporal_schedule_day_planner",
+  "variants": {
+    "longer_than_reference_count": 25,
+    "maximum_non_overlapping_count": 25,
+    "overlap_count": 25
+  },
+  "workbook": "temporal/task_temporal_schedule_day_planner/task_temporal_schedule_day_planner.xlsx",
+  "workbook_sheets": {
+    "longer_than_reference_count": "longer_than_reference_count",
+    "maximum_non_overlapping_count": "maximum_non_overlapping_count",
+    "overlap_count": "overlap_count"
+  }
+}

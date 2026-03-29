@@ -94,16 +94,18 @@ Define how we split tasks into reusable families so each dataset slice stays com
 
 ## Temporal direction (current)
 1. Temporal tasks should group by visual time artifact (`clock`, `calendar`, `schedule`, `timeline`) rather than by one exact question stem.
-2. The current active temporal families are `clock` and `calendar`.
+2. The current active temporal families are `clock`, `calendar`, and `schedule`.
 3. `task_temporal_clock_readout` uses semantic `task_variant` values `shown_time`, `minutes_after`, and `minutes_before`.
 4. `task_temporal_clock_compare` uses semantic `task_variant` values `earliest_time` and `latest_time`.
 5. `task_temporal_calendar_month_view` uses semantic `task_variant` values `date_of_weekday_occurrence`, `count_marked_weekend_days`, and `days_between_marked_dates`.
-6. The active clock tasks use visual `scene_variant` values `classic`, `minimal`, and `outline`.
-7. The active temporal tasks use non-semantic visual axes `style_variant=studio|accented|marker` and `accent_color_name` from the shared named-color palette; these axes should change styling only, never the prompt contract.
-8. `task_temporal_clock_readout` uses two-hand `bbox_set` evidence over the hour and minute hands, `task_temporal_clock_compare` uses a one-box `bbox_set` over the winning clock face, and `task_temporal_calendar_month_view` uses date-cell `bbox_set` evidence over the relevant day cells.
-9. Early temporal tasks should prefer local prompt-facing evidence on the queried artifact itself (for example hand bboxes, winning clock faces, date-cell bboxes) instead of wide scene evidence.
-10. For temporal offset variants, keep the displayed scene fixed and let the prompt carry the offset; prompt JSON examples must match the active offset semantics rather than reusing the direct-readout example answer.
-11. For month-view calendar tasks, keep the visual scaffold fixed to one month grid and widen question diversity through `task_variant`; do not fork separate calendar task ids for nth-weekday lookup vs marked-date counting when the same date-cell evidence contract already covers them.
+6. `task_temporal_schedule_day_planner` uses semantic `task_variant` values `overlap_count`, `longer_than_reference_count`, and `maximum_non_overlapping_count`.
+7. The active temporal tasks use visual `scene_variant` values `classic`, `minimal`, and `outline`.
+8. The active temporal tasks use non-semantic visual axes `style_variant=studio|accented|marker` and `accent_color_name` from the shared named-color palette; these axes should change styling only, never the prompt contract.
+9. `task_temporal_clock_readout` uses two-hand `bbox_set` evidence over the hour and minute hands, `task_temporal_clock_compare` uses a one-box `bbox_set` over the winning clock face, `task_temporal_calendar_month_view` uses date-cell `bbox_set` evidence over the relevant day cells, and `task_temporal_schedule_day_planner` uses event-block `bbox_set` evidence over the relevant schedule blocks.
+10. Early temporal tasks should prefer local prompt-facing evidence on the queried artifact itself (for example hand bboxes, winning clock faces, date-cell bboxes, or event blocks) instead of wide scene evidence.
+11. For temporal offset variants, keep the displayed scene fixed and let the prompt carry the offset; prompt JSON examples must match the active offset semantics rather than reusing the direct-readout example answer.
+12. For month-view calendar tasks, keep the visual scaffold fixed to one month grid and widen question diversity through `task_variant`; do not fork separate calendar task ids for nth-weekday lookup vs marked-date counting when the same date-cell evidence contract already covers them.
+13. For single-day schedule tasks, keep one stable planner scaffold and widen question diversity through `task_variant`; if a schedule variant answers with a selected event subset, enforce that witness subset’s uniqueness by construction before exposing it as prompt-facing evidence.
 
 ## Planned geometry measurement variants
 1. **Angle measurement**

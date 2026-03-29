@@ -8,7 +8,7 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_temporal_calendar_month_view"
+      "task_temporal_schedule_day_planner"
     ],
     "workers": 16
   },
@@ -22,19 +22,19 @@
       "distribution_pass": true,
       "domain": "temporal",
       "inspection_count": 75,
-      "inspection_workbook": "temporal/task_temporal_calendar_month_view/task_temporal_calendar_month_view.xlsx",
+      "inspection_workbook": "temporal/task_temporal_schedule_day_planner/task_temporal_schedule_day_planner.xlsx",
       "inspection_workbook_sheets": {
-        "count_marked_weekend_days": "count_marked_weekend_days",
-        "date_of_weekday_occurrence": "date_of_weekday_occurrence",
-        "days_between_marked_dates": "days_between_marked_dates"
+        "longer_than_reference_count": "longer_than_reference_count",
+        "maximum_non_overlapping_count": "maximum_non_overlapping_count",
+        "overlap_count": "overlap_count"
       },
       "reports": {
-        "distribution_review": "temporal/task_temporal_calendar_month_view/distribution_review.json",
-        "inspection_manifest": "temporal/task_temporal_calendar_month_view/manifest.json",
-        "random_review": "temporal/task_temporal_calendar_month_view/random_review_100.json"
+        "distribution_review": "temporal/task_temporal_schedule_day_planner/distribution_review.json",
+        "inspection_manifest": "temporal/task_temporal_schedule_day_planner/manifest.json",
+        "random_review": "temporal/task_temporal_schedule_day_planner/random_review_100.json"
       },
-      "task_group": "calendar",
-      "task_id": "task_temporal_calendar_month_view"
+      "task_group": "schedule",
+      "task_id": "task_temporal_schedule_day_planner"
     }
   ]
 }

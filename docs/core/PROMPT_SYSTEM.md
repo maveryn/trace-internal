@@ -106,6 +106,7 @@ Active bundles:
 7. Temporal:
    - `prompts/temporal/calendar/temporal_calendar_v1.json`
    - `prompts/temporal/clock/temporal_clock_v1.json`
+   - `prompts/temporal/schedule/temporal_schedule_v1.json`
 8. Puzzles:
    - `prompts/puzzles/arithmetic/puzzles_arithmetic_v1.json`
 
@@ -139,6 +140,7 @@ Active task-to-bundle mapping:
 8. Temporal:
    - `task_temporal_clock_readout|task_temporal_clock_compare` -> `temporal_clock_v1`
    - `task_temporal_calendar_month_view` -> `temporal_calendar_v1`
+   - `task_temporal_schedule_day_planner` -> `temporal_schedule_v1`
 9. Tile:
    - `task_tile_count_color_count|color_components|largest_component_size` -> `tile_count_v1`
    - `task_tile_path_shortest_path|reachable_target_count` -> `tile_path_v1`

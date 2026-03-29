@@ -3423,3 +3423,32 @@ def test_temporal_calendar_defaults_loaded() -> None:
     assert str(prompt_defaults["bundle_id"]).strip() == "temporal_calendar_v1"
     assert str(prompt_defaults["task_family_key"]).strip() == "month_calendar"
     assert str(prompt_defaults["task_key"]).strip() == "calendar_month_query"
+
+
+def test_temporal_schedule_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("temporal", "schedule")
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_temporal_schedule_day_planner",
+    )
+
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "longer_than_reference_count",
+        "maximum_non_overlapping_count",
+        "overlap_count",
+    ]
+    assert bool(generation_defaults["balanced_task_variant_sampling"]) is True
+    assert list(generation_defaults["event_count_support"]) == [7, 8, 9, 10]
+    assert list(generation_defaults["overlap_count_support"]) == [1, 2, 3, 4, 5, 6]
+    assert list(generation_defaults["maximum_non_overlapping_support"]) == [2, 3, 4, 5, 6, 7]
+    assert int(generation_defaults["slot_minutes"]) == 30
+    assert int(generation_defaults["max_lane_count"]) == 5
+
+    assert int(rendering_defaults["canvas_width"]) == 920
+    assert int(rendering_defaults["canvas_height"]) == 820
+    assert int(rendering_defaults["header_height_px"]) == 92
+    assert int(rendering_defaults["time_axis_width_px"]) == 94
+
+    assert str(prompt_defaults["bundle_id"]).strip() == "temporal_schedule_v1"
+    assert str(prompt_defaults["task_family_key"]).strip() == "day_schedule"
+    assert str(prompt_defaults["task_key"]).strip() == "schedule_day_query"

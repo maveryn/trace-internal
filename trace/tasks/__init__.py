@@ -71,6 +71,7 @@ from .puzzles.arithmetic import equation_value as _task_puzzles_arithmetic_equat
 from .temporal.calendar import month_view as _task_temporal_calendar_month_view
 from .temporal.clock import compare as _task_temporal_clock_compare
 from .temporal.clock import readout as _task_temporal_clock_readout
+from .temporal.schedule import day_planner as _task_temporal_schedule_day_planner
 from .tile import count_color_components as _task_tile_count_color_components
 from .tile import count_color_count as _task_tile_count_color_count
 from .tile import count_largest_component_size as _task_tile_count_largest_component_size

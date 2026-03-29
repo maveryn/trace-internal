@@ -290,6 +290,13 @@ def test_graph_relation_bundle_supports_unique_cycle_size_query() -> None:
     assert list(bundle.required_slots_by_key["task:unique_cycle_size_query"]) == ["question_text"]
 
 
+def test_temporal_schedule_bundle_supports_day_planner_queries() -> None:
+    bundle = load_prompt_bundle("temporal", "schedule", "temporal_schedule_v1")
+    assert "day_schedule" in bundle.task_family_templates
+    assert len(bundle.task_templates["schedule_day_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_family:day_schedule"]) == ["object_description"]
+
+
 def test_graph_comparison_bundle_supports_largest_component_size_query() -> None:
     bundle = load_prompt_bundle("graph", "comparison", "graph_comparison_v1")
     assert "single_graph_comparison" in bundle.task_family_templates

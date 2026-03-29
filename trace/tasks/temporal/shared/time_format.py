@@ -1,4 +1,4 @@
-"""Shared temporal-domain helpers for clocks and calendar/date formatting."""
+"""Shared temporal-domain helpers for clocks, calendars, and schedule time labels."""
 
 from __future__ import annotations
 
@@ -111,6 +111,19 @@ def ordinal_label(value: int) -> str:
     return f"{number}{suffix}"
 
 
+def format_day_time_hhmm(total_minutes: int) -> str:
+    """Format one day-time minute count as zero-padded 24-hour ``HH:MM``."""
+
+    total = int(total_minutes)
+    hour = int(total // 60)
+    minute = int(total % 60)
+    if not 0 <= hour <= 23:
+        raise ValueError("format_day_time_hhmm requires total_minutes within one day")
+    if not 0 <= minute <= 59:
+        raise ValueError("format_day_time_hhmm requires minute remainder within 0..59")
+    return f"{int(hour):02d}:{int(minute):02d}"
+
+
 __all__ = [
     "MONTH_NAMES",
     "MINUTES_PER_CLOCK_CYCLE",
@@ -119,6 +132,7 @@ __all__ = [
     "add_clock_minutes",
     "clock_hand_angle_gap_deg",
     "clock_total_minutes",
+    "format_day_time_hhmm",
     "format_clock_hhmm",
     "month_name",
     "ordinal_label",

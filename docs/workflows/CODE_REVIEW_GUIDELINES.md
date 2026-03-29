@@ -176,6 +176,7 @@ Use this checklist during implementation and refactor reviews.
 158. For temporal tasks that add non-semantic visual style axes (for example named accent colors or bezel/tick styles), keep those axes recorded in trace/render metadata and review artifacts, but do not let prompt wording or answer semantics start depending on them unless the task is explicitly about color/style.
 159. For temporal compare tasks that answer with one visible clock label, keep the visible label support broad enough to satisfy review diversity on its own (for example at least five labeled clocks or another equally broad label pool); do not ship a label-answer task with only two-to-four feasible labels and hope cross-variant mixing will rescue the answer distribution.
 160. For month-view calendar tasks, review the finalized date-cell map directly: nth-weekday answers, marked-weekend counts, and marked-date gaps should all be computed from the same emitted month metadata plus the same valid date-cell bboxes used for evidence, and prompt-facing evidence should stay on date cells rather than widening to headers or full week rows.
+161. For temporal schedule optimization variants whose evidence is a selected event subset, enforce the optimum subset’s uniqueness by construction and re-check it from the finalized event intervals; do not rely on solver tie-breaking to make one witness set look canonical after the fact.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

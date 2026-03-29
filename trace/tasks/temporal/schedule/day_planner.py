@@ -14,7 +14,6 @@ from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_generation_rendering_prompt_defaults
-from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -35,7 +34,7 @@ from ..shared.style import (
     SUPPORTED_TEMPORAL_STYLE_VARIANTS,
     build_temporal_schedule_theme,
 )
-from ..shared.task_support import resolve_temporal_named_variant
+from ..shared.task_support import resolve_temporal_named_variant, resolve_temporal_selection_index
 from ..shared.time_format import format_day_time_hhmm
 from ..shared.visual_defaults import load_temporal_background_defaults, load_temporal_noise_defaults
 
@@ -253,20 +252,6 @@ def _resolve_int_support(params: Mapping[str, Any], key: str, fallback: Sequence
     return tuple(int(value) for value in resolved)
 
 
-def _selection_index(*, params: Mapping[str, Any], instance_seed: int, namespace: str) -> int:
-    """Resolve one stable selection index, favoring `_sampling_index` when present."""
-
-    if "_sampling_index" in params:
-        return int(params["_sampling_index"])
-    return int(
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=str(namespace),
-        )
-    )
-
-
 def _resolve_str_support(params: Mapping[str, Any], key: str, fallback: Sequence[str]) -> Tuple[str, ...]:
     """Resolve one string support list from config or explicit params."""
 
@@ -401,7 +386,7 @@ def _sample_overlap_variant(
         raise ValueError("no feasible event_count_support exists for overlap_count")
     event_count = int(
         feasible_event_counts[
-            int(_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:overlap_event_count") % len(feasible_event_counts))
+            int(resolve_temporal_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:overlap_event_count") % len(feasible_event_counts))
         ]
     )
     feasible_answer_support = [int(value) for value in overlap_count_support if 0 <= int(value) <= int(event_count - 1)]
@@ -414,13 +399,13 @@ def _sample_overlap_variant(
     for _ in range(600):
         answer_count = int(
             feasible_answer_support[
-                int(_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:overlap_answer_count") % len(feasible_answer_support))
+                int(resolve_temporal_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:overlap_answer_count") % len(feasible_answer_support))
             ]
         )
         reference_support = [int(value) for value in reference_duration_slots_support if 1 <= int(value) < int(total_slots)]
         ref_duration = int(
             reference_support[
-                int(_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:overlap_reference_duration") % len(reference_support))
+                int(resolve_temporal_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:overlap_reference_duration") % len(reference_support))
             ]
         )
         ref_start = int(rng.randint(0, int(total_slots - ref_duration)))
@@ -515,13 +500,13 @@ def _sample_longer_variant(
     for _ in range(600):
         event_count = int(
             feasible_event_counts[
-                int(_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:longer_event_count") % len(feasible_event_counts))
+                int(resolve_temporal_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:longer_event_count") % len(feasible_event_counts))
             ]
         )
         reference_support = [int(value) for value in reference_duration_slots_support if 1 <= int(value) < int(total_slots)]
         ref_duration = int(
             reference_support[
-                int(_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:longer_reference_duration") % len(reference_support))
+                int(resolve_temporal_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:longer_reference_duration") % len(reference_support))
             ]
         )
         reference_interval = _random_interval(rng, total_slots=int(total_slots), duration_support=(int(ref_duration),))
@@ -530,7 +515,7 @@ def _sample_longer_variant(
             raise ValueError("no feasible longer_than_count_support exists for longer_than_reference_count")
         answer_count = int(
             feasible_answer_support[
-                int(_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:longer_answer_count") % len(feasible_answer_support))
+                int(resolve_temporal_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:longer_answer_count") % len(feasible_answer_support))
             ]
         )
 
@@ -610,7 +595,7 @@ def _sample_unique_optimal_variant(
         raise ValueError("maximum_non_overlapping_support must contain feasible values whose witness set fits the label pool")
     answer_value = int(
         feasible_support[
-            int(_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:maximum_non_overlapping_count") % len(feasible_support))
+            int(resolve_temporal_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:maximum_non_overlapping_count") % len(feasible_support))
         ]
     )
 
@@ -719,7 +704,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
     event_label_pool = _resolve_str_support(params, "event_label_pool", _DEFAULTS.event_label_pool)
     day_label = str(
         day_label_support[
-            int(_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:day_label") % len(day_label_support))
+            int(resolve_temporal_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:day_label") % len(day_label_support))
         ]
     )
 

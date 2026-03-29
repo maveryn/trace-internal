@@ -8,7 +8,7 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_temporal_schedule_day_planner"
+      "task_temporal_timeline_milestones"
     ],
     "workers": 16
   },
@@ -22,19 +22,19 @@
       "distribution_pass": true,
       "domain": "temporal",
       "inspection_count": 75,
-      "inspection_workbook": "temporal/task_temporal_schedule_day_planner/task_temporal_schedule_day_planner.xlsx",
+      "inspection_workbook": "temporal/task_temporal_timeline_milestones/task_temporal_timeline_milestones.xlsx",
       "inspection_workbook_sheets": {
-        "longer_than_reference_count": "longer_than_reference_count",
-        "maximum_non_overlapping_count": "maximum_non_overlapping_count",
-        "overlap_count": "overlap_count"
+        "before_reference_count": "before_reference_count",
+        "between_reference_events_count": "between_reference_events_count",
+        "position_of_reference": "position_of_reference"
       },
       "reports": {
-        "distribution_review": "temporal/task_temporal_schedule_day_planner/distribution_review.json",
-        "inspection_manifest": "temporal/task_temporal_schedule_day_planner/manifest.json",
-        "random_review": "temporal/task_temporal_schedule_day_planner/random_review_100.json"
+        "distribution_review": "temporal/task_temporal_timeline_milestones/distribution_review.json",
+        "inspection_manifest": "temporal/task_temporal_timeline_milestones/manifest.json",
+        "random_review": "temporal/task_temporal_timeline_milestones/random_review_100.json"
       },
-      "task_group": "schedule",
-      "task_id": "task_temporal_schedule_day_planner"
+      "task_group": "timeline",
+      "task_id": "task_temporal_timeline_milestones"
     }
   ]
 }

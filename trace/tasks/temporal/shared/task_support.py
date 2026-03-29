@@ -1,9 +1,10 @@
-"""Shared temporal-task support for balanced named variant axes."""
+"""Shared temporal-task support for balanced named variant axes and index selection."""
 
 from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Tuple
 
+from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 
 
@@ -45,4 +46,23 @@ def resolve_temporal_named_variant(
     return str(variant), {str(key): float(value) for key, value in sorted(probabilities.items())}
 
 
-__all__ = ["resolve_temporal_named_variant"]
+def resolve_temporal_selection_index(
+    *,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+) -> int:
+    """Resolve one stable selection index, favoring ``_sampling_index`` when present."""
+
+    if "_sampling_index" in params:
+        return int(params["_sampling_index"])
+    return int(
+        resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=str(namespace),
+        )
+    )
+
+
+__all__ = ["resolve_temporal_named_variant", "resolve_temporal_selection_index"]

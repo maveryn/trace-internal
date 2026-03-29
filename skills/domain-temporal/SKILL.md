@@ -35,16 +35,15 @@ Use this whenever the task lives under `domain=temporal`.
   - `task_temporal_calendar_month_view`
 - `schedule`
   - `task_temporal_schedule_day_planner`
-
-## Planned near-term coverage
 - `timeline`
-  - `task_temporal_timeline`
+  - `task_temporal_timeline_milestones`
 
 ## Shared helpers to prefer
 - `trace/tasks/temporal/shared/time_format.py`
 - `trace/tasks/temporal/shared/calendar_scene.py`
 - `trace/tasks/temporal/shared/clock_scene.py`
 - `trace/tasks/temporal/shared/schedule_scene.py`
+- `trace/tasks/temporal/shared/timeline_scene.py`
 - `trace/tasks/temporal/shared/style.py`
 - `trace/tasks/temporal/shared/task_support.py`
 - `trace/tasks/temporal/shared/visual_defaults.py`

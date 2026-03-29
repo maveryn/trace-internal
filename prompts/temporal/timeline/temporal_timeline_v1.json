@@ -1,0 +1,77 @@
+{
+  "bundle_id": "temporal_timeline_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "milestone_timeline": [
+      "The image shows {object_description}.",
+      "Look at the milestone timeline in the image. It shows {object_description}.",
+      "You are given an image with {object_description}.",
+      "Work from the milestone timeline shown in the image: {object_description}.",
+      "Use the timeline in the image. It shows {object_description}."
+    ]
+  },
+  "task_templates": {
+    "timeline_milestone_query": [
+      "Answer the question using the timeline.",
+      "Use the milestone timeline to answer the question.",
+      "Read the timeline carefully and answer the question.",
+      "Work from the full timeline view to answer the question.",
+      "Determine the answer from the shown timeline."
+    ]
+  },
+  "task_variant_templates": {
+    "before_reference_count": [
+      "How many events happen before the highlighted reference event?",
+      "Count the events that occur before the highlighted reference event.",
+      "Among the labeled events, how many come before the highlighted reference event?",
+      "How many event cards are earlier than the highlighted reference event?",
+      "Count the milestones that occur before the highlighted reference event."
+    ],
+    "between_reference_events_count": [
+      "How many events happen strictly between the two highlighted reference events?",
+      "Count the events that occur strictly between the two highlighted reference events.",
+      "Among the labeled events, how many lie between the two highlighted reference events?",
+      "How many milestone cards fall strictly between the two highlighted reference events?",
+      "Count the milestones that occur strictly between the two highlighted reference events."
+    ],
+    "position_of_reference": [
+      "What is the position of the highlighted reference event from earliest to latest? Use 1 for the earliest event.",
+      "Count from earliest to latest. What position does the highlighted reference event have? Use 1 for the earliest event.",
+      "If the events are ordered from earliest to latest, what number is the highlighted reference event? Use 1 for the earliest event.",
+      "What is the 1-based position of the highlighted reference event when reading the timeline from earliest to latest?",
+      "Order the events from earliest to latest. What is the highlighted reference event's position, using 1 for the earliest?"
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:milestone_timeline": [
+      "object_description"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

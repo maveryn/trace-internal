@@ -1,0 +1,804 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 7
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        52.0,
+        304.16,
+        153.0,
+        374.16
+      ],
+      [
+        173.786,
+        494.16,
+        274.786,
+        564.16
+      ],
+      [
+        308.071,
+        304.16,
+        409.071,
+        374.16
+      ],
+      [
+        442.357,
+        304.16,
+        543.357,
+        374.16
+      ],
+      [
+        576.643,
+        494.16,
+        677.643,
+        564.16
+      ],
+      [
+        710.929,
+        304.16,
+        811.929,
+        374.16
+      ],
+      [
+        845.214,
+        304.16,
+        946.214,
+        374.16
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "temporal/task_temporal_timeline_milestones/images/before_reference_count/0007.png"
+  },
+  "instance_seed": 778966253196130,
+  "prompt": "Look at the milestone timeline in the image. It shows one labeled milestone timeline for June 2030 with dated event cards and one highlighted reference event. Work from the full timeline view to answer the question. Count the milestones that occur before the highlighted reference event.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all event cards before the highlighted reference event.\nAnswer: set \"answer\" to the integer count of events before the highlighted reference event.\nExample JSON:\n{\"evidence\":[[160,158,264,228],[286,158,390,228]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the milestone timeline in the image. It shows one labeled milestone timeline for June 2030 with dated event cards and one highlighted reference event. Work from the full timeline view to answer the question. Count the milestones that occur before the highlighted reference event.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all event cards before the highlighted reference event.\nAnswer: set \"answer\" to the integer count of events before the highlighted reference event.\nExample JSON:\n{\"evidence\":[[160,158,264,228],[286,158,390,228]],\"answer\":2}",
+    "answer_only": "Look at the milestone timeline in the image. It shows one labeled milestone timeline for June 2030 with dated event cards and one highlighted reference event. Work from the full timeline view to answer the question. Count the milestones that occur before the highlighted reference event.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the integer count of events before the highlighted reference event.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_temporal_timeline_milestones",
+  "task_variant": "before_reference_count",
+  "trace_payload": {
+    "execution_trace": {
+      "accent_color_name": "orange",
+      "accent_color_name_probabilities": {
+        "blue": 0.1,
+        "brown": 0.1,
+        "cyan": 0.1,
+        "green": 0.1,
+        "magenta": 0.1,
+        "maroon": 0.1,
+        "orange": 0.1,
+        "purple": 0.1,
+        "red": 0.1,
+        "yellow": 0.1
+      },
+      "answer_event_ids": [
+        "event_a",
+        "event_b",
+        "event_c",
+        "event_d",
+        "event_e",
+        "event_f",
+        "event_g"
+      ],
+      "answer_value": 7,
+      "event_count": 8,
+      "events": [
+        {
+          "card_side": "above",
+          "date_text": "Jun 02",
+          "day_of_month": 2,
+          "event_id": "event_a",
+          "label": "A",
+          "order_index": 0,
+          "reference_kind": "none"
+        },
+        {
+          "card_side": "below",
+          "date_text": "Jun 04",
+          "day_of_month": 4,
+          "event_id": "event_b",
+          "label": "B",
+          "order_index": 1,
+          "reference_kind": "none"
+        },
+        {
+          "card_side": "above",
+          "date_text": "Jun 06",
+          "day_of_month": 6,
+          "event_id": "event_c",
+          "label": "C",
+          "order_index": 2,
+          "reference_kind": "none"
+        },
+        {
+          "card_side": "above",
+          "date_text": "Jun 07",
+          "day_of_month": 7,
+          "event_id": "event_d",
+          "label": "D",
+          "order_index": 3,
+          "reference_kind": "none"
+        },
+        {
+          "card_side": "below",
+          "date_text": "Jun 10",
+          "day_of_month": 10,
+          "event_id": "event_e",
+          "label": "E",
+          "order_index": 4,
+          "reference_kind": "none"
+        },
+        {
+          "card_side": "above",
+          "date_text": "Jun 18",
+          "day_of_month": 18,
+          "event_id": "event_f",
+          "label": "F",
+          "order_index": 5,
+          "reference_kind": "none"
+        },
+        {
+          "card_side": "above",
+          "date_text": "Jun 20",
+          "day_of_month": 20,
+          "event_id": "event_g",
+          "label": "G",
+          "order_index": 6,
+          "reference_kind": "none"
+        },
+        {
+          "card_side": "below",
+          "date_text": "Jun 29",
+          "day_of_month": 29,
+          "event_id": "event_h",
+          "label": "H",
+          "order_index": 7,
+          "reference_kind": "primary"
+        }
+      ],
+      "month": 6,
+      "month_name": "June",
+      "reference_event_ids": [
+        "event_h"
+      ],
+      "scene_variant": "roadmap",
+      "scene_variant_probabilities": {
+        "classic": 0.3333333333333333,
+        "minimal": 0.3333333333333333,
+        "roadmap": 0.3333333333333333
+      },
+      "style_variant": "accented",
+      "style_variant_probabilities": {
+        "accented": 0.3333333333333333,
+        "marker": 0.3333333333333333,
+        "studio": 0.3333333333333333
+      },
+      "task_variant": "before_reference_count",
+      "task_variant_probabilities": {
+        "before_reference_count": 1.0,
+        "between_reference_events_count": 0.0,
+        "position_of_reference": 0.0
+      },
+      "year": 2030
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          52.0,
+          304.16,
+          153.0,
+          374.16
+        ],
+        [
+          173.786,
+          494.16,
+          274.786,
+          564.16
+        ],
+        [
+          308.071,
+          304.16,
+          409.071,
+          374.16
+        ],
+        [
+          442.357,
+          304.16,
+          543.357,
+          374.16
+        ],
+        [
+          576.643,
+          494.16,
+          677.643,
+          564.16
+        ],
+        [
+          710.929,
+          304.16,
+          811.929,
+          374.16
+        ],
+        [
+          845.214,
+          304.16,
+          946.214,
+          374.16
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "accent_color_name": "orange",
+        "accent_color_name_probabilities": {
+          "blue": 0.1,
+          "brown": 0.1,
+          "cyan": 0.1,
+          "green": 0.1,
+          "magenta": 0.1,
+          "maroon": 0.1,
+          "orange": 0.1,
+          "purple": 0.1,
+          "red": 0.1,
+          "yellow": 0.1
+        },
+        "before_count_support": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "between_count_support": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "event_count_support": [
+          6,
+          7,
+          8,
+          9
+        ],
+        "month": 6,
+        "month_name": "June",
+        "position_support": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "scene_variant": "roadmap",
+        "scene_variant_probabilities": {
+          "classic": 0.3333333333333333,
+          "minimal": 0.3333333333333333,
+          "roadmap": 0.3333333333333333
+        },
+        "style_variant": "accented",
+        "style_variant_probabilities": {
+          "accented": 0.3333333333333333,
+          "marker": 0.3333333333333333,
+          "studio": 0.3333333333333333
+        },
+        "task_variant": "before_reference_count",
+        "task_variant_probabilities": {
+          "before_reference_count": 1.0,
+          "between_reference_events_count": 0.0,
+          "position_of_reference": 0.0
+        },
+        "year": 2030
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "temporal_timeline_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the integer count of events before the highlighted reference event",
+          "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all event cards before the highlighted reference event",
+          "json_example": "{\"evidence\":[[160,158,264,228],[286,158,390,228]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "one labeled milestone timeline for June 2030 with dated event cards and one highlighted reference event"
+        },
+        "task_family_key": "milestone_timeline",
+        "task_family_variant_index": 1,
+        "task_key": "timeline_milestone_query",
+        "task_variant_index": 3,
+        "task_variant_key": "before_reference_count",
+        "task_variant_template_index": 4,
+        "template_paths": [
+          "temporal/timeline/temporal_timeline_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:timeline_milestone_query": 5,
+          "task_family:milestone_timeline": 5,
+          "task_variant:before_reference_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "temporal_timeline_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the integer count of events before the highlighted reference event",
+              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all event cards before the highlighted reference event",
+              "json_example": "{\"evidence\":[[160,158,264,228],[286,158,390,228]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "one labeled milestone timeline for June 2030 with dated event cards and one highlighted reference event"
+            },
+            "task_family_key": "milestone_timeline",
+            "task_family_variant_index": 1,
+            "task_key": "timeline_milestone_query",
+            "task_variant_index": 3,
+            "task_variant_key": "before_reference_count",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "temporal/timeline/temporal_timeline_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:timeline_milestone_query": 5,
+              "task_family:milestone_timeline": 5,
+              "task_variant:before_reference_count": 5
+            }
+          },
+          "prompt": "Look at the milestone timeline in the image. It shows one labeled milestone timeline for June 2030 with dated event cards and one highlighted reference event. Work from the full timeline view to answer the question. Count the milestones that occur before the highlighted reference event.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all event cards before the highlighted reference event.\nAnswer: set \"answer\" to the integer count of events before the highlighted reference event.\nExample JSON:\n{\"evidence\":[[160,158,264,228],[286,158,390,228]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "temporal_timeline_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the integer count of events before the highlighted reference event",
+              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for all event cards before the highlighted reference event",
+              "json_example": "{\"evidence\":[[160,158,264,228],[286,158,390,228]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "one labeled milestone timeline for June 2030 with dated event cards and one highlighted reference event"
+            },
+            "task_family_key": "milestone_timeline",
+            "task_family_variant_index": 1,
+            "task_key": "timeline_milestone_query",
+            "task_variant_index": 3,
+            "task_variant_key": "before_reference_count",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "temporal/timeline/temporal_timeline_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:timeline_milestone_query": 5,
+              "task_family:milestone_timeline": 5,
+              "task_variant:before_reference_count": 5
+            }
+          },
+          "prompt": "Look at the milestone timeline in the image. It shows one labeled milestone timeline for June 2030 with dated event cards and one highlighted reference event. Work from the full timeline view to answer the question. Count the milestones that occur before the highlighted reference event.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the integer count of events before the highlighted reference event.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "before_reference_count",
+      "template_id": "temporal_timeline_v1"
+    },
+    "render_map": {
+      "answer_event_ids": [
+        "event_a",
+        "event_b",
+        "event_c",
+        "event_d",
+        "event_e",
+        "event_f",
+        "event_g"
+      ],
+      "axis_bbox_px": [
+        90.0,
+        432.16,
+        1030.0,
+        436.16
+      ],
+      "event_bboxes_by_id": {
+        "event_a": [
+          52.0,
+          304.16,
+          153.0,
+          374.16
+        ],
+        "event_b": [
+          173.786,
+          494.16,
+          274.786,
+          564.16
+        ],
+        "event_c": [
+          308.071,
+          304.16,
+          409.071,
+          374.16
+        ],
+        "event_d": [
+          442.357,
+          304.16,
+          543.357,
+          374.16
+        ],
+        "event_e": [
+          576.643,
+          494.16,
+          677.643,
+          564.16
+        ],
+        "event_f": [
+          710.929,
+          304.16,
+          811.929,
+          374.16
+        ],
+        "event_g": [
+          845.214,
+          304.16,
+          946.214,
+          374.16
+        ],
+        "event_h": [
+          967.0,
+          494.16,
+          1068.0,
+          564.16
+        ]
+      },
+      "image_id": "img0",
+      "panel_bbox_px": [
+        34.0,
+        34.0,
+        1086.0,
+        666.0
+      ],
+      "reference_event_ids": [
+        "event_h"
+      ],
+      "scene_bbox_px": [
+        34.0,
+        34.0,
+        1086.0,
+        666.0
+      ],
+      "subtitle_text": "June 2030",
+      "title_text": "Milestone timeline"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 700,
+      "canvas_width": 1120,
+      "coord_space": "pixel",
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_bbox_px": [
+        34.0,
+        34.0,
+        1086.0,
+        666.0
+      ],
+      "scene_variant": "roadmap",
+      "timeline_style": {
+        "accent_color_name": "orange",
+        "resolved_colors_rgb": {
+          "axis_line": [
+            220,
+            202,
+            183
+          ],
+          "event_fill": [
+            252,
+            234,
+            214
+          ],
+          "event_outline": [
+            138,
+            79,
+            15
+          ],
+          "panel_fill": [
+            254,
+            247,
+            239
+          ],
+          "panel_outline": [
+            138,
+            79,
+            15
+          ],
+          "primary_reference_fill": [
+            244,
+            181,
+            113
+          ],
+          "secondary_reference_fill": [
+            249,
+            212,
+            173
+          ]
+        },
+        "style_variant": "accented",
+        "subtitle_text": "June 2030",
+        "title_text": "Milestone timeline"
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "card_bbox_px": [
+            52.0,
+            304.16,
+            153.0,
+            374.16
+          ],
+          "card_side": "above",
+          "date_text": "Jun 02",
+          "event_id": "event_a",
+          "label": "A",
+          "marker_center_px": [
+            90.0,
+            434.16
+          ],
+          "order_index": 0,
+          "reference_kind": "none",
+          "type": "timeline_event_card"
+        },
+        {
+          "card_bbox_px": [
+            173.786,
+            494.16,
+            274.786,
+            564.16
+          ],
+          "card_side": "below",
+          "date_text": "Jun 04",
+          "event_id": "event_b",
+          "label": "B",
+          "marker_center_px": [
+            224.286,
+            434.16
+          ],
+          "order_index": 1,
+          "reference_kind": "none",
+          "type": "timeline_event_card"
+        },
+        {
+          "card_bbox_px": [
+            308.071,
+            304.16,
+            409.071,
+            374.16
+          ],
+          "card_side": "above",
+          "date_text": "Jun 06",
+          "event_id": "event_c",
+          "label": "C",
+          "marker_center_px": [
+            358.571,
+            434.16
+          ],
+          "order_index": 2,
+          "reference_kind": "none",
+          "type": "timeline_event_card"
+        },
+        {
+          "card_bbox_px": [
+            442.357,
+            304.16,
+            543.357,
+            374.16
+          ],
+          "card_side": "above",
+          "date_text": "Jun 07",
+          "event_id": "event_d",
+          "label": "D",
+          "marker_center_px": [
+            492.857,
+            434.16
+          ],
+          "order_index": 3,
+          "reference_kind": "none",
+          "type": "timeline_event_card"
+        },
+        {
+          "card_bbox_px": [
+            576.643,
+            494.16,
+            677.643,
+            564.16
+          ],
+          "card_side": "below",
+          "date_text": "Jun 10",
+          "event_id": "event_e",
+          "label": "E",
+          "marker_center_px": [
+            627.143,
+            434.16
+          ],
+          "order_index": 4,
+          "reference_kind": "none",
+          "type": "timeline_event_card"
+        },
+        {
+          "card_bbox_px": [
+            710.929,
+            304.16,
+            811.929,
+            374.16
+          ],
+          "card_side": "above",
+          "date_text": "Jun 18",
+          "event_id": "event_f",
+          "label": "F",
+          "marker_center_px": [
+            761.429,
+            434.16
+          ],
+          "order_index": 5,
+          "reference_kind": "none",
+          "type": "timeline_event_card"
+        },
+        {
+          "card_bbox_px": [
+            845.214,
+            304.16,
+            946.214,
+            374.16
+          ],
+          "card_side": "above",
+          "date_text": "Jun 20",
+          "event_id": "event_g",
+          "label": "G",
+          "marker_center_px": [
+            895.714,
+            434.16
+          ],
+          "order_index": 6,
+          "reference_kind": "none",
+          "type": "timeline_event_card"
+        },
+        {
+          "card_bbox_px": [
+            967.0,
+            494.16,
+            1068.0,
+            564.16
+          ],
+          "card_side": "below",
+          "date_text": "Jun 29",
+          "event_id": "event_h",
+          "label": "H",
+          "marker_center_px": [
+            1030.0,
+            434.16
+          ],
+          "order_index": 7,
+          "reference_kind": "primary",
+          "type": "timeline_event_card"
+        }
+      ],
+      "relations": {
+        "accent_color_name": "orange",
+        "month": 6,
+        "month_name": "June",
+        "reference_event_ids": [
+          "event_h"
+        ],
+        "scene_variant": "roadmap",
+        "style_variant": "accented",
+        "task_variant": "before_reference_count",
+        "year": 2030
+      },
+      "scene_kind": "temporal_milestone_timeline"
+    },
+    "witness_symbolic": {
+      "type": "bbox_set",
+      "value": [
+        [
+          52.0,
+          304.16,
+          153.0,
+          374.16
+        ],
+        [
+          173.786,
+          494.16,
+          274.786,
+          564.16
+        ],
+        [
+          308.071,
+          304.16,
+          409.071,
+          374.16
+        ],
+        [
+          442.357,
+          304.16,
+          543.357,
+          374.16
+        ],
+        [
+          576.643,
+          494.16,
+          677.643,
+          564.16
+        ],
+        [
+          710.929,
+          304.16,
+          811.929,
+          374.16
+        ],
+        [
+          845.214,
+          304.16,
+          946.214,
+          374.16
+        ]
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

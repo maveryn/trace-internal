@@ -1,0 +1,15 @@
+{
+  "inspection_count": 75,
+  "task_id": "task_temporal_timeline_milestones",
+  "variants": {
+    "before_reference_count": 25,
+    "between_reference_events_count": 25,
+    "position_of_reference": 25
+  },
+  "workbook": "temporal/task_temporal_timeline_milestones/task_temporal_timeline_milestones.xlsx",
+  "workbook_sheets": {
+    "before_reference_count": "before_reference_count",
+    "between_reference_events_count": "between_reference_events_count",
+    "position_of_reference": "position_of_reference"
+  }
+}

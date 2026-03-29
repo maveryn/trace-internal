@@ -1,4 +1,4 @@
-"""Shared temporal-domain helpers for clocks, calendars, and schedule time labels."""
+"""Shared temporal-domain helpers for clocks, calendars, schedules, and timelines."""
 
 from __future__ import annotations
 
@@ -98,6 +98,12 @@ def month_name(month_index: int) -> str:
     return str(MONTH_NAMES[index])
 
 
+def month_abbreviation(month_index: int) -> str:
+    """Return the three-letter month label for a one-based Gregorian month index."""
+
+    return str(month_name(int(month_index))[:3])
+
+
 def ordinal_label(value: int) -> str:
     """Return one English ordinal label such as ``1st`` or ``3rd``."""
 
@@ -124,6 +130,18 @@ def format_day_time_hhmm(total_minutes: int) -> str:
     return f"{int(hour):02d}:{int(minute):02d}"
 
 
+def format_month_day_label(month_index: int, day_of_month: int) -> str:
+    """Format one month/day label such as ``Mar 03`` for timeline scenes."""
+
+    month = int(month_index)
+    day = int(day_of_month)
+    if not 1 <= month <= 12:
+        raise ValueError("format_month_day_label requires month_index within 1..12")
+    if not 1 <= day <= 31:
+        raise ValueError("format_month_day_label requires day_of_month within 1..31")
+    return f"{month_abbreviation(int(month))} {int(day):02d}"
+
+
 __all__ = [
     "MONTH_NAMES",
     "MINUTES_PER_CLOCK_CYCLE",
@@ -134,7 +152,9 @@ __all__ = [
     "clock_total_minutes",
     "format_day_time_hhmm",
     "format_clock_hhmm",
+    "format_month_day_label",
     "month_name",
+    "month_abbreviation",
     "ordinal_label",
     "split_clock_total_minutes",
     "weekday_abbreviation",

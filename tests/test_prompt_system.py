@@ -167,6 +167,7 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
         ("icons", "transformation", "icons_transformation_v1"),
         ("temporal", "calendar", "temporal_calendar_v1"),
         ("temporal", "clock", "temporal_clock_v1"),
+        ("temporal", "timeline", "temporal_timeline_v1"),
         ("tables", "readout", "tables_readout_v1"),
         ("tables", "relation", "tables_relation_v1"),
         ("tables", "temporal", "tables_temporal_v1"),
@@ -295,6 +296,16 @@ def test_temporal_schedule_bundle_supports_day_planner_queries() -> None:
     assert "day_schedule" in bundle.task_family_templates
     assert len(bundle.task_templates["schedule_day_query"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["task_family:day_schedule"]) == ["object_description"]
+
+
+def test_temporal_timeline_bundle_supports_milestone_queries() -> None:
+    bundle = load_prompt_bundle("temporal", "timeline", "temporal_timeline_v1")
+    assert "milestone_timeline" in bundle.task_family_templates
+    assert len(bundle.task_templates["timeline_milestone_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["before_reference_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["between_reference_events_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["position_of_reference"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_family:milestone_timeline"]) == ["object_description"]
 
 
 def test_graph_comparison_bundle_supports_largest_component_size_query() -> None:

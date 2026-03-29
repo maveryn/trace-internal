@@ -3452,3 +3452,31 @@ def test_temporal_schedule_defaults_loaded() -> None:
     assert str(prompt_defaults["bundle_id"]).strip() == "temporal_schedule_v1"
     assert str(prompt_defaults["task_family_key"]).strip() == "day_schedule"
     assert str(prompt_defaults["task_key"]).strip() == "schedule_day_query"
+
+
+def test_temporal_timeline_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("temporal", "timeline")
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_temporal_timeline_milestones",
+    )
+
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "before_reference_count",
+        "between_reference_events_count",
+        "position_of_reference",
+    ]
+    assert bool(generation_defaults["balanced_task_variant_sampling"]) is True
+    assert list(generation_defaults["event_count_support"]) == [6, 7, 8, 9]
+    assert list(generation_defaults["before_count_support"]) == [0, 1, 2, 3, 4, 5, 6, 7]
+    assert list(generation_defaults["between_count_support"]) == [0, 1, 2, 3, 4, 5]
+    assert list(generation_defaults["position_support"]) == [1, 2, 3, 4, 5, 6, 7, 8]
+
+    assert int(rendering_defaults["canvas_width"]) == 1120
+    assert int(rendering_defaults["canvas_height"]) == 700
+    assert int(rendering_defaults["card_width_px"]) == 106
+    assert int(rendering_defaults["marker_radius_px"]) == 10
+
+    assert str(prompt_defaults["bundle_id"]).strip() == "temporal_timeline_v1"
+    assert str(prompt_defaults["task_family_key"]).strip() == "milestone_timeline"
+    assert str(prompt_defaults["task_key"]).strip() == "timeline_milestone_query"

@@ -1,0 +1,80 @@
+generation:
+  shared:
+    scene_variant_weights:
+      classic: 1.0
+      roadmap: 1.0
+      minimal: 1.0
+    style_variant_weights:
+      studio: 1.0
+      accented: 1.0
+      marker: 1.0
+    accent_color_name_weights:
+      red: 1.0
+      blue: 1.0
+      green: 1.0
+      yellow: 1.0
+      orange: 1.0
+      purple: 1.0
+      brown: 1.0
+      cyan: 1.0
+      magenta: 1.0
+      maroon: 1.0
+    balanced_task_variant_sampling: true
+    balanced_scene_variant_sampling: true
+    balanced_style_variant_sampling: true
+    balanced_accent_color_name_sampling: true
+    year_min: 2024
+    year_max: 2030
+  task_overrides:
+    task_temporal_timeline_milestones:
+      task_variant_weights:
+        before_reference_count: 1.0
+        between_reference_events_count: 1.0
+        position_of_reference: 1.0
+      balanced_task_variant_sampling: true
+      event_count_support: [6, 7, 8, 9]
+      before_count_support: [0, 1, 2, 3, 4, 5, 6, 7]
+      between_count_support: [0, 1, 2, 3, 4, 5]
+      position_support: [1, 2, 3, 4, 5, 6, 7, 8]
+      event_label_pool: ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
+
+rendering:
+  shared:
+    canvas_width: 1120
+    canvas_height: 700
+    outer_margin_px: 34
+    title_height_px: 86
+    title_gap_px: 18
+    panel_corner_radius_px: 20
+    panel_outline_width_px: 3
+    axis_width_px: 4
+    axis_tick_height_px: 12
+    marker_radius_px: 10
+    marker_outline_width_px: 3
+    connector_width_px: 3
+    card_width_px: 106
+    card_height_px: 70
+    card_corner_radius_px: 14
+    card_outline_width_px: 3
+    label_font_size_px: 22
+    date_font_size_px: 16
+    title_font_size_px: 30
+    subtitle_font_size_px: 18
+    event_vertical_gap_px: 16
+    event_stem_length_px: 44
+
+complexity:
+  shared:
+    criteria_weights:
+      temporal_order_reasoning: 0.55
+      visual_scan: 0.20
+      ambiguity: 0.15
+      clutter: 0.10
+
+prompt:
+  shared:
+    bundle_id: temporal_timeline_v1
+  task_overrides:
+    task_temporal_timeline_milestones:
+      task_family_key: milestone_timeline
+      task_key: timeline_milestone_query

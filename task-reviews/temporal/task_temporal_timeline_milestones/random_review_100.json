@@ -1,0 +1,199 @@
+{
+  "answer_distribution": {
+    "answer_type_counts": {
+      "integer": 100
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.18,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": 0.31,
+        "pass": null,
+        "status": "reported_not_gated_numeric_answers"
+      },
+      "min_unique_answers": {
+        "observed": 9,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": {
+      "bin_count": 5,
+      "bins": [
+        {
+          "bin_id": 0,
+          "count": 25,
+          "label": "[0, 1.6)"
+        },
+        {
+          "bin_id": 1,
+          "count": 31,
+          "label": "[1.6, 3.2)"
+        },
+        {
+          "bin_id": 2,
+          "count": 10,
+          "label": "[3.2, 4.8)"
+        },
+        {
+          "bin_id": 3,
+          "count": 16,
+          "label": "[4.8, 6.4)"
+        },
+        {
+          "bin_id": 4,
+          "count": 18,
+          "label": "[6.4, 8]"
+        }
+      ],
+      "max_bin_count": 31,
+      "max_bin_frequency": 0.31,
+      "range_max": 8.0,
+      "range_min": 0.0
+    },
+    "max_answer_count": 18,
+    "max_answer_frequency": 0.18,
+    "pass": true,
+    "sample_count": 100,
+    "top_answers": [
+      {
+        "answer_label": "3",
+        "count": 18
+      },
+      {
+        "answer_label": "1",
+        "count": 17
+      },
+      {
+        "answer_label": "2",
+        "count": 13
+      },
+      {
+        "answer_label": "7",
+        "count": 12
+      },
+      {
+        "answer_label": "4",
+        "count": 10
+      },
+      {
+        "answer_label": "6",
+        "count": 9
+      },
+      {
+        "answer_label": "0",
+        "count": 8
+      },
+      {
+        "answer_label": "5",
+        "count": 7
+      },
+      {
+        "answer_label": "8",
+        "count": 6
+      }
+    ],
+    "unique_answers": 9
+  },
+  "sample_count": 100,
+  "sampling_axes": {
+    "accent_color_name": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "blue": 0.1,
+        "brown": 0.1,
+        "cyan": 0.1,
+        "green": 0.1,
+        "magenta": 0.1,
+        "maroon": 0.1,
+        "orange": 0.1,
+        "purple": 0.1,
+        "red": 0.1,
+        "yellow": 0.1
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.18,
+      "observed_counts": {
+        "blue": 4,
+        "brown": 18,
+        "cyan": 7,
+        "green": 10,
+        "magenta": 16,
+        "maroon": 9,
+        "orange": 11,
+        "purple": 11,
+        "red": 7,
+        "yellow": 7
+      },
+      "sample_count": 100
+    },
+    "scene_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "classic": 0.3333333333333333,
+        "minimal": 0.3333333333333333,
+        "roadmap": 0.3333333333333333
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.44,
+      "observed_counts": {
+        "classic": 21,
+        "minimal": 44,
+        "roadmap": 35
+      },
+      "sample_count": 100
+    },
+    "style_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "accented": 0.3333333333333333,
+        "marker": 0.3333333333333333,
+        "studio": 0.3333333333333333
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.38,
+      "observed_counts": {
+        "accented": 31,
+        "marker": 31,
+        "studio": 38
+      },
+      "sample_count": 100
+    },
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "before_reference_count": 0.3333333333333333,
+        "between_reference_events_count": 0.3333333333333333,
+        "position_of_reference": 0.3333333333333333
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.37,
+      "observed_counts": {
+        "before_reference_count": 37,
+        "between_reference_events_count": 29,
+        "position_of_reference": 34
+      },
+      "sample_count": 100
+    }
+  },
+  "task_id": "task_temporal_timeline_milestones",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {
+      "before_reference_count": 0.3333333333333333,
+      "between_reference_events_count": 0.3333333333333333,
+      "position_of_reference": 0.3333333333333333
+    },
+    "expected_source": "execution_trace",
+    "has_variants": true,
+    "observed_counts": {
+      "before_reference_count": 37,
+      "between_reference_events_count": 29,
+      "position_of_reference": 34
+    },
+    "status": "reported"
+  }
+}

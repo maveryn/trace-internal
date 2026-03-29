@@ -8,11 +8,13 @@ Capture the active v1 contract for the `temporal` domain.
    - `clock`
    - `calendar`
    - `schedule`
+   - `timeline`
 2. Current active tasks:
    - `task_temporal_clock_readout`
    - `task_temporal_clock_compare`
    - `task_temporal_calendar_month_view`
    - `task_temporal_schedule_day_planner`
+   - `task_temporal_timeline_milestones`
 
 ## Family contract
 1. Temporal tasks use familiar time-structured visual artifacts rather than generic tables or charts.
@@ -20,6 +22,7 @@ Capture the active v1 contract for the `temporal` domain.
 3. The active clock family now covers both one-clock readout and multi-clock comparison while keeping one stable analog-clock grammar shared across the task group.
 4. The active calendar family now uses one stable month-view scaffold and widens question diversity through `task_variant` rather than changing the calendar scene grammar itself.
 5. The active schedule family now uses one stable single-day planner scaffold and widens question diversity through `task_variant` rather than forking separate schedule task ids for overlap, duration, and optimization questions.
+6. The active timeline family now uses one stable milestone-roadmap scaffold and widens question diversity through `task_variant` rather than forking separate task ids for before/between/position timeline queries.
 
 ## `task_temporal_clock_readout`
 1. Supported `task_variant` values:
@@ -58,15 +61,18 @@ Capture the active v1 contract for the `temporal` domain.
    - `temporal_clock_v1`
    - `temporal_calendar_v1`
    - `temporal_schedule_v1`
+   - `temporal_timeline_v1`
 2. `task_temporal_clock_readout` uses `task_family_key=single_analog_clock` and `task_key=clock_readout_query`.
 3. `task_temporal_clock_compare` uses `task_family_key=multi_analog_clock` and `task_key=clock_compare_query`.
 4. `task_temporal_calendar_month_view` uses `task_family_key=month_calendar` and `task_key=calendar_month_query`.
 5. `task_temporal_schedule_day_planner` uses `task_family_key=day_schedule` and `task_key=schedule_day_query`.
+6. `task_temporal_timeline_milestones` uses `task_family_key=milestone_timeline` and `task_key=timeline_milestone_query`.
 6. `task_variant_key` values stay task-specific:
    - `shown_time|minutes_after|minutes_before` for readout
    - `earliest_time|latest_time` for compare
    - `date_of_weekday_occurrence|count_marked_weekend_days|days_between_marked_dates` for calendar
    - `overlap_count|longer_than_reference_count|maximum_non_overlapping_count` for schedule
+   - `before_reference_count|between_reference_events_count|position_of_reference` for timeline
 7. Required slots:
    - task-family: `object_description`
    - task-variant: `delta_minutes` for the readout offset variants only
@@ -79,7 +85,7 @@ Capture the active v1 contract for the `temporal` domain.
 1. Temporal tasks use the same light solid background baseline as the other clean synthetic domains.
 2. `classic`, `minimal`, and `outline` vary artifact chrome only; they do not change the underlying time semantics.
 3. `style_variant` and `accent_color_name` add extra non-semantic temporal diversity while keeping the same answer/evidence contract.
-4. The queried witness should stay visually separable in every active family, which is why clocks filter near-overlap hand placements, calendars keep evidence on date cells, and schedules keep evidence on event blocks.
+4. The queried witness should stay visually separable in every active family, which is why clocks filter near-overlap hand placements, calendars keep evidence on date cells, schedules keep evidence on event blocks, and timelines keep evidence on event cards instead of the full axis.
 
 ## Determinism + review
 1. Deterministic generation/rendering from `instance_seed`.
@@ -173,3 +179,32 @@ Capture the active v1 contract for the `temporal` domain.
    - `render_map.answer_event_ids` stores the witness event ids,
    - `execution_trace.events` records the start/end slot, start/end time text, lane index, duration, and reference flag for every event,
    - `execution_trace.answer_event_ids` records the exact event subset used for answer/evidence.
+
+## `task_temporal_timeline_milestones`
+1. Supported `task_variant` values:
+   - `before_reference_count`
+   - `between_reference_events_count`
+   - `position_of_reference`
+2. Supported `scene_variant` values:
+   - `classic`
+   - `roadmap`
+   - `minimal`
+3. Supported non-semantic visual axes:
+   - `style_variant`: `studio|accented|marker`
+   - `accent_color_name`: shared named-color palette
+4. Answer contract:
+   - `answer_gt.type = integer`
+5. Evidence contract:
+   - `evidence_gt.type = bbox_set`
+   - one or more event-card bboxes depending on the active variant
+6. Scene contract:
+   - one horizontal milestone timeline per image,
+   - one dated event card per visible event,
+   - one highlighted reference event for `before_reference_count` and `position_of_reference`,
+   - two highlighted reference events for `between_reference_events_count`,
+   - prompt-facing evidence stays on event cards rather than the full axis.
+7. Trace contract:
+   - `render_map.event_bboxes_by_id` stores one bbox per event card,
+   - `render_map.answer_event_ids` stores the witness event ids,
+   - `execution_trace.events` records order index, day-of-month, date label, card side, and reference kind for every event,
+   - `execution_trace.reference_event_ids` records the highlighted reference event ids.

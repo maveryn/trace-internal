@@ -1,4 +1,4 @@
-"""Shared temporal-domain visual-theme helpers for clocks, calendars, and schedules."""
+"""Shared temporal-domain visual-theme helpers for clocks, calendars, schedules, and timelines."""
 
 from __future__ import annotations
 
@@ -76,6 +76,33 @@ class TemporalScheduleTheme:
     reference_outline_rgb: Color
     reference_text_rgb: Color
     header_kind: str
+
+
+@dataclass(frozen=True)
+class TemporalTimelineTheme:
+    """Resolved per-instance milestone-timeline theme derived from one named accent color."""
+
+    accent_color_name: str
+    style_variant: str
+    panel_fill_rgb: Color
+    panel_outline_rgb: Color
+    title_text_rgb: Color
+    subtitle_text_rgb: Color
+    axis_line_rgb: Color
+    tick_line_rgb: Color
+    connector_line_rgb: Color
+    marker_fill_rgb: Color
+    marker_outline_rgb: Color
+    event_fill_rgb: Color
+    event_outline_rgb: Color
+    event_text_rgb: Color
+    event_subtext_rgb: Color
+    primary_reference_fill_rgb: Color
+    primary_reference_outline_rgb: Color
+    primary_reference_text_rgb: Color
+    secondary_reference_fill_rgb: Color
+    secondary_reference_outline_rgb: Color
+    secondary_reference_text_rgb: Color
 
 
 def _blend_with_white(color: Sequence[int], *, color_weight: float) -> Color:
@@ -292,6 +319,92 @@ def build_temporal_schedule_theme(accent_color_name: str, style_variant: str) ->
     )
 
 
+def build_temporal_timeline_theme(accent_color_name: str, style_variant: str) -> TemporalTimelineTheme:
+    """Resolve one readable milestone-timeline theme from a named accent color and style."""
+
+    accent_rgb = tuple(int(channel) for channel in named_color(str(accent_color_name)))
+    accent_dark_rgb = darken_color(accent_rgb, factor=0.58)
+    accent_deep_rgb = darken_color(accent_rgb, factor=0.42)
+    neutral_dark_rgb = (46, 52, 62)
+    soft_gray_rgb = (124, 132, 144)
+
+    variant = str(style_variant)
+    panel_fill_rgb = (255, 255, 255)
+    panel_outline_rgb = _blend_with_white(accent_deep_rgb, color_weight=0.30)
+    title_text_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+    subtitle_text_rgb = tuple(int(channel) for channel in soft_gray_rgb)
+    axis_line_rgb = _blend_with_white(accent_deep_rgb, color_weight=0.22)
+    tick_line_rgb = _blend_with_white(accent_dark_rgb, color_weight=0.18)
+    connector_line_rgb = _blend_with_white(accent_dark_rgb, color_weight=0.22)
+    marker_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.28)
+    marker_outline_rgb = tuple(int(channel) for channel in accent_dark_rgb)
+    event_fill_rgb = (255, 255, 255)
+    event_outline_rgb = tuple(int(channel) for channel in accent_dark_rgb)
+    event_text_rgb = tuple(int(channel) for channel in neutral_dark_rgb)
+    event_subtext_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+    primary_reference_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.52)
+    primary_reference_outline_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+    primary_reference_text_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+    secondary_reference_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.26)
+    secondary_reference_outline_rgb = tuple(int(channel) for channel in accent_dark_rgb)
+    secondary_reference_text_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+
+    if variant == "accented":
+        panel_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.07)
+        panel_outline_rgb = tuple(int(channel) for channel in accent_dark_rgb)
+        axis_line_rgb = _blend_with_white(accent_dark_rgb, color_weight=0.30)
+        tick_line_rgb = _blend_with_white(accent_dark_rgb, color_weight=0.24)
+        connector_line_rgb = _blend_with_white(accent_dark_rgb, color_weight=0.26)
+        marker_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.38)
+        marker_outline_rgb = tuple(int(channel) for channel in accent_dark_rgb)
+        event_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.18)
+        event_outline_rgb = tuple(int(channel) for channel in accent_dark_rgb)
+        event_subtext_rgb = tuple(int(channel) for channel in accent_dark_rgb)
+        primary_reference_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.62)
+        secondary_reference_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.36)
+    elif variant == "marker":
+        panel_fill_rgb = (255, 255, 255)
+        panel_outline_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+        title_text_rgb = tuple(int(channel) for channel in accent_dark_rgb)
+        axis_line_rgb = tuple(int(channel) for channel in accent_dark_rgb)
+        tick_line_rgb = _blend_with_white(accent_dark_rgb, color_weight=0.18)
+        connector_line_rgb = tuple(int(channel) for channel in accent_dark_rgb)
+        marker_fill_rgb = (255, 255, 255)
+        marker_outline_rgb = tuple(int(channel) for channel in accent_rgb)
+        event_fill_rgb = (255, 255, 255)
+        event_outline_rgb = tuple(int(channel) for channel in accent_dark_rgb)
+        event_subtext_rgb = tuple(int(channel) for channel in accent_dark_rgb)
+        primary_reference_fill_rgb = (255, 255, 255)
+        primary_reference_outline_rgb = tuple(int(channel) for channel in accent_rgb)
+        primary_reference_text_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+        secondary_reference_fill_rgb = (255, 255, 255)
+        secondary_reference_outline_rgb = tuple(int(channel) for channel in accent_dark_rgb)
+
+    return TemporalTimelineTheme(
+        accent_color_name=str(accent_color_name),
+        style_variant=variant,
+        panel_fill_rgb=tuple(int(channel) for channel in panel_fill_rgb),
+        panel_outline_rgb=tuple(int(channel) for channel in panel_outline_rgb),
+        title_text_rgb=tuple(int(channel) for channel in title_text_rgb),
+        subtitle_text_rgb=tuple(int(channel) for channel in subtitle_text_rgb),
+        axis_line_rgb=tuple(int(channel) for channel in axis_line_rgb),
+        tick_line_rgb=tuple(int(channel) for channel in tick_line_rgb),
+        connector_line_rgb=tuple(int(channel) for channel in connector_line_rgb),
+        marker_fill_rgb=tuple(int(channel) for channel in marker_fill_rgb),
+        marker_outline_rgb=tuple(int(channel) for channel in marker_outline_rgb),
+        event_fill_rgb=tuple(int(channel) for channel in event_fill_rgb),
+        event_outline_rgb=tuple(int(channel) for channel in event_outline_rgb),
+        event_text_rgb=tuple(int(channel) for channel in event_text_rgb),
+        event_subtext_rgb=tuple(int(channel) for channel in event_subtext_rgb),
+        primary_reference_fill_rgb=tuple(int(channel) for channel in primary_reference_fill_rgb),
+        primary_reference_outline_rgb=tuple(int(channel) for channel in primary_reference_outline_rgb),
+        primary_reference_text_rgb=tuple(int(channel) for channel in primary_reference_text_rgb),
+        secondary_reference_fill_rgb=tuple(int(channel) for channel in secondary_reference_fill_rgb),
+        secondary_reference_outline_rgb=tuple(int(channel) for channel in secondary_reference_outline_rgb),
+        secondary_reference_text_rgb=tuple(int(channel) for channel in secondary_reference_text_rgb),
+    )
+
+
 __all__ = [
     "SUPPORTED_TEMPORAL_COLOR_NAMES",
     "SUPPORTED_TEMPORAL_STYLE_VARIANTS",
@@ -300,7 +413,9 @@ __all__ = [
     "TemporalCalendarTheme",
     "TemporalClockTheme",
     "TemporalScheduleTheme",
+    "TemporalTimelineTheme",
     "build_temporal_calendar_theme",
     "build_temporal_clock_theme",
     "build_temporal_schedule_theme",
+    "build_temporal_timeline_theme",
 ]

@@ -1,0 +1,858 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 8
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        52.0,
+        304.16,
+        141.0,
+        374.16
+      ],
+      [
+        163.0,
+        494.16,
+        252.0,
+        564.16
+      ],
+      [
+        280.5,
+        304.16,
+        369.5,
+        374.16
+      ],
+      [
+        398.0,
+        304.16,
+        487.0,
+        374.16
+      ],
+      [
+        515.5,
+        494.16,
+        604.5,
+        564.16
+      ],
+      [
+        633.0,
+        304.16,
+        722.0,
+        374.16
+      ],
+      [
+        750.5,
+        304.16,
+        839.5,
+        374.16
+      ],
+      [
+        868.0,
+        494.16,
+        957.0,
+        564.16
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "temporal/task_temporal_timeline_milestones/images/position_of_reference/0003.png"
+  },
+  "instance_seed": 6243760805836615,
+  "prompt": "The image shows one labeled milestone timeline for March 2025 with dated event cards and one highlighted reference event. Use the milestone timeline to answer the question. What is the 1-based position of the highlighted reference event when reading the timeline from earliest to latest?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every event card from the earliest event through the highlighted reference event, including the reference event itself.\nAnswer requirement: set \"answer\" to the 1-based integer position of the highlighted reference event.\nExample JSON:\n{\"evidence\":[[160,158,264,228],[286,158,390,228],[412,410,516,480]],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows one labeled milestone timeline for March 2025 with dated event cards and one highlighted reference event. Use the milestone timeline to answer the question. What is the 1-based position of the highlighted reference event when reading the timeline from earliest to latest?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every event card from the earliest event through the highlighted reference event, including the reference event itself.\nAnswer requirement: set \"answer\" to the 1-based integer position of the highlighted reference event.\nExample JSON:\n{\"evidence\":[[160,158,264,228],[286,158,390,228],[412,410,516,480]],\"answer\":3}",
+    "answer_only": "The image shows one labeled milestone timeline for March 2025 with dated event cards and one highlighted reference event. Use the milestone timeline to answer the question. What is the 1-based position of the highlighted reference event when reading the timeline from earliest to latest?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the 1-based integer position of the highlighted reference event.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_temporal_timeline_milestones",
+  "task_variant": "position_of_reference",
+  "trace_payload": {
+    "execution_trace": {
+      "accent_color_name": "brown",
+      "accent_color_name_probabilities": {
+        "blue": 0.1,
+        "brown": 0.1,
+        "cyan": 0.1,
+        "green": 0.1,
+        "magenta": 0.1,
+        "maroon": 0.1,
+        "orange": 0.1,
+        "purple": 0.1,
+        "red": 0.1,
+        "yellow": 0.1
+      },
+      "answer_event_ids": [
+        "event_a",
+        "event_b",
+        "event_c",
+        "event_d",
+        "event_e",
+        "event_f",
+        "event_g",
+        "event_h"
+      ],
+      "answer_value": 8,
+      "event_count": 9,
+      "events": [
+        {
+          "card_side": "above",
+          "date_text": "Mar 04",
+          "day_of_month": 4,
+          "event_id": "event_a",
+          "label": "A",
+          "order_index": 0,
+          "reference_kind": "none"
+        },
+        {
+          "card_side": "below",
+          "date_text": "Mar 08",
+          "day_of_month": 8,
+          "event_id": "event_b",
+          "label": "B",
+          "order_index": 1,
+          "reference_kind": "none"
+        },
+        {
+          "card_side": "above",
+          "date_text": "Mar 10",
+          "day_of_month": 10,
+          "event_id": "event_c",
+          "label": "C",
+          "order_index": 2,
+          "reference_kind": "none"
+        },
+        {
+          "card_side": "above",
+          "date_text": "Mar 11",
+          "day_of_month": 11,
+          "event_id": "event_d",
+          "label": "D",
+          "order_index": 3,
+          "reference_kind": "none"
+        },
+        {
+          "card_side": "below",
+          "date_text": "Mar 16",
+          "day_of_month": 16,
+          "event_id": "event_e",
+          "label": "E",
+          "order_index": 4,
+          "reference_kind": "none"
+        },
+        {
+          "card_side": "above",
+          "date_text": "Mar 17",
+          "day_of_month": 17,
+          "event_id": "event_f",
+          "label": "F",
+          "order_index": 5,
+          "reference_kind": "none"
+        },
+        {
+          "card_side": "above",
+          "date_text": "Mar 20",
+          "day_of_month": 20,
+          "event_id": "event_g",
+          "label": "G",
+          "order_index": 6,
+          "reference_kind": "none"
+        },
+        {
+          "card_side": "below",
+          "date_text": "Mar 23",
+          "day_of_month": 23,
+          "event_id": "event_h",
+          "label": "H",
+          "order_index": 7,
+          "reference_kind": "primary"
+        },
+        {
+          "card_side": "above",
+          "date_text": "Mar 28",
+          "day_of_month": 28,
+          "event_id": "event_i",
+          "label": "I",
+          "order_index": 8,
+          "reference_kind": "none"
+        }
+      ],
+      "month": 3,
+      "month_name": "March",
+      "reference_event_ids": [
+        "event_h"
+      ],
+      "scene_variant": "roadmap",
+      "scene_variant_probabilities": {
+        "classic": 0.3333333333333333,
+        "minimal": 0.3333333333333333,
+        "roadmap": 0.3333333333333333
+      },
+      "style_variant": "studio",
+      "style_variant_probabilities": {
+        "accented": 0.3333333333333333,
+        "marker": 0.3333333333333333,
+        "studio": 0.3333333333333333
+      },
+      "task_variant": "position_of_reference",
+      "task_variant_probabilities": {
+        "before_reference_count": 0.0,
+        "between_reference_events_count": 0.0,
+        "position_of_reference": 1.0
+      },
+      "year": 2025
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          52.0,
+          304.16,
+          141.0,
+          374.16
+        ],
+        [
+          163.0,
+          494.16,
+          252.0,
+          564.16
+        ],
+        [
+          280.5,
+          304.16,
+          369.5,
+          374.16
+        ],
+        [
+          398.0,
+          304.16,
+          487.0,
+          374.16
+        ],
+        [
+          515.5,
+          494.16,
+          604.5,
+          564.16
+        ],
+        [
+          633.0,
+          304.16,
+          722.0,
+          374.16
+        ],
+        [
+          750.5,
+          304.16,
+          839.5,
+          374.16
+        ],
+        [
+          868.0,
+          494.16,
+          957.0,
+          564.16
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "accent_color_name": "brown",
+        "accent_color_name_probabilities": {
+          "blue": 0.1,
+          "brown": 0.1,
+          "cyan": 0.1,
+          "green": 0.1,
+          "magenta": 0.1,
+          "maroon": 0.1,
+          "orange": 0.1,
+          "purple": 0.1,
+          "red": 0.1,
+          "yellow": 0.1
+        },
+        "before_count_support": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "between_count_support": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "event_count_support": [
+          6,
+          7,
+          8,
+          9
+        ],
+        "month": 3,
+        "month_name": "March",
+        "position_support": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "scene_variant": "roadmap",
+        "scene_variant_probabilities": {
+          "classic": 0.3333333333333333,
+          "minimal": 0.3333333333333333,
+          "roadmap": 0.3333333333333333
+        },
+        "style_variant": "studio",
+        "style_variant_probabilities": {
+          "accented": 0.3333333333333333,
+          "marker": 0.3333333333333333,
+          "studio": 0.3333333333333333
+        },
+        "task_variant": "position_of_reference",
+        "task_variant_probabilities": {
+          "before_reference_count": 0.0,
+          "between_reference_events_count": 0.0,
+          "position_of_reference": 1.0
+        },
+        "year": 2025
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "temporal_timeline_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the 1-based integer position of the highlighted reference event",
+          "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every event card from the earliest event through the highlighted reference event, including the reference event itself",
+          "json_example": "{\"evidence\":[[160,158,264,228],[286,158,390,228],[412,410,516,480]],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "one labeled milestone timeline for March 2025 with dated event cards and one highlighted reference event"
+        },
+        "task_family_key": "milestone_timeline",
+        "task_family_variant_index": 0,
+        "task_key": "timeline_milestone_query",
+        "task_variant_index": 1,
+        "task_variant_key": "position_of_reference",
+        "task_variant_template_index": 3,
+        "template_paths": [
+          "temporal/timeline/temporal_timeline_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:timeline_milestone_query": 5,
+          "task_family:milestone_timeline": 5,
+          "task_variant:position_of_reference": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "temporal_timeline_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the 1-based integer position of the highlighted reference event",
+              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every event card from the earliest event through the highlighted reference event, including the reference event itself",
+              "json_example": "{\"evidence\":[[160,158,264,228],[286,158,390,228],[412,410,516,480]],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "one labeled milestone timeline for March 2025 with dated event cards and one highlighted reference event"
+            },
+            "task_family_key": "milestone_timeline",
+            "task_family_variant_index": 0,
+            "task_key": "timeline_milestone_query",
+            "task_variant_index": 1,
+            "task_variant_key": "position_of_reference",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "temporal/timeline/temporal_timeline_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:timeline_milestone_query": 5,
+              "task_family:milestone_timeline": 5,
+              "task_variant:position_of_reference": 5
+            }
+          },
+          "prompt": "The image shows one labeled milestone timeline for March 2025 with dated event cards and one highlighted reference event. Use the milestone timeline to answer the question. What is the 1-based position of the highlighted reference event when reading the timeline from earliest to latest?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every event card from the earliest event through the highlighted reference event, including the reference event itself.\nAnswer requirement: set \"answer\" to the 1-based integer position of the highlighted reference event.\nExample JSON:\n{\"evidence\":[[160,158,264,228],[286,158,390,228],[412,410,516,480]],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "temporal_timeline_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the 1-based integer position of the highlighted reference event",
+              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every event card from the earliest event through the highlighted reference event, including the reference event itself",
+              "json_example": "{\"evidence\":[[160,158,264,228],[286,158,390,228],[412,410,516,480]],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "one labeled milestone timeline for March 2025 with dated event cards and one highlighted reference event"
+            },
+            "task_family_key": "milestone_timeline",
+            "task_family_variant_index": 0,
+            "task_key": "timeline_milestone_query",
+            "task_variant_index": 1,
+            "task_variant_key": "position_of_reference",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "temporal/timeline/temporal_timeline_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:timeline_milestone_query": 5,
+              "task_family:milestone_timeline": 5,
+              "task_variant:position_of_reference": 5
+            }
+          },
+          "prompt": "The image shows one labeled milestone timeline for March 2025 with dated event cards and one highlighted reference event. Use the milestone timeline to answer the question. What is the 1-based position of the highlighted reference event when reading the timeline from earliest to latest?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the 1-based integer position of the highlighted reference event.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "position_of_reference",
+      "template_id": "temporal_timeline_v1"
+    },
+    "render_map": {
+      "answer_event_ids": [
+        "event_a",
+        "event_b",
+        "event_c",
+        "event_d",
+        "event_e",
+        "event_f",
+        "event_g",
+        "event_h"
+      ],
+      "axis_bbox_px": [
+        90.0,
+        432.16,
+        1030.0,
+        436.16
+      ],
+      "event_bboxes_by_id": {
+        "event_a": [
+          52.0,
+          304.16,
+          141.0,
+          374.16
+        ],
+        "event_b": [
+          163.0,
+          494.16,
+          252.0,
+          564.16
+        ],
+        "event_c": [
+          280.5,
+          304.16,
+          369.5,
+          374.16
+        ],
+        "event_d": [
+          398.0,
+          304.16,
+          487.0,
+          374.16
+        ],
+        "event_e": [
+          515.5,
+          494.16,
+          604.5,
+          564.16
+        ],
+        "event_f": [
+          633.0,
+          304.16,
+          722.0,
+          374.16
+        ],
+        "event_g": [
+          750.5,
+          304.16,
+          839.5,
+          374.16
+        ],
+        "event_h": [
+          868.0,
+          494.16,
+          957.0,
+          564.16
+        ],
+        "event_i": [
+          979.0,
+          304.16,
+          1068.0,
+          374.16
+        ]
+      },
+      "image_id": "img0",
+      "panel_bbox_px": [
+        34.0,
+        34.0,
+        1086.0,
+        666.0
+      ],
+      "reference_event_ids": [
+        "event_h"
+      ],
+      "scene_bbox_px": [
+        34.0,
+        34.0,
+        1086.0,
+        666.0
+      ],
+      "subtitle_text": "March 2025",
+      "title_text": "Milestone timeline"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 700,
+      "canvas_width": 1120,
+      "coord_space": "pixel",
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_bbox_px": [
+        34.0,
+        34.0,
+        1086.0,
+        666.0
+      ],
+      "scene_variant": "roadmap",
+      "timeline_style": {
+        "accent_color_name": "brown",
+        "resolved_colors_rgb": {
+          "axis_line": [
+            211,
+            209,
+            205
+          ],
+          "event_fill": [
+            255,
+            255,
+            255
+          ],
+          "event_outline": [
+            79,
+            65,
+            39
+          ],
+          "panel_fill": [
+            255,
+            255,
+            255
+          ],
+          "panel_outline": [
+            196,
+            193,
+            187
+          ],
+          "primary_reference_fill": [
+            193,
+            181,
+            158
+          ],
+          "secondary_reference_fill": [
+            224,
+            218,
+            206
+          ]
+        },
+        "style_variant": "studio",
+        "subtitle_text": "March 2025",
+        "title_text": "Milestone timeline"
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "card_bbox_px": [
+            52.0,
+            304.16,
+            141.0,
+            374.16
+          ],
+          "card_side": "above",
+          "date_text": "Mar 04",
+          "event_id": "event_a",
+          "label": "A",
+          "marker_center_px": [
+            90.0,
+            434.16
+          ],
+          "order_index": 0,
+          "reference_kind": "none",
+          "type": "timeline_event_card"
+        },
+        {
+          "card_bbox_px": [
+            163.0,
+            494.16,
+            252.0,
+            564.16
+          ],
+          "card_side": "below",
+          "date_text": "Mar 08",
+          "event_id": "event_b",
+          "label": "B",
+          "marker_center_px": [
+            207.5,
+            434.16
+          ],
+          "order_index": 1,
+          "reference_kind": "none",
+          "type": "timeline_event_card"
+        },
+        {
+          "card_bbox_px": [
+            280.5,
+            304.16,
+            369.5,
+            374.16
+          ],
+          "card_side": "above",
+          "date_text": "Mar 10",
+          "event_id": "event_c",
+          "label": "C",
+          "marker_center_px": [
+            325.0,
+            434.16
+          ],
+          "order_index": 2,
+          "reference_kind": "none",
+          "type": "timeline_event_card"
+        },
+        {
+          "card_bbox_px": [
+            398.0,
+            304.16,
+            487.0,
+            374.16
+          ],
+          "card_side": "above",
+          "date_text": "Mar 11",
+          "event_id": "event_d",
+          "label": "D",
+          "marker_center_px": [
+            442.5,
+            434.16
+          ],
+          "order_index": 3,
+          "reference_kind": "none",
+          "type": "timeline_event_card"
+        },
+        {
+          "card_bbox_px": [
+            515.5,
+            494.16,
+            604.5,
+            564.16
+          ],
+          "card_side": "below",
+          "date_text": "Mar 16",
+          "event_id": "event_e",
+          "label": "E",
+          "marker_center_px": [
+            560.0,
+            434.16
+          ],
+          "order_index": 4,
+          "reference_kind": "none",
+          "type": "timeline_event_card"
+        },
+        {
+          "card_bbox_px": [
+            633.0,
+            304.16,
+            722.0,
+            374.16
+          ],
+          "card_side": "above",
+          "date_text": "Mar 17",
+          "event_id": "event_f",
+          "label": "F",
+          "marker_center_px": [
+            677.5,
+            434.16
+          ],
+          "order_index": 5,
+          "reference_kind": "none",
+          "type": "timeline_event_card"
+        },
+        {
+          "card_bbox_px": [
+            750.5,
+            304.16,
+            839.5,
+            374.16
+          ],
+          "card_side": "above",
+          "date_text": "Mar 20",
+          "event_id": "event_g",
+          "label": "G",
+          "marker_center_px": [
+            795.0,
+            434.16
+          ],
+          "order_index": 6,
+          "reference_kind": "none",
+          "type": "timeline_event_card"
+        },
+        {
+          "card_bbox_px": [
+            868.0,
+            494.16,
+            957.0,
+            564.16
+          ],
+          "card_side": "below",
+          "date_text": "Mar 23",
+          "event_id": "event_h",
+          "label": "H",
+          "marker_center_px": [
+            912.5,
+            434.16
+          ],
+          "order_index": 7,
+          "reference_kind": "primary",
+          "type": "timeline_event_card"
+        },
+        {
+          "card_bbox_px": [
+            979.0,
+            304.16,
+            1068.0,
+            374.16
+          ],
+          "card_side": "above",
+          "date_text": "Mar 28",
+          "event_id": "event_i",
+          "label": "I",
+          "marker_center_px": [
+            1030.0,
+            434.16
+          ],
+          "order_index": 8,
+          "reference_kind": "none",
+          "type": "timeline_event_card"
+        }
+      ],
+      "relations": {
+        "accent_color_name": "brown",
+        "month": 3,
+        "month_name": "March",
+        "reference_event_ids": [
+          "event_h"
+        ],
+        "scene_variant": "roadmap",
+        "style_variant": "studio",
+        "task_variant": "position_of_reference",
+        "year": 2025
+      },
+      "scene_kind": "temporal_milestone_timeline"
+    },
+    "witness_symbolic": {
+      "type": "bbox_set",
+      "value": [
+        [
+          52.0,
+          304.16,
+          141.0,
+          374.16
+        ],
+        [
+          163.0,
+          494.16,
+          252.0,
+          564.16
+        ],
+        [
+          280.5,
+          304.16,
+          369.5,
+          374.16
+        ],
+        [
+          398.0,
+          304.16,
+          487.0,
+          374.16
+        ],
+        [
+          515.5,
+          494.16,
+          604.5,
+          564.16
+        ],
+        [
+          633.0,
+          304.16,
+          722.0,
+          374.16
+        ],
+        [
+          750.5,
+          304.16,
+          839.5,
+          374.16
+        ],
+        [
+          868.0,
+          494.16,
+          957.0,
+          564.16
+        ]
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

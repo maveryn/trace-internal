@@ -960,7 +960,7 @@ def test_puzzles_spatial_cube_removal_defaults_loaded() -> None:
     assert int(generation_defaults["original_max_height_min"]) == 2
     assert int(generation_defaults["original_max_height_max"]) == 5
     assert int(generation_defaults["removal_count_min"]) == 1
-    assert int(generation_defaults["removal_count_max"]) == 6
+    assert int(generation_defaults["removal_count_max"]) == 5
     assert int(rendering_defaults["canvas_width"]) > 0
     assert int(rendering_defaults["structure_padding_px"]) > 0
     assert int(rendering_defaults["structure_pair_gap_px"]) > 0
@@ -977,6 +977,47 @@ def test_puzzles_spatial_cube_removal_defaults_loaded() -> None:
         "reasoning_load": pytest.approx(0.4),
         "scene_variant_load": pytest.approx(0.15),
         "visual_scan": pytest.approx(0.45),
+    }
+
+
+def test_puzzles_topology_bead_equivalence_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("puzzles", "topology")
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_puzzles_topology_bead_equivalence_count",
+    )
+    assert str(prompt_defaults["task_family_key"]).strip() == "topology_bead_equivalence_puzzle"
+    assert str(prompt_defaults["task_key"]).strip() == "bead_equivalence_count_query"
+    assert str(prompt_defaults["object_description_loop_strip"]).strip()
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "color_cycle_count",
+        "mixed_cycle_count",
+        "shape_cycle_count",
+    ]
+    assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
+        "loop_card",
+        "loop_outline",
+        "loop_strip",
+    ]
+    assert int(generation_defaults["option_count_min"]) == 6
+    assert int(generation_defaults["option_count_max"]) == 7
+    assert int(generation_defaults["valid_option_count_min"]) == 1
+    assert int(generation_defaults["valid_option_count_max"]) == 5
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert int(rendering_defaults["reference_panel_height_px"]) > 0
+    assert int(rendering_defaults["option_image_width_px"]) > 0
+    assert str(prompt_defaults["evidence_hint_color_cycle_count"]).strip()
+    assert str(prompt_defaults["json_example_mixed_cycle_count"]).strip()
+
+    topology_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_puzzles_topology_bead_equivalence_count",
+    )
+    assert topology_complexity["criteria_weights"] == {
+        "reasoning_load": pytest.approx(0.4),
+        "scene_variant_load": pytest.approx(0.24),
+        "visual_scan": pytest.approx(0.36),
     }
 
 

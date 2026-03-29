@@ -167,6 +167,7 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
         ("puzzles", "arithmetic", "puzzles_arithmetic_v1"),
         ("puzzles", "logic", "puzzles_logic_v1"),
         ("puzzles", "spatial", "puzzles_spatial_v1"),
+        ("puzzles", "topology", "puzzles_topology_v1"),
         ("tile", "count", "tile_count_v1"),
         ("tile", "pattern", "tile_pattern_v1"),
         ("tile", "relation", "tile_relation_v1"),
@@ -468,6 +469,17 @@ def test_puzzles_spatial_bundle_supports_cube_removal_variant() -> None:
     assert len(bundle.task_templates["cube_removal_count_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_variant_templates["cube_removal_count"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["task_family:spatial_cube_removal_puzzle"]) == [
+        "object_description",
+    ]
+
+
+def test_puzzles_topology_bundle_supports_bead_equivalence_variants() -> None:
+    bundle = load_prompt_bundle("puzzles", "topology", "puzzles_topology_v1")
+    assert len(bundle.task_templates["bead_equivalence_count_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["color_cycle_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["shape_cycle_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["mixed_cycle_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_family:topology_bead_equivalence_puzzle"]) == [
         "object_description",
     ]
 

@@ -193,7 +193,7 @@ def test_puzzle_spatial_cube_removal_count_contract_matches_structure_bboxes() -
         assert str(execution["question_format"]) == "cube_removal_count"
         assert str(execution["view_family"]) == "isometric_block_comparison"
         assert int(out.answer_gt.value) == int(execution["removal_count"])
-        assert int(execution["removal_count"]) >= 1
+        assert 1 <= int(execution["removal_count"]) <= 5
         assert int(execution["original_total_cubes"]) > int(execution["remaining_total_cubes"])
         assert int(execution["original_total_cubes"]) - int(execution["remaining_total_cubes"]) == int(out.answer_gt.value)
         assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes

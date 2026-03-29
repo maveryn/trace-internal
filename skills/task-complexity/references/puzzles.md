@@ -17,5 +17,6 @@ Guidance:
    - arithmetic-grid tasks should usually rise with row count, whether the hidden cell is an operand or a result, and whether the repeated row rule uses multiplication rather than simple addition.
    - paper-fold spatial tasks should usually rise with more marks, a higher fraction of marks that originate on the folded side, and option sets that contain stronger near-miss reflections.
    - cube-removal spatial tasks should usually rise with the original footprint size, total cube count, maximum height, removal count, and how many distinct columns changed between the left and right structures.
+   - topology bead-loop tasks should usually rise with option count, bead count, how many valid options must be counted, and whether the identity depends on color only, shape only, or a mixed color+shape token.
 4. Use `scene_variant_load` only when the task genuinely supports multiple visible scene grammars inside the same task.
 5. If a later puzzle family uses only one stable presentation, give `scene_variant_load` zero weight for that task/family instead of inventing fake variation.

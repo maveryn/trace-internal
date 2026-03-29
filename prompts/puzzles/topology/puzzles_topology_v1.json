@@ -1,0 +1,77 @@
+{
+  "bundle_id": "puzzles_topology_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "topology_bead_equivalence_puzzle": [
+      "The image shows {object_description}.",
+      "Look at the bead-loop puzzle in the image: {object_description}.",
+      "You are given {object_description}.",
+      "Work from the reference loop and the labeled option loops in the image: {object_description}.",
+      "Use the reference bead loop and the option loops shown in the image: {object_description}."
+    ]
+  },
+  "task_templates": {
+    "bead_equivalence_count_query": [
+      "How many option loops can be obtained from the reference loop by rotating or smoothly deforming the loop, without cutting the string, moving beads through each other, or flipping the loop over?",
+      "Count the option loops that have the same clockwise bead order as the reference loop, up to rotation, without allowing a flip.",
+      "How many labeled option loops preserve the same cyclic bead order as the reference loop when rotation and smooth deformation are allowed but reflection is not?",
+      "Count the option loops that can be made from the reference loop without cutting the string, passing beads through each other, or reversing the bead order.",
+      "How many option loops match the reference loop up to rotation only, while keeping the bead order around the loop unchanged?"
+    ]
+  },
+  "task_variant_templates": {
+    "color_cycle_count": [
+      "Use the bead colors to determine which option loops are valid, then answer with the count as an integer.",
+      "Compare the colored bead order around each loop and return the valid-option count as an integer.",
+      "Count the options whose colored bead cycle matches the reference up to rotation, then answer as an integer.",
+      "Use the colored bead order around the loops and give the number of valid options as an integer.",
+      "Return the count of option loops with the same cyclic color order as an integer."
+    ],
+    "shape_cycle_count": [
+      "Use the bead shapes to determine which option loops are valid, then answer with the count as an integer.",
+      "Compare the shaped bead order around each loop and return the valid-option count as an integer.",
+      "Count the options whose shaped bead cycle matches the reference up to rotation, then answer as an integer.",
+      "Use the bead-shape order around the loops and give the number of valid options as an integer.",
+      "Return the count of option loops with the same cyclic shape order as an integer."
+    ],
+    "mixed_cycle_count": [
+      "Use the colored shapes on the beads to determine which option loops are valid, then answer with the count as an integer.",
+      "Compare the full colored-shape bead order around each loop and return the valid-option count as an integer.",
+      "Count the options whose colored-shape bead cycle matches the reference up to rotation, then answer as an integer.",
+      "Use both bead shape and bead color order around the loops and give the number of valid options as an integer.",
+      "Return the count of option loops with the same cyclic bead pattern, including color and shape, as an integer."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:topology_bead_equivalence_puzzle": [
+      "object_description"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

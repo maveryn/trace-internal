@@ -1,7 +1,7 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 2
+    "value": 1
   },
   "evidence_gt": {
     "type": "bbox_set",
@@ -35,15 +35,15 @@
   "trace_payload": {
     "answer_gt": {
       "type": "integer",
-      "value": 2
+      "value": 1
     },
     "complexity": {
       "complexity_components": {
-        "reasoning_load": 0.44800000000000006,
+        "reasoning_load": 0.38,
         "scene_variant_load": 0.18,
         "visual_scan": 0.5555555555555556
       },
-      "complexity_score": 0.45620000000000005
+      "complexity_score": 0.42900000000000005
     },
     "evidence_gt": {
       "type": "bbox_set",
@@ -63,8 +63,8 @@
       ]
     },
     "execution_trace": {
-      "answer_value": 2,
-      "changed_column_count": 2,
+      "answer_value": 1,
+      "changed_column_count": 1,
       "col_count": 3,
       "col_count_range": [
         2,
@@ -402,6 +402,18 @@
           "visible_faces": {
             "front": true,
             "right": true,
+            "top": false
+          }
+        },
+        {
+          "col_index": 2,
+          "cube_id": "cube_13",
+          "is_hidden": false,
+          "level_index": 2,
+          "row_index": 1,
+          "visible_faces": {
+            "front": true,
+            "right": true,
             "top": true
           }
         }
@@ -415,15 +427,15 @@
         [
           1,
           2,
-          2
+          3
         ]
       ],
       "remaining_structure_bbox_id": "remaining_structure",
-      "remaining_total_cubes": 12,
-      "removal_count": 2,
+      "remaining_total_cubes": 13,
+      "removal_count": 1,
       "removal_count_range": [
         1,
-        6
+        5
       ],
       "removed_cube_records": [
         {
@@ -431,12 +443,6 @@
           "level_index": 2,
           "removed_cube_id": "removed_cube_1",
           "row_index": 0
-        },
-        {
-          "col_index": 2,
-          "level_index": 2,
-          "removed_cube_id": "removed_cube_2",
-          "row_index": 1
         }
       ],
       "row_count": 2,
@@ -451,7 +457,7 @@
         "stack_strip": 0.3333333333333333
       },
       "solver_trace": {
-        "changed_column_count": 2,
+        "changed_column_count": 1,
         "col_count": 3,
         "original_max_height": 3,
         "removal_rows": [
@@ -463,11 +469,11 @@
           [
             0,
             0,
-            1
+            0
           ]
         ],
         "row_count": 2,
-        "target_removal_count": 2
+        "target_removal_count": 1
       },
       "supporting_structure_ids": [
         "original_structure",
@@ -501,8 +507,8 @@
         "col_count": 3,
         "original_max_height": 3,
         "original_total_cubes": 14,
-        "remaining_total_cubes": 12,
-        "removal_count": 2,
+        "remaining_total_cubes": 13,
+        "removal_count": 1,
         "row_count": 2,
         "scene_variant": "stack_card",
         "scene_variant_probabilities": {
@@ -1338,22 +1344,52 @@
         },
         {
           "attrs": {
-            "cube_id": "cube_12",
+            "cube_id": "cube_13",
+            "face_type": "front",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            829.533,
+            332.909,
+            910.467,
+            473.091
+          ],
+          "entity_id": "remaining_structure_face_18",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_13",
+            "face_type": "right",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            910.467,
+            332.909,
+            991.401,
+            473.091
+          ],
+          "entity_id": "remaining_structure_face_19",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_13",
             "face_type": "top",
             "structure_id": "remaining_structure"
           },
           "bbox_px": [
             829.533,
-            379.636,
+            286.182,
             991.401,
-            473.091
+            379.636
           ],
-          "entity_id": "remaining_structure_face_18",
+          "entity_id": "remaining_structure_face_20",
           "entity_type": "puzzle_block_face"
         }
       ],
       "relations": {
-        "answer_value": 2,
+        "answer_value": 1,
         "original_structure_bbox_id": "original_structure",
         "remaining_structure_bbox_id": "remaining_structure",
         "scene_variant": "stack_card",

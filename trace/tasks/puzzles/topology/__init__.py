@@ -1,0 +1,2 @@
+"""Topology puzzle tasks."""
+

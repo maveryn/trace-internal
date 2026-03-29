@@ -1,16 +1,16 @@
 {
   "answer_gt": {
     "type": "integer",
-    "value": 1
+    "value": 5
   },
   "evidence_gt": {
     "type": "bbox_set",
     "value": [
       [
         108.0,
-        219.897,
+        201.587,
         552.0,
-        586.103
+        604.413
       ],
       [
         648.0,
@@ -35,24 +35,24 @@
   "trace_payload": {
     "answer_gt": {
       "type": "integer",
-      "value": 1
+      "value": 5
     },
     "complexity": {
       "complexity_components": {
-        "reasoning_load": 0.38,
+        "reasoning_load": 0.6181818181818183,
         "scene_variant_load": 0.18,
-        "visual_scan": 0.7222222222222222
+        "visual_scan": 1.0
       },
-      "complexity_score": 0.504
+      "complexity_score": 0.7242727272727273
     },
     "evidence_gt": {
       "type": "bbox_set",
       "value": [
         [
           108.0,
-          219.897,
+          201.587,
           552.0,
-          586.103
+          604.413
         ],
         [
           648.0,
@@ -63,8 +63,8 @@
       ]
     },
     "execution_trace": {
-      "answer_value": 1,
-      "changed_column_count": 1,
+      "answer_value": 5,
+      "changed_column_count": 4,
       "col_count": 4,
       "col_count_range": [
         2,
@@ -86,8 +86,20 @@
         {
           "col_index": 1,
           "cube_id": "cube_2",
-          "is_hidden": false,
+          "is_hidden": true,
           "level_index": 0,
+          "row_index": 0,
+          "visible_faces": {
+            "front": false,
+            "right": false,
+            "top": false
+          }
+        },
+        {
+          "col_index": 1,
+          "cube_id": "cube_3",
+          "is_hidden": false,
+          "level_index": 1,
           "row_index": 0,
           "visible_faces": {
             "front": false,
@@ -97,7 +109,7 @@
         },
         {
           "col_index": 2,
-          "cube_id": "cube_3",
+          "cube_id": "cube_4",
           "is_hidden": true,
           "level_index": 0,
           "row_index": 0,
@@ -109,7 +121,7 @@
         },
         {
           "col_index": 2,
-          "cube_id": "cube_4",
+          "cube_id": "cube_5",
           "is_hidden": false,
           "level_index": 1,
           "row_index": 0,
@@ -117,25 +129,37 @@
             "front": false,
             "right": false,
             "top": true
-          }
-        },
-        {
-          "col_index": 3,
-          "cube_id": "cube_5",
-          "is_hidden": false,
-          "level_index": 0,
-          "row_index": 0,
-          "visible_faces": {
-            "front": false,
-            "right": true,
-            "top": false
           }
         },
         {
           "col_index": 3,
           "cube_id": "cube_6",
           "is_hidden": false,
+          "level_index": 0,
+          "row_index": 0,
+          "visible_faces": {
+            "front": false,
+            "right": true,
+            "top": false
+          }
+        },
+        {
+          "col_index": 3,
+          "cube_id": "cube_7",
+          "is_hidden": false,
           "level_index": 1,
+          "row_index": 0,
+          "visible_faces": {
+            "front": true,
+            "right": true,
+            "top": false
+          }
+        },
+        {
+          "col_index": 3,
+          "cube_id": "cube_8",
+          "is_hidden": false,
+          "level_index": 2,
           "row_index": 0,
           "visible_faces": {
             "front": true,
@@ -145,7 +169,7 @@
         },
         {
           "col_index": 0,
-          "cube_id": "cube_7",
+          "cube_id": "cube_9",
           "is_hidden": true,
           "level_index": 0,
           "row_index": 1,
@@ -157,21 +181,9 @@
         },
         {
           "col_index": 0,
-          "cube_id": "cube_8",
+          "cube_id": "cube_10",
           "is_hidden": false,
           "level_index": 1,
-          "row_index": 1,
-          "visible_faces": {
-            "front": false,
-            "right": true,
-            "top": true
-          }
-        },
-        {
-          "col_index": 1,
-          "cube_id": "cube_9",
-          "is_hidden": false,
-          "level_index": 0,
           "row_index": 1,
           "visible_faces": {
             "front": false,
@@ -180,8 +192,32 @@
           }
         },
         {
+          "col_index": 1,
+          "cube_id": "cube_11",
+          "is_hidden": true,
+          "level_index": 0,
+          "row_index": 1,
+          "visible_faces": {
+            "front": false,
+            "right": false,
+            "top": false
+          }
+        },
+        {
+          "col_index": 1,
+          "cube_id": "cube_12",
+          "is_hidden": false,
+          "level_index": 1,
+          "row_index": 1,
+          "visible_faces": {
+            "front": true,
+            "right": false,
+            "top": true
+          }
+        },
+        {
           "col_index": 2,
-          "cube_id": "cube_10",
+          "cube_id": "cube_13",
           "is_hidden": true,
           "level_index": 0,
           "row_index": 1,
@@ -193,19 +229,19 @@
         },
         {
           "col_index": 2,
-          "cube_id": "cube_11",
+          "cube_id": "cube_14",
           "is_hidden": false,
           "level_index": 1,
           "row_index": 1,
           "visible_faces": {
-            "front": true,
+            "front": false,
             "right": true,
             "top": true
           }
         },
         {
           "col_index": 3,
-          "cube_id": "cube_12",
+          "cube_id": "cube_15",
           "is_hidden": false,
           "level_index": 0,
           "row_index": 1,
@@ -217,42 +253,6 @@
         },
         {
           "col_index": 0,
-          "cube_id": "cube_13",
-          "is_hidden": false,
-          "level_index": 0,
-          "row_index": 2,
-          "visible_faces": {
-            "front": true,
-            "right": false,
-            "top": false
-          }
-        },
-        {
-          "col_index": 0,
-          "cube_id": "cube_14",
-          "is_hidden": false,
-          "level_index": 1,
-          "row_index": 2,
-          "visible_faces": {
-            "front": true,
-            "right": true,
-            "top": true
-          }
-        },
-        {
-          "col_index": 1,
-          "cube_id": "cube_15",
-          "is_hidden": false,
-          "level_index": 0,
-          "row_index": 2,
-          "visible_faces": {
-            "front": true,
-            "right": false,
-            "top": true
-          }
-        },
-        {
-          "col_index": 2,
           "cube_id": "cube_16",
           "is_hidden": false,
           "level_index": 0,
@@ -260,12 +260,72 @@
           "visible_faces": {
             "front": true,
             "right": false,
+            "top": false
+          }
+        },
+        {
+          "col_index": 0,
+          "cube_id": "cube_17",
+          "is_hidden": false,
+          "level_index": 1,
+          "row_index": 2,
+          "visible_faces": {
+            "front": true,
+            "right": true,
+            "top": false
+          }
+        },
+        {
+          "col_index": 0,
+          "cube_id": "cube_18",
+          "is_hidden": false,
+          "level_index": 2,
+          "row_index": 2,
+          "visible_faces": {
+            "front": true,
+            "right": true,
+            "top": true
+          }
+        },
+        {
+          "col_index": 1,
+          "cube_id": "cube_19",
+          "is_hidden": false,
+          "level_index": 0,
+          "row_index": 2,
+          "visible_faces": {
+            "front": true,
+            "right": false,
+            "top": true
+          }
+        },
+        {
+          "col_index": 2,
+          "cube_id": "cube_20",
+          "is_hidden": false,
+          "level_index": 0,
+          "row_index": 2,
+          "visible_faces": {
+            "front": true,
+            "right": false,
+            "top": false
+          }
+        },
+        {
+          "col_index": 2,
+          "cube_id": "cube_21",
+          "is_hidden": false,
+          "level_index": 1,
+          "row_index": 2,
+          "visible_faces": {
+            "front": true,
+            "right": true,
             "top": true
           }
         },
         {
           "col_index": 3,
-          "cube_id": "cube_17",
+          "cube_id": "cube_22",
           "is_hidden": false,
           "level_index": 0,
           "row_index": 2,
@@ -279,30 +339,30 @@
       "original_height_rows": [
         [
           1,
-          1,
           2,
-          2
+          2,
+          3
         ],
         [
           2,
-          1,
+          2,
           2,
           1
         ],
         [
+          3,
+          1,
           2,
-          1,
-          1,
           1
         ]
       ],
-      "original_max_height": 2,
+      "original_max_height": 3,
       "original_max_height_range": [
         2,
         5
       ],
       "original_structure_bbox_id": "original_structure",
-      "original_total_cubes": 17,
+      "original_total_cubes": 22,
       "question_format": "cube_removal_count",
       "remaining_cube_records": [
         {
@@ -348,7 +408,7 @@
           "level_index": 1,
           "row_index": 0,
           "visible_faces": {
-            "front": true,
+            "front": false,
             "right": false,
             "top": true
           }
@@ -396,65 +456,53 @@
           "level_index": 1,
           "row_index": 1,
           "visible_faces": {
-            "front": false,
-            "right": true,
+            "front": true,
+            "right": false,
             "top": true
           }
         },
         {
           "col_index": 1,
           "cube_id": "cube_9",
-          "is_hidden": false,
+          "is_hidden": true,
           "level_index": 0,
           "row_index": 1,
           "visible_faces": {
             "front": false,
+            "right": false,
+            "top": false
+          }
+        },
+        {
+          "col_index": 1,
+          "cube_id": "cube_10",
+          "is_hidden": false,
+          "level_index": 1,
+          "row_index": 1,
+          "visible_faces": {
+            "front": true,
             "right": false,
             "top": true
           }
         },
         {
           "col_index": 2,
-          "cube_id": "cube_10",
-          "is_hidden": false,
-          "level_index": 0,
-          "row_index": 1,
-          "visible_faces": {
-            "front": false,
-            "right": false,
-            "top": true
-          }
-        },
-        {
-          "col_index": 3,
           "cube_id": "cube_11",
-          "is_hidden": false,
+          "is_hidden": true,
           "level_index": 0,
           "row_index": 1,
           "visible_faces": {
             "front": false,
-            "right": true,
-            "top": true
-          }
-        },
-        {
-          "col_index": 0,
-          "cube_id": "cube_12",
-          "is_hidden": false,
-          "level_index": 0,
-          "row_index": 2,
-          "visible_faces": {
-            "front": true,
             "right": false,
             "top": false
           }
         },
         {
-          "col_index": 0,
-          "cube_id": "cube_13",
+          "col_index": 2,
+          "cube_id": "cube_12",
           "is_hidden": false,
           "level_index": 1,
-          "row_index": 2,
+          "row_index": 1,
           "visible_faces": {
             "front": true,
             "right": true,
@@ -462,7 +510,19 @@
           }
         },
         {
-          "col_index": 1,
+          "col_index": 3,
+          "cube_id": "cube_13",
+          "is_hidden": false,
+          "level_index": 0,
+          "row_index": 1,
+          "visible_faces": {
+            "front": false,
+            "right": true,
+            "top": true
+          }
+        },
+        {
+          "col_index": 0,
           "cube_id": "cube_14",
           "is_hidden": false,
           "level_index": 0,
@@ -474,7 +534,7 @@
           }
         },
         {
-          "col_index": 2,
+          "col_index": 1,
           "cube_id": "cube_15",
           "is_hidden": false,
           "level_index": 0,
@@ -486,8 +546,20 @@
           }
         },
         {
-          "col_index": 3,
+          "col_index": 2,
           "cube_id": "cube_16",
+          "is_hidden": false,
+          "level_index": 0,
+          "row_index": 2,
+          "visible_faces": {
+            "front": true,
+            "right": false,
+            "top": true
+          }
+        },
+        {
+          "col_index": 3,
+          "cube_id": "cube_17",
           "is_hidden": false,
           "level_index": 0,
           "row_index": 2,
@@ -507,30 +579,54 @@
         ],
         [
           2,
-          1,
-          1,
+          2,
+          2,
           1
         ],
         [
-          2,
+          1,
           1,
           1,
           1
         ]
       ],
       "remaining_structure_bbox_id": "remaining_structure",
-      "remaining_total_cubes": 16,
-      "removal_count": 1,
+      "remaining_total_cubes": 17,
+      "removal_count": 5,
       "removal_count_range": [
         1,
-        6
+        5
       ],
       "removed_cube_records": [
         {
-          "col_index": 2,
+          "col_index": 1,
           "level_index": 1,
           "removed_cube_id": "removed_cube_1",
-          "row_index": 1
+          "row_index": 0
+        },
+        {
+          "col_index": 3,
+          "level_index": 2,
+          "removed_cube_id": "removed_cube_2",
+          "row_index": 0
+        },
+        {
+          "col_index": 0,
+          "level_index": 1,
+          "removed_cube_id": "removed_cube_3",
+          "row_index": 2
+        },
+        {
+          "col_index": 0,
+          "level_index": 2,
+          "removed_cube_id": "removed_cube_4",
+          "row_index": 2
+        },
+        {
+          "col_index": 2,
+          "level_index": 1,
+          "removed_cube_id": "removed_cube_5",
+          "row_index": 2
         }
       ],
       "row_count": 3,
@@ -545,31 +641,31 @@
         "stack_strip": 0.3333333333333333
       },
       "solver_trace": {
-        "changed_column_count": 1,
+        "changed_column_count": 4,
         "col_count": 4,
-        "original_max_height": 2,
+        "original_max_height": 3,
         "removal_rows": [
           [
             0,
+            1,
+            0,
+            1
+          ],
+          [
+            0,
             0,
             0,
             0
           ],
           [
-            0,
+            2,
             0,
             1,
-            0
-          ],
-          [
-            0,
-            0,
-            0,
             0
           ]
         ],
         "row_count": 3,
-        "target_removal_count": 1
+        "target_removal_count": 5
       },
       "supporting_structure_ids": [
         "original_structure",
@@ -586,9 +682,9 @@
       "bbox_set": [
         [
           108.0,
-          219.897,
+          201.587,
           552.0,
-          586.103
+          604.413
         ],
         [
           648.0,
@@ -601,10 +697,10 @@
     "query_spec": {
       "params": {
         "col_count": 4,
-        "original_max_height": 2,
-        "original_total_cubes": 17,
-        "remaining_total_cubes": 16,
-        "removal_count": 1,
+        "original_max_height": 3,
+        "original_total_cubes": 22,
+        "remaining_total_cubes": 17,
+        "removal_count": 5,
         "row_count": 3,
         "scene_variant": "stack_card",
         "scene_variant_probabilities": {
@@ -723,9 +819,9 @@
       "image_id": "img0",
       "original_structure_bbox_px": [
         108.0,
-        219.897,
+        201.587,
         552.0,
-        586.103
+        604.413
       ],
       "remaining_structure_bbox_px": [
         648.0,
@@ -742,9 +838,9 @@
       "structure_bboxes_px": {
         "original_structure": [
           108.0,
-          219.897,
+          201.587,
           552.0,
-          586.103
+          604.413
         ],
         "remaining_structure": [
           648.0,
@@ -807,9 +903,9 @@
           },
           "bbox_px": [
             108.0,
-            219.897,
+            201.587,
             552.0,
-            586.103
+            604.413
           ],
           "entity_id": "original_structure",
           "entity_type": "puzzle_block_structure"
@@ -876,161 +972,281 @@
           },
           "bbox_px": [
             234.857,
-            256.518,
+            274.828,
             361.714,
-            329.759
+            348.069
           ],
           "entity_id": "original_structure_face_1",
           "entity_type": "puzzle_block_face"
         },
         {
           "attrs": {
-            "cube_id": "cube_2",
-            "face_type": "top",
+            "cube_id": "cube_16",
+            "face_type": "front",
             "structure_id": "original_structure"
           },
           "bbox_px": [
-            298.286,
-            293.138,
-            425.143,
-            366.379
+            108.0,
+            384.69,
+            171.429,
+            494.551
           ],
           "entity_id": "original_structure_face_2",
           "entity_type": "puzzle_block_face"
         },
         {
           "attrs": {
-            "cube_id": "cube_13",
-            "face_type": "front",
+            "cube_id": "cube_3",
+            "face_type": "top",
             "structure_id": "original_structure"
           },
           "bbox_px": [
-            108.0,
-            366.379,
-            171.429,
-            476.241
+            298.286,
+            238.208,
+            425.143,
+            311.449
           ],
           "entity_id": "original_structure_face_3",
           "entity_type": "puzzle_block_face"
         },
         {
           "attrs": {
-            "cube_id": "cube_8",
-            "face_type": "right",
+            "cube_id": "cube_10",
+            "face_type": "top",
             "structure_id": "original_structure"
           },
           "bbox_px": [
-            234.857,
-            256.518,
+            171.429,
+            238.208,
             298.286,
-            366.379
+            311.449
           ],
           "entity_id": "original_structure_face_4",
           "entity_type": "puzzle_block_face"
         },
         {
           "attrs": {
-            "cube_id": "cube_8",
-            "face_type": "top",
+            "cube_id": "cube_12",
+            "face_type": "front",
             "structure_id": "original_structure"
           },
           "bbox_px": [
-            171.429,
-            219.897,
+            234.857,
+            311.449,
             298.286,
-            293.138
+            421.31
           ],
           "entity_id": "original_structure_face_5",
           "entity_type": "puzzle_block_face"
         },
         {
           "attrs": {
-            "cube_id": "cube_9",
-            "face_type": "top",
+            "cube_id": "cube_17",
+            "face_type": "front",
             "structure_id": "original_structure"
           },
           "bbox_px": [
-            234.857,
-            329.759,
-            361.714,
-            403.0
+            108.0,
+            311.449,
+            171.429,
+            421.31
           ],
           "entity_id": "original_structure_face_6",
           "entity_type": "puzzle_block_face"
         },
         {
           "attrs": {
-            "cube_id": "cube_14",
+            "cube_id": "cube_19",
             "face_type": "front",
             "structure_id": "original_structure"
           },
           "bbox_px": [
-            108.0,
-            293.138,
             171.429,
-            403.0
+            421.31,
+            234.857,
+            531.172
           ],
           "entity_id": "original_structure_face_7",
           "entity_type": "puzzle_block_face"
         },
         {
           "attrs": {
-            "cube_id": "cube_15",
-            "face_type": "front",
+            "cube_id": "cube_6",
+            "face_type": "right",
             "structure_id": "original_structure"
           },
           "bbox_px": [
-            171.429,
-            403.0,
-            234.857,
-            512.862
+            488.571,
+            421.31,
+            552.0,
+            531.172
           ],
           "entity_id": "original_structure_face_8",
           "entity_type": "puzzle_block_face"
         },
         {
           "attrs": {
-            "cube_id": "cube_5",
+            "cube_id": "cube_17",
             "face_type": "right",
             "structure_id": "original_structure"
           },
           "bbox_px": [
-            488.571,
-            403.0,
-            552.0,
-            512.862
+            171.429,
+            311.449,
+            234.857,
+            421.31
           ],
           "entity_id": "original_structure_face_9",
           "entity_type": "puzzle_block_face"
         },
         {
           "attrs": {
-            "cube_id": "cube_14",
-            "face_type": "right",
+            "cube_id": "cube_5",
+            "face_type": "top",
             "structure_id": "original_structure"
           },
           "bbox_px": [
-            171.429,
-            293.138,
-            234.857,
-            403.0
+            361.714,
+            274.828,
+            488.571,
+            348.069
           ],
           "entity_id": "original_structure_face_10",
           "entity_type": "puzzle_block_face"
         },
         {
           "attrs": {
-            "cube_id": "cube_4",
+            "cube_id": "cube_12",
             "face_type": "top",
             "structure_id": "original_structure"
           },
           "bbox_px": [
+            234.857,
+            274.828,
             361.714,
-            256.518,
-            488.571,
-            329.759
+            348.069
           ],
           "entity_id": "original_structure_face_11",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_19",
+            "face_type": "top",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            171.429,
+            384.69,
+            298.286,
+            457.931
+          ],
+          "entity_id": "original_structure_face_12",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_7",
+            "face_type": "front",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            425.143,
+            348.069,
+            488.571,
+            457.931
+          ],
+          "entity_id": "original_structure_face_13",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_18",
+            "face_type": "front",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            108.0,
+            238.208,
+            171.429,
+            348.069
+          ],
+          "entity_id": "original_structure_face_14",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_20",
+            "face_type": "front",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            234.857,
+            457.931,
+            298.286,
+            567.792
+          ],
+          "entity_id": "original_structure_face_15",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_7",
+            "face_type": "right",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            488.571,
+            348.069,
+            552.0,
+            457.931
+          ],
+          "entity_id": "original_structure_face_16",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_14",
+            "face_type": "right",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            361.714,
+            348.069,
+            425.143,
+            457.931
+          ],
+          "entity_id": "original_structure_face_17",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_15",
+            "face_type": "right",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            425.143,
+            457.931,
+            488.571,
+            567.792
+          ],
+          "entity_id": "original_structure_face_18",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_18",
+            "face_type": "right",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            171.429,
+            238.208,
+            234.857,
+            348.069
+          ],
+          "entity_id": "original_structure_face_19",
           "entity_type": "puzzle_block_face"
         },
         {
@@ -1040,12 +1256,12 @@
             "structure_id": "original_structure"
           },
           "bbox_px": [
-            108.0,
-            256.518,
-            234.857,
-            329.759
+            298.286,
+            311.449,
+            425.143,
+            384.69
           ],
-          "entity_id": "original_structure_face_12",
+          "entity_id": "original_structure_face_20",
           "entity_type": "puzzle_block_face"
         },
         {
@@ -1055,207 +1271,162 @@
             "structure_id": "original_structure"
           },
           "bbox_px": [
-            171.429,
-            366.379,
-            298.286,
-            439.621
-          ],
-          "entity_id": "original_structure_face_13",
-          "entity_type": "puzzle_block_face"
-        },
-        {
-          "attrs": {
-            "cube_id": "cube_6",
-            "face_type": "front",
-            "structure_id": "original_structure"
-          },
-          "bbox_px": [
-            425.143,
-            329.759,
-            488.571,
-            439.621
-          ],
-          "entity_id": "original_structure_face_14",
-          "entity_type": "puzzle_block_face"
-        },
-        {
-          "attrs": {
-            "cube_id": "cube_11",
-            "face_type": "front",
-            "structure_id": "original_structure"
-          },
-          "bbox_px": [
-            298.286,
-            329.759,
             361.714,
-            439.621
-          ],
-          "entity_id": "original_structure_face_15",
-          "entity_type": "puzzle_block_face"
-        },
-        {
-          "attrs": {
-            "cube_id": "cube_16",
-            "face_type": "front",
-            "structure_id": "original_structure"
-          },
-          "bbox_px": [
-            234.857,
-            439.621,
-            298.286,
-            549.482
-          ],
-          "entity_id": "original_structure_face_16",
-          "entity_type": "puzzle_block_face"
-        },
-        {
-          "attrs": {
-            "cube_id": "cube_6",
-            "face_type": "right",
-            "structure_id": "original_structure"
-          },
-          "bbox_px": [
+            421.31,
             488.571,
-            329.759,
-            552.0,
-            439.621
-          ],
-          "entity_id": "original_structure_face_17",
-          "entity_type": "puzzle_block_face"
-        },
-        {
-          "attrs": {
-            "cube_id": "cube_11",
-            "face_type": "right",
-            "structure_id": "original_structure"
-          },
-          "bbox_px": [
-            361.714,
-            329.759,
-            425.143,
-            439.621
-          ],
-          "entity_id": "original_structure_face_18",
-          "entity_type": "puzzle_block_face"
-        },
-        {
-          "attrs": {
-            "cube_id": "cube_12",
-            "face_type": "right",
-            "structure_id": "original_structure"
-          },
-          "bbox_px": [
-            425.143,
-            439.621,
-            488.571,
-            549.482
-          ],
-          "entity_id": "original_structure_face_19",
-          "entity_type": "puzzle_block_face"
-        },
-        {
-          "attrs": {
-            "cube_id": "cube_6",
-            "face_type": "top",
-            "structure_id": "original_structure"
-          },
-          "bbox_px": [
-            425.143,
-            293.138,
-            552.0,
-            366.379
-          ],
-          "entity_id": "original_structure_face_20",
-          "entity_type": "puzzle_block_face"
-        },
-        {
-          "attrs": {
-            "cube_id": "cube_11",
-            "face_type": "top",
-            "structure_id": "original_structure"
-          },
-          "bbox_px": [
-            298.286,
-            293.138,
-            425.143,
-            366.379
+            494.551
           ],
           "entity_id": "original_structure_face_21",
           "entity_type": "puzzle_block_face"
         },
         {
           "attrs": {
-            "cube_id": "cube_12",
+            "cube_id": "cube_18",
             "face_type": "top",
             "structure_id": "original_structure"
           },
           "bbox_px": [
-            361.714,
-            403.0,
-            488.571,
-            476.241
+            108.0,
+            201.587,
+            234.857,
+            274.828
           ],
           "entity_id": "original_structure_face_22",
           "entity_type": "puzzle_block_face"
         },
         {
           "attrs": {
-            "cube_id": "cube_16",
-            "face_type": "top",
+            "cube_id": "cube_8",
+            "face_type": "front",
             "structure_id": "original_structure"
           },
           "bbox_px": [
-            234.857,
-            403.0,
-            361.714,
-            476.241
+            425.143,
+            274.828,
+            488.571,
+            384.69
           ],
           "entity_id": "original_structure_face_23",
           "entity_type": "puzzle_block_face"
         },
         {
           "attrs": {
-            "cube_id": "cube_17",
+            "cube_id": "cube_21",
             "face_type": "front",
             "structure_id": "original_structure"
           },
           "bbox_px": [
+            234.857,
+            384.69,
             298.286,
-            476.241,
-            361.714,
-            586.103
+            494.551
           ],
           "entity_id": "original_structure_face_24",
           "entity_type": "puzzle_block_face"
         },
         {
           "attrs": {
-            "cube_id": "cube_17",
-            "face_type": "right",
+            "cube_id": "cube_22",
+            "face_type": "front",
             "structure_id": "original_structure"
           },
           "bbox_px": [
+            298.286,
+            494.551,
             361.714,
-            476.241,
-            425.143,
-            586.103
+            604.413
           ],
           "entity_id": "original_structure_face_25",
           "entity_type": "puzzle_block_face"
         },
         {
           "attrs": {
-            "cube_id": "cube_17",
+            "cube_id": "cube_8",
+            "face_type": "right",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            488.571,
+            274.828,
+            552.0,
+            384.69
+          ],
+          "entity_id": "original_structure_face_26",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_21",
+            "face_type": "right",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            298.286,
+            384.69,
+            361.714,
+            494.551
+          ],
+          "entity_id": "original_structure_face_27",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_22",
+            "face_type": "right",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            361.714,
+            494.551,
+            425.143,
+            604.413
+          ],
+          "entity_id": "original_structure_face_28",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_8",
+            "face_type": "top",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            425.143,
+            238.208,
+            552.0,
+            311.449
+          ],
+          "entity_id": "original_structure_face_29",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_21",
+            "face_type": "top",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            234.857,
+            348.069,
+            361.714,
+            421.31
+          ],
+          "entity_id": "original_structure_face_30",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_22",
             "face_type": "top",
             "structure_id": "original_structure"
           },
           "bbox_px": [
             298.286,
-            439.621,
+            457.931,
             425.143,
-            512.862
+            531.172
           ],
-          "entity_id": "original_structure_face_26",
+          "entity_id": "original_structure_face_31",
           "entity_type": "puzzle_block_face"
         },
         {
@@ -1290,7 +1461,22 @@
         },
         {
           "attrs": {
-            "cube_id": "cube_12",
+            "cube_id": "cube_8",
+            "face_type": "front",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            711.429,
+            256.518,
+            774.857,
+            366.379
+          ],
+          "entity_id": "remaining_structure_face_3",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_14",
             "face_type": "front",
             "structure_id": "remaining_structure"
           },
@@ -1299,21 +1485,6 @@
             366.379,
             711.429,
             476.241
-          ],
-          "entity_id": "remaining_structure_face_3",
-          "entity_type": "puzzle_block_face"
-        },
-        {
-          "attrs": {
-            "cube_id": "cube_8",
-            "face_type": "right",
-            "structure_id": "remaining_structure"
-          },
-          "bbox_px": [
-            774.857,
-            256.518,
-            838.286,
-            366.379
           ],
           "entity_id": "remaining_structure_face_4",
           "entity_type": "puzzle_block_face"
@@ -1335,14 +1506,14 @@
         },
         {
           "attrs": {
-            "cube_id": "cube_9",
+            "cube_id": "cube_14",
             "face_type": "top",
             "structure_id": "remaining_structure"
           },
           "bbox_px": [
-            774.857,
+            648.0,
             329.759,
-            901.714,
+            774.857,
             403.0
           ],
           "entity_id": "remaining_structure_face_6",
@@ -1350,14 +1521,14 @@
         },
         {
           "attrs": {
-            "cube_id": "cube_4",
+            "cube_id": "cube_10",
             "face_type": "front",
             "structure_id": "remaining_structure"
           },
           "bbox_px": [
-            901.714,
+            774.857,
             293.138,
-            965.143,
+            838.286,
             403.0
           ],
           "entity_id": "remaining_structure_face_7",
@@ -1365,22 +1536,7 @@
         },
         {
           "attrs": {
-            "cube_id": "cube_13",
-            "face_type": "front",
-            "structure_id": "remaining_structure"
-          },
-          "bbox_px": [
-            648.0,
-            293.138,
-            711.429,
-            403.0
-          ],
-          "entity_id": "remaining_structure_face_8",
-          "entity_type": "puzzle_block_face"
-        },
-        {
-          "attrs": {
-            "cube_id": "cube_14",
+            "cube_id": "cube_15",
             "face_type": "front",
             "structure_id": "remaining_structure"
           },
@@ -1390,7 +1546,7 @@
             774.857,
             512.862
           ],
-          "entity_id": "remaining_structure_face_9",
+          "entity_id": "remaining_structure_face_8",
           "entity_type": "puzzle_block_face"
         },
         {
@@ -1405,22 +1561,7 @@
             1092.0,
             512.862
           ],
-          "entity_id": "remaining_structure_face_10",
-          "entity_type": "puzzle_block_face"
-        },
-        {
-          "attrs": {
-            "cube_id": "cube_13",
-            "face_type": "right",
-            "structure_id": "remaining_structure"
-          },
-          "bbox_px": [
-            711.429,
-            293.138,
-            774.857,
-            403.0
-          ],
-          "entity_id": "remaining_structure_face_11",
+          "entity_id": "remaining_structure_face_9",
           "entity_type": "puzzle_block_face"
         },
         {
@@ -1435,7 +1576,7 @@
             1028.571,
             329.759
           ],
-          "entity_id": "remaining_structure_face_12",
+          "entity_id": "remaining_structure_face_10",
           "entity_type": "puzzle_block_face"
         },
         {
@@ -1445,32 +1586,17 @@
             "structure_id": "remaining_structure"
           },
           "bbox_px": [
-            838.286,
-            366.379,
-            965.143,
-            439.621
-          ],
-          "entity_id": "remaining_structure_face_13",
-          "entity_type": "puzzle_block_face"
-        },
-        {
-          "attrs": {
-            "cube_id": "cube_13",
-            "face_type": "top",
-            "structure_id": "remaining_structure"
-          },
-          "bbox_px": [
-            648.0,
-            256.518,
             774.857,
+            256.518,
+            901.714,
             329.759
           ],
-          "entity_id": "remaining_structure_face_14",
+          "entity_id": "remaining_structure_face_11",
           "entity_type": "puzzle_block_face"
         },
         {
           "attrs": {
-            "cube_id": "cube_14",
+            "cube_id": "cube_15",
             "face_type": "top",
             "structure_id": "remaining_structure"
           },
@@ -1480,7 +1606,7 @@
             838.286,
             439.621
           ],
-          "entity_id": "remaining_structure_face_15",
+          "entity_id": "remaining_structure_face_12",
           "entity_type": "puzzle_block_face"
         },
         {
@@ -1495,12 +1621,27 @@
             1028.571,
             439.621
           ],
-          "entity_id": "remaining_structure_face_16",
+          "entity_id": "remaining_structure_face_13",
           "entity_type": "puzzle_block_face"
         },
         {
           "attrs": {
-            "cube_id": "cube_15",
+            "cube_id": "cube_12",
+            "face_type": "front",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            838.286,
+            329.759,
+            901.714,
+            439.621
+          ],
+          "entity_id": "remaining_structure_face_14",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_16",
             "face_type": "front",
             "structure_id": "remaining_structure"
           },
@@ -1510,7 +1651,7 @@
             838.286,
             549.482
           ],
-          "entity_id": "remaining_structure_face_17",
+          "entity_id": "remaining_structure_face_15",
           "entity_type": "puzzle_block_face"
         },
         {
@@ -1525,12 +1666,27 @@
             1092.0,
             439.621
           ],
-          "entity_id": "remaining_structure_face_18",
+          "entity_id": "remaining_structure_face_16",
           "entity_type": "puzzle_block_face"
         },
         {
           "attrs": {
-            "cube_id": "cube_11",
+            "cube_id": "cube_12",
+            "face_type": "right",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            901.714,
+            329.759,
+            965.143,
+            439.621
+          ],
+          "entity_id": "remaining_structure_face_17",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_13",
             "face_type": "right",
             "structure_id": "remaining_structure"
           },
@@ -1540,7 +1696,7 @@
             1028.571,
             549.482
           ],
-          "entity_id": "remaining_structure_face_19",
+          "entity_id": "remaining_structure_face_18",
           "entity_type": "puzzle_block_face"
         },
         {
@@ -1555,12 +1711,27 @@
             1092.0,
             366.379
           ],
+          "entity_id": "remaining_structure_face_19",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_12",
+            "face_type": "top",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            838.286,
+            293.138,
+            965.143,
+            366.379
+          ],
           "entity_id": "remaining_structure_face_20",
           "entity_type": "puzzle_block_face"
         },
         {
           "attrs": {
-            "cube_id": "cube_11",
+            "cube_id": "cube_13",
             "face_type": "top",
             "structure_id": "remaining_structure"
           },
@@ -1575,7 +1746,7 @@
         },
         {
           "attrs": {
-            "cube_id": "cube_15",
+            "cube_id": "cube_16",
             "face_type": "top",
             "structure_id": "remaining_structure"
           },
@@ -1590,7 +1761,7 @@
         },
         {
           "attrs": {
-            "cube_id": "cube_16",
+            "cube_id": "cube_17",
             "face_type": "front",
             "structure_id": "remaining_structure"
           },
@@ -1605,7 +1776,7 @@
         },
         {
           "attrs": {
-            "cube_id": "cube_16",
+            "cube_id": "cube_17",
             "face_type": "right",
             "structure_id": "remaining_structure"
           },
@@ -1620,7 +1791,7 @@
         },
         {
           "attrs": {
-            "cube_id": "cube_16",
+            "cube_id": "cube_17",
             "face_type": "top",
             "structure_id": "remaining_structure"
           },
@@ -1635,7 +1806,7 @@
         }
       ],
       "relations": {
-        "answer_value": 1,
+        "answer_value": 5,
         "original_structure_bbox_id": "original_structure",
         "remaining_structure_bbox_id": "remaining_structure",
         "scene_variant": "stack_card",
@@ -1649,9 +1820,9 @@
       "value": [
         [
           108.0,
-          219.897,
+          201.587,
           552.0,
-          586.103
+          604.413
         ],
         [
           648.0,

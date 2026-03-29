@@ -31,7 +31,7 @@ Use this whenever the task lives under `domain=puzzles`.
 - `arithmetic`: visual equations, balance/weight puzzles, digit-placement puzzles, number-grid puzzles with explicit unknowns.
 - `logic`: option filtering under placement/adjacency/consistency constraints.
 - `spatial`: paper-fold result puzzles, cube views/nets, block stacks, assembly/cut-and-build puzzles.
-- `topology`: equivalence under deformation, region/inside-outside reasoning, connected-structure invariants.
+- `topology`: equivalence under deformation, region/inside-outside reasoning, connected-structure invariants, bead-loop cyclic-order puzzles.
 - `symbolic` later: letter/word/path puzzles and symbol-mapping tasks once text-rendering needs are clear.
 
 ## Evidence rules
@@ -40,6 +40,7 @@ Use this whenever the task lives under `domain=puzzles`.
 - For option-based puzzles, evidence should usually ground the queried target option or missing slot rather than a large set of explanatory regions.
 - Only use multi-box evidence when the task genuinely needs multiple ordered witnesses and the order can be defined cleanly in the prompt.
 - Design early puzzle tasks so the evidence can stay local and visually obvious; avoid families whose first version would need long derived witness sets.
+- When a topology puzzle asks for a count of valid options rather than one winning option, order the supporting option-image bboxes in normal reading order and keep the rule text explicit enough that reflection ambiguity cannot creep in.
 
 ## Design heuristics
 - Start with puzzle tasks that expose an explicit queried slot, missing value, or named option. They are easier to verify and keep evidence clean.
@@ -72,6 +73,11 @@ Use this whenever the task lives under `domain=puzzles`.
 - For option-based spatial puzzles, keep `answer_gt.type = option_letter` and ground prompt-facing evidence on the winning option image bbox, not on many explanatory regions.
 - Not every option-based puzzle needs boxed option cards. If bare image choices with labels below are clearer, prefer the simpler layout and project evidence from the image region itself.
 - For spatial block-comparison puzzles such as cube-removal counting, ground prompt-facing evidence on the ordered pair of visible structures rather than inventing image-space bboxes for cubes that have already been removed.
+
+## Early topology lessons
+- For first topology tasks, prefer bead-loop or similar closed-curve puzzles where the invariant can be stated exactly in the prompt.
+- Make the allowed transformations explicit. A good default is: smooth deformation and cyclic rotation are allowed, but cutting, bead crossing, and flipping/reflection are not.
+- When the task asks for the number of valid options, keep the answer as an integer and ground evidence on the valid option images in reading order rather than inventing a new evidence type.
 
 ## Benchmark alignment
 - MathVision-style useful puzzle coverage includes arithmetic, logic, spatial, topology, and competition-style visual problem solving.

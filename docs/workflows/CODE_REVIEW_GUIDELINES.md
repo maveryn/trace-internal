@@ -155,6 +155,7 @@ Use this checklist during implementation and refactor reviews.
 137. For fold-result paper puzzles whose options show only the visible folded sheet, prefer reflection-invariant marks and build the folded result first, then back-project it onto the reference sheet, so the task tests the fold transformation without introducing hidden symbol-orientation ambiguity.
 138. For option-based puzzle tasks, do not default to boxed option cards if they make the candidate images too small; when the benchmark pattern is better read as bare image choices with labels underneath, project evidence from the option image bbox and keep the label outside the image region.
 139. For puzzle tasks that ask how many cubes were removed between two visible block structures, ground prompt-facing `bbox_set` evidence on the ordered pair of visible structures `[original, remaining]` instead of inventing image-space bboxes for the missing cubes.
+140. For topology bead-loop puzzles, make the equivalence rule explicit in both prompt text and generation: if flipping/reflection is disallowed, valid options must match the reference only up to cyclic rotation, and the prompt should say so directly instead of leaving reflection ambiguous.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

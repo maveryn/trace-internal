@@ -24,7 +24,7 @@ generation:
       original_max_height_max: 5
       total_cubes_max: 22
       removal_count_min: 1
-      removal_count_max: 6
+      removal_count_max: 5
       balanced_task_variant_sampling: true
       balanced_scene_variant_sampling: true
       task_variant_weights:

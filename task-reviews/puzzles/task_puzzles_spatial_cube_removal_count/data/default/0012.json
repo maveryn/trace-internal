@@ -39,11 +39,11 @@
     },
     "complexity": {
       "complexity_components": {
-        "reasoning_load": 0.43750000000000006,
+        "reasoning_load": 0.4475,
         "scene_variant_load": 0.12,
         "visual_scan": 0.8888888888888888
       },
-      "complexity_score": 0.593
+      "complexity_score": 0.597
     },
     "evidence_gt": {
       "type": "bbox_set",
@@ -577,7 +577,7 @@
       "removal_count": 2,
       "removal_count_range": [
         1,
-        6
+        5
       ],
       "removed_cube_records": [
         {

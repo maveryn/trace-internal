@@ -10,17 +10,17 @@
     },
     "checks": {
       "max_answer_frequency": {
-        "observed": 0.2,
+        "observed": 0.24,
         "pass": true,
         "threshold": 0.25
       },
       "max_five_bin_frequency": {
-        "observed": 0.31,
+        "observed": 0.24,
         "pass": null,
         "status": "reported_not_gated_numeric_answers"
       },
       "min_unique_answers": {
-        "observed": 6,
+        "observed": 5,
         "pass": true,
         "threshold": 5
       }
@@ -31,65 +31,61 @@
         {
           "bin_id": 0,
           "count": 17,
-          "label": "[1, 2)"
+          "label": "[1, 1.8)"
         },
         {
           "bin_id": 1,
           "count": 19,
-          "label": "[2, 3)"
+          "label": "[1.8, 2.6)"
         },
         {
           "bin_id": 2,
-          "count": 17,
-          "label": "[3, 4)"
+          "count": 18,
+          "label": "[2.6, 3.4)"
         },
         {
           "bin_id": 3,
-          "count": 16,
-          "label": "[4, 5)"
+          "count": 22,
+          "label": "[3.4, 4.2)"
         },
         {
           "bin_id": 4,
-          "count": 31,
-          "label": "[5, 6]"
+          "count": 24,
+          "label": "[4.2, 5]"
         }
       ],
-      "max_bin_count": 31,
-      "max_bin_frequency": 0.31,
-      "range_max": 6.0,
+      "max_bin_count": 24,
+      "max_bin_frequency": 0.24,
+      "range_max": 5.0,
       "range_min": 1.0
     },
-    "max_answer_count": 20,
-    "max_answer_frequency": 0.2,
+    "max_answer_count": 24,
+    "max_answer_frequency": 0.24,
     "pass": true,
     "sample_count": 100,
     "top_answers": [
       {
-        "answer_label": "6",
-        "count": 20
+        "answer_label": "5",
+        "count": 24
+      },
+      {
+        "answer_label": "4",
+        "count": 22
       },
       {
         "answer_label": "2",
         "count": 19
       },
       {
+        "answer_label": "3",
+        "count": 18
+      },
+      {
         "answer_label": "1",
         "count": 17
-      },
-      {
-        "answer_label": "3",
-        "count": 17
-      },
-      {
-        "answer_label": "4",
-        "count": 16
-      },
-      {
-        "answer_label": "5",
-        "count": 11
       }
     ],
-    "unique_answers": 6
+    "unique_answers": 5
   },
   "pass": true,
   "per_task_variant": {
@@ -99,17 +95,17 @@
       },
       "checks": {
         "max_answer_frequency": {
-          "observed": 0.2,
+          "observed": 0.24,
           "pass": true,
           "threshold": 0.25
         },
         "max_five_bin_frequency": {
-          "observed": 0.31,
+          "observed": 0.24,
           "pass": null,
           "status": "reported_not_gated_numeric_answers"
         },
         "min_unique_answers": {
-          "observed": 6,
+          "observed": 5,
           "pass": true,
           "threshold": 5
         }
@@ -120,65 +116,61 @@
           {
             "bin_id": 0,
             "count": 17,
-            "label": "[1, 2)"
+            "label": "[1, 1.8)"
           },
           {
             "bin_id": 1,
             "count": 19,
-            "label": "[2, 3)"
+            "label": "[1.8, 2.6)"
           },
           {
             "bin_id": 2,
-            "count": 17,
-            "label": "[3, 4)"
+            "count": 18,
+            "label": "[2.6, 3.4)"
           },
           {
             "bin_id": 3,
-            "count": 16,
-            "label": "[4, 5)"
+            "count": 22,
+            "label": "[3.4, 4.2)"
           },
           {
             "bin_id": 4,
-            "count": 31,
-            "label": "[5, 6]"
+            "count": 24,
+            "label": "[4.2, 5]"
           }
         ],
-        "max_bin_count": 31,
-        "max_bin_frequency": 0.31,
-        "range_max": 6.0,
+        "max_bin_count": 24,
+        "max_bin_frequency": 0.24,
+        "range_max": 5.0,
         "range_min": 1.0
       },
-      "max_answer_count": 20,
-      "max_answer_frequency": 0.2,
+      "max_answer_count": 24,
+      "max_answer_frequency": 0.24,
       "pass": true,
       "sample_count": 100,
       "top_answers": [
         {
-          "answer_label": "6",
-          "count": 20
+          "answer_label": "5",
+          "count": 24
+        },
+        {
+          "answer_label": "4",
+          "count": 22
         },
         {
           "answer_label": "2",
           "count": 19
         },
         {
+          "answer_label": "3",
+          "count": 18
+        },
+        {
           "answer_label": "1",
           "count": 17
-        },
-        {
-          "answer_label": "3",
-          "count": 17
-        },
-        {
-          "answer_label": "4",
-          "count": 16
-        },
-        {
-          "answer_label": "5",
-          "count": 11
         }
       ],
-      "unique_answers": 6
+      "unique_answers": 5
     }
   },
   "sampling_axes": {

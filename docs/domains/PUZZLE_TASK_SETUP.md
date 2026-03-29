@@ -8,6 +8,7 @@ Capture the active v1 contract for the `puzzles` domain.
    - `arithmetic`
    - `logic`
    - `spatial`
+   - `topology`
 2. Current active tasks:
    - `task_puzzles_arithmetic_equation_value`
    - `task_puzzles_arithmetic_balance_value`
@@ -15,13 +16,15 @@ Capture the active v1 contract for the `puzzles` domain.
    - `task_puzzles_logic_grid_completion_label`
    - `task_puzzles_spatial_fold_result_label`
    - `task_puzzles_spatial_cube_removal_count`
+   - `task_puzzles_topology_bead_equivalence_count`
 
 ## Family contract
 1. Puzzle families are hidden-rule / hidden-variable reasoning families, not generic icon grids or mini tables.
 2. The active arithmetic family centers on explicit local query targets so the prompt-facing evidence can stay local and simple.
 3. The active logic family currently centers on one missing grid cell plus six labeled image options, so the answer format can stay `option_letter` while the evidence stays local to one option panel.
 4. The active spatial family currently mixes option-based fold-result puzzles and integer cube-removal comparison puzzles, while keeping the prompt-facing evidence local to one winning option image or one ordered pair of visible structure regions.
-5. Puzzle variants should widen `task_variant` before creating a new task id when the same scene grammar and evidence contract still hold.
+5. The active topology family currently uses one reference bead loop plus several labeled option loops and counts the options that preserve a cyclic order rule under deformation.
+6. Puzzle variants should widen `task_variant` before creating a new task id when the same scene grammar and evidence contract still hold.
 
 ## `task_puzzles_arithmetic_equation_value`
 1. Supported `task_variant` values:
@@ -183,6 +186,7 @@ Capture the active v1 contract for the `puzzles` domain.
    - the left structure is the original block and the right structure is the remaining block after cubes were removed,
    - both structures share the same viewpoint and shared rendering scale,
    - only visible cube faces are rendered in the image and the removed cubes remain implicit,
+   - removal counts default to the support `1..5`,
    - the prompt asks for the number of cubes taken from the original block,
    - the answer is that removal count as an integer.
 6. Trace contract:
@@ -191,6 +195,34 @@ Capture the active v1 contract for the `puzzles` domain.
    - `render_map.structure_bboxes_px` stores visible structure regions keyed by `structure_bbox_id`,
    - `execution_trace` stores `original_height_rows`, `remaining_height_rows`, `row_count`, `col_count`, `original_max_height`, `original_total_cubes`, `remaining_total_cubes`, `removal_count`, `changed_column_count`, `original_cube_records`, `remaining_cube_records`, `removed_cube_records`, `original_structure_bbox_id`, `remaining_structure_bbox_id`, `supporting_structure_ids`, and `solver_trace`,
    - prompt-facing evidence is projected from the ordered visible structure ids, not from fake removed-cube image boxes.
+
+## `task_puzzles_topology_bead_equivalence_count`
+1. Supported `task_variant` values:
+   - `color_cycle_count`
+   - `shape_cycle_count`
+   - `mixed_cycle_count`
+2. Supported `scene_variant` values:
+   - `loop_strip`
+   - `loop_card`
+   - `loop_outline`
+3. Answer contract:
+   - `answer_gt.type = integer`
+4. Evidence contract:
+   - `evidence_gt.type = bbox_set`
+   - one bbox for each valid option image, ordered left to right and then top to bottom
+5. Scene contract:
+   - one reference bead loop appears above several labeled option loops,
+   - the loops may vary between circle-like, wide, and tall silhouettes while preserving bead order around each loop,
+   - the prompt explicitly allows rotation and smooth deformation but forbids cutting, bead crossing, and flipping the loop over,
+   - option counts default to `6..7`,
+   - valid-option counts default to `1..5`,
+   - the answer is the number of valid option loops as an integer.
+6. Trace contract:
+   - `scene_ir.entities` includes `puzzle_topology_reference_panel`, `puzzle_topology_reference_label`, `puzzle_topology_reference_loop`, `puzzle_topology_reference_bead`, `puzzle_topology_option_choice`, `puzzle_topology_option_label`, `puzzle_topology_option_loop`, and `puzzle_topology_option_bead` entities,
+   - `render_map.reference_loop_bbox_px` stores the projected reference loop bbox,
+   - `render_map.option_choice_bboxes_px` stores option-image bboxes keyed by `option_choice_id`,
+   - `execution_trace` stores `reference_token_sequence`, `reference_loop_shape_variant`, `reference_start_angle_deg`, `option_specs`, `option_count`, `option_count_range`, `valid_option_count`, `valid_option_count_range`, `bead_count`, `bead_count_range`, `valid_option_choice_ids`, `valid_option_labels`, `supporting_option_choice_ids`, `equivalence_rule`, and `solver_trace`,
+   - prompt-facing evidence is projected from the ordered `valid_option_choice_ids`, not inferred from pixels.
 
 ## Prompt contract for `task_puzzles_arithmetic_equation_value`
 1. Bundle: `puzzles_arithmetic_v1`
@@ -257,6 +289,17 @@ Capture the active v1 contract for the `puzzles` domain.
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
    - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
 6. Prompt-facing evidence wording should always make the two-box contract explicit: the returned bboxes are ordered `[original block on the left, remaining block on the right]`.
+
+## Prompt contract for `task_puzzles_topology_bead_equivalence_count`
+1. Bundle: `puzzles_topology_v1`
+2. `task_family_key`: `topology_bead_equivalence_puzzle`
+3. `task_key`: `bead_equivalence_count_query`
+4. `task_variant_key`: `color_cycle_count|shape_cycle_count|mixed_cycle_count`
+5. Required slots:
+   - task-family: `object_description`
+   - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
+   - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
+6. Prompt-facing wording should always make the rule explicit: rotation and smooth deformation are allowed, but cutting, bead crossing, and reflection/flipping are not.
 
 ## Visual policy
 1. Puzzles use the same light solid background baseline as the other clean synthetic domains.

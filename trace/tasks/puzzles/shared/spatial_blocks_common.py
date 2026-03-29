@@ -42,7 +42,7 @@ class PuzzleCubeRemovalDefaults:
     original_max_height_max: int = 5
     total_cubes_max: int = 22
     removal_count_min: int = 1
-    removal_count_max: int = 6
+    removal_count_max: int = 5
 
 
 @dataclass(frozen=True)

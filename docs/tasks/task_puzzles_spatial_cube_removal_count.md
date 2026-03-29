@@ -27,7 +27,7 @@
    - footprint width and depth default to `2..4`,
    - original maximum stack height defaults to `2..5`,
    - total original cubes are capped by config so the structures remain readable,
-   - removal count defaults to `1..6`,
+   - removal count defaults to `1..5`,
    - every accepted scene keeps both structures non-empty and leaves at least one cube in every remaining occupied column,
    - the remaining structure is derived exactly from the original structure by removing whole top cubes from one or more columns.
 

@@ -58,6 +58,7 @@ from .puzzles.arithmetic import grid_value as _task_puzzles_arithmetic_grid_valu
 from .puzzles.logic import grid_completion_label as _task_puzzles_logic_grid_completion_label
 from .puzzles.spatial import cube_removal_count as _task_puzzles_spatial_cube_removal_count
 from .puzzles.spatial import fold_result_label as _task_puzzles_spatial_fold_result_label
+from .puzzles.topology import bead_equivalence_count as _task_puzzles_topology_bead_equivalence_count
 from .tile import count_color_components as _task_tile_count_color_components
 from .tile import count_color_count as _task_tile_count_color_count
 from .tile import count_largest_component_size as _task_tile_count_largest_component_size

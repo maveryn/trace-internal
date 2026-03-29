@@ -1,0 +1,744 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 5
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "A",
+      "B",
+      "C",
+      "F",
+      "G"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_counting_value/images/equilateral_triangle/0018.png"
+  },
+  "instance_seed": 8921824082410438,
+  "prompt": "Use the diagram showing several labeled triangles. Question: How many labeled triangles are equilateral triangles?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a sorted JSON array of the labels of all triangles that match the requested type.\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the diagram showing several labeled triangles. Question: How many labeled triangles are equilateral triangles?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a sorted JSON array of the labels of all triangles that match the requested type.\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+    "answer_only": "Use the diagram showing several labeled triangles. Question: How many labeled triangles are equilateral triangles?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_geometry_counting_value",
+  "task_variant": "equilateral_triangle",
+  "trace_payload": {
+    "execution_trace": {
+      "class_by_label": {
+        "A": {
+          "angle_kind": "acute",
+          "side_kind": "equilateral"
+        },
+        "B": {
+          "angle_kind": "acute",
+          "side_kind": "equilateral"
+        },
+        "C": {
+          "angle_kind": "acute",
+          "side_kind": "equilateral"
+        },
+        "D": {
+          "angle_kind": "acute",
+          "side_kind": "scalene"
+        },
+        "E": {
+          "angle_kind": "obtuse",
+          "side_kind": "scalene"
+        },
+        "F": {
+          "angle_kind": "acute",
+          "side_kind": "equilateral"
+        },
+        "G": {
+          "angle_kind": "acute",
+          "side_kind": "equilateral"
+        }
+      },
+      "counting_class": "equilateral",
+      "legacy_query_variant": "equilateral_triangle",
+      "legacy_scene_variant": "equilateral_triangle",
+      "legacy_task_id": "task_geometry_counting_triangle",
+      "matching_labels": [
+        "A",
+        "B",
+        "C",
+        "F",
+        "G"
+      ],
+      "object_count": 7,
+      "object_count_probabilities": {
+        "6": 0.3333333333333333,
+        "7": 0.3333333333333333,
+        "8": 0.3333333333333333
+      },
+      "object_labels": [
+        "E",
+        "A",
+        "D",
+        "G",
+        "F",
+        "B",
+        "C"
+      ],
+      "query_variant": "equilateral_triangle",
+      "query_variant_probabilities": {
+        "acute_angle": 0.0,
+        "acute_triangle": 0.0,
+        "circle": 0.0,
+        "concave_polygon": 0.0,
+        "convex_polygon": 0.0,
+        "ellipse": 0.0,
+        "equilateral_triangle": 1.0,
+        "hexagon": 0.0,
+        "isosceles_triangle": 0.0,
+        "obtuse_angle": 0.0,
+        "obtuse_triangle": 0.0,
+        "parallelogram_only": 0.0,
+        "pentagon": 0.0,
+        "quadrilateral": 0.0,
+        "rectangle_non_square": 0.0,
+        "rhombus_non_square": 0.0,
+        "right_angle": 0.0,
+        "right_triangle": 0.0,
+        "scalene_triangle": 0.0,
+        "square": 0.0,
+        "triangle": 0.0
+      },
+      "question_format": "count_matching_labeled_objects",
+      "scene_variant": "triangle",
+      "scene_variant_probabilities": {
+        "angle": 0.0,
+        "mixed_shape": 0.0,
+        "polygon": 0.0,
+        "quadrilateral": 0.0,
+        "triangle": 1.0
+      },
+      "target_count": 5,
+      "target_count_probabilities": {
+        "1": 0.14285714285714285,
+        "2": 0.14285714285714285,
+        "3": 0.14285714285714285,
+        "4": 0.14285714285714285,
+        "5": 0.14285714285714285,
+        "6": 0.14285714285714285,
+        "7": 0.14285714285714285
+      },
+      "task_variant": "equilateral_triangle",
+      "task_variant_probabilities": {
+        "acute_angle": 0.0,
+        "acute_triangle": 0.0,
+        "circle": 0.0,
+        "concave_polygon": 0.0,
+        "convex_polygon": 0.0,
+        "ellipse": 0.0,
+        "equilateral_triangle": 1.0,
+        "hexagon": 0.0,
+        "isosceles_triangle": 0.0,
+        "obtuse_angle": 0.0,
+        "obtuse_triangle": 0.0,
+        "parallelogram_only": 0.0,
+        "pentagon": 0.0,
+        "quadrilateral": 0.0,
+        "rectangle_non_square": 0.0,
+        "rhombus_non_square": 0.0,
+        "right_angle": 0.0,
+        "right_triangle": 0.0,
+        "scalene_triangle": 0.0,
+        "square": 0.0,
+        "triangle": 0.0
+      }
+    },
+    "projected_evidence": {
+      "label_set": [
+        "A",
+        "B",
+        "C",
+        "F",
+        "G"
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "legacy_query_variant": "equilateral_triangle",
+        "legacy_scene_variant": "equilateral_triangle",
+        "legacy_task_id": "task_geometry_counting_triangle",
+        "object_count": 7,
+        "object_count_probabilities": {
+          "6": 0.3333333333333333,
+          "7": 0.3333333333333333,
+          "8": 0.3333333333333333
+        },
+        "query_variant": "equilateral_triangle",
+        "query_variant_probabilities": {
+          "acute_angle": 0.0,
+          "acute_triangle": 0.0,
+          "circle": 0.0,
+          "concave_polygon": 0.0,
+          "convex_polygon": 0.0,
+          "ellipse": 0.0,
+          "equilateral_triangle": 1.0,
+          "hexagon": 0.0,
+          "isosceles_triangle": 0.0,
+          "obtuse_angle": 0.0,
+          "obtuse_triangle": 0.0,
+          "parallelogram_only": 0.0,
+          "pentagon": 0.0,
+          "quadrilateral": 0.0,
+          "rectangle_non_square": 0.0,
+          "rhombus_non_square": 0.0,
+          "right_angle": 0.0,
+          "right_triangle": 0.0,
+          "scalene_triangle": 0.0,
+          "square": 0.0,
+          "triangle": 0.0
+        },
+        "scene_variant": "triangle",
+        "scene_variant_probabilities": {
+          "angle": 0.0,
+          "mixed_shape": 0.0,
+          "polygon": 0.0,
+          "quadrilateral": 0.0,
+          "triangle": 1.0
+        },
+        "target_count": 5,
+        "target_count_probabilities": {
+          "1": 0.14285714285714285,
+          "2": 0.14285714285714285,
+          "3": 0.14285714285714285,
+          "4": 0.14285714285714285,
+          "5": 0.14285714285714285,
+          "6": 0.14285714285714285,
+          "7": 0.14285714285714285
+        },
+        "task_variant": "equilateral_triangle",
+        "variant_probabilities": {
+          "acute_angle": 0.0,
+          "acute_triangle": 0.0,
+          "circle": 0.0,
+          "concave_polygon": 0.0,
+          "convex_polygon": 0.0,
+          "ellipse": 0.0,
+          "equilateral_triangle": 1.0,
+          "hexagon": 0.0,
+          "isosceles_triangle": 0.0,
+          "obtuse_angle": 0.0,
+          "obtuse_triangle": 0.0,
+          "parallelogram_only": 0.0,
+          "pentagon": 0.0,
+          "quadrilateral": 0.0,
+          "rectangle_non_square": 0.0,
+          "rhombus_non_square": 0.0,
+          "right_angle": 0.0,
+          "right_triangle": 0.0,
+          "scalene_triangle": 0.0,
+          "square": 0.0,
+          "triangle": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "geometry_counting_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all triangles that match the requested type",
+          "json_example": "{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "several labeled triangles",
+          "question_text": "How many labeled triangles are equilateral triangles?"
+        },
+        "task_family_key": "counting_scene",
+        "task_family_variant_index": 3,
+        "task_key": "counting_query",
+        "task_variant_index": 1,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/counting/geometry_counting_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:counting_query": 5,
+          "task_family:counting_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "geometry_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all triangles that match the requested type",
+              "json_example": "{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled triangles",
+              "question_text": "How many labeled triangles are equilateral triangles?"
+            },
+            "task_family_key": "counting_scene",
+            "task_family_variant_index": 3,
+            "task_key": "counting_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/counting/geometry_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:counting_query": 5,
+              "task_family:counting_scene": 5
+            }
+          },
+          "prompt": "Use the diagram showing several labeled triangles. Question: How many labeled triangles are equilateral triangles?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a sorted JSON array of the labels of all triangles that match the requested type.\nAnswer field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all triangles that match the requested type",
+              "json_example": "{\"evidence\":[\"A\",\"C\",\"F\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled triangles",
+              "question_text": "How many labeled triangles are equilateral triangles?"
+            },
+            "task_family_key": "counting_scene",
+            "task_family_variant_index": 3,
+            "task_key": "counting_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/counting/geometry_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:counting_query": 5,
+              "task_family:counting_scene": 5
+            }
+          },
+          "prompt": "Use the diagram showing several labeled triangles. Question: How many labeled triangles are equilateral triangles?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "equilateral_triangle",
+      "template_id": "geometry_counting_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching": {
+          "matching_labels": [
+            "A",
+            "B",
+            "C",
+            "F",
+            "G"
+          ],
+          "task_variant": "equilateral_triangle"
+        }
+      },
+      "image_id": "img0",
+      "object_label_centers": {
+        "A": [
+          609.3985681456298,
+          519.1731346187871
+        ],
+        "B": [
+          436.4113589456058,
+          520.951825360567
+        ],
+        "C": [
+          455.2580984345796,
+          147.11285234813053
+        ],
+        "D": [
+          20.28686038178562,
+          463.4251192410668
+        ],
+        "E": [
+          638.400616217201,
+          185.91394427430043
+        ],
+        "F": [
+          199.3216444335028,
+          164.10791889764744
+        ],
+        "G": [
+          227.90344509376027,
+          519.65947369248
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_cool",
+        "style_spec": {
+          "color": [
+            246,
+            248,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 664,
+      "coord_space": "pixel",
+      "layout_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 26,
+        "full_cells_y": 26,
+        "origin_pixel": [
+          332,
+          332
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 23,
+        "target_cells_x": 29,
+        "target_cells_y": 29,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "legacy_scene_variant": "equilateral_triangle",
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "quality": 89.0
+            },
+            "type": "jpeg"
+          }
+        ],
+        "enabled": true
+      },
+      "query_variant": "equilateral_triangle",
+      "scene_variant": "triangle",
+      "shape_style": {
+        "label_color": [
+          84,
+          140,
+          38
+        ],
+        "label_stroke_color": [
+          253,
+          248,
+          252
+        ],
+        "line_color": [
+          84,
+          140,
+          38
+        ]
+      },
+      "text_style": {
+        "font_size_px": 90,
+        "stroke_width_px": 3
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "angle_kind": "obtuse",
+            "angles_degrees": [
+              41.87351619943165,
+              107.93969306155832,
+              30.18679073901002
+            ],
+            "label": "E",
+            "side_kind": "scalene",
+            "side_lengths": [
+              4.0228405144944075,
+              5.7338146800131895,
+              3.0304156198320937
+            ],
+            "vertices": [
+              [
+                529.0338729409116,
+                223.34228851641993
+              ],
+              [
+                598.7334321970498,
+                223.34228851641993
+              ],
+              [
+                627.2326948620387,
+                135.31542296716015
+              ]
+            ]
+          },
+          "entity_id": "triangle_E",
+          "entity_type": "triangle"
+        },
+        {
+          "attrs": {
+            "angle_kind": "acute",
+            "angles_degrees": [
+              60.00000000000001,
+              60.00000000000001,
+              59.99999999999999
+            ],
+            "label": "A",
+            "side_kind": "equilateral",
+            "side_lengths": [
+              3.3380004621389596,
+              3.3380004621389596,
+              3.3380004621389596
+            ],
+            "vertices": [
+              [
+                546.612994685402,
+                492.16274785176677
+              ],
+              [
+                623.3870053145981,
+                492.16274785176677
+              ],
+              [
+                585.0,
+                425.67450429646647
+              ]
+            ]
+          },
+          "entity_id": "triangle_A",
+          "entity_type": "triangle"
+        },
+        {
+          "attrs": {
+            "angle_kind": "acute",
+            "angles_degrees": [
+              64.67959098160297,
+              47.33140963327722,
+              67.98899938511981
+            ],
+            "label": "D",
+            "side_kind": "scalene",
+            "side_lengths": [
+              4.553587498198582,
+              3.7040360484338204,
+              4.670366048049736
+            ],
+            "vertices": [
+              [
+                31.048774140783337,
+                495.66945887947406
+              ],
+              [
+                138.46719324592726,
+                495.66945887947406
+              ],
+              [
+                67.4840326132894,
+                418.66108224105176
+              ]
+            ]
+          },
+          "entity_id": "triangle_D",
+          "entity_type": "triangle"
+        },
+        {
+          "attrs": {
+            "angle_kind": "acute",
+            "angles_degrees": [
+              60.00000000000001,
+              60.00000000000001,
+              59.99999999999999
+            ],
+            "label": "G",
+            "side_kind": "equilateral",
+            "side_lengths": [
+              3.1080294540131006,
+              3.1080294540131006,
+              3.1080294540131006
+            ],
+            "vertices": [
+              [
+                204.25766127884935,
+                490.6358488821231
+              ],
+              [
+                275.74233872115065,
+                490.6358488821231
+              ],
+              [
+                240.0,
+                428.72830223575374
+              ]
+            ]
+          },
+          "entity_id": "triangle_G",
+          "entity_type": "triangle"
+        },
+        {
+          "attrs": {
+            "angle_kind": "acute",
+            "angles_degrees": [
+              59.99999999999999,
+              59.99999999999999,
+              60.00000000000001
+            ],
+            "label": "F",
+            "side_kind": "equilateral",
+            "side_lengths": [
+              3.990541022864847,
+              3.990541022864847,
+              3.9905410228648477
+            ],
+            "vertices": [
+              [
+                194.10877823705425,
+                220.4953092382775
+              ],
+              [
+                285.89122176294575,
+                220.4953092382775
+              ],
+              [
+                240.0,
+                141.00938152344494
+              ]
+            ]
+          },
+          "entity_id": "triangle_F",
+          "entity_type": "triangle"
+        },
+        {
+          "attrs": {
+            "angle_kind": "acute",
+            "angles_degrees": [
+              60.00000000000001,
+              60.00000000000001,
+              59.99999999999999
+            ],
+            "label": "B",
+            "side_kind": "equilateral",
+            "side_lengths": [
+              4.145587756691442,
+              4.145587756691442,
+              4.145587756691442
+            ],
+            "vertices": [
+              [
+                376.3257407980484,
+                497.5247463836628
+              ],
+              [
+                471.6742592019516,
+                497.5247463836628
+              ],
+              [
+                424.0,
+                414.9505072326745
+              ]
+            ]
+          },
+          "entity_id": "triangle_B",
+          "entity_type": "triangle"
+        },
+        {
+          "attrs": {
+            "angle_kind": "acute",
+            "angles_degrees": [
+              60.00000000000001,
+              60.00000000000001,
+              59.99999999999999
+            ],
+            "label": "C",
+            "side_kind": "equilateral",
+            "side_lengths": [
+              3.4266548093456253,
+              3.4266548093456253,
+              3.4266548093456253
+            ],
+            "vertices": [
+              [
+                384.59346969252533,
+                216.75137088084966
+              ],
+              [
+                463.40653030747467,
+                216.75137088084966
+              ],
+              [
+                424.0,
+                148.4972582383007
+              ]
+            ]
+          },
+          "entity_id": "triangle_C",
+          "entity_type": "triangle"
+        }
+      ],
+      "relations": {
+        "counting_target": "triangle_class",
+        "legacy_query_variant": "equilateral_triangle",
+        "legacy_scene_variant": "equilateral_triangle",
+        "legacy_task_id": "task_geometry_counting_triangle",
+        "matching_labels": [
+          "A",
+          "B",
+          "C",
+          "F",
+          "G"
+        ],
+        "query_variant": "equilateral_triangle",
+        "scene_variant": "triangle",
+        "task_variant": "equilateral_triangle"
+      },
+      "scene_kind": "geometry_2d_triangle_counting"
+    },
+    "witness_symbolic": {
+      "counting_class": "equilateral",
+      "matching_labels": [
+        "A",
+        "B",
+        "C",
+        "F",
+        "G"
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

@@ -1,0 +1,679 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 4
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "B",
+      "C",
+      "E",
+      "G"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_counting_value/images/acute_angle/0009.png"
+  },
+  "instance_seed": 4914352247394446,
+  "prompt": "Look at the image showing several labeled angles. Determine the answer: How many labeled angles are acute angles?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a sorted JSON array of the labels of all angles that match the requested type.\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"D\"],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the image showing several labeled angles. Determine the answer: How many labeled angles are acute angles?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a sorted JSON array of the labels of all angles that match the requested type.\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"D\"],\"answer\":2}",
+    "answer_only": "Look at the image showing several labeled angles. Determine the answer: How many labeled angles are acute angles?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_geometry_counting_value",
+  "task_variant": "acute_angle",
+  "trace_payload": {
+    "execution_trace": {
+      "class_by_label": {
+        "A": "obtuse",
+        "B": "acute",
+        "C": "acute",
+        "D": "obtuse",
+        "E": "acute",
+        "F": "obtuse",
+        "G": "acute"
+      },
+      "counting_class": "acute",
+      "legacy_query_variant": "acute_angle",
+      "legacy_scene_variant": "acute_angle",
+      "legacy_task_id": "task_geometry_counting_angle",
+      "matching_labels": [
+        "B",
+        "C",
+        "E",
+        "G"
+      ],
+      "object_count": 7,
+      "object_count_probabilities": {
+        "10": 0.2,
+        "6": 0.2,
+        "7": 0.2,
+        "8": 0.2,
+        "9": 0.2
+      },
+      "object_labels": [
+        "C",
+        "A",
+        "F",
+        "E",
+        "D",
+        "B",
+        "G"
+      ],
+      "query_variant": "acute_angle",
+      "query_variant_probabilities": {
+        "acute_angle": 1.0,
+        "acute_triangle": 0.0,
+        "circle": 0.0,
+        "concave_polygon": 0.0,
+        "convex_polygon": 0.0,
+        "ellipse": 0.0,
+        "equilateral_triangle": 0.0,
+        "hexagon": 0.0,
+        "isosceles_triangle": 0.0,
+        "obtuse_angle": 0.0,
+        "obtuse_triangle": 0.0,
+        "parallelogram_only": 0.0,
+        "pentagon": 0.0,
+        "quadrilateral": 0.0,
+        "rectangle_non_square": 0.0,
+        "rhombus_non_square": 0.0,
+        "right_angle": 0.0,
+        "right_triangle": 0.0,
+        "scalene_triangle": 0.0,
+        "square": 0.0,
+        "triangle": 0.0
+      },
+      "question_format": "count_matching_labeled_objects",
+      "scene_variant": "angle",
+      "scene_variant_probabilities": {
+        "angle": 1.0,
+        "mixed_shape": 0.0,
+        "polygon": 0.0,
+        "quadrilateral": 0.0,
+        "triangle": 0.0
+      },
+      "target_count": 4,
+      "target_count_probabilities": {
+        "1": 0.16666666666666666,
+        "2": 0.16666666666666666,
+        "3": 0.16666666666666666,
+        "4": 0.16666666666666666,
+        "5": 0.16666666666666666,
+        "6": 0.16666666666666666
+      },
+      "task_variant": "acute_angle",
+      "task_variant_probabilities": {
+        "acute_angle": 1.0,
+        "acute_triangle": 0.0,
+        "circle": 0.0,
+        "concave_polygon": 0.0,
+        "convex_polygon": 0.0,
+        "ellipse": 0.0,
+        "equilateral_triangle": 0.0,
+        "hexagon": 0.0,
+        "isosceles_triangle": 0.0,
+        "obtuse_angle": 0.0,
+        "obtuse_triangle": 0.0,
+        "parallelogram_only": 0.0,
+        "pentagon": 0.0,
+        "quadrilateral": 0.0,
+        "rectangle_non_square": 0.0,
+        "rhombus_non_square": 0.0,
+        "right_angle": 0.0,
+        "right_triangle": 0.0,
+        "scalene_triangle": 0.0,
+        "square": 0.0,
+        "triangle": 0.0
+      }
+    },
+    "projected_evidence": {
+      "label_set": [
+        "B",
+        "C",
+        "E",
+        "G"
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "angle_step": 1,
+        "boundary_margin_degrees": 10.0,
+        "legacy_query_variant": "acute_angle",
+        "legacy_scene_variant": "acute_angle",
+        "legacy_task_id": "task_geometry_counting_angle",
+        "max_angle": 155,
+        "min_angle": 25,
+        "object_count": 7,
+        "object_count_probabilities": {
+          "10": 0.2,
+          "6": 0.2,
+          "7": 0.2,
+          "8": 0.2,
+          "9": 0.2
+        },
+        "query_variant": "acute_angle",
+        "query_variant_probabilities": {
+          "acute_angle": 1.0,
+          "acute_triangle": 0.0,
+          "circle": 0.0,
+          "concave_polygon": 0.0,
+          "convex_polygon": 0.0,
+          "ellipse": 0.0,
+          "equilateral_triangle": 0.0,
+          "hexagon": 0.0,
+          "isosceles_triangle": 0.0,
+          "obtuse_angle": 0.0,
+          "obtuse_triangle": 0.0,
+          "parallelogram_only": 0.0,
+          "pentagon": 0.0,
+          "quadrilateral": 0.0,
+          "rectangle_non_square": 0.0,
+          "rhombus_non_square": 0.0,
+          "right_angle": 0.0,
+          "right_triangle": 0.0,
+          "scalene_triangle": 0.0,
+          "square": 0.0,
+          "triangle": 0.0
+        },
+        "scene_variant": "angle",
+        "scene_variant_probabilities": {
+          "angle": 1.0,
+          "mixed_shape": 0.0,
+          "polygon": 0.0,
+          "quadrilateral": 0.0,
+          "triangle": 0.0
+        },
+        "target_count": 4,
+        "target_count_probabilities": {
+          "1": 0.16666666666666666,
+          "2": 0.16666666666666666,
+          "3": 0.16666666666666666,
+          "4": 0.16666666666666666,
+          "5": 0.16666666666666666,
+          "6": 0.16666666666666666
+        },
+        "task_variant": "acute_angle",
+        "variant_probabilities": {
+          "acute_angle": 1.0,
+          "acute_triangle": 0.0,
+          "circle": 0.0,
+          "concave_polygon": 0.0,
+          "convex_polygon": 0.0,
+          "ellipse": 0.0,
+          "equilateral_triangle": 0.0,
+          "hexagon": 0.0,
+          "isosceles_triangle": 0.0,
+          "obtuse_angle": 0.0,
+          "obtuse_triangle": 0.0,
+          "parallelogram_only": 0.0,
+          "pentagon": 0.0,
+          "quadrilateral": 0.0,
+          "rectangle_non_square": 0.0,
+          "rhombus_non_square": 0.0,
+          "right_angle": 0.0,
+          "right_triangle": 0.0,
+          "scalene_triangle": 0.0,
+          "square": 0.0,
+          "triangle": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "geometry_counting_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the count as an integer",
+          "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all angles that match the requested type",
+          "json_example": "{\"evidence\":[\"B\",\"D\"],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "several labeled angles",
+          "question_text": "How many labeled angles are acute angles?"
+        },
+        "task_family_key": "counting_scene",
+        "task_family_variant_index": 2,
+        "task_key": "counting_query",
+        "task_variant_index": 4,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/counting/geometry_counting_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:counting_query": 5,
+          "task_family:counting_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all angles that match the requested type",
+              "json_example": "{\"evidence\":[\"B\",\"D\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled angles",
+              "question_text": "How many labeled angles are acute angles?"
+            },
+            "task_family_key": "counting_scene",
+            "task_family_variant_index": 2,
+            "task_key": "counting_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/counting/geometry_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:counting_query": 5,
+              "task_family:counting_scene": 5
+            }
+          },
+          "prompt": "Look at the image showing several labeled angles. Determine the answer: How many labeled angles are acute angles?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a sorted JSON array of the labels of all angles that match the requested type.\nAnswer rule: set \"answer\" to the count as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"D\"],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "geometry_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the count as an integer",
+              "evidence_hint": "set \"evidence\" to a sorted JSON array of the labels of all angles that match the requested type",
+              "json_example": "{\"evidence\":[\"B\",\"D\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled angles",
+              "question_text": "How many labeled angles are acute angles?"
+            },
+            "task_family_key": "counting_scene",
+            "task_family_variant_index": 2,
+            "task_key": "counting_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/counting/geometry_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:counting_query": 5,
+              "task_family:counting_scene": 5
+            }
+          },
+          "prompt": "Look at the image showing several labeled angles. Determine the answer: How many labeled angles are acute angles?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "acute_angle",
+      "template_id": "geometry_counting_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "matching": {
+          "matching_labels": [
+            "B",
+            "C",
+            "E",
+            "G"
+          ],
+          "task_variant": "acute_angle"
+        }
+      },
+      "image_id": "img0",
+      "object_label_centers": {
+        "A": [
+          277.2965724370434,
+          146.81080750672643
+        ],
+        "B": [
+          508.97931223446614,
+          385.412785608079
+        ],
+        "C": [
+          294.4145554881552,
+          385.8627256508066
+        ],
+        "D": [
+          375.0986354819508,
+          386.03983686244516
+        ],
+        "E": [
+          381.69896980194926,
+          148.8465617464966
+        ],
+        "F": [
+          196.9793122344662,
+          385.412785608079
+        ],
+        "G": [
+          512.5010808759938,
+          146.71479696458957
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_cool",
+        "style_spec": {
+          "color": [
+            246,
+            248,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 575,
+      "coord_space": "pixel",
+      "layout_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 22,
+        "full_cells_y": 22,
+        "origin_pixel": [
+          287,
+          287
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 24,
+        "target_cells_x": 24,
+        "target_cells_y": 24,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "legacy_scene_variant": "acute_angle",
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "scale": 0.948968
+            },
+            "type": "downsample"
+          }
+        ],
+        "enabled": true
+      },
+      "query_variant": "acute_angle",
+      "scene_variant": "angle",
+      "shape_style": {
+        "label_color": [
+          28,
+          26,
+          151
+        ],
+        "label_stroke_color": [
+          248,
+          250,
+          255
+        ],
+        "line_color": [
+          28,
+          26,
+          151
+        ]
+      },
+      "text_style": {
+        "font_size_px": 87,
+        "stroke_width_px": 3
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "angle_class": "acute",
+            "label": "C",
+            "points": {
+              "arm_a": [
+                167.0,
+                311.0
+              ],
+              "arm_b": [
+                119.0,
+                407.0
+              ],
+              "vertex": [
+                287.0,
+                407.0
+              ]
+            },
+            "raw_angle_degrees": 38.659808,
+            "target_angle_degrees": 39
+          },
+          "entity_id": "angle_C",
+          "entity_type": "angle"
+        },
+        {
+          "attrs": {
+            "angle_class": "obtuse",
+            "label": "A",
+            "points": {
+              "arm_a": [
+                383.0,
+                47.0
+              ],
+              "arm_b": [
+                167.0,
+                167.0
+              ],
+              "vertex": [
+                287.0,
+                167.0
+              ]
+            },
+            "raw_angle_degrees": 128.659808,
+            "target_angle_degrees": 129
+          },
+          "entity_id": "angle_A",
+          "entity_type": "angle"
+        },
+        {
+          "attrs": {
+            "angle_class": "obtuse",
+            "label": "F",
+            "points": {
+              "arm_a": [
+                263.0,
+                407.0
+              ],
+              "arm_b": [
+                71.0,
+                335.0
+              ],
+              "vertex": [
+                191.0,
+                407.0
+              ]
+            },
+            "raw_angle_degrees": 149.036243,
+            "target_angle_degrees": 149
+          },
+          "entity_id": "angle_F",
+          "entity_type": "angle"
+        },
+        {
+          "attrs": {
+            "angle_class": "acute",
+            "label": "E",
+            "points": {
+              "arm_a": [
+                287.0,
+                167.0
+              ],
+              "arm_b": [
+                335.0,
+                287.0
+              ],
+              "vertex": [
+                383.0,
+                167.0
+              ]
+            },
+            "raw_angle_degrees": 68.198591,
+            "target_angle_degrees": 68
+          },
+          "entity_id": "angle_E",
+          "entity_type": "angle"
+        },
+        {
+          "attrs": {
+            "angle_class": "obtuse",
+            "label": "D",
+            "points": {
+              "arm_a": [
+                407.0,
+                527.0
+              ],
+              "arm_b": [
+                287.0,
+                407.0
+              ],
+              "vertex": [
+                383.0,
+                407.0
+              ]
+            },
+            "raw_angle_degrees": 101.309932,
+            "target_angle_degrees": 101
+          },
+          "entity_id": "angle_D",
+          "entity_type": "angle"
+        },
+        {
+          "attrs": {
+            "angle_class": "acute",
+            "label": "B",
+            "points": {
+              "arm_a": [
+                383.0,
+                335.0
+              ],
+              "arm_b": [
+                359.0,
+                407.0
+              ],
+              "vertex": [
+                503.0,
+                407.0
+              ]
+            },
+            "raw_angle_degrees": 30.963757,
+            "target_angle_degrees": 31
+          },
+          "entity_id": "angle_B",
+          "entity_type": "angle"
+        },
+        {
+          "attrs": {
+            "angle_class": "acute",
+            "label": "G",
+            "points": {
+              "arm_a": [
+                431.0,
+                167.0
+              ],
+              "arm_b": [
+                383.0,
+                23.0
+              ],
+              "vertex": [
+                503.0,
+                167.0
+              ]
+            },
+            "raw_angle_degrees": 50.194429,
+            "target_angle_degrees": 50
+          },
+          "entity_id": "angle_G",
+          "entity_type": "angle"
+        }
+      ],
+      "frames": {
+        "layout_graph_unit": {
+          "origin_pixel": [
+            287,
+            287
+          ],
+          "spacing_px": 24,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "counting_target": "angle_class",
+        "legacy_query_variant": "acute_angle",
+        "legacy_scene_variant": "acute_angle",
+        "legacy_task_id": "task_geometry_counting_angle",
+        "matching_labels": [
+          "B",
+          "C",
+          "E",
+          "G"
+        ],
+        "query_variant": "acute_angle",
+        "scene_variant": "angle",
+        "task_variant": "acute_angle"
+      },
+      "scene_kind": "geometry_2d_angle_counting"
+    },
+    "witness_symbolic": {
+      "counting_class": "acute",
+      "matching_labels": [
+        "B",
+        "C",
+        "E",
+        "G"
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

@@ -1,0 +1,495 @@
+{
+  "answer_gt": {
+    "type": "number",
+    "value": 32.2
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "FG": 53,
+      "IH": 21,
+      "IJ": 28
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_2d_value/images/length/0002.png"
+  },
+  "instance_seed": 1635913320947028,
+  "prompt": "Use the image showing a geometric scene with measurement annotations. The isosceles trapezoid shows both bases and a height. What is the length of segment FI?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, IH, IJ.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"FG\":2,\"IH\":3,\"IJ\":4},\"answer\":42.3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the image showing a geometric scene with measurement annotations. The isosceles trapezoid shows both bases and a height. What is the length of segment FI?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, IH, IJ.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"FG\":2,\"IH\":3,\"IJ\":4},\"answer\":42.3}",
+    "answer_only": "Use the image showing a geometric scene with measurement annotations. The isosceles trapezoid shows both bases and a height. What is the length of segment FI?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+  },
+  "task": "task_geometry_analytical_2d_value",
+  "task_variant": "length",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 100,
+      "answer_min": 3,
+      "answer_scalar": 322,
+      "answer_type": "number",
+      "answer_value": 32.2,
+      "evidence_map": {
+        "FG": 53,
+        "IH": 21,
+        "IJ": 28
+      },
+      "evidence_role_tokens": {
+        "base_bottom": "FG",
+        "base_top": "IH",
+        "height": "IJ"
+      },
+      "evidence_role_values": {
+        "base_bottom": 53,
+        "base_top": 21,
+        "height": 28
+      },
+      "evidence_roles": [
+        "base_bottom",
+        "base_top",
+        "height"
+      ],
+      "formula_expression": "sqrt(height^2 + ((base_bottom - base_top)/2)^2)",
+      "legacy_query_variant": "isosceles_trapezoid_leg",
+      "legacy_scene_variant": "trapezoid",
+      "legacy_task_id": "task_geometry_analytical_2d_length",
+      "query_variant": "length",
+      "query_variant_probabilities": {
+        "area": 0.0,
+        "composite_area": 0.0,
+        "length": 1.0,
+        "perimeter": 0.0
+      },
+      "raw_answer_value": 32.2490309931942,
+      "required_annotations": [
+        "FG",
+        "IH",
+        "IJ"
+      ],
+      "scene_variant": "trapezoid",
+      "scene_variant_probabilities": {
+        "circle": 0.2,
+        "composite_region": 0.0,
+        "ellipse": 0.0,
+        "parallelogram": 0.0,
+        "rectangle": 0.2,
+        "rhombus": 0.2,
+        "trapezoid": 0.2,
+        "triangle": 0.2
+      },
+      "target_annotation": "FI",
+      "task_variant": "length",
+      "task_variant_probabilities": {
+        "area": 0.0,
+        "composite_area": 0.0,
+        "length": 1.0,
+        "perimeter": 0.0
+      },
+      "variant_probabilities": {
+        "circle_chord_length": 0.0,
+        "inscribed_square_side": 0.0,
+        "isosceles_trapezoid_leg": 1.0,
+        "rectangle_diagonal_side": 0.0,
+        "rhombus_diagonal_side": 0.0,
+        "triangle_altitude_side": 0.0
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "base_bottom": "FG",
+        "base_top": "IH",
+        "height": "IJ"
+      },
+      "id_set": [
+        "FG",
+        "IH",
+        "IJ"
+      ],
+      "measurement_ref_map": {
+        "FG": 53,
+        "IH": 21,
+        "IJ": 28
+      },
+      "pixel_annotation_centers": {
+        "FG": [
+          358.0,
+          622.2379623808325
+        ],
+        "IH": [
+          358.0,
+          319.7602265317759
+        ],
+        "IJ": [
+          288.56251572327045,
+          471.4990944563042
+        ]
+      },
+      "pixel_point_set": [
+        [
+          358.0,
+          622.2379623808325
+        ],
+        [
+          358.0,
+          319.7602265317759
+        ],
+        [
+          288.56251572327045,
+          471.4990944563042
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 100,
+        "answer_min": 3,
+        "legacy_query_variant": "isosceles_trapezoid_leg",
+        "legacy_scene_variant": "trapezoid",
+        "legacy_task_id": "task_geometry_analytical_2d_length",
+        "query_variant": "length",
+        "query_variant_probabilities": {
+          "area": 0.0,
+          "composite_area": 0.0,
+          "length": 1.0,
+          "perimeter": 0.0
+        },
+        "scene_variant": "trapezoid",
+        "scene_variant_probabilities": {
+          "circle": 0.2,
+          "composite_region": 0.0,
+          "ellipse": 0.0,
+          "parallelogram": 0.0,
+          "rectangle": 0.2,
+          "rhombus": 0.2,
+          "trapezoid": 0.2,
+          "triangle": 0.2
+        },
+        "task_variant": "isosceles_trapezoid_leg",
+        "variant_probabilities": {
+          "area": 0.0,
+          "composite_area": 0.0,
+          "length": 1.0,
+          "perimeter": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "geometry_analytical_length_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, IH, IJ",
+          "json_example": "{\"evidence\":{\"FG\":2,\"IH\":3,\"IJ\":4},\"answer\":42.3}",
+          "json_example_answer_only": "{\"answer\":42.3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a geometric scene with measurement annotations",
+          "question_text": "The isosceles trapezoid shows both bases and a height. What is the length of segment FI?"
+        },
+        "task_family_key": "analytical_length_scene",
+        "task_family_variant_index": 3,
+        "task_key": "analytical_length_query",
+        "task_variant_index": 0,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_2d/geometry_analytical_length_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_length_query": 5,
+          "task_family:analytical_length_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_analytical_length_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, IH, IJ",
+              "json_example": "{\"evidence\":{\"FG\":2,\"IH\":3,\"IJ\":4},\"answer\":42.3}",
+              "json_example_answer_only": "{\"answer\":42.3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric scene with measurement annotations",
+              "question_text": "The isosceles trapezoid shows both bases and a height. What is the length of segment FI?"
+            },
+            "task_family_key": "analytical_length_scene",
+            "task_family_variant_index": 3,
+            "task_key": "analytical_length_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_length_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_length_query": 5,
+              "task_family:analytical_length_scene": 5
+            }
+          },
+          "prompt": "Use the image showing a geometric scene with measurement annotations. The isosceles trapezoid shows both bases and a height. What is the length of segment FI?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, IH, IJ.\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"FG\":2,\"IH\":3,\"IJ\":4},\"answer\":42.3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "geometry_analytical_length_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FG, IH, IJ",
+              "json_example": "{\"evidence\":{\"FG\":2,\"IH\":3,\"IJ\":4},\"answer\":42.3}",
+              "json_example_answer_only": "{\"answer\":42.3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric scene with measurement annotations",
+              "question_text": "The isosceles trapezoid shows both bases and a height. What is the length of segment FI?"
+            },
+            "task_family_key": "analytical_length_scene",
+            "task_family_variant_index": 3,
+            "task_key": "analytical_length_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_length_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_length_query": 5,
+              "task_family:analytical_length_scene": 5
+            }
+          },
+          "prompt": "Use the image showing a geometric scene with measurement annotations. The isosceles trapezoid shows both bases and a height. What is the length of segment FI?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+        }
+      },
+      "task_variant": "length",
+      "template_id": "geometry_analytical_length_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "FG": [
+          358.0,
+          622.2379623808325
+        ],
+        "IH": [
+          358.0,
+          319.7602265317759
+        ],
+        "IJ": [
+          288.56251572327045,
+          471.4990944563042
+        ]
+      },
+      "annotation_labels": {
+        "base_bottom": "FG",
+        "base_top": "IH",
+        "height": "IJ"
+      },
+      "coord_space": "pixel",
+      "instance_anchor": {
+        "bbox": [
+          107.88,
+          339.3602265317759,
+          608.12,
+          603.6379623808325
+        ],
+        "coord_space": "pixel"
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_warm",
+        "style_spec": {
+          "color": [
+            252,
+            249,
+            245
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 716,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 6,
+        "full_cells_y": 6,
+        "origin_pixel": [
+          358,
+          358
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 90,
+        "target_cells_x": 8,
+        "target_cells_y": 8,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 6,
+        "full_cells_y": 6,
+        "partial_edge_cells": true,
+        "spacing_px": 90,
+        "target_cells_x": 8,
+        "target_cells_y": 8
+      },
+      "legacy_scene_variant": "trapezoid",
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "query_variant": "length",
+      "scene_variant": "trapezoid",
+      "shape_style": {
+        "label_color": [
+          68,
+          53,
+          19
+        ],
+        "label_stroke_color": [
+          249,
+          252,
+          255
+        ],
+        "line_color": [
+          68,
+          53,
+          19
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "vertices": [
+              [
+                107.88,
+                603.6379623808325
+              ],
+              [
+                608.12,
+                603.6379623808325
+              ],
+              [
+                457.10415094339623,
+                339.3602265317759
+              ],
+              [
+                258.89584905660377,
+                339.3602265317759
+              ]
+            ]
+          },
+          "entity_id": "trapezoid_1",
+          "entity_type": "isosceles_trapezoid"
+        },
+        {
+          "attrs": {
+            "helper": true,
+            "point_a": [
+              258.89584905660377,
+              339.3602265317759
+            ],
+            "point_b": [
+              258.89584905660377,
+              603.6379623808325
+            ]
+          },
+          "entity_id": "height_1",
+          "entity_type": "altitude"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            358,
+            358
+          ],
+          "spacing_px": 90,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "legacy_query_variant": "isosceles_trapezoid_leg",
+        "legacy_scene_variant": "trapezoid",
+        "legacy_task_id": "task_geometry_analytical_2d_length",
+        "query_variant": "length",
+        "scene_variant": "trapezoid"
+      },
+      "scene_kind": "geometry_2d_analytical_length"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "FG",
+        "IH",
+        "IJ"
+      ],
+      "annotation_labels": {
+        "base_bottom": "FG",
+        "base_top": "IH",
+        "height": "IJ"
+      },
+      "annotation_values": {
+        "FG": 53,
+        "IH": 21,
+        "IJ": 28
+      },
+      "formula_expression": "sqrt(height^2 + ((base_bottom - base_top)/2)^2)",
+      "measurement_ref_map": {
+        "FG": 53,
+        "IH": 21,
+        "IJ": 28
+      },
+      "task_variant": "isosceles_trapezoid_leg",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

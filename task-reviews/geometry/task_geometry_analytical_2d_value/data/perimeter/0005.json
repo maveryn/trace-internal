@@ -1,0 +1,457 @@
+{
+  "answer_gt": {
+    "type": "number",
+    "value": 141.7
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "FH": 36,
+      "GH": 59
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_2d_value/images/perimeter/0005.png"
+  },
+  "instance_seed": 2963578787912675,
+  "prompt": "You are given an image showing a geometric scene with measurement annotations. Task: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FH, GH.\nAnswer field: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"FH\":2,\"GH\":3},\"answer\":42.3}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given an image showing a geometric scene with measurement annotations. Task: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FH, GH.\nAnswer field: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"FH\":2,\"GH\":3},\"answer\":42.3}",
+    "answer_only": "You are given an image showing a geometric scene with measurement annotations. Task: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+  },
+  "task": "task_geometry_analytical_2d_value",
+  "task_variant": "perimeter",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 250,
+      "answer_min": 8,
+      "answer_scalar": 1417,
+      "answer_type": "number",
+      "answer_value": 141.7,
+      "evidence_map": {
+        "FH": 36,
+        "GH": 59
+      },
+      "evidence_role_tokens": {
+        "hypotenuse": "GH",
+        "known_leg": "FH"
+      },
+      "evidence_role_values": {
+        "hypotenuse": 59,
+        "known_leg": 36
+      },
+      "evidence_roles": [
+        "known_leg",
+        "hypotenuse"
+      ],
+      "formula_expression": "known_leg + hypotenuse + sqrt(hypotenuse^2 - known_leg^2)",
+      "legacy_query_variant": "right_triangle_leg_hypotenuse",
+      "legacy_scene_variant": "triangle",
+      "legacy_task_id": "task_geometry_analytical_2d_perimeter",
+      "query_variant": "perimeter",
+      "query_variant_probabilities": {
+        "area": 0.0,
+        "composite_area": 0.0,
+        "length": 0.0,
+        "perimeter": 1.0
+      },
+      "raw_answer_value": 141.74398357008096,
+      "required_annotations": [
+        "FH",
+        "GH"
+      ],
+      "scene_variant": "triangle",
+      "scene_variant_probabilities": {
+        "circle": 0.2,
+        "composite_region": 0.0,
+        "ellipse": 0.0,
+        "parallelogram": 0.0,
+        "rectangle": 0.2,
+        "rhombus": 0.2,
+        "trapezoid": 0.2,
+        "triangle": 0.2
+      },
+      "target_quantity": "perimeter",
+      "task_variant": "perimeter",
+      "task_variant_probabilities": {
+        "area": 0.0,
+        "composite_area": 0.0,
+        "length": 0.0,
+        "perimeter": 1.0
+      },
+      "variant_probabilities": {
+        "inscribed_square_diameter": 0.0,
+        "isosceles_trapezoid_bases_height": 0.0,
+        "rectangle_side_diagonal": 0.0,
+        "rhombus_diagonals": 0.0,
+        "right_triangle_leg_hypotenuse": 1.0
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "hypotenuse": "GH",
+        "known_leg": "FH"
+      },
+      "id_set": [
+        "FH",
+        "GH"
+      ],
+      "measurement_ref_map": {
+        "FH": 36,
+        "GH": 59
+      },
+      "pixel_annotation_centers": {
+        "FH": [
+          65.33999999999999,
+          265.6861403862905
+        ],
+        "GH": [
+          321.81694915254235,
+          242.55182987364026
+        ]
+      },
+      "pixel_point_set": [
+        [
+          65.33999999999999,
+          265.6861403862905
+        ],
+        [
+          321.81694915254235,
+          242.55182987364026
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 250,
+        "answer_min": 8,
+        "legacy_query_variant": "right_triangle_leg_hypotenuse",
+        "legacy_scene_variant": "triangle",
+        "legacy_task_id": "task_geometry_analytical_2d_perimeter",
+        "query_variant": "perimeter",
+        "query_variant_probabilities": {
+          "area": 0.0,
+          "composite_area": 0.0,
+          "length": 0.0,
+          "perimeter": 1.0
+        },
+        "scene_variant": "triangle",
+        "scene_variant_probabilities": {
+          "circle": 0.2,
+          "composite_region": 0.0,
+          "ellipse": 0.0,
+          "parallelogram": 0.0,
+          "rectangle": 0.2,
+          "rhombus": 0.2,
+          "trapezoid": 0.2,
+          "triangle": 0.2
+        },
+        "task_variant": "right_triangle_leg_hypotenuse",
+        "variant_probabilities": {
+          "area": 0.0,
+          "composite_area": 0.0,
+          "length": 0.0,
+          "perimeter": 1.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "geometry_analytical_perimeter_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FH, GH",
+          "json_example": "{\"evidence\":{\"FH\":2,\"GH\":3},\"answer\":42.3}",
+          "json_example_answer_only": "{\"answer\":42.3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a geometric scene with measurement annotations",
+          "question_text": "The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?"
+        },
+        "task_family_key": "analytical_perimeter_scene",
+        "task_family_variant_index": 0,
+        "task_key": "analytical_perimeter_query",
+        "task_variant_index": 2,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_2d/geometry_analytical_perimeter_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_perimeter_query": 5,
+          "task_family:analytical_perimeter_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "geometry_analytical_perimeter_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FH, GH",
+              "json_example": "{\"evidence\":{\"FH\":2,\"GH\":3},\"answer\":42.3}",
+              "json_example_answer_only": "{\"answer\":42.3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric scene with measurement annotations",
+              "question_text": "The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?"
+            },
+            "task_family_key": "analytical_perimeter_scene",
+            "task_family_variant_index": 0,
+            "task_key": "analytical_perimeter_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_perimeter_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_perimeter_query": 5,
+              "task_family:analytical_perimeter_scene": 5
+            }
+          },
+          "prompt": "You are given an image showing a geometric scene with measurement annotations. Task: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FH, GH.\nAnswer field: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"FH\":2,\"GH\":3},\"answer\":42.3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_analytical_perimeter_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: FH, GH",
+              "json_example": "{\"evidence\":{\"FH\":2,\"GH\":3},\"answer\":42.3}",
+              "json_example_answer_only": "{\"answer\":42.3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric scene with measurement annotations",
+              "question_text": "The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?"
+            },
+            "task_family_key": "analytical_perimeter_scene",
+            "task_family_variant_index": 0,
+            "task_key": "analytical_perimeter_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_perimeter_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_perimeter_query": 5,
+              "task_family:analytical_perimeter_scene": 5
+            }
+          },
+          "prompt": "You are given an image showing a geometric scene with measurement annotations. Task: The right triangle shows one leg and the hypotenuse. What is the perimeter of the triangle?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+        }
+      },
+      "task_variant": "perimeter",
+      "template_id": "geometry_analytical_perimeter_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "FH": [
+          65.33999999999999,
+          265.6861403862905
+        ],
+        "GH": [
+          321.81694915254235,
+          242.55182987364026
+        ]
+      },
+      "annotation_labels": {
+        "hypotenuse": "GH",
+        "known_leg": "FH"
+      },
+      "coord_space": "pixel",
+      "instance_anchor": {
+        "bbox": [
+          93.84,
+          103.83087213220546,
+          514.16,
+          427.54140864037555
+        ],
+        "coord_space": "pixel"
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_offwhite",
+        "style_spec": {
+          "color": [
+            252,
+            252,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 608,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "origin_pixel": [
+          304,
+          304
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 51,
+        "target_cells_x": 12,
+        "target_cells_y": 12,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "partial_edge_cells": true,
+        "spacing_px": 51,
+        "target_cells_x": 12,
+        "target_cells_y": 12
+      },
+      "legacy_scene_variant": "triangle",
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "radius": 0.317029
+            },
+            "type": "blur"
+          }
+        ],
+        "enabled": true
+      },
+      "query_variant": "perimeter",
+      "scene_variant": "triangle",
+      "shape_style": {
+        "label_color": [
+          147,
+          20,
+          158
+        ],
+        "label_stroke_color": [
+          248,
+          252,
+          254
+        ],
+        "line_color": [
+          147,
+          20,
+          158
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "fill_kind": "none",
+            "vertices": [
+              [
+                93.84,
+                427.54140864037555
+              ],
+              [
+                514.16,
+                427.54140864037555
+              ],
+              [
+                93.84,
+                103.83087213220546
+              ]
+            ]
+          },
+          "entity_id": "triangle_1",
+          "entity_type": "right_triangle"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            304,
+            304
+          ],
+          "spacing_px": 51,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "legacy_query_variant": "right_triangle_leg_hypotenuse",
+        "legacy_scene_variant": "triangle",
+        "legacy_task_id": "task_geometry_analytical_2d_perimeter",
+        "query_variant": "perimeter",
+        "scene_variant": "triangle"
+      },
+      "scene_kind": "geometry_2d_analytical_perimeter"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "FH",
+        "GH"
+      ],
+      "annotation_labels": {
+        "hypotenuse": "GH",
+        "known_leg": "FH"
+      },
+      "annotation_values": {
+        "FH": 36,
+        "GH": 59
+      },
+      "formula_expression": "known_leg + hypotenuse + sqrt(hypotenuse^2 - known_leg^2)",
+      "measurement_ref_map": {
+        "FH": 36,
+        "GH": 59
+      },
+      "task_variant": "right_triangle_leg_hypotenuse",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

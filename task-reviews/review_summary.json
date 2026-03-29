@@ -3,14 +3,14 @@
     "count_per_variant": 100,
     "inspection_count_per_variant": 25,
     "max_attempts_per_instance": 200,
-    "max_total_samples_per_task": 30000,
-    "mode": "full",
-    "random_count": 100,
+    "max_total_samples_per_task": 7000,
+    "mode": "distribution",
+    "random_count": 25,
     "seed": 0,
     "tasks": [
-      "task_temporal_timeline_milestones"
+      "task_geometry_counting_value"
     ],
-    "workers": 16
+    "workers": 8
   },
   "summary": {
     "distribution_tasks_failed": 0,
@@ -20,21 +20,13 @@
   "tasks": [
     {
       "distribution_pass": true,
-      "domain": "temporal",
-      "inspection_count": 75,
-      "inspection_workbook": "temporal/task_temporal_timeline_milestones/task_temporal_timeline_milestones.xlsx",
-      "inspection_workbook_sheets": {
-        "before_reference_count": "before_reference_count",
-        "between_reference_events_count": "between_reference_events_count",
-        "position_of_reference": "position_of_reference"
-      },
+      "domain": "geometry",
       "reports": {
-        "distribution_review": "temporal/task_temporal_timeline_milestones/distribution_review.json",
-        "inspection_manifest": "temporal/task_temporal_timeline_milestones/manifest.json",
-        "random_review": "temporal/task_temporal_timeline_milestones/random_review_100.json"
+        "distribution_review": "geometry/task_geometry_counting_value/distribution_review.json",
+        "random_review": "geometry/task_geometry_counting_value/random_review_100.json"
       },
-      "task_group": "timeline",
-      "task_id": "task_temporal_timeline_milestones"
+      "task_group": "counting",
+      "task_id": "task_geometry_counting_value"
     }
   ]
 }

@@ -1,0 +1,585 @@
+{
+  "collection": {
+    "collected_variant_counts": {
+      "surface_area": 25,
+      "volume": 25
+    },
+    "expected_variants": [
+      "surface_area",
+      "volume"
+    ],
+    "generated_variant_counts": {
+      "surface_area": 26,
+      "volume": 25
+    },
+    "generation_error_counts": {},
+    "target_count_per_variant": 25,
+    "total_generated": 51
+  },
+  "domain": "geometry",
+  "failed_variants": [],
+  "has_task_variants": true,
+  "incomplete_variants": [],
+  "mode": "per_variant",
+  "no_samples_collected": false,
+  "overall": {
+    "answer_type_counts": {
+      "integer": 22,
+      "pi_expression": 28
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.04,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": null,
+        "pass": null,
+        "status": "not_applicable_non_numeric_answers"
+      },
+      "min_unique_answers": {
+        "observed": 48,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": null,
+    "max_answer_count": 2,
+    "max_answer_frequency": 0.04,
+    "pass": true,
+    "sample_count": 50,
+    "top_answers": [
+      {
+        "answer_label": "196π",
+        "count": 2
+      },
+      {
+        "answer_label": "288π",
+        "count": 2
+      },
+      {
+        "answer_label": "1024π",
+        "count": 1
+      },
+      {
+        "answer_label": "1088π",
+        "count": 1
+      },
+      {
+        "answer_label": "1107π",
+        "count": 1
+      },
+      {
+        "answer_label": "11340π",
+        "count": 1
+      },
+      {
+        "answer_label": "11616",
+        "count": 1
+      },
+      {
+        "answer_label": "1188",
+        "count": 1
+      },
+      {
+        "answer_label": "1248",
+        "count": 1
+      },
+      {
+        "answer_label": "1520",
+        "count": 1
+      },
+      {
+        "answer_label": "1568",
+        "count": 1
+      },
+      {
+        "answer_label": "18576π",
+        "count": 1
+      },
+      {
+        "answer_label": "1890π",
+        "count": 1
+      },
+      {
+        "answer_label": "19000",
+        "count": 1
+      },
+      {
+        "answer_label": "1904π",
+        "count": 1
+      },
+      {
+        "answer_label": "1908",
+        "count": 1
+      },
+      {
+        "answer_label": "19881π",
+        "count": 1
+      },
+      {
+        "answer_label": "21296π",
+        "count": 1
+      },
+      {
+        "answer_label": "22050π",
+        "count": 1
+      },
+      {
+        "answer_label": "22446",
+        "count": 1
+      },
+      {
+        "answer_label": "2638",
+        "count": 1
+      },
+      {
+        "answer_label": "276",
+        "count": 1
+      },
+      {
+        "answer_label": "2800π",
+        "count": 1
+      },
+      {
+        "answer_label": "2940π",
+        "count": 1
+      },
+      {
+        "answer_label": "2950",
+        "count": 1
+      },
+      {
+        "answer_label": "300π",
+        "count": 1
+      },
+      {
+        "answer_label": "3432",
+        "count": 1
+      },
+      {
+        "answer_label": "36000π",
+        "count": 1
+      },
+      {
+        "answer_label": "3600π",
+        "count": 1
+      },
+      {
+        "answer_label": "36288π",
+        "count": 1
+      },
+      {
+        "answer_label": "3690",
+        "count": 1
+      },
+      {
+        "answer_label": "4096π",
+        "count": 1
+      },
+      {
+        "answer_label": "42624",
+        "count": 1
+      },
+      {
+        "answer_label": "4960",
+        "count": 1
+      },
+      {
+        "answer_label": "500",
+        "count": 1
+      },
+      {
+        "answer_label": "5054",
+        "count": 1
+      },
+      {
+        "answer_label": "5780",
+        "count": 1
+      },
+      {
+        "answer_label": "5896",
+        "count": 1
+      },
+      {
+        "answer_label": "608π",
+        "count": 1
+      },
+      {
+        "answer_label": "649π",
+        "count": 1
+      },
+      {
+        "answer_label": "7290π",
+        "count": 1
+      },
+      {
+        "answer_label": "7488",
+        "count": 1
+      },
+      {
+        "answer_label": "7776",
+        "count": 1
+      },
+      {
+        "answer_label": "7938π",
+        "count": 1
+      },
+      {
+        "answer_label": "816π",
+        "count": 1
+      },
+      {
+        "answer_label": "85π",
+        "count": 1
+      },
+      {
+        "answer_label": "9568",
+        "count": 1
+      },
+      {
+        "answer_label": "9604π",
+        "count": 1
+      }
+    ],
+    "unique_answers": 48
+  },
+  "pass": true,
+  "per_task_variant": {
+    "surface_area": {
+      "answer_type_counts": {
+        "integer": 10,
+        "pi_expression": 15
+      },
+      "checks": {
+        "max_answer_frequency": {
+          "observed": 0.08,
+          "pass": true,
+          "threshold": 0.25
+        },
+        "max_five_bin_frequency": {
+          "observed": null,
+          "pass": null,
+          "status": "not_applicable_non_numeric_answers"
+        },
+        "min_unique_answers": {
+          "observed": 24,
+          "pass": true,
+          "threshold": 5
+        }
+      },
+      "five_bin_numeric": null,
+      "max_answer_count": 2,
+      "max_answer_frequency": 0.08,
+      "pass": true,
+      "sample_count": 25,
+      "top_answers": [
+        {
+          "answer_label": "196π",
+          "count": 2
+        },
+        {
+          "answer_label": "1024π",
+          "count": 1
+        },
+        {
+          "answer_label": "1088π",
+          "count": 1
+        },
+        {
+          "answer_label": "1248",
+          "count": 1
+        },
+        {
+          "answer_label": "1520",
+          "count": 1
+        },
+        {
+          "answer_label": "1568",
+          "count": 1
+        },
+        {
+          "answer_label": "1890π",
+          "count": 1
+        },
+        {
+          "answer_label": "1904π",
+          "count": 1
+        },
+        {
+          "answer_label": "1908",
+          "count": 1
+        },
+        {
+          "answer_label": "2638",
+          "count": 1
+        },
+        {
+          "answer_label": "2950",
+          "count": 1
+        },
+        {
+          "answer_label": "300π",
+          "count": 1
+        },
+        {
+          "answer_label": "3600π",
+          "count": 1
+        },
+        {
+          "answer_label": "3690",
+          "count": 1
+        },
+        {
+          "answer_label": "4096π",
+          "count": 1
+        },
+        {
+          "answer_label": "4960",
+          "count": 1
+        },
+        {
+          "answer_label": "5896",
+          "count": 1
+        },
+        {
+          "answer_label": "608π",
+          "count": 1
+        },
+        {
+          "answer_label": "649π",
+          "count": 1
+        },
+        {
+          "answer_label": "7488",
+          "count": 1
+        },
+        {
+          "answer_label": "7938π",
+          "count": 1
+        },
+        {
+          "answer_label": "816π",
+          "count": 1
+        },
+        {
+          "answer_label": "85π",
+          "count": 1
+        },
+        {
+          "answer_label": "9604π",
+          "count": 1
+        }
+      ],
+      "unique_answers": 24
+    },
+    "volume": {
+      "answer_type_counts": {
+        "integer": 12,
+        "pi_expression": 13
+      },
+      "checks": {
+        "max_answer_frequency": {
+          "observed": 0.08,
+          "pass": true,
+          "threshold": 0.25
+        },
+        "max_five_bin_frequency": {
+          "observed": null,
+          "pass": null,
+          "status": "not_applicable_non_numeric_answers"
+        },
+        "min_unique_answers": {
+          "observed": 24,
+          "pass": true,
+          "threshold": 5
+        }
+      },
+      "five_bin_numeric": null,
+      "max_answer_count": 2,
+      "max_answer_frequency": 0.08,
+      "pass": true,
+      "sample_count": 25,
+      "top_answers": [
+        {
+          "answer_label": "288π",
+          "count": 2
+        },
+        {
+          "answer_label": "1107π",
+          "count": 1
+        },
+        {
+          "answer_label": "11340π",
+          "count": 1
+        },
+        {
+          "answer_label": "11616",
+          "count": 1
+        },
+        {
+          "answer_label": "1188",
+          "count": 1
+        },
+        {
+          "answer_label": "18576π",
+          "count": 1
+        },
+        {
+          "answer_label": "19000",
+          "count": 1
+        },
+        {
+          "answer_label": "19881π",
+          "count": 1
+        },
+        {
+          "answer_label": "21296π",
+          "count": 1
+        },
+        {
+          "answer_label": "22050π",
+          "count": 1
+        },
+        {
+          "answer_label": "22446",
+          "count": 1
+        },
+        {
+          "answer_label": "276",
+          "count": 1
+        },
+        {
+          "answer_label": "2800π",
+          "count": 1
+        },
+        {
+          "answer_label": "2940π",
+          "count": 1
+        },
+        {
+          "answer_label": "3432",
+          "count": 1
+        },
+        {
+          "answer_label": "36000π",
+          "count": 1
+        },
+        {
+          "answer_label": "36288π",
+          "count": 1
+        },
+        {
+          "answer_label": "42624",
+          "count": 1
+        },
+        {
+          "answer_label": "500",
+          "count": 1
+        },
+        {
+          "answer_label": "5054",
+          "count": 1
+        },
+        {
+          "answer_label": "5780",
+          "count": 1
+        },
+        {
+          "answer_label": "7290π",
+          "count": 1
+        },
+        {
+          "answer_label": "7776",
+          "count": 1
+        },
+        {
+          "answer_label": "9568",
+          "count": 1
+        }
+      ],
+      "unique_answers": 24
+    }
+  },
+  "sampling_axes": {
+    "query_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "surface_area": 0.5,
+        "volume": 0.5
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.52,
+      "observed_counts": {
+        "surface_area": 12,
+        "volume": 13
+      },
+      "sample_count": 25
+    },
+    "scene_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "cone": 0.16666666666666666,
+        "cylinder": 0.16666666666666666,
+        "rectangular_prism": 0.16666666666666666,
+        "sphere": 0.16666666666666666,
+        "square_pyramid": 0.16666666666666666,
+        "triangular_prism": 0.16666666666666666
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.2,
+      "observed_counts": {
+        "cone": 5,
+        "cylinder": 5,
+        "rectangular_prism": 5,
+        "sphere": 5,
+        "square_pyramid": 2,
+        "triangular_prism": 3
+      },
+      "sample_count": 25
+    },
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "surface_area": 0.5,
+        "volume": 0.5
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.52,
+      "observed_counts": {
+        "surface_area": 12,
+        "volume": 13
+      },
+      "sample_count": 25
+    },
+    "variant": {
+      "expected_conflict": true,
+      "expected_probabilities": {
+        "cone_given_r_h": 1.0
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 1.0,
+      "observed_counts": {
+        "": 25
+      },
+      "sample_count": 25
+    }
+  },
+  "task_group": "analytical_3d",
+  "task_id": "task_geometry_analytical_3d_value",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {
+      "surface_area": 0.5,
+      "volume": 0.5
+    },
+    "expected_source": "execution_trace",
+    "has_variants": true,
+    "observed_counts": {
+      "surface_area": 12,
+      "volume": 13
+    },
+    "status": "reported"
+  }
+}

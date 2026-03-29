@@ -1,0 +1,425 @@
+{
+  "answer_gt": {
+    "type": "pi_expression",
+    "value": "36000π"
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "ZA": 30
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_3d_value/images/volume/0020.png"
+  },
+  "instance_seed": 2988666460797354,
+  "prompt": "You are given an image showing an annotated 3D solid. Question: The sphere has an annotated radius. What is its volume? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ZA.\nAnswer format: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"ZA\":2},\"answer\":\"12π\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given an image showing an annotated 3D solid. Question: The sphere has an annotated radius. What is its volume? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ZA.\nAnswer format: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"ZA\":2},\"answer\":\"12π\"}",
+    "answer_only": "You are given an image showing an annotated 3D solid. Question: The sphere has an annotated radius. What is its volume? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
+  },
+  "task": "task_geometry_analytical_3d_value",
+  "task_variant": "volume",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 200000,
+      "answer_min": 8,
+      "answer_scalar": 36000,
+      "answer_type": "pi_expression",
+      "answer_value": "36000π",
+      "evidence_map": {
+        "ZA": 30
+      },
+      "evidence_role_tokens": {
+        "r": "ZA"
+      },
+      "evidence_role_values": {
+        "r": 30
+      },
+      "evidence_roles": [
+        "r"
+      ],
+      "formula_expression": "V = (4/3) * π * r^3",
+      "legacy_query_variant": "sphere_given_r",
+      "legacy_scene_variant": "sphere_given_r",
+      "legacy_task_id": "task_geometry_analytical_3d_volume",
+      "query_variant": "volume",
+      "query_variant_probabilities": {
+        "surface_area": 0.0,
+        "volume": 1.0
+      },
+      "required_annotations": [
+        "ZA"
+      ],
+      "scene_variant": "sphere",
+      "scene_variant_probabilities": {
+        "cone": 0.16666666666666666,
+        "cylinder": 0.16666666666666666,
+        "rectangular_prism": 0.16666666666666666,
+        "sphere": 0.16666666666666666,
+        "square_pyramid": 0.16666666666666666,
+        "triangular_prism": 0.16666666666666666
+      },
+      "task_variant": "volume",
+      "task_variant_probabilities": {
+        "surface_area": 0.0,
+        "volume": 1.0
+      },
+      "variant_probabilities": {
+        "cone_given_r_h": 0.0,
+        "cylinder_given_r_h": 0.0,
+        "rectangular_prism_given_lwh": 0.0,
+        "sphere_given_r": 1.0,
+        "square_pyramid_given_base_height": 0.0,
+        "triangular_prism_given_b_h_l": 0.0
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "r": "ZA"
+      },
+      "id_set": [
+        "ZA"
+      ],
+      "measurement_ref_map": {
+        "ZA": 30
+      },
+      "pixel_annotation_centers": {
+        "ZA": [
+          486.75,
+          324.04
+        ]
+      },
+      "pixel_point_set": [
+        [
+          486.75,
+          324.04
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 200000,
+        "answer_min": 8,
+        "legacy_query_variant": "sphere_given_r",
+        "legacy_scene_variant": "sphere_given_r",
+        "legacy_task_id": "task_geometry_analytical_3d_volume",
+        "query_variant": "volume",
+        "query_variant_probabilities": {
+          "surface_area": 0.0,
+          "volume": 1.0
+        },
+        "scene_variant": "sphere",
+        "scene_variant_probabilities": {
+          "cone": 0.16666666666666666,
+          "cylinder": 0.16666666666666666,
+          "rectangular_prism": 0.16666666666666666,
+          "sphere": 0.16666666666666666,
+          "square_pyramid": 0.16666666666666666,
+          "triangular_prism": 0.16666666666666666
+        },
+        "task_variant": "sphere_given_r",
+        "variant_probabilities": {
+          "surface_area": 0.0,
+          "volume": 1.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "geometry_analytical_volume_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ZA",
+          "json_example": "{\"evidence\":{\"ZA\":2},\"answer\":\"12π\"}",
+          "json_example_answer_only": "{\"answer\":\"12π\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "an annotated 3D solid",
+          "question_text": "The sphere has an annotated radius. What is its volume? Express the result in kπ form."
+        },
+        "task_family_key": "analytical_single_solid",
+        "task_family_variant_index": 0,
+        "task_key": "analytical_volume_query",
+        "task_variant_index": 1,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_3d/geometry_analytical_volume_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_volume_query": 5,
+          "task_family:analytical_single_solid": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_analytical_volume_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ZA",
+              "json_example": "{\"evidence\":{\"ZA\":2},\"answer\":\"12π\"}",
+              "json_example_answer_only": "{\"answer\":\"12π\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an annotated 3D solid",
+              "question_text": "The sphere has an annotated radius. What is its volume? Express the result in kπ form."
+            },
+            "task_family_key": "analytical_single_solid",
+            "task_family_variant_index": 0,
+            "task_key": "analytical_volume_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_3d/geometry_analytical_volume_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_volume_query": 5,
+              "task_family:analytical_single_solid": 5
+            }
+          },
+          "prompt": "You are given an image showing an annotated 3D solid. Question: The sphere has an annotated radius. What is its volume? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ZA.\nAnswer format: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"ZA\":2},\"answer\":\"12π\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_analytical_volume_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: ZA",
+              "json_example": "{\"evidence\":{\"ZA\":2},\"answer\":\"12π\"}",
+              "json_example_answer_only": "{\"answer\":\"12π\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an annotated 3D solid",
+              "question_text": "The sphere has an annotated radius. What is its volume? Express the result in kπ form."
+            },
+            "task_family_key": "analytical_single_solid",
+            "task_family_variant_index": 0,
+            "task_key": "analytical_volume_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_3d/geometry_analytical_volume_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_volume_query": 5,
+              "task_family:analytical_single_solid": 5
+            }
+          },
+          "prompt": "You are given an image showing an annotated 3D solid. Question: The sphere has an annotated radius. What is its volume? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
+        }
+      },
+      "task_variant": "volume",
+      "template_id": "geometry_analytical_volume_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "ZA": [
+          486.75,
+          324.04
+        ]
+      },
+      "annotation_labels": {
+        "r": "ZA"
+      },
+      "coord_space": "pixel",
+      "entity_id": "solid_1",
+      "instance_anchor": {
+        "coord_space": "pixel",
+        "point": [
+          486.75,
+          352.04
+        ],
+        "polyline": [
+          [
+            338.5,
+            352.04
+          ],
+          [
+            635.0,
+            352.04
+          ]
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_warm",
+        "style_spec": {
+          "color": [
+            252,
+            249,
+            245
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 677,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "origin_pixel": [
+          338,
+          338
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 68,
+        "target_cells_x": 10,
+        "target_cells_y": 10,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "partial_edge_cells": true,
+        "spacing_px": 68,
+        "target_cells_x": 10,
+        "target_cells_y": 10
+      },
+      "legacy_scene_variant": "sphere_given_r",
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "quality": 94.0
+            },
+            "type": "jpeg"
+          }
+        ],
+        "enabled": true
+      },
+      "query_variant": "volume",
+      "scene_variant": "sphere",
+      "shape_style": {
+        "label_color": [
+          127,
+          33,
+          164
+        ],
+        "label_stroke_color": [
+          253,
+          248,
+          255
+        ],
+        "line_color": [
+          127,
+          33,
+          164
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "points": {
+              "center": [
+                338.5,
+                352.04
+              ],
+              "right_point": [
+                635.0,
+                352.04
+              ]
+            },
+            "radius_units": 30,
+            "task_variant": "sphere_given_r",
+            "volume_pi_coefficient": 36000
+          },
+          "entity_id": "solid_1",
+          "entity_type": "sphere"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            338,
+            338
+          ],
+          "spacing_px": 68,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "legacy_query_variant": "sphere_given_r",
+        "legacy_scene_variant": "sphere_given_r",
+        "legacy_task_id": "task_geometry_analytical_3d_volume",
+        "query_variant": "volume",
+        "scene_variant": "sphere"
+      },
+      "scene_kind": "geometry_3d_analytical_volume"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "ZA"
+      ],
+      "annotation_labels": {
+        "r": "ZA"
+      },
+      "annotation_values": {
+        "ZA": 30
+      },
+      "formula_expression": "V = (4/3) * π * r^3",
+      "measurement_ref_map": {
+        "ZA": 30
+      },
+      "task_variant": "sphere_given_r",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

@@ -1,0 +1,251 @@
+{
+  "answer_distribution": {
+    "answer_type_counts": {
+      "integer": 9,
+      "number": 12,
+      "pi_expression": 4
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.04,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": null,
+        "pass": null,
+        "status": "not_applicable_non_numeric_answers"
+      },
+      "min_unique_answers": {
+        "observed": 25,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": null,
+    "max_answer_count": 1,
+    "max_answer_frequency": 0.04,
+    "pass": true,
+    "sample_count": 25,
+    "top_answers": [
+      {
+        "answer_label": "1080",
+        "count": 1
+      },
+      {
+        "answer_label": "13.4",
+        "count": 1
+      },
+      {
+        "answer_label": "136π",
+        "count": 1
+      },
+      {
+        "answer_label": "140.7",
+        "count": 1
+      },
+      {
+        "answer_label": "141.7",
+        "count": 1
+      },
+      {
+        "answer_label": "144.9",
+        "count": 1
+      },
+      {
+        "answer_label": "147.1",
+        "count": 1
+      },
+      {
+        "answer_label": "15.7",
+        "count": 1
+      },
+      {
+        "answer_label": "1539",
+        "count": 1
+      },
+      {
+        "answer_label": "164",
+        "count": 1
+      },
+      {
+        "answer_label": "168",
+        "count": 1
+      },
+      {
+        "answer_label": "178",
+        "count": 1
+      },
+      {
+        "answer_label": "181",
+        "count": 1
+      },
+      {
+        "answer_label": "288",
+        "count": 1
+      },
+      {
+        "answer_label": "32.2",
+        "count": 1
+      },
+      {
+        "answer_label": "361π",
+        "count": 1
+      },
+      {
+        "answer_label": "491",
+        "count": 1
+      },
+      {
+        "answer_label": "529π",
+        "count": 1
+      },
+      {
+        "answer_label": "59.1",
+        "count": 1
+      },
+      {
+        "answer_label": "65π",
+        "count": 1
+      },
+      {
+        "answer_label": "694",
+        "count": 1
+      },
+      {
+        "answer_label": "74.2",
+        "count": 1
+      },
+      {
+        "answer_label": "84",
+        "count": 1
+      },
+      {
+        "answer_label": "888",
+        "count": 1
+      },
+      {
+        "answer_label": "94.4",
+        "count": 1
+      }
+    ],
+    "unique_answers": 25
+  },
+  "sample_count": 25,
+  "sampling_axes": {
+    "mode": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "derived": 0.5,
+        "explicit": 0.5
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 1.0,
+      "observed_counts": {
+        "": 25
+      },
+      "sample_count": 25
+    },
+    "query_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "area": 0.25,
+        "composite_area": 0.25,
+        "length": 0.25,
+        "perimeter": 0.25
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.36,
+      "observed_counts": {
+        "area": 9,
+        "composite_area": 4,
+        "length": 3,
+        "perimeter": 9
+      },
+      "sample_count": 25
+    },
+    "scene_variant": {
+      "expected_conflict": true,
+      "expected_probabilities": {
+        "circle": 0.2,
+        "rectangle": 0.2,
+        "rhombus": 0.2,
+        "trapezoid": 0.2,
+        "triangle": 0.2
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.2,
+      "observed_counts": {
+        "circle": 3,
+        "composite_region": 4,
+        "ellipse": 2,
+        "rectangle": 5,
+        "rhombus": 1,
+        "trapezoid": 5,
+        "triangle": 5
+      },
+      "sample_count": 25
+    },
+    "shape": {
+      "expected_conflict": true,
+      "expected_probabilities": {
+        "circle": 1.0
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 1.0,
+      "observed_counts": {
+        "": 25
+      },
+      "sample_count": 25
+    },
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "area": 0.25,
+        "composite_area": 0.25,
+        "length": 0.25,
+        "perimeter": 0.25
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.36,
+      "observed_counts": {
+        "area": 9,
+        "composite_area": 4,
+        "length": 3,
+        "perimeter": 9
+      },
+      "sample_count": 25
+    },
+    "variant": {
+      "expected_conflict": true,
+      "expected_probabilities": {
+        "isosceles_trapezoid_bases_height": 1.0
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 1.0,
+      "observed_counts": {
+        "": 25
+      },
+      "sample_count": 25
+    }
+  },
+  "task_id": "task_geometry_analytical_2d_value",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {
+      "area": 0.25,
+      "composite_area": 0.25,
+      "length": 0.25,
+      "perimeter": 0.25
+    },
+    "expected_source": "execution_trace",
+    "has_variants": true,
+    "observed_counts": {
+      "area": 9,
+      "composite_area": 4,
+      "length": 3,
+      "perimeter": 9
+    },
+    "status": "reported"
+  }
+}

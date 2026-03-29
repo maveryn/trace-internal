@@ -1,0 +1,658 @@
+{
+  "answer_gt": {
+    "type": "option_letter",
+    "value": "C"
+  },
+  "evidence_gt": {
+    "type": "graph_point_set",
+    "value": [
+      [
+        0,
+        -3
+      ],
+      [
+        0,
+        -5
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_comparison_value/images/smallest_length/0003.png"
+  },
+  "instance_seed": 921335551912321,
+  "prompt": "Use the graph-paper diagram showing several labeled line segments. Determine the answer: Which labeled segment is the shortest?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of exactly two graph-paper points for the winning segment endpoints.\nAnswer: set \"answer\" to the single-letter label of the correct segment.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":\"B\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the graph-paper diagram showing several labeled line segments. Determine the answer: Which labeled segment is the shortest?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of exactly two graph-paper points for the winning segment endpoints.\nAnswer: set \"answer\" to the single-letter label of the correct segment.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":\"B\"}",
+    "answer_only": "Use the graph-paper diagram showing several labeled line segments. Determine the answer: Which labeled segment is the shortest?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the single-letter label of the correct segment.\nExample JSON:\n{\"answer\":\"B\"}"
+  },
+  "task": "task_geometry_comparison_value",
+  "task_variant": "smallest_length",
+  "trace_payload": {
+    "execution_trace": {
+      "legacy_query_variant": "segment_set",
+      "legacy_scene_variant": "segment_set",
+      "legacy_task_id": "task_geometry_comparison_length",
+      "object_count": 4,
+      "object_count_probabilities": {
+        "4": 0.3333333333333333,
+        "5": 0.3333333333333333,
+        "6": 0.3333333333333333
+      },
+      "object_labels": [
+        "A",
+        "F",
+        "C",
+        "B"
+      ],
+      "query_type": "smallest",
+      "query_type_probabilities": {
+        "largest": 0.0,
+        "smallest": 1.0
+      },
+      "query_variant": "smallest_length",
+      "query_variant_probabilities": {
+        "largest_angle": 0.0,
+        "largest_area": 0.0,
+        "largest_length": 0.0,
+        "largest_perimeter": 0.0,
+        "smallest_angle": 0.0,
+        "smallest_area": 0.0,
+        "smallest_length": 1.0,
+        "smallest_perimeter": 0.0
+      },
+      "question_format": "label_choice_no_text_options",
+      "required_evidence_labels": [
+        "endpoint_a",
+        "endpoint_b"
+      ],
+      "runner_up_value": 4.0,
+      "scene_variant": "segment",
+      "scene_variant_probabilities": {
+        "angle": 0.0,
+        "rectangle": 0.0,
+        "segment": 1.0
+      },
+      "task_variant": "smallest_length",
+      "task_variant_probabilities": {
+        "largest_angle": 0.0,
+        "largest_area": 0.0,
+        "largest_length": 0.0,
+        "largest_perimeter": 0.0,
+        "smallest_angle": 0.0,
+        "smallest_area": 0.0,
+        "smallest_length": 1.0,
+        "smallest_perimeter": 0.0
+      },
+      "values_by_label": {
+        "A": 4,
+        "B": 9,
+        "C": 2,
+        "F": 6
+      },
+      "winner_gap_abs": 2.0,
+      "winner_gap_normalized": 0.2857142857142857,
+      "winner_label": "C",
+      "winner_label_probabilities": {
+        "A": 0.16666666666666666,
+        "B": 0.16666666666666666,
+        "C": 0.16666666666666666,
+        "D": 0.16666666666666666,
+        "E": 0.16666666666666666,
+        "F": 0.16666666666666666
+      },
+      "winner_label_target": "C",
+      "winner_value": 2.0
+    },
+    "projected_evidence": {
+      "grid_point_map": {
+        "endpoint_a": [
+          0,
+          -3
+        ],
+        "endpoint_b": [
+          0,
+          -5
+        ]
+      },
+      "grid_point_path": [
+        [
+          0,
+          -3
+        ],
+        [
+          0,
+          -5
+        ]
+      ],
+      "grid_point_set": [
+        [
+          0,
+          -3
+        ],
+        [
+          0,
+          -5
+        ]
+      ],
+      "pixel_point_map": {
+        "endpoint_a": [
+          317.0,
+          407.0
+        ],
+        "endpoint_b": [
+          317.0,
+          467.0
+        ]
+      },
+      "pixel_point_path": [
+        [
+          317.0,
+          407.0
+        ],
+        [
+          317.0,
+          467.0
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          317.0,
+          407.0
+        ],
+        [
+          317.0,
+          467.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "legacy_query_variant": "segment_set",
+        "legacy_scene_variant": "segment_set",
+        "legacy_task_id": "task_geometry_comparison_length",
+        "max_abs_vector_component": 10,
+        "max_segment_length": 10,
+        "min_absolute_gap_units": 2.0,
+        "min_normalized_gap": 0.2,
+        "min_segment_length": 2,
+        "object_count": 4,
+        "object_count_probabilities": {
+          "4": 0.3333333333333333,
+          "5": 0.3333333333333333,
+          "6": 0.3333333333333333
+        },
+        "query_type": "smallest",
+        "query_type_probabilities": {
+          "largest": 0.0,
+          "smallest": 1.0
+        },
+        "query_variant": "smallest_length",
+        "query_variant_probabilities": {
+          "largest_angle": 0.0,
+          "largest_area": 0.0,
+          "largest_length": 0.0,
+          "largest_perimeter": 0.0,
+          "smallest_angle": 0.0,
+          "smallest_area": 0.0,
+          "smallest_length": 1.0,
+          "smallest_perimeter": 0.0
+        },
+        "scene_variant": "segment",
+        "scene_variant_probabilities": {
+          "angle": 0.0,
+          "rectangle": 0.0,
+          "segment": 1.0
+        },
+        "variant_probabilities": {
+          "largest_angle": 0.0,
+          "largest_area": 0.0,
+          "largest_length": 0.0,
+          "largest_perimeter": 0.0,
+          "smallest_angle": 0.0,
+          "smallest_area": 0.0,
+          "smallest_length": 1.0,
+          "smallest_perimeter": 0.0
+        },
+        "winner_label": "C",
+        "winner_label_probabilities": {
+          "A": 0.16666666666666666,
+          "B": 0.16666666666666666,
+          "C": 0.16666666666666666,
+          "D": 0.16666666666666666,
+          "E": 0.16666666666666666,
+          "F": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "geometry_comparison_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the single-letter label of the correct segment",
+          "evidence_hint": "set \"evidence\" to an array of exactly two graph-paper points for the winning segment endpoints",
+          "json_example": "{\"evidence\":[[0,0],[4,0]],\"answer\":\"B\"}",
+          "json_example_answer_only": "{\"answer\":\"B\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "several labeled line segments",
+          "question_text": "Which labeled segment is the shortest?"
+        },
+        "task_family_key": "comparison_graph_scene",
+        "task_family_variant_index": 3,
+        "task_key": "comparison_query",
+        "task_variant_index": 4,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/comparison/geometry_comparison_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:comparison_query": 5,
+          "task_family:comparison_graph_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_comparison_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single-letter label of the correct segment",
+              "evidence_hint": "set \"evidence\" to an array of exactly two graph-paper points for the winning segment endpoints",
+              "json_example": "{\"evidence\":[[0,0],[4,0]],\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled line segments",
+              "question_text": "Which labeled segment is the shortest?"
+            },
+            "task_family_key": "comparison_graph_scene",
+            "task_family_variant_index": 3,
+            "task_key": "comparison_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/comparison/geometry_comparison_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:comparison_query": 5,
+              "task_family:comparison_graph_scene": 5
+            }
+          },
+          "prompt": "Use the graph-paper diagram showing several labeled line segments. Determine the answer: Which labeled segment is the shortest?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of exactly two graph-paper points for the winning segment endpoints.\nAnswer: set \"answer\" to the single-letter label of the correct segment.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":\"B\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_comparison_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single-letter label of the correct segment",
+              "evidence_hint": "set \"evidence\" to an array of exactly two graph-paper points for the winning segment endpoints",
+              "json_example": "{\"evidence\":[[0,0],[4,0]],\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled line segments",
+              "question_text": "Which labeled segment is the shortest?"
+            },
+            "task_family_key": "comparison_graph_scene",
+            "task_family_variant_index": 3,
+            "task_key": "comparison_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/comparison/geometry_comparison_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:comparison_query": 5,
+              "task_family:comparison_graph_scene": 5
+            }
+          },
+          "prompt": "Use the graph-paper diagram showing several labeled line segments. Determine the answer: Which labeled segment is the shortest?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the single-letter label of the correct segment.\nExample JSON:\n{\"answer\":\"B\"}"
+        }
+      },
+      "task_variant": "smallest_length",
+      "template_id": "geometry_comparison_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "winner": {
+          "winner_label": "C",
+          "winner_midpoint": [
+            317.0,
+            437.0
+          ],
+          "winner_segment": [
+            [
+              317.0,
+              407.0
+            ],
+            [
+              317.0,
+              467.0
+            ]
+          ]
+        }
+      },
+      "image_id": "img0",
+      "object_label_centers": {
+        "A": [
+          317.0,
+          228.20000000000002
+        ],
+        "B": [
+          135.79999999999998,
+          422.0
+        ],
+        "C": [
+          285.8,
+          437.0
+        ],
+        "F": [
+          467.0,
+          468.2
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "graph_paper",
+        "style_spec": {
+          "axis_arrow_size": 10,
+          "axis_arrows_enabled": true,
+          "axis_color": [
+            175,
+            180,
+            187
+          ],
+          "axis_darken_range": [
+            32,
+            48
+          ],
+          "axis_enabled": true,
+          "axis_line_width": 2,
+          "axis_scale_label_max_abs": 0,
+          "axis_scale_labels_enabled": true,
+          "base_color": [
+            255,
+            255,
+            255
+          ],
+          "base_color_jitter": [
+            0,
+            0
+          ],
+          "center_point_color": [
+            161,
+            166,
+            173
+          ],
+          "center_point_darken_extra_range": [
+            8,
+            14
+          ],
+          "center_point_enabled": true,
+          "center_point_radius": 2,
+          "color_variation_applied": true,
+          "color_variation_enabled": true,
+          "color_variation_sampled": {
+            "axis_darken": 45,
+            "base_color_delta": 0,
+            "center_point_darken_extra": 14,
+            "line_color_delta": -4,
+            "major_line_darken": 8,
+            "origin_label_darken_extra": 10
+          },
+          "kind": "grid",
+          "line_color": [
+            220,
+            225,
+            232
+          ],
+          "line_color_jitter": [
+            -5,
+            5
+          ],
+          "line_width": 1,
+          "major_every": 0,
+          "major_line_color": [
+            212,
+            217,
+            224
+          ],
+          "major_line_darken_range": [
+            6,
+            14
+          ],
+          "major_line_width": 1,
+          "origin_label_color": [
+            165,
+            170,
+            177
+          ],
+          "origin_label_darken_extra_range": [
+            6,
+            12
+          ],
+          "origin_label_enabled": false,
+          "origin_label_text": "0",
+          "outer_margin_px": 16,
+          "scene_supersample_scale": 3,
+          "spacing": 30,
+          "supersample_scale": 1
+        }
+      },
+      "canvas_size": 635,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 20,
+        "full_cells_y": 20,
+        "origin_pixel": [
+          317,
+          317
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 30,
+        "target_cells_x": 21,
+        "target_cells_y": 21,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 20,
+        "full_cells_y": 20,
+        "partial_edge_cells": true,
+        "spacing_px": 30,
+        "target_cells_x": 21,
+        "target_cells_y": 21
+      },
+      "legacy_scene_variant": "segment_set",
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "alpha": 0.036311
+            },
+            "type": "noise"
+          }
+        ],
+        "enabled": true
+      },
+      "query_variant": "smallest_length",
+      "scene_variant": "segment",
+      "shape_style": {
+        "label_color": [
+          25,
+          16,
+          160
+        ],
+        "label_stroke_color": [
+          253,
+          252,
+          255
+        ],
+        "line_color": [
+          25,
+          16,
+          160
+        ]
+      },
+      "text_style": {
+        "font_size_px": 90,
+        "stroke_width_px": 6
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "label": "A",
+            "length_units": 4,
+            "points": {
+              "endpoint_a": [
+                257.0,
+                197.0
+              ],
+              "endpoint_b": [
+                377.0,
+                197.0
+              ]
+            }
+          },
+          "entity_id": "segment_A",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "label": "F",
+            "length_units": 6,
+            "points": {
+              "endpoint_a": [
+                377.0,
+                437.0
+              ],
+              "endpoint_b": [
+                557.0,
+                437.0
+              ]
+            }
+          },
+          "entity_id": "segment_F",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "label": "C",
+            "length_units": 2,
+            "points": {
+              "endpoint_a": [
+                317.0,
+                407.0
+              ],
+              "endpoint_b": [
+                317.0,
+                467.0
+              ]
+            }
+          },
+          "entity_id": "segment_C",
+          "entity_type": "segment"
+        },
+        {
+          "attrs": {
+            "label": "B",
+            "length_units": 9,
+            "points": {
+              "endpoint_a": [
+                167.0,
+                287.0
+              ],
+              "endpoint_b": [
+                167.0,
+                557.0
+              ]
+            }
+          },
+          "entity_id": "segment_B",
+          "entity_type": "segment"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            317,
+            317
+          ],
+          "spacing_px": 30,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "comparison_target": "segment_length",
+        "legacy_query_variant": "segment_set",
+        "legacy_scene_variant": "segment_set",
+        "legacy_task_id": "task_geometry_comparison_length",
+        "query_type": "smallest",
+        "query_variant": "smallest_length",
+        "scene_variant": "segment",
+        "winner_label": "C"
+      },
+      "scene_kind": "geometry_2d_length_comparison"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "endpoint_a",
+        "endpoint_b"
+      ],
+      "type": "winning_segment_endpoints",
+      "winner_label": "C"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

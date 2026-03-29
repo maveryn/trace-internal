@@ -4,6 +4,37 @@ generation:
     object_count_max: 10
     balanced_sampling: true
   task_overrides:
+    task_geometry_counting_value:
+      query_variant_weights:
+        acute_angle: 1.0
+        right_angle: 1.0
+        obtuse_angle: 1.0
+        equilateral_triangle: 1.0
+        isosceles_triangle: 1.0
+        scalene_triangle: 1.0
+        right_triangle: 1.0
+        acute_triangle: 1.0
+        obtuse_triangle: 1.0
+        square: 1.0
+        rectangle_non_square: 1.0
+        rhombus_non_square: 1.0
+        parallelogram_only: 1.0
+        triangle: 1.0
+        quadrilateral: 1.0
+        pentagon: 1.0
+        hexagon: 1.0
+        circle: 1.0
+        ellipse: 1.0
+        convex_polygon: 1.0
+        concave_polygon: 1.0
+      scene_variant_weights:
+        angle: 1.0
+        triangle: 1.0
+        quadrilateral: 1.0
+        mixed_shape: 1.0
+        polygon: 1.0
+      balanced_query_variant_sampling: true
+      balanced_scene_variant_sampling: true
     task_geometry_counting_angle:
       min_angle: 25
       max_angle: 155

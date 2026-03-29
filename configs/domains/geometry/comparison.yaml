@@ -5,6 +5,22 @@ generation:
     balanced_sampling: true
     min_normalized_gap: 0.2
   task_overrides:
+    task_geometry_comparison_value:
+      query_variant_weights:
+        largest_angle: 1.0
+        smallest_angle: 1.0
+        largest_length: 1.0
+        smallest_length: 1.0
+        largest_area: 1.0
+        smallest_area: 1.0
+        largest_perimeter: 1.0
+        smallest_perimeter: 1.0
+      scene_variant_weights:
+        angle: 1.0
+        segment: 1.0
+        rectangle: 1.0
+      balanced_query_variant_sampling: true
+      balanced_scene_variant_sampling: true
     task_geometry_comparison_angle:
       min_angle: 30
       max_angle: 150

@@ -1,0 +1,751 @@
+{
+  "answer_gt": {
+    "type": "option_letter",
+    "value": "E"
+  },
+  "evidence_gt": {
+    "type": "graph_point_set",
+    "value": [
+      [
+        5,
+        6
+      ],
+      [
+        5,
+        4
+      ],
+      [
+        -2,
+        0
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_comparison_value/images/largest_angle/0006.png"
+  },
+  "instance_seed": 3711090827692079,
+  "prompt": "Look at the graph-paper image showing several labeled angles. Answer this question: Which labeled angle has the greatest measure?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of exactly three graph-paper points for the winning angle: the vertex and the two ray endpoints.\nAnswer field: set \"answer\" to the single-letter label of the correct angle.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":\"B\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the graph-paper image showing several labeled angles. Answer this question: Which labeled angle has the greatest measure?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of exactly three graph-paper points for the winning angle: the vertex and the two ray endpoints.\nAnswer field: set \"answer\" to the single-letter label of the correct angle.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":\"B\"}",
+    "answer_only": "Look at the graph-paper image showing several labeled angles. Answer this question: Which labeled angle has the greatest measure?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the single-letter label of the correct angle.\nExample JSON:\n{\"answer\":\"B\"}"
+  },
+  "task": "task_geometry_comparison_value",
+  "task_variant": "largest_angle",
+  "trace_payload": {
+    "execution_trace": {
+      "legacy_query_variant": "primitive_angle_set",
+      "legacy_scene_variant": "primitive_angle_set",
+      "legacy_task_id": "task_geometry_comparison_angle",
+      "object_count": 6,
+      "object_count_probabilities": {
+        "4": 0.3333333333333333,
+        "5": 0.3333333333333333,
+        "6": 0.3333333333333333
+      },
+      "object_labels": [
+        "B",
+        "D",
+        "C",
+        "F",
+        "E",
+        "A"
+      ],
+      "query_type": "largest",
+      "query_type_probabilities": {
+        "largest": 1.0,
+        "smallest": 0.0
+      },
+      "query_variant": "largest_angle",
+      "query_variant_probabilities": {
+        "largest_angle": 1.0,
+        "largest_area": 0.0,
+        "largest_length": 0.0,
+        "largest_perimeter": 0.0,
+        "smallest_angle": 0.0,
+        "smallest_area": 0.0,
+        "smallest_length": 0.0,
+        "smallest_perimeter": 0.0
+      },
+      "question_format": "label_choice_no_text_options",
+      "required_evidence_labels": [
+        "ray_a",
+        "vertex",
+        "ray_b"
+      ],
+      "runner_up_value": 98.130102,
+      "scene_variant": "angle",
+      "scene_variant_probabilities": {
+        "angle": 1.0,
+        "rectangle": 0.0,
+        "segment": 0.0
+      },
+      "task_variant": "largest_angle",
+      "task_variant_probabilities": {
+        "largest_angle": 1.0,
+        "largest_area": 0.0,
+        "largest_length": 0.0,
+        "largest_perimeter": 0.0,
+        "smallest_angle": 0.0,
+        "smallest_area": 0.0,
+        "smallest_length": 0.0,
+        "smallest_perimeter": 0.0
+      },
+      "values_by_label": {
+        "A": 97.125016,
+        "B": 50.194429,
+        "C": 98.130102,
+        "D": 66.801409,
+        "E": 119.744881,
+        "F": 75.963757
+      },
+      "winner_gap_abs": 21.614779000000013,
+      "winner_gap_normalized": 0.3107784116198125,
+      "winner_label": "E",
+      "winner_label_probabilities": {
+        "A": 0.16666666666666666,
+        "B": 0.16666666666666666,
+        "C": 0.16666666666666666,
+        "D": 0.16666666666666666,
+        "E": 0.16666666666666666,
+        "F": 0.16666666666666666
+      },
+      "winner_label_target": "E",
+      "winner_value": 119.744881
+    },
+    "projected_evidence": {
+      "grid_point_map": {
+        "ray_a": [
+          5,
+          6
+        ],
+        "ray_b": [
+          -2,
+          0
+        ],
+        "vertex": [
+          5,
+          4
+        ]
+      },
+      "grid_point_path": [
+        [
+          5,
+          6
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          -2,
+          0
+        ]
+      ],
+      "grid_point_set": [
+        [
+          5,
+          6
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          -2,
+          0
+        ]
+      ],
+      "pixel_point_map": {
+        "ray_a": [
+          448.0,
+          96.0
+        ],
+        "ray_b": [
+          224.0,
+          288.0
+        ],
+        "vertex": [
+          448.0,
+          160.0
+        ]
+      },
+      "pixel_point_path": [
+        [
+          448.0,
+          96.0
+        ],
+        [
+          448.0,
+          160.0
+        ],
+        [
+          224.0,
+          288.0
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          448.0,
+          96.0
+        ],
+        [
+          448.0,
+          160.0
+        ],
+        [
+          224.0,
+          288.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "angle_step": 1,
+        "legacy_query_variant": "primitive_angle_set",
+        "legacy_scene_variant": "primitive_angle_set",
+        "legacy_task_id": "task_geometry_comparison_angle",
+        "max_abs_vector_component": 8,
+        "max_angle": 150,
+        "min_absolute_gap_degrees": 10.0,
+        "min_angle": 30,
+        "min_normalized_gap": 0.2,
+        "min_ray_length_units": 2.0,
+        "object_count": 6,
+        "object_count_probabilities": {
+          "4": 0.3333333333333333,
+          "5": 0.3333333333333333,
+          "6": 0.3333333333333333
+        },
+        "query_type": "largest",
+        "query_type_probabilities": {
+          "largest": 1.0,
+          "smallest": 0.0
+        },
+        "query_variant": "largest_angle",
+        "query_variant_probabilities": {
+          "largest_angle": 1.0,
+          "largest_area": 0.0,
+          "largest_length": 0.0,
+          "largest_perimeter": 0.0,
+          "smallest_angle": 0.0,
+          "smallest_area": 0.0,
+          "smallest_length": 0.0,
+          "smallest_perimeter": 0.0
+        },
+        "scene_variant": "angle",
+        "scene_variant_probabilities": {
+          "angle": 1.0,
+          "rectangle": 0.0,
+          "segment": 0.0
+        },
+        "variant_probabilities": {
+          "largest_angle": 1.0,
+          "largest_area": 0.0,
+          "largest_length": 0.0,
+          "largest_perimeter": 0.0,
+          "smallest_angle": 0.0,
+          "smallest_area": 0.0,
+          "smallest_length": 0.0,
+          "smallest_perimeter": 0.0
+        },
+        "winner_label": "E",
+        "winner_label_probabilities": {
+          "A": 0.16666666666666666,
+          "B": 0.16666666666666666,
+          "C": 0.16666666666666666,
+          "D": 0.16666666666666666,
+          "E": 0.16666666666666666,
+          "F": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "geometry_comparison_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the single-letter label of the correct angle",
+          "evidence_hint": "set \"evidence\" to an array of exactly three graph-paper points for the winning angle: the vertex and the two ray endpoints",
+          "json_example": "{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":\"B\"}",
+          "json_example_answer_only": "{\"answer\":\"B\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "several labeled angles",
+          "question_text": "Which labeled angle has the greatest measure?"
+        },
+        "task_family_key": "comparison_graph_scene",
+        "task_family_variant_index": 2,
+        "task_key": "comparison_query",
+        "task_variant_index": 3,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/comparison/geometry_comparison_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:comparison_query": 5,
+          "task_family:comparison_graph_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "geometry_comparison_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single-letter label of the correct angle",
+              "evidence_hint": "set \"evidence\" to an array of exactly three graph-paper points for the winning angle: the vertex and the two ray endpoints",
+              "json_example": "{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled angles",
+              "question_text": "Which labeled angle has the greatest measure?"
+            },
+            "task_family_key": "comparison_graph_scene",
+            "task_family_variant_index": 2,
+            "task_key": "comparison_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/comparison/geometry_comparison_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:comparison_query": 5,
+              "task_family:comparison_graph_scene": 5
+            }
+          },
+          "prompt": "Look at the graph-paper image showing several labeled angles. Answer this question: Which labeled angle has the greatest measure?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of exactly three graph-paper points for the winning angle: the vertex and the two ray endpoints.\nAnswer field: set \"answer\" to the single-letter label of the correct angle.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":\"B\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_comparison_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single-letter label of the correct angle",
+              "evidence_hint": "set \"evidence\" to an array of exactly three graph-paper points for the winning angle: the vertex and the two ray endpoints",
+              "json_example": "{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled angles",
+              "question_text": "Which labeled angle has the greatest measure?"
+            },
+            "task_family_key": "comparison_graph_scene",
+            "task_family_variant_index": 2,
+            "task_key": "comparison_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/comparison/geometry_comparison_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:comparison_query": 5,
+              "task_family:comparison_graph_scene": 5
+            }
+          },
+          "prompt": "Look at the graph-paper image showing several labeled angles. Answer this question: Which labeled angle has the greatest measure?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the single-letter label of the correct angle.\nExample JSON:\n{\"answer\":\"B\"}"
+        }
+      },
+      "task_variant": "largest_angle",
+      "template_id": "geometry_comparison_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "winner": {
+          "winner_label": "E",
+          "winner_vertex": [
+            448.0,
+            160.0
+          ]
+        }
+      },
+      "image_id": "img0",
+      "object_label_centers": {
+        "A": [
+          124.39096285658145,
+          433.8385776029768
+        ],
+        "B": [
+          466.1334087899149,
+          417.55546959399334
+        ],
+        "C": [
+          122.0551256876113,
+          142.79830039182463
+        ],
+        "D": [
+          275.669001404085,
+          178.70044046613722
+        ],
+        "E": [
+          447.9501302340571,
+          182.39994448668222
+        ],
+        "F": [
+          290.527249964034,
+          397.97632091887755
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "graph_paper",
+        "style_spec": {
+          "axis_arrow_size": 10,
+          "axis_arrows_enabled": true,
+          "axis_color": [
+            179,
+            184,
+            191
+          ],
+          "axis_darken_range": [
+            32,
+            48
+          ],
+          "axis_enabled": true,
+          "axis_line_width": 2,
+          "axis_scale_label_max_abs": 0,
+          "axis_scale_labels_enabled": true,
+          "base_color": [
+            255,
+            255,
+            255
+          ],
+          "base_color_jitter": [
+            0,
+            0
+          ],
+          "center_point_color": [
+            165,
+            170,
+            177
+          ],
+          "center_point_darken_extra_range": [
+            8,
+            14
+          ],
+          "center_point_enabled": true,
+          "center_point_radius": 2,
+          "color_variation_applied": true,
+          "color_variation_enabled": true,
+          "color_variation_sampled": {
+            "axis_darken": 43,
+            "base_color_delta": 0,
+            "center_point_darken_extra": 14,
+            "line_color_delta": -2,
+            "major_line_darken": 9,
+            "origin_label_darken_extra": 9
+          },
+          "kind": "grid",
+          "line_color": [
+            222,
+            227,
+            234
+          ],
+          "line_color_jitter": [
+            -5,
+            5
+          ],
+          "line_width": 1,
+          "major_every": 0,
+          "major_line_color": [
+            213,
+            218,
+            225
+          ],
+          "major_line_darken_range": [
+            6,
+            14
+          ],
+          "major_line_width": 1,
+          "origin_label_color": [
+            170,
+            175,
+            182
+          ],
+          "origin_label_darken_extra_range": [
+            6,
+            12
+          ],
+          "origin_label_enabled": false,
+          "origin_label_text": "0",
+          "outer_margin_px": 16,
+          "scene_supersample_scale": 3,
+          "spacing": 32,
+          "supersample_scale": 1
+        }
+      },
+      "canvas_size": 578,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 16,
+        "full_cells_y": 16,
+        "origin_pixel": [
+          288,
+          288
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 32,
+        "target_cells_x": 18,
+        "target_cells_y": 18,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 16,
+        "full_cells_y": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 32,
+        "target_cells_x": 18,
+        "target_cells_y": 18
+      },
+      "legacy_scene_variant": "primitive_angle_set",
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "query_variant": "largest_angle",
+      "scene_variant": "angle",
+      "shape_style": {
+        "label_color": [
+          123,
+          146,
+          36
+        ],
+        "label_stroke_color": [
+          254,
+          249,
+          251
+        ],
+        "line_color": [
+          123,
+          146,
+          36
+        ]
+      },
+      "text_style": {
+        "font_size_px": 87,
+        "stroke_width_px": 6
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "label": "B",
+            "points": {
+              "arm_a": [
+                256.0,
+                256.0
+              ],
+              "arm_b": [
+                448.0,
+                224.0
+              ],
+              "vertex": [
+                448.0,
+                416.0
+              ]
+            },
+            "raw_angle_degrees": 50.194429,
+            "target_angle_degrees": 50
+          },
+          "entity_id": "angle_B",
+          "entity_type": "angle"
+        },
+        {
+          "attrs": {
+            "label": "D",
+            "points": {
+              "arm_a": [
+                384.0,
+                384.0
+              ],
+              "arm_b": [
+                480.0,
+                160.0
+              ],
+              "vertex": [
+                288.0,
+                160.0
+              ]
+            },
+            "raw_angle_degrees": 66.801409,
+            "target_angle_degrees": 67
+          },
+          "entity_id": "angle_D",
+          "entity_type": "angle"
+        },
+        {
+          "attrs": {
+            "label": "C",
+            "points": {
+              "arm_a": [
+                128.0,
+                320.0
+              ],
+              "arm_b": [
+                352.0,
+                128.0
+              ],
+              "vertex": [
+                128.0,
+                160.0
+              ]
+            },
+            "raw_angle_degrees": 98.130102,
+            "target_angle_degrees": 98
+          },
+          "entity_id": "angle_C",
+          "entity_type": "angle"
+        },
+        {
+          "attrs": {
+            "label": "F",
+            "points": {
+              "arm_a": [
+                320.0,
+                544.0
+              ],
+              "arm_b": [
+                416.0,
+                416.0
+              ],
+              "vertex": [
+                288.0,
+                416.0
+              ]
+            },
+            "raw_angle_degrees": 75.963757,
+            "target_angle_degrees": 76
+          },
+          "entity_id": "angle_F",
+          "entity_type": "angle"
+        },
+        {
+          "attrs": {
+            "label": "E",
+            "points": {
+              "arm_a": [
+                448.0,
+                96.0
+              ],
+              "arm_b": [
+                224.0,
+                288.0
+              ],
+              "vertex": [
+                448.0,
+                160.0
+              ]
+            },
+            "raw_angle_degrees": 119.744881,
+            "target_angle_degrees": 120
+          },
+          "entity_id": "angle_E",
+          "entity_type": "angle"
+        },
+        {
+          "attrs": {
+            "label": "A",
+            "points": {
+              "arm_a": [
+                96.0,
+                160.0
+              ],
+              "arm_b": [
+                352.0,
+                416.0
+              ],
+              "vertex": [
+                128.0,
+                416.0
+              ]
+            },
+            "raw_angle_degrees": 97.125016,
+            "target_angle_degrees": 97
+          },
+          "entity_id": "angle_A",
+          "entity_type": "angle"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            288,
+            288
+          ],
+          "spacing_px": 32,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "comparison_target": "angle_measure",
+        "legacy_query_variant": "primitive_angle_set",
+        "legacy_scene_variant": "primitive_angle_set",
+        "legacy_task_id": "task_geometry_comparison_angle",
+        "query_type": "largest",
+        "query_variant": "largest_angle",
+        "scene_variant": "angle",
+        "winner_label": "E"
+      },
+      "scene_kind": "geometry_2d_angle_comparison"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "ray_a",
+        "vertex",
+        "ray_b"
+      ],
+      "type": "winning_angle_triplet",
+      "winner_label": "E"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

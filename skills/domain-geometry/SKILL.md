@@ -14,10 +14,12 @@ Use this whenever the task lives under `domain=geometry`.
 4. `docs/workflows/SHARED_UTILITIES.md`
 
 ## Geometry-domain rules
+- Geometry is intentionally consolidated into five active task ids: `task_geometry_measurement_value`, `task_geometry_comparison_value`, `task_geometry_counting_value`, `task_geometry_analytical_2d_value`, and `task_geometry_analytical_3d_value`.
+- Active geometry tasks follow a chart-style two-axis contract: `scene_variant` names the geometric scene family, while `query_variant` names the requested question type.
 - Measurement tasks use graph-paper-style coordinate grounding and geometry shared helpers.
-- Analytical 2D tasks use solid non-graph-paper scenes with structured `measurement_ref_map` evidence.
+- Analytical 2D / 3D tasks use structured `measurement_ref_map` evidence.
 - Comparison tasks use labeled objects with `option_letter` answers and winner evidence.
-- Counting tasks use non-graph-paper multi-object scenes with sorted `label_set` evidence when labels are the canonical witness.
+- Counting tasks use non-graph-paper multi-object scenes with unordered `label_set` evidence when labels are the canonical witness.
 - Shared geometry logic belongs in `trace/tasks/geometry/shared/`; task-group shared code belongs inside the task-group package.
 
 ## Design heuristics
@@ -25,6 +27,7 @@ Use this whenever the task lives under `domain=geometry`.
 - Reuse existing scene samplers/renderers before introducing a new object-family stack.
 - Keep label placement collision-aware and matched to the object footprint.
 - If sibling geometry objectives reuse the same scene/prompt/trace flow, factor that into shared helpers instead of copying task-local logic.
+- When refactoring geometry coverage, prefer widening `query_variant` or `scene_variant` support inside the five consolidated task ids before adding new geometry task ids.
 
 ## Coverage reference
 For current geometry coverage and active task families, use:

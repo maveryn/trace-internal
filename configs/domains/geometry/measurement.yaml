@@ -8,6 +8,24 @@ generation:
     ellipse_axis_max: 10
     ellipse_allow_circle: false
   task_overrides:
+    task_geometry_measurement_value:
+      query_variant_weights:
+        angle: 1.0
+        length: 1.0
+        area: 1.0
+        perimeter: 1.0
+        slope: 1.0
+      scene_variant_weights:
+        angle: 1.0
+        segment: 1.0
+        triangle: 1.0
+        quadrilateral: 1.0
+        pentagon: 1.0
+        circle: 1.0
+        ellipse: 1.0
+        line: 1.0
+      balanced_query_variant_sampling: true
+      balanced_scene_variant_sampling: true
     task_geometry_measurement_angle:
       min_angle: 30
       max_angle: 150

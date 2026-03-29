@@ -1,0 +1,477 @@
+{
+  "answer_gt": {
+    "type": "pi_expression",
+    "value": "15π"
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "NO": 5,
+      "NP": 4
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_2d_value/images/area/0016.png"
+  },
+  "instance_seed": 426593549563959,
+  "prompt": "Work from the annotated figure showing a geometric shape with measurement annotations. Based on the shown values, answer this question: The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, NP.\nAnswer field: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"NO\":2,\"NP\":3},\"answer\":\"12π\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the annotated figure showing a geometric shape with measurement annotations. Based on the shown values, answer this question: The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, NP.\nAnswer field: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"NO\":2,\"NP\":3},\"answer\":\"12π\"}",
+    "answer_only": "Work from the annotated figure showing a geometric shape with measurement annotations. Based on the shown values, answer this question: The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
+  },
+  "task": "task_geometry_analytical_2d_value",
+  "task_variant": "area",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 2500,
+      "answer_min": 8,
+      "answer_scalar": 15,
+      "answer_type": "pi_expression",
+      "answer_value": "15π",
+      "case_id": "ellipse_derived",
+      "evidence_annotations": {
+        "a": "NO",
+        "c": "NP"
+      },
+      "evidence_ids": [
+        "NO",
+        "NP"
+      ],
+      "evidence_label_values": {
+        "a": 5,
+        "c": 4
+      },
+      "evidence_map": {
+        "NO": 5,
+        "NP": 4
+      },
+      "evidence_roles": [
+        "a",
+        "c"
+      ],
+      "formula_expression": "A = π * a * sqrt(a^2 - c^2)",
+      "legacy_query_variant": "ellipse_derived",
+      "legacy_scene_variant": "ellipse",
+      "legacy_task_id": "task_geometry_analytical_2d_area",
+      "mode_probabilities": {
+        "derived": 0.5,
+        "explicit": 0.5
+      },
+      "query_variant": "area",
+      "query_variant_probabilities": {
+        "area": 1.0,
+        "composite_area": 0.0,
+        "length": 0.0,
+        "perimeter": 0.0
+      },
+      "reasoning_mode": "derived",
+      "required_annotations": [
+        "NO",
+        "NP"
+      ],
+      "scene_variant": "ellipse",
+      "scene_variant_probabilities": {
+        "circle": 0.14285714285714285,
+        "composite_region": 0.0,
+        "ellipse": 0.14285714285714285,
+        "parallelogram": 0.14285714285714285,
+        "rectangle": 0.14285714285714285,
+        "rhombus": 0.14285714285714285,
+        "trapezoid": 0.14285714285714285,
+        "triangle": 0.14285714285714285
+      },
+      "shape_probabilities": {
+        "circle": 0.0,
+        "ellipse": 1.0,
+        "parallelogram": 0.0,
+        "rectangle": 0.0,
+        "rhombus": 0.0,
+        "trapezoid": 0.0,
+        "triangle": 0.0
+      },
+      "shape_variant": "ellipse",
+      "task_variant": "area",
+      "task_variant_probabilities": {
+        "area": 1.0,
+        "composite_area": 0.0,
+        "length": 0.0,
+        "perimeter": 0.0
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "a": "NO",
+        "c": "NP"
+      },
+      "id_set": [
+        "NO",
+        "NP"
+      ],
+      "measurement_ref_map": {
+        "NO": 5,
+        "NP": 4
+      },
+      "pixel_annotation_centers": {
+        "NO": [
+          417.0,
+          114.5
+        ],
+        "NP": [
+          412.0,
+          149.5
+        ]
+      },
+      "pixel_point_set": [
+        [
+          417.0,
+          114.5
+        ],
+        [
+          412.0,
+          149.5
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 2500,
+        "answer_min": 8,
+        "legacy_query_variant": "ellipse_derived",
+        "legacy_scene_variant": "ellipse",
+        "legacy_task_id": "task_geometry_analytical_2d_area",
+        "mode_probabilities": {
+          "derived": 0.5,
+          "explicit": 0.5
+        },
+        "query_variant": "area",
+        "query_variant_probabilities": {
+          "area": 1.0,
+          "composite_area": 0.0,
+          "length": 0.0,
+          "perimeter": 0.0
+        },
+        "reasoning_mode": "derived",
+        "scene_variant": "ellipse",
+        "scene_variant_probabilities": {
+          "circle": 0.14285714285714285,
+          "composite_region": 0.0,
+          "ellipse": 0.14285714285714285,
+          "parallelogram": 0.14285714285714285,
+          "rectangle": 0.14285714285714285,
+          "rhombus": 0.14285714285714285,
+          "trapezoid": 0.14285714285714285,
+          "triangle": 0.14285714285714285
+        },
+        "shape_probabilities": {
+          "circle": 0.0,
+          "ellipse": 1.0,
+          "parallelogram": 0.0,
+          "rectangle": 0.0,
+          "rhombus": 0.0,
+          "trapezoid": 0.0,
+          "triangle": 0.0
+        },
+        "shape_variant": "ellipse",
+        "variant_probabilities": {
+          "area": 1.0,
+          "composite_area": 0.0,
+          "length": 0.0,
+          "perimeter": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "geometry_analytical_area_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, NP",
+          "json_example": "{\"evidence\":{\"NO\":2,\"NP\":3},\"answer\":\"12π\"}",
+          "json_example_answer_only": "{\"answer\":\"12π\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a geometric shape with measurement annotations",
+          "question_text": "The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in kπ form."
+        },
+        "task_family_key": "analytical_single_shape",
+        "task_family_variant_index": 4,
+        "task_key": "analytical_area_query",
+        "task_variant_index": 4,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_2d/geometry_analytical_area_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_area_query": 5,
+          "task_family:analytical_single_shape": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "geometry_analytical_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, NP",
+              "json_example": "{\"evidence\":{\"NO\":2,\"NP\":3},\"answer\":\"12π\"}",
+              "json_example_answer_only": "{\"answer\":\"12π\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric shape with measurement annotations",
+              "question_text": "The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in kπ form."
+            },
+            "task_family_key": "analytical_single_shape",
+            "task_family_variant_index": 4,
+            "task_key": "analytical_area_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_area_query": 5,
+              "task_family:analytical_single_shape": 5
+            }
+          },
+          "prompt": "Work from the annotated figure showing a geometric shape with measurement annotations. Based on the shown values, answer this question: The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, NP.\nAnswer field: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"NO\":2,\"NP\":3},\"answer\":\"12π\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_analytical_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the area value in the form kπ (for example 12π)",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: NO, NP",
+              "json_example": "{\"evidence\":{\"NO\":2,\"NP\":3},\"answer\":\"12π\"}",
+              "json_example_answer_only": "{\"answer\":\"12π\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric shape with measurement annotations",
+              "question_text": "The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in kπ form."
+            },
+            "task_family_key": "analytical_single_shape",
+            "task_family_variant_index": 4,
+            "task_key": "analytical_area_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_area_query": 5,
+              "task_family:analytical_single_shape": 5
+            }
+          },
+          "prompt": "Work from the annotated figure showing a geometric shape with measurement annotations. Based on the shown values, answer this question: The ellipse shows the semimajor axis and focal distance. What is its area? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the area value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
+        }
+      },
+      "task_variant": "area",
+      "template_id": "geometry_analytical_area_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "NO": [
+          417.0,
+          114.5
+        ],
+        "NP": [
+          412.0,
+          149.5
+        ]
+      },
+      "annotation_labels": {
+        "a": "NO",
+        "c": "NP"
+      },
+      "coord_space": "pixel",
+      "entity_id": "shape_1",
+      "instance_anchor": {
+        "bbox": [
+          342.0,
+          102.0,
+          442.0,
+          162.0
+        ],
+        "coord_space": "pixel",
+        "point": [
+          392.0,
+          132.0
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_cool",
+        "style_spec": {
+          "color": [
+            246,
+            248,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 566,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "origin_pixel": [
+          282,
+          282
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 47,
+        "target_cells_x": 12,
+        "target_cells_y": 12,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "partial_edge_cells": true,
+        "spacing_px": 47,
+        "target_cells_x": 12,
+        "target_cells_y": 12
+      },
+      "legacy_scene_variant": "ellipse",
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "query_variant": "area",
+      "scene_variant": "ellipse",
+      "shape_style": {
+        "label_color": [
+          38,
+          59,
+          93
+        ],
+        "label_stroke_color": [
+          248,
+          252,
+          254
+        ],
+        "line_color": [
+          38,
+          59,
+          93
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "area_pi_coefficient": 15,
+            "center": [
+              392.0,
+              132.0
+            ],
+            "focal_distance_units": 4,
+            "reasoning_mode": "derived",
+            "semi_axis_x_units": 5,
+            "semi_axis_y_units": 3,
+            "shape_variant": "ellipse"
+          },
+          "entity_id": "shape_1",
+          "entity_type": "ellipse"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            282,
+            282
+          ],
+          "spacing_px": 47,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "legacy_query_variant": "ellipse_derived",
+        "legacy_scene_variant": "ellipse",
+        "legacy_task_id": "task_geometry_analytical_2d_area",
+        "query_variant": "area",
+        "scene_variant": "ellipse"
+      },
+      "scene_kind": "geometry_2d_analytical_area"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "NO",
+        "NP"
+      ],
+      "annotation_labels": {
+        "a": "NO",
+        "c": "NP"
+      },
+      "annotation_values": {
+        "NO": 5,
+        "NP": 4
+      },
+      "case_id": "ellipse_derived",
+      "formula_expression": "A = π * a * sqrt(a^2 - c^2)",
+      "measurement_ref_map": {
+        "NO": 5,
+        "NP": 4
+      },
+      "reasoning_mode": "derived",
+      "shape_variant": "ellipse",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

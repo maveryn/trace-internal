@@ -1,9 +1,0 @@
-dataset_name: task_geometry_analytical_2d_length_example
-instance_version: v1
-image_format: png
-sampling_seed: 13
-max_attempts_per_instance: 320
-tasks:
-  - task_id: task_geometry_analytical_2d_length
-    count: 12
-    params: {}

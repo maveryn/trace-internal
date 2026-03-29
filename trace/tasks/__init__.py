@@ -1,26 +1,11 @@
 """TRACE task implementations."""
 
 from .registry import TASK_REGISTRY, create_task
-from .geometry.analytical_2d import area as _task_geometry_analytical_2d_area
-from .geometry.analytical_2d import composite_area as _task_geometry_analytical_2d_composite_area
-from .geometry.analytical_2d import length as _task_geometry_analytical_2d_length
-from .geometry.analytical_2d import perimeter as _task_geometry_analytical_2d_perimeter
-from .geometry.analytical_3d import surface_area as _task_geometry_analytical_3d_surface_area
-from .geometry.analytical_3d import volume as _task_geometry_analytical_3d_volume
-from .geometry.comparison import angle as _task_geometry_comparison_angle
-from .geometry.comparison import area as _task_geometry_comparison_area
-from .geometry.comparison import length as _task_geometry_comparison_length
-from .geometry.comparison import perimeter as _task_geometry_comparison_perimeter
-from .geometry.counting import angle as _task_geometry_counting_angle
-from .geometry.counting import convexity as _task_geometry_counting_convexity
-from .geometry.counting import quadrilateral as _task_geometry_counting_quadrilateral
-from .geometry.counting import shape_type as _task_geometry_counting_shape_type
-from .geometry.counting import triangle as _task_geometry_counting_triangle
-from .geometry.measurement import angle as _task_geometry_measurement_angle
-from .geometry.measurement import area as _task_geometry_measurement_area
-from .geometry.measurement import length as _task_geometry_measurement_length
-from .geometry.measurement import perimeter as _task_geometry_measurement_perimeter
-from .geometry.measurement import slope as _task_geometry_measurement_slope
+from .geometry.analytical_2d import value as _task_geometry_analytical_2d_value
+from .geometry.analytical_3d import value as _task_geometry_analytical_3d_value
+from .geometry.comparison import value as _task_geometry_comparison_label
+from .geometry.counting import value as _task_geometry_counting_value
+from .geometry.measurement import value as _task_geometry_measurement_value
 from .graph.comparison import largest_component_size as _task_graph_comparison_largest_component_size
 from .graph.counting import articulation_point_count as _task_graph_counting_articulation_point_count
 from .graph.counting import bridge_count as _task_graph_counting_bridge_count

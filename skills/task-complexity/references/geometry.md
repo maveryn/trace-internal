@@ -75,6 +75,7 @@ Measure:
 
 ## Notes
 - Domain-level criteria must apply to every geometry task; keep `measurement_precision`, `comparison_reasoning`, `classification_reasoning`, and `analytical_reasoning` at task-group scope rather than forcing them onto unrelated families.
-- Geometry usually wants criterion values from explicit scene/query structure, not from answer magnitude alone.
+- Geometry usually wants criterion values from explicit `scene_variant` / `query_variant` structure, not from answer magnitude alone.
 - Keep raw givens counts, winner gaps, or derivation depth in trace if they help debug the score.
 - For analytical geometry, prefer annotation-count, formula-family, and answer-format signals over raw answer magnitude; answer size alone is usually a poor proxy for derivation difficulty.
+- In the consolidated geometry surface, use the broad task group to choose the criteria vocabulary, then let `scene_variant` and `query_variant` determine the per-instance component values.

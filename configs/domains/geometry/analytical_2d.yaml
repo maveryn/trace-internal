@@ -16,6 +16,23 @@ generation:
     balanced_shape_sampling: true
     balanced_mode_sampling: true
   task_overrides:
+    task_geometry_analytical_2d_value:
+      query_variant_weights:
+        area: 1.0
+        length: 1.0
+        perimeter: 1.0
+        composite_area: 1.0
+      scene_variant_weights:
+        rectangle: 1.0
+        triangle: 1.0
+        parallelogram: 1.0
+        trapezoid: 1.0
+        rhombus: 1.0
+        circle: 1.0
+        ellipse: 1.0
+        composite_region: 1.0
+      balanced_query_variant_sampling: true
+      balanced_scene_variant_sampling: true
     task_geometry_analytical_2d_area:
       side_min: 5
       side_max: 50

@@ -1,0 +1,524 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 1120
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "QR": 40,
+      "RS": 19,
+      "VU": 18
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_2d_value/images/composite_area/0024.png"
+  },
+  "instance_seed": 5164049235467832,
+  "prompt": "Use the image showing a shaded composite geometric region with measurement annotations. Question: The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, RS, VU.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"QR\":2,\"RS\":3,\"VU\":4},\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the image showing a shaded composite geometric region with measurement annotations. Question: The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, RS, VU.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"QR\":2,\"RS\":3,\"VU\":4},\"answer\":8}",
+    "answer_only": "Use the image showing a shaded composite geometric region with measurement annotations. Question: The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_geometry_analytical_2d_value",
+  "task_variant": "composite_area",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 2500,
+      "answer_min": 20,
+      "answer_scalar": 1120,
+      "answer_type": "integer",
+      "answer_value": 1120,
+      "evidence_map": {
+        "QR": 40,
+        "RS": 19,
+        "VU": 18
+      },
+      "evidence_role_tokens": {
+        "rect_height": "RS",
+        "roof_height": "VU",
+        "width": "QR"
+      },
+      "evidence_role_values": {
+        "rect_height": 19,
+        "roof_height": 18,
+        "width": 40
+      },
+      "evidence_roles": [
+        "width",
+        "rect_height",
+        "roof_height"
+      ],
+      "formula_expression": "width * rect_height + (width * roof_height) / 2",
+      "legacy_query_variant": "rectangle_triangle_union",
+      "legacy_scene_variant": "composite_region",
+      "legacy_task_id": "task_geometry_analytical_2d_composite_area",
+      "query_variant": "composite_area",
+      "query_variant_probabilities": {
+        "area": 0.0,
+        "composite_area": 1.0,
+        "length": 0.0,
+        "perimeter": 0.0
+      },
+      "raw_answer_value": 1120,
+      "required_annotations": [
+        "QR",
+        "RS",
+        "VU"
+      ],
+      "scene_kind": "composite_region",
+      "scene_variant": "composite_region",
+      "scene_variant_probabilities": {
+        "circle": 0.0,
+        "composite_region": 1.0,
+        "ellipse": 0.0,
+        "parallelogram": 0.0,
+        "rectangle": 0.0,
+        "rhombus": 0.0,
+        "trapezoid": 0.0,
+        "triangle": 0.0
+      },
+      "target_quantity": "area",
+      "task_variant": "composite_area",
+      "task_variant_probabilities": {
+        "area": 0.0,
+        "composite_area": 1.0,
+        "length": 0.0,
+        "perimeter": 0.0
+      },
+      "variant_probabilities": {
+        "l_shape_cutout": 0.2,
+        "rectangle_inner_cutout": 0.2,
+        "rectangle_triangle_cutout": 0.2,
+        "rectangle_triangle_union": 0.2,
+        "step_rectangles_union": 0.2
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "rect_height": "RS",
+        "roof_height": "VU",
+        "width": "QR"
+      },
+      "id_set": [
+        "QR",
+        "RS",
+        "VU"
+      ],
+      "measurement_ref_map": {
+        "QR": 40,
+        "RS": 19,
+        "VU": 18
+      },
+      "pixel_annotation_centers": {
+        "QR": [
+          265.5,
+          431.15873960080745
+        ],
+        "RS": [
+          459.94000000000005,
+          333.86223960080747
+        ],
+        "VU": [
+          293.93333333333334,
+          179.4427396008074
+        ]
+      },
+      "pixel_point_set": [
+        [
+          265.5,
+          431.15873960080745
+        ],
+        [
+          459.94000000000005,
+          333.86223960080747
+        ],
+        [
+          293.93333333333334,
+          179.4427396008074
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 2500,
+        "answer_min": 20,
+        "legacy_query_variant": "rectangle_triangle_union",
+        "legacy_scene_variant": "composite_region",
+        "legacy_task_id": "task_geometry_analytical_2d_composite_area",
+        "query_variant": "composite_area",
+        "query_variant_probabilities": {
+          "area": 0.0,
+          "composite_area": 1.0,
+          "length": 0.0,
+          "perimeter": 0.0
+        },
+        "scene_variant": "composite_region",
+        "scene_variant_probabilities": {
+          "circle": 0.0,
+          "composite_region": 1.0,
+          "ellipse": 0.0,
+          "parallelogram": 0.0,
+          "rectangle": 0.0,
+          "rhombus": 0.0,
+          "trapezoid": 0.0,
+          "triangle": 0.0
+        },
+        "task_variant": "rectangle_triangle_union",
+        "variant_probabilities": {
+          "area": 0.0,
+          "composite_area": 1.0,
+          "length": 0.0,
+          "perimeter": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "geometry_analytical_composite_area_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the area value as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, RS, VU",
+          "json_example": "{\"evidence\":{\"QR\":2,\"RS\":3,\"VU\":4},\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a shaded composite geometric region with measurement annotations",
+          "question_text": "The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?"
+        },
+        "task_family_key": "analytical_composite_area_scene",
+        "task_family_variant_index": 3,
+        "task_key": "analytical_composite_area_query",
+        "task_variant_index": 1,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_2d/geometry_analytical_composite_area_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_composite_area_query": 5,
+          "task_family:analytical_composite_area_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "geometry_analytical_composite_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the area value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, RS, VU",
+              "json_example": "{\"evidence\":{\"QR\":2,\"RS\":3,\"VU\":4},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a shaded composite geometric region with measurement annotations",
+              "question_text": "The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?"
+            },
+            "task_family_key": "analytical_composite_area_scene",
+            "task_family_variant_index": 3,
+            "task_key": "analytical_composite_area_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_composite_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_composite_area_query": 5,
+              "task_family:analytical_composite_area_scene": 5
+            }
+          },
+          "prompt": "Use the image showing a shaded composite geometric region with measurement annotations. Question: The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, RS, VU.\nAnswer requirement: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"QR\":2,\"RS\":3,\"VU\":4},\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_analytical_composite_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the area value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QR, RS, VU",
+              "json_example": "{\"evidence\":{\"QR\":2,\"RS\":3,\"VU\":4},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a shaded composite geometric region with measurement annotations",
+              "question_text": "The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?"
+            },
+            "task_family_key": "analytical_composite_area_scene",
+            "task_family_variant_index": 3,
+            "task_key": "analytical_composite_area_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_composite_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_composite_area_query": 5,
+              "task_family:analytical_composite_area_scene": 5
+            }
+          },
+          "prompt": "Use the image showing a shaded composite geometric region with measurement annotations. Question: The shaded figure is a rectangle with a triangular roof attached. What is the area of the shaded region in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "composite_area",
+      "template_id": "geometry_analytical_composite_area_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "QR": [
+          265.5,
+          431.15873960080745
+        ],
+        "RS": [
+          459.94000000000005,
+          333.86223960080747
+        ],
+        "VU": [
+          293.93333333333334,
+          179.4427396008074
+        ]
+      },
+      "annotation_labels": {
+        "rect_height": "RS",
+        "roof_height": "VU",
+        "width": "QR"
+      },
+      "coord_space": "pixel",
+      "instance_anchor": {
+        "bbox": [
+          98.55999999999997,
+          104.3197396008074,
+          432.44000000000005,
+          413.15873960080745
+        ],
+        "coord_space": "pixel"
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_offwhite",
+        "style_spec": {
+          "color": [
+            252,
+            252,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 531,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "origin_pixel": [
+          265,
+          265
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 53,
+        "target_cells_x": 10,
+        "target_cells_y": 10,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "partial_edge_cells": true,
+        "spacing_px": 53,
+        "target_cells_x": 10,
+        "target_cells_y": 10
+      },
+      "legacy_scene_variant": "composite_region",
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "scale": 0.938141
+            },
+            "type": "downsample"
+          }
+        ],
+        "enabled": true
+      },
+      "query_variant": "composite_area",
+      "scene_variant": "composite_region",
+      "shape_style": {
+        "label_color": [
+          150,
+          112,
+          33
+        ],
+        "label_stroke_color": [
+          250,
+          254,
+          255
+        ],
+        "line_color": [
+          150,
+          112,
+          33
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "fill_kind": "shaded",
+            "vertices": [
+              [
+                98.55999999999997,
+                413.15873960080745
+              ],
+              [
+                432.44000000000005,
+                413.15873960080745
+              ],
+              [
+                432.44000000000005,
+                254.56573960080743
+              ],
+              [
+                98.55999999999997,
+                254.56573960080743
+              ]
+            ]
+          },
+          "entity_id": "rect_body",
+          "entity_type": "rectangle"
+        },
+        {
+          "attrs": {
+            "fill_kind": "shaded",
+            "vertices": [
+              [
+                98.55999999999997,
+                254.56573960080743
+              ],
+              [
+                432.44000000000005,
+                254.56573960080743
+              ],
+              [
+                265.5,
+                104.3197396008074
+              ]
+            ]
+          },
+          "entity_id": "roof_tri",
+          "entity_type": "isosceles_triangle"
+        },
+        {
+          "attrs": {
+            "helper": true,
+            "point_a": [
+              265.5,
+              254.56573960080743
+            ],
+            "point_b": [
+              265.5,
+              104.3197396008074
+            ]
+          },
+          "entity_id": "roof_height",
+          "entity_type": "altitude"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            265,
+            265
+          ],
+          "spacing_px": 53,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "legacy_query_variant": "rectangle_triangle_union",
+        "legacy_scene_variant": "composite_region",
+        "legacy_task_id": "task_geometry_analytical_2d_composite_area",
+        "query_variant": "composite_area",
+        "scene_variant": "composite_region"
+      },
+      "scene_kind": "geometry_2d_analytical_composite_area"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "QR",
+        "RS",
+        "VU"
+      ],
+      "annotation_labels": {
+        "rect_height": "RS",
+        "roof_height": "VU",
+        "width": "QR"
+      },
+      "annotation_values": {
+        "QR": 40,
+        "RS": 19,
+        "VU": 18
+      },
+      "formula_expression": "width * rect_height + (width * roof_height) / 2",
+      "measurement_ref_map": {
+        "QR": 40,
+        "RS": 19,
+        "VU": 18
+      },
+      "task_variant": "rectangle_triangle_union",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

@@ -1,0 +1,491 @@
+{
+  "answer_gt": {
+    "type": "number",
+    "value": 65.1
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "BD": 24,
+      "CE": 22
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_2d_value/images/perimeter/0020.png"
+  },
+  "instance_seed": 6575057703949273,
+  "prompt": "Use the image showing a geometric scene with measurement annotations. Question: The rhombus shows both diagonals. What is the perimeter of the rhombus?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BD, CE.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"BD\":2,\"CE\":3},\"answer\":42.3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the image showing a geometric scene with measurement annotations. Question: The rhombus shows both diagonals. What is the perimeter of the rhombus?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BD, CE.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"BD\":2,\"CE\":3},\"answer\":42.3}",
+    "answer_only": "Use the image showing a geometric scene with measurement annotations. Question: The rhombus shows both diagonals. What is the perimeter of the rhombus?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+  },
+  "task": "task_geometry_analytical_2d_value",
+  "task_variant": "perimeter",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 250,
+      "answer_min": 8,
+      "answer_scalar": 651,
+      "answer_type": "number",
+      "answer_value": 65.1,
+      "evidence_map": {
+        "BD": 24,
+        "CE": 22
+      },
+      "evidence_role_tokens": {
+        "diag_x": "BD",
+        "diag_y": "CE"
+      },
+      "evidence_role_values": {
+        "diag_x": 24,
+        "diag_y": 22
+      },
+      "evidence_roles": [
+        "diag_x",
+        "diag_y"
+      ],
+      "formula_expression": "4 * sqrt((diag_x/2)^2 + (diag_y/2)^2)",
+      "legacy_query_variant": "rhombus_diagonals",
+      "legacy_scene_variant": "rhombus",
+      "legacy_task_id": "task_geometry_analytical_2d_perimeter",
+      "query_variant": "perimeter",
+      "query_variant_probabilities": {
+        "area": 0.0,
+        "composite_area": 0.0,
+        "length": 0.0,
+        "perimeter": 1.0
+      },
+      "raw_answer_value": 65.11528238439882,
+      "required_annotations": [
+        "BD",
+        "CE"
+      ],
+      "scene_variant": "rhombus",
+      "scene_variant_probabilities": {
+        "circle": 0.2,
+        "composite_region": 0.0,
+        "ellipse": 0.0,
+        "parallelogram": 0.0,
+        "rectangle": 0.2,
+        "rhombus": 0.2,
+        "trapezoid": 0.2,
+        "triangle": 0.2
+      },
+      "target_quantity": "perimeter",
+      "task_variant": "perimeter",
+      "task_variant_probabilities": {
+        "area": 0.0,
+        "composite_area": 0.0,
+        "length": 0.0,
+        "perimeter": 1.0
+      },
+      "variant_probabilities": {
+        "inscribed_square_diameter": 0.0,
+        "isosceles_trapezoid_bases_height": 0.0,
+        "rectangle_side_diagonal": 0.0,
+        "rhombus_diagonals": 1.0,
+        "right_triangle_leg_hypotenuse": 0.0
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "diag_x": "BD",
+        "diag_y": "CE"
+      },
+      "id_set": [
+        "BD",
+        "CE"
+      ],
+      "measurement_ref_map": {
+        "BD": 24,
+        "CE": 22
+      },
+      "pixel_annotation_centers": {
+        "BD": [
+          249.899,
+          268.55735706741626
+        ],
+        "CE": [
+          346.7,
+          239.62310706741627
+        ]
+      },
+      "pixel_point_set": [
+        [
+          249.899,
+          268.55735706741626
+        ],
+        [
+          346.7,
+          239.62310706741627
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 250,
+        "answer_min": 8,
+        "legacy_query_variant": "rhombus_diagonals",
+        "legacy_scene_variant": "rhombus",
+        "legacy_task_id": "task_geometry_analytical_2d_perimeter",
+        "query_variant": "perimeter",
+        "query_variant_probabilities": {
+          "area": 0.0,
+          "composite_area": 0.0,
+          "length": 0.0,
+          "perimeter": 1.0
+        },
+        "scene_variant": "rhombus",
+        "scene_variant_probabilities": {
+          "circle": 0.2,
+          "composite_region": 0.0,
+          "ellipse": 0.0,
+          "parallelogram": 0.0,
+          "rectangle": 0.2,
+          "rhombus": 0.2,
+          "trapezoid": 0.2,
+          "triangle": 0.2
+        },
+        "task_variant": "rhombus_diagonals",
+        "variant_probabilities": {
+          "area": 0.0,
+          "composite_area": 0.0,
+          "length": 0.0,
+          "perimeter": 1.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "geometry_analytical_perimeter_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BD, CE",
+          "json_example": "{\"evidence\":{\"BD\":2,\"CE\":3},\"answer\":42.3}",
+          "json_example_answer_only": "{\"answer\":42.3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a geometric scene with measurement annotations",
+          "question_text": "The rhombus shows both diagonals. What is the perimeter of the rhombus?"
+        },
+        "task_family_key": "analytical_perimeter_scene",
+        "task_family_variant_index": 3,
+        "task_key": "analytical_perimeter_query",
+        "task_variant_index": 1,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_2d/geometry_analytical_perimeter_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_perimeter_query": 5,
+          "task_family:analytical_perimeter_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_analytical_perimeter_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BD, CE",
+              "json_example": "{\"evidence\":{\"BD\":2,\"CE\":3},\"answer\":42.3}",
+              "json_example_answer_only": "{\"answer\":42.3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric scene with measurement annotations",
+              "question_text": "The rhombus shows both diagonals. What is the perimeter of the rhombus?"
+            },
+            "task_family_key": "analytical_perimeter_scene",
+            "task_family_variant_index": 3,
+            "task_key": "analytical_perimeter_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_perimeter_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_perimeter_query": 5,
+              "task_family:analytical_perimeter_scene": 5
+            }
+          },
+          "prompt": "Use the image showing a geometric scene with measurement annotations. Question: The rhombus shows both diagonals. What is the perimeter of the rhombus?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BD, CE.\nAnswer: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"BD\":2,\"CE\":3},\"answer\":42.3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_analytical_perimeter_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: BD, CE",
+              "json_example": "{\"evidence\":{\"BD\":2,\"CE\":3},\"answer\":42.3}",
+              "json_example_answer_only": "{\"answer\":42.3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric scene with measurement annotations",
+              "question_text": "The rhombus shows both diagonals. What is the perimeter of the rhombus?"
+            },
+            "task_family_key": "analytical_perimeter_scene",
+            "task_family_variant_index": 3,
+            "task_key": "analytical_perimeter_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_perimeter_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_perimeter_query": 5,
+              "task_family:analytical_perimeter_scene": 5
+            }
+          },
+          "prompt": "Use the image showing a geometric scene with measurement annotations. Question: The rhombus shows both diagonals. What is the perimeter of the rhombus?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+        }
+      },
+      "task_variant": "perimeter",
+      "template_id": "geometry_analytical_perimeter_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "BD": [
+          249.899,
+          268.55735706741626
+        ],
+        "CE": [
+          346.7,
+          239.62310706741627
+        ]
+      },
+      "annotation_labels": {
+        "diag_x": "BD",
+        "diag_y": "CE"
+      },
+      "coord_space": "pixel",
+      "instance_anchor": {
+        "bbox": [
+          96.82999999999998,
+          99.30985706741626,
+          534.1700000000001,
+          500.20485706741624
+        ],
+        "coord_space": "pixel"
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_offwhite",
+        "style_spec": {
+          "color": [
+            252,
+            252,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 631,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "origin_pixel": [
+          315,
+          315
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 70,
+        "target_cells_x": 9,
+        "target_cells_y": 9,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "partial_edge_cells": true,
+        "spacing_px": 70,
+        "target_cells_x": 9,
+        "target_cells_y": 9
+      },
+      "legacy_scene_variant": "rhombus",
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "alpha": 0.013335
+            },
+            "type": "noise"
+          }
+        ],
+        "enabled": true
+      },
+      "query_variant": "perimeter",
+      "scene_variant": "rhombus",
+      "shape_style": {
+        "label_color": [
+          74,
+          142,
+          71
+        ],
+        "label_stroke_color": [
+          255,
+          255,
+          252
+        ],
+        "line_color": [
+          74,
+          142,
+          71
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "fill_kind": "none",
+            "vertices": [
+              [
+                96.82999999999998,
+                299.75735706741625
+              ],
+              [
+                315.5,
+                99.30985706741626
+              ],
+              [
+                534.1700000000001,
+                299.75735706741625
+              ],
+              [
+                315.5,
+                500.20485706741624
+              ]
+            ]
+          },
+          "entity_id": "rhombus_1",
+          "entity_type": "rhombus"
+        },
+        {
+          "attrs": {
+            "helper": true,
+            "point_a": [
+              96.82999999999998,
+              299.75735706741625
+            ],
+            "point_b": [
+              534.1700000000001,
+              299.75735706741625
+            ]
+          },
+          "entity_id": "diag_x_1",
+          "entity_type": "diagonal"
+        },
+        {
+          "attrs": {
+            "helper": true,
+            "point_a": [
+              315.5,
+              99.30985706741626
+            ],
+            "point_b": [
+              315.5,
+              500.20485706741624
+            ]
+          },
+          "entity_id": "diag_y_1",
+          "entity_type": "diagonal"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            315,
+            315
+          ],
+          "spacing_px": 70,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "legacy_query_variant": "rhombus_diagonals",
+        "legacy_scene_variant": "rhombus",
+        "legacy_task_id": "task_geometry_analytical_2d_perimeter",
+        "query_variant": "perimeter",
+        "scene_variant": "rhombus"
+      },
+      "scene_kind": "geometry_2d_analytical_perimeter"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "BD",
+        "CE"
+      ],
+      "annotation_labels": {
+        "diag_x": "BD",
+        "diag_y": "CE"
+      },
+      "annotation_values": {
+        "BD": 24,
+        "CE": 22
+      },
+      "formula_expression": "4 * sqrt((diag_x/2)^2 + (diag_y/2)^2)",
+      "measurement_ref_map": {
+        "BD": 24,
+        "CE": 22
+      },
+      "task_variant": "rhombus_diagonals",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

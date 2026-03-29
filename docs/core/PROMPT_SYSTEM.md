@@ -114,19 +114,19 @@ Active bundles:
    - `prompts/puzzles/spatial/puzzles_spatial_v1.json`
 
 Active task-to-bundle mapping:
-1. Geometry comparison tasks (`task_geometry_comparison_angle|area|length|perimeter`) -> `geometry_comparison_v1`
-2. Geometry counting tasks (`task_geometry_counting_angle|triangle|quadrilateral|shape_type|convexity`) -> `geometry_counting_v1`
-3. Geometry measurement tasks:
-   - `task_geometry_measurement_angle` -> `geometry_angle_measure_v1`
-   - `task_geometry_measurement_area|perimeter|length|slope` -> `geometry_measurement_v1`
-4. Geometry analytical 2D tasks:
-   - `task_geometry_analytical_2d_area` -> `geometry_analytical_area_v1`
-   - `task_geometry_analytical_2d_composite_area` -> `geometry_analytical_composite_area_v1`
-   - `task_geometry_analytical_2d_length` -> `geometry_analytical_length_v1`
-   - `task_geometry_analytical_2d_perimeter` -> `geometry_analytical_perimeter_v1`
-5. Geometry analytical 3D tasks:
-   - `task_geometry_analytical_3d_volume` -> `geometry_analytical_volume_v1`
-   - `task_geometry_analytical_3d_surface_area` -> `geometry_analytical_surface_area_v1`
+1. Geometry comparison task (`task_geometry_comparison_value`) delegates to `geometry_comparison_v1`
+2. Geometry counting task (`task_geometry_counting_value`) delegates to `geometry_counting_v1`
+3. Geometry measurement task (`task_geometry_measurement_value`) delegates by compatible scene/query pair to:
+   - `geometry_angle_measure_v1`
+   - `geometry_measurement_v1`
+4. Geometry analytical 2D task (`task_geometry_analytical_2d_value`) delegates by compatible scene/query pair to:
+   - `geometry_analytical_area_v1`
+   - `geometry_analytical_composite_area_v1`
+   - `geometry_analytical_length_v1`
+   - `geometry_analytical_perimeter_v1`
+5. Geometry analytical 3D task (`task_geometry_analytical_3d_value`) delegates by compatible scene/query pair to:
+   - `geometry_analytical_volume_v1`
+   - `geometry_analytical_surface_area_v1`
 6. Icons:
    - `task_icons_counting_type|orientation|color|attribute_binding|size_relation|singleton_type` -> `icons_counting_v1`
    - `task_icons_pattern_grid_rotation_violation|task_icons_pattern_grid_size_violation` -> `icons_pattern_v1`

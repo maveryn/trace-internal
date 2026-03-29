@@ -139,6 +139,7 @@ Use this as the implementation checklist for new or modified tasks.
 2. Task-variant sampling occurs inside each task.
 3. Default `P(task_variant|task)` is uniform unless overridden.
 4. If one task has both a semantic variant axis and a visual-representation axis, keep `task_variant` for the semantic/query axis and record the visual axis separately as `scene_variant` in trace/query metadata instead of exploding the task into a cross-product of near-duplicate tasks.
+5. If a consolidated wrapper delegates to older task implementations, rewrite every prompt/review-facing variant field to the active surface (`task_variant`, `task_variant_probabilities`, and `query_spec.params.variant_probabilities`) and accept `task_variant` as an alias for the semantic query axis during regeneration so inspection tooling can rebuild samples from saved manifests.
 5. Keep answer sampling as broad as constraints allow and validate with the standard answer-distribution checks.
 6. For geometry placement with lattice offsets, compute anchor bounds from the selected candidate (not global worst-case margins).
 7. Avoid tiny fixed structure banks; randomize both structural and visual factors whenever constraints allow.

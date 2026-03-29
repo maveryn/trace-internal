@@ -1,0 +1,611 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 7
+  },
+  "evidence_gt": {
+    "type": "graph_point_set",
+    "value": [
+      [
+        -4,
+        -1
+      ],
+      [
+        3,
+        -1
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_measurement_value/images/length/0006.png"
+  },
+  "instance_seed": 8626728650233917,
+  "prompt": "Use the graph-paper diagram showing a polygon. Answer this question: What is the length of side YV in graph units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of exactly two graph-paper points for the measured polygon-side endpoints.\nAnswer: set \"answer\" to the measurement value as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[3,4]],\"answer\":5}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the graph-paper diagram showing a polygon. Answer this question: What is the length of side YV in graph units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of exactly two graph-paper points for the measured polygon-side endpoints.\nAnswer: set \"answer\" to the measurement value as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[3,4]],\"answer\":5}",
+    "answer_only": "Use the graph-paper diagram showing a polygon. Answer this question: What is the length of side YV in graph units?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the measurement value as an integer.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_geometry_measurement_value",
+  "task_variant": "length",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_format": "integer",
+      "answer_scalar": 7,
+      "answer_scalar_probabilities": {
+        "10": 0.125,
+        "2": 0.125,
+        "3": 0.125,
+        "4": 0.125,
+        "5": 0.125,
+        "6": 0.125,
+        "7": 0.125,
+        "8": 0.125
+      },
+      "feasible_answer_values": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        10
+      ],
+      "legacy_query_variant": "quadrilateral",
+      "legacy_scene_variant": "quadrilateral",
+      "legacy_task_id": "task_geometry_measurement_length",
+      "query_variant": "length",
+      "query_variant_probabilities": {
+        "angle": 0.2,
+        "area": 0.2,
+        "length": 0.2,
+        "perimeter": 0.2,
+        "slope": 0.2
+      },
+      "question_text": "What is the length of side YV in graph units?",
+      "required_evidence_labels": [
+        "Y",
+        "V"
+      ],
+      "required_graph_cells": 9,
+      "scene_variant": "quadrilateral",
+      "scene_variant_probabilities": {
+        "angle": 0.0,
+        "circle": 0.16666666666666666,
+        "ellipse": 0.16666666666666666,
+        "line": 0.0,
+        "pentagon": 0.16666666666666666,
+        "quadrilateral": 0.16666666666666666,
+        "segment": 0.16666666666666666,
+        "triangle": 0.16666666666666666
+      },
+      "shape_variant": "quadrilateral",
+      "target_side_indices": [
+        1,
+        2
+      ],
+      "target_side_labels": [
+        "Y",
+        "V"
+      ],
+      "task_variant": "length",
+      "task_variant_probabilities": {
+        "angle": 0.2,
+        "area": 0.2,
+        "length": 0.2,
+        "perimeter": 0.2,
+        "slope": 0.2
+      },
+      "variant_probabilities": {
+        "circle_diameter": 0.0,
+        "circle_radius": 0.0,
+        "ellipse_major_axis": 0.0,
+        "ellipse_minor_axis": 0.0,
+        "pentagon": 0.0,
+        "quadrilateral": 1.0,
+        "segment": 0.0,
+        "triangle": 0.0
+      }
+    },
+    "projected_evidence": {
+      "grid_point_map": {
+        "V": [
+          3,
+          -1
+        ],
+        "Y": [
+          -4,
+          -1
+        ]
+      },
+      "grid_point_path": [
+        [
+          -4,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "grid_point_set": [
+        [
+          -4,
+          -1
+        ],
+        [
+          3,
+          -1
+        ]
+      ],
+      "pixel_point_map": {
+        "V": [
+          485.0,
+          383.0
+        ],
+        "Y": [
+          128.0,
+          383.0
+        ]
+      },
+      "pixel_point_path": [
+        [
+          128.0,
+          383.0
+        ],
+        [
+          485.0,
+          383.0
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          128.0,
+          383.0
+        ],
+        [
+          485.0,
+          383.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 20,
+        "answer_min": 2,
+        "legacy_query_variant": "quadrilateral",
+        "legacy_scene_variant": "quadrilateral",
+        "legacy_task_id": "task_geometry_measurement_length",
+        "query_variant": "length",
+        "query_variant_probabilities": {
+          "angle": 0.2,
+          "area": 0.2,
+          "length": 0.2,
+          "perimeter": 0.2,
+          "slope": 0.2
+        },
+        "required_graph_cells": 9,
+        "scene_variant": "quadrilateral",
+        "scene_variant_probabilities": {
+          "angle": 0.0,
+          "circle": 0.16666666666666666,
+          "ellipse": 0.16666666666666666,
+          "line": 0.0,
+          "pentagon": 0.16666666666666666,
+          "quadrilateral": 0.16666666666666666,
+          "segment": 0.16666666666666666,
+          "triangle": 0.16666666666666666
+        },
+        "shape_variant": "quadrilateral",
+        "supported_shape_variants": [
+          "segment",
+          "triangle",
+          "quadrilateral",
+          "pentagon",
+          "circle_radius",
+          "circle_diameter",
+          "ellipse_major_axis",
+          "ellipse_minor_axis"
+        ],
+        "variant_probabilities": {
+          "angle": 0.2,
+          "area": 0.2,
+          "length": 0.2,
+          "perimeter": 0.2,
+          "slope": 0.2
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "geometry_measurement_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the measurement value as an integer",
+          "evidence_hint": "set \"evidence\" to an array of exactly two graph-paper points for the measured polygon-side endpoints",
+          "json_example": "{\"evidence\":[[0,0],[3,4]],\"answer\":5}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a polygon",
+          "question_text": "What is the length of side YV in graph units?"
+        },
+        "task_family_key": "measurement_single_object",
+        "task_family_variant_index": 3,
+        "task_key": "measurement_query",
+        "task_variant_index": 3,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/measurement/geometry_measurement_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:measurement_query": 5,
+          "task_family:measurement_single_object": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_measurement_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the measurement value as an integer",
+              "evidence_hint": "set \"evidence\" to an array of exactly two graph-paper points for the measured polygon-side endpoints",
+              "json_example": "{\"evidence\":[[0,0],[3,4]],\"answer\":5}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a polygon",
+              "question_text": "What is the length of side YV in graph units?"
+            },
+            "task_family_key": "measurement_single_object",
+            "task_family_variant_index": 3,
+            "task_key": "measurement_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/measurement/geometry_measurement_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:measurement_query": 5,
+              "task_family:measurement_single_object": 5
+            }
+          },
+          "prompt": "Use the graph-paper diagram showing a polygon. Answer this question: What is the length of side YV in graph units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of exactly two graph-paper points for the measured polygon-side endpoints.\nAnswer: set \"answer\" to the measurement value as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[3,4]],\"answer\":5}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "geometry_measurement_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the measurement value as an integer",
+              "evidence_hint": "set \"evidence\" to an array of exactly two graph-paper points for the measured polygon-side endpoints",
+              "json_example": "{\"evidence\":[[0,0],[3,4]],\"answer\":5}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a polygon",
+              "question_text": "What is the length of side YV in graph units?"
+            },
+            "task_family_key": "measurement_single_object",
+            "task_family_variant_index": 3,
+            "task_key": "measurement_query",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/measurement/geometry_measurement_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:measurement_query": 5,
+              "task_family:measurement_single_object": 5
+            }
+          },
+          "prompt": "Use the graph-paper diagram showing a polygon. Answer this question: What is the length of side YV in graph units?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the measurement value as an integer.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "length",
+      "template_id": "geometry_2d_length_measure_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "target_1": {
+          "coord_space": "pixel",
+          "point": [
+            281.0,
+            587.0
+          ],
+          "polyline": [
+            [
+              281.0,
+              587.0
+            ],
+            [
+              128.0,
+              383.0
+            ],
+            [
+              485.0,
+              383.0
+            ],
+            [
+              485.0,
+              587.0
+            ],
+            [
+              281.0,
+              587.0
+            ]
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "graph_paper",
+        "style_spec": {
+          "axis_arrow_size": 10,
+          "axis_arrows_enabled": true,
+          "axis_color": [
+            186,
+            191,
+            198
+          ],
+          "axis_darken_range": [
+            32,
+            48
+          ],
+          "axis_enabled": true,
+          "axis_line_width": 2,
+          "axis_scale_label_max_abs": 0,
+          "axis_scale_labels_enabled": true,
+          "base_color": [
+            255,
+            255,
+            255
+          ],
+          "base_color_jitter": [
+            0,
+            0
+          ],
+          "center_point_color": [
+            176,
+            181,
+            188
+          ],
+          "center_point_darken_extra_range": [
+            8,
+            14
+          ],
+          "center_point_enabled": true,
+          "center_point_radius": 2,
+          "color_variation_applied": true,
+          "color_variation_enabled": true,
+          "color_variation_sampled": {
+            "axis_darken": 40,
+            "base_color_delta": 0,
+            "center_point_darken_extra": 10,
+            "line_color_delta": 2,
+            "major_line_darken": 11,
+            "origin_label_darken_extra": 11
+          },
+          "kind": "grid",
+          "line_color": [
+            226,
+            231,
+            238
+          ],
+          "line_color_jitter": [
+            -5,
+            5
+          ],
+          "line_width": 1,
+          "major_every": 0,
+          "major_line_color": [
+            215,
+            220,
+            227
+          ],
+          "major_line_darken_range": [
+            6,
+            14
+          ],
+          "major_line_width": 1,
+          "origin_label_color": [
+            175,
+            180,
+            187
+          ],
+          "origin_label_darken_extra_range": [
+            6,
+            12
+          ],
+          "origin_label_enabled": false,
+          "origin_label_text": "0",
+          "outer_margin_px": 16,
+          "scene_supersample_scale": 3,
+          "spacing": 51,
+          "supersample_scale": 1
+        }
+      },
+      "canvas_size": 664,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 12,
+        "full_cells_y": 12,
+        "origin_pixel": [
+          332,
+          332
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 51,
+        "target_cells_x": 13,
+        "target_cells_y": 13,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 12,
+        "full_cells_y": 12,
+        "partial_edge_cells": true,
+        "spacing_px": 51,
+        "target_cells_x": 13,
+        "target_cells_y": 13
+      },
+      "legacy_scene_variant": "quadrilateral",
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "quality": 87.0
+            },
+            "type": "jpeg"
+          }
+        ],
+        "enabled": true
+      },
+      "query_variant": "length",
+      "scene_variant": "quadrilateral",
+      "shape_style": {
+        "label_color": [
+          99,
+          30,
+          119
+        ],
+        "label_stroke_color": [
+          251,
+          250,
+          250
+        ],
+        "line_color": [
+          99,
+          30,
+          119
+        ]
+      },
+      "text_style": {
+        "font_size_px": 32,
+        "stroke_width_px": 1
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "area_square_units": 22,
+            "labels": [
+              "X",
+              "Y",
+              "V",
+              "W"
+            ],
+            "perimeter_units": 20,
+            "polygon_sides": 4,
+            "target_side_indices": [
+              1,
+              2
+            ],
+            "target_side_labels": [
+              "Y",
+              "V"
+            ],
+            "target_side_length_units": 7,
+            "template_id": "procedural_4_9e88a9b1b447",
+            "vertices": [
+              [
+                281.0,
+                587.0
+              ],
+              [
+                128.0,
+                383.0
+              ],
+              [
+                485.0,
+                383.0
+              ],
+              [
+                485.0,
+                587.0
+              ]
+            ]
+          },
+          "entity_id": "polygon_1",
+          "entity_type": "polygon"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            332,
+            332
+          ],
+          "spacing_px": 51,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "legacy_query_variant": "quadrilateral",
+        "legacy_scene_variant": "quadrilateral",
+        "legacy_task_id": "task_geometry_measurement_length",
+        "query_variant": "length",
+        "scene_variant": "quadrilateral"
+      },
+      "scene_kind": "geometry_2d_length_measurement"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "Y",
+        "V"
+      ],
+      "type": "polygon_side_endpoints"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

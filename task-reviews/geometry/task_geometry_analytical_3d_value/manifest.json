@@ -1,0 +1,13 @@
+{
+  "inspection_count": 50,
+  "task_id": "task_geometry_analytical_3d_value",
+  "variants": {
+    "surface_area": 25,
+    "volume": 25
+  },
+  "workbook": "geometry/task_geometry_analytical_3d_value/task_geometry_analytical_3d_value.xlsx",
+  "workbook_sheets": {
+    "surface_area": "surface_area",
+    "volume": "volume"
+  }
+}

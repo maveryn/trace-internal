@@ -1,0 +1,507 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 168
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "HI": 24,
+      "HJ": 25
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_2d_value/images/area/0005.png"
+  },
+  "instance_seed": 8234810215416047,
+  "prompt": "The image shows a geometric shape with measurement annotations. Based on the shown values, answer this question: One side length and the diagonal of the rectangle are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, HJ.\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"HI\":2,\"HJ\":3},\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows a geometric shape with measurement annotations. Based on the shown values, answer this question: One side length and the diagonal of the rectangle are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, HJ.\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"HI\":2,\"HJ\":3},\"answer\":8}",
+    "answer_only": "The image shows a geometric shape with measurement annotations. Based on the shown values, answer this question: One side length and the diagonal of the rectangle are annotated. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_geometry_analytical_2d_value",
+  "task_variant": "area",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 2500,
+      "answer_min": 8,
+      "answer_scalar": 168,
+      "answer_type": "integer",
+      "answer_value": 168,
+      "case_id": "rectangle_derived",
+      "evidence_annotations": {
+        "d": "HJ",
+        "s": "HI"
+      },
+      "evidence_ids": [
+        "HI",
+        "HJ"
+      ],
+      "evidence_label_values": {
+        "d": 25,
+        "s": 24
+      },
+      "evidence_map": {
+        "HI": 24,
+        "HJ": 25
+      },
+      "evidence_roles": [
+        "s",
+        "d"
+      ],
+      "formula_expression": "A = s * sqrt(d^2 - s^2)",
+      "legacy_query_variant": "rectangle_derived",
+      "legacy_scene_variant": "rectangle",
+      "legacy_task_id": "task_geometry_analytical_2d_area",
+      "mode_probabilities": {
+        "derived": 0.5,
+        "explicit": 0.5
+      },
+      "query_variant": "area",
+      "query_variant_probabilities": {
+        "area": 1.0,
+        "composite_area": 0.0,
+        "length": 0.0,
+        "perimeter": 0.0
+      },
+      "reasoning_mode": "derived",
+      "required_annotations": [
+        "HI",
+        "HJ"
+      ],
+      "scene_variant": "rectangle",
+      "scene_variant_probabilities": {
+        "circle": 0.14285714285714285,
+        "composite_region": 0.0,
+        "ellipse": 0.14285714285714285,
+        "parallelogram": 0.14285714285714285,
+        "rectangle": 0.14285714285714285,
+        "rhombus": 0.14285714285714285,
+        "trapezoid": 0.14285714285714285,
+        "triangle": 0.14285714285714285
+      },
+      "shape_probabilities": {
+        "circle": 0.0,
+        "ellipse": 0.0,
+        "parallelogram": 0.0,
+        "rectangle": 1.0,
+        "rhombus": 0.0,
+        "trapezoid": 0.0,
+        "triangle": 0.0
+      },
+      "shape_variant": "rectangle",
+      "task_variant": "area",
+      "task_variant_probabilities": {
+        "area": 1.0,
+        "composite_area": 0.0,
+        "length": 0.0,
+        "perimeter": 0.0
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "d": "HJ",
+        "s": "HI"
+      },
+      "id_set": [
+        "HI",
+        "HJ"
+      ],
+      "measurement_ref_map": {
+        "HI": 24,
+        "HJ": 25
+      },
+      "pixel_annotation_centers": {
+        "HI": [
+          296.0,
+          308.0
+        ],
+        "HJ": [
+          336.7981442805886,
+          361.02445874850497
+        ]
+      },
+      "pixel_point_set": [
+        [
+          296.0,
+          308.0
+        ],
+        [
+          336.7981442805886,
+          361.02445874850497
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 2500,
+        "answer_min": 8,
+        "legacy_query_variant": "rectangle_derived",
+        "legacy_scene_variant": "rectangle",
+        "legacy_task_id": "task_geometry_analytical_2d_area",
+        "mode_probabilities": {
+          "derived": 0.5,
+          "explicit": 0.5
+        },
+        "query_variant": "area",
+        "query_variant_probabilities": {
+          "area": 1.0,
+          "composite_area": 0.0,
+          "length": 0.0,
+          "perimeter": 0.0
+        },
+        "reasoning_mode": "derived",
+        "scene_variant": "rectangle",
+        "scene_variant_probabilities": {
+          "circle": 0.14285714285714285,
+          "composite_region": 0.0,
+          "ellipse": 0.14285714285714285,
+          "parallelogram": 0.14285714285714285,
+          "rectangle": 0.14285714285714285,
+          "rhombus": 0.14285714285714285,
+          "trapezoid": 0.14285714285714285,
+          "triangle": 0.14285714285714285
+        },
+        "shape_probabilities": {
+          "circle": 0.0,
+          "ellipse": 0.0,
+          "parallelogram": 0.0,
+          "rectangle": 1.0,
+          "rhombus": 0.0,
+          "trapezoid": 0.0,
+          "triangle": 0.0
+        },
+        "shape_variant": "rectangle",
+        "variant_probabilities": {
+          "area": 1.0,
+          "composite_area": 0.0,
+          "length": 0.0,
+          "perimeter": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "geometry_analytical_area_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the area value as an integer",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, HJ",
+          "json_example": "{\"evidence\":{\"HI\":2,\"HJ\":3},\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a geometric shape with measurement annotations",
+          "question_text": "One side length and the diagonal of the rectangle are annotated. What is its area in square units?"
+        },
+        "task_family_key": "analytical_single_shape",
+        "task_family_variant_index": 1,
+        "task_key": "analytical_area_query",
+        "task_variant_index": 4,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_2d/geometry_analytical_area_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_area_query": 5,
+          "task_family:analytical_single_shape": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_analytical_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the area value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, HJ",
+              "json_example": "{\"evidence\":{\"HI\":2,\"HJ\":3},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric shape with measurement annotations",
+              "question_text": "One side length and the diagonal of the rectangle are annotated. What is its area in square units?"
+            },
+            "task_family_key": "analytical_single_shape",
+            "task_family_variant_index": 1,
+            "task_key": "analytical_area_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_area_query": 5,
+              "task_family:analytical_single_shape": 5
+            }
+          },
+          "prompt": "The image shows a geometric shape with measurement annotations. Based on the shown values, answer this question: One side length and the diagonal of the rectangle are annotated. What is its area in square units?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, HJ.\nAnswer: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"evidence\":{\"HI\":2,\"HJ\":3},\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_analytical_area_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the area value as an integer",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: HI, HJ",
+              "json_example": "{\"evidence\":{\"HI\":2,\"HJ\":3},\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric shape with measurement annotations",
+              "question_text": "One side length and the diagonal of the rectangle are annotated. What is its area in square units?"
+            },
+            "task_family_key": "analytical_single_shape",
+            "task_family_variant_index": 1,
+            "task_key": "analytical_area_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_area_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_area_query": 5,
+              "task_family:analytical_single_shape": 5
+            }
+          },
+          "prompt": "The image shows a geometric shape with measurement annotations. Based on the shown values, answer this question: One side length and the diagonal of the rectangle are annotated. What is its area in square units?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the area value as an integer.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "area",
+      "template_id": "geometry_analytical_area_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "HI": [
+          296.0,
+          308.0
+        ],
+        "HJ": [
+          336.7981442805886,
+          361.02445874850497
+        ]
+      },
+      "annotation_labels": {
+        "d": "HJ",
+        "s": "HI"
+      },
+      "coord_space": "pixel",
+      "entity_id": "shape_1",
+      "instance_anchor": {
+        "coord_space": "pixel",
+        "point": [
+          176.0,
+          336.0
+        ],
+        "polyline": [
+          [
+            176.0,
+            336.0
+          ],
+          [
+            416.0,
+            336.0
+          ],
+          [
+            416.0,
+            406.0
+          ],
+          [
+            176.0,
+            406.0
+          ],
+          [
+            176.0,
+            336.0
+          ]
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_cool",
+        "style_spec": {
+          "color": [
+            246,
+            248,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 514,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "origin_pixel": [
+          256,
+          256
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 43,
+        "target_cells_x": 12,
+        "target_cells_y": 12,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "partial_edge_cells": true,
+        "spacing_px": 43,
+        "target_cells_x": 12,
+        "target_cells_y": 12
+      },
+      "legacy_scene_variant": "rectangle",
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "query_variant": "area",
+      "scene_variant": "rectangle",
+      "shape_style": {
+        "label_color": [
+          42,
+          49,
+          43
+        ],
+        "label_stroke_color": [
+          255,
+          253,
+          250
+        ],
+        "line_color": [
+          42,
+          49,
+          43
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "area_square_units": 168,
+            "diagonal_units": 25,
+            "inferred_side_units": 7,
+            "known_side_units": 24,
+            "reasoning_mode": "derived",
+            "shape_variant": "rectangle",
+            "vertices": [
+              [
+                176.0,
+                336.0
+              ],
+              [
+                416.0,
+                336.0
+              ],
+              [
+                416.0,
+                406.0
+              ],
+              [
+                176.0,
+                406.0
+              ]
+            ]
+          },
+          "entity_id": "shape_1",
+          "entity_type": "rectangle"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            256,
+            256
+          ],
+          "spacing_px": 43,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "legacy_query_variant": "rectangle_derived",
+        "legacy_scene_variant": "rectangle",
+        "legacy_task_id": "task_geometry_analytical_2d_area",
+        "query_variant": "area",
+        "scene_variant": "rectangle"
+      },
+      "scene_kind": "geometry_2d_analytical_area"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "HI",
+        "HJ"
+      ],
+      "annotation_labels": {
+        "d": "HJ",
+        "s": "HI"
+      },
+      "annotation_values": {
+        "HI": 24,
+        "HJ": 25
+      },
+      "case_id": "rectangle_derived",
+      "formula_expression": "A = s * sqrt(d^2 - s^2)",
+      "measurement_ref_map": {
+        "HI": 24,
+        "HJ": 25
+      },
+      "reasoning_mode": "derived",
+      "shape_variant": "rectangle",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

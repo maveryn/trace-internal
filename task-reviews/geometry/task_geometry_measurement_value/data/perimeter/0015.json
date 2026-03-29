@@ -1,0 +1,507 @@
+{
+  "answer_gt": {
+    "type": "pi_expression",
+    "value": "8π"
+  },
+  "evidence_gt": {
+    "type": "graph_point",
+    "value": [
+      -1,
+      -1
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_measurement_value/images/perimeter/0015.png"
+  },
+  "instance_seed": 8941883679886944,
+  "prompt": "Look at the graph-paper image showing a circle. Task: What is the circumference of the circle in graph units? Express the answer in the form kπ.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to one graph-paper point [x, y] for the circle center.\nAnswer requirement: set \"answer\" to the measurement value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[[0,0]],\"answer\":\"8π\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the graph-paper image showing a circle. Task: What is the circumference of the circle in graph units? Express the answer in the form kπ.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to one graph-paper point [x, y] for the circle center.\nAnswer requirement: set \"answer\" to the measurement value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[[0,0]],\"answer\":\"8π\"}",
+    "answer_only": "Look at the graph-paper image showing a circle. Task: What is the circumference of the circle in graph units? Express the answer in the form kπ.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the measurement value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
+  },
+  "task": "task_geometry_measurement_value",
+  "task_variant": "perimeter",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_format": "pi_expression",
+      "answer_scalar": 8,
+      "answer_scalar_probabilities": {
+        "10": 0.2,
+        "12": 0.2,
+        "14": 0.2,
+        "16": 0.2,
+        "8": 0.2
+      },
+      "circle_area_pi_coefficient": 16,
+      "circle_circumference_pi_coefficient": 8,
+      "circle_radius_units": 4,
+      "feasible_answer_values": [
+        8,
+        10,
+        12,
+        14,
+        16
+      ],
+      "legacy_query_variant": "circle",
+      "legacy_scene_variant": "circle",
+      "legacy_task_id": "task_geometry_measurement_perimeter",
+      "query_variant": "perimeter",
+      "query_variant_probabilities": {
+        "angle": 0.2,
+        "area": 0.2,
+        "length": 0.2,
+        "perimeter": 0.2,
+        "slope": 0.2
+      },
+      "required_evidence_labels": [
+        "center"
+      ],
+      "required_graph_cells": 12,
+      "scene_variant": "circle",
+      "scene_variant_probabilities": {
+        "angle": 0.0,
+        "circle": 0.3333333333333333,
+        "ellipse": 0.0,
+        "line": 0.0,
+        "pentagon": 0.0,
+        "quadrilateral": 0.3333333333333333,
+        "segment": 0.0,
+        "triangle": 0.3333333333333333
+      },
+      "shape_variant": "circle",
+      "task_variant": "perimeter",
+      "task_variant_probabilities": {
+        "angle": 0.2,
+        "area": 0.2,
+        "length": 0.2,
+        "perimeter": 0.2,
+        "slope": 0.2
+      },
+      "variant_probabilities": {
+        "circle": 1.0,
+        "quadrilateral": 0.0,
+        "triangle": 0.0
+      }
+    },
+    "projected_evidence": {
+      "grid_point_map": {
+        "center": [
+          -1,
+          -1
+        ]
+      },
+      "grid_point_path": [
+        [
+          -1,
+          -1
+        ]
+      ],
+      "grid_point_set": [
+        [
+          -1,
+          -1
+        ]
+      ],
+      "pixel_point_map": {
+        "center": [
+          262.0,
+          350.0
+        ]
+      },
+      "pixel_point_path": [
+        [
+          262.0,
+          350.0
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          262.0,
+          350.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 64,
+        "answer_min": 8,
+        "legacy_query_variant": "circle",
+        "legacy_scene_variant": "circle",
+        "legacy_task_id": "task_geometry_measurement_perimeter",
+        "query_variant": "perimeter",
+        "query_variant_probabilities": {
+          "angle": 0.2,
+          "area": 0.2,
+          "length": 0.2,
+          "perimeter": 0.2,
+          "slope": 0.2
+        },
+        "required_graph_cells": 12,
+        "scene_variant": "circle",
+        "scene_variant_probabilities": {
+          "angle": 0.0,
+          "circle": 0.3333333333333333,
+          "ellipse": 0.0,
+          "line": 0.0,
+          "pentagon": 0.0,
+          "quadrilateral": 0.3333333333333333,
+          "segment": 0.0,
+          "triangle": 0.3333333333333333
+        },
+        "shape_variant": "circle",
+        "supported_shape_variants": [
+          "triangle",
+          "quadrilateral",
+          "circle"
+        ],
+        "variant_probabilities": {
+          "angle": 0.2,
+          "area": 0.2,
+          "length": 0.2,
+          "perimeter": 0.2,
+          "slope": 0.2
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "geometry_measurement_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the measurement value in the form kπ (for example 12π)",
+          "evidence_hint": "set \"evidence\" to one graph-paper point [x, y] for the circle center",
+          "json_example": "{\"evidence\":[[0,0]],\"answer\":\"8π\"}",
+          "json_example_answer_only": "{\"answer\":\"12π\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a circle",
+          "question_text": "What is the circumference of the circle in graph units? Express the answer in the form kπ."
+        },
+        "task_family_key": "measurement_single_object",
+        "task_family_variant_index": 2,
+        "task_key": "measurement_query",
+        "task_variant_index": 2,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/measurement/geometry_measurement_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:measurement_query": 5,
+          "task_family:measurement_single_object": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "geometry_measurement_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the measurement value in the form kπ (for example 12π)",
+              "evidence_hint": "set \"evidence\" to one graph-paper point [x, y] for the circle center",
+              "json_example": "{\"evidence\":[[0,0]],\"answer\":\"8π\"}",
+              "json_example_answer_only": "{\"answer\":\"12π\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a circle",
+              "question_text": "What is the circumference of the circle in graph units? Express the answer in the form kπ."
+            },
+            "task_family_key": "measurement_single_object",
+            "task_family_variant_index": 2,
+            "task_key": "measurement_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/measurement/geometry_measurement_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:measurement_query": 5,
+              "task_family:measurement_single_object": 5
+            }
+          },
+          "prompt": "Look at the graph-paper image showing a circle. Task: What is the circumference of the circle in graph units? Express the answer in the form kπ.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to one graph-paper point [x, y] for the circle center.\nAnswer requirement: set \"answer\" to the measurement value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":[[0,0]],\"answer\":\"8π\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "geometry_measurement_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the measurement value in the form kπ (for example 12π)",
+              "evidence_hint": "set \"evidence\" to one graph-paper point [x, y] for the circle center",
+              "json_example": "{\"evidence\":[[0,0]],\"answer\":\"8π\"}",
+              "json_example_answer_only": "{\"answer\":\"12π\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a circle",
+              "question_text": "What is the circumference of the circle in graph units? Express the answer in the form kπ."
+            },
+            "task_family_key": "measurement_single_object",
+            "task_family_variant_index": 2,
+            "task_key": "measurement_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/measurement/geometry_measurement_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:measurement_query": 5,
+              "task_family:measurement_single_object": 5
+            }
+          },
+          "prompt": "Look at the graph-paper image showing a circle. Task: What is the circumference of the circle in graph units? Express the answer in the form kπ.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the measurement value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
+        }
+      },
+      "task_variant": "perimeter",
+      "template_id": "geometry_2d_perimeter_measure_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "target_1": {
+          "bbox": [
+            86.0,
+            174.0,
+            438.0,
+            526.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            262.0,
+            350.0
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "graph_paper",
+        "style_spec": {
+          "axis_arrow_size": 10,
+          "axis_arrows_enabled": true,
+          "axis_color": [
+            182,
+            187,
+            194
+          ],
+          "axis_darken_range": [
+            32,
+            48
+          ],
+          "axis_enabled": true,
+          "axis_line_width": 2,
+          "axis_scale_label_max_abs": 0,
+          "axis_scale_labels_enabled": true,
+          "base_color": [
+            255,
+            255,
+            255
+          ],
+          "base_color_jitter": [
+            0,
+            0
+          ],
+          "center_point_color": [
+            171,
+            176,
+            183
+          ],
+          "center_point_darken_extra_range": [
+            8,
+            14
+          ],
+          "center_point_enabled": true,
+          "center_point_radius": 2,
+          "color_variation_applied": true,
+          "color_variation_enabled": true,
+          "color_variation_sampled": {
+            "axis_darken": 42,
+            "base_color_delta": 0,
+            "center_point_darken_extra": 11,
+            "line_color_delta": 0,
+            "major_line_darken": 11,
+            "origin_label_darken_extra": 9
+          },
+          "kind": "grid",
+          "line_color": [
+            224,
+            229,
+            236
+          ],
+          "line_color_jitter": [
+            -5,
+            5
+          ],
+          "line_width": 1,
+          "major_every": 0,
+          "major_line_color": [
+            213,
+            218,
+            225
+          ],
+          "major_line_darken_range": [
+            6,
+            14
+          ],
+          "major_line_width": 1,
+          "origin_label_color": [
+            173,
+            178,
+            185
+          ],
+          "origin_label_darken_extra_range": [
+            6,
+            12
+          ],
+          "origin_label_enabled": false,
+          "origin_label_text": "0",
+          "outer_margin_px": 16,
+          "scene_supersample_scale": 3,
+          "spacing": 44,
+          "supersample_scale": 1
+        }
+      },
+      "canvas_size": 614,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 12,
+        "full_cells_y": 12,
+        "origin_pixel": [
+          306,
+          306
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 44,
+        "target_cells_x": 14,
+        "target_cells_y": 14,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 12,
+        "full_cells_y": 12,
+        "partial_edge_cells": true,
+        "spacing_px": 44,
+        "target_cells_x": 14,
+        "target_cells_y": 14
+      },
+      "legacy_scene_variant": "circle",
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "scale": 0.958542
+            },
+            "type": "downsample"
+          }
+        ],
+        "enabled": true
+      },
+      "query_variant": "perimeter",
+      "scene_variant": "circle",
+      "shape_style": {
+        "label_color": [
+          91,
+          162,
+          69
+        ],
+        "label_stroke_color": [
+          251,
+          250,
+          253
+        ],
+        "line_color": [
+          91,
+          162,
+          69
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "area_pi_coefficient": 16,
+            "center": [
+              262.0,
+              350.0
+            ],
+            "circumference_pi_coefficient": 8,
+            "radius_units": 4
+          },
+          "entity_id": "circle_1",
+          "entity_type": "circle"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            306,
+            306
+          ],
+          "spacing_px": 44,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "legacy_query_variant": "circle",
+        "legacy_scene_variant": "circle",
+        "legacy_task_id": "task_geometry_measurement_perimeter",
+        "query_variant": "perimeter",
+        "scene_variant": "circle"
+      },
+      "scene_kind": "geometry_2d_perimeter_measurement"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "center"
+      ],
+      "type": "circle_center_point"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

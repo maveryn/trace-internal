@@ -120,104 +120,38 @@ Define how we split tasks into reusable families so each dataset slice stays com
 14. For single-day schedule tasks, keep one stable planner scaffold and widen question diversity through `task_variant`; if a schedule variant answers with a selected event subset, enforce that witness subset’s uniqueness by construction before exposing it as prompt-facing evidence.
 15. For milestone-timeline tasks, keep evidence on visible event cards rather than the full axis or connector lines, even when the answer depends on temporal order across multiple events.
 
-## Planned geometry measurement variants
-1. **Angle measurement**
-   - One angle per image.
-   - Ask for the angle value rounded to the nearest integer degree.
-   - Evidence: unlabeled 3-point set in graph-unit integer coordinates.
-2. **Polygon area measurement**
-   - One shape per image: triangle/quadrilateral polygon or ellipse.
-   - Ask for area (`integer` for polygons, `kπ` for ellipses).
-   - Evidence: polygon/circle-specific graph-point evidence in graph-unit coordinates.
-3. **Polygon perimeter measurement**
-   - One shape per image: triangle/quadrilateral polygon or circle.
-   - Ask for perimeter/circumference (`integer` for polygons, `kπ` for circles).
-   - Evidence: polygon/circle-specific graph-point evidence in graph-unit coordinates.
-4. **Slope measurement**
-   - One finite line per image on graph paper.
-   - Line crosses x-axis at an integer lattice coordinate and at least one other integer lattice point.
-   - Ask for slope to one decimal place.
-   - Evidence: one x-axis crossing lattice point.
-
-## Implemented analytical variant
-1. **Comparison angle (`task_geometry_comparison_angle`)**
-   - One graph-paper image with 4–6 labeled angles.
-   - Query type: `largest` or `smallest`.
-   - Answer type: winner label (`option_letter`) with no textual option list in the prompt.
-   - Evidence: `graph_point_set` for the winning angle's vertex + two ray endpoints.
-2. **Comparison area (`task_geometry_comparison_area`)**
-   - One graph-paper image with 4–6 labeled rectangles.
-   - Query type: `largest` or `smallest`.
-   - Answer type: winner label (`option_letter`) with no textual option list in the prompt.
-   - Evidence: `graph_point_set` for the winning rectangle vertices.
-3. **Comparison length (`task_geometry_comparison_length`)**
-   - One graph-paper image with 4–6 labeled line segments.
-   - Query type: `largest` or `smallest`.
-   - Answer type: winner label (`option_letter`) with no textual option list in the prompt.
-   - Evidence: `graph_point_set` for the winning segment endpoints.
-4. **Comparison perimeter (`task_geometry_comparison_perimeter`)**
-   - One graph-paper image with 4–6 labeled rectangles.
-   - Query type: `largest` or `smallest`.
-   - Answer type: winner label (`option_letter`) with no textual option list in the prompt.
-   - Evidence: `graph_point_set` for the winning rectangle vertices.
-5. **Counting angle (`task_geometry_counting_angle`)**
-   - One non-graph-paper image with 6–10 labeled angles.
-   - Query variants: `acute_angle`, `right_angle`, `obtuse_angle`.
-   - Answer type: integer count.
-   - Evidence: sorted `label_set` of the matching angle labels.
-6. **Counting triangle (`task_geometry_counting_triangle`)**
-   - One non-graph-paper image with 5–8 labeled triangles.
-   - Query variants: `equilateral_triangle`, `isosceles_triangle`, `scalene_triangle`, `right_triangle`, `acute_triangle`, `obtuse_triangle`.
-   - Answer type: integer count.
-   - Evidence: sorted `label_set` of the matching triangle labels.
-   - Overlap wording: the isosceles query is phrased as `isosceles triangles but not equilateral triangles` so the task does not rely on competing textbook conventions.
-7. **Counting quadrilateral (`task_geometry_counting_quadrilateral`)**
-   - One non-graph-paper image with 5–7 labeled quadrilaterals.
-   - Query variants: `square`, `rectangle_non_square`, `rhombus_non_square`, `parallelogram_only`.
-   - Answer type: integer count.
-   - Evidence: sorted `label_set` of the matching quadrilateral labels.
-   - Overlap wording: rectangle/rhombus/parallelogram prompts use exclusive wording so squares are not double-counted by convention.
-8. **Counting shape type (`task_geometry_counting_shape_type`)**
-   - One non-graph-paper image with 6–9 labeled mixed shapes.
-   - Query variants: `triangle`, `quadrilateral`, `pentagon`, `hexagon`, `circle`, `ellipse`.
-   - Answer type: integer count.
-   - Evidence: sorted `label_set` of the matching shape labels.
-   - Visual distinction rule: ellipses must stay visibly non-circular so `circle` and `ellipse` do not collapse into one ambiguous class.
-9. **Counting convexity (`task_geometry_counting_convexity`)**
-   - One non-graph-paper image with 6–9 labeled polygons.
-   - Query variants: `convex_polygon`, `concave_polygon`.
-   - Polygon families: quadrilateral, pentagon, and hexagon.
-   - Answer type: integer count.
-   - Evidence: sorted `label_set` of the matching polygon labels.
-   - Visual distinction rule: concave polygons must keep a clear reflex indentation; degenerate or borderline near-flat shapes are rejected instead of left to interpretation.
-10. **Analytical area (`task_geometry_analytical_2d_area`)**
-   - One annotated shape per image: rectangle, triangle, parallelogram, trapezoid, rhombus, circle, ellipse.
-   - One explicit + one derived variant per shape.
-   - Ask for area (`integer` for polygonal shapes, `kπ` for circle/ellipse).
-   - Evidence: structured `measurement_ref_map` (`annotation -> value`) for all quantities used in the area computation.
-11. **Analytical length (`task_geometry_analytical_2d_length`)**
-   - One annotated analytical scene per image, including auxiliary constructions or coupled shapes.
-   - Derived-only variants: triangle altitude side, rectangle diagonal side, rhombus diagonal side, isosceles trapezoid leg, inscribed square side, circle chord length.
-   - Ask for a target segment length rounded to one decimal place.
-   - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the givens used in the derivation.
-12. **Analytical perimeter (`task_geometry_analytical_2d_perimeter`)**
-   - One annotated analytical scene per image, including auxiliary constructions or coupled shapes.
-   - Derived-only variants: right triangle from leg+hypotenuse, rectangle from side+diagonal, rhombus from diagonals, isosceles trapezoid from bases+height, inscribed square from circle diameter.
-   - Ask for the perimeter rounded to one decimal place.
-   - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the givens used in the derivation.
-13. **Analytical composite area (`task_geometry_analytical_2d_composite_area`)**
-   - One annotated analytical scene per image with one shaded target region; auxiliary cuts/unions and coupled polygons are allowed.
-   - Derived-only variants: inner-rectangle cutout, triangle cutout, rectangle+triangle union, L-shape cutout, step-rectangle union.
-   - Ask for the shaded/composite area as an integer number of square units.
-   - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the givens used in the derivation.
-14. **Analytical 3D volume (`task_geometry_analytical_3d_volume`)**
-   - One annotated 3D solid per image: rectangular prism, triangular prism, square pyramid, cylinder, cone, sphere.
-   - Ask for volume (`integer` for polyhedra, `kπ` for cylinder/cone/sphere).
-   - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the required measurement labels.
-15. **Analytical 3D surface area (`task_geometry_analytical_3d_surface_area`)**
-   - One annotated 3D solid per image: rectangular prism, triangular prism, square pyramid, cylinder, cone, sphere.
-   - Ask for total surface area (`integer` for polyhedra, `kπ` for cylinder/cone/sphere).
-   - Evidence: structured `measurement_ref_map` (`annotation -> value`) for the required measurement labels.
+## Geometry direction (current)
+1. Geometry is now intentionally consolidated into five active task ids:
+   - `task_geometry_measurement_value`
+   - `task_geometry_comparison_value`
+   - `task_geometry_counting_value`
+   - `task_geometry_analytical_2d_value`
+   - `task_geometry_analytical_3d_value`
+2. Geometry follows a chart-style two-axis policy:
+   - `scene_variant` identifies the geometric scene family / object family,
+   - `query_variant` identifies the requested question type.
+3. The consolidation is taxonomy-first: legacy geometry generators still provide the underlying scene construction, prompt wording, and verifier traces, but active sampling and docs now expose the broader scene/query surface instead of 20 separate task ids.
+4. `task_geometry_measurement_value`
+   - uses scene variants `angle|segment|triangle|quadrilateral|pentagon|circle|ellipse|line`
+   - uses query variants `angle|length|area|perimeter|slope`
+   - keeps legacy graph-grounded evidence (`graph_point` / `graph_point_set`) and legacy answer typing (`integer|decimal|pi_expression`) by compatible pair
+5. `task_geometry_comparison_value`
+   - uses scene variants `angle|segment|rectangle`
+   - uses query variants `largest_angle|smallest_angle|largest_length|smallest_length|largest_area|smallest_area|largest_perimeter|smallest_perimeter`
+   - keeps `option_letter` answers with winner-specific geometry evidence
+6. `task_geometry_counting_value`
+   - uses scene variants `angle|triangle|quadrilateral|mixed_shape|polygon`
+   - uses query variants for the counted class (`acute_angle`, `square`, `ellipse`, `concave_polygon`, etc.)
+   - keeps integer answers with unordered `label_set` evidence
+7. `task_geometry_analytical_2d_value`
+   - uses scene variants `rectangle|triangle|parallelogram|trapezoid|rhombus|circle|ellipse|composite_region`
+   - uses query variants `area|length|perimeter|composite_area`
+   - keeps structured `measurement_ref_map` evidence and the legacy analytical answer typing
+8. `task_geometry_analytical_3d_value`
+   - uses scene variants `rectangular_prism|triangular_prism|square_pyramid|cylinder|cone|sphere`
+   - uses query variants `volume|surface_area`
+   - keeps structured `measurement_ref_map` evidence and the legacy analytical answer typing
+9. For all five active geometry tasks, `execution_trace`, `query_spec.params`, and `scene_ir.relations` should expose the consolidated `scene_variant` / `query_variant` pair, while preserving `legacy_task_id` and other `legacy_*` trace slots for auditability.
 16. **Icons counting type (`task_icons_counting_type`)**
    - One two-panel image with a `Reference` icon and a `Scene` panel of icons.
    - Query: how many scene icons have the same icon type as the reference.

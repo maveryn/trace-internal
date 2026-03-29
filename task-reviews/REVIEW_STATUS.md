@@ -4,26 +4,11 @@ Update this table after each review run.
 
 | task_id | latest_run_id | status | notes |
 |---|---|---|---|
-| task_geometry_comparison_angle | task_geometry_comparison_angle | alright_for_now | distribution pass |
-| task_geometry_comparison_area | task_geometry_comparison_area | alright_for_now | distribution pass |
-| task_geometry_comparison_length | task_geometry_comparison_length | alright_for_now | distribution pass |
-| task_geometry_comparison_perimeter | task_geometry_comparison_perimeter | alright_for_now | distribution pass |
-| task_geometry_counting_angle | task_geometry_counting_angle | alright_for_now | distribution pass |
-| task_geometry_counting_triangle | task_geometry_counting_triangle | alright_for_now | distribution pass |
-| task_geometry_counting_quadrilateral | task_geometry_counting_quadrilateral | alright_for_now | distribution pass |
-| task_geometry_counting_shape_type | task_geometry_counting_shape_type | alright_for_now | distribution pass |
-| task_geometry_counting_convexity | task_geometry_counting_convexity | alright_for_now | distribution pass |
-| task_geometry_measurement_angle | task_geometry_measurement_angle | alright_for_now | distribution pass |
-| task_geometry_measurement_area | task_geometry_measurement_area | alright_for_now | distribution pass |
-| task_geometry_measurement_perimeter | task_geometry_measurement_perimeter | alright_for_now | distribution pass |
-| task_geometry_measurement_length | task_geometry_measurement_length | alright_for_now | distribution pass |
-| task_geometry_measurement_slope | task_geometry_measurement_slope | alright_for_now | distribution pass |
-| task_geometry_analytical_2d_area | task_geometry_analytical_2d_area | alright_for_now | distribution pass |
-| task_geometry_analytical_2d_composite_area | task_geometry_analytical_2d_composite_area | alright_for_now | distribution pass |
-| task_geometry_analytical_2d_length | task_geometry_analytical_2d_length | alright_for_now | distribution pass |
-| task_geometry_analytical_2d_perimeter | task_geometry_analytical_2d_perimeter | alright_for_now | distribution pass |
-| task_geometry_analytical_3d_volume | task_geometry_analytical_3d_volume | alright_for_now | distribution pass |
-| task_geometry_analytical_3d_surface_area | task_geometry_analytical_3d_surface_area | alright_for_now | distribution pass |
+| task_geometry_analytical_2d_value | task_geometry_analytical_2d_value | alright_for_now | distribution pass (scene/query consolidated wrapper) |
+| task_geometry_analytical_3d_value | task_geometry_analytical_3d_value | alright_for_now | distribution pass (scene/query consolidated wrapper) |
+| task_geometry_comparison_value | task_geometry_comparison_value | alright_for_now | distribution pass (scene/query consolidated wrapper) |
+| task_geometry_counting_value | task_geometry_counting_value | alright_for_now | distribution pass (scene/query consolidated wrapper) |
+| task_geometry_measurement_value | task_geometry_measurement_value | alright_for_now | distribution pass (scene/query consolidated wrapper) |
 | task_icons_counting_type | task_icons_counting_type | alright_for_now | distribution pass |
 | task_icons_counting_orientation | task_icons_counting_orientation | alright_for_now | distribution pass |
 | task_icons_counting_color | task_icons_counting_color | alright_for_now | distribution pass |

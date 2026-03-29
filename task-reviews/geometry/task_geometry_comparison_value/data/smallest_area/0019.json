@@ -1,0 +1,764 @@
+{
+  "answer_gt": {
+    "type": "option_letter",
+    "value": "B"
+  },
+  "evidence_gt": {
+    "type": "graph_point_set",
+    "value": [
+      [
+        6,
+        5
+      ],
+      [
+        8,
+        5
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        6,
+        7
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_comparison_value/images/smallest_area/0019.png"
+  },
+  "instance_seed": 354119551701613,
+  "prompt": "Work from the graph-paper image showing several labeled rectangles. Which labeled rectangle has the smallest area?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of exactly four graph-paper points for the winning rectangle vertices.\nAnswer: set \"answer\" to the single-letter label of the correct rectangle.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":\"B\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the graph-paper image showing several labeled rectangles. Which labeled rectangle has the smallest area?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of exactly four graph-paper points for the winning rectangle vertices.\nAnswer: set \"answer\" to the single-letter label of the correct rectangle.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":\"B\"}",
+    "answer_only": "Work from the graph-paper image showing several labeled rectangles. Which labeled rectangle has the smallest area?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the single-letter label of the correct rectangle.\nExample JSON:\n{\"answer\":\"B\"}"
+  },
+  "task": "task_geometry_comparison_value",
+  "task_variant": "smallest_area",
+  "trace_payload": {
+    "execution_trace": {
+      "legacy_query_variant": "rectangle_set",
+      "legacy_scene_variant": "rectangle_set",
+      "legacy_task_id": "task_geometry_comparison_area",
+      "object_count": 4,
+      "object_count_probabilities": {
+        "4": 0.3333333333333333,
+        "5": 0.3333333333333333,
+        "6": 0.3333333333333333
+      },
+      "object_labels": [
+        "F",
+        "D",
+        "B",
+        "E"
+      ],
+      "query_type": "smallest",
+      "query_type_probabilities": {
+        "largest": 0.0,
+        "smallest": 1.0
+      },
+      "query_variant": "smallest_area",
+      "query_variant_probabilities": {
+        "largest_angle": 0.0,
+        "largest_area": 0.0,
+        "largest_length": 0.0,
+        "largest_perimeter": 0.0,
+        "smallest_angle": 0.0,
+        "smallest_area": 1.0,
+        "smallest_length": 0.0,
+        "smallest_perimeter": 0.0
+      },
+      "question_format": "label_choice_no_text_options",
+      "required_evidence_labels": [
+        "vertex_1",
+        "vertex_2",
+        "vertex_3",
+        "vertex_4"
+      ],
+      "runner_up_value": 10.0,
+      "scene_variant": "rectangle",
+      "scene_variant_probabilities": {
+        "angle": 0.0,
+        "rectangle": 1.0,
+        "segment": 0.0
+      },
+      "task_variant": "smallest_area",
+      "task_variant_probabilities": {
+        "largest_angle": 0.0,
+        "largest_area": 0.0,
+        "largest_length": 0.0,
+        "largest_perimeter": 0.0,
+        "smallest_angle": 0.0,
+        "smallest_area": 1.0,
+        "smallest_length": 0.0,
+        "smallest_perimeter": 0.0
+      },
+      "values_by_label": {
+        "B": 4,
+        "D": 18,
+        "E": 16,
+        "F": 10
+      },
+      "winner_gap_abs": 6.0,
+      "winner_gap_normalized": 0.42857142857142855,
+      "winner_label": "B",
+      "winner_label_probabilities": {
+        "A": 0.16666666666666666,
+        "B": 0.16666666666666666,
+        "C": 0.16666666666666666,
+        "D": 0.16666666666666666,
+        "E": 0.16666666666666666,
+        "F": 0.16666666666666666
+      },
+      "winner_label_target": "B",
+      "winner_value": 4.0
+    },
+    "projected_evidence": {
+      "grid_point_map": {
+        "vertex_1": [
+          6,
+          5
+        ],
+        "vertex_2": [
+          8,
+          5
+        ],
+        "vertex_3": [
+          8,
+          7
+        ],
+        "vertex_4": [
+          6,
+          7
+        ]
+      },
+      "grid_point_path": [
+        [
+          6,
+          5
+        ],
+        [
+          8,
+          5
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          6,
+          7
+        ]
+      ],
+      "grid_point_set": [
+        [
+          6,
+          5
+        ],
+        [
+          8,
+          5
+        ],
+        [
+          8,
+          7
+        ],
+        [
+          6,
+          7
+        ]
+      ],
+      "pixel_point_map": {
+        "vertex_1": [
+          474.0,
+          155.0
+        ],
+        "vertex_2": [
+          532.0,
+          155.0
+        ],
+        "vertex_3": [
+          532.0,
+          97.0
+        ],
+        "vertex_4": [
+          474.0,
+          97.0
+        ]
+      },
+      "pixel_point_path": [
+        [
+          474.0,
+          155.0
+        ],
+        [
+          532.0,
+          155.0
+        ],
+        [
+          532.0,
+          97.0
+        ],
+        [
+          474.0,
+          97.0
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          474.0,
+          155.0
+        ],
+        [
+          532.0,
+          155.0
+        ],
+        [
+          532.0,
+          97.0
+        ],
+        [
+          474.0,
+          97.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "legacy_query_variant": "rectangle_set",
+        "legacy_scene_variant": "rectangle_set",
+        "legacy_task_id": "task_geometry_comparison_area",
+        "max_rectangle_height": 6,
+        "max_rectangle_width": 6,
+        "min_absolute_gap_square_units": 6.0,
+        "min_normalized_gap": 0.2,
+        "min_rectangle_height": 2,
+        "min_rectangle_width": 2,
+        "object_count": 4,
+        "object_count_probabilities": {
+          "4": 0.3333333333333333,
+          "5": 0.3333333333333333,
+          "6": 0.3333333333333333
+        },
+        "query_type": "smallest",
+        "query_type_probabilities": {
+          "largest": 0.0,
+          "smallest": 1.0
+        },
+        "query_variant": "smallest_area",
+        "query_variant_probabilities": {
+          "largest_angle": 0.0,
+          "largest_area": 0.0,
+          "largest_length": 0.0,
+          "largest_perimeter": 0.0,
+          "smallest_angle": 0.0,
+          "smallest_area": 1.0,
+          "smallest_length": 0.0,
+          "smallest_perimeter": 0.0
+        },
+        "scene_variant": "rectangle",
+        "scene_variant_probabilities": {
+          "angle": 0.0,
+          "rectangle": 1.0,
+          "segment": 0.0
+        },
+        "variant_probabilities": {
+          "largest_angle": 0.0,
+          "largest_area": 0.0,
+          "largest_length": 0.0,
+          "largest_perimeter": 0.0,
+          "smallest_angle": 0.0,
+          "smallest_area": 1.0,
+          "smallest_length": 0.0,
+          "smallest_perimeter": 0.0
+        },
+        "winner_label": "B",
+        "winner_label_probabilities": {
+          "A": 0.16666666666666666,
+          "B": 0.16666666666666666,
+          "C": 0.16666666666666666,
+          "D": 0.16666666666666666,
+          "E": 0.16666666666666666,
+          "F": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "geometry_comparison_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the single-letter label of the correct rectangle",
+          "evidence_hint": "set \"evidence\" to an array of exactly four graph-paper points for the winning rectangle vertices",
+          "json_example": "{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":\"B\"}",
+          "json_example_answer_only": "{\"answer\":\"B\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "several labeled rectangles",
+          "question_text": "Which labeled rectangle has the smallest area?"
+        },
+        "task_family_key": "comparison_graph_scene",
+        "task_family_variant_index": 4,
+        "task_key": "comparison_query",
+        "task_variant_index": 0,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/comparison/geometry_comparison_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:comparison_query": 5,
+          "task_family:comparison_graph_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_comparison_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single-letter label of the correct rectangle",
+              "evidence_hint": "set \"evidence\" to an array of exactly four graph-paper points for the winning rectangle vertices",
+              "json_example": "{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled rectangles",
+              "question_text": "Which labeled rectangle has the smallest area?"
+            },
+            "task_family_key": "comparison_graph_scene",
+            "task_family_variant_index": 4,
+            "task_key": "comparison_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/comparison/geometry_comparison_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:comparison_query": 5,
+              "task_family:comparison_graph_scene": 5
+            }
+          },
+          "prompt": "Work from the graph-paper image showing several labeled rectangles. Which labeled rectangle has the smallest area?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of exactly four graph-paper points for the winning rectangle vertices.\nAnswer: set \"answer\" to the single-letter label of the correct rectangle.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":\"B\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_comparison_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single-letter label of the correct rectangle",
+              "evidence_hint": "set \"evidence\" to an array of exactly four graph-paper points for the winning rectangle vertices",
+              "json_example": "{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled rectangles",
+              "question_text": "Which labeled rectangle has the smallest area?"
+            },
+            "task_family_key": "comparison_graph_scene",
+            "task_family_variant_index": 4,
+            "task_key": "comparison_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/comparison/geometry_comparison_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:comparison_query": 5,
+              "task_family:comparison_graph_scene": 5
+            }
+          },
+          "prompt": "Work from the graph-paper image showing several labeled rectangles. Which labeled rectangle has the smallest area?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the single-letter label of the correct rectangle.\nExample JSON:\n{\"answer\":\"B\"}"
+        }
+      },
+      "task_variant": "smallest_area",
+      "template_id": "geometry_comparison_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "winner": {
+          "winner_center": [
+            503.0,
+            126.0
+          ],
+          "winner_label": "B",
+          "winner_polygon": [
+            [
+              474.0,
+              155.0
+            ],
+            [
+              532.0,
+              155.0
+            ],
+            [
+              532.0,
+              97.0
+            ],
+            [
+              474.0,
+              97.0
+            ]
+          ]
+        }
+      },
+      "image_id": "img0",
+      "object_label_centers": {
+        "B": [
+          502.19510722851743,
+          74.96634691082349
+        ],
+        "D": [
+          15.801332460805932,
+          299.4949938388433
+        ],
+        "E": [
+          76.40789684974337,
+          45.656930057103295
+        ],
+        "F": [
+          34.02423498336176,
+          508.42969978008415
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "graph_paper",
+        "style_spec": {
+          "axis_arrow_size": 10,
+          "axis_arrows_enabled": true,
+          "axis_color": [
+            188,
+            193,
+            200
+          ],
+          "axis_darken_range": [
+            32,
+            48
+          ],
+          "axis_enabled": true,
+          "axis_line_width": 2,
+          "axis_scale_label_max_abs": 0,
+          "axis_scale_labels_enabled": true,
+          "base_color": [
+            255,
+            255,
+            255
+          ],
+          "base_color_jitter": [
+            0,
+            0
+          ],
+          "center_point_color": [
+            176,
+            181,
+            188
+          ],
+          "center_point_darken_extra_range": [
+            8,
+            14
+          ],
+          "center_point_enabled": true,
+          "center_point_radius": 2,
+          "color_variation_applied": true,
+          "color_variation_enabled": true,
+          "color_variation_sampled": {
+            "axis_darken": 40,
+            "base_color_delta": 0,
+            "center_point_darken_extra": 12,
+            "line_color_delta": 4,
+            "major_line_darken": 13,
+            "origin_label_darken_extra": 6
+          },
+          "kind": "grid",
+          "line_color": [
+            228,
+            233,
+            240
+          ],
+          "line_color_jitter": [
+            -5,
+            5
+          ],
+          "line_width": 1,
+          "major_every": 0,
+          "major_line_color": [
+            215,
+            220,
+            227
+          ],
+          "major_line_darken_range": [
+            6,
+            14
+          ],
+          "major_line_width": 1,
+          "origin_label_color": [
+            182,
+            187,
+            194
+          ],
+          "origin_label_darken_extra_range": [
+            6,
+            12
+          ],
+          "origin_label_enabled": false,
+          "origin_label_text": "0",
+          "outer_margin_px": 16,
+          "scene_supersample_scale": 3,
+          "spacing": 29,
+          "supersample_scale": 1
+        }
+      },
+      "canvas_size": 602,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 18,
+        "full_cells_y": 18,
+        "origin_pixel": [
+          300,
+          300
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 29,
+        "target_cells_x": 21,
+        "target_cells_y": 21,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 18,
+        "full_cells_y": 18,
+        "partial_edge_cells": true,
+        "spacing_px": 29,
+        "target_cells_x": 21,
+        "target_cells_y": 21
+      },
+      "legacy_scene_variant": "rectangle_set",
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "query_variant": "smallest_area",
+      "scene_variant": "rectangle",
+      "shape_style": {
+        "label_color": [
+          98,
+          43,
+          136
+        ],
+        "label_stroke_color": [
+          255,
+          255,
+          248
+        ],
+        "line_color": [
+          98,
+          43,
+          136
+        ]
+      },
+      "text_style": {
+        "font_size_px": 90,
+        "stroke_width_px": 3
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "area_square_units": 10,
+            "height_units": 5,
+            "label": "F",
+            "shape_family": "rectangle",
+            "vertices": [
+              [
+                68.0,
+                532.0
+              ],
+              [
+                126.0,
+                532.0
+              ],
+              [
+                126.0,
+                387.0
+              ],
+              [
+                68.0,
+                387.0
+              ]
+            ],
+            "width_units": 2
+          },
+          "entity_id": "rectangle_F",
+          "entity_type": "polygon"
+        },
+        {
+          "attrs": {
+            "area_square_units": 18,
+            "height_units": 6,
+            "label": "D",
+            "shape_family": "rectangle",
+            "vertices": [
+              [
+                68.0,
+                387.0
+              ],
+              [
+                155.0,
+                387.0
+              ],
+              [
+                155.0,
+                213.0
+              ],
+              [
+                68.0,
+                213.0
+              ]
+            ],
+            "width_units": 3
+          },
+          "entity_id": "rectangle_D",
+          "entity_type": "polygon"
+        },
+        {
+          "attrs": {
+            "area_square_units": 4,
+            "height_units": 2,
+            "label": "B",
+            "shape_family": "rectangle",
+            "vertices": [
+              [
+                474.0,
+                155.0
+              ],
+              [
+                532.0,
+                155.0
+              ],
+              [
+                532.0,
+                97.0
+              ],
+              [
+                474.0,
+                97.0
+              ]
+            ],
+            "width_units": 2
+          },
+          "entity_id": "rectangle_B",
+          "entity_type": "polygon"
+        },
+        {
+          "attrs": {
+            "area_square_units": 16,
+            "height_units": 4,
+            "label": "E",
+            "shape_family": "rectangle",
+            "vertices": [
+              [
+                39.0,
+                184.0
+              ],
+              [
+                155.0,
+                184.0
+              ],
+              [
+                155.0,
+                68.0
+              ],
+              [
+                39.0,
+                68.0
+              ]
+            ],
+            "width_units": 4
+          },
+          "entity_id": "rectangle_E",
+          "entity_type": "polygon"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            300,
+            300
+          ],
+          "spacing_px": 29,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "comparison_target": "area_square_units",
+        "legacy_query_variant": "rectangle_set",
+        "legacy_scene_variant": "rectangle_set",
+        "legacy_task_id": "task_geometry_comparison_area",
+        "query_type": "smallest",
+        "query_variant": "smallest_area",
+        "scene_variant": "rectangle",
+        "winner_label": "B"
+      },
+      "scene_kind": "geometry_2d_area_comparison"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "vertex_1",
+        "vertex_2",
+        "vertex_3",
+        "vertex_4"
+      ],
+      "type": "winning_rectangle_vertices",
+      "winner_label": "B"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

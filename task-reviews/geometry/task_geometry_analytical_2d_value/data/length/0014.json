@@ -1,0 +1,469 @@
+{
+  "answer_gt": {
+    "type": "number",
+    "value": 41.8
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "BD": 42,
+      "CD": 4
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_2d_value/images/length/0014.png"
+  },
+  "instance_seed": 7390757115937481,
+  "prompt": "Use the image showing a geometric scene with measurement annotations. The rectangle shows one side and its diagonal. What is the length of segment BC?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CD, BD.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"CD\":2,\"BD\":3},\"answer\":42.3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the image showing a geometric scene with measurement annotations. The rectangle shows one side and its diagonal. What is the length of segment BC?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CD, BD.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"CD\":2,\"BD\":3},\"answer\":42.3}",
+    "answer_only": "Use the image showing a geometric scene with measurement annotations. The rectangle shows one side and its diagonal. What is the length of segment BC?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+  },
+  "task": "task_geometry_analytical_2d_value",
+  "task_variant": "length",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 100,
+      "answer_min": 3,
+      "answer_scalar": 418,
+      "answer_type": "number",
+      "answer_value": 41.8,
+      "evidence_map": {
+        "BD": 42,
+        "CD": 4
+      },
+      "evidence_role_tokens": {
+        "diagonal": "BD",
+        "known_side": "CD"
+      },
+      "evidence_role_values": {
+        "diagonal": 42,
+        "known_side": 4
+      },
+      "evidence_roles": [
+        "known_side",
+        "diagonal"
+      ],
+      "formula_expression": "sqrt(diagonal^2 - known_side^2)",
+      "legacy_query_variant": "rectangle_diagonal_side",
+      "legacy_scene_variant": "rectangle",
+      "legacy_task_id": "task_geometry_analytical_2d_length",
+      "query_variant": "length",
+      "query_variant_probabilities": {
+        "area": 0.0,
+        "composite_area": 0.0,
+        "length": 1.0,
+        "perimeter": 0.0
+      },
+      "raw_answer_value": 41.80908992073375,
+      "required_annotations": [
+        "CD",
+        "BD"
+      ],
+      "scene_variant": "rectangle",
+      "scene_variant_probabilities": {
+        "circle": 0.2,
+        "composite_region": 0.0,
+        "ellipse": 0.0,
+        "parallelogram": 0.0,
+        "rectangle": 0.2,
+        "rhombus": 0.2,
+        "trapezoid": 0.2,
+        "triangle": 0.2
+      },
+      "target_annotation": "BC",
+      "task_variant": "length",
+      "task_variant_probabilities": {
+        "area": 0.0,
+        "composite_area": 0.0,
+        "length": 1.0,
+        "perimeter": 0.0
+      },
+      "variant_probabilities": {
+        "circle_chord_length": 0.0,
+        "inscribed_square_side": 0.0,
+        "isosceles_trapezoid_leg": 0.0,
+        "rectangle_diagonal_side": 1.0,
+        "rhombus_diagonal_side": 0.0,
+        "triangle_altitude_side": 0.0
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "diagonal": "BD",
+        "known_side": "CD"
+      },
+      "id_set": [
+        "CD",
+        "BD"
+      ],
+      "measurement_ref_map": {
+        "BD": 42,
+        "CD": 4
+      },
+      "pixel_annotation_centers": {
+        "BD": [
+          291.2809523809524,
+          319.85223585642274
+        ],
+        "CD": [
+          504.95666666666665,
+          290.78496381629355
+        ]
+      },
+      "pixel_point_set": [
+        [
+          504.95666666666665,
+          290.78496381629355
+        ],
+        [
+          291.2809523809524,
+          319.85223585642274
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 100,
+        "answer_min": 3,
+        "legacy_query_variant": "rectangle_diagonal_side",
+        "legacy_scene_variant": "rectangle",
+        "legacy_task_id": "task_geometry_analytical_2d_length",
+        "query_variant": "length",
+        "query_variant_probabilities": {
+          "area": 0.0,
+          "composite_area": 0.0,
+          "length": 1.0,
+          "perimeter": 0.0
+        },
+        "scene_variant": "rectangle",
+        "scene_variant_probabilities": {
+          "circle": 0.2,
+          "composite_region": 0.0,
+          "ellipse": 0.0,
+          "parallelogram": 0.0,
+          "rectangle": 0.2,
+          "rhombus": 0.2,
+          "trapezoid": 0.2,
+          "triangle": 0.2
+        },
+        "task_variant": "rectangle_diagonal_side",
+        "variant_probabilities": {
+          "area": 0.0,
+          "composite_area": 0.0,
+          "length": 1.0,
+          "perimeter": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "geometry_analytical_length_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CD, BD",
+          "json_example": "{\"evidence\":{\"CD\":2,\"BD\":3},\"answer\":42.3}",
+          "json_example_answer_only": "{\"answer\":42.3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a geometric scene with measurement annotations",
+          "question_text": "The rectangle shows one side and its diagonal. What is the length of segment BC?"
+        },
+        "task_family_key": "analytical_length_scene",
+        "task_family_variant_index": 3,
+        "task_key": "analytical_length_query",
+        "task_variant_index": 0,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_2d/geometry_analytical_length_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_length_query": 5,
+          "task_family:analytical_length_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "geometry_analytical_length_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CD, BD",
+              "json_example": "{\"evidence\":{\"CD\":2,\"BD\":3},\"answer\":42.3}",
+              "json_example_answer_only": "{\"answer\":42.3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric scene with measurement annotations",
+              "question_text": "The rectangle shows one side and its diagonal. What is the length of segment BC?"
+            },
+            "task_family_key": "analytical_length_scene",
+            "task_family_variant_index": 3,
+            "task_key": "analytical_length_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_length_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_length_query": 5,
+              "task_family:analytical_length_scene": 5
+            }
+          },
+          "prompt": "Use the image showing a geometric scene with measurement annotations. The rectangle shows one side and its diagonal. What is the length of segment BC?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CD, BD.\nAnswer requirement: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"CD\":2,\"BD\":3},\"answer\":42.3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_analytical_length_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the length value rounded to one decimal place",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: CD, BD",
+              "json_example": "{\"evidence\":{\"CD\":2,\"BD\":3},\"answer\":42.3}",
+              "json_example_answer_only": "{\"answer\":42.3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric scene with measurement annotations",
+              "question_text": "The rectangle shows one side and its diagonal. What is the length of segment BC?"
+            },
+            "task_family_key": "analytical_length_scene",
+            "task_family_variant_index": 3,
+            "task_key": "analytical_length_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_length_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_length_query": 5,
+              "task_family:analytical_length_scene": 5
+            }
+          },
+          "prompt": "Use the image showing a geometric scene with measurement annotations. The rectangle shows one side and its diagonal. What is the length of segment BC?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the length value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+        }
+      },
+      "task_variant": "length",
+      "template_id": "geometry_analytical_length_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "BD": [
+          291.2809523809524,
+          319.85223585642274
+        ],
+        "CD": [
+          504.95666666666665,
+          290.78496381629355
+        ]
+      },
+      "annotation_labels": {
+        "diagonal": "BD",
+        "known_side": "CD"
+      },
+      "coord_space": "pixel",
+      "instance_anchor": {
+        "bbox": [
+          89.81,
+          271.7757004836835,
+          487.19,
+          309.7942271489036
+        ],
+        "coord_space": "pixel"
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_offwhite",
+        "style_spec": {
+          "color": [
+            252,
+            252,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 577,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "origin_pixel": [
+          288,
+          288
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 58,
+        "target_cells_x": 10,
+        "target_cells_y": 10,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "partial_edge_cells": true,
+        "spacing_px": 58,
+        "target_cells_x": 10,
+        "target_cells_y": 10
+      },
+      "legacy_scene_variant": "rectangle",
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "query_variant": "length",
+      "scene_variant": "rectangle",
+      "shape_style": {
+        "label_color": [
+          33,
+          27,
+          95
+        ],
+        "label_stroke_color": [
+          255,
+          254,
+          250
+        ],
+        "line_color": [
+          33,
+          27,
+          95
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "vertices": [
+              [
+                89.81,
+                309.7942271489036
+              ],
+              [
+                487.19,
+                309.7942271489036
+              ],
+              [
+                487.19,
+                271.7757004836835
+              ],
+              [
+                89.81,
+                271.7757004836835
+              ]
+            ]
+          },
+          "entity_id": "rectangle_1",
+          "entity_type": "rectangle"
+        },
+        {
+          "attrs": {
+            "helper": true,
+            "point_a": [
+              89.81,
+              309.7942271489036
+            ],
+            "point_b": [
+              487.19,
+              271.7757004836835
+            ]
+          },
+          "entity_id": "diagonal_1",
+          "entity_type": "diagonal"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            288,
+            288
+          ],
+          "spacing_px": 58,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "legacy_query_variant": "rectangle_diagonal_side",
+        "legacy_scene_variant": "rectangle",
+        "legacy_task_id": "task_geometry_analytical_2d_length",
+        "query_variant": "length",
+        "scene_variant": "rectangle"
+      },
+      "scene_kind": "geometry_2d_analytical_length"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "CD",
+        "BD"
+      ],
+      "annotation_labels": {
+        "diagonal": "BD",
+        "known_side": "CD"
+      },
+      "annotation_values": {
+        "BD": 42,
+        "CD": 4
+      },
+      "formula_expression": "sqrt(diagonal^2 - known_side^2)",
+      "measurement_ref_map": {
+        "BD": 42,
+        "CD": 4
+      },
+      "task_variant": "rectangle_diagonal_side",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

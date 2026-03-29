@@ -1,0 +1,454 @@
+{
+  "answer_gt": {
+    "type": "number",
+    "value": 45.3
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "QO": 16
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_2d_value/images/perimeter/0012.png"
+  },
+  "instance_seed": 7143796477367504,
+  "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. Task: The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QO.\nAnswer requirement: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"QO\":2},\"answer\":42.3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the annotated image showing a geometric scene with measurement annotations. Task: The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QO.\nAnswer requirement: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"QO\":2},\"answer\":42.3}",
+    "answer_only": "Look at the annotated image showing a geometric scene with measurement annotations. Task: The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+  },
+  "task": "task_geometry_analytical_2d_value",
+  "task_variant": "perimeter",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 250,
+      "answer_min": 8,
+      "answer_scalar": 453,
+      "answer_type": "number",
+      "answer_value": 45.3,
+      "evidence_map": {
+        "QO": 16
+      },
+      "evidence_role_tokens": {
+        "diameter": "QO"
+      },
+      "evidence_role_values": {
+        "diameter": 16
+      },
+      "evidence_roles": [
+        "diameter"
+      ],
+      "formula_expression": "2 * sqrt(2) * diameter",
+      "legacy_query_variant": "inscribed_square_diameter",
+      "legacy_scene_variant": "circle",
+      "legacy_task_id": "task_geometry_analytical_2d_perimeter",
+      "query_variant": "perimeter",
+      "query_variant_probabilities": {
+        "area": 0.0,
+        "composite_area": 0.0,
+        "length": 0.0,
+        "perimeter": 1.0
+      },
+      "raw_answer_value": 45.254833995939045,
+      "required_annotations": [
+        "QO"
+      ],
+      "scene_variant": "circle",
+      "scene_variant_probabilities": {
+        "circle": 0.2,
+        "composite_region": 0.0,
+        "ellipse": 0.0,
+        "parallelogram": 0.0,
+        "rectangle": 0.2,
+        "rhombus": 0.2,
+        "trapezoid": 0.2,
+        "triangle": 0.2
+      },
+      "target_quantity": "perimeter",
+      "task_variant": "perimeter",
+      "task_variant_probabilities": {
+        "area": 0.0,
+        "composite_area": 0.0,
+        "length": 0.0,
+        "perimeter": 1.0
+      },
+      "variant_probabilities": {
+        "inscribed_square_diameter": 1.0,
+        "isosceles_trapezoid_bases_height": 0.0,
+        "rectangle_side_diagonal": 0.0,
+        "rhombus_diagonals": 0.0,
+        "right_triangle_leg_hypotenuse": 0.0
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "diameter": "QO"
+      },
+      "id_set": [
+        "QO"
+      ],
+      "measurement_ref_map": {
+        "QO": 16
+      },
+      "pixel_annotation_centers": {
+        "QO": [
+          349.5,
+          320.8666666666667
+        ]
+      },
+      "pixel_point_set": [
+        [
+          349.5,
+          320.8666666666667
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 250,
+        "answer_min": 8,
+        "legacy_query_variant": "inscribed_square_diameter",
+        "legacy_scene_variant": "circle",
+        "legacy_task_id": "task_geometry_analytical_2d_perimeter",
+        "query_variant": "perimeter",
+        "query_variant_probabilities": {
+          "area": 0.0,
+          "composite_area": 0.0,
+          "length": 0.0,
+          "perimeter": 1.0
+        },
+        "scene_variant": "circle",
+        "scene_variant_probabilities": {
+          "circle": 0.2,
+          "composite_region": 0.0,
+          "ellipse": 0.0,
+          "parallelogram": 0.0,
+          "rectangle": 0.2,
+          "rhombus": 0.2,
+          "trapezoid": 0.2,
+          "triangle": 0.2
+        },
+        "task_variant": "inscribed_square_diameter",
+        "variant_probabilities": {
+          "area": 0.0,
+          "composite_area": 0.0,
+          "length": 0.0,
+          "perimeter": 1.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "geometry_analytical_perimeter_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QO",
+          "json_example": "{\"evidence\":{\"QO\":2},\"answer\":42.3}",
+          "json_example_answer_only": "{\"answer\":42.3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a geometric scene with measurement annotations",
+          "question_text": "The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?"
+        },
+        "task_family_key": "analytical_perimeter_scene",
+        "task_family_variant_index": 2,
+        "task_key": "analytical_perimeter_query",
+        "task_variant_index": 2,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_2d/geometry_analytical_perimeter_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_perimeter_query": 5,
+          "task_family:analytical_perimeter_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "geometry_analytical_perimeter_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QO",
+              "json_example": "{\"evidence\":{\"QO\":2},\"answer\":42.3}",
+              "json_example_answer_only": "{\"answer\":42.3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric scene with measurement annotations",
+              "question_text": "The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?"
+            },
+            "task_family_key": "analytical_perimeter_scene",
+            "task_family_variant_index": 2,
+            "task_key": "analytical_perimeter_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_perimeter_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_perimeter_query": 5,
+              "task_family:analytical_perimeter_scene": 5
+            }
+          },
+          "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. Task: The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QO.\nAnswer requirement: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"evidence\":{\"QO\":2},\"answer\":42.3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_analytical_perimeter_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the perimeter value rounded to one decimal place",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: QO",
+              "json_example": "{\"evidence\":{\"QO\":2},\"answer\":42.3}",
+              "json_example_answer_only": "{\"answer\":42.3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a geometric scene with measurement annotations",
+              "question_text": "The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?"
+            },
+            "task_family_key": "analytical_perimeter_scene",
+            "task_family_variant_index": 2,
+            "task_key": "analytical_perimeter_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_2d/geometry_analytical_perimeter_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_perimeter_query": 5,
+              "task_family:analytical_perimeter_scene": 5
+            }
+          },
+          "prompt": "Look at the annotated image showing a geometric scene with measurement annotations. Task: The square is inscribed in the circle, and a diameter is annotated. What is the perimeter of the square?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the perimeter value rounded to one decimal place.\nExample JSON:\n{\"answer\":42.3}"
+        }
+      },
+      "task_variant": "perimeter",
+      "template_id": "geometry_analytical_perimeter_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "QO": [
+          349.5,
+          320.8666666666667
+        ]
+      },
+      "annotation_labels": {
+        "diameter": "QO"
+      },
+      "coord_space": "pixel",
+      "instance_anchor": {
+        "bbox": [
+          105.67000000000002,
+          105.67000000000002,
+          593.3299999999999,
+          593.3299999999999
+        ],
+        "coord_space": "pixel"
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_offwhite",
+        "style_spec": {
+          "color": [
+            252,
+            252,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 699,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "origin_pixel": [
+          349,
+          349
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 58,
+        "target_cells_x": 12,
+        "target_cells_y": 12,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 10,
+        "full_cells_y": 10,
+        "partial_edge_cells": true,
+        "spacing_px": 58,
+        "target_cells_x": 12,
+        "target_cells_y": 12
+      },
+      "legacy_scene_variant": "circle",
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "query_variant": "perimeter",
+      "scene_variant": "circle",
+      "shape_style": {
+        "label_color": [
+          32,
+          94,
+          96
+        ],
+        "label_stroke_color": [
+          251,
+          254,
+          254
+        ],
+        "line_color": [
+          32,
+          94,
+          96
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "fill_kind": "none",
+            "vertices": [
+              [
+                349.5,
+                105.67000000000002
+              ],
+              [
+                593.3299999999999,
+                349.5
+              ],
+              [
+                349.5,
+                593.3299999999999
+              ],
+              [
+                105.67000000000002,
+                349.5
+              ]
+            ]
+          },
+          "entity_id": "square_1",
+          "entity_type": "square"
+        },
+        {
+          "attrs": {
+            "center": [
+              349.5,
+              349.5
+            ],
+            "radius_px": 244
+          },
+          "entity_id": "circle_1",
+          "entity_type": "circle"
+        },
+        {
+          "attrs": {
+            "helper": true,
+            "point_a": [
+              105.67000000000002,
+              349.5
+            ],
+            "point_b": [
+              593.3299999999999,
+              349.5
+            ]
+          },
+          "entity_id": "diameter_1",
+          "entity_type": "diameter"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            349,
+            349
+          ],
+          "spacing_px": 58,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "legacy_query_variant": "inscribed_square_diameter",
+        "legacy_scene_variant": "circle",
+        "legacy_task_id": "task_geometry_analytical_2d_perimeter",
+        "query_variant": "perimeter",
+        "scene_variant": "circle"
+      },
+      "scene_kind": "geometry_2d_analytical_perimeter"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "QO"
+      ],
+      "annotation_labels": {
+        "diameter": "QO"
+      },
+      "annotation_values": {
+        "QO": 16
+      },
+      "formula_expression": "2 * sqrt(2) * diameter",
+      "measurement_ref_map": {
+        "QO": 16
+      },
+      "task_variant": "inscribed_square_diameter",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

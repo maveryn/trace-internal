@@ -1,0 +1,847 @@
+{
+  "answer_gt": {
+    "type": "option_letter",
+    "value": "F"
+  },
+  "evidence_gt": {
+    "type": "graph_point_set",
+    "value": [
+      [
+        -8,
+        2
+      ],
+      [
+        -3,
+        2
+      ],
+      [
+        -3,
+        8
+      ],
+      [
+        -8,
+        8
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_comparison_value/images/largest_perimeter/0022.png"
+  },
+  "instance_seed": 4174321178050577,
+  "prompt": "Work from the graph-paper image showing several labeled rectangles. Question: Which labeled rectangle has the greatest perimeter?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of exactly four graph-paper points for the winning rectangle vertices.\nAnswer field: set \"answer\" to the single-letter label of the correct rectangle.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":\"B\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the graph-paper image showing several labeled rectangles. Question: Which labeled rectangle has the greatest perimeter?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of exactly four graph-paper points for the winning rectangle vertices.\nAnswer field: set \"answer\" to the single-letter label of the correct rectangle.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":\"B\"}",
+    "answer_only": "Work from the graph-paper image showing several labeled rectangles. Question: Which labeled rectangle has the greatest perimeter?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the single-letter label of the correct rectangle.\nExample JSON:\n{\"answer\":\"B\"}"
+  },
+  "task": "task_geometry_comparison_value",
+  "task_variant": "largest_perimeter",
+  "trace_payload": {
+    "execution_trace": {
+      "legacy_query_variant": "rectangle_set",
+      "legacy_scene_variant": "rectangle_set",
+      "legacy_task_id": "task_geometry_comparison_perimeter",
+      "object_count": 6,
+      "object_count_probabilities": {
+        "4": 0.3333333333333333,
+        "5": 0.3333333333333333,
+        "6": 0.3333333333333333
+      },
+      "object_labels": [
+        "C",
+        "B",
+        "A",
+        "D",
+        "E",
+        "F"
+      ],
+      "query_type": "largest",
+      "query_type_probabilities": {
+        "largest": 1.0,
+        "smallest": 0.0
+      },
+      "query_variant": "largest_perimeter",
+      "query_variant_probabilities": {
+        "largest_angle": 0.0,
+        "largest_area": 0.0,
+        "largest_length": 0.0,
+        "largest_perimeter": 1.0,
+        "smallest_angle": 0.0,
+        "smallest_area": 0.0,
+        "smallest_length": 0.0,
+        "smallest_perimeter": 0.0
+      },
+      "question_format": "label_choice_no_text_options",
+      "required_evidence_labels": [
+        "vertex_1",
+        "vertex_2",
+        "vertex_3",
+        "vertex_4"
+      ],
+      "runner_up_value": 18.0,
+      "scene_variant": "rectangle",
+      "scene_variant_probabilities": {
+        "angle": 0.0,
+        "rectangle": 1.0,
+        "segment": 0.0
+      },
+      "task_variant": "largest_perimeter",
+      "task_variant_probabilities": {
+        "largest_angle": 0.0,
+        "largest_area": 0.0,
+        "largest_length": 0.0,
+        "largest_perimeter": 1.0,
+        "smallest_angle": 0.0,
+        "smallest_area": 0.0,
+        "smallest_length": 0.0,
+        "smallest_perimeter": 0.0
+      },
+      "values_by_label": {
+        "A": 12,
+        "B": 18,
+        "C": 16,
+        "D": 8,
+        "E": 14,
+        "F": 22
+      },
+      "winner_gap_abs": 4.0,
+      "winner_gap_normalized": 0.2857142857142857,
+      "winner_label": "F",
+      "winner_label_probabilities": {
+        "A": 0.16666666666666666,
+        "B": 0.16666666666666666,
+        "C": 0.16666666666666666,
+        "D": 0.16666666666666666,
+        "E": 0.16666666666666666,
+        "F": 0.16666666666666666
+      },
+      "winner_label_target": "F",
+      "winner_value": 22.0
+    },
+    "projected_evidence": {
+      "grid_point_map": {
+        "vertex_1": [
+          -8,
+          2
+        ],
+        "vertex_2": [
+          -3,
+          2
+        ],
+        "vertex_3": [
+          -3,
+          8
+        ],
+        "vertex_4": [
+          -8,
+          8
+        ]
+      },
+      "grid_point_path": [
+        [
+          -8,
+          2
+        ],
+        [
+          -3,
+          2
+        ],
+        [
+          -3,
+          8
+        ],
+        [
+          -8,
+          8
+        ]
+      ],
+      "grid_point_set": [
+        [
+          -8,
+          2
+        ],
+        [
+          -3,
+          2
+        ],
+        [
+          -3,
+          8
+        ],
+        [
+          -8,
+          8
+        ]
+      ],
+      "pixel_point_map": {
+        "vertex_1": [
+          40.0,
+          268.0
+        ],
+        "vertex_2": [
+          230.0,
+          268.0
+        ],
+        "vertex_3": [
+          230.0,
+          40.0
+        ],
+        "vertex_4": [
+          40.0,
+          40.0
+        ]
+      },
+      "pixel_point_path": [
+        [
+          40.0,
+          268.0
+        ],
+        [
+          230.0,
+          268.0
+        ],
+        [
+          230.0,
+          40.0
+        ],
+        [
+          40.0,
+          40.0
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          40.0,
+          268.0
+        ],
+        [
+          230.0,
+          268.0
+        ],
+        [
+          230.0,
+          40.0
+        ],
+        [
+          40.0,
+          40.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "legacy_query_variant": "rectangle_set",
+        "legacy_scene_variant": "rectangle_set",
+        "legacy_task_id": "task_geometry_comparison_perimeter",
+        "max_rectangle_height": 6,
+        "max_rectangle_width": 6,
+        "min_absolute_gap_units": 4.0,
+        "min_normalized_gap": 0.2,
+        "min_rectangle_height": 2,
+        "min_rectangle_width": 2,
+        "object_count": 6,
+        "object_count_probabilities": {
+          "4": 0.3333333333333333,
+          "5": 0.3333333333333333,
+          "6": 0.3333333333333333
+        },
+        "query_type": "largest",
+        "query_type_probabilities": {
+          "largest": 1.0,
+          "smallest": 0.0
+        },
+        "query_variant": "largest_perimeter",
+        "query_variant_probabilities": {
+          "largest_angle": 0.0,
+          "largest_area": 0.0,
+          "largest_length": 0.0,
+          "largest_perimeter": 1.0,
+          "smallest_angle": 0.0,
+          "smallest_area": 0.0,
+          "smallest_length": 0.0,
+          "smallest_perimeter": 0.0
+        },
+        "scene_variant": "rectangle",
+        "scene_variant_probabilities": {
+          "angle": 0.0,
+          "rectangle": 1.0,
+          "segment": 0.0
+        },
+        "variant_probabilities": {
+          "largest_angle": 0.0,
+          "largest_area": 0.0,
+          "largest_length": 0.0,
+          "largest_perimeter": 1.0,
+          "smallest_angle": 0.0,
+          "smallest_area": 0.0,
+          "smallest_length": 0.0,
+          "smallest_perimeter": 0.0
+        },
+        "winner_label": "F",
+        "winner_label_probabilities": {
+          "A": 0.16666666666666666,
+          "B": 0.16666666666666666,
+          "C": 0.16666666666666666,
+          "D": 0.16666666666666666,
+          "E": 0.16666666666666666,
+          "F": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "geometry_comparison_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the single-letter label of the correct rectangle",
+          "evidence_hint": "set \"evidence\" to an array of exactly four graph-paper points for the winning rectangle vertices",
+          "json_example": "{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":\"B\"}",
+          "json_example_answer_only": "{\"answer\":\"B\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "several labeled rectangles",
+          "question_text": "Which labeled rectangle has the greatest perimeter?"
+        },
+        "task_family_key": "comparison_graph_scene",
+        "task_family_variant_index": 4,
+        "task_key": "comparison_query",
+        "task_variant_index": 1,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/comparison/geometry_comparison_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:comparison_query": 5,
+          "task_family:comparison_graph_scene": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "geometry_comparison_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single-letter label of the correct rectangle",
+              "evidence_hint": "set \"evidence\" to an array of exactly four graph-paper points for the winning rectangle vertices",
+              "json_example": "{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled rectangles",
+              "question_text": "Which labeled rectangle has the greatest perimeter?"
+            },
+            "task_family_key": "comparison_graph_scene",
+            "task_family_variant_index": 4,
+            "task_key": "comparison_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/comparison/geometry_comparison_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:comparison_query": 5,
+              "task_family:comparison_graph_scene": 5
+            }
+          },
+          "prompt": "Work from the graph-paper image showing several labeled rectangles. Question: Which labeled rectangle has the greatest perimeter?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array of exactly four graph-paper points for the winning rectangle vertices.\nAnswer field: set \"answer\" to the single-letter label of the correct rectangle.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":\"B\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "geometry_comparison_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single-letter label of the correct rectangle",
+              "evidence_hint": "set \"evidence\" to an array of exactly four graph-paper points for the winning rectangle vertices",
+              "json_example": "{\"evidence\":[[0,0],[4,0],[4,2],[0,2]],\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "several labeled rectangles",
+              "question_text": "Which labeled rectangle has the greatest perimeter?"
+            },
+            "task_family_key": "comparison_graph_scene",
+            "task_family_variant_index": 4,
+            "task_key": "comparison_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/comparison/geometry_comparison_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:comparison_query": 5,
+              "task_family:comparison_graph_scene": 5
+            }
+          },
+          "prompt": "Work from the graph-paper image showing several labeled rectangles. Question: Which labeled rectangle has the greatest perimeter?\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the single-letter label of the correct rectangle.\nExample JSON:\n{\"answer\":\"B\"}"
+        }
+      },
+      "task_variant": "largest_perimeter",
+      "template_id": "geometry_comparison_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "winner": {
+          "winner_center": [
+            135.0,
+            154.0
+          ],
+          "winner_label": "F",
+          "winner_polygon": [
+            [
+              40.0,
+              268.0
+            ],
+            [
+              230.0,
+              268.0
+            ],
+            [
+              230.0,
+              40.0
+            ],
+            [
+              40.0,
+              40.0
+            ]
+          ]
+        }
+      },
+      "image_id": "img0",
+      "object_label_centers": {
+        "A": [
+          672.2561461607329,
+          318.5720290055404
+        ],
+        "B": [
+          15.118686432277116,
+          352.2618886515731
+        ],
+        "C": [
+          668.3523038576737,
+          614.2582926638645
+        ],
+        "D": [
+          634.8699457266074,
+          131.1898197215925
+        ],
+        "E": [
+          52.04655013883599,
+          544.3771458567061
+        ],
+        "F": [
+          18.962508868923862,
+          106.45569800695955
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "graph_paper",
+        "style_spec": {
+          "axis_arrow_size": 10,
+          "axis_arrows_enabled": true,
+          "axis_color": [
+            189,
+            194,
+            201
+          ],
+          "axis_darken_range": [
+            32,
+            48
+          ],
+          "axis_enabled": true,
+          "axis_line_width": 2,
+          "axis_scale_label_max_abs": 0,
+          "axis_scale_labels_enabled": true,
+          "base_color": [
+            255,
+            255,
+            255
+          ],
+          "base_color_jitter": [
+            0,
+            0
+          ],
+          "center_point_color": [
+            179,
+            184,
+            191
+          ],
+          "center_point_darken_extra_range": [
+            8,
+            14
+          ],
+          "center_point_enabled": true,
+          "center_point_radius": 2,
+          "color_variation_applied": true,
+          "color_variation_enabled": true,
+          "color_variation_sampled": {
+            "axis_darken": 39,
+            "base_color_delta": 0,
+            "center_point_darken_extra": 10,
+            "line_color_delta": 4,
+            "major_line_darken": 12,
+            "origin_label_darken_extra": 6
+          },
+          "kind": "grid",
+          "line_color": [
+            228,
+            233,
+            240
+          ],
+          "line_color_jitter": [
+            -5,
+            5
+          ],
+          "line_width": 1,
+          "major_every": 0,
+          "major_line_color": [
+            216,
+            221,
+            228
+          ],
+          "major_line_darken_range": [
+            6,
+            14
+          ],
+          "major_line_width": 1,
+          "origin_label_color": [
+            183,
+            188,
+            195
+          ],
+          "origin_label_darken_extra_range": [
+            6,
+            12
+          ],
+          "origin_label_enabled": false,
+          "origin_label_text": "0",
+          "outer_margin_px": 16,
+          "scene_supersample_scale": 3,
+          "spacing": 38,
+          "supersample_scale": 1
+        }
+      },
+      "canvas_size": 689,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 16,
+        "full_cells_y": 16,
+        "origin_pixel": [
+          344,
+          344
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 38,
+        "target_cells_x": 18,
+        "target_cells_y": 18,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 16,
+        "full_cells_y": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 38,
+        "target_cells_x": 18,
+        "target_cells_y": 18
+      },
+      "legacy_scene_variant": "rectangle_set",
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "quality": 90.0
+            },
+            "type": "jpeg"
+          }
+        ],
+        "enabled": true
+      },
+      "query_variant": "largest_perimeter",
+      "scene_variant": "rectangle",
+      "shape_style": {
+        "label_color": [
+          141,
+          39,
+          106
+        ],
+        "label_stroke_color": [
+          250,
+          251,
+          255
+        ],
+        "line_color": [
+          141,
+          39,
+          106
+        ]
+      },
+      "text_style": {
+        "font_size_px": 90,
+        "stroke_width_px": 3
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "area_square_units": 12,
+            "height_units": 6,
+            "label": "C",
+            "perimeter_units": 16,
+            "shape_family": "rectangle",
+            "vertices": [
+              [
+                534.0,
+                648.0
+              ],
+              [
+                610.0,
+                648.0
+              ],
+              [
+                610.0,
+                420.0
+              ],
+              [
+                534.0,
+                420.0
+              ]
+            ],
+            "width_units": 2
+          },
+          "entity_id": "rectangle_C",
+          "entity_type": "polygon"
+        },
+        {
+          "attrs": {
+            "area_square_units": 20,
+            "height_units": 5,
+            "label": "B",
+            "perimeter_units": 18,
+            "shape_family": "rectangle",
+            "vertices": [
+              [
+                40.0,
+                420.0
+              ],
+              [
+                192.0,
+                420.0
+              ],
+              [
+                192.0,
+                230.0
+              ],
+              [
+                40.0,
+                230.0
+              ]
+            ],
+            "width_units": 4
+          },
+          "entity_id": "rectangle_B",
+          "entity_type": "polygon"
+        },
+        {
+          "attrs": {
+            "area_square_units": 9,
+            "height_units": 3,
+            "label": "A",
+            "perimeter_units": 12,
+            "shape_family": "rectangle",
+            "vertices": [
+              [
+                534.0,
+                382.0
+              ],
+              [
+                648.0,
+                382.0
+              ],
+              [
+                648.0,
+                268.0
+              ],
+              [
+                534.0,
+                268.0
+              ]
+            ],
+            "width_units": 3
+          },
+          "entity_id": "rectangle_A",
+          "entity_type": "polygon"
+        },
+        {
+          "attrs": {
+            "area_square_units": 4,
+            "height_units": 2,
+            "label": "D",
+            "perimeter_units": 8,
+            "shape_family": "rectangle",
+            "vertices": [
+              [
+                534.0,
+                192.0
+              ],
+              [
+                610.0,
+                192.0
+              ],
+              [
+                610.0,
+                116.0
+              ],
+              [
+                534.0,
+                116.0
+              ]
+            ],
+            "width_units": 2
+          },
+          "entity_id": "rectangle_D",
+          "entity_type": "polygon"
+        },
+        {
+          "attrs": {
+            "area_square_units": 12,
+            "height_units": 4,
+            "label": "E",
+            "perimeter_units": 14,
+            "shape_family": "rectangle",
+            "vertices": [
+              [
+                78.0,
+                610.0
+              ],
+              [
+                192.0,
+                610.0
+              ],
+              [
+                192.0,
+                458.0
+              ],
+              [
+                78.0,
+                458.0
+              ]
+            ],
+            "width_units": 3
+          },
+          "entity_id": "rectangle_E",
+          "entity_type": "polygon"
+        },
+        {
+          "attrs": {
+            "area_square_units": 30,
+            "height_units": 6,
+            "label": "F",
+            "perimeter_units": 22,
+            "shape_family": "rectangle",
+            "vertices": [
+              [
+                40.0,
+                268.0
+              ],
+              [
+                230.0,
+                268.0
+              ],
+              [
+                230.0,
+                40.0
+              ],
+              [
+                40.0,
+                40.0
+              ]
+            ],
+            "width_units": 5
+          },
+          "entity_id": "rectangle_F",
+          "entity_type": "polygon"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            344,
+            344
+          ],
+          "spacing_px": 38,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "comparison_target": "perimeter_units",
+        "legacy_query_variant": "rectangle_set",
+        "legacy_scene_variant": "rectangle_set",
+        "legacy_task_id": "task_geometry_comparison_perimeter",
+        "query_type": "largest",
+        "query_variant": "largest_perimeter",
+        "scene_variant": "rectangle",
+        "winner_label": "F"
+      },
+      "scene_kind": "geometry_2d_perimeter_comparison"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "vertex_1",
+        "vertex_2",
+        "vertex_3",
+        "vertex_4"
+      ],
+      "type": "winning_rectangle_vertices",
+      "winner_label": "F"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

@@ -7,26 +7,33 @@ strict_repro: true
 max_attempts_per_instance: 180
 sampling_seed: 0
 tasks:
-  - task_id: task_geometry_measurement_angle
+  - task_id: task_geometry_measurement_value
     count: 8
     params:
-      min_angle: 30
-      max_angle: 150
-      angle_step: 1
-      quantization_tolerance_degrees: 0.5
-      max_abs_vector_component: 20
-      min_ray_length_units: 2
-      balanced_sampling: true
-      source_kind_weights:
-        primitive_angle: 1.0
-        intersection_lines: 1.0
-  - task_id: task_geometry_measurement_area
+      scene_variant: angle
+      query_variant: angle
+  - task_id: task_geometry_measurement_value
     count: 8
-  - task_id: task_geometry_measurement_perimeter
+    params:
+      scene_variant: circle
+      query_variant: perimeter
+  - task_id: task_geometry_comparison_value
     count: 8
-  - task_id: task_geometry_measurement_length
+    params:
+      scene_variant: rectangle
+      query_variant: largest_area
+  - task_id: task_geometry_counting_value
     count: 8
-  - task_id: task_geometry_measurement_slope
+    params:
+      scene_variant: triangle
+      query_variant: right_triangle
+  - task_id: task_geometry_analytical_2d_value
     count: 8
-  - task_id: task_geometry_analytical_2d_area
+    params:
+      scene_variant: composite_region
+      query_variant: composite_area
+  - task_id: task_geometry_analytical_3d_value
     count: 8
+    params:
+      scene_variant: cylinder
+      query_variant: volume

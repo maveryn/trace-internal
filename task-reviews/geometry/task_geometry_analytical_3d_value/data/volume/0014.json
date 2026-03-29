@@ -1,0 +1,496 @@
+{
+  "answer_gt": {
+    "type": "pi_expression",
+    "value": "11340π"
+  },
+  "evidence_gt": {
+    "type": "measurement_ref_map",
+    "value": {
+      "WX": 18,
+      "YZ": 35
+    }
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_analytical_3d_value/images/volume/0014.png"
+  },
+  "instance_seed": 212728511500442,
+  "prompt": "Work from the annotated figure showing an annotated 3D solid. Task: The cylinder has an annotated radius and height. What is its volume? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: WX, YZ.\nAnswer rule: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"WX\":2,\"YZ\":3},\"answer\":\"12π\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the annotated figure showing an annotated 3D solid. Task: The cylinder has an annotated radius and height. What is its volume? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: WX, YZ.\nAnswer rule: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"WX\":2,\"YZ\":3},\"answer\":\"12π\"}",
+    "answer_only": "Work from the annotated figure showing an annotated 3D solid. Task: The cylinder has an annotated radius and height. What is its volume? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
+  },
+  "task": "task_geometry_analytical_3d_value",
+  "task_variant": "volume",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_max": 200000,
+      "answer_min": 8,
+      "answer_scalar": 11340,
+      "answer_type": "pi_expression",
+      "answer_value": "11340π",
+      "evidence_map": {
+        "WX": 18,
+        "YZ": 35
+      },
+      "evidence_role_tokens": {
+        "h": "YZ",
+        "r": "WX"
+      },
+      "evidence_role_values": {
+        "h": 35,
+        "r": 18
+      },
+      "evidence_roles": [
+        "r",
+        "h"
+      ],
+      "formula_expression": "V = π * r^2 * h",
+      "legacy_query_variant": "cylinder_given_r_h",
+      "legacy_scene_variant": "cylinder_given_r_h",
+      "legacy_task_id": "task_geometry_analytical_3d_volume",
+      "query_variant": "volume",
+      "query_variant_probabilities": {
+        "surface_area": 0.0,
+        "volume": 1.0
+      },
+      "required_annotations": [
+        "WX",
+        "YZ"
+      ],
+      "scene_variant": "cylinder",
+      "scene_variant_probabilities": {
+        "cone": 0.16666666666666666,
+        "cylinder": 0.16666666666666666,
+        "rectangular_prism": 0.16666666666666666,
+        "sphere": 0.16666666666666666,
+        "square_pyramid": 0.16666666666666666,
+        "triangular_prism": 0.16666666666666666
+      },
+      "task_variant": "volume",
+      "task_variant_probabilities": {
+        "surface_area": 0.0,
+        "volume": 1.0
+      },
+      "variant_probabilities": {
+        "cone_given_r_h": 0.0,
+        "cylinder_given_r_h": 1.0,
+        "rectangular_prism_given_lwh": 0.0,
+        "sphere_given_r": 0.0,
+        "square_pyramid_given_base_height": 0.0,
+        "triangular_prism_given_b_h_l": 0.0
+      }
+    },
+    "projected_evidence": {
+      "annotation_labels": {
+        "h": "YZ",
+        "r": "WX"
+      },
+      "id_set": [
+        "WX",
+        "YZ"
+      ],
+      "measurement_ref_map": {
+        "WX": 18,
+        "YZ": 35
+      },
+      "pixel_annotation_centers": {
+        "WX": [
+          493.5607287449393,
+          112.04858299595143
+        ],
+        "YZ": [
+          708.8554655870445,
+          373.5
+        ]
+      },
+      "pixel_point_set": [
+        [
+          493.5607287449393,
+          112.04858299595143
+        ],
+        [
+          708.8554655870445,
+          373.5
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "answer_max": 200000,
+        "answer_min": 8,
+        "legacy_query_variant": "cylinder_given_r_h",
+        "legacy_scene_variant": "cylinder_given_r_h",
+        "legacy_task_id": "task_geometry_analytical_3d_volume",
+        "query_variant": "volume",
+        "query_variant_probabilities": {
+          "surface_area": 0.0,
+          "volume": 1.0
+        },
+        "scene_variant": "cylinder",
+        "scene_variant_probabilities": {
+          "cone": 0.16666666666666666,
+          "cylinder": 0.16666666666666666,
+          "rectangular_prism": 0.16666666666666666,
+          "sphere": 0.16666666666666666,
+          "square_pyramid": 0.16666666666666666,
+          "triangular_prism": 0.16666666666666666
+        },
+        "task_variant": "cylinder_given_r_h",
+        "variant_probabilities": {
+          "surface_area": 0.0,
+          "volume": 1.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "geometry_analytical_volume_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
+          "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: WX, YZ",
+          "json_example": "{\"evidence\":{\"WX\":2,\"YZ\":3},\"answer\":\"12π\"}",
+          "json_example_answer_only": "{\"answer\":\"12π\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "an annotated 3D solid",
+          "question_text": "The cylinder has an annotated radius and height. What is its volume? Express the result in kπ form."
+        },
+        "task_family_key": "analytical_single_solid",
+        "task_family_variant_index": 4,
+        "task_key": "analytical_volume_query",
+        "task_variant_index": 2,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/analytical_3d/geometry_analytical_volume_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:analytical_volume_query": 5,
+          "task_family:analytical_single_solid": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_analytical_volume_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: WX, YZ",
+              "json_example": "{\"evidence\":{\"WX\":2,\"YZ\":3},\"answer\":\"12π\"}",
+              "json_example_answer_only": "{\"answer\":\"12π\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an annotated 3D solid",
+              "question_text": "The cylinder has an annotated radius and height. What is its volume? Express the result in kπ form."
+            },
+            "task_family_key": "analytical_single_solid",
+            "task_family_variant_index": 4,
+            "task_key": "analytical_volume_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_3d/geometry_analytical_volume_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:analytical_volume_query": 5,
+              "task_family:analytical_single_solid": 5
+            }
+          },
+          "prompt": "Work from the annotated figure showing an annotated 3D solid. Task: The cylinder has an annotated radius and height. What is its volume? Express the result in kπ form.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: WX, YZ.\nAnswer rule: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"evidence\":{\"WX\":2,\"YZ\":3},\"answer\":\"12π\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "geometry_analytical_volume_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the value in the form kπ (for example 12π)",
+              "evidence_hint": "set \"evidence\" to a JSON object that maps each required annotation label to its shown measurement value. Required annotations: WX, YZ",
+              "json_example": "{\"evidence\":{\"WX\":2,\"YZ\":3},\"answer\":\"12π\"}",
+              "json_example_answer_only": "{\"answer\":\"12π\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an annotated 3D solid",
+              "question_text": "The cylinder has an annotated radius and height. What is its volume? Express the result in kπ form."
+            },
+            "task_family_key": "analytical_single_solid",
+            "task_family_variant_index": 4,
+            "task_key": "analytical_volume_query",
+            "task_variant_index": 2,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/analytical_3d/geometry_analytical_volume_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:analytical_volume_query": 5,
+              "task_family:analytical_single_solid": 5
+            }
+          },
+          "prompt": "Work from the annotated figure showing an annotated 3D solid. Task: The cylinder has an annotated radius and height. What is its volume? Express the result in kπ form.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the value in the form kπ (for example 12π).\nExample JSON:\n{\"answer\":\"12π\"}"
+        }
+      },
+      "task_variant": "volume",
+      "template_id": "geometry_analytical_volume_v1"
+    },
+    "render_map": {
+      "annotation_centers": {
+        "WX": [
+          493.5607287449393,
+          112.04858299595143
+        ],
+        "YZ": [
+          708.8554655870445,
+          373.5
+        ]
+      },
+      "annotation_labels": {
+        "h": "YZ",
+        "r": "WX"
+      },
+      "coord_space": "pixel",
+      "entity_id": "solid_1",
+      "instance_anchor": {
+        "coord_space": "pixel",
+        "point": [
+          450.33886639676115,
+          373.5
+        ],
+        "polyline": [
+          [
+            373.5,
+            606.9514170040486
+          ],
+          [
+            680.8554655870446,
+            140.04858299595142
+          ],
+          [
+            680.8554655870446,
+            606.9514170040486
+          ],
+          [
+            133.37854251012146,
+            606.9514170040486
+          ],
+          [
+            133.37854251012146,
+            140.04858299595142
+          ],
+          [
+            613.6214574898786,
+            606.9514170040486
+          ],
+          [
+            613.6214574898786,
+            140.04858299595142
+          ],
+          [
+            373.5,
+            140.04858299595142
+          ]
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper",
+          "solid_cool",
+          "solid_offwhite",
+          "solid_warm"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "solid_cool",
+        "style_spec": {
+          "color": [
+            246,
+            248,
+            252
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_size": 747,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "origin_pixel": [
+          373,
+          373
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 75,
+        "target_cells_x": 10,
+        "target_cells_y": 10,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "partial_edge_cells": true,
+        "spacing_px": 75,
+        "target_cells_x": 10,
+        "target_cells_y": 10
+      },
+      "legacy_scene_variant": "cylinder_given_r_h",
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "query_variant": "volume",
+      "scene_variant": "cylinder",
+      "shape_style": {
+        "label_color": [
+          64,
+          21,
+          130
+        ],
+        "label_stroke_color": [
+          248,
+          252,
+          250
+        ],
+        "line_color": [
+          64,
+          21,
+          130
+        ]
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "height_units": 35,
+            "points": {
+              "bottom_center": [
+                373.5,
+                606.9514170040486
+              ],
+              "h_a": [
+                680.8554655870446,
+                140.04858299595142
+              ],
+              "h_b": [
+                680.8554655870446,
+                606.9514170040486
+              ],
+              "left_bottom": [
+                133.37854251012146,
+                606.9514170040486
+              ],
+              "left_top": [
+                133.37854251012146,
+                140.04858299595142
+              ],
+              "right_bottom": [
+                613.6214574898786,
+                606.9514170040486
+              ],
+              "right_top": [
+                613.6214574898786,
+                140.04858299595142
+              ],
+              "top_center": [
+                373.5,
+                140.04858299595142
+              ]
+            },
+            "radius_units": 18,
+            "render_cap_radius_y_px": 81.64129554655871,
+            "render_height_px": 466.90283400809716,
+            "render_radius_px": 240.12145748987854,
+            "task_variant": "cylinder_given_r_h",
+            "volume_pi_coefficient": 11340
+          },
+          "entity_id": "solid_1",
+          "entity_type": "cylinder"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            373,
+            373
+          ],
+          "spacing_px": 75,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "legacy_query_variant": "cylinder_given_r_h",
+        "legacy_scene_variant": "cylinder_given_r_h",
+        "legacy_task_id": "task_geometry_analytical_3d_volume",
+        "query_variant": "volume",
+        "scene_variant": "cylinder"
+      },
+      "scene_kind": "geometry_3d_analytical_volume"
+    },
+    "witness_symbolic": {
+      "annotation_ids": [
+        "WX",
+        "YZ"
+      ],
+      "annotation_labels": {
+        "h": "YZ",
+        "r": "WX"
+      },
+      "annotation_values": {
+        "WX": 18,
+        "YZ": 35
+      },
+      "formula_expression": "V = π * r^2 * h",
+      "measurement_ref_map": {
+        "WX": 18,
+        "YZ": 35
+      },
+      "task_variant": "cylinder_given_r_h",
+      "type": "annotation_measurement_map"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

@@ -14,15 +14,15 @@
 8. Continue rolling out domain-owned task complexity policy: migrate remaining legacy ad hoc `complexity_score` formulas toward within-task normalized criterion values with domain/task-group weighting. The active icons, geometry, tile, charts, and graph suites are now migrated; tables and puzzles still need the same rollout.
 9. Expand the new puzzles domain beyond `task_puzzles_arithmetic_equation_value`, `task_puzzles_arithmetic_balance_value`, `task_puzzles_arithmetic_grid_value`, `task_puzzles_logic_grid_completion_label`, and `task_puzzles_spatial_fold_hole_label` with additional spatial and topology families while keeping early evidence contracts local and visually obvious.
 10. Improve dataset QA diagnostics/report summaries.
-11. Extend geometry comparison beyond angle/length/area/perimeter using the same label-answer + winner-gap contract.
-12. Extend analytical geometry to additional objectives beyond the current analytical set (additional 3D objectives, richer conic/composite-region reasoning).
+11. Extend consolidated geometry comparison beyond the current `task_geometry_comparison_value` scene/query surface using the same label-answer + winner-gap contract.
+12. Extend consolidated analytical geometry beyond the current `task_geometry_analytical_2d_value` / `task_geometry_analytical_3d_value` scene/query surface (additional 3D objectives, richer conic/composite-region reasoning).
 
 ## Later (P2)
 1. Add split-artifact generation with deterministic split policy metadata.
 2. Add richer dataset inspection tooling around trace shards and build reports.
 3. Keep future tile task groups aligned with `configs/domains/tile/base.yaml` shared defaults.
-4. Expand geometry analytical task suite with multi-step composite-region and shaded-area reasoning.
-5. Add geometry `estimate` task track for non-exact quantitative reasoning (for example count graph squares, count angles `< 90°`).
+4. Expand consolidated geometry analytical coverage with multi-step composite-region and shaded-area reasoning.
+5. Add geometry `estimate` task track for non-exact quantitative reasoning (for example count graph squares, count angles `< 90°`) if it lands with a meaningfully different visual/evidence contract from the current five-task geometry surface.
 
 ## Deferred
 1. Reward/tolerance policy tuning for RLVR scoring.
@@ -42,15 +42,11 @@
 - `task_tile_count_color_components`
 - `task_tile_reachability_region_size`
 - `task_tile_relation_min_distance`
-- `task_geometry_measurement_angle`
-- `task_geometry_measurement_area`
-- `task_geometry_measurement_perimeter`
-- `task_geometry_measurement_length`
-- `task_geometry_measurement_slope`
-- `task_geometry_analytical_2d_area`
-- `task_geometry_analytical_2d_length`
-- `task_geometry_analytical_3d_volume`
-- `task_geometry_analytical_3d_surface_area`
+- `task_geometry_measurement_value`
+- `task_geometry_comparison_value`
+- `task_geometry_counting_value`
+- `task_geometry_analytical_2d_value`
+- `task_geometry_analytical_3d_value`
 6. Task-review/sample-generation tooling with per-task artifacts and inspection workbooks.
 7. Pre-finalize prompt validation checks (metadata/bundle/key/placeholder/cardinality).
 8. First charts-domain tasks: `task_charts_statistics_summary_value`, `task_charts_statistics_summary_label`, `task_charts_counting_value_count`, `task_charts_readout_subset_value`, `task_charts_multiseries_pairwise_comparison_count`, `task_charts_distribution_histogram_count`, `task_charts_distribution_boxplot_label`, `task_charts_distribution_density_label`, `task_charts_trend_structure_value`, `task_charts_composition_subset_value`.

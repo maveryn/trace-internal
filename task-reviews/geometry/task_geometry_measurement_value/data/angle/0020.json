@@ -1,0 +1,699 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 59
+  },
+  "evidence_gt": {
+    "type": "graph_point_set",
+    "value": [
+      [
+        -1,
+        -3
+      ],
+      [
+        2,
+        -3
+      ],
+      [
+        -1,
+        2
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_measurement_value/images/angle/0020.png"
+  },
+  "instance_seed": 2891655516544728,
+  "prompt": "Work from the graph-paper image showing a labeled angle. What is the measure of angle ANV in degrees?\nProvide the angle measure to the nearest integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of exactly three graph-paper points for the queried angle: the vertex and the two ray endpoints.\nAnswer requirement: set \"answer\" to the angle value rounded to the nearest integer.\nExample JSON:\n{\"evidence\":[[0,2],[0,0],[3,0]],\"answer\":90}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the graph-paper image showing a labeled angle. What is the measure of angle ANV in degrees?\nProvide the angle measure to the nearest integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of exactly three graph-paper points for the queried angle: the vertex and the two ray endpoints.\nAnswer requirement: set \"answer\" to the angle value rounded to the nearest integer.\nExample JSON:\n{\"evidence\":[[0,2],[0,0],[3,0]],\"answer\":90}",
+    "answer_only": "Work from the graph-paper image showing a labeled angle. What is the measure of angle ANV in degrees?\nProvide the angle measure to the nearest integer.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the angle value rounded to the nearest integer.\nExample JSON:\n{\"answer\":45}"
+  },
+  "task": "task_geometry_measurement_value",
+  "task_variant": "angle",
+  "trace_payload": {
+    "execution_trace": {
+      "angle_degrees": 59,
+      "answer_value": 59,
+      "feasible_answer_values": [
+        31,
+        32,
+        35,
+        36,
+        42,
+        43,
+        45,
+        47,
+        48,
+        54,
+        55,
+        58,
+        59,
+        65,
+        66,
+        69,
+        70,
+        76,
+        77,
+        90,
+        103,
+        104,
+        110,
+        111,
+        114,
+        115,
+        121,
+        122,
+        125,
+        126,
+        132,
+        133,
+        135,
+        138,
+        144,
+        145,
+        148,
+        149
+      ],
+      "feasible_target_angles": [
+        31,
+        32,
+        35,
+        36,
+        42,
+        43,
+        45,
+        47,
+        48,
+        54,
+        55,
+        58,
+        59,
+        65,
+        66,
+        69,
+        70,
+        76,
+        77,
+        90,
+        103,
+        104,
+        110,
+        111,
+        114,
+        115,
+        121,
+        122,
+        125,
+        126,
+        132,
+        133,
+        135,
+        138,
+        144,
+        145,
+        148,
+        149
+      ],
+      "legacy_query_variant": "primitive_angle",
+      "legacy_scene_variant": "primitive_angle",
+      "legacy_task_id": "task_geometry_measurement_angle",
+      "query_variant": "angle",
+      "query_variant_probabilities": {
+        "angle": 0.2,
+        "area": 0.2,
+        "length": 0.2,
+        "perimeter": 0.2,
+        "slope": 0.2
+      },
+      "question_format": "numeric_open",
+      "raw_angle_degrees": 59.036243,
+      "required_evidence_labels": [
+        "A",
+        "N",
+        "V"
+      ],
+      "scene_variant": "angle",
+      "scene_variant_probabilities": {
+        "angle": 1.0,
+        "circle": 0.0,
+        "ellipse": 0.0,
+        "line": 0.0,
+        "pentagon": 0.0,
+        "quadrilateral": 0.0,
+        "segment": 0.0,
+        "triangle": 0.0
+      },
+      "source_kind": "primitive_angle",
+      "target_angle": 59,
+      "target_labels": [
+        "A",
+        "N",
+        "V"
+      ],
+      "task_variant": "angle",
+      "task_variant_probabilities": {
+        "angle": 0.2,
+        "area": 0.2,
+        "length": 0.2,
+        "perimeter": 0.2,
+        "slope": 0.2
+      }
+    },
+    "projected_evidence": {
+      "grid_point_map": {
+        "A": [
+          -1,
+          -3
+        ],
+        "N": [
+          2,
+          -3
+        ],
+        "V": [
+          -1,
+          2
+        ]
+      },
+      "grid_point_path": [
+        [
+          -1,
+          -3
+        ],
+        [
+          2,
+          -3
+        ],
+        [
+          -1,
+          2
+        ]
+      ],
+      "grid_point_set": [
+        [
+          -1,
+          -3
+        ],
+        [
+          2,
+          -3
+        ],
+        [
+          -1,
+          2
+        ]
+      ],
+      "pixel_point_map": {
+        "A": [
+          244.0,
+          488.0
+        ],
+        "N": [
+          427.0,
+          488.0
+        ],
+        "V": [
+          244.0,
+          183.0
+        ]
+      },
+      "pixel_point_path": [
+        [
+          244.0,
+          488.0
+        ],
+        [
+          427.0,
+          488.0
+        ],
+        [
+          244.0,
+          183.0
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          244.0,
+          488.0
+        ],
+        [
+          427.0,
+          488.0
+        ],
+        [
+          244.0,
+          183.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "angle_step": 1,
+        "answer_rounding": "nearest_integer_degree",
+        "legacy_query_variant": "primitive_angle",
+        "legacy_scene_variant": "primitive_angle",
+        "legacy_task_id": "task_geometry_measurement_angle",
+        "max_abs_vector_component": 20,
+        "max_angle": 150,
+        "min_angle": 30,
+        "min_ray_length_units": 2.0,
+        "quantization_tolerance_degrees": 0.05,
+        "query_variant": "angle",
+        "query_variant_probabilities": {
+          "angle": 0.2,
+          "area": 0.2,
+          "length": 0.2,
+          "perimeter": 0.2,
+          "slope": 0.2
+        },
+        "required_graph_cells": 9,
+        "scene_variant": "angle",
+        "scene_variant_probabilities": {
+          "angle": 1.0,
+          "circle": 0.0,
+          "ellipse": 0.0,
+          "line": 0.0,
+          "pentagon": 0.0,
+          "quadrilateral": 0.0,
+          "segment": 0.0,
+          "triangle": 0.0
+        },
+        "source_kind": "primitive_angle",
+        "source_kind_probabilities": {
+          "intersection_lines": 0.5,
+          "primitive_angle": 0.5
+        },
+        "target_angle": 59,
+        "target_angle_probabilities": {
+          "103": 0.02631578947368421,
+          "104": 0.02631578947368421,
+          "110": 0.02631578947368421,
+          "111": 0.02631578947368421,
+          "114": 0.02631578947368421,
+          "115": 0.02631578947368421,
+          "121": 0.02631578947368421,
+          "122": 0.02631578947368421,
+          "125": 0.02631578947368421,
+          "126": 0.02631578947368421,
+          "132": 0.02631578947368421,
+          "133": 0.02631578947368421,
+          "135": 0.02631578947368421,
+          "138": 0.02631578947368421,
+          "144": 0.02631578947368421,
+          "145": 0.02631578947368421,
+          "148": 0.02631578947368421,
+          "149": 0.02631578947368421,
+          "31": 0.02631578947368421,
+          "32": 0.02631578947368421,
+          "35": 0.02631578947368421,
+          "36": 0.02631578947368421,
+          "42": 0.02631578947368421,
+          "43": 0.02631578947368421,
+          "45": 0.02631578947368421,
+          "47": 0.02631578947368421,
+          "48": 0.02631578947368421,
+          "54": 0.02631578947368421,
+          "55": 0.02631578947368421,
+          "58": 0.02631578947368421,
+          "59": 0.02631578947368421,
+          "65": 0.02631578947368421,
+          "66": 0.02631578947368421,
+          "69": 0.02631578947368421,
+          "70": 0.02631578947368421,
+          "76": 0.02631578947368421,
+          "77": 0.02631578947368421,
+          "90": 0.02631578947368421
+        },
+        "variant_probabilities": {
+          "angle": 0.2,
+          "area": 0.2,
+          "length": 0.2,
+          "perimeter": 0.2,
+          "slope": 0.2
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "geometry_angle_measure_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the angle value rounded to the nearest integer",
+          "evidence_hint": "set \"evidence\" to an array of exactly three graph-paper points for the queried angle: the vertex and the two ray endpoints",
+          "json_example": "{\"evidence\":[[0,2],[0,0],[3,0]],\"answer\":90}",
+          "json_example_answer_only": "{\"answer\":45}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a labeled angle",
+          "question_text": "What is the measure of angle ANV in degrees?"
+        },
+        "task_family_key": "measurement_single_object",
+        "task_family_variant_index": 4,
+        "task_key": "measurement_angle_value",
+        "task_variant_index": 3,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "geometry/measurement/geometry_angle_measure_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:measurement_angle_value": 5,
+          "task_family:measurement_single_object": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "geometry_angle_measure_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the angle value rounded to the nearest integer",
+              "evidence_hint": "set \"evidence\" to an array of exactly three graph-paper points for the queried angle: the vertex and the two ray endpoints",
+              "json_example": "{\"evidence\":[[0,2],[0,0],[3,0]],\"answer\":90}",
+              "json_example_answer_only": "{\"answer\":45}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled angle",
+              "question_text": "What is the measure of angle ANV in degrees?"
+            },
+            "task_family_key": "measurement_single_object",
+            "task_family_variant_index": 4,
+            "task_key": "measurement_angle_value",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/measurement/geometry_angle_measure_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:measurement_angle_value": 5,
+              "task_family:measurement_single_object": 5
+            }
+          },
+          "prompt": "Work from the graph-paper image showing a labeled angle. What is the measure of angle ANV in degrees?\nProvide the angle measure to the nearest integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of exactly three graph-paper points for the queried angle: the vertex and the two ray endpoints.\nAnswer requirement: set \"answer\" to the angle value rounded to the nearest integer.\nExample JSON:\n{\"evidence\":[[0,2],[0,0],[3,0]],\"answer\":90}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_angle_measure_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the angle value rounded to the nearest integer",
+              "evidence_hint": "set \"evidence\" to an array of exactly three graph-paper points for the queried angle: the vertex and the two ray endpoints",
+              "json_example": "{\"evidence\":[[0,2],[0,0],[3,0]],\"answer\":90}",
+              "json_example_answer_only": "{\"answer\":45}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled angle",
+              "question_text": "What is the measure of angle ANV in degrees?"
+            },
+            "task_family_key": "measurement_single_object",
+            "task_family_variant_index": 4,
+            "task_key": "measurement_angle_value",
+            "task_variant_index": 3,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "geometry/measurement/geometry_angle_measure_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:measurement_angle_value": 5,
+              "task_family:measurement_single_object": 5
+            }
+          },
+          "prompt": "Work from the graph-paper image showing a labeled angle. What is the measure of angle ANV in degrees?\nProvide the angle measure to the nearest integer.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the angle value rounded to the nearest integer.\nExample JSON:\n{\"answer\":45}"
+        }
+      },
+      "task_variant": "angle",
+      "template_id": "geometry_angle_measure_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "target": {
+          "coord_space": "pixel",
+          "point": [
+            427.0,
+            488.0
+          ],
+          "polyline": [
+            [
+              244.0,
+              488.0
+            ],
+            [
+              427.0,
+              488.0
+            ],
+            [
+              244.0,
+              183.0
+            ]
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "graph_paper",
+        "style_spec": {
+          "axis_arrow_size": 10,
+          "axis_arrows_enabled": true,
+          "axis_color": [
+            184,
+            189,
+            196
+          ],
+          "axis_darken_range": [
+            32,
+            48
+          ],
+          "axis_enabled": true,
+          "axis_line_width": 2,
+          "axis_scale_label_max_abs": 0,
+          "axis_scale_labels_enabled": true,
+          "base_color": [
+            255,
+            255,
+            255
+          ],
+          "base_color_jitter": [
+            0,
+            0
+          ],
+          "center_point_color": [
+            172,
+            177,
+            184
+          ],
+          "center_point_darken_extra_range": [
+            8,
+            14
+          ],
+          "center_point_enabled": true,
+          "center_point_radius": 2,
+          "color_variation_applied": true,
+          "color_variation_enabled": true,
+          "color_variation_sampled": {
+            "axis_darken": 37,
+            "base_color_delta": 0,
+            "center_point_darken_extra": 12,
+            "line_color_delta": -3,
+            "major_line_darken": 9,
+            "origin_label_darken_extra": 10
+          },
+          "kind": "grid",
+          "line_color": [
+            221,
+            226,
+            233
+          ],
+          "line_color_jitter": [
+            -5,
+            5
+          ],
+          "line_width": 1,
+          "major_every": 0,
+          "major_line_color": [
+            212,
+            217,
+            224
+          ],
+          "major_line_darken_range": [
+            6,
+            14
+          ],
+          "major_line_width": 1,
+          "origin_label_color": [
+            174,
+            179,
+            186
+          ],
+          "origin_label_darken_extra_range": [
+            6,
+            12
+          ],
+          "origin_label_enabled": false,
+          "origin_label_text": "0",
+          "outer_margin_px": 16,
+          "scene_supersample_scale": 3,
+          "spacing": 61,
+          "supersample_scale": 1
+        }
+      },
+      "canvas_size": 611,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "origin_pixel": [
+          305,
+          305
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 61,
+        "target_cells_x": 10,
+        "target_cells_y": 10,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 8,
+        "full_cells_y": 8,
+        "partial_edge_cells": true,
+        "spacing_px": 61,
+        "target_cells_x": 10,
+        "target_cells_y": 10
+      },
+      "legacy_scene_variant": "primitive_angle",
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "query_variant": "angle",
+      "scene_variant": "angle",
+      "shape_style": {
+        "label_color": [
+          38,
+          128,
+          46
+        ],
+        "label_stroke_color": [
+          252,
+          255,
+          249
+        ],
+        "line_color": [
+          38,
+          128,
+          46
+        ]
+      },
+      "text_style": {
+        "font_size_px": 96,
+        "stroke_width_px": 3
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "angle_degrees": 59,
+            "labels": [
+              "A",
+              "N",
+              "V"
+            ],
+            "points": {
+              "arm_a": [
+                244.0,
+                488.0
+              ],
+              "arm_b": [
+                244.0,
+                183.0
+              ],
+              "vertex": [
+                427.0,
+                488.0
+              ]
+            },
+            "raw_angle_degrees": 59.036243,
+            "source_kind": "primitive_angle"
+          },
+          "entity_id": "angle_1",
+          "entity_type": "angle"
+        }
+      ],
+      "frames": {
+        "graph_unit": {
+          "origin_pixel": [
+            305,
+            305
+          ],
+          "spacing_px": 61,
+          "x_positive": "right",
+          "y_positive": "up"
+        },
+        "pixel": {
+          "origin": [
+            0.0,
+            0.0
+          ],
+          "x_positive": "right",
+          "y_positive": "down"
+        }
+      },
+      "relations": {
+        "legacy_query_variant": "primitive_angle",
+        "legacy_scene_variant": "primitive_angle",
+        "legacy_task_id": "task_geometry_measurement_angle",
+        "query_variant": "angle",
+        "scene_variant": "angle"
+      },
+      "scene_kind": "geometry_2d_angle_measurement"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "A",
+        "N",
+        "V"
+      ],
+      "type": "angle_triplet"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

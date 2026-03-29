@@ -35,11 +35,12 @@ def draw_puzzle_shape_icon(
     fill_rgb: Sequence[int],
     outline_rgb: Sequence[int],
     width: int,
+    inset_px: float = 16.0,
 ) -> None:
     """Draw one deterministic symbolic shape inside a box."""
 
     left, top, right, bottom = [float(value) for value in bbox]
-    inset = 16.0
+    inset = float(max(0.0, inset_px))
     x0, y0, x1, y1 = left + inset, top + inset, right - inset, bottom - inset
     cx = 0.5 * (x0 + x1)
     cy = 0.5 * (y0 + y1)

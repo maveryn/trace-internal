@@ -7,17 +7,20 @@ Capture the active v1 contract for the `puzzles` domain.
 1. Current active `task_group` values:
    - `arithmetic`
    - `logic`
+   - `spatial`
 2. Current active tasks:
    - `task_puzzles_arithmetic_equation_value`
    - `task_puzzles_arithmetic_balance_value`
    - `task_puzzles_arithmetic_grid_value`
    - `task_puzzles_logic_grid_completion_label`
+   - `task_puzzles_spatial_cube_view_label`
 
 ## Family contract
 1. Puzzle families are hidden-rule / hidden-variable reasoning families, not generic icon grids or mini tables.
 2. The active arithmetic family centers on explicit local query targets so the prompt-facing evidence can stay local and simple.
 3. The active logic family currently centers on one missing grid cell plus six labeled image options, so the answer format can stay `option_letter` while the evidence stays local to one option panel.
-4. Puzzle variants should widen `task_variant` before creating a new task id when the same scene grammar and evidence contract still hold.
+4. The active spatial family currently centers on reference-plus-options view consistency tasks, so the answer format can stay `option_letter` while the evidence stays local to one winning option panel.
+5. Puzzle variants should widen `task_variant` before creating a new task id when the same scene grammar and evidence contract still hold.
 
 ## `task_puzzles_arithmetic_equation_value`
 1. Supported `task_variant` values:
@@ -131,6 +134,34 @@ Capture the active v1 contract for the `puzzles` domain.
    - `execution_trace` stores `board_values`, `grid_rows`, `symbol_pool`, `query_cell_id`, `query_row_index`, `query_col_index`, `answer_object_type`, `answer_option_label`, `correct_option_index`, `correct_option_panel_id`, `option_specs`, `board_size`, `board_size_range`, `cell_count`, `cell_count_range`, `option_count`, and `solver_trace`,
    - prompt-facing evidence is projected from `correct_option_panel_id`, not inferred from pixels.
 
+## `task_puzzles_spatial_cube_view_label`
+1. Supported `task_variant` values:
+   - `same_cube_view`
+   - `impossible_cube_view`
+2. Supported `scene_variant` values:
+   - `cube_strip`
+   - `cube_card`
+   - `cube_outline`
+3. Answer contract:
+   - `answer_gt.type = option_letter`
+4. Evidence contract:
+   - `evidence_gt.type = bbox_set`
+   - exactly one bbox for the winning option panel
+5. Scene contract:
+   - one reference cube per image,
+   - three opposite-face hint pairs appear below the reference cube,
+   - exactly six labeled option cubes (`A..F`) appear below the hint pairs,
+   - the opposite-face hints expose the hidden-face structure the options are allowed to use,
+   - the answer is the option letter, not the symbol names.
+6. Trace contract:
+   - `scene_ir.entities` includes `puzzle_cube_reference`, `puzzle_cube_face`, `puzzle_cube_pair_box`, `puzzle_cube_pair_token`, `puzzle_cube_option_panel`, `puzzle_cube_option_label`, and `puzzle_cube_option_box` entities,
+   - `render_map.reference_cube_bbox_px` stores the reference cube bbox,
+   - `render_map.pair_box_bboxes_px` stores each opposite-pair hint box bbox keyed by pair-box id,
+   - `render_map.option_panel_bboxes_px` stores each option-panel bbox keyed by `option_panel_id`,
+   - `render_map.option_cube_bboxes_px` stores each option-cube content bbox keyed by `option_panel_id`,
+   - `execution_trace` stores `reference_view`, `face_object_types`, `reference_triplet`, `opposite_pair_specs`, `valid_triplets`, `invalid_triplets`, `answer_option_label`, `correct_option_index`, `correct_option_panel_id`, `option_specs`, `option_count`, `visible_face_count`, and `solver_trace`,
+   - prompt-facing evidence is projected from `correct_option_panel_id`, not inferred from pixels.
+
 ## Prompt contract for `task_puzzles_arithmetic_equation_value`
 1. Bundle: `puzzles_arithmetic_v1`
 2. `task_family_key`: `arithmetic_unknown_slot_puzzle`
@@ -175,13 +206,24 @@ Capture the active v1 contract for the `puzzles` domain.
    - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
 6. Prompt-facing evidence wording should always make the one-box contract explicit: the returned bbox is the winning option panel.
 
+## Prompt contract for `task_puzzles_spatial_cube_view_label`
+1. Bundle: `puzzles_spatial_v1`
+2. `task_family_key`: `spatial_cube_view_puzzle`
+3. `task_key`: `cube_view_query`
+4. `task_variant_key`: `same_cube_view|impossible_cube_view`
+5. Required slots:
+   - task-family: `object_description`
+   - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
+   - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
+6. Prompt-facing evidence wording should always make the one-box contract explicit: the returned bbox is the winning option panel.
+
 ## Visual policy
 1. Puzzles use the same light solid background baseline as the other clean synthetic domains.
 2. Arithmetic scene variants vary panel chrome and outline treatment, not the semantic layouts of the equation row, equality panels, or arithmetic grids.
-3. The equation unknown slot, equality query answer box, arithmetic-grid question-mark cell, and logic-grid winning option panels should stay visually salient relative to the other boxes.
+3. The equation unknown slot, equality query answer box, arithmetic-grid question-mark cell, logic-grid winning option panel, and spatial cube-view winning option panel should stay visually salient relative to the other boxes.
 
 ## Determinism + review
 1. Deterministic generation/rendering from `instance_seed`.
 2. `task_variant` and `scene_variant` are sampled independently at the task policy level.
 3. No semantic auto-relaxation: every generated puzzle has exactly one valid integer answer.
-4. Review/sample overlays should use the recorded bbox maps (`render_map.slot_bboxes_px[query_slot_id]`, `render_map.box_bboxes_px[query_box_id]`, or `render_map.cell_bboxes_px[query_cell_id]`) for the prompt-facing witness.
+4. Review/sample overlays should use the recorded bbox maps (`render_map.slot_bboxes_px[query_slot_id]`, `render_map.box_bboxes_px[query_box_id]`, `render_map.cell_bboxes_px[query_cell_id]`, or `render_map.option_panel_bboxes_px[correct_option_panel_id]`) for the prompt-facing witness.

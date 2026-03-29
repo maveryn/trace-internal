@@ -889,6 +889,53 @@ def test_puzzles_logic_defaults_loaded() -> None:
     }
 
 
+def test_puzzles_spatial_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("puzzles", "spatial")
+    for section in ("generation", "rendering", "prompt", "complexity"):
+        assert isinstance(cfg.get(section), dict)
+
+    prompt_shared = cfg["prompt"]["shared"]
+    assert str(prompt_shared["bundle_id"]).strip() == "puzzles_spatial_v1"
+    assert str(prompt_shared["answer_hint"]).strip()
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_puzzles_spatial_cube_view_label",
+    )
+    assert str(prompt_defaults["task_family_key"]).strip() == "spatial_cube_view_puzzle"
+    assert str(prompt_defaults["task_key"]).strip() == "cube_view_query"
+    assert str(prompt_defaults["object_description_cube_strip"]).strip()
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "impossible_cube_view",
+        "same_cube_view",
+    ]
+    assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
+        "cube_card",
+        "cube_outline",
+        "cube_strip",
+    ]
+    assert int(generation_defaults["option_count"]) == 6
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert int(rendering_defaults["reference_cube_box_size_px"]) > 0
+    assert int(rendering_defaults["pair_box_size_px"]) > 0
+    assert int(rendering_defaults["option_panel_width_px"]) > 0
+    assert str(prompt_defaults["evidence_hint_same_cube_view"]).strip()
+    assert str(prompt_defaults["evidence_hint_impossible_cube_view"]).strip()
+    assert str(prompt_defaults["json_example_same_cube_view"]).strip()
+    assert str(prompt_defaults["json_example_answer_only_impossible_cube_view"]).strip()
+
+    spatial_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_puzzles_spatial_cube_view_label",
+    )
+    assert spatial_complexity["criteria_weights"] == {
+        "reasoning_load": pytest.approx(0.7),
+        "scene_variant_load": pytest.approx(0.3),
+        "visual_scan": pytest.approx(0.0),
+    }
+
+
 def test_charts_multiseries_defaults_loaded() -> None:
     cfg = get_task_group_defaults("charts", "multiseries")
     for section in ("generation", "rendering", "prompt", "complexity"):

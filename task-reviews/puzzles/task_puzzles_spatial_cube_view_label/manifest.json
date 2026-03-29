@@ -1,0 +1,13 @@
+{
+  "inspection_count": 50,
+  "task_id": "task_puzzles_spatial_cube_view_label",
+  "variants": {
+    "impossible_cube_view": 25,
+    "same_cube_view": 25
+  },
+  "workbook": "puzzles/task_puzzles_spatial_cube_view_label/task_puzzles_spatial_cube_view_label.xlsx",
+  "workbook_sheets": {
+    "impossible_cube_view": "impossible_cube_view",
+    "same_cube_view": "same_cube_view"
+  }
+}

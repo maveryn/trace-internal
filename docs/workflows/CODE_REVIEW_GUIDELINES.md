@@ -148,6 +148,7 @@ Use this checklist during implementation and refactor reviews.
 131. For arithmetic equality puzzles, prefer an explicit `=` marker between the two sides when the intended semantics are exact equality; do not rely on a decorative scale glyph alone if it makes the algebraic relation less obvious.
 132. For balance-style arithmetic queries that ask for a symbol's value, prefer a final explicit query row rendered like `symbol = ?` and project the prompt-facing evidence from the `?` box; do not leave the query as an isolated symbol box if that makes the requested output feel implicit.
 133. When adding visual spacing jitter to a synthetic task, sample and record the offsets explicitly in trace or render inputs; do not hide layout randomness inside renderer-only heuristics.
+134. For single-reference cube-view puzzles, never build distractors from hidden faces the reference image does not reveal; keep option generation grounded on the visible corner only (for example cyclic-versus-mirrored permutations of the same three visible faces) unless the scene explicitly exposes more cube-face information.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

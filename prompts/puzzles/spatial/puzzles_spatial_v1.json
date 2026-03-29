@@ -1,0 +1,70 @@
+{
+  "bundle_id": "puzzles_spatial_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "spatial_cube_view_puzzle": [
+      "The image shows {object_description}.",
+      "Look at the cube-view puzzle in the image: {object_description}.",
+      "You are given {object_description}.",
+      "Work from the spatial puzzle shown in the image: {object_description}.",
+      "Use the reference cube, opposite-face hints, and labeled image options in the image: {object_description}."
+    ]
+  },
+  "task_templates": {
+    "cube_view_query": [
+      "Choose the correct labeled option cube.",
+      "Determine which labeled option cube is correct.",
+      "Use the reference cube and opposite-face hints to identify the correct image option.",
+      "Find the labeled option cube that satisfies the question.",
+      "Work from the reference cube plus the opposite-face hints and choose the correct option."
+    ]
+  },
+  "task_variant_templates": {
+    "same_cube_view": [
+      "Which option could be another view of the same cube? Answer with the option letter.",
+      "Select the labeled option that could show the same cube from another viewpoint. Answer with the option letter.",
+      "Which labeled option is a possible view of the same cube? Answer with the option letter.",
+      "Choose the option that could be the same cube seen from a different angle. Answer with the option letter.",
+      "Which option can represent another valid view of the reference cube? Answer with the option letter."
+    ],
+    "impossible_cube_view": [
+      "Which option cannot be a view of the same cube? Answer with the option letter.",
+      "Select the labeled option that is impossible for the reference cube. Answer with the option letter.",
+      "Which labeled option is not a possible view of the same cube? Answer with the option letter.",
+      "Choose the option that cannot match the reference cube from any viewpoint. Answer with the option letter.",
+      "Which option is inconsistent with the reference cube? Answer with the option letter."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:spatial_cube_view_puzzle": [
+      "object_description"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

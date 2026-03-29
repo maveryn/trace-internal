@@ -8,6 +8,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.text_rendering import load_font
+from .drawing import draw_centered_text, draw_rounded_rect
+from .option_panels import render_puzzle_option_panel
 from .symbol_rendering import PUZZLE_OBJECT_COLOR_BY_TYPE, draw_puzzle_shape_icon
 
 
@@ -62,60 +64,6 @@ class RenderedPuzzleLogicScene:
     scene_bbox_px: List[float]
     cell_bbox_map: Dict[str, List[float]]
     option_panel_bbox_map: Dict[str, List[float]]
-
-
-def _rounded_rect(
-    draw: ImageDraw.ImageDraw,
-    bbox: Tuple[float, float, float, float],
-    *,
-    radius: int,
-    fill: Sequence[int],
-    outline: Sequence[int],
-    width: int,
-) -> None:
-    """Draw one rounded rectangle with deterministic styling."""
-
-    draw.rounded_rectangle(
-        bbox,
-        radius=int(radius),
-        fill=tuple(int(value) for value in fill),
-        outline=tuple(int(value) for value in outline),
-        width=int(width),
-    )
-
-
-def _draw_centered_text(
-    draw: ImageDraw.ImageDraw,
-    *,
-    text: str,
-    center: Tuple[float, float],
-    font,
-    fill: Sequence[int],
-    stroke_fill: Sequence[int],
-    stroke_width: int = 1,
-) -> List[float]:
-    """Draw centered text and return the final text bbox."""
-
-    bbox = draw.textbbox((0, 0), str(text), font=font, stroke_width=max(0, int(stroke_width)))
-    left, top, right, bottom = [float(value) for value in bbox]
-    cx, cy = float(center[0]), float(center[1])
-    tx = float(cx - (0.5 * (left + right)))
-    ty = float(cy - (0.5 * (top + bottom)))
-    draw.text(
-        (tx, ty),
-        str(text),
-        fill=tuple(int(v) for v in fill),
-        font=font,
-        stroke_width=max(0, int(stroke_width)),
-        stroke_fill=tuple(int(v) for v in stroke_fill),
-    )
-    return [
-        round(float(tx + left), 3),
-        round(float(ty + top), 3),
-        round(float(tx + right), 3),
-        round(float(ty + bottom), 3),
-    ]
-
 
 def render_puzzle_logic_scene(
     background: Image.Image,
@@ -196,7 +144,7 @@ def render_puzzle_logic_scene(
     )
     if selected_variant in {"logic_card", "logic_outline"}:
         fill = render_params.panel_fill_rgb if selected_variant == "logic_card" else (248, 248, 248)
-        _rounded_rect(
+        draw_rounded_rect(
             draw,
             board_panel_bbox,
             radius=int(render_params.panel_corner_radius_px),
@@ -204,7 +152,7 @@ def render_puzzle_logic_scene(
             outline=render_params.border_color_rgb,
             width=int(render_params.border_width_px),
         )
-        _rounded_rect(
+        draw_rounded_rect(
             draw,
             options_panel_bbox,
             radius=int(render_params.panel_corner_radius_px),
@@ -241,7 +189,7 @@ def render_puzzle_logic_scene(
             )
             cell_id = str(cell["cell_id"])
             is_unknown = bool(cell.get("is_unknown", False))
-            _rounded_rect(
+            draw_rounded_rect(
                 draw,
                 cell_bbox,
                 radius=int(render_params.slot_corner_radius_px),
@@ -250,7 +198,7 @@ def render_puzzle_logic_scene(
                 width=int(render_params.border_width_px),
             )
             if is_unknown:
-                _draw_centered_text(
+                draw_centered_text(
                     draw,
                     text="?",
                     center=(float(cell_left + 0.5 * cell_size), float(cell_top + 0.5 * cell_size)),
@@ -298,56 +246,35 @@ def render_puzzle_logic_scene(
             float(panel_top + option_panel_height),
         )
         option_panel_id = str(option["option_panel_id"])
-        _rounded_rect(
+        option_panel = render_puzzle_option_panel(
             draw,
-            panel_bbox,
-            radius=int(render_params.slot_corner_radius_px),
-            fill=render_params.option_panel_fill_rgb,
-            outline=render_params.border_color_rgb,
-            width=int(render_params.border_width_px),
-        )
-
-        label_center = (
-            float(panel_left + 0.5 * option_panel_width),
-            float(panel_top + 28.0),
-        )
-        label_bbox = _draw_centered_text(
-            draw,
-            text=str(option["option_label"]),
-            center=label_center,
-            font=option_label_font,
-            fill=render_params.text_color_rgb,
-            stroke_fill=render_params.text_stroke_rgb,
-            stroke_width=1,
-        )
-        symbol_box_left = float(panel_left + 0.5 * (option_panel_width - symbol_box_size))
-        symbol_box_top = float(label_bbox[3] + option_label_gap)
-        symbol_box_bbox = (
-            float(symbol_box_left),
-            float(symbol_box_top),
-            float(symbol_box_left + symbol_box_size),
-            float(symbol_box_top + symbol_box_size),
-        )
-        _rounded_rect(
-            draw,
-            symbol_box_bbox,
-            radius=int(max(8, render_params.slot_corner_radius_px - 4)),
-            fill=render_params.option_symbol_fill_rgb,
-            outline=render_params.border_color_rgb,
-            width=int(render_params.border_width_px),
+            panel_bbox=panel_bbox,
+            option_label=str(option["option_label"]),
+            label_font=option_label_font,
+            label_center_y_px=float(panel_top + 28.0),
+            content_box_size_px=float(symbol_box_size),
+            content_gap_px=float(option_label_gap),
+            panel_fill_rgb=render_params.option_panel_fill_rgb,
+            content_fill_rgb=render_params.option_symbol_fill_rgb,
+            border_color_rgb=render_params.border_color_rgb,
+            text_color_rgb=render_params.text_color_rgb,
+            text_stroke_rgb=render_params.text_stroke_rgb,
+            panel_corner_radius_px=int(render_params.slot_corner_radius_px),
+            content_corner_radius_px=int(max(8, render_params.slot_corner_radius_px - 4)),
+            border_width_px=int(render_params.border_width_px),
         )
         option_type = str(option["object_type"])
         option_fill = PUZZLE_OBJECT_COLOR_BY_TYPE.get(option_type, render_params.accent_color_rgb)
         draw_puzzle_shape_icon(
             draw,
-            bbox=symbol_box_bbox,
+            bbox=tuple(float(value) for value in option_panel.content_bbox),
             object_type=option_type,
             fill_rgb=option_fill,
             outline_rgb=render_params.border_color_rgb,
             width=max(2, int(render_params.border_width_px)),
         )
 
-        panel_bbox_list = [round(float(value), 3) for value in panel_bbox]
+        panel_bbox_list = list(option_panel.panel_bbox)
         option_panel_bbox_map[option_panel_id] = list(panel_bbox_list)
         entities.append(
             {
@@ -366,7 +293,7 @@ def render_puzzle_logic_scene(
             {
                 "entity_id": f"{option_panel_id}_label",
                 "entity_type": "puzzle_logic_option_label",
-                "bbox_px": list(label_bbox),
+                "bbox_px": list(option_panel.label_bbox),
                 "attrs": {
                     "option_index": int(option_index),
                     "option_label": str(option["option_label"]),
@@ -377,7 +304,7 @@ def render_puzzle_logic_scene(
             {
                 "entity_id": f"{option_panel_id}_symbol_box",
                 "entity_type": "puzzle_logic_option_symbol_box",
-                "bbox_px": [round(float(value), 3) for value in symbol_box_bbox],
+                "bbox_px": list(option_panel.content_bbox),
                 "attrs": {
                     "option_index": int(option_index),
                     "option_label": str(option["option_label"]),

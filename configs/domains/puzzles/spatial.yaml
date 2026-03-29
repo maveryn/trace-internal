@@ -1,0 +1,72 @@
+generation:
+  task_overrides:
+    task_puzzles_spatial_cube_view_label:
+      option_count: 6
+      balanced_task_variant_sampling: true
+      balanced_scene_variant_sampling: true
+      task_variant_weights:
+        same_cube_view: 1.0
+        impossible_cube_view: 1.0
+      scene_variant_weights:
+        cube_strip: 1.0
+        cube_card: 1.0
+        cube_outline: 1.0
+
+rendering:
+  task_overrides:
+    task_puzzles_spatial_cube_view_label:
+      canvas_width: 1200
+      canvas_height: 880
+      scene_margin_left_px: 64
+      scene_margin_right_px: 64
+      scene_margin_top_px: 56
+      scene_margin_bottom_px: 56
+      reference_cube_box_size_px: 300
+      reference_panel_padding_px: 28
+      reference_to_pairs_gap_px: 36
+      pair_group_gap_px: 28
+      pair_box_size_px: 78
+      pair_token_gap_px: 14
+      pairs_to_options_gap_px: 56
+      option_panel_width_px: 144
+      option_panel_height_px: 186
+      option_gap_px: 20
+      option_cube_box_size_px: 92
+      option_label_gap_px: 18
+      slot_corner_radius_px: 18
+      border_width_px: 3
+      panel_corner_radius_px: 28
+      option_label_font_size_px: 30
+      panel_fill_rgb: [248, 249, 252]
+      option_panel_fill_rgb: [251, 251, 255]
+      option_cube_fill_rgb: [252, 252, 255]
+      border_color_rgb: [86, 94, 108]
+      text_color_rgb: [30, 34, 40]
+      text_stroke_rgb: [255, 255, 255]
+      accent_color_rgb: [54, 102, 180]
+
+prompt:
+  shared:
+    bundle_id: puzzles_spatial_v1
+    answer_hint: set "answer" to the exact option letter of the correct image option
+  task_overrides:
+    task_puzzles_spatial_cube_view_label:
+      task_family_key: spatial_cube_view_puzzle
+      task_key: cube_view_query
+      object_description_cube_strip: a reference cube, three opposite-face hint pairs, and six labeled option cubes underneath
+      object_description_cube_card: a card-style reference cube, three opposite-face hint pairs, and six labeled option cubes underneath
+      object_description_cube_outline: an outline-style reference cube, three opposite-face hint pairs, and six labeled option cubes underneath
+      evidence_hint_same_cube_view: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel
+      evidence_hint_impossible_cube_view: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel
+      json_example_same_cube_view: '{"evidence":[[340,638,484,824]],"answer":"C"}'
+      json_example_impossible_cube_view: '{"evidence":[[668,638,812,824]],"answer":"E"}'
+      json_example_answer_only_same_cube_view: '{"answer":"C"}'
+      json_example_answer_only_impossible_cube_view: '{"answer":"E"}'
+
+complexity:
+  task_overrides:
+    task_puzzles_spatial_cube_view_label:
+      criteria_weights:
+        visual_scan: 0.0
+        reasoning_load: 0.7
+        scene_variant_load: 0.3

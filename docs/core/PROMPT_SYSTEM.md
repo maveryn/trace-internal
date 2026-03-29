@@ -98,6 +98,7 @@ Active bundles:
 6. Puzzles:
    - `prompts/puzzles/arithmetic/puzzles_arithmetic_v1.json`
    - `prompts/puzzles/logic/puzzles_logic_v1.json`
+   - `prompts/puzzles/spatial/puzzles_spatial_v1.json`
 
 Active task-to-bundle mapping:
 1. Geometry comparison tasks (`task_geometry_comparison_angle|area|length|perimeter`) -> `geometry_comparison_v1`
@@ -144,3 +145,4 @@ Active task-to-bundle mapping:
 10. Puzzles:
    - `task_puzzles_arithmetic_equation_value|task_puzzles_arithmetic_balance_value|task_puzzles_arithmetic_grid_value` -> `puzzles_arithmetic_v1`
    - `task_puzzles_logic_grid_completion_label` -> `puzzles_logic_v1`
+   - `task_puzzles_spatial_cube_view_label` -> `puzzles_spatial_v1`

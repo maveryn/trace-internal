@@ -64,6 +64,12 @@ Use this whenever the task lives under `domain=puzzles`.
 - Prefer logic boards with one explicit `?` cell and a stable set of labeled option panels so the user interaction stays consistent even when the hidden rule changes across variants.
 - For early logic families, make the semantic rule vary inside `task_variant` (for example row uniqueness vs column uniqueness vs both) before creating new task ids for near-identical board-and-options layouts.
 
+## Early spatial lessons
+- For early single-reference cube tasks, do not ask the model to reason about hidden faces the image never reveals.
+- If a cube-view task needs full-cube view consistency rather than only visible-corner order, expose the hidden-face structure explicitly in the image first (for example opposite-face hint pairs) before asking about candidate views.
+- For option-based spatial puzzles, keep `answer_gt.type = option_letter` and ground prompt-facing evidence on the winning option panel bbox, not on multiple cube faces.
+- When a second puzzle family needs labeled image options, reuse shared puzzle option-panel chrome instead of copying panel/label/content-box layout into another scene renderer.
+
 ## Benchmark alignment
 - MathVision-style useful puzzle coverage includes arithmetic, logic, spatial, topology, and competition-style visual problem solving.
 - MathVista-style useful puzzle coverage includes IQ-test / puzzle-figure reasoning, but prefer variants that are structurally distinct from existing icon tasks.

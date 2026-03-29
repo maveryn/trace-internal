@@ -1,0 +1,2630 @@
+{
+  "answer_gt": {
+    "type": "option_letter",
+    "value": "B"
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        282.0,
+        582.0,
+        426.0,
+        768.0
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "puzzles/task_puzzles_spatial_cube_view_label/images/same_cube_view/0015.png"
+  },
+  "instance_seed": 5216589964956080,
+  "prompt": "Look at the cube-view puzzle in the image: an outline-style reference cube, three opposite-face hint pairs, and six labeled option cubes underneath. Find the labeled option cube that satisfies the question. Which option can represent another valid view of the reference cube? Answer with the option letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel.\nAnswer: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"evidence\":[[340,638,484,824]],\"answer\":\"C\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the cube-view puzzle in the image: an outline-style reference cube, three opposite-face hint pairs, and six labeled option cubes underneath. Find the labeled option cube that satisfies the question. Which option can represent another valid view of the reference cube? Answer with the option letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel.\nAnswer: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"evidence\":[[340,638,484,824]],\"answer\":\"C\"}",
+    "answer_only": "Look at the cube-view puzzle in the image: an outline-style reference cube, three opposite-face hint pairs, and six labeled option cubes underneath. Find the labeled option cube that satisfies the question. Which option can represent another valid view of the reference cube? Answer with the option letter.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"answer\":\"C\"}"
+  },
+  "task": "task_puzzles_spatial_cube_view_label",
+  "task_variant": "same_cube_view",
+  "trace_payload": {
+    "answer": {
+      "type": "option_letter",
+      "value": "B"
+    },
+    "complexity": {
+      "complexity_components": {
+        "reasoning_load": 0.38,
+        "scene_variant_load": 0.2
+      },
+      "complexity_score": 0.32599999999999996
+    },
+    "evidence": {
+      "type": "bbox_set",
+      "value": [
+        [
+          282.0,
+          582.0,
+          426.0,
+          768.0
+        ]
+      ]
+    },
+    "execution_trace": {
+      "answer_option_label": "B",
+      "correct_option_index": 1,
+      "correct_option_panel_id": "option_B",
+      "face_object_types": {
+        "B": "square",
+        "D": "star",
+        "F": "circle",
+        "L": "hexagon",
+        "R": "triangle",
+        "U": "diamond"
+      },
+      "invalid_triplets": [
+        [
+          "diamond",
+          "star",
+          "circle"
+        ],
+        [
+          "diamond",
+          "star",
+          "square"
+        ],
+        [
+          "diamond",
+          "star",
+          "triangle"
+        ],
+        [
+          "diamond",
+          "star",
+          "hexagon"
+        ],
+        [
+          "diamond",
+          "circle",
+          "star"
+        ],
+        [
+          "diamond",
+          "circle",
+          "square"
+        ],
+        [
+          "diamond",
+          "circle",
+          "hexagon"
+        ],
+        [
+          "diamond",
+          "square",
+          "star"
+        ],
+        [
+          "diamond",
+          "square",
+          "circle"
+        ],
+        [
+          "diamond",
+          "square",
+          "triangle"
+        ],
+        [
+          "diamond",
+          "triangle",
+          "star"
+        ],
+        [
+          "diamond",
+          "triangle",
+          "circle"
+        ],
+        [
+          "diamond",
+          "triangle",
+          "hexagon"
+        ],
+        [
+          "diamond",
+          "hexagon",
+          "star"
+        ],
+        [
+          "diamond",
+          "hexagon",
+          "square"
+        ],
+        [
+          "diamond",
+          "hexagon",
+          "triangle"
+        ],
+        [
+          "star",
+          "diamond",
+          "circle"
+        ],
+        [
+          "star",
+          "diamond",
+          "square"
+        ],
+        [
+          "star",
+          "diamond",
+          "triangle"
+        ],
+        [
+          "star",
+          "diamond",
+          "hexagon"
+        ],
+        [
+          "star",
+          "circle",
+          "diamond"
+        ],
+        [
+          "star",
+          "circle",
+          "square"
+        ],
+        [
+          "star",
+          "circle",
+          "triangle"
+        ],
+        [
+          "star",
+          "square",
+          "diamond"
+        ],
+        [
+          "star",
+          "square",
+          "circle"
+        ],
+        [
+          "star",
+          "square",
+          "hexagon"
+        ],
+        [
+          "star",
+          "triangle",
+          "diamond"
+        ],
+        [
+          "star",
+          "triangle",
+          "square"
+        ],
+        [
+          "star",
+          "triangle",
+          "hexagon"
+        ],
+        [
+          "star",
+          "hexagon",
+          "diamond"
+        ],
+        [
+          "star",
+          "hexagon",
+          "circle"
+        ],
+        [
+          "star",
+          "hexagon",
+          "triangle"
+        ],
+        [
+          "circle",
+          "diamond",
+          "star"
+        ],
+        [
+          "circle",
+          "diamond",
+          "square"
+        ],
+        [
+          "circle",
+          "diamond",
+          "triangle"
+        ],
+        [
+          "circle",
+          "star",
+          "diamond"
+        ],
+        [
+          "circle",
+          "star",
+          "square"
+        ],
+        [
+          "circle",
+          "star",
+          "hexagon"
+        ],
+        [
+          "circle",
+          "square",
+          "diamond"
+        ],
+        [
+          "circle",
+          "square",
+          "star"
+        ],
+        [
+          "circle",
+          "square",
+          "triangle"
+        ],
+        [
+          "circle",
+          "square",
+          "hexagon"
+        ],
+        [
+          "circle",
+          "triangle",
+          "star"
+        ],
+        [
+          "circle",
+          "triangle",
+          "square"
+        ],
+        [
+          "circle",
+          "triangle",
+          "hexagon"
+        ],
+        [
+          "circle",
+          "hexagon",
+          "diamond"
+        ],
+        [
+          "circle",
+          "hexagon",
+          "square"
+        ],
+        [
+          "circle",
+          "hexagon",
+          "triangle"
+        ],
+        [
+          "square",
+          "diamond",
+          "star"
+        ],
+        [
+          "square",
+          "diamond",
+          "circle"
+        ],
+        [
+          "square",
+          "diamond",
+          "hexagon"
+        ],
+        [
+          "square",
+          "star",
+          "diamond"
+        ],
+        [
+          "square",
+          "star",
+          "circle"
+        ],
+        [
+          "square",
+          "star",
+          "triangle"
+        ],
+        [
+          "square",
+          "circle",
+          "diamond"
+        ],
+        [
+          "square",
+          "circle",
+          "star"
+        ],
+        [
+          "square",
+          "circle",
+          "triangle"
+        ],
+        [
+          "square",
+          "circle",
+          "hexagon"
+        ],
+        [
+          "square",
+          "triangle",
+          "diamond"
+        ],
+        [
+          "square",
+          "triangle",
+          "circle"
+        ],
+        [
+          "square",
+          "triangle",
+          "hexagon"
+        ],
+        [
+          "square",
+          "hexagon",
+          "star"
+        ],
+        [
+          "square",
+          "hexagon",
+          "circle"
+        ],
+        [
+          "square",
+          "hexagon",
+          "triangle"
+        ],
+        [
+          "triangle",
+          "diamond",
+          "star"
+        ],
+        [
+          "triangle",
+          "diamond",
+          "square"
+        ],
+        [
+          "triangle",
+          "diamond",
+          "hexagon"
+        ],
+        [
+          "triangle",
+          "star",
+          "diamond"
+        ],
+        [
+          "triangle",
+          "star",
+          "circle"
+        ],
+        [
+          "triangle",
+          "star",
+          "hexagon"
+        ],
+        [
+          "triangle",
+          "circle",
+          "diamond"
+        ],
+        [
+          "triangle",
+          "circle",
+          "square"
+        ],
+        [
+          "triangle",
+          "circle",
+          "hexagon"
+        ],
+        [
+          "triangle",
+          "square",
+          "star"
+        ],
+        [
+          "triangle",
+          "square",
+          "circle"
+        ],
+        [
+          "triangle",
+          "square",
+          "hexagon"
+        ],
+        [
+          "triangle",
+          "hexagon",
+          "diamond"
+        ],
+        [
+          "triangle",
+          "hexagon",
+          "star"
+        ],
+        [
+          "triangle",
+          "hexagon",
+          "circle"
+        ],
+        [
+          "triangle",
+          "hexagon",
+          "square"
+        ],
+        [
+          "hexagon",
+          "diamond",
+          "star"
+        ],
+        [
+          "hexagon",
+          "diamond",
+          "circle"
+        ],
+        [
+          "hexagon",
+          "diamond",
+          "triangle"
+        ],
+        [
+          "hexagon",
+          "star",
+          "diamond"
+        ],
+        [
+          "hexagon",
+          "star",
+          "square"
+        ],
+        [
+          "hexagon",
+          "star",
+          "triangle"
+        ],
+        [
+          "hexagon",
+          "circle",
+          "star"
+        ],
+        [
+          "hexagon",
+          "circle",
+          "square"
+        ],
+        [
+          "hexagon",
+          "circle",
+          "triangle"
+        ],
+        [
+          "hexagon",
+          "square",
+          "diamond"
+        ],
+        [
+          "hexagon",
+          "square",
+          "circle"
+        ],
+        [
+          "hexagon",
+          "square",
+          "triangle"
+        ],
+        [
+          "hexagon",
+          "triangle",
+          "diamond"
+        ],
+        [
+          "hexagon",
+          "triangle",
+          "star"
+        ],
+        [
+          "hexagon",
+          "triangle",
+          "circle"
+        ],
+        [
+          "hexagon",
+          "triangle",
+          "square"
+        ]
+      ],
+      "opposite_pair_specs": [
+        {
+          "anchor_face": "R",
+          "left_box_id": "pair_0_left",
+          "left_object_type": "triangle",
+          "opposite_face": "L",
+          "pair_id": "pair_0",
+          "right_box_id": "pair_0_right",
+          "right_object_type": "hexagon"
+        },
+        {
+          "anchor_face": "D",
+          "left_box_id": "pair_1_left",
+          "left_object_type": "star",
+          "opposite_face": "U",
+          "pair_id": "pair_1",
+          "right_box_id": "pair_1_right",
+          "right_object_type": "diamond"
+        },
+        {
+          "anchor_face": "B",
+          "left_box_id": "pair_2_left",
+          "left_object_type": "square",
+          "opposite_face": "F",
+          "pair_id": "pair_2",
+          "right_box_id": "pair_2_right",
+          "right_object_type": "circle"
+        }
+      ],
+      "option_count": 6,
+      "option_labels": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F"
+      ],
+      "option_specs": [
+        {
+          "front_face": "?",
+          "front_object_type": "triangle",
+          "is_correct": false,
+          "is_valid_view": false,
+          "option_index": 0,
+          "option_label": "A",
+          "option_panel_id": "option_A",
+          "right_face": "?",
+          "right_object_type": "square",
+          "top_face": "?",
+          "top_object_type": "star",
+          "visible_triplet": [
+            "star",
+            "triangle",
+            "square"
+          ]
+        },
+        {
+          "front_face": "R",
+          "front_object_type": "triangle",
+          "is_correct": true,
+          "is_valid_view": true,
+          "option_index": 1,
+          "option_label": "B",
+          "option_panel_id": "option_B",
+          "right_face": "D",
+          "right_object_type": "star",
+          "top_face": "B",
+          "top_object_type": "square",
+          "visible_triplet": [
+            "square",
+            "triangle",
+            "star"
+          ]
+        },
+        {
+          "front_face": "?",
+          "front_object_type": "square",
+          "is_correct": false,
+          "is_valid_view": false,
+          "option_index": 2,
+          "option_label": "C",
+          "option_panel_id": "option_C",
+          "right_face": "?",
+          "right_object_type": "star",
+          "top_face": "?",
+          "top_object_type": "triangle",
+          "visible_triplet": [
+            "triangle",
+            "square",
+            "star"
+          ]
+        },
+        {
+          "front_face": "?",
+          "front_object_type": "star",
+          "is_correct": false,
+          "is_valid_view": false,
+          "option_index": 3,
+          "option_label": "D",
+          "option_panel_id": "option_D",
+          "right_face": "?",
+          "right_object_type": "triangle",
+          "top_face": "?",
+          "top_object_type": "square",
+          "visible_triplet": [
+            "square",
+            "star",
+            "triangle"
+          ]
+        },
+        {
+          "front_face": "?",
+          "front_object_type": "star",
+          "is_correct": false,
+          "is_valid_view": false,
+          "option_index": 4,
+          "option_label": "E",
+          "option_panel_id": "option_E",
+          "right_face": "?",
+          "right_object_type": "circle",
+          "top_face": "?",
+          "top_object_type": "triangle",
+          "visible_triplet": [
+            "triangle",
+            "star",
+            "circle"
+          ]
+        },
+        {
+          "front_face": "?",
+          "front_object_type": "star",
+          "is_correct": false,
+          "is_valid_view": false,
+          "option_index": 5,
+          "option_label": "F",
+          "option_panel_id": "option_F",
+          "right_face": "?",
+          "right_object_type": "diamond",
+          "top_face": "?",
+          "top_object_type": "triangle",
+          "visible_triplet": [
+            "triangle",
+            "star",
+            "diamond"
+          ]
+        }
+      ],
+      "question_format": "cube_view_mcq",
+      "reference_triplet": [
+        "triangle",
+        "star",
+        "square"
+      ],
+      "reference_view": {
+        "front_face": "D",
+        "front_object_type": "star",
+        "right_face": "B",
+        "right_object_type": "square",
+        "top_face": "R",
+        "top_object_type": "triangle",
+        "visible_triplet": [
+          "triangle",
+          "star",
+          "square"
+        ]
+      },
+      "scene_variant": "cube_outline",
+      "scene_variant_probabilities": {
+        "cube_card": 0.3333333333333333,
+        "cube_outline": 0.3333333333333333,
+        "cube_strip": 0.3333333333333333
+      },
+      "solver_trace": {
+        "correct_option_index": 1,
+        "correct_option_label": "B",
+        "correct_visible_triplet": [
+          "square",
+          "triangle",
+          "star"
+        ],
+        "face_object_types": {
+          "B": "square",
+          "D": "star",
+          "F": "circle",
+          "L": "hexagon",
+          "R": "triangle",
+          "U": "diamond"
+        },
+        "invalid_triplets": [
+          [
+            "diamond",
+            "star",
+            "circle"
+          ],
+          [
+            "diamond",
+            "star",
+            "square"
+          ],
+          [
+            "diamond",
+            "star",
+            "triangle"
+          ],
+          [
+            "diamond",
+            "star",
+            "hexagon"
+          ],
+          [
+            "diamond",
+            "circle",
+            "star"
+          ],
+          [
+            "diamond",
+            "circle",
+            "square"
+          ],
+          [
+            "diamond",
+            "circle",
+            "hexagon"
+          ],
+          [
+            "diamond",
+            "square",
+            "star"
+          ],
+          [
+            "diamond",
+            "square",
+            "circle"
+          ],
+          [
+            "diamond",
+            "square",
+            "triangle"
+          ],
+          [
+            "diamond",
+            "triangle",
+            "star"
+          ],
+          [
+            "diamond",
+            "triangle",
+            "circle"
+          ],
+          [
+            "diamond",
+            "triangle",
+            "hexagon"
+          ],
+          [
+            "diamond",
+            "hexagon",
+            "star"
+          ],
+          [
+            "diamond",
+            "hexagon",
+            "square"
+          ],
+          [
+            "diamond",
+            "hexagon",
+            "triangle"
+          ],
+          [
+            "star",
+            "diamond",
+            "circle"
+          ],
+          [
+            "star",
+            "diamond",
+            "square"
+          ],
+          [
+            "star",
+            "diamond",
+            "triangle"
+          ],
+          [
+            "star",
+            "diamond",
+            "hexagon"
+          ],
+          [
+            "star",
+            "circle",
+            "diamond"
+          ],
+          [
+            "star",
+            "circle",
+            "square"
+          ],
+          [
+            "star",
+            "circle",
+            "triangle"
+          ],
+          [
+            "star",
+            "square",
+            "diamond"
+          ],
+          [
+            "star",
+            "square",
+            "circle"
+          ],
+          [
+            "star",
+            "square",
+            "hexagon"
+          ],
+          [
+            "star",
+            "triangle",
+            "diamond"
+          ],
+          [
+            "star",
+            "triangle",
+            "square"
+          ],
+          [
+            "star",
+            "triangle",
+            "hexagon"
+          ],
+          [
+            "star",
+            "hexagon",
+            "diamond"
+          ],
+          [
+            "star",
+            "hexagon",
+            "circle"
+          ],
+          [
+            "star",
+            "hexagon",
+            "triangle"
+          ],
+          [
+            "circle",
+            "diamond",
+            "star"
+          ],
+          [
+            "circle",
+            "diamond",
+            "square"
+          ],
+          [
+            "circle",
+            "diamond",
+            "triangle"
+          ],
+          [
+            "circle",
+            "star",
+            "diamond"
+          ],
+          [
+            "circle",
+            "star",
+            "square"
+          ],
+          [
+            "circle",
+            "star",
+            "hexagon"
+          ],
+          [
+            "circle",
+            "square",
+            "diamond"
+          ],
+          [
+            "circle",
+            "square",
+            "star"
+          ],
+          [
+            "circle",
+            "square",
+            "triangle"
+          ],
+          [
+            "circle",
+            "square",
+            "hexagon"
+          ],
+          [
+            "circle",
+            "triangle",
+            "star"
+          ],
+          [
+            "circle",
+            "triangle",
+            "square"
+          ],
+          [
+            "circle",
+            "triangle",
+            "hexagon"
+          ],
+          [
+            "circle",
+            "hexagon",
+            "diamond"
+          ],
+          [
+            "circle",
+            "hexagon",
+            "square"
+          ],
+          [
+            "circle",
+            "hexagon",
+            "triangle"
+          ],
+          [
+            "square",
+            "diamond",
+            "star"
+          ],
+          [
+            "square",
+            "diamond",
+            "circle"
+          ],
+          [
+            "square",
+            "diamond",
+            "hexagon"
+          ],
+          [
+            "square",
+            "star",
+            "diamond"
+          ],
+          [
+            "square",
+            "star",
+            "circle"
+          ],
+          [
+            "square",
+            "star",
+            "triangle"
+          ],
+          [
+            "square",
+            "circle",
+            "diamond"
+          ],
+          [
+            "square",
+            "circle",
+            "star"
+          ],
+          [
+            "square",
+            "circle",
+            "triangle"
+          ],
+          [
+            "square",
+            "circle",
+            "hexagon"
+          ],
+          [
+            "square",
+            "triangle",
+            "diamond"
+          ],
+          [
+            "square",
+            "triangle",
+            "circle"
+          ],
+          [
+            "square",
+            "triangle",
+            "hexagon"
+          ],
+          [
+            "square",
+            "hexagon",
+            "star"
+          ],
+          [
+            "square",
+            "hexagon",
+            "circle"
+          ],
+          [
+            "square",
+            "hexagon",
+            "triangle"
+          ],
+          [
+            "triangle",
+            "diamond",
+            "star"
+          ],
+          [
+            "triangle",
+            "diamond",
+            "square"
+          ],
+          [
+            "triangle",
+            "diamond",
+            "hexagon"
+          ],
+          [
+            "triangle",
+            "star",
+            "diamond"
+          ],
+          [
+            "triangle",
+            "star",
+            "circle"
+          ],
+          [
+            "triangle",
+            "star",
+            "hexagon"
+          ],
+          [
+            "triangle",
+            "circle",
+            "diamond"
+          ],
+          [
+            "triangle",
+            "circle",
+            "square"
+          ],
+          [
+            "triangle",
+            "circle",
+            "hexagon"
+          ],
+          [
+            "triangle",
+            "square",
+            "star"
+          ],
+          [
+            "triangle",
+            "square",
+            "circle"
+          ],
+          [
+            "triangle",
+            "square",
+            "hexagon"
+          ],
+          [
+            "triangle",
+            "hexagon",
+            "diamond"
+          ],
+          [
+            "triangle",
+            "hexagon",
+            "star"
+          ],
+          [
+            "triangle",
+            "hexagon",
+            "circle"
+          ],
+          [
+            "triangle",
+            "hexagon",
+            "square"
+          ],
+          [
+            "hexagon",
+            "diamond",
+            "star"
+          ],
+          [
+            "hexagon",
+            "diamond",
+            "circle"
+          ],
+          [
+            "hexagon",
+            "diamond",
+            "triangle"
+          ],
+          [
+            "hexagon",
+            "star",
+            "diamond"
+          ],
+          [
+            "hexagon",
+            "star",
+            "square"
+          ],
+          [
+            "hexagon",
+            "star",
+            "triangle"
+          ],
+          [
+            "hexagon",
+            "circle",
+            "star"
+          ],
+          [
+            "hexagon",
+            "circle",
+            "square"
+          ],
+          [
+            "hexagon",
+            "circle",
+            "triangle"
+          ],
+          [
+            "hexagon",
+            "square",
+            "diamond"
+          ],
+          [
+            "hexagon",
+            "square",
+            "circle"
+          ],
+          [
+            "hexagon",
+            "square",
+            "triangle"
+          ],
+          [
+            "hexagon",
+            "triangle",
+            "diamond"
+          ],
+          [
+            "hexagon",
+            "triangle",
+            "star"
+          ],
+          [
+            "hexagon",
+            "triangle",
+            "circle"
+          ],
+          [
+            "hexagon",
+            "triangle",
+            "square"
+          ]
+        ],
+        "options_are_valid_views": [
+          false,
+          true,
+          false,
+          false,
+          false,
+          false
+        ],
+        "reference_triplet": [
+          "triangle",
+          "star",
+          "square"
+        ],
+        "valid_triplets": [
+          [
+            "diamond",
+            "circle",
+            "triangle"
+          ],
+          [
+            "diamond",
+            "square",
+            "hexagon"
+          ],
+          [
+            "diamond",
+            "triangle",
+            "square"
+          ],
+          [
+            "diamond",
+            "hexagon",
+            "circle"
+          ],
+          [
+            "star",
+            "circle",
+            "hexagon"
+          ],
+          [
+            "star",
+            "square",
+            "triangle"
+          ],
+          [
+            "star",
+            "triangle",
+            "circle"
+          ],
+          [
+            "star",
+            "hexagon",
+            "square"
+          ],
+          [
+            "circle",
+            "diamond",
+            "hexagon"
+          ],
+          [
+            "circle",
+            "star",
+            "triangle"
+          ],
+          [
+            "circle",
+            "triangle",
+            "diamond"
+          ],
+          [
+            "circle",
+            "hexagon",
+            "star"
+          ],
+          [
+            "square",
+            "diamond",
+            "triangle"
+          ],
+          [
+            "square",
+            "star",
+            "hexagon"
+          ],
+          [
+            "square",
+            "triangle",
+            "star"
+          ],
+          [
+            "square",
+            "hexagon",
+            "diamond"
+          ],
+          [
+            "triangle",
+            "diamond",
+            "circle"
+          ],
+          [
+            "triangle",
+            "star",
+            "square"
+          ],
+          [
+            "triangle",
+            "circle",
+            "star"
+          ],
+          [
+            "triangle",
+            "square",
+            "diamond"
+          ],
+          [
+            "hexagon",
+            "diamond",
+            "square"
+          ],
+          [
+            "hexagon",
+            "star",
+            "circle"
+          ],
+          [
+            "hexagon",
+            "circle",
+            "diamond"
+          ],
+          [
+            "hexagon",
+            "square",
+            "star"
+          ]
+        ],
+        "view_family": "cube_view_with_opposite_face_hints"
+      },
+      "supporting_option_panel_ids": [
+        "option_B"
+      ],
+      "task_variant": "same_cube_view",
+      "task_variant_probabilities": {
+        "impossible_cube_view": 0.0,
+        "same_cube_view": 1.0
+      },
+      "valid_triplets": [
+        [
+          "diamond",
+          "circle",
+          "triangle"
+        ],
+        [
+          "diamond",
+          "square",
+          "hexagon"
+        ],
+        [
+          "diamond",
+          "triangle",
+          "square"
+        ],
+        [
+          "diamond",
+          "hexagon",
+          "circle"
+        ],
+        [
+          "star",
+          "circle",
+          "hexagon"
+        ],
+        [
+          "star",
+          "square",
+          "triangle"
+        ],
+        [
+          "star",
+          "triangle",
+          "circle"
+        ],
+        [
+          "star",
+          "hexagon",
+          "square"
+        ],
+        [
+          "circle",
+          "diamond",
+          "hexagon"
+        ],
+        [
+          "circle",
+          "star",
+          "triangle"
+        ],
+        [
+          "circle",
+          "triangle",
+          "diamond"
+        ],
+        [
+          "circle",
+          "hexagon",
+          "star"
+        ],
+        [
+          "square",
+          "diamond",
+          "triangle"
+        ],
+        [
+          "square",
+          "star",
+          "hexagon"
+        ],
+        [
+          "square",
+          "triangle",
+          "star"
+        ],
+        [
+          "square",
+          "hexagon",
+          "diamond"
+        ],
+        [
+          "triangle",
+          "diamond",
+          "circle"
+        ],
+        [
+          "triangle",
+          "star",
+          "square"
+        ],
+        [
+          "triangle",
+          "circle",
+          "star"
+        ],
+        [
+          "triangle",
+          "square",
+          "diamond"
+        ],
+        [
+          "hexagon",
+          "diamond",
+          "square"
+        ],
+        [
+          "hexagon",
+          "star",
+          "circle"
+        ],
+        [
+          "hexagon",
+          "circle",
+          "diamond"
+        ],
+        [
+          "hexagon",
+          "square",
+          "star"
+        ]
+      ],
+      "view_family": "cube_view_with_opposite_face_hints",
+      "visible_face_count": 3
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          282.0,
+          582.0,
+          426.0,
+          768.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "option_count": 6,
+        "scene_variant": "cube_outline",
+        "scene_variant_probabilities": {
+          "cube_card": 0.3333333333333333,
+          "cube_outline": 0.3333333333333333,
+          "cube_strip": 0.3333333333333333
+        },
+        "task_variant": "same_cube_view",
+        "task_variant_probabilities": {
+          "impossible_cube_view": 0.0,
+          "same_cube_view": 1.0
+        },
+        "visible_face_count": 3
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "puzzles_spatial_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the exact option letter of the correct image option",
+          "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel",
+          "json_example": "{\"evidence\":[[340,638,484,824]],\"answer\":\"C\"}",
+          "json_example_answer_only": "{\"answer\":\"C\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "an outline-style reference cube, three opposite-face hint pairs, and six labeled option cubes underneath"
+        },
+        "task_family_key": "spatial_cube_view_puzzle",
+        "task_family_variant_index": 1,
+        "task_key": "cube_view_query",
+        "task_variant_index": 3,
+        "task_variant_key": "same_cube_view",
+        "task_variant_template_index": 4,
+        "template_paths": [
+          "puzzles/spatial/puzzles_spatial_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:cube_view_query": 5,
+          "task_family:spatial_cube_view_puzzle": 5,
+          "task_variant:same_cube_view": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "puzzles_spatial_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact option letter of the correct image option",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel",
+              "json_example": "{\"evidence\":[[340,638,484,824]],\"answer\":\"C\"}",
+              "json_example_answer_only": "{\"answer\":\"C\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an outline-style reference cube, three opposite-face hint pairs, and six labeled option cubes underneath"
+            },
+            "task_family_key": "spatial_cube_view_puzzle",
+            "task_family_variant_index": 1,
+            "task_key": "cube_view_query",
+            "task_variant_index": 3,
+            "task_variant_key": "same_cube_view",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "puzzles/spatial/puzzles_spatial_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:cube_view_query": 5,
+              "task_family:spatial_cube_view_puzzle": 5,
+              "task_variant:same_cube_view": 5
+            }
+          },
+          "prompt": "Look at the cube-view puzzle in the image: an outline-style reference cube, three opposite-face hint pairs, and six labeled option cubes underneath. Find the labeled option cube that satisfies the question. Which option can represent another valid view of the reference cube? Answer with the option letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel.\nAnswer: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"evidence\":[[340,638,484,824]],\"answer\":\"C\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "puzzles_spatial_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact option letter of the correct image option",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel",
+              "json_example": "{\"evidence\":[[340,638,484,824]],\"answer\":\"C\"}",
+              "json_example_answer_only": "{\"answer\":\"C\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an outline-style reference cube, three opposite-face hint pairs, and six labeled option cubes underneath"
+            },
+            "task_family_key": "spatial_cube_view_puzzle",
+            "task_family_variant_index": 1,
+            "task_key": "cube_view_query",
+            "task_variant_index": 3,
+            "task_variant_key": "same_cube_view",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "puzzles/spatial/puzzles_spatial_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:cube_view_query": 5,
+              "task_family:spatial_cube_view_puzzle": 5,
+              "task_variant:same_cube_view": 5
+            }
+          },
+          "prompt": "Look at the cube-view puzzle in the image: an outline-style reference cube, three opposite-face hint pairs, and six labeled option cubes underneath. Find the labeled option cube that satisfies the question. Which option can represent another valid view of the reference cube? Answer with the option letter.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"answer\":\"C\"}"
+        }
+      },
+      "task_variant": "same_cube_view",
+      "template_id": "puzzles_spatial_v1"
+    },
+    "render_map": {
+      "image_id": "img0",
+      "option_cube_bboxes_px": {
+        "option_A": [
+          144.0,
+          640.0,
+          236.0,
+          732.0
+        ],
+        "option_B": [
+          308.0,
+          640.0,
+          400.0,
+          732.0
+        ],
+        "option_C": [
+          472.0,
+          640.0,
+          564.0,
+          732.0
+        ],
+        "option_D": [
+          636.0,
+          640.0,
+          728.0,
+          732.0
+        ],
+        "option_E": [
+          800.0,
+          640.0,
+          892.0,
+          732.0
+        ],
+        "option_F": [
+          964.0,
+          640.0,
+          1056.0,
+          732.0
+        ]
+      },
+      "option_panel_bboxes_px": {
+        "option_A": [
+          118.0,
+          582.0,
+          262.0,
+          768.0
+        ],
+        "option_B": [
+          282.0,
+          582.0,
+          426.0,
+          768.0
+        ],
+        "option_C": [
+          446.0,
+          582.0,
+          590.0,
+          768.0
+        ],
+        "option_D": [
+          610.0,
+          582.0,
+          754.0,
+          768.0
+        ],
+        "option_E": [
+          774.0,
+          582.0,
+          918.0,
+          768.0
+        ],
+        "option_F": [
+          938.0,
+          582.0,
+          1082.0,
+          768.0
+        ]
+      },
+      "pair_box_bboxes_px": {
+        "pair_0_left": [
+          218.0,
+          448.0,
+          296.0,
+          526.0
+        ],
+        "pair_0_right": [
+          376.0,
+          448.0,
+          454.0,
+          526.0
+        ],
+        "pair_1_left": [
+          482.0,
+          448.0,
+          560.0,
+          526.0
+        ],
+        "pair_1_right": [
+          640.0,
+          448.0,
+          718.0,
+          526.0
+        ],
+        "pair_2_left": [
+          746.0,
+          448.0,
+          824.0,
+          526.0
+        ],
+        "pair_2_right": [
+          904.0,
+          448.0,
+          982.0,
+          526.0
+        ]
+      },
+      "reference_cube_bbox_px": [
+        450.0,
+        112.0,
+        750.0,
+        412.0
+      ],
+      "scene_bbox_px": [
+        90.0,
+        84.0,
+        1110.0,
+        796.0
+      ]
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 880,
+      "canvas_width": 1200,
+      "coord_space": "pixel",
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_bbox_px": [
+        90.0,
+        84.0,
+        1110.0,
+        796.0
+      ],
+      "scene_variant": "cube_outline",
+      "text_style": {
+        "option_label_font_size_px": 30
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "panel_role": "reference",
+            "scene_variant": "cube_outline"
+          },
+          "bbox_px": [
+            422.0,
+            84.0,
+            778.0,
+            554.0
+          ],
+          "entity_id": "puzzle_cube_reference_panel",
+          "entity_type": "puzzle_cube_panel"
+        },
+        {
+          "attrs": {
+            "panel_role": "options",
+            "scene_variant": "cube_outline"
+          },
+          "bbox_px": [
+            90.0,
+            554.0,
+            1110.0,
+            796.0
+          ],
+          "entity_id": "puzzle_cube_options_panel",
+          "entity_type": "puzzle_cube_panel"
+        },
+        {
+          "attrs": {
+            "front_object_type": "star",
+            "right_object_type": "square",
+            "top_object_type": "triangle"
+          },
+          "bbox_px": [
+            450.0,
+            112.0,
+            750.0,
+            412.0
+          ],
+          "entity_id": "reference_cube",
+          "entity_type": "puzzle_cube_reference"
+        },
+        {
+          "attrs": {
+            "cube_role": "reference",
+            "face_role": "top",
+            "object_type": "triangle"
+          },
+          "bbox_px": [
+            511.111,
+            117.556,
+            688.889,
+            221.259
+          ],
+          "entity_id": "reference_cube_top_face",
+          "entity_type": "puzzle_cube_face"
+        },
+        {
+          "attrs": {
+            "cube_role": "reference",
+            "face_role": "front",
+            "object_type": "star"
+          },
+          "bbox_px": [
+            511.111,
+            169.407,
+            600.0,
+            406.444
+          ],
+          "entity_id": "reference_cube_front_face",
+          "entity_type": "puzzle_cube_face"
+        },
+        {
+          "attrs": {
+            "cube_role": "reference",
+            "face_role": "right",
+            "object_type": "square"
+          },
+          "bbox_px": [
+            600.0,
+            169.407,
+            688.889,
+            406.444
+          ],
+          "entity_id": "reference_cube_right_face",
+          "entity_type": "puzzle_cube_face"
+        },
+        {
+          "attrs": {
+            "anchor_face": "R",
+            "object_type": "triangle",
+            "opposite_face": "L",
+            "pair_index": 0,
+            "pair_role": "left"
+          },
+          "bbox_px": [
+            218.0,
+            448.0,
+            296.0,
+            526.0
+          ],
+          "entity_id": "pair_0_left",
+          "entity_type": "puzzle_cube_pair_box"
+        },
+        {
+          "attrs": {
+            "anchor_face": "R",
+            "object_type": "hexagon",
+            "opposite_face": "L",
+            "pair_index": 0,
+            "pair_role": "right"
+          },
+          "bbox_px": [
+            376.0,
+            448.0,
+            454.0,
+            526.0
+          ],
+          "entity_id": "pair_0_right",
+          "entity_type": "puzzle_cube_pair_box"
+        },
+        {
+          "attrs": {
+            "pair_index": 0,
+            "token": "<->"
+          },
+          "bbox_px": [
+            310.0,
+            479.0,
+            362.0,
+            495.0
+          ],
+          "entity_id": "pair_0_token",
+          "entity_type": "puzzle_cube_pair_token"
+        },
+        {
+          "attrs": {
+            "anchor_face": "D",
+            "object_type": "star",
+            "opposite_face": "U",
+            "pair_index": 1,
+            "pair_role": "left"
+          },
+          "bbox_px": [
+            482.0,
+            448.0,
+            560.0,
+            526.0
+          ],
+          "entity_id": "pair_1_left",
+          "entity_type": "puzzle_cube_pair_box"
+        },
+        {
+          "attrs": {
+            "anchor_face": "D",
+            "object_type": "diamond",
+            "opposite_face": "U",
+            "pair_index": 1,
+            "pair_role": "right"
+          },
+          "bbox_px": [
+            640.0,
+            448.0,
+            718.0,
+            526.0
+          ],
+          "entity_id": "pair_1_right",
+          "entity_type": "puzzle_cube_pair_box"
+        },
+        {
+          "attrs": {
+            "pair_index": 1,
+            "token": "<->"
+          },
+          "bbox_px": [
+            574.0,
+            479.0,
+            626.0,
+            495.0
+          ],
+          "entity_id": "pair_1_token",
+          "entity_type": "puzzle_cube_pair_token"
+        },
+        {
+          "attrs": {
+            "anchor_face": "B",
+            "object_type": "square",
+            "opposite_face": "F",
+            "pair_index": 2,
+            "pair_role": "left"
+          },
+          "bbox_px": [
+            746.0,
+            448.0,
+            824.0,
+            526.0
+          ],
+          "entity_id": "pair_2_left",
+          "entity_type": "puzzle_cube_pair_box"
+        },
+        {
+          "attrs": {
+            "anchor_face": "B",
+            "object_type": "circle",
+            "opposite_face": "F",
+            "pair_index": 2,
+            "pair_role": "right"
+          },
+          "bbox_px": [
+            904.0,
+            448.0,
+            982.0,
+            526.0
+          ],
+          "entity_id": "pair_2_right",
+          "entity_type": "puzzle_cube_pair_box"
+        },
+        {
+          "attrs": {
+            "pair_index": 2,
+            "token": "<->"
+          },
+          "bbox_px": [
+            838.0,
+            479.0,
+            890.0,
+            495.0
+          ],
+          "entity_id": "pair_2_token",
+          "entity_type": "puzzle_cube_pair_token"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "is_valid_view": false,
+            "option_index": 0,
+            "option_label": "A"
+          },
+          "bbox_px": [
+            118.0,
+            582.0,
+            262.0,
+            768.0
+          ],
+          "entity_id": "option_A",
+          "entity_type": "puzzle_cube_option_panel"
+        },
+        {
+          "attrs": {
+            "option_index": 0,
+            "option_label": "A"
+          },
+          "bbox_px": [
+            177.0,
+            598.0,
+            203.0,
+            622.0
+          ],
+          "entity_id": "option_A_label",
+          "entity_type": "puzzle_cube_option_label"
+        },
+        {
+          "attrs": {
+            "option_index": 0,
+            "option_label": "A"
+          },
+          "bbox_px": [
+            144.0,
+            640.0,
+            236.0,
+            732.0
+          ],
+          "entity_id": "option_A_cube_box",
+          "entity_type": "puzzle_cube_option_box"
+        },
+        {
+          "attrs": {
+            "cube_role": "option",
+            "face_role": "top",
+            "object_type": "star",
+            "option_index": 0,
+            "option_label": "A"
+          },
+          "bbox_px": [
+            162.741,
+            641.704,
+            217.259,
+            673.506
+          ],
+          "entity_id": "option_A_top_face",
+          "entity_type": "puzzle_cube_face"
+        },
+        {
+          "attrs": {
+            "cube_role": "option",
+            "face_role": "front",
+            "object_type": "triangle",
+            "option_index": 0,
+            "option_label": "A"
+          },
+          "bbox_px": [
+            162.741,
+            657.605,
+            190.0,
+            730.296
+          ],
+          "entity_id": "option_A_front_face",
+          "entity_type": "puzzle_cube_face"
+        },
+        {
+          "attrs": {
+            "cube_role": "option",
+            "face_role": "right",
+            "object_type": "square",
+            "option_index": 0,
+            "option_label": "A"
+          },
+          "bbox_px": [
+            190.0,
+            657.605,
+            217.259,
+            730.296
+          ],
+          "entity_id": "option_A_right_face",
+          "entity_type": "puzzle_cube_face"
+        },
+        {
+          "attrs": {
+            "is_correct": true,
+            "is_valid_view": true,
+            "option_index": 1,
+            "option_label": "B"
+          },
+          "bbox_px": [
+            282.0,
+            582.0,
+            426.0,
+            768.0
+          ],
+          "entity_id": "option_B",
+          "entity_type": "puzzle_cube_option_panel"
+        },
+        {
+          "attrs": {
+            "option_index": 1,
+            "option_label": "B"
+          },
+          "bbox_px": [
+            341.5,
+            598.0,
+            366.5,
+            622.0
+          ],
+          "entity_id": "option_B_label",
+          "entity_type": "puzzle_cube_option_label"
+        },
+        {
+          "attrs": {
+            "option_index": 1,
+            "option_label": "B"
+          },
+          "bbox_px": [
+            308.0,
+            640.0,
+            400.0,
+            732.0
+          ],
+          "entity_id": "option_B_cube_box",
+          "entity_type": "puzzle_cube_option_box"
+        },
+        {
+          "attrs": {
+            "cube_role": "option",
+            "face_role": "top",
+            "object_type": "square",
+            "option_index": 1,
+            "option_label": "B"
+          },
+          "bbox_px": [
+            326.741,
+            641.704,
+            381.259,
+            673.506
+          ],
+          "entity_id": "option_B_top_face",
+          "entity_type": "puzzle_cube_face"
+        },
+        {
+          "attrs": {
+            "cube_role": "option",
+            "face_role": "front",
+            "object_type": "triangle",
+            "option_index": 1,
+            "option_label": "B"
+          },
+          "bbox_px": [
+            326.741,
+            657.605,
+            354.0,
+            730.296
+          ],
+          "entity_id": "option_B_front_face",
+          "entity_type": "puzzle_cube_face"
+        },
+        {
+          "attrs": {
+            "cube_role": "option",
+            "face_role": "right",
+            "object_type": "star",
+            "option_index": 1,
+            "option_label": "B"
+          },
+          "bbox_px": [
+            354.0,
+            657.605,
+            381.259,
+            730.296
+          ],
+          "entity_id": "option_B_right_face",
+          "entity_type": "puzzle_cube_face"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "is_valid_view": false,
+            "option_index": 2,
+            "option_label": "C"
+          },
+          "bbox_px": [
+            446.0,
+            582.0,
+            590.0,
+            768.0
+          ],
+          "entity_id": "option_C",
+          "entity_type": "puzzle_cube_option_panel"
+        },
+        {
+          "attrs": {
+            "option_index": 2,
+            "option_label": "C"
+          },
+          "bbox_px": [
+            506.0,
+            598.0,
+            530.0,
+            622.0
+          ],
+          "entity_id": "option_C_label",
+          "entity_type": "puzzle_cube_option_label"
+        },
+        {
+          "attrs": {
+            "option_index": 2,
+            "option_label": "C"
+          },
+          "bbox_px": [
+            472.0,
+            640.0,
+            564.0,
+            732.0
+          ],
+          "entity_id": "option_C_cube_box",
+          "entity_type": "puzzle_cube_option_box"
+        },
+        {
+          "attrs": {
+            "cube_role": "option",
+            "face_role": "top",
+            "object_type": "triangle",
+            "option_index": 2,
+            "option_label": "C"
+          },
+          "bbox_px": [
+            490.741,
+            641.704,
+            545.259,
+            673.506
+          ],
+          "entity_id": "option_C_top_face",
+          "entity_type": "puzzle_cube_face"
+        },
+        {
+          "attrs": {
+            "cube_role": "option",
+            "face_role": "front",
+            "object_type": "square",
+            "option_index": 2,
+            "option_label": "C"
+          },
+          "bbox_px": [
+            490.741,
+            657.605,
+            518.0,
+            730.296
+          ],
+          "entity_id": "option_C_front_face",
+          "entity_type": "puzzle_cube_face"
+        },
+        {
+          "attrs": {
+            "cube_role": "option",
+            "face_role": "right",
+            "object_type": "star",
+            "option_index": 2,
+            "option_label": "C"
+          },
+          "bbox_px": [
+            518.0,
+            657.605,
+            545.259,
+            730.296
+          ],
+          "entity_id": "option_C_right_face",
+          "entity_type": "puzzle_cube_face"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "is_valid_view": false,
+            "option_index": 3,
+            "option_label": "D"
+          },
+          "bbox_px": [
+            610.0,
+            582.0,
+            754.0,
+            768.0
+          ],
+          "entity_id": "option_D",
+          "entity_type": "puzzle_cube_option_panel"
+        },
+        {
+          "attrs": {
+            "option_index": 3,
+            "option_label": "D"
+          },
+          "bbox_px": [
+            668.5,
+            598.0,
+            695.5,
+            622.0
+          ],
+          "entity_id": "option_D_label",
+          "entity_type": "puzzle_cube_option_label"
+        },
+        {
+          "attrs": {
+            "option_index": 3,
+            "option_label": "D"
+          },
+          "bbox_px": [
+            636.0,
+            640.0,
+            728.0,
+            732.0
+          ],
+          "entity_id": "option_D_cube_box",
+          "entity_type": "puzzle_cube_option_box"
+        },
+        {
+          "attrs": {
+            "cube_role": "option",
+            "face_role": "top",
+            "object_type": "square",
+            "option_index": 3,
+            "option_label": "D"
+          },
+          "bbox_px": [
+            654.741,
+            641.704,
+            709.259,
+            673.506
+          ],
+          "entity_id": "option_D_top_face",
+          "entity_type": "puzzle_cube_face"
+        },
+        {
+          "attrs": {
+            "cube_role": "option",
+            "face_role": "front",
+            "object_type": "star",
+            "option_index": 3,
+            "option_label": "D"
+          },
+          "bbox_px": [
+            654.741,
+            657.605,
+            682.0,
+            730.296
+          ],
+          "entity_id": "option_D_front_face",
+          "entity_type": "puzzle_cube_face"
+        },
+        {
+          "attrs": {
+            "cube_role": "option",
+            "face_role": "right",
+            "object_type": "triangle",
+            "option_index": 3,
+            "option_label": "D"
+          },
+          "bbox_px": [
+            682.0,
+            657.605,
+            709.259,
+            730.296
+          ],
+          "entity_id": "option_D_right_face",
+          "entity_type": "puzzle_cube_face"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "is_valid_view": false,
+            "option_index": 4,
+            "option_label": "E"
+          },
+          "bbox_px": [
+            774.0,
+            582.0,
+            918.0,
+            768.0
+          ],
+          "entity_id": "option_E",
+          "entity_type": "puzzle_cube_option_panel"
+        },
+        {
+          "attrs": {
+            "option_index": 4,
+            "option_label": "E"
+          },
+          "bbox_px": [
+            834.5,
+            598.0,
+            857.5,
+            622.0
+          ],
+          "entity_id": "option_E_label",
+          "entity_type": "puzzle_cube_option_label"
+        },
+        {
+          "attrs": {
+            "option_index": 4,
+            "option_label": "E"
+          },
+          "bbox_px": [
+            800.0,
+            640.0,
+            892.0,
+            732.0
+          ],
+          "entity_id": "option_E_cube_box",
+          "entity_type": "puzzle_cube_option_box"
+        },
+        {
+          "attrs": {
+            "cube_role": "option",
+            "face_role": "top",
+            "object_type": "triangle",
+            "option_index": 4,
+            "option_label": "E"
+          },
+          "bbox_px": [
+            818.741,
+            641.704,
+            873.259,
+            673.506
+          ],
+          "entity_id": "option_E_top_face",
+          "entity_type": "puzzle_cube_face"
+        },
+        {
+          "attrs": {
+            "cube_role": "option",
+            "face_role": "front",
+            "object_type": "star",
+            "option_index": 4,
+            "option_label": "E"
+          },
+          "bbox_px": [
+            818.741,
+            657.605,
+            846.0,
+            730.296
+          ],
+          "entity_id": "option_E_front_face",
+          "entity_type": "puzzle_cube_face"
+        },
+        {
+          "attrs": {
+            "cube_role": "option",
+            "face_role": "right",
+            "object_type": "circle",
+            "option_index": 4,
+            "option_label": "E"
+          },
+          "bbox_px": [
+            846.0,
+            657.605,
+            873.259,
+            730.296
+          ],
+          "entity_id": "option_E_right_face",
+          "entity_type": "puzzle_cube_face"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "is_valid_view": false,
+            "option_index": 5,
+            "option_label": "F"
+          },
+          "bbox_px": [
+            938.0,
+            582.0,
+            1082.0,
+            768.0
+          ],
+          "entity_id": "option_F",
+          "entity_type": "puzzle_cube_option_panel"
+        },
+        {
+          "attrs": {
+            "option_index": 5,
+            "option_label": "F"
+          },
+          "bbox_px": [
+            998.5,
+            598.0,
+            1021.5,
+            622.0
+          ],
+          "entity_id": "option_F_label",
+          "entity_type": "puzzle_cube_option_label"
+        },
+        {
+          "attrs": {
+            "option_index": 5,
+            "option_label": "F"
+          },
+          "bbox_px": [
+            964.0,
+            640.0,
+            1056.0,
+            732.0
+          ],
+          "entity_id": "option_F_cube_box",
+          "entity_type": "puzzle_cube_option_box"
+        },
+        {
+          "attrs": {
+            "cube_role": "option",
+            "face_role": "top",
+            "object_type": "triangle",
+            "option_index": 5,
+            "option_label": "F"
+          },
+          "bbox_px": [
+            982.741,
+            641.704,
+            1037.259,
+            673.506
+          ],
+          "entity_id": "option_F_top_face",
+          "entity_type": "puzzle_cube_face"
+        },
+        {
+          "attrs": {
+            "cube_role": "option",
+            "face_role": "front",
+            "object_type": "star",
+            "option_index": 5,
+            "option_label": "F"
+          },
+          "bbox_px": [
+            982.741,
+            657.605,
+            1010.0,
+            730.296
+          ],
+          "entity_id": "option_F_front_face",
+          "entity_type": "puzzle_cube_face"
+        },
+        {
+          "attrs": {
+            "cube_role": "option",
+            "face_role": "right",
+            "object_type": "diamond",
+            "option_index": 5,
+            "option_label": "F"
+          },
+          "bbox_px": [
+            1010.0,
+            657.605,
+            1037.259,
+            730.296
+          ],
+          "entity_id": "option_F_right_face",
+          "entity_type": "puzzle_cube_face"
+        }
+      ],
+      "relations": {
+        "answer_option_label": "B",
+        "correct_option_panel_id": "option_B",
+        "scene_variant": "cube_outline",
+        "task_variant": "same_cube_view",
+        "view_family": "cube_view_with_opposite_face_hints"
+      },
+      "scene_kind": "puzzle_spatial_cube_outline"
+    },
+    "task_versions": {
+      "domain_capability_version": "v1",
+      "dsl_spec_version": "v1",
+      "operator_bundle_version": "v1",
+      "renderer_version": "v1",
+      "template_version": "v1"
+    },
+    "witness_symbolic": {
+      "type": "bbox_set",
+      "value": [
+        [
+          282.0,
+          582.0,
+          426.0,
+          768.0
+        ]
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

@@ -1,0 +1,238 @@
+{
+  "collection": {
+    "collected_variant_counts": {
+      "impossible_cube_view": 100,
+      "same_cube_view": 100
+    },
+    "expected_variants": [
+      "impossible_cube_view",
+      "same_cube_view"
+    ],
+    "generated_variant_counts": {
+      "impossible_cube_view": 128,
+      "same_cube_view": 100
+    },
+    "generation_error_counts": {},
+    "target_count_per_variant": 100,
+    "total_generated": 228
+  },
+  "domain": "puzzles",
+  "failed_variants": [],
+  "has_task_variants": true,
+  "incomplete_variants": [],
+  "mode": "per_variant",
+  "no_samples_collected": false,
+  "overall": {
+    "answer_type_counts": {
+      "option_letter": 200
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.195,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": null,
+        "pass": null,
+        "status": "not_applicable_non_numeric_answers"
+      },
+      "min_unique_answers": {
+        "observed": 6,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": null,
+    "max_answer_count": 39,
+    "max_answer_frequency": 0.195,
+    "pass": true,
+    "sample_count": 200,
+    "top_answers": [
+      {
+        "answer_label": "B",
+        "count": 39
+      },
+      {
+        "answer_label": "D",
+        "count": 39
+      },
+      {
+        "answer_label": "A",
+        "count": 35
+      },
+      {
+        "answer_label": "F",
+        "count": 31
+      },
+      {
+        "answer_label": "C",
+        "count": 30
+      },
+      {
+        "answer_label": "E",
+        "count": 26
+      }
+    ],
+    "unique_answers": 6
+  },
+  "pass": true,
+  "per_task_variant": {
+    "impossible_cube_view": {
+      "answer_type_counts": {
+        "option_letter": 100
+      },
+      "checks": {
+        "max_answer_frequency": {
+          "observed": 0.21,
+          "pass": true,
+          "threshold": 0.25
+        },
+        "max_five_bin_frequency": {
+          "observed": null,
+          "pass": null,
+          "status": "not_applicable_non_numeric_answers"
+        },
+        "min_unique_answers": {
+          "observed": 6,
+          "pass": true,
+          "threshold": 5
+        }
+      },
+      "five_bin_numeric": null,
+      "max_answer_count": 21,
+      "max_answer_frequency": 0.21,
+      "pass": true,
+      "sample_count": 100,
+      "top_answers": [
+        {
+          "answer_label": "D",
+          "count": 21
+        },
+        {
+          "answer_label": "B",
+          "count": 18
+        },
+        {
+          "answer_label": "C",
+          "count": 17
+        },
+        {
+          "answer_label": "F",
+          "count": 16
+        },
+        {
+          "answer_label": "A",
+          "count": 15
+        },
+        {
+          "answer_label": "E",
+          "count": 13
+        }
+      ],
+      "unique_answers": 6
+    },
+    "same_cube_view": {
+      "answer_type_counts": {
+        "option_letter": 100
+      },
+      "checks": {
+        "max_answer_frequency": {
+          "observed": 0.21,
+          "pass": true,
+          "threshold": 0.25
+        },
+        "max_five_bin_frequency": {
+          "observed": null,
+          "pass": null,
+          "status": "not_applicable_non_numeric_answers"
+        },
+        "min_unique_answers": {
+          "observed": 6,
+          "pass": true,
+          "threshold": 5
+        }
+      },
+      "five_bin_numeric": null,
+      "max_answer_count": 21,
+      "max_answer_frequency": 0.21,
+      "pass": true,
+      "sample_count": 100,
+      "top_answers": [
+        {
+          "answer_label": "B",
+          "count": 21
+        },
+        {
+          "answer_label": "A",
+          "count": 20
+        },
+        {
+          "answer_label": "D",
+          "count": 18
+        },
+        {
+          "answer_label": "F",
+          "count": 15
+        },
+        {
+          "answer_label": "C",
+          "count": 13
+        },
+        {
+          "answer_label": "E",
+          "count": 13
+        }
+      ],
+      "unique_answers": 6
+    }
+  },
+  "sampling_axes": {
+    "scene_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "cube_card": 0.3333333333333333,
+        "cube_outline": 0.3333333333333333,
+        "cube_strip": 0.3333333333333333
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.35,
+      "observed_counts": {
+        "cube_card": 35,
+        "cube_outline": 35,
+        "cube_strip": 30
+      },
+      "sample_count": 100
+    },
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "impossible_cube_view": 0.5,
+        "same_cube_view": 0.5
+      },
+      "expected_source": "execution_trace",
+      "max_observed_frequency": 0.56,
+      "observed_counts": {
+        "impossible_cube_view": 56,
+        "same_cube_view": 44
+      },
+      "sample_count": 100
+    }
+  },
+  "task_group": "spatial",
+  "task_id": "task_puzzles_spatial_cube_view_label",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {
+      "impossible_cube_view": 0.5,
+      "same_cube_view": 0.5
+    },
+    "expected_source": "execution_trace",
+    "has_variants": true,
+    "observed_counts": {
+      "impossible_cube_view": 56,
+      "same_cube_view": 44
+    },
+    "status": "reported"
+  }
+}

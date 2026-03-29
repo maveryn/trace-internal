@@ -1,0 +1,1 @@
+"""Puzzle spatial task group."""

@@ -1,0 +1,73 @@
+generation:
+  shared:
+    candidate_label_pool: ["A", "B", "C", "D", "E", "F"]
+    candidate_slots:
+      - [4, 4]
+      - [8, 4]
+      - [4, 0]
+      - [8, 0]
+      - [4, -4]
+      - [8, -4]
+    translation_vectors:
+      - [8, 0]
+      - [8, 3]
+      - [8, -3]
+      - [12, 0]
+      - [12, 3]
+      - [12, -3]
+    translation_vector_anchor: [-10, 7]
+    reflection_axis_x: 0
+    reflection_line_y_min: -9
+    reflection_line_y_max: 9
+  task_overrides:
+    task_geometry_transformation_match:
+      scene_variant_weights:
+        triangle: 1.0
+        quadrilateral: 1.0
+      query_variant_weights:
+        translation_match: 1.0
+        reflection_match: 1.0
+        rotation_match: 1.0
+      balanced_scene_variant_sampling: true
+      balanced_query_variant_sampling: true
+
+rendering:
+  shared:
+    canvas_size_min: 640
+    canvas_size_max: 720
+    graph_cells_min: 24
+    graph_cells_max: 28
+    line_width: 4
+    line_width_min: 3
+    line_width_max: 5
+    label_font_size_min: 16
+    label_font_size_max: 28
+    label_stroke_width: 1
+    label_stroke_width_min: 1
+    label_stroke_width_max: 2
+    object_label_offset_px: 14
+    reference_label_gap_px: 20
+    cue_label_gap_px: 18
+    cue_dash_px: 10
+    cue_gap_px: 8
+    cue_arrow_head_length_px: 18
+    cue_arrow_head_width_px: 14
+    cue_point_radius_px: 4
+    cue_line_padding_px: 18
+
+prompt:
+  shared:
+    bundle_id: geometry_transformation_v1
+    task_family_key: transformation_graph_scene
+    task_key: transformation_query
+    object_description: a Reference polygon, one transformation cue, and six labeled candidate polygons A through F
+    evidence_hint_template: 'set "evidence" to an array of exactly {vertex_count} graph-paper points for the winning polygon vertices'
+    answer_hint: 'set "answer" to the single-letter label of the correct polygon'
+
+complexity:
+  shared:
+    criteria_weights:
+      visual_scan: 0.25
+      transformation_reasoning: 0.40
+      ambiguity: 0.25
+      output_burden: 0.10

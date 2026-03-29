@@ -121,12 +121,13 @@ Define how we split tasks into reusable families so each dataset slice stays com
 15. For milestone-timeline tasks, keep evidence on visible event cards rather than the full axis or connector lines, even when the answer depends on temporal order across multiple events.
 
 ## Geometry direction (current)
-1. Geometry is now intentionally consolidated into five active task ids:
+1. Geometry now exposes six active task ids:
    - `task_geometry_measurement_value`
    - `task_geometry_comparison_value`
    - `task_geometry_counting_value`
    - `task_geometry_analytical_2d_value`
    - `task_geometry_analytical_3d_value`
+   - `task_geometry_transformation_match`
 2. Geometry follows a chart-style two-axis policy:
    - `scene_variant` identifies the geometric scene family / object family,
    - `query_variant` identifies the requested question type.
@@ -151,7 +152,11 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - uses scene variants `rectangular_prism|triangular_prism|square_pyramid|cylinder|cone|sphere`
    - uses query variants `volume|surface_area`
    - keeps structured `measurement_ref_map` evidence and the legacy analytical answer typing
-9. For all five active geometry tasks, `execution_trace`, `query_spec.params`, and `scene_ir.relations` should expose the consolidated `scene_variant` / `query_variant` pair, while preserving `legacy_task_id` and other `legacy_*` trace slots for auditability.
+9. `task_geometry_transformation_match`
+   - uses scene variants `triangle|quadrilateral`
+   - uses query variants `translation_match|reflection_match|rotation_match`
+   - keeps `option_letter` answers with winning-polygon `graph_point_set` evidence
+10. For the five consolidated value tasks, `execution_trace`, `query_spec.params`, and `scene_ir.relations` should expose the consolidated `scene_variant` / `query_variant` pair, while preserving `legacy_task_id` and other `legacy_*` trace slots for auditability.
 16. **Icons counting type (`task_icons_counting_type`)**
    - One two-panel image with a `Reference` icon and a `Scene` panel of icons.
    - Query: how many scene icons have the same icon type as the reference.

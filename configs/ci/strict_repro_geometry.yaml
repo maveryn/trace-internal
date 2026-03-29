@@ -12,6 +12,11 @@ tasks:
     params:
       scene_variant: angle
       query_variant: angle
+  - task_id: task_geometry_transformation_match
+    count: 8
+    params:
+      scene_variant: triangle
+      query_variant: reflection_match
   - task_id: task_geometry_measurement_value
     count: 8
     params:

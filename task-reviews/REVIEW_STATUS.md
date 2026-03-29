@@ -9,6 +9,7 @@ Update this table after each review run.
 | task_geometry_comparison_value | task_geometry_comparison_value | alright_for_now | distribution pass (scene/query consolidated wrapper) |
 | task_geometry_counting_value | task_geometry_counting_value | alright_for_now | distribution pass (scene/query consolidated wrapper) |
 | task_geometry_measurement_value | task_geometry_measurement_value | alright_for_now | distribution pass (scene/query consolidated wrapper) |
+| task_geometry_transformation_match | task_geometry_transformation_match | alright_for_now | distribution pass (triangle/quadrilateral x translation/reflection/rotation) |
 | task_icons_counting_type | task_icons_counting_type | alright_for_now | distribution pass |
 | task_icons_counting_orientation | task_icons_counting_orientation | alright_for_now | distribution pass |
 | task_icons_counting_color | task_icons_counting_color | alright_for_now | distribution pass |

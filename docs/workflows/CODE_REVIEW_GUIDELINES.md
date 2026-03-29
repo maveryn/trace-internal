@@ -188,6 +188,7 @@ Use this checklist during implementation and refactor reviews.
 170. For fold-hole paper puzzles, keep the fold direction explicit in the reference steps via visible fold lines and arrows; do not make the solver infer the fold direction solely from the final folded packet if the task is meant to test unfolding rather than hidden-convention guessing.
 171. When a domain is over-split into many near-duplicate task ids, prefer consolidating it into fewer task ids with explicit `scene_variant` and `query_variant` axes rather than keeping one task id per predicate; only keep separate task ids when the visual scaffold or answer/evidence contract materially changes.
 172. When a consolidated wrapper task remaps legacy task variants onto a new `query_variant` surface, rewrite every task-review-facing variant field to the new surface in the emitted trace (`task_variant`, `task_variant_probabilities`, and `query_spec.params.variant_probabilities`) and accept `task_variant` as an alias for `query_variant` during regeneration; otherwise review tooling will silently collect legacy variants or fail to rebuild inspection samples.
+173. When a second domain needs the same low-level drawing primitive (for example dashed lines or arrows), promote it out of a domain-local `shared/` module into `trace/tasks/shared/` in the same patch; keep any old domain wrapper as a thin re-export only if compatibility requires it.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

@@ -1,0 +1,80 @@
+{
+  "bundle_id": "geometry_transformation_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "transformation_graph_scene": [
+      "The graph-paper image shows {object_description}.",
+      "Look at the graph-paper diagram. It shows {object_description}.",
+      "Use the graph-paper image showing {object_description}.",
+      "Work from the graph-paper diagram showing {object_description}.",
+      "You are given a graph-paper image with {object_description}."
+    ]
+  },
+  "task_templates": {
+    "transformation_query": [
+      "Answer the question using the graph-paper diagram.",
+      "Use the full graph-paper scene to answer the question.",
+      "Read the Reference polygon, cue, and labeled candidates carefully, then answer the question.",
+      "Work from the full transformation scene to answer the question.",
+      "Determine the answer from the graph-paper transformation diagram."
+    ]
+  },
+  "task_variant_templates": {
+    "translation_match": [
+      "Which labeled polygon is the translation of the Reference by the shown vector?",
+      "Identify the labeled polygon that matches the Reference after translating it by the shown vector.",
+      "Use the shown vector. Which labeled polygon is the translated image of the Reference?",
+      "Which labeled polygon is the image of the Reference after the shown translation?",
+      "Apply the shown vector to the Reference. Which labeled polygon matches the result?"
+    ],
+    "reflection_match": [
+      "Which labeled polygon is the reflection of the Reference across line l?",
+      "Reflect the Reference across line l. Which labeled polygon matches the result?",
+      "Use line l as the reflection line. Which labeled polygon is the reflected image of the Reference?",
+      "Which labeled polygon matches the Reference after reflecting it across line l?",
+      "Identify the labeled polygon produced by reflecting the Reference across line l."
+    ],
+    "rotation_match": [
+      "Which labeled polygon is the image of the Reference after a {rotation_instruction} about point O?",
+      "Rotate the Reference by a {rotation_instruction} about point O. Which labeled polygon matches the result?",
+      "Using point O as the center, which labeled polygon matches the Reference after a {rotation_instruction}?",
+      "Which labeled polygon is produced by a {rotation_instruction} of the Reference about point O?",
+      "Apply a {rotation_instruction} about point O to the Reference. Which labeled polygon is correct?"
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:transformation_graph_scene": [
+      "object_description"
+    ],
+    "task_variant:rotation_match": [
+      "rotation_instruction"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

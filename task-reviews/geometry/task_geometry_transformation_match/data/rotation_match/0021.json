@@ -1,0 +1,841 @@
+{
+  "answer_gt": {
+    "type": "option_letter",
+    "value": "E"
+  },
+  "evidence_gt": {
+    "type": "graph_point_set",
+    "value": [
+      [
+        3,
+        7
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        7,
+        3
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_transformation_match/images/rotation_match/0021.png"
+  },
+  "instance_seed": 3875764756300588,
+  "prompt": "Look at the graph-paper diagram. It shows a Reference polygon, one transformation cue, and six labeled candidate polygons A through F. Determine the answer from the graph-paper transformation diagram. Using point O as the center, which labeled polygon matches the Reference after a 90° clockwise rotation?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of exactly 3 graph-paper points for the winning polygon vertices.\nAnswer requirement: set \"answer\" to the single-letter label of the correct polygon.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":\"B\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the graph-paper diagram. It shows a Reference polygon, one transformation cue, and six labeled candidate polygons A through F. Determine the answer from the graph-paper transformation diagram. Using point O as the center, which labeled polygon matches the Reference after a 90° clockwise rotation?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of exactly 3 graph-paper points for the winning polygon vertices.\nAnswer requirement: set \"answer\" to the single-letter label of the correct polygon.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":\"B\"}",
+    "answer_only": "Look at the graph-paper diagram. It shows a Reference polygon, one transformation cue, and six labeled candidate polygons A through F. Determine the answer from the graph-paper transformation diagram. Using point O as the center, which labeled polygon matches the Reference after a 90° clockwise rotation?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the single-letter label of the correct polygon.\nExample JSON:\n{\"answer\":\"B\"}"
+  },
+  "task": "task_geometry_transformation_match",
+  "task_variant": "rotation_match",
+  "trace_payload": {
+    "execution_trace": {
+      "cue_kind": "rotation_center",
+      "query_variant": "rotation_match",
+      "query_variant_probabilities": {
+        "reflection_match": 0.0,
+        "rotation_match": 1.0,
+        "translation_match": 0.0
+      },
+      "question_format": "label_choice_no_text_options",
+      "required_evidence_labels": [
+        "vertex_1",
+        "vertex_2",
+        "vertex_3"
+      ],
+      "rotation_instruction": "90° clockwise rotation",
+      "rotation_mode": "quarter_turn_clockwise",
+      "scene_variant": "triangle",
+      "scene_variant_probabilities": {
+        "quadrilateral": 0.5,
+        "triangle": 0.5
+      },
+      "task_variant": "rotation_match",
+      "task_variant_probabilities": {
+        "reflection_match": 0.0,
+        "rotation_match": 1.0,
+        "translation_match": 0.0
+      },
+      "translation_vector": null,
+      "winner_label": "E",
+      "winner_label_probabilities": {
+        "A": 0.16666666666666666,
+        "B": 0.16666666666666666,
+        "C": 0.16666666666666666,
+        "D": 0.16666666666666666,
+        "E": 0.16666666666666666,
+        "F": 0.16666666666666666
+      }
+    },
+    "projected_evidence": {
+      "grid_point_map": {
+        "vertex_1": [
+          3,
+          7
+        ],
+        "vertex_2": [
+          2,
+          2
+        ],
+        "vertex_3": [
+          7,
+          3
+        ]
+      },
+      "grid_point_path": [
+        [
+          3,
+          7
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          7,
+          3
+        ]
+      ],
+      "grid_point_set": [
+        [
+          3,
+          7
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          7,
+          3
+        ]
+      ],
+      "pixel_point_map": {
+        "vertex_1": [
+          408.0,
+          168.0
+        ],
+        "vertex_2": [
+          384.0,
+          288.0
+        ],
+        "vertex_3": [
+          504.0,
+          264.0
+        ]
+      },
+      "pixel_point_path": [
+        [
+          408.0,
+          168.0
+        ],
+        [
+          384.0,
+          288.0
+        ],
+        [
+          504.0,
+          264.0
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          408.0,
+          168.0
+        ],
+        [
+          384.0,
+          288.0
+        ],
+        [
+          504.0,
+          264.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "candidate_label_pool": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F"
+        ],
+        "query_variant": "rotation_match",
+        "query_variant_probabilities": {
+          "reflection_match": 0.0,
+          "rotation_match": 1.0,
+          "translation_match": 0.0
+        },
+        "rotation_instruction": "90° clockwise rotation",
+        "rotation_mode": "quarter_turn_clockwise",
+        "scene_variant": "triangle",
+        "scene_variant_probabilities": {
+          "quadrilateral": 0.5,
+          "triangle": 0.5
+        },
+        "task_variant": "rotation_match",
+        "variant_probabilities": {
+          "reflection_match": 0.0,
+          "rotation_match": 1.0,
+          "translation_match": 0.0
+        },
+        "winner_label_probabilities": {
+          "A": 0.16666666666666666,
+          "B": 0.16666666666666666,
+          "C": 0.16666666666666666,
+          "D": 0.16666666666666666,
+          "E": 0.16666666666666666,
+          "F": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "geometry_transformation_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the single-letter label of the correct polygon",
+          "evidence_hint": "set \"evidence\" to an array of exactly 3 graph-paper points for the winning polygon vertices",
+          "json_example": "{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":\"B\"}",
+          "json_example_answer_only": "{\"answer\":\"B\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Reference polygon, one transformation cue, and six labeled candidate polygons A through F",
+          "rotation_instruction": "90° clockwise rotation"
+        },
+        "task_family_key": "transformation_graph_scene",
+        "task_family_variant_index": 1,
+        "task_key": "transformation_query",
+        "task_variant_index": 4,
+        "task_variant_key": "rotation_match",
+        "task_variant_template_index": 2,
+        "template_paths": [
+          "geometry/transformation/geometry_transformation_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:transformation_query": 5,
+          "task_family:transformation_graph_scene": 5,
+          "task_variant:rotation_match": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "geometry_transformation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single-letter label of the correct polygon",
+              "evidence_hint": "set \"evidence\" to an array of exactly 3 graph-paper points for the winning polygon vertices",
+              "json_example": "{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference polygon, one transformation cue, and six labeled candidate polygons A through F",
+              "rotation_instruction": "90° clockwise rotation"
+            },
+            "task_family_key": "transformation_graph_scene",
+            "task_family_variant_index": 1,
+            "task_key": "transformation_query",
+            "task_variant_index": 4,
+            "task_variant_key": "rotation_match",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "geometry/transformation/geometry_transformation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:transformation_query": 5,
+              "task_family:transformation_graph_scene": 5,
+              "task_variant:rotation_match": 5
+            }
+          },
+          "prompt": "Look at the graph-paper diagram. It shows a Reference polygon, one transformation cue, and six labeled candidate polygons A through F. Determine the answer from the graph-paper transformation diagram. Using point O as the center, which labeled polygon matches the Reference after a 90° clockwise rotation?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of exactly 3 graph-paper points for the winning polygon vertices.\nAnswer requirement: set \"answer\" to the single-letter label of the correct polygon.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":\"B\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_transformation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single-letter label of the correct polygon",
+              "evidence_hint": "set \"evidence\" to an array of exactly 3 graph-paper points for the winning polygon vertices",
+              "json_example": "{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference polygon, one transformation cue, and six labeled candidate polygons A through F",
+              "rotation_instruction": "90° clockwise rotation"
+            },
+            "task_family_key": "transformation_graph_scene",
+            "task_family_variant_index": 1,
+            "task_key": "transformation_query",
+            "task_variant_index": 4,
+            "task_variant_key": "rotation_match",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "geometry/transformation/geometry_transformation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:transformation_query": 5,
+              "task_family:transformation_graph_scene": 5,
+              "task_variant:rotation_match": 5
+            }
+          },
+          "prompt": "Look at the graph-paper diagram. It shows a Reference polygon, one transformation cue, and six labeled candidate polygons A through F. Determine the answer from the graph-paper transformation diagram. Using point O as the center, which labeled polygon matches the Reference after a 90° clockwise rotation?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the single-letter label of the correct polygon.\nExample JSON:\n{\"answer\":\"B\"}"
+        }
+      },
+      "task_variant": "rotation_match",
+      "template_id": "geometry_transformation_v1"
+    },
+    "render_map": {
+      "candidate_centers_graph_by_label": {
+        "A": [
+          8.0,
+          -4.0
+        ],
+        "B": [
+          8.0,
+          0.0
+        ],
+        "C": [
+          4.0,
+          0.0
+        ],
+        "D": [
+          8.0,
+          4.0
+        ],
+        "E": [
+          4.0,
+          4.0
+        ],
+        "F": [
+          4.0,
+          -4.0
+        ]
+      },
+      "candidate_vertices_graph_by_label": {
+        "A": [
+          [
+            9,
+            -7
+          ],
+          [
+            10,
+            -2
+          ],
+          [
+            5,
+            -3
+          ]
+        ],
+        "B": [
+          [
+            5,
+            -1
+          ],
+          [
+            10,
+            -2
+          ],
+          [
+            9,
+            3
+          ]
+        ],
+        "C": [
+          [
+            7,
+            -1
+          ],
+          [
+            2,
+            -2
+          ],
+          [
+            3,
+            3
+          ]
+        ],
+        "D": [
+          [
+            5,
+            5
+          ],
+          [
+            10,
+            6
+          ],
+          [
+            9,
+            1
+          ]
+        ],
+        "E": [
+          [
+            3,
+            7
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            7,
+            3
+          ]
+        ],
+        "F": [
+          [
+            7,
+            -3
+          ],
+          [
+            2,
+            -2
+          ],
+          [
+            3,
+            -7
+          ]
+        ]
+      },
+      "cue": {
+        "center_graph": [
+          0,
+          0
+        ],
+        "center_px": [
+          336.0,
+          336.0
+        ],
+        "point_label": "O",
+        "rotation_instruction": "90° clockwise rotation",
+        "rotation_mode": "quarter_turn_clockwise",
+        "type": "rotation_center"
+      },
+      "image_id": "img0",
+      "object_label_centers": {
+        "A": [
+          587.0321946059945,
+          461.5160973029972
+        ],
+        "B": [
+          594.0,
+          336.0
+        ],
+        "C": [
+          486.06403492307345,
+          298.14395520083093
+        ],
+        "D": [
+          593.5672174900362,
+          232.45414082994566
+        ],
+        "E": [
+          459.89280527488614,
+          180.1836860555811
+        ],
+        "F": [
+          478.6690475583121,
+          478.6690475583121
+        ]
+      },
+      "reference_vertices_graph": [
+        [
+          -7,
+          3
+        ],
+        [
+          -2,
+          2
+        ],
+        [
+          -3,
+          7
+        ]
+      ],
+      "winner_label": "E"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "graph_paper",
+        "style_spec": {
+          "axis_arrow_size": 10,
+          "axis_arrows_enabled": true,
+          "axis_color": [
+            180,
+            185,
+            192
+          ],
+          "axis_darken_range": [
+            32,
+            48
+          ],
+          "axis_enabled": true,
+          "axis_line_width": 2,
+          "axis_scale_label_max_abs": 0,
+          "axis_scale_labels_enabled": true,
+          "base_color": [
+            255,
+            255,
+            255
+          ],
+          "base_color_jitter": [
+            0,
+            0
+          ],
+          "center_point_color": [
+            168,
+            173,
+            180
+          ],
+          "center_point_darken_extra_range": [
+            8,
+            14
+          ],
+          "center_point_enabled": true,
+          "center_point_radius": 2,
+          "color_variation_applied": true,
+          "color_variation_enabled": true,
+          "color_variation_sampled": {
+            "axis_darken": 45,
+            "base_color_delta": 0,
+            "center_point_darken_extra": 12,
+            "line_color_delta": 1,
+            "major_line_darken": 11,
+            "origin_label_darken_extra": 10
+          },
+          "kind": "grid",
+          "line_color": [
+            225,
+            230,
+            237
+          ],
+          "line_color_jitter": [
+            -5,
+            5
+          ],
+          "line_width": 1,
+          "major_every": 0,
+          "major_line_color": [
+            214,
+            219,
+            226
+          ],
+          "major_line_darken_range": [
+            6,
+            14
+          ],
+          "major_line_width": 1,
+          "origin_label_color": [
+            170,
+            175,
+            182
+          ],
+          "origin_label_darken_extra_range": [
+            6,
+            12
+          ],
+          "origin_label_enabled": false,
+          "origin_label_text": "0",
+          "outer_margin_px": 16,
+          "scene_supersample_scale": 3,
+          "spacing": 24,
+          "supersample_scale": 1
+        }
+      },
+      "canvas_size": 672,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 26,
+        "full_cells_y": 26,
+        "origin_pixel": [
+          336,
+          336
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 24,
+        "target_cells_x": 28,
+        "target_cells_y": 28,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 26,
+        "full_cells_y": 26,
+        "partial_edge_cells": true,
+        "spacing_px": 24,
+        "target_cells_x": 28,
+        "target_cells_y": 28
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "scene_variant": "triangle",
+      "shape_style": {
+        "label_color": [
+          147,
+          166,
+          31
+        ],
+        "label_stroke_color": [
+          254,
+          255,
+          249
+        ],
+        "line_color": [
+          147,
+          166,
+          31
+        ]
+      },
+      "text_style": {
+        "font_size_px": 84,
+        "stroke_width_px": 6
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "center_graph": [
+            -4.0,
+            4.0
+          ],
+          "entity_id": "reference_polygon",
+          "entity_type": "reference_polygon",
+          "scene_variant": "triangle",
+          "vertices_graph": [
+            [
+              -7,
+              3
+            ],
+            [
+              -2,
+              2
+            ],
+            [
+              -3,
+              7
+            ]
+          ]
+        },
+        {
+          "center_graph": [
+            4,
+            4
+          ],
+          "entity_id": "candidate_E",
+          "entity_type": "candidate_polygon",
+          "label": "E",
+          "scene_variant": "triangle",
+          "vertices_graph": [
+            [
+              3,
+              7
+            ],
+            [
+              2,
+              2
+            ],
+            [
+              7,
+              3
+            ]
+          ]
+        },
+        {
+          "center_graph": [
+            8,
+            4
+          ],
+          "entity_id": "candidate_D",
+          "entity_type": "candidate_polygon",
+          "label": "D",
+          "scene_variant": "triangle",
+          "vertices_graph": [
+            [
+              5,
+              5
+            ],
+            [
+              10,
+              6
+            ],
+            [
+              9,
+              1
+            ]
+          ]
+        },
+        {
+          "center_graph": [
+            4,
+            0
+          ],
+          "entity_id": "candidate_C",
+          "entity_type": "candidate_polygon",
+          "label": "C",
+          "scene_variant": "triangle",
+          "vertices_graph": [
+            [
+              7,
+              -1
+            ],
+            [
+              2,
+              -2
+            ],
+            [
+              3,
+              3
+            ]
+          ]
+        },
+        {
+          "center_graph": [
+            8,
+            0
+          ],
+          "entity_id": "candidate_B",
+          "entity_type": "candidate_polygon",
+          "label": "B",
+          "scene_variant": "triangle",
+          "vertices_graph": [
+            [
+              5,
+              -1
+            ],
+            [
+              10,
+              -2
+            ],
+            [
+              9,
+              3
+            ]
+          ]
+        },
+        {
+          "center_graph": [
+            4,
+            -4
+          ],
+          "entity_id": "candidate_F",
+          "entity_type": "candidate_polygon",
+          "label": "F",
+          "scene_variant": "triangle",
+          "vertices_graph": [
+            [
+              7,
+              -3
+            ],
+            [
+              2,
+              -2
+            ],
+            [
+              3,
+              -7
+            ]
+          ]
+        },
+        {
+          "center_graph": [
+            8,
+            -4
+          ],
+          "entity_id": "candidate_A",
+          "entity_type": "candidate_polygon",
+          "label": "A",
+          "scene_variant": "triangle",
+          "vertices_graph": [
+            [
+              9,
+              -7
+            ],
+            [
+              10,
+              -2
+            ],
+            [
+              5,
+              -3
+            ]
+          ]
+        },
+        {
+          "center_graph": [
+            0,
+            0
+          ],
+          "center_px": [
+            336.0,
+            336.0
+          ],
+          "point_label": "O",
+          "rotation_instruction": "90° clockwise rotation",
+          "rotation_mode": "quarter_turn_clockwise",
+          "type": "rotation_center"
+        }
+      ],
+      "relations": {
+        "cue_kind": "rotation_center",
+        "query_variant": "rotation_match",
+        "scene_variant": "triangle",
+        "task_variant": "rotation_match",
+        "winner_label": "E"
+      },
+      "scene_kind": "geometry_transformation_match"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "vertex_1",
+        "vertex_2",
+        "vertex_3"
+      ],
+      "type": "winning_transformed_polygon_vertices",
+      "winner_label": "E"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

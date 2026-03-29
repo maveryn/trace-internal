@@ -401,6 +401,56 @@ def build_geometry_measurement_complexity(
     )
 
 
+def geometry_transformation_reasoning_score(*, query_variant: str, scene_variant: str) -> float:
+    """Return normalized reasoning load for one transformation-matching query."""
+
+    base_by_query = {
+        "translation_match": 0.36,
+        "reflection_match": 0.58,
+        "rotation_match": 0.80,
+    }
+    query_key = str(query_variant).strip().lower()
+    scene_key = str(scene_variant).strip().lower()
+    if query_key not in base_by_query:
+        raise ValueError(f"unsupported geometry transformation query_variant: {query_variant}")
+    scene_bonus = {
+        "triangle": 0.00,
+        "quadrilateral": 0.08,
+    }.get(scene_key)
+    if scene_bonus is None:
+        raise ValueError(f"unsupported geometry transformation scene_variant: {scene_variant}")
+    return clamp_unit_interval(float(base_by_query[query_key]) + float(scene_bonus))
+
+
+def build_geometry_transformation_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    visual_scan: float,
+    query_variant: str,
+    scene_variant: str,
+    ambiguity: float,
+    evidence_point_count: int,
+) -> TaskComplexity:
+    """Build one normalized transformation-family complexity payload."""
+
+    weights = resolve_geometry_complexity_weights(task_group_defaults, task_id=task_id)
+    return build_geometry_task_complexity(
+        weights=weights,
+        components={
+            "visual_scan": clamp_unit_interval(float(visual_scan)),
+            "transformation_reasoning": geometry_transformation_reasoning_score(
+                query_variant=str(query_variant),
+                scene_variant=str(scene_variant),
+            ),
+            "ambiguity": clamp_unit_interval(float(ambiguity)),
+            "output_burden": geometry_graph_point_output_burden(
+                evidence_point_count=int(evidence_point_count),
+            ),
+        },
+    )
+
+
 def geometry_analytical_reasoning_score(*, task_kind: str, task_variant: str) -> float:
     """Return normalized reasoning load for one analytical geometry variant."""
 
@@ -585,6 +635,7 @@ __all__ = [
     "build_geometry_counting_complexity",
     "build_geometry_comparison_complexity",
     "build_geometry_measurement_complexity",
+    "build_geometry_transformation_complexity",
     "build_geometry_task_complexity",
     "clamp_unit_interval",
     "geometry_analytical_output_burden",
@@ -599,6 +650,7 @@ __all__ = [
     "geometry_graph_point_output_burden",
     "geometry_label_set_output_burden",
     "geometry_measurement_output_burden",
+    "geometry_transformation_reasoning_score",
     "geometry_visual_scan_score",
     "normalize_linear",
     "resolve_geometry_complexity_weights",

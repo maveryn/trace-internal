@@ -1,0 +1,865 @@
+{
+  "answer_gt": {
+    "type": "option_letter",
+    "value": "F"
+  },
+  "evidence_gt": {
+    "type": "graph_point_set",
+    "value": [
+      [
+        6,
+        -7
+      ],
+      [
+        11,
+        -5
+      ],
+      [
+        7,
+        -2
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_transformation_match/images/translation_match/0007.png"
+  },
+  "instance_seed": 1565126334995276,
+  "prompt": "You are given a graph-paper image with a Reference polygon, one transformation cue, and six labeled candidate polygons A through F. Read the Reference polygon, cue, and labeled candidates carefully, then answer the question. Which labeled polygon is the translation of the Reference by the shown vector?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of exactly 3 graph-paper points for the winning polygon vertices.\nAnswer rule: set \"answer\" to the single-letter label of the correct polygon.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":\"B\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given a graph-paper image with a Reference polygon, one transformation cue, and six labeled candidate polygons A through F. Read the Reference polygon, cue, and labeled candidates carefully, then answer the question. Which labeled polygon is the translation of the Reference by the shown vector?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of exactly 3 graph-paper points for the winning polygon vertices.\nAnswer rule: set \"answer\" to the single-letter label of the correct polygon.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":\"B\"}",
+    "answer_only": "You are given a graph-paper image with a Reference polygon, one transformation cue, and six labeled candidate polygons A through F. Read the Reference polygon, cue, and labeled candidates carefully, then answer the question. Which labeled polygon is the translation of the Reference by the shown vector?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the single-letter label of the correct polygon.\nExample JSON:\n{\"answer\":\"B\"}"
+  },
+  "task": "task_geometry_transformation_match",
+  "task_variant": "translation_match",
+  "trace_payload": {
+    "execution_trace": {
+      "cue_kind": "translation_vector",
+      "query_variant": "translation_match",
+      "query_variant_probabilities": {
+        "reflection_match": 0.0,
+        "rotation_match": 0.0,
+        "translation_match": 1.0
+      },
+      "question_format": "label_choice_no_text_options",
+      "required_evidence_labels": [
+        "vertex_1",
+        "vertex_2",
+        "vertex_3"
+      ],
+      "rotation_instruction": null,
+      "rotation_mode": null,
+      "scene_variant": "triangle",
+      "scene_variant_probabilities": {
+        "quadrilateral": 0.5,
+        "triangle": 0.5
+      },
+      "task_variant": "translation_match",
+      "task_variant_probabilities": {
+        "reflection_match": 0.0,
+        "rotation_match": 0.0,
+        "translation_match": 1.0
+      },
+      "translation_vector": [
+        12,
+        -3
+      ],
+      "winner_label": "F",
+      "winner_label_probabilities": {
+        "A": 0.16666666666666666,
+        "B": 0.16666666666666666,
+        "C": 0.16666666666666666,
+        "D": 0.16666666666666666,
+        "E": 0.16666666666666666,
+        "F": 0.16666666666666666
+      }
+    },
+    "projected_evidence": {
+      "grid_point_map": {
+        "vertex_1": [
+          6,
+          -7
+        ],
+        "vertex_2": [
+          11,
+          -5
+        ],
+        "vertex_3": [
+          7,
+          -2
+        ]
+      },
+      "grid_point_path": [
+        [
+          6,
+          -7
+        ],
+        [
+          11,
+          -5
+        ],
+        [
+          7,
+          -2
+        ]
+      ],
+      "grid_point_set": [
+        [
+          6,
+          -7
+        ],
+        [
+          11,
+          -5
+        ],
+        [
+          7,
+          -2
+        ]
+      ],
+      "pixel_point_map": {
+        "vertex_1": [
+          493.0,
+          520.0
+        ],
+        "vertex_2": [
+          628.0,
+          466.0
+        ],
+        "vertex_3": [
+          520.0,
+          385.0
+        ]
+      },
+      "pixel_point_path": [
+        [
+          493.0,
+          520.0
+        ],
+        [
+          628.0,
+          466.0
+        ],
+        [
+          520.0,
+          385.0
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          493.0,
+          520.0
+        ],
+        [
+          628.0,
+          466.0
+        ],
+        [
+          520.0,
+          385.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "candidate_label_pool": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F"
+        ],
+        "query_variant": "translation_match",
+        "query_variant_probabilities": {
+          "reflection_match": 0.0,
+          "rotation_match": 0.0,
+          "translation_match": 1.0
+        },
+        "scene_variant": "triangle",
+        "scene_variant_probabilities": {
+          "quadrilateral": 0.5,
+          "triangle": 0.5
+        },
+        "task_variant": "translation_match",
+        "translation_vector": [
+          12,
+          -3
+        ],
+        "variant_probabilities": {
+          "reflection_match": 0.0,
+          "rotation_match": 0.0,
+          "translation_match": 1.0
+        },
+        "winner_label_probabilities": {
+          "A": 0.16666666666666666,
+          "B": 0.16666666666666666,
+          "C": 0.16666666666666666,
+          "D": 0.16666666666666666,
+          "E": 0.16666666666666666,
+          "F": 0.16666666666666666
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "geometry_transformation_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the single-letter label of the correct polygon",
+          "evidence_hint": "set \"evidence\" to an array of exactly 3 graph-paper points for the winning polygon vertices",
+          "json_example": "{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":\"B\"}",
+          "json_example_answer_only": "{\"answer\":\"B\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a Reference polygon, one transformation cue, and six labeled candidate polygons A through F"
+        },
+        "task_family_key": "transformation_graph_scene",
+        "task_family_variant_index": 4,
+        "task_key": "transformation_query",
+        "task_variant_index": 2,
+        "task_variant_key": "translation_match",
+        "task_variant_template_index": 0,
+        "template_paths": [
+          "geometry/transformation/geometry_transformation_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:transformation_query": 5,
+          "task_family:transformation_graph_scene": 5,
+          "task_variant:translation_match": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_transformation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single-letter label of the correct polygon",
+              "evidence_hint": "set \"evidence\" to an array of exactly 3 graph-paper points for the winning polygon vertices",
+              "json_example": "{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference polygon, one transformation cue, and six labeled candidate polygons A through F"
+            },
+            "task_family_key": "transformation_graph_scene",
+            "task_family_variant_index": 4,
+            "task_key": "transformation_query",
+            "task_variant_index": 2,
+            "task_variant_key": "translation_match",
+            "task_variant_template_index": 0,
+            "template_paths": [
+              "geometry/transformation/geometry_transformation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:transformation_query": 5,
+              "task_family:transformation_graph_scene": 5,
+              "task_variant:translation_match": 5
+            }
+          },
+          "prompt": "You are given a graph-paper image with a Reference polygon, one transformation cue, and six labeled candidate polygons A through F. Read the Reference polygon, cue, and labeled candidates carefully, then answer the question. Which labeled polygon is the translation of the Reference by the shown vector?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of exactly 3 graph-paper points for the winning polygon vertices.\nAnswer rule: set \"answer\" to the single-letter label of the correct polygon.\nExample JSON:\n{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":\"B\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "geometry_transformation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single-letter label of the correct polygon",
+              "evidence_hint": "set \"evidence\" to an array of exactly 3 graph-paper points for the winning polygon vertices",
+              "json_example": "{\"evidence\":[[0,0],[4,0],[0,3]],\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a Reference polygon, one transformation cue, and six labeled candidate polygons A through F"
+            },
+            "task_family_key": "transformation_graph_scene",
+            "task_family_variant_index": 4,
+            "task_key": "transformation_query",
+            "task_variant_index": 2,
+            "task_variant_key": "translation_match",
+            "task_variant_template_index": 0,
+            "template_paths": [
+              "geometry/transformation/geometry_transformation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:transformation_query": 5,
+              "task_family:transformation_graph_scene": 5,
+              "task_variant:translation_match": 5
+            }
+          },
+          "prompt": "You are given a graph-paper image with a Reference polygon, one transformation cue, and six labeled candidate polygons A through F. Read the Reference polygon, cue, and labeled candidates carefully, then answer the question. Which labeled polygon is the translation of the Reference by the shown vector?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the single-letter label of the correct polygon.\nExample JSON:\n{\"answer\":\"B\"}"
+        }
+      },
+      "task_variant": "translation_match",
+      "template_id": "geometry_transformation_v1"
+    },
+    "render_map": {
+      "candidate_centers_graph_by_label": {
+        "A": [
+          4.0,
+          -4.0
+        ],
+        "B": [
+          8.0,
+          0.0
+        ],
+        "C": [
+          4.0,
+          4.0
+        ],
+        "D": [
+          4.0,
+          0.0
+        ],
+        "E": [
+          8.0,
+          4.0
+        ],
+        "F": [
+          8.0,
+          -4.0
+        ]
+      },
+      "candidate_vertices_graph_by_label": {
+        "A": [
+          [
+            1,
+            -2
+          ],
+          [
+            3,
+            -7
+          ],
+          [
+            6,
+            -3
+          ]
+        ],
+        "B": [
+          [
+            10,
+            3
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            9,
+            -2
+          ]
+        ],
+        "C": [
+          [
+            7,
+            2
+          ],
+          [
+            5,
+            7
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "D": [
+          [
+            6,
+            -3
+          ],
+          [
+            1,
+            -1
+          ],
+          [
+            5,
+            2
+          ]
+        ],
+        "E": [
+          [
+            6,
+            7
+          ],
+          [
+            11,
+            5
+          ],
+          [
+            7,
+            2
+          ]
+        ],
+        "F": [
+          [
+            6,
+            -7
+          ],
+          [
+            11,
+            -5
+          ],
+          [
+            7,
+            -2
+          ]
+        ]
+      },
+      "cue": {
+        "end_graph": [
+          2,
+          4
+        ],
+        "end_px": [
+          385.0,
+          223.0
+        ],
+        "start_graph": [
+          -10,
+          7
+        ],
+        "start_px": [
+          61.0,
+          142.0
+        ],
+        "type": "translation_vector",
+        "vector_graph": [
+          12,
+          -3
+        ]
+      },
+      "image_id": "img0",
+      "object_label_centers": {
+        "A": [
+          470.37940593424696,
+          506.29335318747127
+        ],
+        "B": [
+          621.2498001472317,
+          330.82772668179297
+        ],
+        "C": [
+          432.18631719356085,
+          149.06329580909605
+        ],
+        "D": [
+          374.52563674374375,
+          294.17447919308785
+        ],
+        "E": [
+          620.4768390105083,
+          233.6872180207877
+        ],
+        "F": [
+          620.4366964571688,
+          428.0403415446624
+        ]
+      },
+      "reference_vertices_graph": [
+        [
+          -6,
+          -4
+        ],
+        [
+          -1,
+          -2
+        ],
+        [
+          -5,
+          1
+        ]
+      ],
+      "translation_vector_graph": [
+        12,
+        -3
+      ],
+      "winner_label": "F"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "graph_paper",
+        "style_spec": {
+          "axis_arrow_size": 10,
+          "axis_arrows_enabled": true,
+          "axis_color": [
+            184,
+            189,
+            196
+          ],
+          "axis_darken_range": [
+            32,
+            48
+          ],
+          "axis_enabled": true,
+          "axis_line_width": 2,
+          "axis_scale_label_max_abs": 0,
+          "axis_scale_labels_enabled": true,
+          "base_color": [
+            255,
+            255,
+            255
+          ],
+          "base_color_jitter": [
+            0,
+            0
+          ],
+          "center_point_color": [
+            175,
+            180,
+            187
+          ],
+          "center_point_darken_extra_range": [
+            8,
+            14
+          ],
+          "center_point_enabled": true,
+          "center_point_radius": 2,
+          "color_variation_applied": true,
+          "color_variation_enabled": true,
+          "color_variation_sampled": {
+            "axis_darken": 42,
+            "base_color_delta": 0,
+            "center_point_darken_extra": 9,
+            "line_color_delta": 2,
+            "major_line_darken": 7,
+            "origin_label_darken_extra": 12
+          },
+          "kind": "grid",
+          "line_color": [
+            226,
+            231,
+            238
+          ],
+          "line_color_jitter": [
+            -5,
+            5
+          ],
+          "line_width": 1,
+          "major_every": 0,
+          "major_line_color": [
+            219,
+            224,
+            231
+          ],
+          "major_line_darken_range": [
+            6,
+            14
+          ],
+          "major_line_width": 1,
+          "origin_label_color": [
+            172,
+            177,
+            184
+          ],
+          "origin_label_darken_extra_range": [
+            6,
+            12
+          ],
+          "origin_label_enabled": false,
+          "origin_label_text": "0",
+          "outer_margin_px": 16,
+          "scene_supersample_scale": 3,
+          "spacing": 27,
+          "supersample_scale": 1
+        }
+      },
+      "canvas_size": 663,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 22,
+        "full_cells_y": 22,
+        "origin_pixel": [
+          331,
+          331
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 27,
+        "target_cells_x": 25,
+        "target_cells_y": 25,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 22,
+        "full_cells_y": 22,
+        "partial_edge_cells": true,
+        "spacing_px": 27,
+        "target_cells_x": 25,
+        "target_cells_y": 25
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "scene_variant": "triangle",
+      "shape_style": {
+        "label_color": [
+          119,
+          171,
+          31
+        ],
+        "label_stroke_color": [
+          254,
+          251,
+          250
+        ],
+        "line_color": [
+          119,
+          171,
+          31
+        ]
+      },
+      "text_style": {
+        "font_size_px": 84,
+        "stroke_width_px": 3
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "center_graph": [
+            -4.0,
+            -1.0
+          ],
+          "entity_id": "reference_polygon",
+          "entity_type": "reference_polygon",
+          "scene_variant": "triangle",
+          "vertices_graph": [
+            [
+              -6,
+              -4
+            ],
+            [
+              -1,
+              -2
+            ],
+            [
+              -5,
+              1
+            ]
+          ]
+        },
+        {
+          "center_graph": [
+            4,
+            4
+          ],
+          "entity_id": "candidate_C",
+          "entity_type": "candidate_polygon",
+          "label": "C",
+          "scene_variant": "triangle",
+          "vertices_graph": [
+            [
+              7,
+              2
+            ],
+            [
+              5,
+              7
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        },
+        {
+          "center_graph": [
+            8,
+            4
+          ],
+          "entity_id": "candidate_E",
+          "entity_type": "candidate_polygon",
+          "label": "E",
+          "scene_variant": "triangle",
+          "vertices_graph": [
+            [
+              6,
+              7
+            ],
+            [
+              11,
+              5
+            ],
+            [
+              7,
+              2
+            ]
+          ]
+        },
+        {
+          "center_graph": [
+            4,
+            0
+          ],
+          "entity_id": "candidate_D",
+          "entity_type": "candidate_polygon",
+          "label": "D",
+          "scene_variant": "triangle",
+          "vertices_graph": [
+            [
+              6,
+              -3
+            ],
+            [
+              1,
+              -1
+            ],
+            [
+              5,
+              2
+            ]
+          ]
+        },
+        {
+          "center_graph": [
+            8,
+            0
+          ],
+          "entity_id": "candidate_B",
+          "entity_type": "candidate_polygon",
+          "label": "B",
+          "scene_variant": "triangle",
+          "vertices_graph": [
+            [
+              10,
+              3
+            ],
+            [
+              5,
+              1
+            ],
+            [
+              9,
+              -2
+            ]
+          ]
+        },
+        {
+          "center_graph": [
+            4,
+            -4
+          ],
+          "entity_id": "candidate_A",
+          "entity_type": "candidate_polygon",
+          "label": "A",
+          "scene_variant": "triangle",
+          "vertices_graph": [
+            [
+              1,
+              -2
+            ],
+            [
+              3,
+              -7
+            ],
+            [
+              6,
+              -3
+            ]
+          ]
+        },
+        {
+          "center_graph": [
+            8,
+            -4
+          ],
+          "entity_id": "candidate_F",
+          "entity_type": "candidate_polygon",
+          "label": "F",
+          "scene_variant": "triangle",
+          "vertices_graph": [
+            [
+              6,
+              -7
+            ],
+            [
+              11,
+              -5
+            ],
+            [
+              7,
+              -2
+            ]
+          ]
+        },
+        {
+          "end_graph": [
+            2,
+            4
+          ],
+          "end_px": [
+            385.0,
+            223.0
+          ],
+          "start_graph": [
+            -10,
+            7
+          ],
+          "start_px": [
+            61.0,
+            142.0
+          ],
+          "type": "translation_vector",
+          "vector_graph": [
+            12,
+            -3
+          ]
+        }
+      ],
+      "relations": {
+        "cue_kind": "translation_vector",
+        "query_variant": "translation_match",
+        "scene_variant": "triangle",
+        "task_variant": "translation_match",
+        "winner_label": "F"
+      },
+      "scene_kind": "geometry_transformation_match"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "vertex_1",
+        "vertex_2",
+        "vertex_3"
+      ],
+      "type": "winning_transformed_polygon_vertices",
+      "winner_label": "F"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

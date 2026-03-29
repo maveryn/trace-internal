@@ -1,0 +1,24 @@
+output_root: ./out
+
+dataset_name: example_geometry_transformation_match
+instance_version: v1
+image_format: png
+strict_repro: true
+max_attempts_per_instance: 80
+sampling_seed: 0
+tasks:
+  - task_id: task_geometry_transformation_match
+    count: 6
+    params:
+      scene_variant: triangle
+      query_variant: translation_match
+  - task_id: task_geometry_transformation_match
+    count: 6
+    params:
+      scene_variant: quadrilateral
+      query_variant: reflection_match
+  - task_id: task_geometry_transformation_match
+    count: 6
+    params:
+      scene_variant: triangle
+      query_variant: rotation_match

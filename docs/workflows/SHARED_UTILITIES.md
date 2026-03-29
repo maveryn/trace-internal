@@ -76,6 +76,9 @@ Promote helpers when a second consumer appears.
 19. `trace/tasks/shared/name_assets.py`
    - Canonical shared loader for vendored short-name manifests reused across domains (currently charts and tables).
    - Use this when a second domain needs the same visible short-name pool instead of keeping another domain-local asset loader.
+20. `trace/tasks/shared/drawing.py`
+   - Canonical small drawing primitives (`draw_arrow`, `draw_dashed_line`, `draw_centered_text`, `draw_rounded_rect`) once a second domain needs the same deterministic vector/text chrome.
+   - If a domain-local wrapper remains for compatibility (for example puzzles), keep it as a thin re-export rather than a second implementation.
 
 ### Domain-shared (current)
 1. Geometry: `trace/tasks/geometry/shared/graph_paper.py`, `graph_rendering.py`, `single_object_scene.py`, `angle_geometry.py`, `multi_angle_scene.py`, `polygon_geometry.py`, `slope_geometry.py`, `shape_style.py`, `background_defaults.py`, `noise_defaults.py`, `render_variation.py`, `annotation_values.py`, `labeled_point_evidence.py`, `point_labels.py`, `prompt_text.py`, `analytical_2d_scene.py`, `analytical_3d_solids.py`, `analytical_task.py`, `complexity.py`, `consolidated_sampling.py`, `consolidated_legacy.py`
@@ -100,6 +103,7 @@ Promote helpers when a second consumer appears.
    - `analytical_task.py` provides shared prompt-slot and answer-bound helpers reused by analytical geometry task modules.
    - `consolidated_sampling.py` is the canonical scene/query-axis resolver for consolidated geometry tasks; use it when a geometry family exposes chart-style `scene_variant` + `query_variant` sampling instead of re-implementing compatibility filtering per task.
    - `consolidated_legacy.py` is the canonical adapter layer for consolidated geometry tasks that delegate to legacy geometry generators while rewriting trace metadata to the active `scene_variant` / `query_variant` contract, including the review-facing `task_variant` probability fields that inspection/distribution tooling reads back later.
+   - `polygon_transformations.py` is the canonical lattice-polygon transform helper for geometry tasks that reason over rigid transforms; keep asymmetric template sampling plus translation/reflection/quarter-turn rotation logic there instead of encoding those transforms directly inside each geometry task.
 2. Geometry measurement task-group: `trace/tasks/geometry/measurement/defaults.py`, `shape_measure_base.py`, `trace/tasks/geometry/shared/conic_geometry.py`, `trace/tasks/geometry/shared/length_geometry.py`
    - `defaults.py` centralizes task-group fallback defaults reused by measurement tasks.
    - `shape_measure_base.py` provides the shared generation/output pipeline for shape variants (polygon + conic) used by area/perimeter tasks.

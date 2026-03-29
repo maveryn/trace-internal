@@ -3,14 +3,14 @@
     "count_per_variant": 100,
     "inspection_count_per_variant": 25,
     "max_attempts_per_instance": 200,
-    "max_total_samples_per_task": 7000,
-    "mode": "distribution",
-    "random_count": 25,
+    "max_total_samples_per_task": 30000,
+    "mode": "full",
+    "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_geometry_counting_value"
+      "task_geometry_transformation_match"
     ],
-    "workers": 8
+    "workers": 16
   },
   "summary": {
     "distribution_tasks_failed": 0,
@@ -21,12 +21,20 @@
     {
       "distribution_pass": true,
       "domain": "geometry",
-      "reports": {
-        "distribution_review": "geometry/task_geometry_counting_value/distribution_review.json",
-        "random_review": "geometry/task_geometry_counting_value/random_review_100.json"
+      "inspection_count": 75,
+      "inspection_workbook": "geometry/task_geometry_transformation_match/task_geometry_transformation_match.xlsx",
+      "inspection_workbook_sheets": {
+        "reflection_match": "reflection_match",
+        "rotation_match": "rotation_match",
+        "translation_match": "translation_match"
       },
-      "task_group": "counting",
-      "task_id": "task_geometry_counting_value"
+      "reports": {
+        "distribution_review": "geometry/task_geometry_transformation_match/distribution_review.json",
+        "inspection_manifest": "geometry/task_geometry_transformation_match/manifest.json",
+        "random_review": "geometry/task_geometry_transformation_match/random_review_100.json"
+      },
+      "task_group": "transformation",
+      "task_id": "task_geometry_transformation_match"
     }
   ]
 }

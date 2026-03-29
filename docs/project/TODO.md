@@ -14,7 +14,7 @@
 8. Continue rolling out domain-owned task complexity policy: migrate remaining legacy ad hoc `complexity_score` formulas toward within-task normalized criterion values with domain/task-group weighting. The active icons, geometry, tile, charts, and graph suites are now migrated; tables and puzzles still need the same rollout.
 9. Expand the new puzzles domain beyond `task_puzzles_arithmetic_equation_value`, `task_puzzles_arithmetic_balance_value`, `task_puzzles_arithmetic_grid_value`, `task_puzzles_logic_grid_completion_label`, and `task_puzzles_spatial_fold_hole_label` with additional spatial and topology families while keeping early evidence contracts local and visually obvious.
 10. Improve dataset QA diagnostics/report summaries.
-11. Extend consolidated geometry comparison beyond the current `task_geometry_comparison_value` scene/query surface using the same label-answer + winner-gap contract.
+11. Extend geometry beyond the current value + transformation surface with additional visually distinct families (similarity, symmetry, coordinate relations) rather than re-splitting value tasks back into one task id per predicate.
 12. Extend consolidated analytical geometry beyond the current `task_geometry_analytical_2d_value` / `task_geometry_analytical_3d_value` scene/query surface (additional 3D objectives, richer conic/composite-region reasoning).
 
 ## Later (P2)

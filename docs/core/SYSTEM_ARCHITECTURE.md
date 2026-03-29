@@ -94,7 +94,9 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/geometry/analytical_2d/perimeter.py`
    - `trace/tasks/geometry/analytical_3d/volume.py`
    - `trace/tasks/geometry/analytical_3d/surface_area.py`
-6. Icons:
+6. Geometry transformation:
+   - `trace/tasks/geometry/transformation/match.py`
+7. Icons:
    - `trace/tasks/icons/counting/type.py`
    - `trace/tasks/icons/counting/orientation.py`
    - `trace/tasks/icons/counting/color.py`
@@ -110,7 +112,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/icons/sequence/missing_count.py`
    - `trace/tasks/icons/sequence/rotation_violation.py`
    - `trace/tasks/icons/transformation/pair_count.py`
-7. Charts:
+8. Charts:
    - `trace/tasks/charts/statistics/summary_value.py`
    - `trace/tasks/charts/statistics/summary_label.py`
    - `trace/tasks/charts/counting/value_count.py`
@@ -121,7 +123,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/charts/distribution/density_label.py`
    - `trace/tasks/charts/trend/structure_value.py`
    - `trace/tasks/charts/composition/subset_value.py`
-8. Tables:
+9. Tables:
    - `trace/tasks/tables/statistics/summary_label.py`
    - `trace/tasks/tables/statistics/summary_value.py`
    - `trace/tasks/tables/statistics/filtered_subset_value.py`
@@ -132,7 +134,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/tables/relation/extremum_transfer_value.py`
    - `trace/tasks/tables/ranking/label.py`
    - `trace/tasks/tables/temporal/value.py`
-9. Graph:
+10. Graph:
    - `trace/tasks/graph/counting/degree_count.py`
    - `trace/tasks/graph/counting/articulation_point_count.py`
    - `trace/tasks/graph/counting/bridge_count.py`
@@ -142,13 +144,13 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/graph/relation/reachable_count.py`
    - `trace/tasks/graph/relation/same_component_count.py`
    - `trace/tasks/graph/relation/unique_cycle_size.py`
-10. Temporal:
+11. Temporal:
    - `trace/tasks/temporal/calendar/month_view.py`
    - `trace/tasks/temporal/clock/readout.py`
    - `trace/tasks/temporal/clock/compare.py`
    - `trace/tasks/temporal/schedule/day_planner.py`
    - `trace/tasks/temporal/timeline/milestones.py`
-11. Puzzles:
+12. Puzzles:
    - `trace/tasks/puzzles/arithmetic/equation_value.py`
    - `trace/tasks/puzzles/arithmetic/balance_value.py`
    - `trace/tasks/puzzles/arithmetic/grid_value.py`

@@ -1,0 +1,995 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 2
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "D",
+      "J"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0008.png"
+  },
+  "instance_seed": 1717946153706570,
+  "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Count the category labels where Kare is below Myra.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Count the category labels where Kare is below Myra.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Count the category labels where Kare is below Myra.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_charts_multiseries_pairwise_comparison_count",
+  "task_variant": "series_a_lt_b_count",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 2,
+      "category_count": 6,
+      "category_count_range": [
+        5,
+        10
+      ],
+      "category_labels": [
+        "D",
+        "H",
+        "W",
+        "N",
+        "T",
+        "J"
+      ],
+      "comparison": "less_than",
+      "evidence_labels": [
+        "D",
+        "J"
+      ],
+      "left_series_label": "Kare",
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb_palette",
+      "queried_series_labels": [
+        "Kare",
+        "Myra"
+      ],
+      "question_format": "numeric_open",
+      "right_series_label": "Myra",
+      "scene_variant": "grouped_bar",
+      "scene_variant_probabilities": {
+        "grouped_bar": 0.25,
+        "grouped_horizontal_bar": 0.25,
+        "grouped_lollipop": 0.25,
+        "multi_line": 0.25
+      },
+      "series_count": 2,
+      "series_count_range": [
+        2,
+        3
+      ],
+      "series_fill_palette_rgb": [
+        [
+          13,
+          217,
+          64
+        ],
+        [
+          186,
+          128,
+          136
+        ]
+      ],
+      "series_labels": [
+        "Kare",
+        "Myra"
+      ],
+      "series_outline_palette_rgb": [
+        [
+          7,
+          119,
+          35
+        ],
+        [
+          102,
+          70,
+          75
+        ]
+      ],
+      "target_answer": 2,
+      "target_answer_range": [
+        0,
+        8
+      ],
+      "task_variant": "series_a_lt_b_count",
+      "task_variant_probabilities": {
+        "series_a_gt_b_count": 0.5,
+        "series_a_lt_b_count": 0.5
+      },
+      "values_by_category": {
+        "D": {
+          "Kare": 10,
+          "Myra": 13
+        },
+        "H": {
+          "Kare": 17,
+          "Myra": 4
+        },
+        "J": {
+          "Kare": 13,
+          "Myra": 14
+        },
+        "N": {
+          "Kare": 17,
+          "Myra": 9
+        },
+        "T": {
+          "Kare": 5,
+          "Myra": 2
+        },
+        "W": {
+          "Kare": 20,
+          "Myra": 3
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          122.734,
+          228.381,
+          188.266,
+          562.0
+        ],
+        [
+          757.734,
+          205.333,
+          823.266,
+          564.0
+        ]
+      ],
+      "label_set": [
+        "D",
+        "J"
+      ],
+      "pixel_point_map": {
+        "D": [
+          155.5,
+          554.0
+        ],
+        "J": [
+          790.5,
+          554.0
+        ]
+      },
+      "pixel_point_set": [
+        [
+          155.5,
+          554.0
+        ],
+        [
+          790.5,
+          554.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "category_count": 6,
+        "category_count_range": [
+          5,
+          10
+        ],
+        "comparison": "less_than",
+        "queried_series_labels": [
+          "Kare",
+          "Myra"
+        ],
+        "scene_variant": "grouped_bar",
+        "scene_variant_probabilities": {
+          "grouped_bar": 0.25,
+          "grouped_horizontal_bar": 0.25,
+          "grouped_lollipop": 0.25,
+          "multi_line": 0.25
+        },
+        "series_count": 2,
+        "series_count_range": [
+          2,
+          3
+        ],
+        "target_answer": 2,
+        "target_answer_range": [
+          0,
+          8
+        ],
+        "task_variant": "series_a_lt_b_count",
+        "task_variant_probabilities": {
+          "series_a_gt_b_count": 0.5,
+          "series_a_lt_b_count": 0.5
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "charts_multiseries_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+          "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "left_series": "Kare",
+          "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+          "right_series": "Myra"
+        },
+        "task_family_key": "multiseries_chart_comparison",
+        "task_family_variant_index": 4,
+        "task_key": "pairwise_comparison_count_query",
+        "task_variant_index": 0,
+        "task_variant_key": "series_a_lt_b_count",
+        "task_variant_template_index": 1,
+        "template_paths": [
+          "charts/multiseries/charts_multiseries_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:pairwise_comparison_count_query": 5,
+          "task_family:multiseries_chart_comparison": 5,
+          "task_variant:series_a_lt_b_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+              "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Kare",
+              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+              "right_series": "Myra"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 4,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 0,
+            "task_variant_key": "series_a_lt_b_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_lt_b_count": 5
+            }
+          },
+          "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Count the category labels where Kare is below Myra.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+              "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Kare",
+              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+              "right_series": "Myra"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 4,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 0,
+            "task_variant_key": "series_a_lt_b_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_lt_b_count": 5
+            }
+          },
+          "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Compare the two queried series category by category. Count the category labels where Kare is below Myra.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "series_a_lt_b_count",
+      "template_id": "charts_multiseries_v1"
+    },
+    "render_map": {
+      "category_label_centers_px": {
+        "D": [
+          155.5,
+          554.0
+        ],
+        "H": [
+          282.5,
+          554.0
+        ],
+        "J": [
+          790.5,
+          554.0
+        ],
+        "N": [
+          536.5,
+          554.0
+        ],
+        "T": [
+          663.5,
+          554.0
+        ],
+        "W": [
+          409.5,
+          554.0
+        ]
+      },
+      "image_id": "img0",
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 620,
+      "canvas_width": 1100,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "sampling_policy": "random_rgb_palette",
+        "series_fill_palette_rgb": [
+          [
+            13,
+            217,
+            64
+          ],
+          [
+            186,
+            128,
+            136
+          ]
+        ],
+        "series_outline_palette_rgb": [
+          [
+            7,
+            119,
+            35
+          ],
+          [
+            102,
+            70,
+            75
+          ]
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "grouped_bar",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 21,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              122.734,
+              228.381,
+              188.266,
+              562.0
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              155.5,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              122.734,
+              297.524,
+              150.166,
+              528.0
+            ],
+            "mark_center_px": [
+              136.45,
+              297.524
+            ],
+            "mark_fill_rgb": [
+              13,
+              217,
+              64
+            ],
+            "mark_outline_rgb": [
+              7,
+              119,
+              35
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Kare",
+            "series_rank": 0,
+            "value": 10
+          },
+          "entity_id": "mark_D_Kare",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              122.734,
+              228.381,
+              188.266,
+              562.0
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              155.5,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              160.834,
+              228.381,
+              188.266,
+              528.0
+            ],
+            "mark_center_px": [
+              174.55,
+              228.381
+            ],
+            "mark_fill_rgb": [
+              186,
+              128,
+              136
+            ],
+            "mark_outline_rgb": [
+              102,
+              70,
+              75
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Myra",
+            "series_rank": 1,
+            "value": 13
+          },
+          "entity_id": "mark_D_Myra",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              249.734,
+              136.19,
+              315.266,
+              562.0
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              249.734,
+              136.19,
+              277.166,
+              528.0
+            ],
+            "mark_center_px": [
+              263.45,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              13,
+              217,
+              64
+            ],
+            "mark_outline_rgb": [
+              7,
+              119,
+              35
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Kare",
+            "series_rank": 0,
+            "value": 17
+          },
+          "entity_id": "mark_H_Kare",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              249.734,
+              136.19,
+              315.266,
+              562.0
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              282.5,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              287.834,
+              435.81,
+              315.266,
+              528.0
+            ],
+            "mark_center_px": [
+              301.55,
+              435.81
+            ],
+            "mark_fill_rgb": [
+              186,
+              128,
+              136
+            ],
+            "mark_outline_rgb": [
+              102,
+              70,
+              75
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Myra",
+            "series_rank": 1,
+            "value": 4
+          },
+          "entity_id": "mark_H_Myra",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              376.734,
+              67.048,
+              442.266,
+              562.0
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              409.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              376.734,
+              67.048,
+              404.166,
+              528.0
+            ],
+            "mark_center_px": [
+              390.45,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              13,
+              217,
+              64
+            ],
+            "mark_outline_rgb": [
+              7,
+              119,
+              35
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Kare",
+            "series_rank": 0,
+            "value": 20
+          },
+          "entity_id": "mark_W_Kare",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              376.734,
+              67.048,
+              442.266,
+              562.0
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              409.5,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              414.834,
+              458.857,
+              442.266,
+              528.0
+            ],
+            "mark_center_px": [
+              428.55,
+              458.857
+            ],
+            "mark_fill_rgb": [
+              186,
+              128,
+              136
+            ],
+            "mark_outline_rgb": [
+              102,
+              70,
+              75
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Myra",
+            "series_rank": 1,
+            "value": 3
+          },
+          "entity_id": "mark_W_Myra",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              503.734,
+              136.19,
+              569.266,
+              562.0
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              536.5,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              503.734,
+              136.19,
+              531.166,
+              528.0
+            ],
+            "mark_center_px": [
+              517.45,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              13,
+              217,
+              64
+            ],
+            "mark_outline_rgb": [
+              7,
+              119,
+              35
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Kare",
+            "series_rank": 0,
+            "value": 17
+          },
+          "entity_id": "mark_N_Kare",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              503.734,
+              136.19,
+              569.266,
+              562.0
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              536.5,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              541.834,
+              320.571,
+              569.266,
+              528.0
+            ],
+            "mark_center_px": [
+              555.55,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              186,
+              128,
+              136
+            ],
+            "mark_outline_rgb": [
+              102,
+              70,
+              75
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Myra",
+            "series_rank": 1,
+            "value": 9
+          },
+          "entity_id": "mark_N_Myra",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              630.734,
+              412.762,
+              696.266,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              630.734,
+              412.762,
+              658.166,
+              528.0
+            ],
+            "mark_center_px": [
+              644.45,
+              412.762
+            ],
+            "mark_fill_rgb": [
+              13,
+              217,
+              64
+            ],
+            "mark_outline_rgb": [
+              7,
+              119,
+              35
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Kare",
+            "series_rank": 0,
+            "value": 5
+          },
+          "entity_id": "mark_T_Kare",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              630.734,
+              412.762,
+              696.266,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              663.5,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              668.834,
+              481.905,
+              696.266,
+              528.0
+            ],
+            "mark_center_px": [
+              682.55,
+              481.905
+            ],
+            "mark_fill_rgb": [
+              186,
+              128,
+              136
+            ],
+            "mark_outline_rgb": [
+              102,
+              70,
+              75
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Myra",
+            "series_rank": 1,
+            "value": 2
+          },
+          "entity_id": "mark_T_Myra",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              757.734,
+              205.333,
+              823.266,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              790.5,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              757.734,
+              228.381,
+              785.166,
+              528.0
+            ],
+            "mark_center_px": [
+              771.45,
+              228.381
+            ],
+            "mark_fill_rgb": [
+              13,
+              217,
+              64
+            ],
+            "mark_outline_rgb": [
+              7,
+              119,
+              35
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Kare",
+            "series_rank": 0,
+            "value": 13
+          },
+          "entity_id": "mark_J_Kare",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              757.734,
+              205.333,
+              823.266,
+              564.0
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              790.5,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              795.834,
+              205.333,
+              823.266,
+              528.0
+            ],
+            "mark_center_px": [
+              809.55,
+              205.333
+            ],
+            "mark_fill_rgb": [
+              186,
+              128,
+              136
+            ],
+            "mark_outline_rgb": [
+              102,
+              70,
+              75
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Myra",
+            "series_rank": 1,
+            "value": 14
+          },
+          "entity_id": "mark_J_Myra",
+          "entity_type": "bar"
+        }
+      ],
+      "relations": {
+        "comparison": "less_than",
+        "evidence_labels": [
+          "D",
+          "J"
+        ],
+        "queried_series_labels": [
+          "Kare",
+          "Myra"
+        ],
+        "scene_variant": "grouped_bar",
+        "task_variant": "series_a_lt_b_count"
+      },
+      "scene_kind": "chart_grouped_bar_multiseries"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "D",
+        "J"
+      ],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

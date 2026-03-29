@@ -1,0 +1,15 @@
+{
+  "inspection_count": 75,
+  "task_id": "task_puzzles_arithmetic_grid_value",
+  "variants": {
+    "difference_rule_missing": 25,
+    "product_rule_missing": 25,
+    "sum_rule_missing": 25
+  },
+  "workbook": "puzzles/task_puzzles_arithmetic_grid_value/task_puzzles_arithmetic_grid_value.xlsx",
+  "workbook_sheets": {
+    "difference_rule_missing": "difference_rule_missing",
+    "product_rule_missing": "product_rule_missing",
+    "sum_rule_missing": "sum_rule_missing"
+  }
+}

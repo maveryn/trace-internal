@@ -1,0 +1,11 @@
+{
+  "inspection_count": 25,
+  "task_id": "task_tile_count_color_count",
+  "variants": {
+    "": 25
+  },
+  "workbook": "tile/task_tile_count_color_count/task_tile_count_color_count.xlsx",
+  "workbook_sheets": {
+    "color_count": "color_count"
+  }
+}

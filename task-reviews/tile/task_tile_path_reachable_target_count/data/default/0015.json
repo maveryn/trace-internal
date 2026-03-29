@@ -1,0 +1,2265 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 1
+  },
+  "evidence_gt": {
+    "type": "grid_point_set",
+    "value": [
+      [
+        2,
+        5
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "tile/task_tile_path_reachable_target_count/images/default/0015.png"
+  },
+  "instance_seed": 6918334559953800,
+  "prompt": "Look at the rectangular tile board with 7 rows and 7 columns. The board uses row labels on the left and column labels on the top. Treat the black [#000000] tiles as blocked. The start tile is green [#37B94B] and the marked target tiles are red [#E63232]. Count the targets reachable with 4-neighbor movement from the start.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to the row-major list of [row, col] coordinates for the reachable target tiles.\nAnswer rule: set \"answer\" to the number of reachable target tiles as an integer.\nExample JSON:\n{\"evidence\":[[0,2],[2,1]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the rectangular tile board with 7 rows and 7 columns. The board uses row labels on the left and column labels on the top. Treat the black [#000000] tiles as blocked. The start tile is green [#37B94B] and the marked target tiles are red [#E63232]. Count the targets reachable with 4-neighbor movement from the start.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to the row-major list of [row, col] coordinates for the reachable target tiles.\nAnswer rule: set \"answer\" to the number of reachable target tiles as an integer.\nExample JSON:\n{\"evidence\":[[0,2],[2,1]],\"answer\":2}",
+    "answer_only": "Look at the rectangular tile board with 7 rows and 7 columns. The board uses row labels on the left and column labels on the top. Treat the black [#000000] tiles as blocked. The start tile is green [#37B94B] and the marked target tiles are red [#E63232]. Count the targets reachable with 4-neighbor movement from the start.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of reachable target tiles as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_tile_path_reachable_target_count",
+  "task_variant": "reachable_target_count",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 1,
+      "blocked_coords": [
+        [
+          0,
+          6
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          6
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          6
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          3,
+          6
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          6,
+          2
+        ],
+        [
+          6,
+          3
+        ],
+        [
+          6,
+          4
+        ]
+      ],
+      "blocked_ids": [
+        "cell_0_6",
+        "cell_1_0",
+        "cell_1_2",
+        "cell_1_6",
+        "cell_2_1",
+        "cell_2_6",
+        "cell_3_0",
+        "cell_3_2",
+        "cell_3_6",
+        "cell_4_2",
+        "cell_5_2",
+        "cell_6_2",
+        "cell_6_3",
+        "cell_6_4"
+      ],
+      "cols": 7,
+      "obstacle_color_label": "black [#000000]",
+      "obstacle_fraction": 0.2857142857142857,
+      "reachable_coords": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          0,
+          5
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          5
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          2,
+          5
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          3,
+          5
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          4,
+          6
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          6,
+          6
+        ]
+      ],
+      "reachable_fraction": 0.5510204081632653,
+      "reachable_ids": [
+        "cell_0_0",
+        "cell_0_1",
+        "cell_0_2",
+        "cell_0_3",
+        "cell_0_4",
+        "cell_0_5",
+        "cell_1_1",
+        "cell_1_3",
+        "cell_1_4",
+        "cell_1_5",
+        "cell_2_2",
+        "cell_2_3",
+        "cell_2_4",
+        "cell_2_5",
+        "cell_3_3",
+        "cell_3_4",
+        "cell_3_5",
+        "cell_4_3",
+        "cell_4_4",
+        "cell_4_5",
+        "cell_4_6",
+        "cell_5_3",
+        "cell_5_4",
+        "cell_5_5",
+        "cell_5_6",
+        "cell_6_5",
+        "cell_6_6"
+      ],
+      "reachable_target_coords": [
+        [
+          2,
+          5
+        ]
+      ],
+      "reachable_target_ids": [
+        "cell_2_5"
+      ],
+      "rows": 7,
+      "start_color_label": "green [#37B94B]",
+      "start_color_rgb": [
+        55,
+        185,
+        75
+      ],
+      "start_coord": [
+        4,
+        6
+      ],
+      "start_id": "cell_4_6",
+      "target_color_label": "red [#E63232]",
+      "target_color_rgb": [
+        230,
+        50,
+        50
+      ],
+      "target_coords": [
+        [
+          2,
+          5
+        ],
+        [
+          6,
+          1
+        ]
+      ],
+      "target_ids": [
+        "cell_2_5",
+        "cell_6_1"
+      ],
+      "target_reachable_target_count": 1,
+      "target_reachable_target_count_range": [
+        0,
+        6
+      ],
+      "task_variant": "reachable_target_count",
+      "total_target_count": 2,
+      "unreachable_target_coords": [
+        [
+          6,
+          1
+        ]
+      ],
+      "unreachable_target_ids": [
+        "cell_6_1"
+      ]
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          219.0,
+          117.0,
+          251.0,
+          149.0
+        ]
+      ],
+      "grid_point_set": [
+        [
+          2,
+          5
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          235.0,
+          133.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "dsl_program": [
+        {
+          "entity_type": "tile_cell",
+          "op": "select",
+          "out": "cells"
+        },
+        {
+          "in": "cells",
+          "op": "filter",
+          "out": "open_cells",
+          "predicate": {
+            "blocked": false
+          }
+        },
+        {
+          "in": "open_cells",
+          "op": "filter",
+          "out": "targets",
+          "predicate": {
+            "is_target": true
+          }
+        },
+        {
+          "op": "reachable_set",
+          "out": "reachable",
+          "relation": "adjacency_open",
+          "start": "cell_4_6"
+        },
+        {
+          "inputs": [
+            "targets",
+            "reachable"
+          ],
+          "op": "intersect",
+          "out": "reachable_targets"
+        },
+        {
+          "coord_space": "tile_grid",
+          "coord_type": "grid_point_set",
+          "in": "reachable_targets",
+          "op": "project_coords",
+          "ordering": "row_major",
+          "out": "evidence"
+        },
+        {
+          "in": "reachable_targets",
+          "op": "count",
+          "out": "answer"
+        }
+      ],
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "tile_path_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of reachable target tiles as an integer",
+          "cols": 7,
+          "evidence_hint": "set \"evidence\" to the row-major list of [row, col] coordinates for the reachable target tiles",
+          "json_example": "{\"evidence\":[[0,2],[2,1]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "obstacle_color": "black [#000000]",
+          "rows": 7,
+          "start_color": "green [#37B94B]",
+          "target_color": "red [#E63232]"
+        },
+        "task_family_key": "rectangular_tile_board",
+        "task_family_variant_index": 2,
+        "task_key": "reachable_target_count_query",
+        "task_variant_index": 1,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "tile/path/tile_path_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:reachable_target_count_query": 5,
+          "task_family:rectangular_tile_board": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "tile_path_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of reachable target tiles as an integer",
+              "cols": 7,
+              "evidence_hint": "set \"evidence\" to the row-major list of [row, col] coordinates for the reachable target tiles",
+              "json_example": "{\"evidence\":[[0,2],[2,1]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "obstacle_color": "black [#000000]",
+              "rows": 7,
+              "start_color": "green [#37B94B]",
+              "target_color": "red [#E63232]"
+            },
+            "task_family_key": "rectangular_tile_board",
+            "task_family_variant_index": 2,
+            "task_key": "reachable_target_count_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "tile/path/tile_path_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:reachable_target_count_query": 5,
+              "task_family:rectangular_tile_board": 5
+            }
+          },
+          "prompt": "Look at the rectangular tile board with 7 rows and 7 columns. The board uses row labels on the left and column labels on the top. Treat the black [#000000] tiles as blocked. The start tile is green [#37B94B] and the marked target tiles are red [#E63232]. Count the targets reachable with 4-neighbor movement from the start.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to the row-major list of [row, col] coordinates for the reachable target tiles.\nAnswer rule: set \"answer\" to the number of reachable target tiles as an integer.\nExample JSON:\n{\"evidence\":[[0,2],[2,1]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "tile_path_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of reachable target tiles as an integer",
+              "cols": 7,
+              "evidence_hint": "set \"evidence\" to the row-major list of [row, col] coordinates for the reachable target tiles",
+              "json_example": "{\"evidence\":[[0,2],[2,1]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "obstacle_color": "black [#000000]",
+              "rows": 7,
+              "start_color": "green [#37B94B]",
+              "target_color": "red [#E63232]"
+            },
+            "task_family_key": "rectangular_tile_board",
+            "task_family_variant_index": 2,
+            "task_key": "reachable_target_count_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "tile/path/tile_path_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:reachable_target_count_query": 5,
+              "task_family:rectangular_tile_board": 5
+            }
+          },
+          "prompt": "Look at the rectangular tile board with 7 rows and 7 columns. The board uses row labels on the left and column labels on the top. Treat the black [#000000] tiles as blocked. The start tile is green [#37B94B] and the marked target tiles are red [#E63232]. Count the targets reachable with 4-neighbor movement from the start.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the number of reachable target tiles as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "reachable_target_count",
+      "template_id": "reachable_target_count_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "cell_0_0": {
+          "bbox": [
+            59.0,
+            53.0,
+            91.0,
+            85.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            75.0,
+            69.0
+          ]
+        },
+        "cell_0_1": {
+          "bbox": [
+            91.0,
+            53.0,
+            123.0,
+            85.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            107.0,
+            69.0
+          ]
+        },
+        "cell_0_2": {
+          "bbox": [
+            123.0,
+            53.0,
+            155.0,
+            85.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            139.0,
+            69.0
+          ]
+        },
+        "cell_0_3": {
+          "bbox": [
+            155.0,
+            53.0,
+            187.0,
+            85.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            171.0,
+            69.0
+          ]
+        },
+        "cell_0_4": {
+          "bbox": [
+            187.0,
+            53.0,
+            219.0,
+            85.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            203.0,
+            69.0
+          ]
+        },
+        "cell_0_5": {
+          "bbox": [
+            219.0,
+            53.0,
+            251.0,
+            85.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            235.0,
+            69.0
+          ]
+        },
+        "cell_0_6": {
+          "bbox": [
+            251.0,
+            53.0,
+            283.0,
+            85.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            267.0,
+            69.0
+          ]
+        },
+        "cell_1_0": {
+          "bbox": [
+            59.0,
+            85.0,
+            91.0,
+            117.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            75.0,
+            101.0
+          ]
+        },
+        "cell_1_1": {
+          "bbox": [
+            91.0,
+            85.0,
+            123.0,
+            117.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            107.0,
+            101.0
+          ]
+        },
+        "cell_1_2": {
+          "bbox": [
+            123.0,
+            85.0,
+            155.0,
+            117.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            139.0,
+            101.0
+          ]
+        },
+        "cell_1_3": {
+          "bbox": [
+            155.0,
+            85.0,
+            187.0,
+            117.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            171.0,
+            101.0
+          ]
+        },
+        "cell_1_4": {
+          "bbox": [
+            187.0,
+            85.0,
+            219.0,
+            117.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            203.0,
+            101.0
+          ]
+        },
+        "cell_1_5": {
+          "bbox": [
+            219.0,
+            85.0,
+            251.0,
+            117.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            235.0,
+            101.0
+          ]
+        },
+        "cell_1_6": {
+          "bbox": [
+            251.0,
+            85.0,
+            283.0,
+            117.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            267.0,
+            101.0
+          ]
+        },
+        "cell_2_0": {
+          "bbox": [
+            59.0,
+            117.0,
+            91.0,
+            149.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            75.0,
+            133.0
+          ]
+        },
+        "cell_2_1": {
+          "bbox": [
+            91.0,
+            117.0,
+            123.0,
+            149.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            107.0,
+            133.0
+          ]
+        },
+        "cell_2_2": {
+          "bbox": [
+            123.0,
+            117.0,
+            155.0,
+            149.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            139.0,
+            133.0
+          ]
+        },
+        "cell_2_3": {
+          "bbox": [
+            155.0,
+            117.0,
+            187.0,
+            149.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            171.0,
+            133.0
+          ]
+        },
+        "cell_2_4": {
+          "bbox": [
+            187.0,
+            117.0,
+            219.0,
+            149.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            203.0,
+            133.0
+          ]
+        },
+        "cell_2_5": {
+          "bbox": [
+            219.0,
+            117.0,
+            251.0,
+            149.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            235.0,
+            133.0
+          ]
+        },
+        "cell_2_6": {
+          "bbox": [
+            251.0,
+            117.0,
+            283.0,
+            149.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            267.0,
+            133.0
+          ]
+        },
+        "cell_3_0": {
+          "bbox": [
+            59.0,
+            149.0,
+            91.0,
+            181.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            75.0,
+            165.0
+          ]
+        },
+        "cell_3_1": {
+          "bbox": [
+            91.0,
+            149.0,
+            123.0,
+            181.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            107.0,
+            165.0
+          ]
+        },
+        "cell_3_2": {
+          "bbox": [
+            123.0,
+            149.0,
+            155.0,
+            181.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            139.0,
+            165.0
+          ]
+        },
+        "cell_3_3": {
+          "bbox": [
+            155.0,
+            149.0,
+            187.0,
+            181.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            171.0,
+            165.0
+          ]
+        },
+        "cell_3_4": {
+          "bbox": [
+            187.0,
+            149.0,
+            219.0,
+            181.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            203.0,
+            165.0
+          ]
+        },
+        "cell_3_5": {
+          "bbox": [
+            219.0,
+            149.0,
+            251.0,
+            181.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            235.0,
+            165.0
+          ]
+        },
+        "cell_3_6": {
+          "bbox": [
+            251.0,
+            149.0,
+            283.0,
+            181.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            267.0,
+            165.0
+          ]
+        },
+        "cell_4_0": {
+          "bbox": [
+            59.0,
+            181.0,
+            91.0,
+            213.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            75.0,
+            197.0
+          ]
+        },
+        "cell_4_1": {
+          "bbox": [
+            91.0,
+            181.0,
+            123.0,
+            213.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            107.0,
+            197.0
+          ]
+        },
+        "cell_4_2": {
+          "bbox": [
+            123.0,
+            181.0,
+            155.0,
+            213.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            139.0,
+            197.0
+          ]
+        },
+        "cell_4_3": {
+          "bbox": [
+            155.0,
+            181.0,
+            187.0,
+            213.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            171.0,
+            197.0
+          ]
+        },
+        "cell_4_4": {
+          "bbox": [
+            187.0,
+            181.0,
+            219.0,
+            213.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            203.0,
+            197.0
+          ]
+        },
+        "cell_4_5": {
+          "bbox": [
+            219.0,
+            181.0,
+            251.0,
+            213.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            235.0,
+            197.0
+          ]
+        },
+        "cell_4_6": {
+          "bbox": [
+            251.0,
+            181.0,
+            283.0,
+            213.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            267.0,
+            197.0
+          ]
+        },
+        "cell_5_0": {
+          "bbox": [
+            59.0,
+            213.0,
+            91.0,
+            245.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            75.0,
+            229.0
+          ]
+        },
+        "cell_5_1": {
+          "bbox": [
+            91.0,
+            213.0,
+            123.0,
+            245.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            107.0,
+            229.0
+          ]
+        },
+        "cell_5_2": {
+          "bbox": [
+            123.0,
+            213.0,
+            155.0,
+            245.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            139.0,
+            229.0
+          ]
+        },
+        "cell_5_3": {
+          "bbox": [
+            155.0,
+            213.0,
+            187.0,
+            245.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            171.0,
+            229.0
+          ]
+        },
+        "cell_5_4": {
+          "bbox": [
+            187.0,
+            213.0,
+            219.0,
+            245.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            203.0,
+            229.0
+          ]
+        },
+        "cell_5_5": {
+          "bbox": [
+            219.0,
+            213.0,
+            251.0,
+            245.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            235.0,
+            229.0
+          ]
+        },
+        "cell_5_6": {
+          "bbox": [
+            251.0,
+            213.0,
+            283.0,
+            245.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            267.0,
+            229.0
+          ]
+        },
+        "cell_6_0": {
+          "bbox": [
+            59.0,
+            245.0,
+            91.0,
+            277.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            75.0,
+            261.0
+          ]
+        },
+        "cell_6_1": {
+          "bbox": [
+            91.0,
+            245.0,
+            123.0,
+            277.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            107.0,
+            261.0
+          ]
+        },
+        "cell_6_2": {
+          "bbox": [
+            123.0,
+            245.0,
+            155.0,
+            277.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            139.0,
+            261.0
+          ]
+        },
+        "cell_6_3": {
+          "bbox": [
+            155.0,
+            245.0,
+            187.0,
+            277.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            171.0,
+            261.0
+          ]
+        },
+        "cell_6_4": {
+          "bbox": [
+            187.0,
+            245.0,
+            219.0,
+            277.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            203.0,
+            261.0
+          ]
+        },
+        "cell_6_5": {
+          "bbox": [
+            219.0,
+            245.0,
+            251.0,
+            277.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            235.0,
+            261.0
+          ]
+        },
+        "cell_6_6": {
+          "bbox": [
+            251.0,
+            245.0,
+            283.0,
+            277.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            267.0,
+            261.0
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            246,
+            246,
+            246
+          ],
+          "kind": "solid"
+        }
+      },
+      "board_origin_px": [
+        59,
+        53
+      ],
+      "board_size_px": [
+        224,
+        224
+      ],
+      "canvas_height_px": 305,
+      "canvas_width_px": 305,
+      "cols": 7,
+      "coord_space": "tile_grid",
+      "coordinate_gutters_px": {
+        "left": 31,
+        "top": 31
+      },
+      "label_style": {
+        "font_size_px": 15,
+        "stroke_width_px": 2
+      },
+      "outer_padding_px": {
+        "x": 21,
+        "y": 21
+      },
+      "placement_offset_px": {
+        "x": 7,
+        "y": 1
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "rows": 7,
+      "tile_aspect_ratio": 1.0,
+      "tile_height_px": 32,
+      "tile_orientation": "square",
+      "tile_outline_width_px": 2,
+      "tile_width_px": 32,
+      "tiling_type": "rectangular_tiling"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 0,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 1,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 2,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 3,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 4,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 5,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_5",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": true,
+            "col": 6,
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_6",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": true,
+            "col": 0,
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 1,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": true,
+            "col": 2,
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 3,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 4,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 5,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_5",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": true,
+            "col": 6,
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_6",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 0,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 2
+          },
+          "entity_id": "cell_2_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": true,
+            "col": 1,
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 2
+          },
+          "entity_id": "cell_2_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 2,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 2
+          },
+          "entity_id": "cell_2_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 3,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 2
+          },
+          "entity_id": "cell_2_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 4,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 2
+          },
+          "entity_id": "cell_2_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 5,
+            "fill_rgb": [
+              230,
+              50,
+              50
+            ],
+            "is_reachable_target": true,
+            "is_start": false,
+            "is_target": true,
+            "is_unreachable_target": false,
+            "row": 2
+          },
+          "entity_id": "cell_2_5",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": true,
+            "col": 6,
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 2
+          },
+          "entity_id": "cell_2_6",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": true,
+            "col": 0,
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 3
+          },
+          "entity_id": "cell_3_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 1,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 3
+          },
+          "entity_id": "cell_3_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": true,
+            "col": 2,
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 3
+          },
+          "entity_id": "cell_3_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 3,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 3
+          },
+          "entity_id": "cell_3_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 4,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 3
+          },
+          "entity_id": "cell_3_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 5,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 3
+          },
+          "entity_id": "cell_3_5",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": true,
+            "col": 6,
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 3
+          },
+          "entity_id": "cell_3_6",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 0,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 4
+          },
+          "entity_id": "cell_4_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 1,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 4
+          },
+          "entity_id": "cell_4_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": true,
+            "col": 2,
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 4
+          },
+          "entity_id": "cell_4_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 3,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 4
+          },
+          "entity_id": "cell_4_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 4,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 4
+          },
+          "entity_id": "cell_4_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 5,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 4
+          },
+          "entity_id": "cell_4_5",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 6,
+            "fill_rgb": [
+              55,
+              185,
+              75
+            ],
+            "is_reachable_target": false,
+            "is_start": true,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 4
+          },
+          "entity_id": "cell_4_6",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 0,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 5
+          },
+          "entity_id": "cell_5_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 1,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 5
+          },
+          "entity_id": "cell_5_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": true,
+            "col": 2,
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 5
+          },
+          "entity_id": "cell_5_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 3,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 5
+          },
+          "entity_id": "cell_5_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 4,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 5
+          },
+          "entity_id": "cell_5_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 5,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 5
+          },
+          "entity_id": "cell_5_5",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 6,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 5
+          },
+          "entity_id": "cell_5_6",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 0,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 6
+          },
+          "entity_id": "cell_6_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 1,
+            "fill_rgb": [
+              230,
+              50,
+              50
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": true,
+            "is_unreachable_target": true,
+            "row": 6
+          },
+          "entity_id": "cell_6_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": true,
+            "col": 2,
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 6
+          },
+          "entity_id": "cell_6_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": true,
+            "col": 3,
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 6
+          },
+          "entity_id": "cell_6_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": true,
+            "col": 4,
+            "fill_rgb": [
+              0,
+              0,
+              0
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 6
+          },
+          "entity_id": "cell_6_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 5,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 6
+          },
+          "entity_id": "cell_6_5",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "blocked": false,
+            "col": 6,
+            "fill_rgb": [
+              250,
+              250,
+              250
+            ],
+            "is_reachable_target": false,
+            "is_start": false,
+            "is_target": false,
+            "is_unreachable_target": false,
+            "row": 6
+          },
+          "entity_id": "cell_6_6",
+          "entity_type": "tile_cell"
+        }
+      ],
+      "relations": {
+        "adjacency_open": {
+          "cell_0_0": [
+            "cell_0_1"
+          ],
+          "cell_0_1": [
+            "cell_0_0",
+            "cell_0_2",
+            "cell_1_1"
+          ],
+          "cell_0_2": [
+            "cell_0_1",
+            "cell_0_3"
+          ],
+          "cell_0_3": [
+            "cell_0_2",
+            "cell_0_4",
+            "cell_1_3"
+          ],
+          "cell_0_4": [
+            "cell_0_3",
+            "cell_0_5",
+            "cell_1_4"
+          ],
+          "cell_0_5": [
+            "cell_0_4",
+            "cell_1_5"
+          ],
+          "cell_1_1": [
+            "cell_0_1"
+          ],
+          "cell_1_3": [
+            "cell_0_3",
+            "cell_1_4",
+            "cell_2_3"
+          ],
+          "cell_1_4": [
+            "cell_0_4",
+            "cell_1_3",
+            "cell_1_5",
+            "cell_2_4"
+          ],
+          "cell_1_5": [
+            "cell_0_5",
+            "cell_1_4",
+            "cell_2_5"
+          ],
+          "cell_2_0": [],
+          "cell_2_2": [
+            "cell_2_3"
+          ],
+          "cell_2_3": [
+            "cell_1_3",
+            "cell_2_2",
+            "cell_2_4",
+            "cell_3_3"
+          ],
+          "cell_2_4": [
+            "cell_1_4",
+            "cell_2_3",
+            "cell_2_5",
+            "cell_3_4"
+          ],
+          "cell_2_5": [
+            "cell_1_5",
+            "cell_2_4",
+            "cell_3_5"
+          ],
+          "cell_3_1": [
+            "cell_4_1"
+          ],
+          "cell_3_3": [
+            "cell_2_3",
+            "cell_3_4",
+            "cell_4_3"
+          ],
+          "cell_3_4": [
+            "cell_2_4",
+            "cell_3_3",
+            "cell_3_5",
+            "cell_4_4"
+          ],
+          "cell_3_5": [
+            "cell_2_5",
+            "cell_3_4",
+            "cell_4_5"
+          ],
+          "cell_4_0": [
+            "cell_4_1",
+            "cell_5_0"
+          ],
+          "cell_4_1": [
+            "cell_3_1",
+            "cell_4_0",
+            "cell_5_1"
+          ],
+          "cell_4_3": [
+            "cell_3_3",
+            "cell_4_4",
+            "cell_5_3"
+          ],
+          "cell_4_4": [
+            "cell_3_4",
+            "cell_4_3",
+            "cell_4_5",
+            "cell_5_4"
+          ],
+          "cell_4_5": [
+            "cell_3_5",
+            "cell_4_4",
+            "cell_4_6",
+            "cell_5_5"
+          ],
+          "cell_4_6": [
+            "cell_4_5",
+            "cell_5_6"
+          ],
+          "cell_5_0": [
+            "cell_4_0",
+            "cell_5_1",
+            "cell_6_0"
+          ],
+          "cell_5_1": [
+            "cell_4_1",
+            "cell_5_0",
+            "cell_6_1"
+          ],
+          "cell_5_3": [
+            "cell_4_3",
+            "cell_5_4"
+          ],
+          "cell_5_4": [
+            "cell_4_4",
+            "cell_5_3",
+            "cell_5_5"
+          ],
+          "cell_5_5": [
+            "cell_4_5",
+            "cell_5_4",
+            "cell_5_6",
+            "cell_6_5"
+          ],
+          "cell_5_6": [
+            "cell_4_6",
+            "cell_5_5",
+            "cell_6_6"
+          ],
+          "cell_6_0": [
+            "cell_5_0",
+            "cell_6_1"
+          ],
+          "cell_6_1": [
+            "cell_5_1",
+            "cell_6_0"
+          ],
+          "cell_6_5": [
+            "cell_5_5",
+            "cell_6_6"
+          ],
+          "cell_6_6": [
+            "cell_5_6",
+            "cell_6_5"
+          ]
+        }
+      },
+      "scene_kind": "rectangular_tile_reachable_target_board"
+    },
+    "witness_symbolic": {
+      "ids": [
+        "cell_2_5"
+      ],
+      "type": "id_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

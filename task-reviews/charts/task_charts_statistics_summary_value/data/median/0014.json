@@ -1,0 +1,658 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 9
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "A"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_statistics_summary_value/images/median/0014.png"
+  },
+  "instance_seed": 4687833264824718,
+  "prompt": "The image shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine the requested summary value. What is the median of the displayed values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the label of the median mark.\nAnswer: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"evidence\":[\"M\"],\"answer\":6}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine the requested summary value. What is the median of the displayed values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the label of the median mark.\nAnswer: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"evidence\":[\"M\"],\"answer\":6}",
+    "answer_only": "The image shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine the requested summary value. What is the median of the displayed values?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"answer\":6}"
+  },
+  "task": "task_charts_statistics_summary_value",
+  "task_variant": "median",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 9,
+      "evidence_labels": [
+        "A"
+      ],
+      "labels": [
+        "H",
+        "W",
+        "V",
+        "M",
+        "A",
+        "B",
+        "X"
+      ],
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb",
+      "mark_count": 7,
+      "mark_count_range": [
+        5,
+        10
+      ],
+      "mark_fill_rgb": [
+        181,
+        15,
+        219
+      ],
+      "mark_outline_rgb": [
+        100,
+        8,
+        120
+      ],
+      "median_label": "A",
+      "question_format": "numeric_open",
+      "scene_variant": "scatter",
+      "scene_variant_probabilities": {
+        "area": 0.14285714285714285,
+        "bar": 0.14285714285714285,
+        "dot_plot": 0.14285714285714285,
+        "horizontal_bar": 0.14285714285714285,
+        "line": 0.14285714285714285,
+        "lollipop": 0.14285714285714285,
+        "scatter": 0.14285714285714285
+      },
+      "sorted_values": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "target_answer": 9,
+      "target_answer_range": [
+        3,
+        10
+      ],
+      "task_variant": "median",
+      "task_variant_probabilities": {
+        "max": 0.14285714285714285,
+        "mean": 0.14285714285714285,
+        "median": 0.14285714285714285,
+        "min": 0.14285714285714285,
+        "mode": 0.14285714285714285,
+        "range": 0.14285714285714285,
+        "sum": 0.14285714285714285
+      },
+      "value_max": 20,
+      "value_min": 1,
+      "values": [
+        8,
+        6,
+        12,
+        11,
+        9,
+        10,
+        7
+      ],
+      "values_by_label": {
+        "A": 9,
+        "B": 10,
+        "H": 8,
+        "M": 11,
+        "V": 12,
+        "W": 6,
+        "X": 7
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          518.917,
+          178.769,
+          534.917,
+          194.769
+        ]
+      ],
+      "label_set": [
+        "A"
+      ],
+      "pixel_point_map": {
+        "A": [
+          526.917,
+          186.769
+        ]
+      },
+      "pixel_point_set": [
+        [
+          526.917,
+          186.769
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "mark_count": 7,
+        "scene_variant": "scatter",
+        "scene_variant_probabilities": {
+          "area": 0.14285714285714285,
+          "bar": 0.14285714285714285,
+          "dot_plot": 0.14285714285714285,
+          "horizontal_bar": 0.14285714285714285,
+          "line": 0.14285714285714285,
+          "lollipop": 0.14285714285714285,
+          "scatter": 0.14285714285714285
+        },
+        "target_answer": 9,
+        "target_answer_range": [
+          3,
+          10
+        ],
+        "task_variant": "median",
+        "task_variant_probabilities": {
+          "max": 0.14285714285714285,
+          "mean": 0.14285714285714285,
+          "median": 0.14285714285714285,
+          "min": 0.14285714285714285,
+          "mode": 0.14285714285714285,
+          "range": 0.14285714285714285,
+          "sum": 0.14285714285714285
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "charts_statistics_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the requested statistic as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the label of the median mark",
+          "json_example": "{\"evidence\":[\"M\"],\"answer\":6}",
+          "json_example_answer_only": "{\"answer\":6}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+        },
+        "task_family_key": "labeled_chart_statistics",
+        "task_family_variant_index": 0,
+        "task_key": "summary_value_query",
+        "task_variant_index": 1,
+        "task_variant_key": "median",
+        "task_variant_template_index": 0,
+        "template_paths": [
+          "charts/statistics/charts_statistics_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:summary_value_query": 5,
+          "task_family:labeled_chart_statistics": 5,
+          "task_variant:median": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "charts_statistics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested statistic as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the label of the median mark",
+              "json_example": "{\"evidence\":[\"M\"],\"answer\":6}",
+              "json_example_answer_only": "{\"answer\":6}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+            },
+            "task_family_key": "labeled_chart_statistics",
+            "task_family_variant_index": 0,
+            "task_key": "summary_value_query",
+            "task_variant_index": 1,
+            "task_variant_key": "median",
+            "task_variant_template_index": 0,
+            "template_paths": [
+              "charts/statistics/charts_statistics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:summary_value_query": 5,
+              "task_family:labeled_chart_statistics": 5,
+              "task_variant:median": 5
+            }
+          },
+          "prompt": "The image shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine the requested summary value. What is the median of the displayed values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the label of the median mark.\nAnswer: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"evidence\":[\"M\"],\"answer\":6}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "charts_statistics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested statistic as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the label of the median mark",
+              "json_example": "{\"evidence\":[\"M\"],\"answer\":6}",
+              "json_example_answer_only": "{\"answer\":6}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+            },
+            "task_family_key": "labeled_chart_statistics",
+            "task_family_variant_index": 0,
+            "task_key": "summary_value_query",
+            "task_variant_index": 1,
+            "task_variant_key": "median",
+            "task_variant_template_index": 0,
+            "template_paths": [
+              "charts/statistics/charts_statistics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:summary_value_query": 5,
+              "task_family:labeled_chart_statistics": 5,
+              "task_variant:median": 5
+            }
+          },
+          "prompt": "The image shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Determine the requested summary value. What is the median of the displayed values?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"answer\":6}"
+        }
+      },
+      "task_variant": "median",
+      "template_id": "charts_statistics_v1"
+    },
+    "render_map": {
+      "image_id": "img0",
+      "label_centers_px": {
+        "A": [
+          526.917,
+          164.769
+        ],
+        "B": [
+          603.637,
+          129.077
+        ],
+        "H": [
+          126.491,
+          200.462
+        ],
+        "M": [
+          413.251,
+          93.385
+        ],
+        "V": [
+          331.225,
+          57.692
+        ],
+        "W": [
+          224.396,
+          271.846
+        ],
+        "X": [
+          715.581,
+          236.154
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 600,
+      "canvas_width": 800,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "mark_fill_rgb": [
+          181,
+          15,
+          219
+        ],
+        "mark_outline_rgb": [
+          100,
+          8,
+          120
+        ],
+        "sampling_policy": "random_rgb"
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "scatter",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 13,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "label": "H",
+            "label_center_px": [
+              126.491,
+              200.462
+            ],
+            "mark_bbox_px": [
+              118.491,
+              214.462,
+              134.491,
+              230.462
+            ],
+            "mark_center_px": [
+              126.491,
+              222.462
+            ],
+            "mark_fill_rgb": [
+              181,
+              15,
+              219
+            ],
+            "mark_outline_rgb": [
+              100,
+              8,
+              120
+            ],
+            "scene_variant": "scatter",
+            "value": 8,
+            "x_rank": 0
+          },
+          "entity_id": "mark_H",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "W",
+            "label_center_px": [
+              224.396,
+              271.846
+            ],
+            "mark_bbox_px": [
+              216.396,
+              285.846,
+              232.396,
+              301.846
+            ],
+            "mark_center_px": [
+              224.396,
+              293.846
+            ],
+            "mark_fill_rgb": [
+              181,
+              15,
+              219
+            ],
+            "mark_outline_rgb": [
+              100,
+              8,
+              120
+            ],
+            "scene_variant": "scatter",
+            "value": 6,
+            "x_rank": 1
+          },
+          "entity_id": "mark_W",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "V",
+            "label_center_px": [
+              331.225,
+              57.692
+            ],
+            "mark_bbox_px": [
+              323.225,
+              71.692,
+              339.225,
+              87.692
+            ],
+            "mark_center_px": [
+              331.225,
+              79.692
+            ],
+            "mark_fill_rgb": [
+              181,
+              15,
+              219
+            ],
+            "mark_outline_rgb": [
+              100,
+              8,
+              120
+            ],
+            "scene_variant": "scatter",
+            "value": 12,
+            "x_rank": 2
+          },
+          "entity_id": "mark_V",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "M",
+            "label_center_px": [
+              413.251,
+              93.385
+            ],
+            "mark_bbox_px": [
+              405.251,
+              107.385,
+              421.251,
+              123.385
+            ],
+            "mark_center_px": [
+              413.251,
+              115.385
+            ],
+            "mark_fill_rgb": [
+              181,
+              15,
+              219
+            ],
+            "mark_outline_rgb": [
+              100,
+              8,
+              120
+            ],
+            "scene_variant": "scatter",
+            "value": 11,
+            "x_rank": 3
+          },
+          "entity_id": "mark_M",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "A",
+            "label_center_px": [
+              526.917,
+              164.769
+            ],
+            "mark_bbox_px": [
+              518.917,
+              178.769,
+              534.917,
+              194.769
+            ],
+            "mark_center_px": [
+              526.917,
+              186.769
+            ],
+            "mark_fill_rgb": [
+              181,
+              15,
+              219
+            ],
+            "mark_outline_rgb": [
+              100,
+              8,
+              120
+            ],
+            "scene_variant": "scatter",
+            "value": 9,
+            "x_rank": 4
+          },
+          "entity_id": "mark_A",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "B",
+            "label_center_px": [
+              603.637,
+              129.077
+            ],
+            "mark_bbox_px": [
+              595.637,
+              143.077,
+              611.637,
+              159.077
+            ],
+            "mark_center_px": [
+              603.637,
+              151.077
+            ],
+            "mark_fill_rgb": [
+              181,
+              15,
+              219
+            ],
+            "mark_outline_rgb": [
+              100,
+              8,
+              120
+            ],
+            "scene_variant": "scatter",
+            "value": 10,
+            "x_rank": 5
+          },
+          "entity_id": "mark_B",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "X",
+            "label_center_px": [
+              715.581,
+              236.154
+            ],
+            "mark_bbox_px": [
+              707.581,
+              250.154,
+              723.581,
+              266.154
+            ],
+            "mark_center_px": [
+              715.581,
+              258.154
+            ],
+            "mark_fill_rgb": [
+              181,
+              15,
+              219
+            ],
+            "mark_outline_rgb": [
+              100,
+              8,
+              120
+            ],
+            "scene_variant": "scatter",
+            "value": 7,
+            "x_rank": 6
+          },
+          "entity_id": "mark_X",
+          "entity_type": "point"
+        }
+      ],
+      "relations": {
+        "evidence_labels": [
+          "A"
+        ],
+        "scene_variant": "scatter",
+        "task_variant": "median"
+      },
+      "scene_kind": "chart_scatter_statistics"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "A"
+      ],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

@@ -1,0 +1,618 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 18
+  },
+  "evidence_gt": {
+    "type": "integer_list",
+    "value": [
+      20,
+      2
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_readout_subset_value/images/difference_two_abs/0022.png"
+  },
+  "instance_seed": 425336072902699,
+  "prompt": "Look at the chart in the image. It shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values for the specified labels and answer the question. What is the positive difference between the values of labels Q and H?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the chart in the image. It shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values for the specified labels and answer the question. What is the positive difference between the values of labels Q and H?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}",
+    "answer_only": "Look at the chart in the image. It shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values for the specified labels and answer the question. What is the positive difference between the values of labels Q and H?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":5}"
+  },
+  "task": "task_charts_readout_subset_value",
+  "task_variant": "difference_two_abs",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 18,
+      "labels": [
+        "Q",
+        "M",
+        "K",
+        "H",
+        "A"
+      ],
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb",
+      "mark_count": 5,
+      "mark_count_range": [
+        5,
+        10
+      ],
+      "mark_fill_rgb": [
+        71,
+        0,
+        146
+      ],
+      "mark_outline_rgb": [
+        39,
+        0,
+        80
+      ],
+      "query_labels": [
+        "Q",
+        "H"
+      ],
+      "query_values": [
+        20,
+        2
+      ],
+      "question_format": "numeric_open",
+      "scene_variant": "scatter",
+      "scene_variant_probabilities": {
+        "area": 0.1,
+        "bar": 0.1,
+        "donut": 0.1,
+        "dot_plot": 0.1,
+        "horizontal_bar": 0.1,
+        "line": 0.1,
+        "lollipop": 0.1,
+        "pie": 0.1,
+        "radar": 0.1,
+        "scatter": 0.1
+      },
+      "target_answer": 18,
+      "target_answer_range": [
+        0,
+        19
+      ],
+      "task_variant": "difference_two_abs",
+      "task_variant_probabilities": {
+        "difference_two_abs": 0.2,
+        "max_two": 0.2,
+        "mean_two": 0.2,
+        "min_two": 0.2,
+        "sum_two": 0.2
+      },
+      "value_max": 20,
+      "value_min": 1,
+      "values": [
+        20,
+        9,
+        18,
+        2,
+        12
+      ],
+      "values_by_label": {
+        "A": 12,
+        "H": 2,
+        "K": 18,
+        "M": 9,
+        "Q": 20
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          150.14,
+          58.095,
+          166.14,
+          74.095
+        ],
+        [
+          570.423,
+          455.81,
+          586.423,
+          471.81
+        ]
+      ],
+      "integer_list": [
+        20,
+        2
+      ],
+      "pixel_point_map": {
+        "H": [
+          578.423,
+          463.81
+        ],
+        "Q": [
+          158.14,
+          66.095
+        ]
+      },
+      "pixel_point_set": [
+        [
+          158.14,
+          66.095
+        ],
+        [
+          578.423,
+          463.81
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "mark_count": 5,
+        "query_labels": [
+          "Q",
+          "H"
+        ],
+        "scene_variant": "scatter",
+        "scene_variant_probabilities": {
+          "area": 0.1,
+          "bar": 0.1,
+          "donut": 0.1,
+          "dot_plot": 0.1,
+          "horizontal_bar": 0.1,
+          "line": 0.1,
+          "lollipop": 0.1,
+          "pie": 0.1,
+          "radar": 0.1,
+          "scatter": 0.1
+        },
+        "target_answer": 18,
+        "target_answer_range": [
+          0,
+          19
+        ],
+        "task_variant": "difference_two_abs",
+        "task_variant_probabilities": {
+          "difference_two_abs": 0.2,
+          "max_two": 0.2,
+          "mean_two": 0.2,
+          "min_two": 0.2,
+          "sum_two": 0.2
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "charts_readout_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the requested integer value",
+          "evidence_hint": "set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question",
+          "json_example": "{\"evidence\":[14,9],\"answer\":5}",
+          "json_example_answer_only": "{\"answer\":5}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+          "query_label_a": "Q",
+          "query_label_b": "H"
+        },
+        "task_family_key": "labeled_chart_readout",
+        "task_family_variant_index": 3,
+        "task_key": "subset_value_query",
+        "task_variant_index": 1,
+        "task_variant_key": "difference_two_abs",
+        "task_variant_template_index": 1,
+        "template_paths": [
+          "charts/readout/charts_readout_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:subset_value_query": 5,
+          "task_family:labeled_chart_readout": 5,
+          "task_variant:difference_two_abs": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "charts_readout_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested integer value",
+              "evidence_hint": "set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question",
+              "json_example": "{\"evidence\":[14,9],\"answer\":5}",
+              "json_example_answer_only": "{\"answer\":5}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+              "query_label_a": "Q",
+              "query_label_b": "H"
+            },
+            "task_family_key": "labeled_chart_readout",
+            "task_family_variant_index": 3,
+            "task_key": "subset_value_query",
+            "task_variant_index": 1,
+            "task_variant_key": "difference_two_abs",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/readout/charts_readout_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:subset_value_query": 5,
+              "task_family:labeled_chart_readout": 5,
+              "task_variant:difference_two_abs": 5
+            }
+          },
+          "prompt": "Look at the chart in the image. It shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values for the specified labels and answer the question. What is the positive difference between the values of labels Q and H?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[14,9],\"answer\":5}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "charts_readout_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested integer value",
+              "evidence_hint": "set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question",
+              "json_example": "{\"evidence\":[14,9],\"answer\":5}",
+              "json_example_answer_only": "{\"answer\":5}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+              "query_label_a": "Q",
+              "query_label_b": "H"
+            },
+            "task_family_key": "labeled_chart_readout",
+            "task_family_variant_index": 3,
+            "task_key": "subset_value_query",
+            "task_variant_index": 1,
+            "task_variant_key": "difference_two_abs",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/readout/charts_readout_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:subset_value_query": 5,
+              "task_family:labeled_chart_readout": 5,
+              "task_variant:difference_two_abs": 5
+            }
+          },
+          "prompt": "Look at the chart in the image. It shows a labeled scatter plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values for the specified labels and answer the question. What is the positive difference between the values of labels Q and H?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":5}"
+        }
+      },
+      "task_variant": "difference_two_abs",
+      "template_id": "charts_readout_v1"
+    },
+    "render_map": {
+      "image_id": "img0",
+      "label_centers_px": {
+        "A": [
+          699.858,
+          220.857
+        ],
+        "H": [
+          578.423,
+          441.81
+        ],
+        "K": [
+          431.834,
+          88.286
+        ],
+        "M": [
+          306.975,
+          287.143
+        ],
+        "Q": [
+          158.14,
+          44.095
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 600,
+      "canvas_width": 800,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "mark_fill_rgb": [
+          71,
+          0,
+          146
+        ],
+        "mark_outline_rgb": [
+          39,
+          0,
+          80
+        ],
+        "sampling_policy": "random_rgb"
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "scatter",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 21,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "label": "Q",
+            "label_center_px": [
+              158.14,
+              44.095
+            ],
+            "mark_bbox_px": [
+              150.14,
+              58.095,
+              166.14,
+              74.095
+            ],
+            "mark_center_px": [
+              158.14,
+              66.095
+            ],
+            "mark_fill_rgb": [
+              71,
+              0,
+              146
+            ],
+            "mark_outline_rgb": [
+              39,
+              0,
+              80
+            ],
+            "scene_variant": "scatter",
+            "value": 20,
+            "x_rank": 0
+          },
+          "entity_id": "mark_Q",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "M",
+            "label_center_px": [
+              306.975,
+              287.143
+            ],
+            "mark_bbox_px": [
+              298.975,
+              301.143,
+              314.975,
+              317.143
+            ],
+            "mark_center_px": [
+              306.975,
+              309.143
+            ],
+            "mark_fill_rgb": [
+              71,
+              0,
+              146
+            ],
+            "mark_outline_rgb": [
+              39,
+              0,
+              80
+            ],
+            "scene_variant": "scatter",
+            "value": 9,
+            "x_rank": 1
+          },
+          "entity_id": "mark_M",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "K",
+            "label_center_px": [
+              431.834,
+              88.286
+            ],
+            "mark_bbox_px": [
+              423.834,
+              102.286,
+              439.834,
+              118.286
+            ],
+            "mark_center_px": [
+              431.834,
+              110.286
+            ],
+            "mark_fill_rgb": [
+              71,
+              0,
+              146
+            ],
+            "mark_outline_rgb": [
+              39,
+              0,
+              80
+            ],
+            "scene_variant": "scatter",
+            "value": 18,
+            "x_rank": 2
+          },
+          "entity_id": "mark_K",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "H",
+            "label_center_px": [
+              578.423,
+              441.81
+            ],
+            "mark_bbox_px": [
+              570.423,
+              455.81,
+              586.423,
+              471.81
+            ],
+            "mark_center_px": [
+              578.423,
+              463.81
+            ],
+            "mark_fill_rgb": [
+              71,
+              0,
+              146
+            ],
+            "mark_outline_rgb": [
+              39,
+              0,
+              80
+            ],
+            "scene_variant": "scatter",
+            "value": 2,
+            "x_rank": 3
+          },
+          "entity_id": "mark_H",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "A",
+            "label_center_px": [
+              699.858,
+              220.857
+            ],
+            "mark_bbox_px": [
+              691.858,
+              234.857,
+              707.858,
+              250.857
+            ],
+            "mark_center_px": [
+              699.858,
+              242.857
+            ],
+            "mark_fill_rgb": [
+              71,
+              0,
+              146
+            ],
+            "mark_outline_rgb": [
+              39,
+              0,
+              80
+            ],
+            "scene_variant": "scatter",
+            "value": 12,
+            "x_rank": 4
+          },
+          "entity_id": "mark_A",
+          "entity_type": "point"
+        }
+      ],
+      "relations": {
+        "answer_value": 18,
+        "query_labels": [
+          "Q",
+          "H"
+        ],
+        "query_values": [
+          20,
+          2
+        ],
+        "scene_variant": "scatter",
+        "task_variant": "difference_two_abs"
+      },
+      "scene_kind": "chart_scatter_readout"
+    },
+    "witness_symbolic": {
+      "query_labels": [
+        "Q",
+        "H"
+      ],
+      "type": "integer_list",
+      "values": [
+        20,
+        2
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

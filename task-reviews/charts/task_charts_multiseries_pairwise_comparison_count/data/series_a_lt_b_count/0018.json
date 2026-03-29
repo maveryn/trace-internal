@@ -1,0 +1,1086 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 2
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "L",
+      "M"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0018.png"
+  },
+  "instance_seed": 3896689252268679,
+  "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Count the category labels where Nagy is below Nata.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Count the category labels where Nagy is below Nata.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Count the category labels where Nagy is below Nata.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_charts_multiseries_pairwise_comparison_count",
+  "task_variant": "series_a_lt_b_count",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 2,
+      "category_count": 7,
+      "category_count_range": [
+        5,
+        10
+      ],
+      "category_labels": [
+        "L",
+        "T",
+        "C",
+        "E",
+        "D",
+        "S",
+        "M"
+      ],
+      "comparison": "less_than",
+      "evidence_labels": [
+        "L",
+        "M"
+      ],
+      "left_series_label": "Nagy",
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb_palette",
+      "queried_series_labels": [
+        "Nagy",
+        "Nata"
+      ],
+      "question_format": "numeric_open",
+      "right_series_label": "Nata",
+      "scene_variant": "grouped_bar",
+      "scene_variant_probabilities": {
+        "grouped_bar": 0.25,
+        "grouped_horizontal_bar": 0.25,
+        "grouped_lollipop": 0.25,
+        "multi_line": 0.25
+      },
+      "series_count": 2,
+      "series_count_range": [
+        2,
+        3
+      ],
+      "series_fill_palette_rgb": [
+        [
+          79,
+          11,
+          209
+        ],
+        [
+          49,
+          74,
+          160
+        ]
+      ],
+      "series_labels": [
+        "Nagy",
+        "Nata"
+      ],
+      "series_outline_palette_rgb": [
+        [
+          43,
+          6,
+          115
+        ],
+        [
+          27,
+          41,
+          88
+        ]
+      ],
+      "target_answer": 2,
+      "target_answer_range": [
+        0,
+        8
+      ],
+      "task_variant": "series_a_lt_b_count",
+      "task_variant_probabilities": {
+        "series_a_gt_b_count": 0.5,
+        "series_a_lt_b_count": 0.5
+      },
+      "values_by_category": {
+        "C": {
+          "Nagy": 18,
+          "Nata": 6
+        },
+        "D": {
+          "Nagy": 13,
+          "Nata": 2
+        },
+        "E": {
+          "Nagy": 18,
+          "Nata": 9
+        },
+        "L": {
+          "Nagy": 16,
+          "Nata": 18
+        },
+        "M": {
+          "Nagy": 2,
+          "Nata": 9
+        },
+        "S": {
+          "Nagy": 14,
+          "Nata": 10
+        },
+        "T": {
+          "Nagy": 10,
+          "Nata": 2
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          118.343,
+          69.474,
+          174.514,
+          562.0
+        ],
+        [
+          771.486,
+          298.737,
+          827.657,
+          562.0
+        ]
+      ],
+      "label_set": [
+        "L",
+        "M"
+      ],
+      "pixel_point_map": {
+        "L": [
+          146.429,
+          554.0
+        ],
+        "M": [
+          799.571,
+          554.0
+        ]
+      },
+      "pixel_point_set": [
+        [
+          146.429,
+          554.0
+        ],
+        [
+          799.571,
+          554.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "category_count": 7,
+        "category_count_range": [
+          5,
+          10
+        ],
+        "comparison": "less_than",
+        "queried_series_labels": [
+          "Nagy",
+          "Nata"
+        ],
+        "scene_variant": "grouped_bar",
+        "scene_variant_probabilities": {
+          "grouped_bar": 0.25,
+          "grouped_horizontal_bar": 0.25,
+          "grouped_lollipop": 0.25,
+          "multi_line": 0.25
+        },
+        "series_count": 2,
+        "series_count_range": [
+          2,
+          3
+        ],
+        "target_answer": 2,
+        "target_answer_range": [
+          0,
+          8
+        ],
+        "task_variant": "series_a_lt_b_count",
+        "task_variant_probabilities": {
+          "series_a_gt_b_count": 0.5,
+          "series_a_lt_b_count": 0.5
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "charts_multiseries_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+          "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "left_series": "Nagy",
+          "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+          "right_series": "Nata"
+        },
+        "task_family_key": "multiseries_chart_comparison",
+        "task_family_variant_index": 4,
+        "task_key": "pairwise_comparison_count_query",
+        "task_variant_index": 3,
+        "task_variant_key": "series_a_lt_b_count",
+        "task_variant_template_index": 1,
+        "template_paths": [
+          "charts/multiseries/charts_multiseries_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:pairwise_comparison_count_query": 5,
+          "task_family:multiseries_chart_comparison": 5,
+          "task_variant:series_a_lt_b_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+              "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Nagy",
+              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+              "right_series": "Nata"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 4,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 3,
+            "task_variant_key": "series_a_lt_b_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_lt_b_count": 5
+            }
+          },
+          "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Count the category labels where Nagy is below Nata.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+              "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Nagy",
+              "object_description": "a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category",
+              "right_series": "Nata"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 4,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 3,
+            "task_variant_key": "series_a_lt_b_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_lt_b_count": 5
+            }
+          },
+          "prompt": "You are given a multiseries chart: a grouped bar chart with labeled category groups on the horizontal axis and a legend on the right. Each colored bar height gives that series value for its category. Read the chart values and count the categories where the stated series relation holds. Count the category labels where Nagy is below Nata.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "series_a_lt_b_count",
+      "template_id": "charts_multiseries_v1"
+    },
+    "render_map": {
+      "category_label_centers_px": {
+        "C": [
+          364.143,
+          554.0
+        ],
+        "D": [
+          581.857,
+          554.0
+        ],
+        "E": [
+          473.0,
+          554.0
+        ],
+        "L": [
+          146.429,
+          554.0
+        ],
+        "M": [
+          799.571,
+          554.0
+        ],
+        "S": [
+          690.714,
+          554.0
+        ],
+        "T": [
+          255.286,
+          554.0
+        ]
+      },
+      "image_id": "img0",
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 620,
+      "canvas_width": 1100,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "sampling_policy": "random_rgb_palette",
+        "series_fill_palette_rgb": [
+          [
+            79,
+            11,
+            209
+          ],
+          [
+            49,
+            74,
+            160
+          ]
+        ],
+        "series_outline_palette_rgb": [
+          [
+            43,
+            6,
+            115
+          ],
+          [
+            27,
+            41,
+            88
+          ]
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "grouped_bar",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 19,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              118.343,
+              69.474,
+              174.514,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              146.429,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              118.343,
+              120.421,
+              141.857,
+              528.0
+            ],
+            "mark_center_px": [
+              130.1,
+              120.421
+            ],
+            "mark_fill_rgb": [
+              79,
+              11,
+              209
+            ],
+            "mark_outline_rgb": [
+              43,
+              6,
+              115
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Nagy",
+            "series_rank": 0,
+            "value": 16
+          },
+          "entity_id": "mark_L_Nagy",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              118.343,
+              69.474,
+              174.514,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              146.429,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              151.001,
+              69.474,
+              174.514,
+              528.0
+            ],
+            "mark_center_px": [
+              162.757,
+              69.474
+            ],
+            "mark_fill_rgb": [
+              49,
+              74,
+              160
+            ],
+            "mark_outline_rgb": [
+              27,
+              41,
+              88
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Nata",
+            "series_rank": 1,
+            "value": 18
+          },
+          "entity_id": "mark_L_Nata",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              227.201,
+              273.263,
+              283.371,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              255.286,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              227.201,
+              273.263,
+              250.714,
+              528.0
+            ],
+            "mark_center_px": [
+              238.957,
+              273.263
+            ],
+            "mark_fill_rgb": [
+              79,
+              11,
+              209
+            ],
+            "mark_outline_rgb": [
+              43,
+              6,
+              115
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Nagy",
+            "series_rank": 0,
+            "value": 10
+          },
+          "entity_id": "mark_T_Nagy",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              227.201,
+              273.263,
+              283.371,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              255.286,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              259.858,
+              477.053,
+              283.371,
+              528.0
+            ],
+            "mark_center_px": [
+              271.614,
+              477.053
+            ],
+            "mark_fill_rgb": [
+              49,
+              74,
+              160
+            ],
+            "mark_outline_rgb": [
+              27,
+              41,
+              88
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Nata",
+            "series_rank": 1,
+            "value": 2
+          },
+          "entity_id": "mark_T_Nata",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              336.058,
+              69.474,
+              392.228,
+              562.0
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              364.143,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              336.058,
+              69.474,
+              359.571,
+              528.0
+            ],
+            "mark_center_px": [
+              347.814,
+              69.474
+            ],
+            "mark_fill_rgb": [
+              79,
+              11,
+              209
+            ],
+            "mark_outline_rgb": [
+              43,
+              6,
+              115
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Nagy",
+            "series_rank": 0,
+            "value": 18
+          },
+          "entity_id": "mark_C_Nagy",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              336.058,
+              69.474,
+              392.228,
+              562.0
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              364.143,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              368.715,
+              375.158,
+              392.228,
+              528.0
+            ],
+            "mark_center_px": [
+              380.471,
+              375.158
+            ],
+            "mark_fill_rgb": [
+              49,
+              74,
+              160
+            ],
+            "mark_outline_rgb": [
+              27,
+              41,
+              88
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Nata",
+            "series_rank": 1,
+            "value": 6
+          },
+          "entity_id": "mark_C_Nata",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              444.915,
+              69.474,
+              501.085,
+              562.0
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              444.915,
+              69.474,
+              468.428,
+              528.0
+            ],
+            "mark_center_px": [
+              456.671,
+              69.474
+            ],
+            "mark_fill_rgb": [
+              79,
+              11,
+              209
+            ],
+            "mark_outline_rgb": [
+              43,
+              6,
+              115
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Nagy",
+            "series_rank": 0,
+            "value": 18
+          },
+          "entity_id": "mark_E_Nagy",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              444.915,
+              69.474,
+              501.085,
+              562.0
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              477.572,
+              298.737,
+              501.085,
+              528.0
+            ],
+            "mark_center_px": [
+              489.329,
+              298.737
+            ],
+            "mark_fill_rgb": [
+              49,
+              74,
+              160
+            ],
+            "mark_outline_rgb": [
+              27,
+              41,
+              88
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Nata",
+            "series_rank": 1,
+            "value": 9
+          },
+          "entity_id": "mark_E_Nata",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              553.772,
+              196.842,
+              609.942,
+              562.0
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              581.857,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              553.772,
+              196.842,
+              577.285,
+              528.0
+            ],
+            "mark_center_px": [
+              565.529,
+              196.842
+            ],
+            "mark_fill_rgb": [
+              79,
+              11,
+              209
+            ],
+            "mark_outline_rgb": [
+              43,
+              6,
+              115
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Nagy",
+            "series_rank": 0,
+            "value": 13
+          },
+          "entity_id": "mark_D_Nagy",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              553.772,
+              196.842,
+              609.942,
+              562.0
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              581.857,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              586.429,
+              477.053,
+              609.942,
+              528.0
+            ],
+            "mark_center_px": [
+              598.186,
+              477.053
+            ],
+            "mark_fill_rgb": [
+              49,
+              74,
+              160
+            ],
+            "mark_outline_rgb": [
+              27,
+              41,
+              88
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Nata",
+            "series_rank": 1,
+            "value": 2
+          },
+          "entity_id": "mark_D_Nata",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              662.629,
+              171.368,
+              718.799,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              690.714,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              662.629,
+              171.368,
+              686.142,
+              528.0
+            ],
+            "mark_center_px": [
+              674.386,
+              171.368
+            ],
+            "mark_fill_rgb": [
+              79,
+              11,
+              209
+            ],
+            "mark_outline_rgb": [
+              43,
+              6,
+              115
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Nagy",
+            "series_rank": 0,
+            "value": 14
+          },
+          "entity_id": "mark_S_Nagy",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              662.629,
+              171.368,
+              718.799,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              690.714,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              695.286,
+              273.263,
+              718.799,
+              528.0
+            ],
+            "mark_center_px": [
+              707.043,
+              273.263
+            ],
+            "mark_fill_rgb": [
+              49,
+              74,
+              160
+            ],
+            "mark_outline_rgb": [
+              27,
+              41,
+              88
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Nata",
+            "series_rank": 1,
+            "value": 10
+          },
+          "entity_id": "mark_S_Nata",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              771.486,
+              298.737,
+              827.657,
+              562.0
+            ],
+            "category_label": "M",
+            "category_label_center_px": [
+              799.571,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              771.486,
+              477.053,
+              794.999,
+              528.0
+            ],
+            "mark_center_px": [
+              783.243,
+              477.053
+            ],
+            "mark_fill_rgb": [
+              79,
+              11,
+              209
+            ],
+            "mark_outline_rgb": [
+              43,
+              6,
+              115
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Nagy",
+            "series_rank": 0,
+            "value": 2
+          },
+          "entity_id": "mark_M_Nagy",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              771.486,
+              298.737,
+              827.657,
+              562.0
+            ],
+            "category_label": "M",
+            "category_label_center_px": [
+              799.571,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              804.143,
+              298.737,
+              827.657,
+              528.0
+            ],
+            "mark_center_px": [
+              815.9,
+              298.737
+            ],
+            "mark_fill_rgb": [
+              49,
+              74,
+              160
+            ],
+            "mark_outline_rgb": [
+              27,
+              41,
+              88
+            ],
+            "scene_variant": "grouped_bar",
+            "series_label": "Nata",
+            "series_rank": 1,
+            "value": 9
+          },
+          "entity_id": "mark_M_Nata",
+          "entity_type": "bar"
+        }
+      ],
+      "relations": {
+        "comparison": "less_than",
+        "evidence_labels": [
+          "L",
+          "M"
+        ],
+        "queried_series_labels": [
+          "Nagy",
+          "Nata"
+        ],
+        "scene_variant": "grouped_bar",
+        "task_variant": "series_a_lt_b_count"
+      },
+      "scene_kind": "chart_grouped_bar_multiseries"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "L",
+        "M"
+      ],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

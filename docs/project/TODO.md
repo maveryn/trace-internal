@@ -12,7 +12,7 @@
 6. Expand the v1 `rectangular_tiling` tile task suite beyond the current active set and keep future ports aligned to `docs/domains/TILE_TASK_SETUP.md`.
 7. Add cross-domain `scene_variant` + role-binding spec in architecture/ABI docs.
 8. Continue rolling out domain-owned task complexity policy: migrate remaining legacy ad hoc `complexity_score` formulas toward within-task normalized criterion values with domain/task-group weighting. The active icons, geometry, tile, charts, and graph suites are now migrated; tables and puzzles still need the same rollout.
-9. Expand the new puzzles domain beyond `task_puzzles_arithmetic_equation_value` and `task_puzzles_arithmetic_balance_value` with logic, spatial, and topology families while keeping early evidence contracts local and visually obvious.
+9. Expand the new puzzles domain beyond `task_puzzles_arithmetic_equation_value`, `task_puzzles_arithmetic_balance_value`, `task_puzzles_arithmetic_grid_value`, `task_puzzles_logic_grid_completion_label`, and `task_puzzles_spatial_fold_hole_label` with additional spatial and topology families while keeping early evidence contracts local and visually obvious.
 10. Improve dataset QA diagnostics/report summaries.
 11. Extend geometry comparison beyond angle/length/area/perimeter using the same label-answer + winner-gap contract.
 12. Extend analytical geometry to additional objectives beyond the current analytical set (additional 3D objectives, richer conic/composite-region reasoning).
@@ -55,3 +55,7 @@
 7. Pre-finalize prompt validation checks (metadata/bundle/key/placeholder/cardinality).
 8. First charts-domain tasks: `task_charts_statistics_summary_value`, `task_charts_statistics_summary_label`, `task_charts_counting_value_count`, `task_charts_readout_subset_value`, `task_charts_multiseries_pairwise_comparison_count`, `task_charts_distribution_histogram_count`, `task_charts_distribution_boxplot_label`, `task_charts_distribution_density_label`, `task_charts_trend_structure_value`, `task_charts_composition_subset_value`.
 9. First tables-domain tasks: `task_tables_statistics_summary_label`, `task_tables_statistics_summary_value`, `task_tables_statistics_filtered_subset_value`, `task_tables_counting_value_count`, `task_tables_readout_subset_value`, `task_tables_relation_row_compare_label`, `task_tables_relation_extremum_transfer_value`, `task_tables_ranking_label`, and `task_tables_temporal_value`.
+9. First tables-domain tasks: `task_tables_statistics_summary_label`, `task_tables_statistics_summary_value`, `task_tables_statistics_filtered_subset_value`, `task_tables_statistics_filtered_subset_label`, `task_tables_counting_value_count`, `task_tables_readout_subset_value`, `task_tables_relation_row_compare_label`, `task_tables_relation_extremum_transfer_value`, `task_tables_ranking_label`, and `task_tables_temporal_value`.
+10. First puzzles-domain arithmetic tasks: `task_puzzles_arithmetic_equation_value`, `task_puzzles_arithmetic_balance_value`, and `task_puzzles_arithmetic_grid_value`.
+11. First puzzles-domain logic task: `task_puzzles_logic_grid_completion_label`.
+12. First puzzles-domain spatial task: `task_puzzles_spatial_fold_hole_label`.

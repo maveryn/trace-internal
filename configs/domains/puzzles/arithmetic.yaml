@@ -33,6 +33,25 @@ generation:
         balance_strip: 1.0
         balance_card: 1.0
         balance_outline: 1.0
+    task_puzzles_arithmetic_grid_value:
+      answer_min: 1
+      answer_max: 24
+      row_count_min: 3
+      row_count_max: 5
+      col_count: 3
+      cell_value_min: 1
+      cell_value_max: 24
+      max_visible_value: 24
+      balanced_task_variant_sampling: true
+      balanced_scene_variant_sampling: true
+      task_variant_weights:
+        sum_rule_missing: 1.0
+        difference_rule_missing: 1.0
+        product_rule_missing: 1.0
+      scene_variant_weights:
+        grid_strip: 1.0
+        grid_card: 1.0
+        grid_outline: 1.0
 
 rendering:
   task_overrides:
@@ -69,8 +88,10 @@ rendering:
       scene_margin_bottom_px: 64
       item_box_width_px: 96
       item_box_height_px: 96
-      item_gap_px: 18
-      scale_side_gap_px: 42
+      item_gap_px: 56
+      scale_side_gap_px: 14
+      relation_gap_jitter_min_px: -2
+      relation_gap_jitter_max_px: 2
       panel_gap_px: 54
       query_gap_px: 44
       query_box_width_px: 112
@@ -85,6 +106,28 @@ rendering:
       panel_fill_rgb: [248, 249, 252]
       box_fill_rgb: [252, 252, 255]
       query_box_fill_rgb: [243, 247, 255]
+      border_color_rgb: [86, 94, 108]
+      text_color_rgb: [30, 34, 40]
+      text_stroke_rgb: [255, 255, 255]
+      accent_color_rgb: [54, 102, 180]
+    task_puzzles_arithmetic_grid_value:
+      canvas_width: 960
+      canvas_height: 760
+      scene_margin_left_px: 72
+      scene_margin_right_px: 72
+      scene_margin_top_px: 64
+      scene_margin_bottom_px: 64
+      cell_width_px: 120
+      cell_height_px: 100
+      cell_gap_px: 24
+      slot_corner_radius_px: 18
+      border_width_px: 3
+      panel_padding_px: 28
+      panel_corner_radius_px: 28
+      value_font_size_px: 46
+      panel_fill_rgb: [248, 249, 252]
+      cell_fill_rgb: [252, 252, 255]
+      unknown_cell_fill_rgb: [242, 246, 255]
       border_color_rgb: [86, 94, 108]
       text_color_rgb: [30, 34, 40]
       text_stroke_rgb: [255, 255, 255]
@@ -110,15 +153,30 @@ prompt:
     task_puzzles_arithmetic_balance_value:
       task_family_key: arithmetic_balance_query_puzzle
       task_key: balance_value_query
-      object_description_balance_strip: a balance-style arithmetic puzzle with stacked equality panels made of boxed symbols and numbers, plus one highlighted query box below the panels
-      object_description_balance_card: a card-style balance arithmetic puzzle with stacked equality panels made of boxed symbols and numbers, plus one highlighted query box below the panels
-      object_description_balance_outline: an outline-style balance arithmetic puzzle with stacked equality panels made of boxed symbols and numbers, plus one highlighted query box below the panels
-      evidence_hint_sum_pair_unknown: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the highlighted query box
-      evidence_hint_two_panel_chain_unknown: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the highlighted query box
-      evidence_hint_three_panel_chain_unknown: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the highlighted query box
-      json_example_sum_pair_unknown: '{"evidence":[[456,508,568,620]],"answer":7}'
-      json_example_two_panel_chain_unknown: '{"evidence":[[456,508,568,620]],"answer":8}'
-      json_example_three_panel_chain_unknown: '{"evidence":[[456,508,568,620]],"answer":5}'
+      object_description_balance_strip: an arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box
+      object_description_balance_card: a card-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box
+      object_description_balance_outline: an outline-style arithmetic equality puzzle with stacked panels of boxed symbols and numbers, explicit plus and equals signs, and a final query row that ends with a question-mark box
+      evidence_hint_sum_pair_unknown: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box
+      evidence_hint_two_panel_chain_unknown: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box
+      evidence_hint_three_panel_chain_unknown: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark query box
+      json_example_sum_pair_unknown: '{"evidence":[[556,449,668,561]],"answer":7}'
+      json_example_two_panel_chain_unknown: '{"evidence":[[556,449,668,561]],"answer":8}'
+      json_example_three_panel_chain_unknown: '{"evidence":[[556,524,668,636]],"answer":5}'
       json_example_answer_only_sum_pair_unknown: '{"answer":7}'
       json_example_answer_only_two_panel_chain_unknown: '{"answer":8}'
       json_example_answer_only_three_panel_chain_unknown: '{"answer":5}'
+    task_puzzles_arithmetic_grid_value:
+      task_family_key: arithmetic_grid_unknown_puzzle
+      task_key: grid_value_query
+      object_description_grid_strip: an arithmetic puzzle grid with 3 columns and 3 to 5 rows of boxed integers, where one cell shows a question mark instead of a number
+      object_description_grid_card: a card-style arithmetic puzzle grid with 3 columns and 3 to 5 rows of boxed integers, where one cell shows a question mark instead of a number
+      object_description_grid_outline: an outline-style arithmetic puzzle grid with 3 columns and 3 to 5 rows of boxed integers, where one cell shows a question mark instead of a number
+      evidence_hint_sum_rule_missing: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark grid cell
+      evidence_hint_difference_rule_missing: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark grid cell
+      evidence_hint_product_rule_missing: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark grid cell
+      json_example_sum_rule_missing: '{"evidence":[[420,250,540,350]],"answer":7}'
+      json_example_difference_rule_missing: '{"evidence":[[420,250,540,350]],"answer":6}'
+      json_example_product_rule_missing: '{"evidence":[[420,250,540,350]],"answer":8}'
+      json_example_answer_only_sum_rule_missing: '{"answer":7}'
+      json_example_answer_only_difference_rule_missing: '{"answer":6}'
+      json_example_answer_only_product_rule_missing: '{"answer":8}'

@@ -1,0 +1,1261 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 27
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        286.08,
+        144.667,
+        486.72,
+        233.333
+      ],
+      [
+        286.08,
+        410.667,
+        486.72,
+        499.333
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "tables/task_tables_readout_subset_value/images/cell_difference_two_abs/0014.png"
+  },
+  "instance_seed": 3710509429584234,
+  "prompt": "Work from the styled table shown in the image: a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Read the table and report the requested value or two-cell result. What is the non-negative difference between the Dist entry for Raab and the Dist entry for Toll?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two queried cells.\nAnswer rule: set \"answer\" to the exact requested integer result.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":6}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the styled table shown in the image: a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Read the table and report the requested value or two-cell result. What is the non-negative difference between the Dist entry for Raab and the Dist entry for Toll?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two queried cells.\nAnswer rule: set \"answer\" to the exact requested integer result.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":6}",
+    "answer_only": "Work from the styled table shown in the image: a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Read the table and report the requested value or two-cell result. What is the non-negative difference between the Dist entry for Raab and the Dist entry for Toll?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact requested integer result.\nExample JSON:\n{\"answer\":6}"
+  },
+  "task": "task_tables_readout_subset_value",
+  "task_variant": "cell_difference_two_abs",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 27,
+      "column_headers": [
+        "Dist",
+        "Time",
+        "Pts"
+      ],
+      "numeric_column_count": 3,
+      "numeric_column_count_range": [
+        3,
+        5
+      ],
+      "query_cells": [
+        {
+          "cell_id": "cell_r1_c1",
+          "column": "Dist",
+          "column_index": 0,
+          "row_index": 0,
+          "row_label": "Raab",
+          "value": 30
+        },
+        {
+          "cell_id": "cell_r4_c1",
+          "column": "Dist",
+          "column_index": 0,
+          "row_index": 3,
+          "row_label": "Toll",
+          "value": 3
+        }
+      ],
+      "question_format": "cell_difference_two_abs",
+      "row_count": 5,
+      "row_count_range": [
+        5,
+        10
+      ],
+      "row_labels": [
+        "Raab",
+        "Caty",
+        "Jada",
+        "Toll",
+        "Gina"
+      ],
+      "scene_variant": "spreadsheet",
+      "scene_variant_probabilities": {
+        "card_table": 0.25,
+        "ledger": 0.25,
+        "spreadsheet": 0.25,
+        "zebra": 0.25
+      },
+      "supporting_cell_ids": [
+        "cell_r1_c1",
+        "cell_r4_c1"
+      ],
+      "task_variant": "cell_difference_two_abs",
+      "task_variant_probabilities": {
+        "cell_difference_two_abs": 1.0,
+        "cell_lookup": 0.0,
+        "cell_sum_two": 0.0
+      },
+      "value_range": [
+        1,
+        32
+      ],
+      "values_by_row": {
+        "Caty": {
+          "Dist": 27,
+          "Pts": 16,
+          "Time": 23
+        },
+        "Gina": {
+          "Dist": 17,
+          "Pts": 30,
+          "Time": 5
+        },
+        "Jada": {
+          "Dist": 14,
+          "Pts": 12,
+          "Time": 26
+        },
+        "Raab": {
+          "Dist": 30,
+          "Pts": 12,
+          "Time": 6
+        },
+        "Toll": {
+          "Dist": 3,
+          "Pts": 3,
+          "Time": 28
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          286.08,
+          144.667,
+          486.72,
+          233.333
+        ],
+        [
+          286.08,
+          410.667,
+          486.72,
+          499.333
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "numeric_column_count": 3,
+        "query_cells": [
+          {
+            "cell_id": "cell_r1_c1",
+            "column": "Dist",
+            "column_index": 0,
+            "row_index": 0,
+            "row_label": "Raab",
+            "value": 30
+          },
+          {
+            "cell_id": "cell_r4_c1",
+            "column": "Dist",
+            "column_index": 0,
+            "row_index": 3,
+            "row_label": "Toll",
+            "value": 3
+          }
+        ],
+        "row_count": 5,
+        "scene_variant": "spreadsheet",
+        "scene_variant_probabilities": {
+          "card_table": 0.25,
+          "ledger": 0.25,
+          "spreadsheet": 0.25,
+          "zebra": 0.25
+        },
+        "task_variant": "cell_difference_two_abs",
+        "task_variant_probabilities": {
+          "cell_difference_two_abs": 1.0,
+          "cell_lookup": 0.0,
+          "cell_sum_two": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "tables_readout_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the exact requested integer result",
+          "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two queried cells",
+          "json_example": "{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":6}",
+          "json_example_answer_only": "{\"answer\":6}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row",
+          "query_column_1": "Dist",
+          "query_column_2": "Dist",
+          "query_row_label_1": "Raab",
+          "query_row_label_2": "Toll"
+        },
+        "task_family_key": "styled_table_readout",
+        "task_family_variant_index": 2,
+        "task_key": "subset_value_query",
+        "task_variant_index": 4,
+        "task_variant_key": "cell_difference_two_abs",
+        "task_variant_template_index": 3,
+        "template_paths": [
+          "tables/readout/tables_readout_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:subset_value_query": 5,
+          "task_family:styled_table_readout": 5,
+          "task_variant:cell_difference_two_abs": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "tables_readout_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact requested integer result",
+              "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two queried cells",
+              "json_example": "{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":6}",
+              "json_example_answer_only": "{\"answer\":6}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row",
+              "query_column_1": "Dist",
+              "query_column_2": "Dist",
+              "query_row_label_1": "Raab",
+              "query_row_label_2": "Toll"
+            },
+            "task_family_key": "styled_table_readout",
+            "task_family_variant_index": 2,
+            "task_key": "subset_value_query",
+            "task_variant_index": 4,
+            "task_variant_key": "cell_difference_two_abs",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "tables/readout/tables_readout_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:subset_value_query": 5,
+              "task_family:styled_table_readout": 5,
+              "task_variant:cell_difference_two_abs": 5
+            }
+          },
+          "prompt": "Work from the styled table shown in the image: a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Read the table and report the requested value or two-cell result. What is the non-negative difference between the Dist entry for Raab and the Dist entry for Toll?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two queried cells.\nAnswer rule: set \"answer\" to the exact requested integer result.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":6}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "tables_readout_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact requested integer result",
+              "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two queried cells",
+              "json_example": "{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":6}",
+              "json_example_answer_only": "{\"answer\":6}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row",
+              "query_column_1": "Dist",
+              "query_column_2": "Dist",
+              "query_row_label_1": "Raab",
+              "query_row_label_2": "Toll"
+            },
+            "task_family_key": "styled_table_readout",
+            "task_family_variant_index": 2,
+            "task_key": "subset_value_query",
+            "task_variant_index": 4,
+            "task_variant_key": "cell_difference_two_abs",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "tables/readout/tables_readout_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:subset_value_query": 5,
+              "task_family:styled_table_readout": 5,
+              "task_variant:cell_difference_two_abs": 5
+            }
+          },
+          "prompt": "Work from the styled table shown in the image: a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Read the table and report the requested value or two-cell result. What is the non-negative difference between the Dist entry for Raab and the Dist entry for Toll?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact requested integer result.\nExample JSON:\n{\"answer\":6}"
+        }
+      },
+      "task_variant": "cell_difference_two_abs",
+      "template_id": "tables_readout_v1"
+    },
+    "render_map": {
+      "cell_bboxes_px": {
+        "cell_r0_c0": [
+          52.0,
+          56.0,
+          286.08,
+          144.667
+        ],
+        "cell_r0_c1": [
+          286.08,
+          56.0,
+          486.72,
+          144.667
+        ],
+        "cell_r0_c2": [
+          486.72,
+          56.0,
+          687.36,
+          144.667
+        ],
+        "cell_r0_c3": [
+          687.36,
+          56.0,
+          888.0,
+          144.667
+        ],
+        "cell_r1_c0": [
+          52.0,
+          144.667,
+          286.08,
+          233.333
+        ],
+        "cell_r1_c1": [
+          286.08,
+          144.667,
+          486.72,
+          233.333
+        ],
+        "cell_r1_c2": [
+          486.72,
+          144.667,
+          687.36,
+          233.333
+        ],
+        "cell_r1_c3": [
+          687.36,
+          144.667,
+          888.0,
+          233.333
+        ],
+        "cell_r2_c0": [
+          52.0,
+          233.333,
+          286.08,
+          322.0
+        ],
+        "cell_r2_c1": [
+          286.08,
+          233.333,
+          486.72,
+          322.0
+        ],
+        "cell_r2_c2": [
+          486.72,
+          233.333,
+          687.36,
+          322.0
+        ],
+        "cell_r2_c3": [
+          687.36,
+          233.333,
+          888.0,
+          322.0
+        ],
+        "cell_r3_c0": [
+          52.0,
+          322.0,
+          286.08,
+          410.667
+        ],
+        "cell_r3_c1": [
+          286.08,
+          322.0,
+          486.72,
+          410.667
+        ],
+        "cell_r3_c2": [
+          486.72,
+          322.0,
+          687.36,
+          410.667
+        ],
+        "cell_r3_c3": [
+          687.36,
+          322.0,
+          888.0,
+          410.667
+        ],
+        "cell_r4_c0": [
+          52.0,
+          410.667,
+          286.08,
+          499.333
+        ],
+        "cell_r4_c1": [
+          286.08,
+          410.667,
+          486.72,
+          499.333
+        ],
+        "cell_r4_c2": [
+          486.72,
+          410.667,
+          687.36,
+          499.333
+        ],
+        "cell_r4_c3": [
+          687.36,
+          410.667,
+          888.0,
+          499.333
+        ],
+        "cell_r5_c0": [
+          52.0,
+          499.333,
+          286.08,
+          588.0
+        ],
+        "cell_r5_c1": [
+          286.08,
+          499.333,
+          486.72,
+          588.0
+        ],
+        "cell_r5_c2": [
+          486.72,
+          499.333,
+          687.36,
+          588.0
+        ],
+        "cell_r5_c3": [
+          687.36,
+          499.333,
+          888.0,
+          588.0
+        ]
+      },
+      "column_region_bboxes_px": {
+        "Dist": [
+          286.08,
+          144.667,
+          486.72,
+          588.0
+        ],
+        "Pts": [
+          687.36,
+          144.667,
+          888.0,
+          588.0
+        ],
+        "Time": [
+          486.72,
+          144.667,
+          687.36,
+          588.0
+        ]
+      },
+      "header_bboxes_px": {
+        "Dist": [
+          286.08,
+          56.0,
+          486.72,
+          144.667
+        ],
+        "Pts": [
+          687.36,
+          56.0,
+          888.0,
+          144.667
+        ],
+        "Time": [
+          486.72,
+          56.0,
+          687.36,
+          144.667
+        ]
+      },
+      "image_id": "img0",
+      "row_label_bboxes_px": {
+        "Caty": [
+          52.0,
+          233.333,
+          286.08,
+          322.0
+        ],
+        "Gina": [
+          52.0,
+          499.333,
+          286.08,
+          588.0
+        ],
+        "Jada": [
+          52.0,
+          322.0,
+          286.08,
+          410.667
+        ],
+        "Raab": [
+          52.0,
+          144.667,
+          286.08,
+          233.333
+        ],
+        "Toll": [
+          52.0,
+          410.667,
+          286.08,
+          499.333
+        ]
+      },
+      "row_region_bboxes_px": {
+        "Caty": [
+          286.08,
+          233.333,
+          888.0,
+          322.0
+        ],
+        "Gina": [
+          286.08,
+          499.333,
+          888.0,
+          588.0
+        ],
+        "Jada": [
+          286.08,
+          322.0,
+          888.0,
+          410.667
+        ],
+        "Raab": [
+          286.08,
+          144.667,
+          888.0,
+          233.333
+        ],
+        "Toll": [
+          286.08,
+          410.667,
+          888.0,
+          499.333
+        ]
+      },
+      "table_bbox_px": [
+        52.0,
+        56.0,
+        888.0,
+        588.0
+      ]
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 640,
+      "canvas_width": 940,
+      "coord_space": "pixel",
+      "grid_style": {
+        "border_width_px": 2,
+        "grid_width_px": 1
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "spreadsheet",
+      "table_bbox_px": [
+        52.0,
+        56.0,
+        888.0,
+        588.0
+      ],
+      "text_style": {
+        "label_font_size_px": 24,
+        "value_font_size_px": 22
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Name",
+            "text_bbox_px": [
+              130.54,
+              91.333,
+              207.54,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            56.0,
+            286.08,
+            144.667
+          ],
+          "entity_id": "cell_r0_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Dist",
+            "column_index": 1,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Dist",
+            "text_bbox_px": [
+              359.9,
+              91.333,
+              412.9,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            286.08,
+            56.0,
+            486.72,
+            144.667
+          ],
+          "entity_id": "cell_r0_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Time",
+            "column_index": 2,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Time",
+            "text_bbox_px": [
+              554.54,
+              91.333,
+              619.54,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            486.72,
+            56.0,
+            687.36,
+            144.667
+          ],
+          "entity_id": "cell_r0_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Pts",
+            "column_index": 3,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Pts",
+            "text_bbox_px": [
+              766.18,
+              91.333,
+              809.18,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            687.36,
+            56.0,
+            888.0,
+            144.667
+          ],
+          "entity_id": "cell_r0_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 1,
+            "row_label": "Raab",
+            "text": "Raab",
+            "text_bbox_px": [
+              66.0,
+              180.0,
+              133.0,
+              198.0
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            144.667,
+            286.08,
+            233.333
+          ],
+          "entity_id": "cell_r1_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 1,
+            "row_index": 1,
+            "row_label": "Raab",
+            "text": "30",
+            "text_bbox_px": [
+              372.4,
+              181.0,
+              400.4,
+              197.0
+            ],
+            "value": 30
+          },
+          "bbox_px": [
+            286.08,
+            144.667,
+            486.72,
+            233.333
+          ],
+          "entity_id": "cell_r1_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 2,
+            "row_index": 1,
+            "row_label": "Raab",
+            "text": "6",
+            "text_bbox_px": [
+              580.04,
+              181.0,
+              594.04,
+              197.0
+            ],
+            "value": 6
+          },
+          "bbox_px": [
+            486.72,
+            144.667,
+            687.36,
+            233.333
+          ],
+          "entity_id": "cell_r1_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Pts",
+            "column_index": 3,
+            "row_index": 1,
+            "row_label": "Raab",
+            "text": "12",
+            "text_bbox_px": [
+              773.68,
+              181.0,
+              801.68,
+              197.0
+            ],
+            "value": 12
+          },
+          "bbox_px": [
+            687.36,
+            144.667,
+            888.0,
+            233.333
+          ],
+          "entity_id": "cell_r1_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 2,
+            "row_label": "Caty",
+            "text": "Caty",
+            "text_bbox_px": [
+              66.0,
+              266.167,
+              127.0,
+              289.167
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            233.333,
+            286.08,
+            322.0
+          ],
+          "entity_id": "cell_r2_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 1,
+            "row_index": 2,
+            "row_label": "Caty",
+            "text": "27",
+            "text_bbox_px": [
+              372.4,
+              269.667,
+              400.4,
+              285.667
+            ],
+            "value": 27
+          },
+          "bbox_px": [
+            286.08,
+            233.333,
+            486.72,
+            322.0
+          ],
+          "entity_id": "cell_r2_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 2,
+            "row_index": 2,
+            "row_label": "Caty",
+            "text": "23",
+            "text_bbox_px": [
+              573.04,
+              269.667,
+              601.04,
+              285.667
+            ],
+            "value": 23
+          },
+          "bbox_px": [
+            486.72,
+            233.333,
+            687.36,
+            322.0
+          ],
+          "entity_id": "cell_r2_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Pts",
+            "column_index": 3,
+            "row_index": 2,
+            "row_label": "Caty",
+            "text": "16",
+            "text_bbox_px": [
+              773.68,
+              269.667,
+              801.68,
+              285.667
+            ],
+            "value": 16
+          },
+          "bbox_px": [
+            687.36,
+            233.333,
+            888.0,
+            322.0
+          ],
+          "entity_id": "cell_r2_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 3,
+            "row_label": "Jada",
+            "text": "Jada",
+            "text_bbox_px": [
+              66.0,
+              354.833,
+              126.0,
+              377.833
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            322.0,
+            286.08,
+            410.667
+          ],
+          "entity_id": "cell_r3_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 1,
+            "row_index": 3,
+            "row_label": "Jada",
+            "text": "14",
+            "text_bbox_px": [
+              372.4,
+              358.333,
+              400.4,
+              374.333
+            ],
+            "value": 14
+          },
+          "bbox_px": [
+            286.08,
+            322.0,
+            486.72,
+            410.667
+          ],
+          "entity_id": "cell_r3_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 2,
+            "row_index": 3,
+            "row_label": "Jada",
+            "text": "26",
+            "text_bbox_px": [
+              573.04,
+              358.333,
+              601.04,
+              374.333
+            ],
+            "value": 26
+          },
+          "bbox_px": [
+            486.72,
+            322.0,
+            687.36,
+            410.667
+          ],
+          "entity_id": "cell_r3_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Pts",
+            "column_index": 3,
+            "row_index": 3,
+            "row_label": "Jada",
+            "text": "12",
+            "text_bbox_px": [
+              773.68,
+              358.333,
+              801.68,
+              374.333
+            ],
+            "value": 12
+          },
+          "bbox_px": [
+            687.36,
+            322.0,
+            888.0,
+            410.667
+          ],
+          "entity_id": "cell_r3_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 4,
+            "row_label": "Toll",
+            "text": "Toll",
+            "text_bbox_px": [
+              66.0,
+              446.0,
+              114.0,
+              464.0
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            410.667,
+            286.08,
+            499.333
+          ],
+          "entity_id": "cell_r4_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 1,
+            "row_index": 4,
+            "row_label": "Toll",
+            "text": "3",
+            "text_bbox_px": [
+              379.4,
+              447.0,
+              393.4,
+              463.0
+            ],
+            "value": 3
+          },
+          "bbox_px": [
+            286.08,
+            410.667,
+            486.72,
+            499.333
+          ],
+          "entity_id": "cell_r4_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 2,
+            "row_index": 4,
+            "row_label": "Toll",
+            "text": "28",
+            "text_bbox_px": [
+              573.04,
+              447.0,
+              601.04,
+              463.0
+            ],
+            "value": 28
+          },
+          "bbox_px": [
+            486.72,
+            410.667,
+            687.36,
+            499.333
+          ],
+          "entity_id": "cell_r4_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Pts",
+            "column_index": 3,
+            "row_index": 4,
+            "row_label": "Toll",
+            "text": "3",
+            "text_bbox_px": [
+              780.68,
+              447.0,
+              794.68,
+              463.0
+            ],
+            "value": 3
+          },
+          "bbox_px": [
+            687.36,
+            410.667,
+            888.0,
+            499.333
+          ],
+          "entity_id": "cell_r4_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 5,
+            "row_label": "Gina",
+            "text": "Gina",
+            "text_bbox_px": [
+              66.0,
+              534.667,
+              127.0,
+              552.667
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            499.333,
+            286.08,
+            588.0
+          ],
+          "entity_id": "cell_r5_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 1,
+            "row_index": 5,
+            "row_label": "Gina",
+            "text": "17",
+            "text_bbox_px": [
+              372.4,
+              535.667,
+              400.4,
+              551.667
+            ],
+            "value": 17
+          },
+          "bbox_px": [
+            286.08,
+            499.333,
+            486.72,
+            588.0
+          ],
+          "entity_id": "cell_r5_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 2,
+            "row_index": 5,
+            "row_label": "Gina",
+            "text": "5",
+            "text_bbox_px": [
+              580.04,
+              535.667,
+              594.04,
+              551.667
+            ],
+            "value": 5
+          },
+          "bbox_px": [
+            486.72,
+            499.333,
+            687.36,
+            588.0
+          ],
+          "entity_id": "cell_r5_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Pts",
+            "column_index": 3,
+            "row_index": 5,
+            "row_label": "Gina",
+            "text": "30",
+            "text_bbox_px": [
+              773.68,
+              535.667,
+              801.68,
+              551.667
+            ],
+            "value": 30
+          },
+          "bbox_px": [
+            687.36,
+            499.333,
+            888.0,
+            588.0
+          ],
+          "entity_id": "cell_r5_c3",
+          "entity_type": "table_cell"
+        }
+      ],
+      "relations": {
+        "answer_value": 27,
+        "query_cells": [
+          {
+            "cell_id": "cell_r1_c1",
+            "column": "Dist",
+            "column_index": 0,
+            "row_index": 0,
+            "row_label": "Raab",
+            "value": 30
+          },
+          {
+            "cell_id": "cell_r4_c1",
+            "column": "Dist",
+            "column_index": 0,
+            "row_index": 3,
+            "row_label": "Toll",
+            "value": 3
+          }
+        ],
+        "scene_variant": "spreadsheet",
+        "supporting_cell_ids": [
+          "cell_r1_c1",
+          "cell_r4_c1"
+        ],
+        "task_variant": "cell_difference_two_abs"
+      },
+      "scene_kind": "table_spreadsheet_readout"
+    },
+    "witness_symbolic": {
+      "type": "bbox_set",
+      "value": [
+        [
+          286.08,
+          144.667,
+          486.72,
+          233.333
+        ],
+        [
+          286.08,
+          410.667,
+          486.72,
+          499.333
+        ]
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

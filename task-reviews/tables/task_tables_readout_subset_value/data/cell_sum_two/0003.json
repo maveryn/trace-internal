@@ -1,0 +1,1687 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 58
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        687.36,
+        174.222,
+        888.0,
+        233.333
+      ],
+      [
+        486.72,
+        410.667,
+        687.36,
+        469.778
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "tables/task_tables_readout_subset_value/images/cell_sum_two/0003.png"
+  },
+  "instance_seed": 8087581556939107,
+  "prompt": "The image shows a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Use the table values to evaluate the queried cell expression. Find the two cell values at (Kuhn, Time) and (Nona, Temp) and report their sum.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two queried cells.\nAnswer requirement: set \"answer\" to the exact requested integer result.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":29}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Use the table values to evaluate the queried cell expression. Find the two cell values at (Kuhn, Time) and (Nona, Temp) and report their sum.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two queried cells.\nAnswer requirement: set \"answer\" to the exact requested integer result.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":29}",
+    "answer_only": "The image shows a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Use the table values to evaluate the queried cell expression. Find the two cell values at (Kuhn, Time) and (Nona, Temp) and report their sum.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact requested integer result.\nExample JSON:\n{\"answer\":29}"
+  },
+  "task": "task_tables_readout_subset_value",
+  "task_variant": "cell_sum_two",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 58,
+      "column_headers": [
+        "Age",
+        "Temp",
+        "Time"
+      ],
+      "numeric_column_count": 3,
+      "numeric_column_count_range": [
+        3,
+        5
+      ],
+      "query_cells": [
+        {
+          "cell_id": "cell_r2_c3",
+          "column": "Time",
+          "column_index": 2,
+          "row_index": 1,
+          "row_label": "Kuhn",
+          "value": 31
+        },
+        {
+          "cell_id": "cell_r6_c2",
+          "column": "Temp",
+          "column_index": 1,
+          "row_index": 5,
+          "row_label": "Nona",
+          "value": 27
+        }
+      ],
+      "question_format": "cell_sum_two",
+      "row_count": 8,
+      "row_count_range": [
+        5,
+        10
+      ],
+      "row_labels": [
+        "Earl",
+        "Kuhn",
+        "Kuth",
+        "Jeu",
+        "Tony",
+        "Nona",
+        "Gunn",
+        "Yand"
+      ],
+      "scene_variant": "spreadsheet",
+      "scene_variant_probabilities": {
+        "card_table": 0.25,
+        "ledger": 0.25,
+        "spreadsheet": 0.25,
+        "zebra": 0.25
+      },
+      "supporting_cell_ids": [
+        "cell_r2_c3",
+        "cell_r6_c2"
+      ],
+      "task_variant": "cell_sum_two",
+      "task_variant_probabilities": {
+        "cell_difference_two_abs": 0.0,
+        "cell_lookup": 0.0,
+        "cell_sum_two": 1.0
+      },
+      "value_range": [
+        1,
+        32
+      ],
+      "values_by_row": {
+        "Earl": {
+          "Age": 9,
+          "Temp": 23,
+          "Time": 31
+        },
+        "Gunn": {
+          "Age": 29,
+          "Temp": 17,
+          "Time": 24
+        },
+        "Jeu": {
+          "Age": 6,
+          "Temp": 20,
+          "Time": 2
+        },
+        "Kuhn": {
+          "Age": 31,
+          "Temp": 30,
+          "Time": 31
+        },
+        "Kuth": {
+          "Age": 19,
+          "Temp": 24,
+          "Time": 22
+        },
+        "Nona": {
+          "Age": 24,
+          "Temp": 27,
+          "Time": 11
+        },
+        "Tony": {
+          "Age": 1,
+          "Temp": 2,
+          "Time": 6
+        },
+        "Yand": {
+          "Age": 8,
+          "Temp": 27,
+          "Time": 28
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          687.36,
+          174.222,
+          888.0,
+          233.333
+        ],
+        [
+          486.72,
+          410.667,
+          687.36,
+          469.778
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "numeric_column_count": 3,
+        "query_cells": [
+          {
+            "cell_id": "cell_r2_c3",
+            "column": "Time",
+            "column_index": 2,
+            "row_index": 1,
+            "row_label": "Kuhn",
+            "value": 31
+          },
+          {
+            "cell_id": "cell_r6_c2",
+            "column": "Temp",
+            "column_index": 1,
+            "row_index": 5,
+            "row_label": "Nona",
+            "value": 27
+          }
+        ],
+        "row_count": 8,
+        "scene_variant": "spreadsheet",
+        "scene_variant_probabilities": {
+          "card_table": 0.25,
+          "ledger": 0.25,
+          "spreadsheet": 0.25,
+          "zebra": 0.25
+        },
+        "task_variant": "cell_sum_two",
+        "task_variant_probabilities": {
+          "cell_difference_two_abs": 0.0,
+          "cell_lookup": 0.0,
+          "cell_sum_two": 1.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "tables_readout_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the exact requested integer result",
+          "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two queried cells",
+          "json_example": "{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":29}",
+          "json_example_answer_only": "{\"answer\":29}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row",
+          "query_column_1": "Time",
+          "query_column_2": "Temp",
+          "query_row_label_1": "Kuhn",
+          "query_row_label_2": "Nona"
+        },
+        "task_family_key": "styled_table_readout",
+        "task_family_variant_index": 0,
+        "task_key": "subset_value_query",
+        "task_variant_index": 2,
+        "task_variant_key": "cell_sum_two",
+        "task_variant_template_index": 2,
+        "template_paths": [
+          "tables/readout/tables_readout_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:subset_value_query": 5,
+          "task_family:styled_table_readout": 5,
+          "task_variant:cell_sum_two": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "tables_readout_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact requested integer result",
+              "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two queried cells",
+              "json_example": "{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":29}",
+              "json_example_answer_only": "{\"answer\":29}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row",
+              "query_column_1": "Time",
+              "query_column_2": "Temp",
+              "query_row_label_1": "Kuhn",
+              "query_row_label_2": "Nona"
+            },
+            "task_family_key": "styled_table_readout",
+            "task_family_variant_index": 0,
+            "task_key": "subset_value_query",
+            "task_variant_index": 2,
+            "task_variant_key": "cell_sum_two",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "tables/readout/tables_readout_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:subset_value_query": 5,
+              "task_family:styled_table_readout": 5,
+              "task_variant:cell_sum_two": 5
+            }
+          },
+          "prompt": "The image shows a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Use the table values to evaluate the queried cell expression. Find the two cell values at (Kuhn, Time) and (Nona, Temp) and report their sum.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two queried cells.\nAnswer requirement: set \"answer\" to the exact requested integer result.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":29}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "tables_readout_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact requested integer result",
+              "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2] in the same order as the two queried cells",
+              "json_example": "{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":29}",
+              "json_example_answer_only": "{\"answer\":29}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row",
+              "query_column_1": "Time",
+              "query_column_2": "Temp",
+              "query_row_label_1": "Kuhn",
+              "query_row_label_2": "Nona"
+            },
+            "task_family_key": "styled_table_readout",
+            "task_family_variant_index": 0,
+            "task_key": "subset_value_query",
+            "task_variant_index": 2,
+            "task_variant_key": "cell_sum_two",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "tables/readout/tables_readout_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:subset_value_query": 5,
+              "task_family:styled_table_readout": 5,
+              "task_variant:cell_sum_two": 5
+            }
+          },
+          "prompt": "The image shows a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Use the table values to evaluate the queried cell expression. Find the two cell values at (Kuhn, Time) and (Nona, Temp) and report their sum.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact requested integer result.\nExample JSON:\n{\"answer\":29}"
+        }
+      },
+      "task_variant": "cell_sum_two",
+      "template_id": "tables_readout_v1"
+    },
+    "render_map": {
+      "cell_bboxes_px": {
+        "cell_r0_c0": [
+          52.0,
+          56.0,
+          286.08,
+          115.111
+        ],
+        "cell_r0_c1": [
+          286.08,
+          56.0,
+          486.72,
+          115.111
+        ],
+        "cell_r0_c2": [
+          486.72,
+          56.0,
+          687.36,
+          115.111
+        ],
+        "cell_r0_c3": [
+          687.36,
+          56.0,
+          888.0,
+          115.111
+        ],
+        "cell_r1_c0": [
+          52.0,
+          115.111,
+          286.08,
+          174.222
+        ],
+        "cell_r1_c1": [
+          286.08,
+          115.111,
+          486.72,
+          174.222
+        ],
+        "cell_r1_c2": [
+          486.72,
+          115.111,
+          687.36,
+          174.222
+        ],
+        "cell_r1_c3": [
+          687.36,
+          115.111,
+          888.0,
+          174.222
+        ],
+        "cell_r2_c0": [
+          52.0,
+          174.222,
+          286.08,
+          233.333
+        ],
+        "cell_r2_c1": [
+          286.08,
+          174.222,
+          486.72,
+          233.333
+        ],
+        "cell_r2_c2": [
+          486.72,
+          174.222,
+          687.36,
+          233.333
+        ],
+        "cell_r2_c3": [
+          687.36,
+          174.222,
+          888.0,
+          233.333
+        ],
+        "cell_r3_c0": [
+          52.0,
+          233.333,
+          286.08,
+          292.444
+        ],
+        "cell_r3_c1": [
+          286.08,
+          233.333,
+          486.72,
+          292.444
+        ],
+        "cell_r3_c2": [
+          486.72,
+          233.333,
+          687.36,
+          292.444
+        ],
+        "cell_r3_c3": [
+          687.36,
+          233.333,
+          888.0,
+          292.444
+        ],
+        "cell_r4_c0": [
+          52.0,
+          292.444,
+          286.08,
+          351.556
+        ],
+        "cell_r4_c1": [
+          286.08,
+          292.444,
+          486.72,
+          351.556
+        ],
+        "cell_r4_c2": [
+          486.72,
+          292.444,
+          687.36,
+          351.556
+        ],
+        "cell_r4_c3": [
+          687.36,
+          292.444,
+          888.0,
+          351.556
+        ],
+        "cell_r5_c0": [
+          52.0,
+          351.556,
+          286.08,
+          410.667
+        ],
+        "cell_r5_c1": [
+          286.08,
+          351.556,
+          486.72,
+          410.667
+        ],
+        "cell_r5_c2": [
+          486.72,
+          351.556,
+          687.36,
+          410.667
+        ],
+        "cell_r5_c3": [
+          687.36,
+          351.556,
+          888.0,
+          410.667
+        ],
+        "cell_r6_c0": [
+          52.0,
+          410.667,
+          286.08,
+          469.778
+        ],
+        "cell_r6_c1": [
+          286.08,
+          410.667,
+          486.72,
+          469.778
+        ],
+        "cell_r6_c2": [
+          486.72,
+          410.667,
+          687.36,
+          469.778
+        ],
+        "cell_r6_c3": [
+          687.36,
+          410.667,
+          888.0,
+          469.778
+        ],
+        "cell_r7_c0": [
+          52.0,
+          469.778,
+          286.08,
+          528.889
+        ],
+        "cell_r7_c1": [
+          286.08,
+          469.778,
+          486.72,
+          528.889
+        ],
+        "cell_r7_c2": [
+          486.72,
+          469.778,
+          687.36,
+          528.889
+        ],
+        "cell_r7_c3": [
+          687.36,
+          469.778,
+          888.0,
+          528.889
+        ],
+        "cell_r8_c0": [
+          52.0,
+          528.889,
+          286.08,
+          588.0
+        ],
+        "cell_r8_c1": [
+          286.08,
+          528.889,
+          486.72,
+          588.0
+        ],
+        "cell_r8_c2": [
+          486.72,
+          528.889,
+          687.36,
+          588.0
+        ],
+        "cell_r8_c3": [
+          687.36,
+          528.889,
+          888.0,
+          588.0
+        ]
+      },
+      "column_region_bboxes_px": {
+        "Age": [
+          286.08,
+          115.111,
+          486.72,
+          588.0
+        ],
+        "Temp": [
+          486.72,
+          115.111,
+          687.36,
+          588.0
+        ],
+        "Time": [
+          687.36,
+          115.111,
+          888.0,
+          588.0
+        ]
+      },
+      "header_bboxes_px": {
+        "Age": [
+          286.08,
+          56.0,
+          486.72,
+          115.111
+        ],
+        "Temp": [
+          486.72,
+          56.0,
+          687.36,
+          115.111
+        ],
+        "Time": [
+          687.36,
+          56.0,
+          888.0,
+          115.111
+        ]
+      },
+      "image_id": "img0",
+      "row_label_bboxes_px": {
+        "Earl": [
+          52.0,
+          115.111,
+          286.08,
+          174.222
+        ],
+        "Gunn": [
+          52.0,
+          469.778,
+          286.08,
+          528.889
+        ],
+        "Jeu": [
+          52.0,
+          292.444,
+          286.08,
+          351.556
+        ],
+        "Kuhn": [
+          52.0,
+          174.222,
+          286.08,
+          233.333
+        ],
+        "Kuth": [
+          52.0,
+          233.333,
+          286.08,
+          292.444
+        ],
+        "Nona": [
+          52.0,
+          410.667,
+          286.08,
+          469.778
+        ],
+        "Tony": [
+          52.0,
+          351.556,
+          286.08,
+          410.667
+        ],
+        "Yand": [
+          52.0,
+          528.889,
+          286.08,
+          588.0
+        ]
+      },
+      "row_region_bboxes_px": {
+        "Earl": [
+          286.08,
+          115.111,
+          888.0,
+          174.222
+        ],
+        "Gunn": [
+          286.08,
+          469.778,
+          888.0,
+          528.889
+        ],
+        "Jeu": [
+          286.08,
+          292.444,
+          888.0,
+          351.556
+        ],
+        "Kuhn": [
+          286.08,
+          174.222,
+          888.0,
+          233.333
+        ],
+        "Kuth": [
+          286.08,
+          233.333,
+          888.0,
+          292.444
+        ],
+        "Nona": [
+          286.08,
+          410.667,
+          888.0,
+          469.778
+        ],
+        "Tony": [
+          286.08,
+          351.556,
+          888.0,
+          410.667
+        ],
+        "Yand": [
+          286.08,
+          528.889,
+          888.0,
+          588.0
+        ]
+      },
+      "table_bbox_px": [
+        52.0,
+        56.0,
+        888.0,
+        588.0
+      ]
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 640,
+      "canvas_width": 940,
+      "coord_space": "pixel",
+      "grid_style": {
+        "border_width_px": 2,
+        "grid_width_px": 1
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "spreadsheet",
+      "table_bbox_px": [
+        52.0,
+        56.0,
+        888.0,
+        588.0
+      ],
+      "text_style": {
+        "label_font_size_px": 24,
+        "value_font_size_px": 22
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Name",
+            "text_bbox_px": [
+              130.54,
+              76.556,
+              207.54,
+              94.556
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            56.0,
+            286.08,
+            115.111
+          ],
+          "entity_id": "cell_r0_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Age",
+            "text_bbox_px": [
+              360.4,
+              74.056,
+              412.4,
+              97.056
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            286.08,
+            56.0,
+            486.72,
+            115.111
+          ],
+          "entity_id": "cell_r0_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Temp",
+            "column_index": 2,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Temp",
+            "text_bbox_px": [
+              550.04,
+              74.056,
+              624.04,
+              97.056
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            486.72,
+            56.0,
+            687.36,
+            115.111
+          ],
+          "entity_id": "cell_r0_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Time",
+            "column_index": 3,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Time",
+            "text_bbox_px": [
+              755.18,
+              76.556,
+              820.18,
+              94.556
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            687.36,
+            56.0,
+            888.0,
+            115.111
+          ],
+          "entity_id": "cell_r0_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 1,
+            "row_label": "Earl",
+            "text": "Earl",
+            "text_bbox_px": [
+              66.0,
+              135.667,
+              118.0,
+              153.667
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            115.111,
+            286.08,
+            174.222
+          ],
+          "entity_id": "cell_r1_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 1,
+            "row_label": "Earl",
+            "text": "9",
+            "text_bbox_px": [
+              379.4,
+              136.667,
+              393.4,
+              152.667
+            ],
+            "value": 9
+          },
+          "bbox_px": [
+            286.08,
+            115.111,
+            486.72,
+            174.222
+          ],
+          "entity_id": "cell_r1_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 2,
+            "row_index": 1,
+            "row_label": "Earl",
+            "text": "23",
+            "text_bbox_px": [
+              573.04,
+              136.667,
+              601.04,
+              152.667
+            ],
+            "value": 23
+          },
+          "bbox_px": [
+            486.72,
+            115.111,
+            687.36,
+            174.222
+          ],
+          "entity_id": "cell_r1_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 3,
+            "row_index": 1,
+            "row_label": "Earl",
+            "text": "31",
+            "text_bbox_px": [
+              773.68,
+              136.667,
+              801.68,
+              152.667
+            ],
+            "value": 31
+          },
+          "bbox_px": [
+            687.36,
+            115.111,
+            888.0,
+            174.222
+          ],
+          "entity_id": "cell_r1_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 2,
+            "row_label": "Kuhn",
+            "text": "Kuhn",
+            "text_bbox_px": [
+              66.0,
+              194.778,
+              136.0,
+              212.778
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            174.222,
+            286.08,
+            233.333
+          ],
+          "entity_id": "cell_r2_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 2,
+            "row_label": "Kuhn",
+            "text": "31",
+            "text_bbox_px": [
+              372.4,
+              195.778,
+              400.4,
+              211.778
+            ],
+            "value": 31
+          },
+          "bbox_px": [
+            286.08,
+            174.222,
+            486.72,
+            233.333
+          ],
+          "entity_id": "cell_r2_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 2,
+            "row_index": 2,
+            "row_label": "Kuhn",
+            "text": "30",
+            "text_bbox_px": [
+              573.04,
+              195.778,
+              601.04,
+              211.778
+            ],
+            "value": 30
+          },
+          "bbox_px": [
+            486.72,
+            174.222,
+            687.36,
+            233.333
+          ],
+          "entity_id": "cell_r2_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 3,
+            "row_index": 2,
+            "row_label": "Kuhn",
+            "text": "31",
+            "text_bbox_px": [
+              773.68,
+              195.778,
+              801.68,
+              211.778
+            ],
+            "value": 31
+          },
+          "bbox_px": [
+            687.36,
+            174.222,
+            888.0,
+            233.333
+          ],
+          "entity_id": "cell_r2_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 3,
+            "row_label": "Kuth",
+            "text": "Kuth",
+            "text_bbox_px": [
+              66.0,
+              253.889,
+              130.0,
+              271.889
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            233.333,
+            286.08,
+            292.444
+          ],
+          "entity_id": "cell_r3_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 3,
+            "row_label": "Kuth",
+            "text": "19",
+            "text_bbox_px": [
+              372.4,
+              254.889,
+              400.4,
+              270.889
+            ],
+            "value": 19
+          },
+          "bbox_px": [
+            286.08,
+            233.333,
+            486.72,
+            292.444
+          ],
+          "entity_id": "cell_r3_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 2,
+            "row_index": 3,
+            "row_label": "Kuth",
+            "text": "24",
+            "text_bbox_px": [
+              573.04,
+              254.889,
+              601.04,
+              270.889
+            ],
+            "value": 24
+          },
+          "bbox_px": [
+            486.72,
+            233.333,
+            687.36,
+            292.444
+          ],
+          "entity_id": "cell_r3_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 3,
+            "row_index": 3,
+            "row_label": "Kuth",
+            "text": "22",
+            "text_bbox_px": [
+              773.68,
+              254.889,
+              801.68,
+              270.889
+            ],
+            "value": 22
+          },
+          "bbox_px": [
+            687.36,
+            233.333,
+            888.0,
+            292.444
+          ],
+          "entity_id": "cell_r3_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 4,
+            "row_label": "Jeu",
+            "text": "Jeu",
+            "text_bbox_px": [
+              66.0,
+              310.5,
+              110.0,
+              333.5
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            292.444,
+            286.08,
+            351.556
+          ],
+          "entity_id": "cell_r4_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 4,
+            "row_label": "Jeu",
+            "text": "6",
+            "text_bbox_px": [
+              379.4,
+              314.0,
+              393.4,
+              330.0
+            ],
+            "value": 6
+          },
+          "bbox_px": [
+            286.08,
+            292.444,
+            486.72,
+            351.556
+          ],
+          "entity_id": "cell_r4_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 2,
+            "row_index": 4,
+            "row_label": "Jeu",
+            "text": "20",
+            "text_bbox_px": [
+              573.04,
+              314.0,
+              601.04,
+              330.0
+            ],
+            "value": 20
+          },
+          "bbox_px": [
+            486.72,
+            292.444,
+            687.36,
+            351.556
+          ],
+          "entity_id": "cell_r4_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 3,
+            "row_index": 4,
+            "row_label": "Jeu",
+            "text": "2",
+            "text_bbox_px": [
+              780.68,
+              314.0,
+              794.68,
+              330.0
+            ],
+            "value": 2
+          },
+          "bbox_px": [
+            687.36,
+            292.444,
+            888.0,
+            351.556
+          ],
+          "entity_id": "cell_r4_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 5,
+            "row_label": "Tony",
+            "text": "Tony",
+            "text_bbox_px": [
+              66.0,
+              369.611,
+              131.0,
+              392.611
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            351.556,
+            286.08,
+            410.667
+          ],
+          "entity_id": "cell_r5_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 5,
+            "row_label": "Tony",
+            "text": "1",
+            "text_bbox_px": [
+              379.4,
+              373.111,
+              393.4,
+              389.111
+            ],
+            "value": 1
+          },
+          "bbox_px": [
+            286.08,
+            351.556,
+            486.72,
+            410.667
+          ],
+          "entity_id": "cell_r5_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 2,
+            "row_index": 5,
+            "row_label": "Tony",
+            "text": "2",
+            "text_bbox_px": [
+              580.04,
+              373.111,
+              594.04,
+              389.111
+            ],
+            "value": 2
+          },
+          "bbox_px": [
+            486.72,
+            351.556,
+            687.36,
+            410.667
+          ],
+          "entity_id": "cell_r5_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 3,
+            "row_index": 5,
+            "row_label": "Tony",
+            "text": "6",
+            "text_bbox_px": [
+              780.68,
+              373.111,
+              794.68,
+              389.111
+            ],
+            "value": 6
+          },
+          "bbox_px": [
+            687.36,
+            351.556,
+            888.0,
+            410.667
+          ],
+          "entity_id": "cell_r5_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 6,
+            "row_label": "Nona",
+            "text": "Nona",
+            "text_bbox_px": [
+              66.0,
+              431.222,
+              135.0,
+              449.222
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            410.667,
+            286.08,
+            469.778
+          ],
+          "entity_id": "cell_r6_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 6,
+            "row_label": "Nona",
+            "text": "24",
+            "text_bbox_px": [
+              372.4,
+              432.222,
+              400.4,
+              448.222
+            ],
+            "value": 24
+          },
+          "bbox_px": [
+            286.08,
+            410.667,
+            486.72,
+            469.778
+          ],
+          "entity_id": "cell_r6_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 2,
+            "row_index": 6,
+            "row_label": "Nona",
+            "text": "27",
+            "text_bbox_px": [
+              573.04,
+              432.222,
+              601.04,
+              448.222
+            ],
+            "value": 27
+          },
+          "bbox_px": [
+            486.72,
+            410.667,
+            687.36,
+            469.778
+          ],
+          "entity_id": "cell_r6_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 3,
+            "row_index": 6,
+            "row_label": "Nona",
+            "text": "11",
+            "text_bbox_px": [
+              773.68,
+              432.222,
+              801.68,
+              448.222
+            ],
+            "value": 11
+          },
+          "bbox_px": [
+            687.36,
+            410.667,
+            888.0,
+            469.778
+          ],
+          "entity_id": "cell_r6_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 7,
+            "row_label": "Gunn",
+            "text": "Gunn",
+            "text_bbox_px": [
+              66.0,
+              490.333,
+              137.0,
+              508.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            469.778,
+            286.08,
+            528.889
+          ],
+          "entity_id": "cell_r7_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 7,
+            "row_label": "Gunn",
+            "text": "29",
+            "text_bbox_px": [
+              372.4,
+              491.333,
+              400.4,
+              507.333
+            ],
+            "value": 29
+          },
+          "bbox_px": [
+            286.08,
+            469.778,
+            486.72,
+            528.889
+          ],
+          "entity_id": "cell_r7_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 2,
+            "row_index": 7,
+            "row_label": "Gunn",
+            "text": "17",
+            "text_bbox_px": [
+              573.04,
+              491.333,
+              601.04,
+              507.333
+            ],
+            "value": 17
+          },
+          "bbox_px": [
+            486.72,
+            469.778,
+            687.36,
+            528.889
+          ],
+          "entity_id": "cell_r7_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 3,
+            "row_index": 7,
+            "row_label": "Gunn",
+            "text": "24",
+            "text_bbox_px": [
+              773.68,
+              491.333,
+              801.68,
+              507.333
+            ],
+            "value": 24
+          },
+          "bbox_px": [
+            687.36,
+            469.778,
+            888.0,
+            528.889
+          ],
+          "entity_id": "cell_r7_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 8,
+            "row_label": "Yand",
+            "text": "Yand",
+            "text_bbox_px": [
+              66.0,
+              549.444,
+              134.0,
+              567.444
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            528.889,
+            286.08,
+            588.0
+          ],
+          "entity_id": "cell_r8_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 8,
+            "row_label": "Yand",
+            "text": "8",
+            "text_bbox_px": [
+              379.4,
+              550.444,
+              393.4,
+              566.444
+            ],
+            "value": 8
+          },
+          "bbox_px": [
+            286.08,
+            528.889,
+            486.72,
+            588.0
+          ],
+          "entity_id": "cell_r8_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 2,
+            "row_index": 8,
+            "row_label": "Yand",
+            "text": "27",
+            "text_bbox_px": [
+              573.04,
+              550.444,
+              601.04,
+              566.444
+            ],
+            "value": 27
+          },
+          "bbox_px": [
+            486.72,
+            528.889,
+            687.36,
+            588.0
+          ],
+          "entity_id": "cell_r8_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Time",
+            "column_index": 3,
+            "row_index": 8,
+            "row_label": "Yand",
+            "text": "28",
+            "text_bbox_px": [
+              773.68,
+              550.444,
+              801.68,
+              566.444
+            ],
+            "value": 28
+          },
+          "bbox_px": [
+            687.36,
+            528.889,
+            888.0,
+            588.0
+          ],
+          "entity_id": "cell_r8_c3",
+          "entity_type": "table_cell"
+        }
+      ],
+      "relations": {
+        "answer_value": 58,
+        "query_cells": [
+          {
+            "cell_id": "cell_r2_c3",
+            "column": "Time",
+            "column_index": 2,
+            "row_index": 1,
+            "row_label": "Kuhn",
+            "value": 31
+          },
+          {
+            "cell_id": "cell_r6_c2",
+            "column": "Temp",
+            "column_index": 1,
+            "row_index": 5,
+            "row_label": "Nona",
+            "value": 27
+          }
+        ],
+        "scene_variant": "spreadsheet",
+        "supporting_cell_ids": [
+          "cell_r2_c3",
+          "cell_r6_c2"
+        ],
+        "task_variant": "cell_sum_two"
+      },
+      "scene_kind": "table_spreadsheet_readout"
+    },
+    "witness_symbolic": {
+      "type": "bbox_set",
+      "value": [
+        [
+          687.36,
+          174.222,
+          888.0,
+          233.333
+        ],
+        [
+          486.72,
+          410.667,
+          687.36,
+          469.778
+        ]
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

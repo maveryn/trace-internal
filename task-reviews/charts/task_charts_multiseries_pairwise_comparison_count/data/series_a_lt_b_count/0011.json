@@ -1,0 +1,1701 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 3
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "H",
+      "S",
+      "Z"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0011.png"
+  },
+  "instance_seed": 3188394787928804,
+  "prompt": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Count the category labels where Dani is below Olia.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Count the category labels where Dani is below Olia.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Count the category labels where Dani is below Olia.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_charts_multiseries_pairwise_comparison_count",
+  "task_variant": "series_a_lt_b_count",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 3,
+      "category_count": 9,
+      "category_count_range": [
+        5,
+        10
+      ],
+      "category_labels": [
+        "C",
+        "S",
+        "L",
+        "E",
+        "W",
+        "T",
+        "B",
+        "Z",
+        "H"
+      ],
+      "comparison": "less_than",
+      "evidence_labels": [
+        "H",
+        "S",
+        "Z"
+      ],
+      "left_series_label": "Dani",
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb_palette",
+      "queried_series_labels": [
+        "Dani",
+        "Olia"
+      ],
+      "question_format": "numeric_open",
+      "right_series_label": "Olia",
+      "scene_variant": "multi_line",
+      "scene_variant_probabilities": {
+        "grouped_bar": 0.25,
+        "grouped_horizontal_bar": 0.25,
+        "grouped_lollipop": 0.25,
+        "multi_line": 0.25
+      },
+      "series_count": 3,
+      "series_count_range": [
+        2,
+        3
+      ],
+      "series_fill_palette_rgb": [
+        [
+          24,
+          2,
+          51
+        ],
+        [
+          151,
+          161,
+          212
+        ],
+        [
+          85,
+          91,
+          202
+        ]
+      ],
+      "series_labels": [
+        "Dani",
+        "Nick",
+        "Olia"
+      ],
+      "series_outline_palette_rgb": [
+        [
+          13,
+          1,
+          28
+        ],
+        [
+          83,
+          89,
+          117
+        ],
+        [
+          47,
+          50,
+          111
+        ]
+      ],
+      "target_answer": 3,
+      "target_answer_range": [
+        0,
+        8
+      ],
+      "task_variant": "series_a_lt_b_count",
+      "task_variant_probabilities": {
+        "series_a_gt_b_count": 0.5,
+        "series_a_lt_b_count": 0.5
+      },
+      "values_by_category": {
+        "B": {
+          "Dani": 12,
+          "Nick": 9,
+          "Olia": 4
+        },
+        "C": {
+          "Dani": 20,
+          "Nick": 10,
+          "Olia": 8
+        },
+        "E": {
+          "Dani": 19,
+          "Nick": 13,
+          "Olia": 7
+        },
+        "H": {
+          "Dani": 6,
+          "Nick": 8,
+          "Olia": 11
+        },
+        "L": {
+          "Dani": 10,
+          "Nick": 6,
+          "Olia": 3
+        },
+        "S": {
+          "Dani": 4,
+          "Nick": 7,
+          "Olia": 12
+        },
+        "T": {
+          "Dani": 13,
+          "Nick": 12,
+          "Olia": 6
+        },
+        "W": {
+          "Dani": 8,
+          "Nick": 2,
+          "Olia": 1
+        },
+        "Z": {
+          "Dani": 1,
+          "Nick": 10,
+          "Olia": 13
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          802.667,
+          266.476,
+          820.667,
+          562.0
+        ],
+        [
+          211.0,
+          243.429,
+          227.0,
+          562.0
+        ],
+        [
+          719.0,
+          220.381,
+          735.0,
+          562.0
+        ]
+      ],
+      "label_set": [
+        "H",
+        "S",
+        "Z"
+      ],
+      "pixel_point_map": {
+        "H": [
+          811.667,
+          554.0
+        ],
+        "S": [
+          219.0,
+          554.0
+        ],
+        "Z": [
+          727.0,
+          554.0
+        ]
+      },
+      "pixel_point_set": [
+        [
+          811.667,
+          554.0
+        ],
+        [
+          219.0,
+          554.0
+        ],
+        [
+          727.0,
+          554.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "category_count": 9,
+        "category_count_range": [
+          5,
+          10
+        ],
+        "comparison": "less_than",
+        "queried_series_labels": [
+          "Dani",
+          "Olia"
+        ],
+        "scene_variant": "multi_line",
+        "scene_variant_probabilities": {
+          "grouped_bar": 0.25,
+          "grouped_horizontal_bar": 0.25,
+          "grouped_lollipop": 0.25,
+          "multi_line": 0.25
+        },
+        "series_count": 3,
+        "series_count_range": [
+          2,
+          3
+        ],
+        "target_answer": 3,
+        "target_answer_range": [
+          0,
+          8
+        ],
+        "task_variant": "series_a_lt_b_count",
+        "task_variant_probabilities": {
+          "series_a_gt_b_count": 0.5,
+          "series_a_lt_b_count": 0.5
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "charts_multiseries_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+          "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "left_series": "Dani",
+          "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+          "right_series": "Olia"
+        },
+        "task_family_key": "multiseries_chart_comparison",
+        "task_family_variant_index": 4,
+        "task_key": "pairwise_comparison_count_query",
+        "task_variant_index": 4,
+        "task_variant_key": "series_a_lt_b_count",
+        "task_variant_template_index": 1,
+        "template_paths": [
+          "charts/multiseries/charts_multiseries_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:pairwise_comparison_count_query": 5,
+          "task_family:multiseries_chart_comparison": 5,
+          "task_variant:series_a_lt_b_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+              "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Dani",
+              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+              "right_series": "Olia"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 4,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 4,
+            "task_variant_key": "series_a_lt_b_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_lt_b_count": 5
+            }
+          },
+          "prompt": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Count the category labels where Dani is below Olia.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+              "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Dani",
+              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+              "right_series": "Olia"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 4,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 4,
+            "task_variant_key": "series_a_lt_b_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_lt_b_count": 5
+            }
+          },
+          "prompt": "You are given a multiseries chart: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Count the category labels where Dani is below Olia.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "series_a_lt_b_count",
+      "template_id": "charts_multiseries_v1"
+    },
+    "render_map": {
+      "category_label_centers_px": {
+        "B": [
+          642.333,
+          554.0
+        ],
+        "C": [
+          134.333,
+          554.0
+        ],
+        "E": [
+          388.333,
+          554.0
+        ],
+        "H": [
+          811.667,
+          554.0
+        ],
+        "L": [
+          303.667,
+          554.0
+        ],
+        "S": [
+          219.0,
+          554.0
+        ],
+        "T": [
+          557.667,
+          554.0
+        ],
+        "W": [
+          473.0,
+          554.0
+        ],
+        "Z": [
+          727.0,
+          554.0
+        ]
+      },
+      "image_id": "img0",
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 620,
+      "canvas_width": 1100,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "sampling_policy": "random_rgb_palette",
+        "series_fill_palette_rgb": [
+          [
+            24,
+            2,
+            51
+          ],
+          [
+            151,
+            161,
+            212
+          ],
+          [
+            85,
+            91,
+            202
+          ]
+        ],
+        "series_outline_palette_rgb": [
+          [
+            13,
+            1,
+            28
+          ],
+          [
+            83,
+            89,
+            117
+          ],
+          [
+            47,
+            50,
+            111
+          ]
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "multi_line",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 21,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              126.333,
+              59.048,
+              142.333,
+              562.0
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              134.333,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              126.333,
+              59.048,
+              142.333,
+              75.048
+            ],
+            "mark_center_px": [
+              134.333,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              24,
+              2,
+              51
+            ],
+            "mark_outline_rgb": [
+              13,
+              1,
+              28
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Dani",
+            "series_rank": 0,
+            "value": 20
+          },
+          "entity_id": "mark_C_Dani",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              126.333,
+              59.048,
+              142.333,
+              562.0
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              134.333,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              126.333,
+              289.524,
+              142.333,
+              305.524
+            ],
+            "mark_center_px": [
+              134.333,
+              297.524
+            ],
+            "mark_fill_rgb": [
+              151,
+              161,
+              212
+            ],
+            "mark_outline_rgb": [
+              83,
+              89,
+              117
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Nick",
+            "series_rank": 1,
+            "value": 10
+          },
+          "entity_id": "mark_C_Nick",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              126.333,
+              59.048,
+              142.333,
+              562.0
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              134.333,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              126.333,
+              335.619,
+              142.333,
+              351.619
+            ],
+            "mark_center_px": [
+              134.333,
+              343.619
+            ],
+            "mark_fill_rgb": [
+              85,
+              91,
+              202
+            ],
+            "mark_outline_rgb": [
+              47,
+              50,
+              111
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Olia",
+            "series_rank": 2,
+            "value": 8
+          },
+          "entity_id": "mark_C_Olia",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              211.0,
+              243.429,
+              227.0,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              219.0,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              211.0,
+              427.81,
+              227.0,
+              443.81
+            ],
+            "mark_center_px": [
+              219.0,
+              435.81
+            ],
+            "mark_fill_rgb": [
+              24,
+              2,
+              51
+            ],
+            "mark_outline_rgb": [
+              13,
+              1,
+              28
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Dani",
+            "series_rank": 0,
+            "value": 4
+          },
+          "entity_id": "mark_S_Dani",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              211.0,
+              243.429,
+              227.0,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              219.0,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              211.0,
+              358.667,
+              227.0,
+              374.667
+            ],
+            "mark_center_px": [
+              219.0,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              151,
+              161,
+              212
+            ],
+            "mark_outline_rgb": [
+              83,
+              89,
+              117
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Nick",
+            "series_rank": 1,
+            "value": 7
+          },
+          "entity_id": "mark_S_Nick",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              211.0,
+              243.429,
+              227.0,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              219.0,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              211.0,
+              243.429,
+              227.0,
+              259.429
+            ],
+            "mark_center_px": [
+              219.0,
+              251.429
+            ],
+            "mark_fill_rgb": [
+              85,
+              91,
+              202
+            ],
+            "mark_outline_rgb": [
+              47,
+              50,
+              111
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Olia",
+            "series_rank": 2,
+            "value": 12
+          },
+          "entity_id": "mark_S_Olia",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              295.667,
+              289.524,
+              311.667,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              303.667,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              295.667,
+              289.524,
+              311.667,
+              305.524
+            ],
+            "mark_center_px": [
+              303.667,
+              297.524
+            ],
+            "mark_fill_rgb": [
+              24,
+              2,
+              51
+            ],
+            "mark_outline_rgb": [
+              13,
+              1,
+              28
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Dani",
+            "series_rank": 0,
+            "value": 10
+          },
+          "entity_id": "mark_L_Dani",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              295.667,
+              289.524,
+              311.667,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              303.667,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              295.667,
+              381.714,
+              311.667,
+              397.714
+            ],
+            "mark_center_px": [
+              303.667,
+              389.714
+            ],
+            "mark_fill_rgb": [
+              151,
+              161,
+              212
+            ],
+            "mark_outline_rgb": [
+              83,
+              89,
+              117
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Nick",
+            "series_rank": 1,
+            "value": 6
+          },
+          "entity_id": "mark_L_Nick",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              295.667,
+              289.524,
+              311.667,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              303.667,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              295.667,
+              450.857,
+              311.667,
+              466.857
+            ],
+            "mark_center_px": [
+              303.667,
+              458.857
+            ],
+            "mark_fill_rgb": [
+              85,
+              91,
+              202
+            ],
+            "mark_outline_rgb": [
+              47,
+              50,
+              111
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Olia",
+            "series_rank": 2,
+            "value": 3
+          },
+          "entity_id": "mark_L_Olia",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              380.333,
+              82.095,
+              396.333,
+              562.0
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              388.333,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              380.333,
+              82.095,
+              396.333,
+              98.095
+            ],
+            "mark_center_px": [
+              388.333,
+              90.095
+            ],
+            "mark_fill_rgb": [
+              24,
+              2,
+              51
+            ],
+            "mark_outline_rgb": [
+              13,
+              1,
+              28
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Dani",
+            "series_rank": 0,
+            "value": 19
+          },
+          "entity_id": "mark_E_Dani",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              380.333,
+              82.095,
+              396.333,
+              562.0
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              388.333,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              380.333,
+              220.381,
+              396.333,
+              236.381
+            ],
+            "mark_center_px": [
+              388.333,
+              228.381
+            ],
+            "mark_fill_rgb": [
+              151,
+              161,
+              212
+            ],
+            "mark_outline_rgb": [
+              83,
+              89,
+              117
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Nick",
+            "series_rank": 1,
+            "value": 13
+          },
+          "entity_id": "mark_E_Nick",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              380.333,
+              82.095,
+              396.333,
+              562.0
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              388.333,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              380.333,
+              358.667,
+              396.333,
+              374.667
+            ],
+            "mark_center_px": [
+              388.333,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              85,
+              91,
+              202
+            ],
+            "mark_outline_rgb": [
+              47,
+              50,
+              111
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Olia",
+            "series_rank": 2,
+            "value": 7
+          },
+          "entity_id": "mark_E_Olia",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              461.0,
+              335.619,
+              485.0,
+              562.0
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              465.0,
+              335.619,
+              481.0,
+              351.619
+            ],
+            "mark_center_px": [
+              473.0,
+              343.619
+            ],
+            "mark_fill_rgb": [
+              24,
+              2,
+              51
+            ],
+            "mark_outline_rgb": [
+              13,
+              1,
+              28
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Dani",
+            "series_rank": 0,
+            "value": 8
+          },
+          "entity_id": "mark_W_Dani",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              461.0,
+              335.619,
+              485.0,
+              562.0
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              465.0,
+              473.905,
+              481.0,
+              489.905
+            ],
+            "mark_center_px": [
+              473.0,
+              481.905
+            ],
+            "mark_fill_rgb": [
+              151,
+              161,
+              212
+            ],
+            "mark_outline_rgb": [
+              83,
+              89,
+              117
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Nick",
+            "series_rank": 1,
+            "value": 2
+          },
+          "entity_id": "mark_W_Nick",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              461.0,
+              335.619,
+              485.0,
+              562.0
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              465.0,
+              496.952,
+              481.0,
+              512.952
+            ],
+            "mark_center_px": [
+              473.0,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              85,
+              91,
+              202
+            ],
+            "mark_outline_rgb": [
+              47,
+              50,
+              111
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Olia",
+            "series_rank": 2,
+            "value": 1
+          },
+          "entity_id": "mark_W_Olia",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              549.667,
+              220.381,
+              565.667,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              557.667,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              549.667,
+              220.381,
+              565.667,
+              236.381
+            ],
+            "mark_center_px": [
+              557.667,
+              228.381
+            ],
+            "mark_fill_rgb": [
+              24,
+              2,
+              51
+            ],
+            "mark_outline_rgb": [
+              13,
+              1,
+              28
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Dani",
+            "series_rank": 0,
+            "value": 13
+          },
+          "entity_id": "mark_T_Dani",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              549.667,
+              220.381,
+              565.667,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              557.667,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              549.667,
+              243.429,
+              565.667,
+              259.429
+            ],
+            "mark_center_px": [
+              557.667,
+              251.429
+            ],
+            "mark_fill_rgb": [
+              151,
+              161,
+              212
+            ],
+            "mark_outline_rgb": [
+              83,
+              89,
+              117
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Nick",
+            "series_rank": 1,
+            "value": 12
+          },
+          "entity_id": "mark_T_Nick",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              549.667,
+              220.381,
+              565.667,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              557.667,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              549.667,
+              381.714,
+              565.667,
+              397.714
+            ],
+            "mark_center_px": [
+              557.667,
+              389.714
+            ],
+            "mark_fill_rgb": [
+              85,
+              91,
+              202
+            ],
+            "mark_outline_rgb": [
+              47,
+              50,
+              111
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Olia",
+            "series_rank": 2,
+            "value": 6
+          },
+          "entity_id": "mark_T_Olia",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              633.833,
+              243.429,
+              650.833,
+              562.0
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              642.333,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              634.333,
+              243.429,
+              650.333,
+              259.429
+            ],
+            "mark_center_px": [
+              642.333,
+              251.429
+            ],
+            "mark_fill_rgb": [
+              24,
+              2,
+              51
+            ],
+            "mark_outline_rgb": [
+              13,
+              1,
+              28
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Dani",
+            "series_rank": 0,
+            "value": 12
+          },
+          "entity_id": "mark_B_Dani",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              633.833,
+              243.429,
+              650.833,
+              562.0
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              642.333,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              634.333,
+              312.571,
+              650.333,
+              328.571
+            ],
+            "mark_center_px": [
+              642.333,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              151,
+              161,
+              212
+            ],
+            "mark_outline_rgb": [
+              83,
+              89,
+              117
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Nick",
+            "series_rank": 1,
+            "value": 9
+          },
+          "entity_id": "mark_B_Nick",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              633.833,
+              243.429,
+              650.833,
+              562.0
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              642.333,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              634.333,
+              427.81,
+              650.333,
+              443.81
+            ],
+            "mark_center_px": [
+              642.333,
+              435.81
+            ],
+            "mark_fill_rgb": [
+              85,
+              91,
+              202
+            ],
+            "mark_outline_rgb": [
+              47,
+              50,
+              111
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Olia",
+            "series_rank": 2,
+            "value": 4
+          },
+          "entity_id": "mark_B_Olia",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              719.0,
+              220.381,
+              735.0,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              727.0,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              719.0,
+              496.952,
+              735.0,
+              512.952
+            ],
+            "mark_center_px": [
+              727.0,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              24,
+              2,
+              51
+            ],
+            "mark_outline_rgb": [
+              13,
+              1,
+              28
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Dani",
+            "series_rank": 0,
+            "value": 1
+          },
+          "entity_id": "mark_Z_Dani",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              719.0,
+              220.381,
+              735.0,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              727.0,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              719.0,
+              289.524,
+              735.0,
+              305.524
+            ],
+            "mark_center_px": [
+              727.0,
+              297.524
+            ],
+            "mark_fill_rgb": [
+              151,
+              161,
+              212
+            ],
+            "mark_outline_rgb": [
+              83,
+              89,
+              117
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Nick",
+            "series_rank": 1,
+            "value": 10
+          },
+          "entity_id": "mark_Z_Nick",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              719.0,
+              220.381,
+              735.0,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              727.0,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              719.0,
+              220.381,
+              735.0,
+              236.381
+            ],
+            "mark_center_px": [
+              727.0,
+              228.381
+            ],
+            "mark_fill_rgb": [
+              85,
+              91,
+              202
+            ],
+            "mark_outline_rgb": [
+              47,
+              50,
+              111
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Olia",
+            "series_rank": 2,
+            "value": 13
+          },
+          "entity_id": "mark_Z_Olia",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              802.667,
+              266.476,
+              820.667,
+              562.0
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              811.667,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              803.667,
+              381.714,
+              819.667,
+              397.714
+            ],
+            "mark_center_px": [
+              811.667,
+              389.714
+            ],
+            "mark_fill_rgb": [
+              24,
+              2,
+              51
+            ],
+            "mark_outline_rgb": [
+              13,
+              1,
+              28
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Dani",
+            "series_rank": 0,
+            "value": 6
+          },
+          "entity_id": "mark_H_Dani",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              802.667,
+              266.476,
+              820.667,
+              562.0
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              811.667,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              803.667,
+              335.619,
+              819.667,
+              351.619
+            ],
+            "mark_center_px": [
+              811.667,
+              343.619
+            ],
+            "mark_fill_rgb": [
+              151,
+              161,
+              212
+            ],
+            "mark_outline_rgb": [
+              83,
+              89,
+              117
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Nick",
+            "series_rank": 1,
+            "value": 8
+          },
+          "entity_id": "mark_H_Nick",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              802.667,
+              266.476,
+              820.667,
+              562.0
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              811.667,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              803.667,
+              266.476,
+              819.667,
+              282.476
+            ],
+            "mark_center_px": [
+              811.667,
+              274.476
+            ],
+            "mark_fill_rgb": [
+              85,
+              91,
+              202
+            ],
+            "mark_outline_rgb": [
+              47,
+              50,
+              111
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Olia",
+            "series_rank": 2,
+            "value": 11
+          },
+          "entity_id": "mark_H_Olia",
+          "entity_type": "point"
+        }
+      ],
+      "relations": {
+        "comparison": "less_than",
+        "evidence_labels": [
+          "H",
+          "S",
+          "Z"
+        ],
+        "queried_series_labels": [
+          "Dani",
+          "Olia"
+        ],
+        "scene_variant": "multi_line",
+        "task_variant": "series_a_lt_b_count"
+      },
+      "scene_kind": "chart_multi_line_multiseries"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "H",
+        "S",
+        "Z"
+      ],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

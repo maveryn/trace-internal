@@ -1,0 +1,11 @@
+{
+  "inspection_count": 25,
+  "task_id": "task_tile_count_largest_component_size",
+  "variants": {
+    "": 25
+  },
+  "workbook": "tile/task_tile_count_largest_component_size/task_tile_count_largest_component_size.xlsx",
+  "workbook_sheets": {
+    "largest_component_size": "largest_component_size"
+  }
+}

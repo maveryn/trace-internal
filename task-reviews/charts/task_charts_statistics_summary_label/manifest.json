@@ -1,0 +1,15 @@
+{
+  "inspection_count": 75,
+  "task_id": "task_charts_statistics_summary_label",
+  "variants": {
+    "argmax": 25,
+    "argmin": 25,
+    "median_label": 25
+  },
+  "workbook": "charts/task_charts_statistics_summary_label/task_charts_statistics_summary_label.xlsx",
+  "workbook_sheets": {
+    "argmax": "argmax",
+    "argmin": "argmin",
+    "median_label": "median_label"
+  }
+}

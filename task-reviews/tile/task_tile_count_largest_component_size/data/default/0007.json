@@ -1,0 +1,1978 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 8
+  },
+  "evidence_gt": {
+    "type": "grid_point_set",
+    "value": [
+      [
+        1,
+        3
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        4,
+        2
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        5,
+        2
+      ],
+      [
+        5,
+        3
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "tile/task_tile_count_largest_component_size/images/default/0007.png"
+  },
+  "instance_seed": 2338851822923713,
+  "prompt": "Work from the labeled rectangular tile board in the image. It has 6 rows and 7 columns with visible row and column indices. What is the size of the largest 4-neighbor connected component of blue [#2D75E6]?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to the row-major list of [row, col] coordinates for the tiles in that largest query-color component.\nAnswer rule: set \"answer\" to the size of the largest 4-neighbor connected component formed by the query-color tiles as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[0,1],[1,1],[1,2]],\"answer\":4}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the labeled rectangular tile board in the image. It has 6 rows and 7 columns with visible row and column indices. What is the size of the largest 4-neighbor connected component of blue [#2D75E6]?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to the row-major list of [row, col] coordinates for the tiles in that largest query-color component.\nAnswer rule: set \"answer\" to the size of the largest 4-neighbor connected component formed by the query-color tiles as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[0,1],[1,1],[1,2]],\"answer\":4}",
+    "answer_only": "Work from the labeled rectangular tile board in the image. It has 6 rows and 7 columns with visible row and column indices. What is the size of the largest 4-neighbor connected component of blue [#2D75E6]?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the size of the largest 4-neighbor connected component formed by the query-color tiles as an integer.\nExample JSON:\n{\"answer\":4}"
+  },
+  "task": "task_tile_count_largest_component_size",
+  "task_variant": "largest_component_size",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 8,
+      "available_largest_component_sizes": [
+        4,
+        8
+      ],
+      "cols": 7,
+      "component_counts_by_color_name": {
+        "blue": 6,
+        "magenta": 6,
+        "maroon": 9
+      },
+      "component_sizes": [
+        2,
+        1,
+        8,
+        2,
+        1,
+        2
+      ],
+      "components": [
+        {
+          "component_index": 0,
+          "coords": [
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              1
+            ]
+          ],
+          "ids": [
+            "cell_0_0",
+            "cell_0_1"
+          ],
+          "is_largest_component": false,
+          "size": 2
+        },
+        {
+          "component_index": 1,
+          "coords": [
+            [
+              0,
+              4
+            ]
+          ],
+          "ids": [
+            "cell_0_4"
+          ],
+          "is_largest_component": false,
+          "size": 1
+        },
+        {
+          "component_index": 2,
+          "coords": [
+            [
+              1,
+              3
+            ],
+            [
+              2,
+              2
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              3,
+              2
+            ],
+            [
+              4,
+              2
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              5,
+              2
+            ],
+            [
+              5,
+              3
+            ]
+          ],
+          "ids": [
+            "cell_1_3",
+            "cell_2_2",
+            "cell_2_3",
+            "cell_3_2",
+            "cell_4_2",
+            "cell_4_3",
+            "cell_5_2",
+            "cell_5_3"
+          ],
+          "is_largest_component": true,
+          "size": 8
+        },
+        {
+          "component_index": 3,
+          "coords": [
+            [
+              3,
+              0
+            ],
+            [
+              4,
+              0
+            ]
+          ],
+          "ids": [
+            "cell_3_0",
+            "cell_4_0"
+          ],
+          "is_largest_component": false,
+          "size": 2
+        },
+        {
+          "component_index": 4,
+          "coords": [
+            [
+              3,
+              4
+            ]
+          ],
+          "ids": [
+            "cell_3_4"
+          ],
+          "is_largest_component": false,
+          "size": 1
+        },
+        {
+          "component_index": 5,
+          "coords": [
+            [
+              5,
+              5
+            ],
+            [
+              5,
+              6
+            ]
+          ],
+          "ids": [
+            "cell_5_5",
+            "cell_5_6"
+          ],
+          "is_largest_component": false,
+          "size": 2
+        }
+      ],
+      "counts_by_color_name": {
+        "blue": 16,
+        "magenta": 11,
+        "maroon": 15
+      },
+      "largest_component_index": 2,
+      "matching_coords": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          5,
+          6
+        ]
+      ],
+      "matching_ids": [
+        "cell_0_0",
+        "cell_0_1",
+        "cell_0_4",
+        "cell_1_3",
+        "cell_2_2",
+        "cell_2_3",
+        "cell_3_0",
+        "cell_3_2",
+        "cell_3_4",
+        "cell_4_0",
+        "cell_4_2",
+        "cell_4_3",
+        "cell_5_2",
+        "cell_5_3",
+        "cell_5_5",
+        "cell_5_6"
+      ],
+      "palette": [
+        {
+          "hex": "#963644",
+          "label": "maroon [#963644]",
+          "name": "maroon",
+          "rgb": [
+            150,
+            54,
+            68
+          ]
+        },
+        {
+          "hex": "#2D75E6",
+          "label": "blue [#2D75E6]",
+          "name": "blue",
+          "rgb": [
+            45,
+            117,
+            230
+          ]
+        },
+        {
+          "hex": "#D02C91",
+          "label": "magenta [#D02C91]",
+          "name": "magenta",
+          "rgb": [
+            208,
+            44,
+            145
+          ]
+        }
+      ],
+      "palette_size": 3,
+      "query_color_hex": "#2D75E6",
+      "query_color_label": "blue [#2D75E6]",
+      "query_color_name": "blue",
+      "query_color_rgb": [
+        45,
+        117,
+        230
+      ],
+      "query_component_count": 6,
+      "query_selection_strategy": "uniform_over_target_largest_component_size_range_with_rejection",
+      "rows": 6,
+      "target_largest_component_size": 8,
+      "target_largest_component_size_range": [
+        2,
+        10
+      ],
+      "task_variant": "largest_component_size",
+      "winning_component_coords": [
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          5,
+          3
+        ]
+      ],
+      "winning_component_ids": [
+        "cell_1_3",
+        "cell_2_2",
+        "cell_2_3",
+        "cell_3_2",
+        "cell_4_2",
+        "cell_4_3",
+        "cell_5_2",
+        "cell_5_3"
+      ]
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          192.0,
+          94.0,
+          233.0,
+          129.0
+        ],
+        [
+          151.0,
+          129.0,
+          192.0,
+          164.0
+        ],
+        [
+          192.0,
+          129.0,
+          233.0,
+          164.0
+        ],
+        [
+          151.0,
+          164.0,
+          192.0,
+          199.0
+        ],
+        [
+          151.0,
+          199.0,
+          192.0,
+          234.0
+        ],
+        [
+          192.0,
+          199.0,
+          233.0,
+          234.0
+        ],
+        [
+          151.0,
+          234.0,
+          192.0,
+          269.0
+        ],
+        [
+          192.0,
+          234.0,
+          233.0,
+          269.0
+        ]
+      ],
+      "grid_point_set": [
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          5,
+          3
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          212.5,
+          111.5
+        ],
+        [
+          171.5,
+          146.5
+        ],
+        [
+          212.5,
+          146.5
+        ],
+        [
+          171.5,
+          181.5
+        ],
+        [
+          171.5,
+          216.5
+        ],
+        [
+          212.5,
+          216.5
+        ],
+        [
+          171.5,
+          251.5
+        ],
+        [
+          212.5,
+          251.5
+        ]
+      ]
+    },
+    "query_spec": {
+      "dsl_program": [
+        {
+          "entity_type": "tile_cell",
+          "op": "select",
+          "out": "cells"
+        },
+        {
+          "in": "cells",
+          "op": "filter",
+          "out": "query_cells",
+          "predicate": {
+            "color_name": "blue"
+          }
+        },
+        {
+          "connectivity": "4_neighbor",
+          "in": "query_cells",
+          "op": "connected_components",
+          "out": "components"
+        },
+        {
+          "in": "components",
+          "op": "argmax_component_size",
+          "out": "largest_component",
+          "tie_break": "reject_non_unique"
+        },
+        {
+          "coord_space": "tile_grid",
+          "coord_type": "grid_point_set",
+          "in": "largest_component",
+          "op": "project_coords",
+          "ordering": "row_major",
+          "out": "evidence"
+        },
+        {
+          "in": "largest_component",
+          "op": "count",
+          "out": "answer"
+        }
+      ],
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "tile_count_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the size of the largest 4-neighbor connected component formed by the query-color tiles as an integer",
+          "cols": 7,
+          "evidence_hint": "set \"evidence\" to the row-major list of [row, col] coordinates for the tiles in that largest query-color component",
+          "json_example": "{\"evidence\":[[0,0],[0,1],[1,1],[1,2]],\"answer\":4}",
+          "json_example_answer_only": "{\"answer\":4}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "query_color": "blue [#2D75E6]",
+          "rows": 6
+        },
+        "task_family_key": "rectangular_tile_board",
+        "task_family_variant_index": 4,
+        "task_key": "largest_component_size_query",
+        "task_variant_index": 0,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "tile/count/tile_count_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:largest_component_size_query": 5,
+          "task_family:rectangular_tile_board": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "tile_count_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the size of the largest 4-neighbor connected component formed by the query-color tiles as an integer",
+              "cols": 7,
+              "evidence_hint": "set \"evidence\" to the row-major list of [row, col] coordinates for the tiles in that largest query-color component",
+              "json_example": "{\"evidence\":[[0,0],[0,1],[1,1],[1,2]],\"answer\":4}",
+              "json_example_answer_only": "{\"answer\":4}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "query_color": "blue [#2D75E6]",
+              "rows": 6
+            },
+            "task_family_key": "rectangular_tile_board",
+            "task_family_variant_index": 4,
+            "task_key": "largest_component_size_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "tile/count/tile_count_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:largest_component_size_query": 5,
+              "task_family:rectangular_tile_board": 5
+            }
+          },
+          "prompt": "Work from the labeled rectangular tile board in the image. It has 6 rows and 7 columns with visible row and column indices. What is the size of the largest 4-neighbor connected component of blue [#2D75E6]?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to the row-major list of [row, col] coordinates for the tiles in that largest query-color component.\nAnswer rule: set \"answer\" to the size of the largest 4-neighbor connected component formed by the query-color tiles as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[0,1],[1,1],[1,2]],\"answer\":4}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "tile_count_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the size of the largest 4-neighbor connected component formed by the query-color tiles as an integer",
+              "cols": 7,
+              "evidence_hint": "set \"evidence\" to the row-major list of [row, col] coordinates for the tiles in that largest query-color component",
+              "json_example": "{\"evidence\":[[0,0],[0,1],[1,1],[1,2]],\"answer\":4}",
+              "json_example_answer_only": "{\"answer\":4}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "query_color": "blue [#2D75E6]",
+              "rows": 6
+            },
+            "task_family_key": "rectangular_tile_board",
+            "task_family_variant_index": 4,
+            "task_key": "largest_component_size_query",
+            "task_variant_index": 0,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "tile/count/tile_count_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:largest_component_size_query": 5,
+              "task_family:rectangular_tile_board": 5
+            }
+          },
+          "prompt": "Work from the labeled rectangular tile board in the image. It has 6 rows and 7 columns with visible row and column indices. What is the size of the largest 4-neighbor connected component of blue [#2D75E6]?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the size of the largest 4-neighbor connected component formed by the query-color tiles as an integer.\nExample JSON:\n{\"answer\":4}"
+        }
+      },
+      "task_variant": "largest_component_size",
+      "template_id": "largest_component_size_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "cell_0_0": {
+          "bbox": [
+            69.0,
+            59.0,
+            110.0,
+            94.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            89.5,
+            76.5
+          ]
+        },
+        "cell_0_1": {
+          "bbox": [
+            110.0,
+            59.0,
+            151.0,
+            94.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            130.5,
+            76.5
+          ]
+        },
+        "cell_0_2": {
+          "bbox": [
+            151.0,
+            59.0,
+            192.0,
+            94.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            171.5,
+            76.5
+          ]
+        },
+        "cell_0_3": {
+          "bbox": [
+            192.0,
+            59.0,
+            233.0,
+            94.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            212.5,
+            76.5
+          ]
+        },
+        "cell_0_4": {
+          "bbox": [
+            233.0,
+            59.0,
+            274.0,
+            94.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            253.5,
+            76.5
+          ]
+        },
+        "cell_0_5": {
+          "bbox": [
+            274.0,
+            59.0,
+            315.0,
+            94.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            294.5,
+            76.5
+          ]
+        },
+        "cell_0_6": {
+          "bbox": [
+            315.0,
+            59.0,
+            356.0,
+            94.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            335.5,
+            76.5
+          ]
+        },
+        "cell_1_0": {
+          "bbox": [
+            69.0,
+            94.0,
+            110.0,
+            129.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            89.5,
+            111.5
+          ]
+        },
+        "cell_1_1": {
+          "bbox": [
+            110.0,
+            94.0,
+            151.0,
+            129.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            130.5,
+            111.5
+          ]
+        },
+        "cell_1_2": {
+          "bbox": [
+            151.0,
+            94.0,
+            192.0,
+            129.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            171.5,
+            111.5
+          ]
+        },
+        "cell_1_3": {
+          "bbox": [
+            192.0,
+            94.0,
+            233.0,
+            129.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            212.5,
+            111.5
+          ]
+        },
+        "cell_1_4": {
+          "bbox": [
+            233.0,
+            94.0,
+            274.0,
+            129.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            253.5,
+            111.5
+          ]
+        },
+        "cell_1_5": {
+          "bbox": [
+            274.0,
+            94.0,
+            315.0,
+            129.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            294.5,
+            111.5
+          ]
+        },
+        "cell_1_6": {
+          "bbox": [
+            315.0,
+            94.0,
+            356.0,
+            129.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            335.5,
+            111.5
+          ]
+        },
+        "cell_2_0": {
+          "bbox": [
+            69.0,
+            129.0,
+            110.0,
+            164.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            89.5,
+            146.5
+          ]
+        },
+        "cell_2_1": {
+          "bbox": [
+            110.0,
+            129.0,
+            151.0,
+            164.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            130.5,
+            146.5
+          ]
+        },
+        "cell_2_2": {
+          "bbox": [
+            151.0,
+            129.0,
+            192.0,
+            164.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            171.5,
+            146.5
+          ]
+        },
+        "cell_2_3": {
+          "bbox": [
+            192.0,
+            129.0,
+            233.0,
+            164.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            212.5,
+            146.5
+          ]
+        },
+        "cell_2_4": {
+          "bbox": [
+            233.0,
+            129.0,
+            274.0,
+            164.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            253.5,
+            146.5
+          ]
+        },
+        "cell_2_5": {
+          "bbox": [
+            274.0,
+            129.0,
+            315.0,
+            164.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            294.5,
+            146.5
+          ]
+        },
+        "cell_2_6": {
+          "bbox": [
+            315.0,
+            129.0,
+            356.0,
+            164.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            335.5,
+            146.5
+          ]
+        },
+        "cell_3_0": {
+          "bbox": [
+            69.0,
+            164.0,
+            110.0,
+            199.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            89.5,
+            181.5
+          ]
+        },
+        "cell_3_1": {
+          "bbox": [
+            110.0,
+            164.0,
+            151.0,
+            199.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            130.5,
+            181.5
+          ]
+        },
+        "cell_3_2": {
+          "bbox": [
+            151.0,
+            164.0,
+            192.0,
+            199.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            171.5,
+            181.5
+          ]
+        },
+        "cell_3_3": {
+          "bbox": [
+            192.0,
+            164.0,
+            233.0,
+            199.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            212.5,
+            181.5
+          ]
+        },
+        "cell_3_4": {
+          "bbox": [
+            233.0,
+            164.0,
+            274.0,
+            199.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            253.5,
+            181.5
+          ]
+        },
+        "cell_3_5": {
+          "bbox": [
+            274.0,
+            164.0,
+            315.0,
+            199.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            294.5,
+            181.5
+          ]
+        },
+        "cell_3_6": {
+          "bbox": [
+            315.0,
+            164.0,
+            356.0,
+            199.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            335.5,
+            181.5
+          ]
+        },
+        "cell_4_0": {
+          "bbox": [
+            69.0,
+            199.0,
+            110.0,
+            234.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            89.5,
+            216.5
+          ]
+        },
+        "cell_4_1": {
+          "bbox": [
+            110.0,
+            199.0,
+            151.0,
+            234.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            130.5,
+            216.5
+          ]
+        },
+        "cell_4_2": {
+          "bbox": [
+            151.0,
+            199.0,
+            192.0,
+            234.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            171.5,
+            216.5
+          ]
+        },
+        "cell_4_3": {
+          "bbox": [
+            192.0,
+            199.0,
+            233.0,
+            234.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            212.5,
+            216.5
+          ]
+        },
+        "cell_4_4": {
+          "bbox": [
+            233.0,
+            199.0,
+            274.0,
+            234.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            253.5,
+            216.5
+          ]
+        },
+        "cell_4_5": {
+          "bbox": [
+            274.0,
+            199.0,
+            315.0,
+            234.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            294.5,
+            216.5
+          ]
+        },
+        "cell_4_6": {
+          "bbox": [
+            315.0,
+            199.0,
+            356.0,
+            234.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            335.5,
+            216.5
+          ]
+        },
+        "cell_5_0": {
+          "bbox": [
+            69.0,
+            234.0,
+            110.0,
+            269.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            89.5,
+            251.5
+          ]
+        },
+        "cell_5_1": {
+          "bbox": [
+            110.0,
+            234.0,
+            151.0,
+            269.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            130.5,
+            251.5
+          ]
+        },
+        "cell_5_2": {
+          "bbox": [
+            151.0,
+            234.0,
+            192.0,
+            269.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            171.5,
+            251.5
+          ]
+        },
+        "cell_5_3": {
+          "bbox": [
+            192.0,
+            234.0,
+            233.0,
+            269.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            212.5,
+            251.5
+          ]
+        },
+        "cell_5_4": {
+          "bbox": [
+            233.0,
+            234.0,
+            274.0,
+            269.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            253.5,
+            251.5
+          ]
+        },
+        "cell_5_5": {
+          "bbox": [
+            274.0,
+            234.0,
+            315.0,
+            269.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            294.5,
+            251.5
+          ]
+        },
+        "cell_5_6": {
+          "bbox": [
+            315.0,
+            234.0,
+            356.0,
+            269.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            335.5,
+            251.5
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            246,
+            246,
+            246
+          ],
+          "kind": "solid"
+        }
+      },
+      "board_origin_px": [
+        69,
+        59
+      ],
+      "board_size_px": [
+        287,
+        210
+      ],
+      "canvas_height_px": 292,
+      "canvas_width_px": 388,
+      "cols": 7,
+      "coord_space": "tile_grid",
+      "coordinate_gutters_px": {
+        "left": 32,
+        "top": 32
+      },
+      "label_style": {
+        "font_size_px": 16,
+        "stroke_width_px": 2
+      },
+      "outer_padding_px": {
+        "x": 29,
+        "y": 21
+      },
+      "placement_offset_px": {
+        "x": 8,
+        "y": 6
+      },
+      "post_image_noise": {
+        "applied": true,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [
+          {
+            "params": {
+              "alpha": 0.02927
+            },
+            "type": "noise"
+          }
+        ],
+        "enabled": true
+      },
+      "rows": 6,
+      "tile_aspect_ratio": 1.181156,
+      "tile_height_px": 35,
+      "tile_orientation": "wide",
+      "tile_outline_width_px": 2,
+      "tile_width_px": 41,
+      "tiling_type": "rectangular_tiling"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "blue",
+            "fill_rgb": [
+              45,
+              117,
+              230
+            ],
+            "is_largest_component": false,
+            "is_query_match": true,
+            "query_component_index": 0,
+            "row": 0
+          },
+          "entity_id": "cell_0_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "blue",
+            "fill_rgb": [
+              45,
+              117,
+              230
+            ],
+            "is_largest_component": false,
+            "is_query_match": true,
+            "query_component_index": 0,
+            "row": 0
+          },
+          "entity_id": "cell_0_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_query_match": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "magenta",
+            "fill_rgb": [
+              208,
+              44,
+              145
+            ],
+            "is_query_match": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "blue",
+            "fill_rgb": [
+              45,
+              117,
+              230
+            ],
+            "is_largest_component": false,
+            "is_query_match": true,
+            "query_component_index": 1,
+            "row": 0
+          },
+          "entity_id": "cell_0_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 5,
+            "color_name": "magenta",
+            "fill_rgb": [
+              208,
+              44,
+              145
+            ],
+            "is_query_match": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_5",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 6,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_query_match": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_6",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_query_match": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_query_match": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "magenta",
+            "fill_rgb": [
+              208,
+              44,
+              145
+            ],
+            "is_query_match": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "blue",
+            "fill_rgb": [
+              45,
+              117,
+              230
+            ],
+            "is_largest_component": true,
+            "is_query_match": true,
+            "query_component_index": 2,
+            "row": 1
+          },
+          "entity_id": "cell_1_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_query_match": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 5,
+            "color_name": "magenta",
+            "fill_rgb": [
+              208,
+              44,
+              145
+            ],
+            "is_query_match": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_5",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 6,
+            "color_name": "magenta",
+            "fill_rgb": [
+              208,
+              44,
+              145
+            ],
+            "is_query_match": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_6",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_query_match": false,
+            "row": 2
+          },
+          "entity_id": "cell_2_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_query_match": false,
+            "row": 2
+          },
+          "entity_id": "cell_2_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "blue",
+            "fill_rgb": [
+              45,
+              117,
+              230
+            ],
+            "is_largest_component": true,
+            "is_query_match": true,
+            "query_component_index": 2,
+            "row": 2
+          },
+          "entity_id": "cell_2_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "blue",
+            "fill_rgb": [
+              45,
+              117,
+              230
+            ],
+            "is_largest_component": true,
+            "is_query_match": true,
+            "query_component_index": 2,
+            "row": 2
+          },
+          "entity_id": "cell_2_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "magenta",
+            "fill_rgb": [
+              208,
+              44,
+              145
+            ],
+            "is_query_match": false,
+            "row": 2
+          },
+          "entity_id": "cell_2_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 5,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_query_match": false,
+            "row": 2
+          },
+          "entity_id": "cell_2_5",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 6,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_query_match": false,
+            "row": 2
+          },
+          "entity_id": "cell_2_6",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "blue",
+            "fill_rgb": [
+              45,
+              117,
+              230
+            ],
+            "is_largest_component": false,
+            "is_query_match": true,
+            "query_component_index": 3,
+            "row": 3
+          },
+          "entity_id": "cell_3_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "magenta",
+            "fill_rgb": [
+              208,
+              44,
+              145
+            ],
+            "is_query_match": false,
+            "row": 3
+          },
+          "entity_id": "cell_3_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "blue",
+            "fill_rgb": [
+              45,
+              117,
+              230
+            ],
+            "is_largest_component": true,
+            "is_query_match": true,
+            "query_component_index": 2,
+            "row": 3
+          },
+          "entity_id": "cell_3_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_query_match": false,
+            "row": 3
+          },
+          "entity_id": "cell_3_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "blue",
+            "fill_rgb": [
+              45,
+              117,
+              230
+            ],
+            "is_largest_component": false,
+            "is_query_match": true,
+            "query_component_index": 4,
+            "row": 3
+          },
+          "entity_id": "cell_3_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 5,
+            "color_name": "magenta",
+            "fill_rgb": [
+              208,
+              44,
+              145
+            ],
+            "is_query_match": false,
+            "row": 3
+          },
+          "entity_id": "cell_3_5",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 6,
+            "color_name": "magenta",
+            "fill_rgb": [
+              208,
+              44,
+              145
+            ],
+            "is_query_match": false,
+            "row": 3
+          },
+          "entity_id": "cell_3_6",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "blue",
+            "fill_rgb": [
+              45,
+              117,
+              230
+            ],
+            "is_largest_component": false,
+            "is_query_match": true,
+            "query_component_index": 3,
+            "row": 4
+          },
+          "entity_id": "cell_4_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "magenta",
+            "fill_rgb": [
+              208,
+              44,
+              145
+            ],
+            "is_query_match": false,
+            "row": 4
+          },
+          "entity_id": "cell_4_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "blue",
+            "fill_rgb": [
+              45,
+              117,
+              230
+            ],
+            "is_largest_component": true,
+            "is_query_match": true,
+            "query_component_index": 2,
+            "row": 4
+          },
+          "entity_id": "cell_4_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "blue",
+            "fill_rgb": [
+              45,
+              117,
+              230
+            ],
+            "is_largest_component": true,
+            "is_query_match": true,
+            "query_component_index": 2,
+            "row": 4
+          },
+          "entity_id": "cell_4_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_query_match": false,
+            "row": 4
+          },
+          "entity_id": "cell_4_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 5,
+            "color_name": "magenta",
+            "fill_rgb": [
+              208,
+              44,
+              145
+            ],
+            "is_query_match": false,
+            "row": 4
+          },
+          "entity_id": "cell_4_5",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 6,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_query_match": false,
+            "row": 4
+          },
+          "entity_id": "cell_4_6",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_query_match": false,
+            "row": 5
+          },
+          "entity_id": "cell_5_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_query_match": false,
+            "row": 5
+          },
+          "entity_id": "cell_5_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "blue",
+            "fill_rgb": [
+              45,
+              117,
+              230
+            ],
+            "is_largest_component": true,
+            "is_query_match": true,
+            "query_component_index": 2,
+            "row": 5
+          },
+          "entity_id": "cell_5_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "blue",
+            "fill_rgb": [
+              45,
+              117,
+              230
+            ],
+            "is_largest_component": true,
+            "is_query_match": true,
+            "query_component_index": 2,
+            "row": 5
+          },
+          "entity_id": "cell_5_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "maroon",
+            "fill_rgb": [
+              150,
+              54,
+              68
+            ],
+            "is_query_match": false,
+            "row": 5
+          },
+          "entity_id": "cell_5_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 5,
+            "color_name": "blue",
+            "fill_rgb": [
+              45,
+              117,
+              230
+            ],
+            "is_largest_component": false,
+            "is_query_match": true,
+            "query_component_index": 5,
+            "row": 5
+          },
+          "entity_id": "cell_5_5",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 6,
+            "color_name": "blue",
+            "fill_rgb": [
+              45,
+              117,
+              230
+            ],
+            "is_largest_component": false,
+            "is_query_match": true,
+            "query_component_index": 5,
+            "row": 5
+          },
+          "entity_id": "cell_5_6",
+          "entity_type": "tile_cell"
+        }
+      ],
+      "relations": {},
+      "scene_kind": "rectangular_tile_board"
+    },
+    "witness_symbolic": {
+      "ids": [
+        "cell_1_3",
+        "cell_2_2",
+        "cell_2_3",
+        "cell_3_2",
+        "cell_4_2",
+        "cell_4_3",
+        "cell_5_2",
+        "cell_5_3"
+      ],
+      "type": "id_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

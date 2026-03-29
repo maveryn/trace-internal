@@ -1,0 +1,940 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 4
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "D",
+      "R",
+      "V",
+      "X"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0022.png"
+  },
+  "instance_seed": 3769719566401525,
+  "prompt": "The image shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Find how many category labels show Pass lower than Dey.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Find how many category labels show Pass lower than Dey.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "The image shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Find how many category labels show Pass lower than Dey.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_charts_multiseries_pairwise_comparison_count",
+  "task_variant": "series_a_lt_b_count",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 4,
+      "category_count": 5,
+      "category_count_range": [
+        5,
+        10
+      ],
+      "category_labels": [
+        "V",
+        "D",
+        "R",
+        "X",
+        "F"
+      ],
+      "comparison": "less_than",
+      "evidence_labels": [
+        "D",
+        "R",
+        "V",
+        "X"
+      ],
+      "left_series_label": "Pass",
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb_palette",
+      "queried_series_labels": [
+        "Pass",
+        "Dey"
+      ],
+      "question_format": "numeric_open",
+      "right_series_label": "Dey",
+      "scene_variant": "grouped_lollipop",
+      "scene_variant_probabilities": {
+        "grouped_bar": 0.25,
+        "grouped_horizontal_bar": 0.25,
+        "grouped_lollipop": 0.25,
+        "multi_line": 0.25
+      },
+      "series_count": 2,
+      "series_count_range": [
+        2,
+        3
+      ],
+      "series_fill_palette_rgb": [
+        [
+          162,
+          108,
+          201
+        ],
+        [
+          158,
+          12,
+          96
+        ]
+      ],
+      "series_labels": [
+        "Pass",
+        "Dey"
+      ],
+      "series_outline_palette_rgb": [
+        [
+          89,
+          59,
+          111
+        ],
+        [
+          87,
+          7,
+          53
+        ]
+      ],
+      "target_answer": 4,
+      "target_answer_range": [
+        0,
+        8
+      ],
+      "task_variant": "series_a_lt_b_count",
+      "task_variant_probabilities": {
+        "series_a_gt_b_count": 0.5,
+        "series_a_lt_b_count": 0.5
+      },
+      "values_by_category": {
+        "D": {
+          "Dey": 20,
+          "Pass": 11
+        },
+        "F": {
+          "Dey": 9,
+          "Pass": 18
+        },
+        "R": {
+          "Dey": 20,
+          "Pass": 6
+        },
+        "V": {
+          "Dey": 19,
+          "Pass": 4
+        },
+        "X": {
+          "Dey": 16,
+          "Pass": 12
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          289.74,
+          59.048,
+          351.46,
+          562.0
+        ],
+        [
+          442.14,
+          59.048,
+          503.86,
+          562.0
+        ],
+        [
+          137.34,
+          82.095,
+          199.06,
+          562.0
+        ],
+        [
+          594.54,
+          151.238,
+          656.26,
+          562.0
+        ]
+      ],
+      "label_set": [
+        "D",
+        "R",
+        "V",
+        "X"
+      ],
+      "pixel_point_map": {
+        "D": [
+          320.6,
+          554.0
+        ],
+        "R": [
+          473.0,
+          554.0
+        ],
+        "V": [
+          168.2,
+          554.0
+        ],
+        "X": [
+          625.4,
+          554.0
+        ]
+      },
+      "pixel_point_set": [
+        [
+          320.6,
+          554.0
+        ],
+        [
+          473.0,
+          554.0
+        ],
+        [
+          168.2,
+          554.0
+        ],
+        [
+          625.4,
+          554.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "category_count": 5,
+        "category_count_range": [
+          5,
+          10
+        ],
+        "comparison": "less_than",
+        "queried_series_labels": [
+          "Pass",
+          "Dey"
+        ],
+        "scene_variant": "grouped_lollipop",
+        "scene_variant_probabilities": {
+          "grouped_bar": 0.25,
+          "grouped_horizontal_bar": 0.25,
+          "grouped_lollipop": 0.25,
+          "multi_line": 0.25
+        },
+        "series_count": 2,
+        "series_count_range": [
+          2,
+          3
+        ],
+        "target_answer": 4,
+        "target_answer_range": [
+          0,
+          8
+        ],
+        "task_variant": "series_a_lt_b_count",
+        "task_variant_probabilities": {
+          "series_a_gt_b_count": 0.5,
+          "series_a_lt_b_count": 0.5
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "charts_multiseries_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+          "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "left_series": "Pass",
+          "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
+          "right_series": "Dey"
+        },
+        "task_family_key": "multiseries_chart_comparison",
+        "task_family_variant_index": 0,
+        "task_key": "pairwise_comparison_count_query",
+        "task_variant_index": 0,
+        "task_variant_key": "series_a_lt_b_count",
+        "task_variant_template_index": 4,
+        "template_paths": [
+          "charts/multiseries/charts_multiseries_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:pairwise_comparison_count_query": 5,
+          "task_family:multiseries_chart_comparison": 5,
+          "task_variant:series_a_lt_b_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+              "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Pass",
+              "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
+              "right_series": "Dey"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 0,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 0,
+            "task_variant_key": "series_a_lt_b_count",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_lt_b_count": 5
+            }
+          },
+          "prompt": "The image shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Find how many category labels show Pass lower than Dey.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+              "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Pass",
+              "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
+              "right_series": "Dey"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 0,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 0,
+            "task_variant_key": "series_a_lt_b_count",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_lt_b_count": 5
+            }
+          },
+          "prompt": "The image shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Compare the two queried series category by category. Find how many category labels show Pass lower than Dey.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "series_a_lt_b_count",
+      "template_id": "charts_multiseries_v1"
+    },
+    "render_map": {
+      "category_label_centers_px": {
+        "D": [
+          320.6,
+          554.0
+        ],
+        "F": [
+          777.8,
+          554.0
+        ],
+        "R": [
+          473.0,
+          554.0
+        ],
+        "V": [
+          168.2,
+          554.0
+        ],
+        "X": [
+          625.4,
+          554.0
+        ]
+      },
+      "image_id": "img0",
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 620,
+      "canvas_width": 1100,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "sampling_policy": "random_rgb_palette",
+        "series_fill_palette_rgb": [
+          [
+            162,
+            108,
+            201
+          ],
+          [
+            158,
+            12,
+            96
+          ]
+        ],
+        "series_outline_palette_rgb": [
+          [
+            89,
+            59,
+            111
+          ],
+          [
+            87,
+            7,
+            53
+          ]
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "grouped_lollipop",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 21,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              137.34,
+              82.095,
+              199.06,
+              562.0
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              168.2,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              137.34,
+              427.81,
+              153.34,
+              443.81
+            ],
+            "mark_center_px": [
+              145.34,
+              435.81
+            ],
+            "mark_fill_rgb": [
+              162,
+              108,
+              201
+            ],
+            "mark_outline_rgb": [
+              89,
+              59,
+              111
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Pass",
+            "series_rank": 0,
+            "value": 4
+          },
+          "entity_id": "mark_V_Pass",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              137.34,
+              82.095,
+              199.06,
+              562.0
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              168.2,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              183.06,
+              82.095,
+              199.06,
+              98.095
+            ],
+            "mark_center_px": [
+              191.06,
+              90.095
+            ],
+            "mark_fill_rgb": [
+              158,
+              12,
+              96
+            ],
+            "mark_outline_rgb": [
+              87,
+              7,
+              53
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Dey",
+            "series_rank": 1,
+            "value": 19
+          },
+          "entity_id": "mark_V_Dey",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              289.74,
+              59.048,
+              351.46,
+              562.0
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              320.6,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              289.74,
+              266.476,
+              305.74,
+              282.476
+            ],
+            "mark_center_px": [
+              297.74,
+              274.476
+            ],
+            "mark_fill_rgb": [
+              162,
+              108,
+              201
+            ],
+            "mark_outline_rgb": [
+              89,
+              59,
+              111
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Pass",
+            "series_rank": 0,
+            "value": 11
+          },
+          "entity_id": "mark_D_Pass",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              289.74,
+              59.048,
+              351.46,
+              562.0
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              320.6,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              335.46,
+              59.048,
+              351.46,
+              75.048
+            ],
+            "mark_center_px": [
+              343.46,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              158,
+              12,
+              96
+            ],
+            "mark_outline_rgb": [
+              87,
+              7,
+              53
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Dey",
+            "series_rank": 1,
+            "value": 20
+          },
+          "entity_id": "mark_D_Dey",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              442.14,
+              59.048,
+              503.86,
+              562.0
+            ],
+            "category_label": "R",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              442.14,
+              381.714,
+              458.14,
+              397.714
+            ],
+            "mark_center_px": [
+              450.14,
+              389.714
+            ],
+            "mark_fill_rgb": [
+              162,
+              108,
+              201
+            ],
+            "mark_outline_rgb": [
+              89,
+              59,
+              111
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Pass",
+            "series_rank": 0,
+            "value": 6
+          },
+          "entity_id": "mark_R_Pass",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              442.14,
+              59.048,
+              503.86,
+              562.0
+            ],
+            "category_label": "R",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              487.86,
+              59.048,
+              503.86,
+              75.048
+            ],
+            "mark_center_px": [
+              495.86,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              158,
+              12,
+              96
+            ],
+            "mark_outline_rgb": [
+              87,
+              7,
+              53
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Dey",
+            "series_rank": 1,
+            "value": 20
+          },
+          "entity_id": "mark_R_Dey",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              594.54,
+              151.238,
+              656.26,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              625.4,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              594.54,
+              243.429,
+              610.54,
+              259.429
+            ],
+            "mark_center_px": [
+              602.54,
+              251.429
+            ],
+            "mark_fill_rgb": [
+              162,
+              108,
+              201
+            ],
+            "mark_outline_rgb": [
+              89,
+              59,
+              111
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Pass",
+            "series_rank": 0,
+            "value": 12
+          },
+          "entity_id": "mark_X_Pass",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              594.54,
+              151.238,
+              656.26,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              625.4,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              640.26,
+              151.238,
+              656.26,
+              167.238
+            ],
+            "mark_center_px": [
+              648.26,
+              159.238
+            ],
+            "mark_fill_rgb": [
+              158,
+              12,
+              96
+            ],
+            "mark_outline_rgb": [
+              87,
+              7,
+              53
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Dey",
+            "series_rank": 1,
+            "value": 16
+          },
+          "entity_id": "mark_X_Dey",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              746.94,
+              105.143,
+              808.66,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              777.8,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              746.94,
+              105.143,
+              762.94,
+              121.143
+            ],
+            "mark_center_px": [
+              754.94,
+              113.143
+            ],
+            "mark_fill_rgb": [
+              162,
+              108,
+              201
+            ],
+            "mark_outline_rgb": [
+              89,
+              59,
+              111
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Pass",
+            "series_rank": 0,
+            "value": 18
+          },
+          "entity_id": "mark_F_Pass",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              746.94,
+              105.143,
+              808.66,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              777.8,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              792.66,
+              312.571,
+              808.66,
+              328.571
+            ],
+            "mark_center_px": [
+              800.66,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              158,
+              12,
+              96
+            ],
+            "mark_outline_rgb": [
+              87,
+              7,
+              53
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Dey",
+            "series_rank": 1,
+            "value": 9
+          },
+          "entity_id": "mark_F_Dey",
+          "entity_type": "point"
+        }
+      ],
+      "relations": {
+        "comparison": "less_than",
+        "evidence_labels": [
+          "D",
+          "R",
+          "V",
+          "X"
+        ],
+        "queried_series_labels": [
+          "Pass",
+          "Dey"
+        ],
+        "scene_variant": "grouped_lollipop",
+        "task_variant": "series_a_lt_b_count"
+      },
+      "scene_kind": "chart_grouped_lollipop_multiseries"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "D",
+        "R",
+        "V",
+        "X"
+      ],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

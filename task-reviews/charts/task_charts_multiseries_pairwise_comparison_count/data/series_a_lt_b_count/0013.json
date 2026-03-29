@@ -1,0 +1,1932 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 8
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "B",
+      "C",
+      "E",
+      "S",
+      "T",
+      "U",
+      "V",
+      "W"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0013.png"
+  },
+  "instance_seed": 1309280685328520,
+  "prompt": "Use the chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Count the category labels where Rip is below Mill.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Count the category labels where Rip is below Mill.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "Use the chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Count the category labels where Rip is below Mill.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_charts_multiseries_pairwise_comparison_count",
+  "task_variant": "series_a_lt_b_count",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 8,
+      "category_count": 10,
+      "category_count_range": [
+        5,
+        10
+      ],
+      "category_labels": [
+        "V",
+        "U",
+        "Q",
+        "E",
+        "T",
+        "S",
+        "C",
+        "W",
+        "Y",
+        "B"
+      ],
+      "comparison": "less_than",
+      "evidence_labels": [
+        "B",
+        "C",
+        "E",
+        "S",
+        "T",
+        "U",
+        "V",
+        "W"
+      ],
+      "left_series_label": "Rip",
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb_palette",
+      "queried_series_labels": [
+        "Rip",
+        "Mill"
+      ],
+      "question_format": "numeric_open",
+      "right_series_label": "Mill",
+      "scene_variant": "grouped_horizontal_bar",
+      "scene_variant_probabilities": {
+        "grouped_bar": 0.25,
+        "grouped_horizontal_bar": 0.25,
+        "grouped_lollipop": 0.25,
+        "multi_line": 0.25
+      },
+      "series_count": 3,
+      "series_count_range": [
+        2,
+        3
+      ],
+      "series_fill_palette_rgb": [
+        [
+          206,
+          64,
+          153
+        ],
+        [
+          60,
+          104,
+          71
+        ],
+        [
+          54,
+          81,
+          175
+        ]
+      ],
+      "series_labels": [
+        "Hake",
+        "Rip",
+        "Mill"
+      ],
+      "series_outline_palette_rgb": [
+        [
+          113,
+          35,
+          84
+        ],
+        [
+          33,
+          57,
+          39
+        ],
+        [
+          30,
+          45,
+          96
+        ]
+      ],
+      "target_answer": 8,
+      "target_answer_range": [
+        0,
+        8
+      ],
+      "task_variant": "series_a_lt_b_count",
+      "task_variant_probabilities": {
+        "series_a_gt_b_count": 0.5,
+        "series_a_lt_b_count": 0.5
+      },
+      "values_by_category": {
+        "B": {
+          "Hake": 3,
+          "Mill": 12,
+          "Rip": 1
+        },
+        "C": {
+          "Hake": 11,
+          "Mill": 17,
+          "Rip": 5
+        },
+        "E": {
+          "Hake": 14,
+          "Mill": 20,
+          "Rip": 9
+        },
+        "Q": {
+          "Hake": 14,
+          "Mill": 1,
+          "Rip": 19
+        },
+        "S": {
+          "Hake": 14,
+          "Mill": 16,
+          "Rip": 9
+        },
+        "T": {
+          "Hake": 14,
+          "Mill": 15,
+          "Rip": 10
+        },
+        "U": {
+          "Hake": 6,
+          "Mill": 7,
+          "Rip": 4
+        },
+        "V": {
+          "Hake": 13,
+          "Mill": 17,
+          "Rip": 12
+        },
+        "W": {
+          "Hake": 11,
+          "Mill": 12,
+          "Rip": 2
+        },
+        "Y": {
+          "Hake": 3,
+          "Mill": 1,
+          "Rip": 9
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          53.5,
+          490.12,
+          527.429,
+          517.48
+        ],
+        [
+          54.0,
+          344.92,
+          708.857,
+          372.28
+        ],
+        [
+          54.5,
+          199.72,
+          817.714,
+          227.08
+        ],
+        [
+          54.0,
+          296.52,
+          672.571,
+          323.88
+        ],
+        [
+          54.5,
+          248.12,
+          636.286,
+          275.48
+        ],
+        [
+          53.0,
+          102.92,
+          346.0,
+          130.28
+        ],
+        [
+          53.5,
+          54.52,
+          708.857,
+          81.88
+        ],
+        [
+          50.0,
+          393.32,
+          527.429,
+          420.68
+        ]
+      ],
+      "label_set": [
+        "B",
+        "C",
+        "E",
+        "S",
+        "T",
+        "U",
+        "V",
+        "W"
+      ],
+      "pixel_point_map": {
+        "B": [
+          62.0,
+          503.8
+        ],
+        "C": [
+          62.0,
+          358.6
+        ],
+        "E": [
+          62.0,
+          213.4
+        ],
+        "S": [
+          62.0,
+          310.2
+        ],
+        "T": [
+          62.0,
+          261.8
+        ],
+        "U": [
+          62.0,
+          116.6
+        ],
+        "V": [
+          62.0,
+          68.2
+        ],
+        "W": [
+          62.0,
+          407.0
+        ]
+      },
+      "pixel_point_set": [
+        [
+          62.0,
+          503.8
+        ],
+        [
+          62.0,
+          358.6
+        ],
+        [
+          62.0,
+          213.4
+        ],
+        [
+          62.0,
+          310.2
+        ],
+        [
+          62.0,
+          261.8
+        ],
+        [
+          62.0,
+          116.6
+        ],
+        [
+          62.0,
+          68.2
+        ],
+        [
+          62.0,
+          407.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "category_count": 10,
+        "category_count_range": [
+          5,
+          10
+        ],
+        "comparison": "less_than",
+        "queried_series_labels": [
+          "Rip",
+          "Mill"
+        ],
+        "scene_variant": "grouped_horizontal_bar",
+        "scene_variant_probabilities": {
+          "grouped_bar": 0.25,
+          "grouped_horizontal_bar": 0.25,
+          "grouped_lollipop": 0.25,
+          "multi_line": 0.25
+        },
+        "series_count": 3,
+        "series_count_range": [
+          2,
+          3
+        ],
+        "target_answer": 8,
+        "target_answer_range": [
+          0,
+          8
+        ],
+        "task_variant": "series_a_lt_b_count",
+        "task_variant_probabilities": {
+          "series_a_gt_b_count": 0.5,
+          "series_a_lt_b_count": 0.5
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "charts_multiseries_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+          "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "left_series": "Rip",
+          "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+          "right_series": "Mill"
+        },
+        "task_family_key": "multiseries_chart_comparison",
+        "task_family_variant_index": 1,
+        "task_key": "pairwise_comparison_count_query",
+        "task_variant_index": 2,
+        "task_variant_key": "series_a_lt_b_count",
+        "task_variant_template_index": 1,
+        "template_paths": [
+          "charts/multiseries/charts_multiseries_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:pairwise_comparison_count_query": 5,
+          "task_family:multiseries_chart_comparison": 5,
+          "task_variant:series_a_lt_b_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+              "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Rip",
+              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+              "right_series": "Mill"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 1,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 2,
+            "task_variant_key": "series_a_lt_b_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_lt_b_count": 5
+            }
+          },
+          "prompt": "Use the chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Count the category labels where Rip is below Mill.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+              "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Rip",
+              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+              "right_series": "Mill"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 1,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 2,
+            "task_variant_key": "series_a_lt_b_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_lt_b_count": 5
+            }
+          },
+          "prompt": "Use the chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Determine how many category labels satisfy the requested pairwise series comparison. Count the category labels where Rip is below Mill.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "series_a_lt_b_count",
+      "template_id": "charts_multiseries_v1"
+    },
+    "render_map": {
+      "category_label_centers_px": {
+        "B": [
+          62.0,
+          503.8
+        ],
+        "C": [
+          62.0,
+          358.6
+        ],
+        "E": [
+          62.0,
+          213.4
+        ],
+        "Q": [
+          62.0,
+          165.0
+        ],
+        "S": [
+          62.0,
+          310.2
+        ],
+        "T": [
+          62.0,
+          261.8
+        ],
+        "U": [
+          62.0,
+          116.6
+        ],
+        "V": [
+          62.0,
+          68.2
+        ],
+        "W": [
+          62.0,
+          407.0
+        ],
+        "Y": [
+          62.0,
+          455.4
+        ]
+      },
+      "image_id": "img0",
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 620,
+      "canvas_width": 1100,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "sampling_policy": "random_rgb_palette",
+        "series_fill_palette_rgb": [
+          [
+            206,
+            64,
+            153
+          ],
+          [
+            60,
+            104,
+            71
+          ],
+          [
+            54,
+            81,
+            175
+          ]
+        ],
+        "series_outline_palette_rgb": [
+          [
+            113,
+            35,
+            84
+          ],
+          [
+            33,
+            57,
+            39
+          ],
+          [
+            30,
+            45,
+            96
+          ]
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "grouped_horizontal_bar",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 21,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              54.52,
+              708.857,
+              81.88
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              62.0,
+              68.2
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              92.0,
+              54.52,
+              563.714,
+              62.52
+            ],
+            "mark_center_px": [
+              327.857,
+              58.52
+            ],
+            "mark_fill_rgb": [
+              206,
+              64,
+              153
+            ],
+            "mark_outline_rgb": [
+              113,
+              35,
+              84
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Hake",
+            "series_rank": 0,
+            "value": 13
+          },
+          "entity_id": "mark_V_Hake",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              54.52,
+              708.857,
+              81.88
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              62.0,
+              68.2
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              92.0,
+              64.2,
+              527.429,
+              72.2
+            ],
+            "mark_center_px": [
+              309.714,
+              68.2
+            ],
+            "mark_fill_rgb": [
+              60,
+              104,
+              71
+            ],
+            "mark_outline_rgb": [
+              33,
+              57,
+              39
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Rip",
+            "series_rank": 1,
+            "value": 12
+          },
+          "entity_id": "mark_V_Rip",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              54.52,
+              708.857,
+              81.88
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              62.0,
+              68.2
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              92.0,
+              73.88,
+              708.857,
+              81.88
+            ],
+            "mark_center_px": [
+              400.429,
+              77.88
+            ],
+            "mark_fill_rgb": [
+              54,
+              81,
+              175
+            ],
+            "mark_outline_rgb": [
+              30,
+              45,
+              96
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Mill",
+            "series_rank": 2,
+            "value": 17
+          },
+          "entity_id": "mark_V_Mill",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              102.92,
+              346.0,
+              130.28
+            ],
+            "category_label": "U",
+            "category_label_center_px": [
+              62.0,
+              116.6
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              92.0,
+              102.92,
+              309.714,
+              110.92
+            ],
+            "mark_center_px": [
+              200.857,
+              106.92
+            ],
+            "mark_fill_rgb": [
+              206,
+              64,
+              153
+            ],
+            "mark_outline_rgb": [
+              113,
+              35,
+              84
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Hake",
+            "series_rank": 0,
+            "value": 6
+          },
+          "entity_id": "mark_U_Hake",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              102.92,
+              346.0,
+              130.28
+            ],
+            "category_label": "U",
+            "category_label_center_px": [
+              62.0,
+              116.6
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              92.0,
+              112.6,
+              237.143,
+              120.6
+            ],
+            "mark_center_px": [
+              164.571,
+              116.6
+            ],
+            "mark_fill_rgb": [
+              60,
+              104,
+              71
+            ],
+            "mark_outline_rgb": [
+              33,
+              57,
+              39
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Rip",
+            "series_rank": 1,
+            "value": 4
+          },
+          "entity_id": "mark_U_Rip",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              102.92,
+              346.0,
+              130.28
+            ],
+            "category_label": "U",
+            "category_label_center_px": [
+              62.0,
+              116.6
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              92.0,
+              122.28,
+              346.0,
+              130.28
+            ],
+            "mark_center_px": [
+              219.0,
+              126.28
+            ],
+            "mark_fill_rgb": [
+              54,
+              81,
+              175
+            ],
+            "mark_outline_rgb": [
+              30,
+              45,
+              96
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Mill",
+            "series_rank": 2,
+            "value": 7
+          },
+          "entity_id": "mark_U_Mill",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              52.5,
+              151.32,
+              781.429,
+              178.68
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              62.0,
+              165.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              151.32,
+              600.0,
+              159.32
+            ],
+            "mark_center_px": [
+              346.0,
+              155.32
+            ],
+            "mark_fill_rgb": [
+              206,
+              64,
+              153
+            ],
+            "mark_outline_rgb": [
+              113,
+              35,
+              84
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Hake",
+            "series_rank": 0,
+            "value": 14
+          },
+          "entity_id": "mark_Q_Hake",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              52.5,
+              151.32,
+              781.429,
+              178.68
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              62.0,
+              165.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              161.0,
+              781.429,
+              169.0
+            ],
+            "mark_center_px": [
+              436.714,
+              165.0
+            ],
+            "mark_fill_rgb": [
+              60,
+              104,
+              71
+            ],
+            "mark_outline_rgb": [
+              33,
+              57,
+              39
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Rip",
+            "series_rank": 1,
+            "value": 19
+          },
+          "entity_id": "mark_Q_Rip",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              52.5,
+              151.32,
+              781.429,
+              178.68
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              62.0,
+              165.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              170.68,
+              128.286,
+              178.68
+            ],
+            "mark_center_px": [
+              110.143,
+              174.68
+            ],
+            "mark_fill_rgb": [
+              54,
+              81,
+              175
+            ],
+            "mark_outline_rgb": [
+              30,
+              45,
+              96
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Mill",
+            "series_rank": 2,
+            "value": 1
+          },
+          "entity_id": "mark_Q_Mill",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.5,
+              199.72,
+              817.714,
+              227.08
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              62.0,
+              213.4
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              199.72,
+              600.0,
+              207.72
+            ],
+            "mark_center_px": [
+              346.0,
+              203.72
+            ],
+            "mark_fill_rgb": [
+              206,
+              64,
+              153
+            ],
+            "mark_outline_rgb": [
+              113,
+              35,
+              84
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Hake",
+            "series_rank": 0,
+            "value": 14
+          },
+          "entity_id": "mark_E_Hake",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.5,
+              199.72,
+              817.714,
+              227.08
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              62.0,
+              213.4
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              209.4,
+              418.571,
+              217.4
+            ],
+            "mark_center_px": [
+              255.286,
+              213.4
+            ],
+            "mark_fill_rgb": [
+              60,
+              104,
+              71
+            ],
+            "mark_outline_rgb": [
+              33,
+              57,
+              39
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Rip",
+            "series_rank": 1,
+            "value": 9
+          },
+          "entity_id": "mark_E_Rip",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.5,
+              199.72,
+              817.714,
+              227.08
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              62.0,
+              213.4
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              219.08,
+              817.714,
+              227.08
+            ],
+            "mark_center_px": [
+              454.857,
+              223.08
+            ],
+            "mark_fill_rgb": [
+              54,
+              81,
+              175
+            ],
+            "mark_outline_rgb": [
+              30,
+              45,
+              96
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Mill",
+            "series_rank": 2,
+            "value": 20
+          },
+          "entity_id": "mark_E_Mill",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.5,
+              248.12,
+              636.286,
+              275.48
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              62.0,
+              261.8
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              248.12,
+              600.0,
+              256.12
+            ],
+            "mark_center_px": [
+              346.0,
+              252.12
+            ],
+            "mark_fill_rgb": [
+              206,
+              64,
+              153
+            ],
+            "mark_outline_rgb": [
+              113,
+              35,
+              84
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Hake",
+            "series_rank": 0,
+            "value": 14
+          },
+          "entity_id": "mark_T_Hake",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.5,
+              248.12,
+              636.286,
+              275.48
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              62.0,
+              261.8
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              257.8,
+              454.857,
+              265.8
+            ],
+            "mark_center_px": [
+              273.429,
+              261.8
+            ],
+            "mark_fill_rgb": [
+              60,
+              104,
+              71
+            ],
+            "mark_outline_rgb": [
+              33,
+              57,
+              39
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Rip",
+            "series_rank": 1,
+            "value": 10
+          },
+          "entity_id": "mark_T_Rip",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.5,
+              248.12,
+              636.286,
+              275.48
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              62.0,
+              261.8
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              267.48,
+              636.286,
+              275.48
+            ],
+            "mark_center_px": [
+              364.143,
+              271.48
+            ],
+            "mark_fill_rgb": [
+              54,
+              81,
+              175
+            ],
+            "mark_outline_rgb": [
+              30,
+              45,
+              96
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Mill",
+            "series_rank": 2,
+            "value": 15
+          },
+          "entity_id": "mark_T_Mill",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.0,
+              296.52,
+              672.571,
+              323.88
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              62.0,
+              310.2
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              92.0,
+              296.52,
+              600.0,
+              304.52
+            ],
+            "mark_center_px": [
+              346.0,
+              300.52
+            ],
+            "mark_fill_rgb": [
+              206,
+              64,
+              153
+            ],
+            "mark_outline_rgb": [
+              113,
+              35,
+              84
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Hake",
+            "series_rank": 0,
+            "value": 14
+          },
+          "entity_id": "mark_S_Hake",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.0,
+              296.52,
+              672.571,
+              323.88
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              62.0,
+              310.2
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              92.0,
+              306.2,
+              418.571,
+              314.2
+            ],
+            "mark_center_px": [
+              255.286,
+              310.2
+            ],
+            "mark_fill_rgb": [
+              60,
+              104,
+              71
+            ],
+            "mark_outline_rgb": [
+              33,
+              57,
+              39
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Rip",
+            "series_rank": 1,
+            "value": 9
+          },
+          "entity_id": "mark_S_Rip",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.0,
+              296.52,
+              672.571,
+              323.88
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              62.0,
+              310.2
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              92.0,
+              315.88,
+              672.571,
+              323.88
+            ],
+            "mark_center_px": [
+              382.286,
+              319.88
+            ],
+            "mark_fill_rgb": [
+              54,
+              81,
+              175
+            ],
+            "mark_outline_rgb": [
+              30,
+              45,
+              96
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Mill",
+            "series_rank": 2,
+            "value": 16
+          },
+          "entity_id": "mark_S_Mill",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.0,
+              344.92,
+              708.857,
+              372.28
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              62.0,
+              358.6
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              92.0,
+              344.92,
+              491.143,
+              352.92
+            ],
+            "mark_center_px": [
+              291.571,
+              348.92
+            ],
+            "mark_fill_rgb": [
+              206,
+              64,
+              153
+            ],
+            "mark_outline_rgb": [
+              113,
+              35,
+              84
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Hake",
+            "series_rank": 0,
+            "value": 11
+          },
+          "entity_id": "mark_C_Hake",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.0,
+              344.92,
+              708.857,
+              372.28
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              62.0,
+              358.6
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              92.0,
+              354.6,
+              273.429,
+              362.6
+            ],
+            "mark_center_px": [
+              182.714,
+              358.6
+            ],
+            "mark_fill_rgb": [
+              60,
+              104,
+              71
+            ],
+            "mark_outline_rgb": [
+              33,
+              57,
+              39
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Rip",
+            "series_rank": 1,
+            "value": 5
+          },
+          "entity_id": "mark_C_Rip",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.0,
+              344.92,
+              708.857,
+              372.28
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              62.0,
+              358.6
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              92.0,
+              364.28,
+              708.857,
+              372.28
+            ],
+            "mark_center_px": [
+              400.429,
+              368.28
+            ],
+            "mark_fill_rgb": [
+              54,
+              81,
+              175
+            ],
+            "mark_outline_rgb": [
+              30,
+              45,
+              96
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Mill",
+            "series_rank": 2,
+            "value": 17
+          },
+          "entity_id": "mark_C_Mill",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              50.0,
+              393.32,
+              527.429,
+              420.68
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              62.0,
+              407.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              92.0,
+              393.32,
+              491.143,
+              401.32
+            ],
+            "mark_center_px": [
+              291.571,
+              397.32
+            ],
+            "mark_fill_rgb": [
+              206,
+              64,
+              153
+            ],
+            "mark_outline_rgb": [
+              113,
+              35,
+              84
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Hake",
+            "series_rank": 0,
+            "value": 11
+          },
+          "entity_id": "mark_W_Hake",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              50.0,
+              393.32,
+              527.429,
+              420.68
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              62.0,
+              407.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              92.0,
+              403.0,
+              164.571,
+              411.0
+            ],
+            "mark_center_px": [
+              128.286,
+              407.0
+            ],
+            "mark_fill_rgb": [
+              60,
+              104,
+              71
+            ],
+            "mark_outline_rgb": [
+              33,
+              57,
+              39
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Rip",
+            "series_rank": 1,
+            "value": 2
+          },
+          "entity_id": "mark_W_Rip",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              50.0,
+              393.32,
+              527.429,
+              420.68
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              62.0,
+              407.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              92.0,
+              412.68,
+              527.429,
+              420.68
+            ],
+            "mark_center_px": [
+              309.714,
+              416.68
+            ],
+            "mark_fill_rgb": [
+              54,
+              81,
+              175
+            ],
+            "mark_outline_rgb": [
+              30,
+              45,
+              96
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Mill",
+            "series_rank": 2,
+            "value": 12
+          },
+          "entity_id": "mark_W_Mill",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              441.72,
+              418.571,
+              469.08
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              62.0,
+              455.4
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              92.0,
+              441.72,
+              200.857,
+              449.72
+            ],
+            "mark_center_px": [
+              146.429,
+              445.72
+            ],
+            "mark_fill_rgb": [
+              206,
+              64,
+              153
+            ],
+            "mark_outline_rgb": [
+              113,
+              35,
+              84
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Hake",
+            "series_rank": 0,
+            "value": 3
+          },
+          "entity_id": "mark_Y_Hake",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              441.72,
+              418.571,
+              469.08
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              62.0,
+              455.4
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              92.0,
+              451.4,
+              418.571,
+              459.4
+            ],
+            "mark_center_px": [
+              255.286,
+              455.4
+            ],
+            "mark_fill_rgb": [
+              60,
+              104,
+              71
+            ],
+            "mark_outline_rgb": [
+              33,
+              57,
+              39
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Rip",
+            "series_rank": 1,
+            "value": 9
+          },
+          "entity_id": "mark_Y_Rip",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              441.72,
+              418.571,
+              469.08
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              62.0,
+              455.4
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              92.0,
+              461.08,
+              128.286,
+              469.08
+            ],
+            "mark_center_px": [
+              110.143,
+              465.08
+            ],
+            "mark_fill_rgb": [
+              54,
+              81,
+              175
+            ],
+            "mark_outline_rgb": [
+              30,
+              45,
+              96
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Mill",
+            "series_rank": 2,
+            "value": 1
+          },
+          "entity_id": "mark_Y_Mill",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              490.12,
+              527.429,
+              517.48
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              62.0,
+              503.8
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              92.0,
+              490.12,
+              200.857,
+              498.12
+            ],
+            "mark_center_px": [
+              146.429,
+              494.12
+            ],
+            "mark_fill_rgb": [
+              206,
+              64,
+              153
+            ],
+            "mark_outline_rgb": [
+              113,
+              35,
+              84
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Hake",
+            "series_rank": 0,
+            "value": 3
+          },
+          "entity_id": "mark_B_Hake",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              490.12,
+              527.429,
+              517.48
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              62.0,
+              503.8
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              92.0,
+              499.8,
+              128.286,
+              507.8
+            ],
+            "mark_center_px": [
+              110.143,
+              503.8
+            ],
+            "mark_fill_rgb": [
+              60,
+              104,
+              71
+            ],
+            "mark_outline_rgb": [
+              33,
+              57,
+              39
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Rip",
+            "series_rank": 1,
+            "value": 1
+          },
+          "entity_id": "mark_B_Rip",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              490.12,
+              527.429,
+              517.48
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              62.0,
+              503.8
+            ],
+            "category_rank": 9,
+            "mark_bbox_px": [
+              92.0,
+              509.48,
+              527.429,
+              517.48
+            ],
+            "mark_center_px": [
+              309.714,
+              513.48
+            ],
+            "mark_fill_rgb": [
+              54,
+              81,
+              175
+            ],
+            "mark_outline_rgb": [
+              30,
+              45,
+              96
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Mill",
+            "series_rank": 2,
+            "value": 12
+          },
+          "entity_id": "mark_B_Mill",
+          "entity_type": "bar"
+        }
+      ],
+      "relations": {
+        "comparison": "less_than",
+        "evidence_labels": [
+          "B",
+          "C",
+          "E",
+          "S",
+          "T",
+          "U",
+          "V",
+          "W"
+        ],
+        "queried_series_labels": [
+          "Rip",
+          "Mill"
+        ],
+        "scene_variant": "grouped_horizontal_bar",
+        "task_variant": "series_a_lt_b_count"
+      },
+      "scene_kind": "chart_grouped_horizontal_bar_multiseries"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "B",
+        "C",
+        "E",
+        "S",
+        "T",
+        "U",
+        "V",
+        "W"
+      ],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

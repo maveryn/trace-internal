@@ -4,7 +4,7 @@
 1. Domain: `puzzles`
 2. Task group: `arithmetic`
 3. Task id: `task_puzzles_arithmetic_balance_value`
-4. Objective: answer the exact integer value of the symbol shown in the highlighted query box of a balance-style arithmetic puzzle.
+4. Objective: answer the exact integer that replaces the question mark in the final query row of an arithmetic equality-panel puzzle.
 
 ## 2) Scene + task contract
 1. Supported `task_variant` values:
@@ -18,12 +18,14 @@
 3. `answer_gt.type`: `integer`
 4. `evidence_gt.type`: `bbox_set`
 5. Scene contract:
-   - one arithmetic balance puzzle per image,
-   - `2..3` balance panels stacked vertically,
+   - one arithmetic equality puzzle per image,
+   - `2..3` equality panels stacked vertically,
    - each panel shows boxed symbols and/or boxed integers on a left side and a right side,
-   - a balanced-scale icon appears between the two sides of each panel,
-   - one highlighted query box appears below the panels,
-   - the query box always shows one symbol that already appears in the balance panels,
+   - explicit plus signs appear between multiple boxed items on the same side,
+   - an explicit equals sign appears between the two sides of each panel,
+   - panel row spacing may use small deterministic jitter while keeping the local `box -> + -> box -> =` gaps visually near-uniform,
+   - one final query row appears below the panels in the form `symbol = ?`,
+   - the query-row symbol always matches one symbol that already appears in the equality panels,
    - numeric boxes always contain visible positive integers,
    - symbol boxes never print their numeric value directly.
 6. Generation guarantees:
@@ -31,7 +33,7 @@
    - every panel is numerically balanced by construction,
    - the queried symbol value is unique by construction,
    - all visible numeric totals stay within the configured visible-value cap,
-   - the highlighted query box is local and unique.
+   - the question-mark query box is local and unique.
 
 ## 3) Prompt contract
 1. Bundle: `puzzles_arithmetic_v1`
@@ -46,15 +48,17 @@
    - prompt config in `configs/domains/puzzles/arithmetic.yaml`,
    - deterministic bundle selection from `prompts/puzzles/arithmetic/puzzles_arithmetic_v1.json`.
 7. Modes: `answer_only`, `answer_and_evidence`
-8. Prompt-facing answer is the integer value of the highlighted query symbol; prompt-facing evidence is the bbox for the highlighted query box.
+8. Prompt-facing answer is the integer value that replaces the question mark; prompt-facing evidence is the bbox for the question-mark query box.
 
 ## 4) Evidence + trace contract
-1. Prompt-facing evidence is exactly one `bbox_set` item: the bbox of the highlighted query box.
+1. Prompt-facing evidence is exactly one `bbox_set` item: the bbox of the question-mark query box.
 2. `projected_evidence` includes:
    - `bbox_set`
 3. `scene_ir.entities` stores:
-   - `puzzle_balance_box` entities for panel boxes and the query box,
-   - `puzzle_balance_panel` entities for each balance panel.
+   - `puzzle_balance_box` entities for panel boxes and the two query-row boxes,
+   - `puzzle_balance_operator` entities for explicit plus signs inside panels,
+   - `puzzle_balance_equals` entities for the explicit equality markers in panels and the final query row,
+   - `puzzle_balance_panel` entities for each equality panel.
 4. `render_map` includes:
    - `scene_bbox_px`
    - `box_bboxes_px`
@@ -64,7 +68,10 @@
    - `panel_specs`
    - `solver_trace`
    - `query_box_id`
+   - `query_object_box_id`
    - `query_object_type`
+   - `panel_relation_gap_offsets_px`
+   - `relation_gap_jitter_range_px`
    - `supporting_box_ids`
    - `panel_count`
    - `panel_count_range`
@@ -74,13 +81,13 @@
 
 ## 5) Visual policy
 1. Background and post-image noise use the merged puzzles-domain visual defaults from `configs/domains/puzzles/base.yaml`.
-2. V1 balance puzzles use clean light solid backgrounds only.
-3. Scene variants change framing and outline style while preserving the same balance-panel and query-box geometry contract.
-4. The highlighted query box should remain visually distinct from the panel boxes.
+2. V1 equality-panel puzzles use clean light solid backgrounds only.
+3. Scene variants change framing and outline style while preserving the same equality-panel and query-box geometry contract.
+4. The question-mark query box should remain visually distinct from the other panel and query-row boxes.
 
 ## 6) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.
 2. `task_variant` and `scene_variant` are sampled independently at the policy level.
-3. Answers and evidence come from the same generated balance scene.
+3. Answers and evidence come from the same generated equality scene.
 4. No semantic auto-relaxation.
-5. Review overlays rely on the recorded `query_box_id` projection, not OCR from pixels.
+5. Review overlays rely on the recorded `query_box_id` projection for the final question-mark box, not OCR from pixels.

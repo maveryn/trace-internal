@@ -1,0 +1,1261 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 2
+  },
+  "evidence_gt": {
+    "type": "grid_point_path",
+    "value": [
+      [
+        0,
+        0
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        2,
+        0
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "tile/task_tile_relation_min_distance/images/default/0020.png"
+  },
+  "instance_seed": 6052894064197522,
+  "prompt": "The image shows one rectangular tile board with 7 rows and 3 columns. Row labels are on the left and column labels are on the top. Count the smallest 4-neighbor step distance between the brown [#887044] region and the cyan [#34C4E0] region on the white [#FFFFFF] board.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to the ordered list of [row, col] coordinates for one unique shortest path between the closest queried-color tiles, including both endpoints.\nAnswer format: set \"answer\" to the minimum number of orthogonal steps between the two queried colors as an integer.\nExample JSON:\n{\"evidence\":[[1,1],[1,2],[1,3]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows one rectangular tile board with 7 rows and 3 columns. Row labels are on the left and column labels are on the top. Count the smallest 4-neighbor step distance between the brown [#887044] region and the cyan [#34C4E0] region on the white [#FFFFFF] board.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to the ordered list of [row, col] coordinates for one unique shortest path between the closest queried-color tiles, including both endpoints.\nAnswer format: set \"answer\" to the minimum number of orthogonal steps between the two queried colors as an integer.\nExample JSON:\n{\"evidence\":[[1,1],[1,2],[1,3]],\"answer\":2}",
+    "answer_only": "The image shows one rectangular tile board with 7 rows and 3 columns. Row labels are on the left and column labels are on the top. Count the smallest 4-neighbor step distance between the brown [#887044] region and the cyan [#34C4E0] region on the white [#FFFFFF] board.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the minimum number of orthogonal steps between the two queried colors as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_tile_relation_min_distance",
+  "task_variant": "min_distance",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 2,
+      "background_color_hex": "#FFFFFF",
+      "background_color_label": "white [#FFFFFF]",
+      "background_color_name": "white",
+      "background_color_rgb": [
+        255,
+        255,
+        255
+      ],
+      "closest_pair_coords": [
+        [
+          0,
+          0
+        ],
+        [
+          2,
+          0
+        ]
+      ],
+      "closest_pair_ids": [
+        "cell_0_0",
+        "cell_2_0"
+      ],
+      "color_a_component_count": 1,
+      "color_a_coords": [
+        [
+          0,
+          0
+        ]
+      ],
+      "color_a_hex": "#887044",
+      "color_a_ids": [
+        "cell_0_0"
+      ],
+      "color_a_label": "brown [#887044]",
+      "color_a_name": "brown",
+      "color_a_rgb": [
+        136,
+        112,
+        68
+      ],
+      "color_a_tip_coord": [
+        0,
+        0
+      ],
+      "color_a_tip_id": "cell_0_0",
+      "color_b_component_count": 1,
+      "color_b_coords": [
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "color_b_hex": "#34C4E0",
+      "color_b_ids": [
+        "cell_2_0",
+        "cell_3_0"
+      ],
+      "color_b_label": "cyan [#34C4E0]",
+      "color_b_name": "cyan",
+      "color_b_rgb": [
+        52,
+        196,
+        224
+      ],
+      "color_b_tip_coord": [
+        2,
+        0
+      ],
+      "color_b_tip_id": "cell_2_0",
+      "cols": 3,
+      "component_size_range": [
+        1,
+        6
+      ],
+      "distance_axis": "vertical",
+      "palette": [
+        {
+          "hex": "#887044",
+          "label": "brown [#887044]",
+          "name": "brown",
+          "rgb": [
+            136,
+            112,
+            68
+          ]
+        },
+        {
+          "hex": "#FFFFFF",
+          "label": "white [#FFFFFF]",
+          "name": "white",
+          "rgb": [
+            255,
+            255,
+            255
+          ]
+        },
+        {
+          "hex": "#34C4E0",
+          "label": "cyan [#34C4E0]",
+          "name": "cyan",
+          "rgb": [
+            52,
+            196,
+            224
+          ]
+        }
+      ],
+      "rows": 7,
+      "shortest_path_coords": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ]
+      ],
+      "shortest_path_ids": [
+        "cell_0_0",
+        "cell_1_0",
+        "cell_2_0"
+      ],
+      "target_distance": 2,
+      "target_distance_range": [
+        2,
+        6
+      ],
+      "task_variant": "min_distance",
+      "unique_closest_pair": true
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          68.0,
+          59.0,
+          132.0,
+          93.0
+        ],
+        [
+          68.0,
+          93.0,
+          132.0,
+          127.0
+        ],
+        [
+          68.0,
+          127.0,
+          132.0,
+          161.0
+        ]
+      ],
+      "grid_point_path": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ]
+      ],
+      "pixel_point_path": [
+        [
+          100.0,
+          76.0
+        ],
+        [
+          100.0,
+          110.0
+        ],
+        [
+          100.0,
+          144.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "dsl_program": [
+        {
+          "entity_type": "tile_cell",
+          "op": "select",
+          "out": "cells"
+        },
+        {
+          "in": "cells",
+          "op": "filter",
+          "out": "color_a_tiles",
+          "predicate": {
+            "is_color_a": true
+          }
+        },
+        {
+          "in": "cells",
+          "op": "filter",
+          "out": "color_b_tiles",
+          "predicate": {
+            "is_color_b": true
+          }
+        },
+        {
+          "expect_unique": true,
+          "goal": "cell_2_0",
+          "op": "shortest_path",
+          "out": "closest_pair_path",
+          "relation": "adjacency_open",
+          "start": "cell_0_0"
+        },
+        {
+          "coord_space": "tile_grid",
+          "coord_type": "grid_point_path",
+          "in": "closest_pair_path",
+          "op": "project_coords",
+          "ordering": "path",
+          "out": "evidence"
+        },
+        {
+          "left": "color_a_tiles",
+          "metric": "orthogonal_steps",
+          "op": "min_distance_between_sets",
+          "out": "answer",
+          "right": "color_b_tiles"
+        }
+      ],
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "tile_relation_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the minimum number of orthogonal steps between the two queried colors as an integer",
+          "background_color": "white [#FFFFFF]",
+          "color_a": "brown [#887044]",
+          "color_b": "cyan [#34C4E0]",
+          "cols": 3,
+          "evidence_hint": "set \"evidence\" to the ordered list of [row, col] coordinates for one unique shortest path between the closest queried-color tiles, including both endpoints",
+          "json_example": "{\"evidence\":[[1,1],[1,2],[1,3]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "rows": 7
+        },
+        "task_family_key": "rectangular_tile_board",
+        "task_family_variant_index": 0,
+        "task_key": "min_distance_query",
+        "task_variant_index": 1,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "tile/relation/tile_relation_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:min_distance_query": 5,
+          "task_family:rectangular_tile_board": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "tile_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the minimum number of orthogonal steps between the two queried colors as an integer",
+              "background_color": "white [#FFFFFF]",
+              "color_a": "brown [#887044]",
+              "color_b": "cyan [#34C4E0]",
+              "cols": 3,
+              "evidence_hint": "set \"evidence\" to the ordered list of [row, col] coordinates for one unique shortest path between the closest queried-color tiles, including both endpoints",
+              "json_example": "{\"evidence\":[[1,1],[1,2],[1,3]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "rows": 7
+            },
+            "task_family_key": "rectangular_tile_board",
+            "task_family_variant_index": 0,
+            "task_key": "min_distance_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "tile/relation/tile_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:min_distance_query": 5,
+              "task_family:rectangular_tile_board": 5
+            }
+          },
+          "prompt": "The image shows one rectangular tile board with 7 rows and 3 columns. Row labels are on the left and column labels are on the top. Count the smallest 4-neighbor step distance between the brown [#887044] region and the cyan [#34C4E0] region on the white [#FFFFFF] board.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to the ordered list of [row, col] coordinates for one unique shortest path between the closest queried-color tiles, including both endpoints.\nAnswer format: set \"answer\" to the minimum number of orthogonal steps between the two queried colors as an integer.\nExample JSON:\n{\"evidence\":[[1,1],[1,2],[1,3]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "tile_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the minimum number of orthogonal steps between the two queried colors as an integer",
+              "background_color": "white [#FFFFFF]",
+              "color_a": "brown [#887044]",
+              "color_b": "cyan [#34C4E0]",
+              "cols": 3,
+              "evidence_hint": "set \"evidence\" to the ordered list of [row, col] coordinates for one unique shortest path between the closest queried-color tiles, including both endpoints",
+              "json_example": "{\"evidence\":[[1,1],[1,2],[1,3]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "rows": 7
+            },
+            "task_family_key": "rectangular_tile_board",
+            "task_family_variant_index": 0,
+            "task_key": "min_distance_query",
+            "task_variant_index": 1,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "tile/relation/tile_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:min_distance_query": 5,
+              "task_family:rectangular_tile_board": 5
+            }
+          },
+          "prompt": "The image shows one rectangular tile board with 7 rows and 3 columns. Row labels are on the left and column labels are on the top. Count the smallest 4-neighbor step distance between the brown [#887044] region and the cyan [#34C4E0] region on the white [#FFFFFF] board.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the minimum number of orthogonal steps between the two queried colors as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "min_distance",
+      "template_id": "min_distance_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "cell_0_0": {
+          "bbox": [
+            68.0,
+            59.0,
+            132.0,
+            93.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            100.0,
+            76.0
+          ]
+        },
+        "cell_0_1": {
+          "bbox": [
+            132.0,
+            59.0,
+            196.0,
+            93.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            164.0,
+            76.0
+          ]
+        },
+        "cell_0_2": {
+          "bbox": [
+            196.0,
+            59.0,
+            260.0,
+            93.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            228.0,
+            76.0
+          ]
+        },
+        "cell_1_0": {
+          "bbox": [
+            68.0,
+            93.0,
+            132.0,
+            127.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            100.0,
+            110.0
+          ]
+        },
+        "cell_1_1": {
+          "bbox": [
+            132.0,
+            93.0,
+            196.0,
+            127.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            164.0,
+            110.0
+          ]
+        },
+        "cell_1_2": {
+          "bbox": [
+            196.0,
+            93.0,
+            260.0,
+            127.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            228.0,
+            110.0
+          ]
+        },
+        "cell_2_0": {
+          "bbox": [
+            68.0,
+            127.0,
+            132.0,
+            161.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            100.0,
+            144.0
+          ]
+        },
+        "cell_2_1": {
+          "bbox": [
+            132.0,
+            127.0,
+            196.0,
+            161.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            164.0,
+            144.0
+          ]
+        },
+        "cell_2_2": {
+          "bbox": [
+            196.0,
+            127.0,
+            260.0,
+            161.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            228.0,
+            144.0
+          ]
+        },
+        "cell_3_0": {
+          "bbox": [
+            68.0,
+            161.0,
+            132.0,
+            195.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            100.0,
+            178.0
+          ]
+        },
+        "cell_3_1": {
+          "bbox": [
+            132.0,
+            161.0,
+            196.0,
+            195.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            164.0,
+            178.0
+          ]
+        },
+        "cell_3_2": {
+          "bbox": [
+            196.0,
+            161.0,
+            260.0,
+            195.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            228.0,
+            178.0
+          ]
+        },
+        "cell_4_0": {
+          "bbox": [
+            68.0,
+            195.0,
+            132.0,
+            229.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            100.0,
+            212.0
+          ]
+        },
+        "cell_4_1": {
+          "bbox": [
+            132.0,
+            195.0,
+            196.0,
+            229.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            164.0,
+            212.0
+          ]
+        },
+        "cell_4_2": {
+          "bbox": [
+            196.0,
+            195.0,
+            260.0,
+            229.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            228.0,
+            212.0
+          ]
+        },
+        "cell_5_0": {
+          "bbox": [
+            68.0,
+            229.0,
+            132.0,
+            263.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            100.0,
+            246.0
+          ]
+        },
+        "cell_5_1": {
+          "bbox": [
+            132.0,
+            229.0,
+            196.0,
+            263.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            164.0,
+            246.0
+          ]
+        },
+        "cell_5_2": {
+          "bbox": [
+            196.0,
+            229.0,
+            260.0,
+            263.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            228.0,
+            246.0
+          ]
+        },
+        "cell_6_0": {
+          "bbox": [
+            68.0,
+            263.0,
+            132.0,
+            297.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            100.0,
+            280.0
+          ]
+        },
+        "cell_6_1": {
+          "bbox": [
+            132.0,
+            263.0,
+            196.0,
+            297.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            164.0,
+            280.0
+          ]
+        },
+        "cell_6_2": {
+          "bbox": [
+            196.0,
+            263.0,
+            260.0,
+            297.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            228.0,
+            280.0
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            246,
+            246,
+            246
+          ],
+          "kind": "solid"
+        }
+      },
+      "board_origin_px": [
+        68,
+        59
+      ],
+      "board_size_px": [
+        192,
+        238
+      ],
+      "canvas_height_px": 318,
+      "canvas_width_px": 277,
+      "cols": 3,
+      "coord_space": "tile_grid",
+      "coordinate_gutters_px": {
+        "left": 46,
+        "top": 32
+      },
+      "label_style": {
+        "font_size_px": 16,
+        "stroke_width_px": 2
+      },
+      "outer_padding_px": {
+        "x": 17,
+        "y": 21
+      },
+      "placement_offset_px": {
+        "x": 5,
+        "y": 6
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "rows": 7,
+      "tile_aspect_ratio": 1.877533,
+      "tile_height_px": 34,
+      "tile_orientation": "wide",
+      "tile_outline_width_px": 2,
+      "tile_width_px": 64,
+      "tiling_type": "rectangular_tiling"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "brown",
+            "fill_rgb": [
+              136,
+              112,
+              68
+            ],
+            "is_background": false,
+            "is_color_a": true,
+            "is_color_b": false,
+            "is_min_distance_endpoint": true,
+            "is_min_distance_path": true,
+            "row": 0
+          },
+          "entity_id": "cell_0_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": true,
+            "row": 1
+          },
+          "entity_id": "cell_1_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "cyan",
+            "fill_rgb": [
+              52,
+              196,
+              224
+            ],
+            "is_background": false,
+            "is_color_a": false,
+            "is_color_b": true,
+            "is_min_distance_endpoint": true,
+            "is_min_distance_path": true,
+            "row": 2
+          },
+          "entity_id": "cell_2_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 2
+          },
+          "entity_id": "cell_2_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 2
+          },
+          "entity_id": "cell_2_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "cyan",
+            "fill_rgb": [
+              52,
+              196,
+              224
+            ],
+            "is_background": false,
+            "is_color_a": false,
+            "is_color_b": true,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 3
+          },
+          "entity_id": "cell_3_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 3
+          },
+          "entity_id": "cell_3_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 3
+          },
+          "entity_id": "cell_3_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 4
+          },
+          "entity_id": "cell_4_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 4
+          },
+          "entity_id": "cell_4_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 4
+          },
+          "entity_id": "cell_4_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 5
+          },
+          "entity_id": "cell_5_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 5
+          },
+          "entity_id": "cell_5_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 5
+          },
+          "entity_id": "cell_5_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 6
+          },
+          "entity_id": "cell_6_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 6
+          },
+          "entity_id": "cell_6_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 6
+          },
+          "entity_id": "cell_6_2",
+          "entity_type": "tile_cell"
+        }
+      ],
+      "relations": {
+        "adjacency_open": {
+          "cell_0_0": [
+            "cell_0_1",
+            "cell_1_0"
+          ],
+          "cell_0_1": [
+            "cell_0_0",
+            "cell_0_2",
+            "cell_1_1"
+          ],
+          "cell_0_2": [
+            "cell_0_1",
+            "cell_1_2"
+          ],
+          "cell_1_0": [
+            "cell_0_0",
+            "cell_1_1",
+            "cell_2_0"
+          ],
+          "cell_1_1": [
+            "cell_0_1",
+            "cell_1_0",
+            "cell_1_2",
+            "cell_2_1"
+          ],
+          "cell_1_2": [
+            "cell_0_2",
+            "cell_1_1",
+            "cell_2_2"
+          ],
+          "cell_2_0": [
+            "cell_1_0",
+            "cell_2_1",
+            "cell_3_0"
+          ],
+          "cell_2_1": [
+            "cell_1_1",
+            "cell_2_0",
+            "cell_2_2",
+            "cell_3_1"
+          ],
+          "cell_2_2": [
+            "cell_1_2",
+            "cell_2_1",
+            "cell_3_2"
+          ],
+          "cell_3_0": [
+            "cell_2_0",
+            "cell_3_1",
+            "cell_4_0"
+          ],
+          "cell_3_1": [
+            "cell_2_1",
+            "cell_3_0",
+            "cell_3_2",
+            "cell_4_1"
+          ],
+          "cell_3_2": [
+            "cell_2_2",
+            "cell_3_1",
+            "cell_4_2"
+          ],
+          "cell_4_0": [
+            "cell_3_0",
+            "cell_4_1",
+            "cell_5_0"
+          ],
+          "cell_4_1": [
+            "cell_3_1",
+            "cell_4_0",
+            "cell_4_2",
+            "cell_5_1"
+          ],
+          "cell_4_2": [
+            "cell_3_2",
+            "cell_4_1",
+            "cell_5_2"
+          ],
+          "cell_5_0": [
+            "cell_4_0",
+            "cell_5_1",
+            "cell_6_0"
+          ],
+          "cell_5_1": [
+            "cell_4_1",
+            "cell_5_0",
+            "cell_5_2",
+            "cell_6_1"
+          ],
+          "cell_5_2": [
+            "cell_4_2",
+            "cell_5_1",
+            "cell_6_2"
+          ],
+          "cell_6_0": [
+            "cell_5_0",
+            "cell_6_1"
+          ],
+          "cell_6_1": [
+            "cell_5_1",
+            "cell_6_0",
+            "cell_6_2"
+          ],
+          "cell_6_2": [
+            "cell_5_2",
+            "cell_6_1"
+          ]
+        }
+      },
+      "scene_kind": "rectangular_tile_min_distance_board"
+    },
+    "witness_symbolic": {
+      "ids": [
+        "cell_0_0",
+        "cell_1_0",
+        "cell_2_0"
+      ],
+      "type": "id_path"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

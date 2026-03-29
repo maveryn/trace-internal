@@ -1,0 +1,17 @@
+{
+  "inspection_count": 100,
+  "task_id": "task_charts_trend_structure_value",
+  "variants": {
+    "longest_decreasing_streak": 25,
+    "longest_increasing_streak": 25,
+    "peak_count": 25,
+    "trough_count": 25
+  },
+  "workbook": "charts/task_charts_trend_structure_value/task_charts_trend_structure_value.xlsx",
+  "workbook_sheets": {
+    "longest_decreasing_streak": "longest_decreasing_streak",
+    "longest_increasing_streak": "longest_increasing_streak",
+    "peak_count": "peak_count",
+    "trough_count": "trough_count"
+  }
+}

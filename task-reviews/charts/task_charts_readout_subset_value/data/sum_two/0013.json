@@ -1,0 +1,618 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 40
+  },
+  "evidence_gt": {
+    "type": "integer_list",
+    "value": [
+      20,
+      20
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_readout_subset_value/images/sum_two/0013.png"
+  },
+  "instance_seed": 2445408611952023,
+  "prompt": "Work from the labeled chart shown in the image: a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values for the specified labels and answer the question. For labels U and B, what is the sum of their values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[7,11],\"answer\":18}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the labeled chart shown in the image: a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values for the specified labels and answer the question. For labels U and B, what is the sum of their values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[7,11],\"answer\":18}",
+    "answer_only": "Work from the labeled chart shown in the image: a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values for the specified labels and answer the question. For labels U and B, what is the sum of their values?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":18}"
+  },
+  "task": "task_charts_readout_subset_value",
+  "task_variant": "sum_two",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 40,
+      "labels": [
+        "C",
+        "B",
+        "A",
+        "U",
+        "S"
+      ],
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb",
+      "mark_count": 5,
+      "mark_count_range": [
+        5,
+        10
+      ],
+      "mark_fill_rgb": [
+        10,
+        3,
+        158
+      ],
+      "mark_outline_rgb": [
+        6,
+        2,
+        87
+      ],
+      "query_labels": [
+        "U",
+        "B"
+      ],
+      "query_values": [
+        20,
+        20
+      ],
+      "question_format": "numeric_open",
+      "scene_variant": "dot_plot",
+      "scene_variant_probabilities": {
+        "area": 0.1,
+        "bar": 0.1,
+        "donut": 0.1,
+        "dot_plot": 0.1,
+        "horizontal_bar": 0.1,
+        "line": 0.1,
+        "lollipop": 0.1,
+        "pie": 0.1,
+        "radar": 0.1,
+        "scatter": 0.1
+      },
+      "target_answer": 40,
+      "target_answer_range": [
+        2,
+        40
+      ],
+      "task_variant": "sum_two",
+      "task_variant_probabilities": {
+        "difference_two_abs": 0.2,
+        "max_two": 0.2,
+        "mean_two": 0.2,
+        "min_two": 0.2,
+        "sum_two": 0.2
+      },
+      "value_max": 20,
+      "value_min": 1,
+      "values": [
+        6,
+        20,
+        15,
+        20,
+        18
+      ],
+      "values_by_label": {
+        "A": 15,
+        "B": 20,
+        "C": 6,
+        "S": 18,
+        "U": 20
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          547.4,
+          58.095,
+          563.4,
+          74.095
+        ],
+        [
+          282.6,
+          58.095,
+          298.6,
+          74.095
+        ]
+      ],
+      "integer_list": [
+        20,
+        20
+      ],
+      "pixel_point_map": {
+        "B": [
+          290.6,
+          66.095
+        ],
+        "U": [
+          555.4,
+          66.095
+        ]
+      },
+      "pixel_point_set": [
+        [
+          555.4,
+          66.095
+        ],
+        [
+          290.6,
+          66.095
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "mark_count": 5,
+        "query_labels": [
+          "U",
+          "B"
+        ],
+        "scene_variant": "dot_plot",
+        "scene_variant_probabilities": {
+          "area": 0.1,
+          "bar": 0.1,
+          "donut": 0.1,
+          "dot_plot": 0.1,
+          "horizontal_bar": 0.1,
+          "line": 0.1,
+          "lollipop": 0.1,
+          "pie": 0.1,
+          "radar": 0.1,
+          "scatter": 0.1
+        },
+        "target_answer": 40,
+        "target_answer_range": [
+          2,
+          40
+        ],
+        "task_variant": "sum_two",
+        "task_variant_probabilities": {
+          "difference_two_abs": 0.2,
+          "max_two": 0.2,
+          "mean_two": 0.2,
+          "min_two": 0.2,
+          "sum_two": 0.2
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "charts_readout_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the requested integer value",
+          "evidence_hint": "set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question",
+          "json_example": "{\"evidence\":[7,11],\"answer\":18}",
+          "json_example_answer_only": "{\"answer\":18}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+          "query_label_a": "U",
+          "query_label_b": "B"
+        },
+        "task_family_key": "labeled_chart_readout",
+        "task_family_variant_index": 2,
+        "task_key": "subset_value_query",
+        "task_variant_index": 1,
+        "task_variant_key": "sum_two",
+        "task_variant_template_index": 0,
+        "template_paths": [
+          "charts/readout/charts_readout_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:subset_value_query": 5,
+          "task_family:labeled_chart_readout": 5,
+          "task_variant:sum_two": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "charts_readout_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested integer value",
+              "evidence_hint": "set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question",
+              "json_example": "{\"evidence\":[7,11],\"answer\":18}",
+              "json_example_answer_only": "{\"answer\":18}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+              "query_label_a": "U",
+              "query_label_b": "B"
+            },
+            "task_family_key": "labeled_chart_readout",
+            "task_family_variant_index": 2,
+            "task_key": "subset_value_query",
+            "task_variant_index": 1,
+            "task_variant_key": "sum_two",
+            "task_variant_template_index": 0,
+            "template_paths": [
+              "charts/readout/charts_readout_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:subset_value_query": 5,
+              "task_family:labeled_chart_readout": 5,
+              "task_variant:sum_two": 5
+            }
+          },
+          "prompt": "Work from the labeled chart shown in the image: a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values for the specified labels and answer the question. For labels U and B, what is the sum of their values?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer field: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[7,11],\"answer\":18}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "charts_readout_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested integer value",
+              "evidence_hint": "set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question",
+              "json_example": "{\"evidence\":[7,11],\"answer\":18}",
+              "json_example_answer_only": "{\"answer\":18}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis",
+              "query_label_a": "U",
+              "query_label_b": "B"
+            },
+            "task_family_key": "labeled_chart_readout",
+            "task_family_variant_index": 2,
+            "task_key": "subset_value_query",
+            "task_variant_index": 1,
+            "task_variant_key": "sum_two",
+            "task_variant_template_index": 0,
+            "template_paths": [
+              "charts/readout/charts_readout_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:subset_value_query": 5,
+              "task_family:labeled_chart_readout": 5,
+              "task_variant:sum_two": 5
+            }
+          },
+          "prompt": "Work from the labeled chart shown in the image: a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Use the chart values for the specified labels and answer the question. For labels U and B, what is the sum of their values?\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":18}"
+        }
+      },
+      "task_variant": "sum_two",
+      "template_id": "charts_readout_v1"
+    },
+    "render_map": {
+      "image_id": "img0",
+      "label_centers_px": {
+        "A": [
+          423.0,
+          154.571
+        ],
+        "B": [
+          290.6,
+          44.095
+        ],
+        "C": [
+          158.2,
+          353.429
+        ],
+        "S": [
+          687.8,
+          88.286
+        ],
+        "U": [
+          555.4,
+          44.095
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 600,
+      "canvas_width": 800,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "mark_fill_rgb": [
+          10,
+          3,
+          158
+        ],
+        "mark_outline_rgb": [
+          6,
+          2,
+          87
+        ],
+        "sampling_policy": "random_rgb"
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "dot_plot",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 21,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "label": "C",
+            "label_center_px": [
+              158.2,
+              353.429
+            ],
+            "mark_bbox_px": [
+              150.2,
+              367.429,
+              166.2,
+              383.429
+            ],
+            "mark_center_px": [
+              158.2,
+              375.429
+            ],
+            "mark_fill_rgb": [
+              10,
+              3,
+              158
+            ],
+            "mark_outline_rgb": [
+              6,
+              2,
+              87
+            ],
+            "scene_variant": "dot_plot",
+            "value": 6,
+            "x_rank": 0
+          },
+          "entity_id": "mark_C",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "B",
+            "label_center_px": [
+              290.6,
+              44.095
+            ],
+            "mark_bbox_px": [
+              282.6,
+              58.095,
+              298.6,
+              74.095
+            ],
+            "mark_center_px": [
+              290.6,
+              66.095
+            ],
+            "mark_fill_rgb": [
+              10,
+              3,
+              158
+            ],
+            "mark_outline_rgb": [
+              6,
+              2,
+              87
+            ],
+            "scene_variant": "dot_plot",
+            "value": 20,
+            "x_rank": 1
+          },
+          "entity_id": "mark_B",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "A",
+            "label_center_px": [
+              423.0,
+              154.571
+            ],
+            "mark_bbox_px": [
+              415.0,
+              168.571,
+              431.0,
+              184.571
+            ],
+            "mark_center_px": [
+              423.0,
+              176.571
+            ],
+            "mark_fill_rgb": [
+              10,
+              3,
+              158
+            ],
+            "mark_outline_rgb": [
+              6,
+              2,
+              87
+            ],
+            "scene_variant": "dot_plot",
+            "value": 15,
+            "x_rank": 2
+          },
+          "entity_id": "mark_A",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "U",
+            "label_center_px": [
+              555.4,
+              44.095
+            ],
+            "mark_bbox_px": [
+              547.4,
+              58.095,
+              563.4,
+              74.095
+            ],
+            "mark_center_px": [
+              555.4,
+              66.095
+            ],
+            "mark_fill_rgb": [
+              10,
+              3,
+              158
+            ],
+            "mark_outline_rgb": [
+              6,
+              2,
+              87
+            ],
+            "scene_variant": "dot_plot",
+            "value": 20,
+            "x_rank": 3
+          },
+          "entity_id": "mark_U",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "S",
+            "label_center_px": [
+              687.8,
+              88.286
+            ],
+            "mark_bbox_px": [
+              679.8,
+              102.286,
+              695.8,
+              118.286
+            ],
+            "mark_center_px": [
+              687.8,
+              110.286
+            ],
+            "mark_fill_rgb": [
+              10,
+              3,
+              158
+            ],
+            "mark_outline_rgb": [
+              6,
+              2,
+              87
+            ],
+            "scene_variant": "dot_plot",
+            "value": 18,
+            "x_rank": 4
+          },
+          "entity_id": "mark_S",
+          "entity_type": "point"
+        }
+      ],
+      "relations": {
+        "answer_value": 40,
+        "query_labels": [
+          "U",
+          "B"
+        ],
+        "query_values": [
+          20,
+          20
+        ],
+        "scene_variant": "dot_plot",
+        "task_variant": "sum_two"
+      },
+      "scene_kind": "chart_dot_plot_readout"
+    },
+    "witness_symbolic": {
+      "query_labels": [
+        "U",
+        "B"
+      ],
+      "type": "integer_list",
+      "values": [
+        20,
+        20
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

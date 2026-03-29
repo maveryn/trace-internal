@@ -1,0 +1,1119 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 1
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "K"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_gt_b_count/0021.png"
+  },
+  "instance_seed": 3102406440316946,
+  "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Count the category labels where Seta exceeds Zebe.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Count the category labels where Seta exceeds Zebe.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+    "answer_only": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Count the category labels where Seta exceeds Zebe.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_charts_multiseries_pairwise_comparison_count",
+  "task_variant": "series_a_gt_b_count",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 1,
+      "category_count": 5,
+      "category_count_range": [
+        5,
+        10
+      ],
+      "category_labels": [
+        "A",
+        "N",
+        "J",
+        "K",
+        "U"
+      ],
+      "comparison": "greater_than",
+      "evidence_labels": [
+        "K"
+      ],
+      "left_series_label": "Seta",
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb_palette",
+      "queried_series_labels": [
+        "Seta",
+        "Zebe"
+      ],
+      "question_format": "numeric_open",
+      "right_series_label": "Zebe",
+      "scene_variant": "grouped_horizontal_bar",
+      "scene_variant_probabilities": {
+        "grouped_bar": 0.25,
+        "grouped_horizontal_bar": 0.25,
+        "grouped_lollipop": 0.25,
+        "multi_line": 0.25
+      },
+      "series_count": 3,
+      "series_count_range": [
+        2,
+        3
+      ],
+      "series_fill_palette_rgb": [
+        [
+          148,
+          208,
+          101
+        ],
+        [
+          198,
+          65,
+          81
+        ],
+        [
+          189,
+          81,
+          188
+        ]
+      ],
+      "series_labels": [
+        "Seta",
+        "Alic",
+        "Zebe"
+      ],
+      "series_outline_palette_rgb": [
+        [
+          81,
+          114,
+          56
+        ],
+        [
+          109,
+          36,
+          45
+        ],
+        [
+          104,
+          45,
+          103
+        ]
+      ],
+      "target_answer": 1,
+      "target_answer_range": [
+        0,
+        8
+      ],
+      "task_variant": "series_a_gt_b_count",
+      "task_variant_probabilities": {
+        "series_a_gt_b_count": 0.5,
+        "series_a_lt_b_count": 0.5
+      },
+      "values_by_category": {
+        "A": {
+          "Alic": 13,
+          "Seta": 4,
+          "Zebe": 18
+        },
+        "J": {
+          "Alic": 15,
+          "Seta": 1,
+          "Zebe": 19
+        },
+        "K": {
+          "Alic": 7,
+          "Seta": 8,
+          "Zebe": 5
+        },
+        "N": {
+          "Alic": 16,
+          "Seta": 5,
+          "Zebe": 20
+        },
+        "U": {
+          "Alic": 6,
+          "Seta": 3,
+          "Zebe": 17
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          53.0,
+          356.47,
+          382.286,
+          409.13
+        ]
+      ],
+      "label_set": [
+        "K"
+      ],
+      "pixel_point_map": {
+        "K": [
+          62.0,
+          382.8
+        ]
+      },
+      "pixel_point_set": [
+        [
+          62.0,
+          382.8
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "category_count": 5,
+        "category_count_range": [
+          5,
+          10
+        ],
+        "comparison": "greater_than",
+        "queried_series_labels": [
+          "Seta",
+          "Zebe"
+        ],
+        "scene_variant": "grouped_horizontal_bar",
+        "scene_variant_probabilities": {
+          "grouped_bar": 0.25,
+          "grouped_horizontal_bar": 0.25,
+          "grouped_lollipop": 0.25,
+          "multi_line": 0.25
+        },
+        "series_count": 3,
+        "series_count_range": [
+          2,
+          3
+        ],
+        "target_answer": 1,
+        "target_answer_range": [
+          0,
+          8
+        ],
+        "task_variant": "series_a_gt_b_count",
+        "task_variant_probabilities": {
+          "series_a_gt_b_count": 0.5,
+          "series_a_lt_b_count": 0.5
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "charts_multiseries_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series",
+          "json_example": "{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "left_series": "Seta",
+          "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+          "right_series": "Zebe"
+        },
+        "task_family_key": "multiseries_chart_comparison",
+        "task_family_variant_index": 2,
+        "task_key": "pairwise_comparison_count_query",
+        "task_variant_index": 4,
+        "task_variant_key": "series_a_gt_b_count",
+        "task_variant_template_index": 1,
+        "template_paths": [
+          "charts/multiseries/charts_multiseries_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:pairwise_comparison_count_query": 5,
+          "task_family:multiseries_chart_comparison": 5,
+          "task_variant:series_a_gt_b_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series",
+              "json_example": "{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Seta",
+              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+              "right_series": "Zebe"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 2,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 4,
+            "task_variant_key": "series_a_gt_b_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_gt_b_count": 5
+            }
+          },
+          "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Count the category labels where Seta exceeds Zebe.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series",
+              "json_example": "{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Seta",
+              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+              "right_series": "Zebe"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 2,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 4,
+            "task_variant_key": "series_a_gt_b_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_gt_b_count": 5
+            }
+          },
+          "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Count the category labels where Seta exceeds Zebe.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "series_a_gt_b_count",
+      "template_id": "charts_multiseries_v1"
+    },
+    "render_map": {
+      "category_label_centers_px": {
+        "A": [
+          62.0,
+          92.4
+        ],
+        "J": [
+          62.0,
+          286.0
+        ],
+        "K": [
+          62.0,
+          382.8
+        ],
+        "N": [
+          62.0,
+          189.2
+        ],
+        "U": [
+          62.0,
+          479.6
+        ]
+      },
+      "image_id": "img0",
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 620,
+      "canvas_width": 1100,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "sampling_policy": "random_rgb_palette",
+        "series_fill_palette_rgb": [
+          [
+            148,
+            208,
+            101
+          ],
+          [
+            198,
+            65,
+            81
+          ],
+          [
+            189,
+            81,
+            188
+          ]
+        ],
+        "series_outline_palette_rgb": [
+          [
+            81,
+            114,
+            56
+          ],
+          [
+            109,
+            36,
+            45
+          ],
+          [
+            104,
+            45,
+            103
+          ]
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "grouped_horizontal_bar",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 21,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              66.07,
+              745.143,
+              118.73
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              62.0,
+              92.4
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              92.0,
+              66.07,
+              237.143,
+              80.01
+            ],
+            "mark_center_px": [
+              164.571,
+              73.04
+            ],
+            "mark_fill_rgb": [
+              148,
+              208,
+              101
+            ],
+            "mark_outline_rgb": [
+              81,
+              114,
+              56
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Seta",
+            "series_rank": 0,
+            "value": 4
+          },
+          "entity_id": "mark_A_Seta",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              66.07,
+              745.143,
+              118.73
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              62.0,
+              92.4
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              92.0,
+              85.43,
+              563.714,
+              99.37
+            ],
+            "mark_center_px": [
+              327.857,
+              92.4
+            ],
+            "mark_fill_rgb": [
+              198,
+              65,
+              81
+            ],
+            "mark_outline_rgb": [
+              109,
+              36,
+              45
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Alic",
+            "series_rank": 1,
+            "value": 13
+          },
+          "entity_id": "mark_A_Alic",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              66.07,
+              745.143,
+              118.73
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              62.0,
+              92.4
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              92.0,
+              104.79,
+              745.143,
+              118.73
+            ],
+            "mark_center_px": [
+              418.571,
+              111.76
+            ],
+            "mark_fill_rgb": [
+              189,
+              81,
+              188
+            ],
+            "mark_outline_rgb": [
+              104,
+              45,
+              103
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Zebe",
+            "series_rank": 2,
+            "value": 18
+          },
+          "entity_id": "mark_A_Zebe",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              162.87,
+              817.714,
+              215.53
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              62.0,
+              189.2
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              92.0,
+              162.87,
+              273.429,
+              176.81
+            ],
+            "mark_center_px": [
+              182.714,
+              169.84
+            ],
+            "mark_fill_rgb": [
+              148,
+              208,
+              101
+            ],
+            "mark_outline_rgb": [
+              81,
+              114,
+              56
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Seta",
+            "series_rank": 0,
+            "value": 5
+          },
+          "entity_id": "mark_N_Seta",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              162.87,
+              817.714,
+              215.53
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              62.0,
+              189.2
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              92.0,
+              182.23,
+              672.571,
+              196.17
+            ],
+            "mark_center_px": [
+              382.286,
+              189.2
+            ],
+            "mark_fill_rgb": [
+              198,
+              65,
+              81
+            ],
+            "mark_outline_rgb": [
+              109,
+              36,
+              45
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Alic",
+            "series_rank": 1,
+            "value": 16
+          },
+          "entity_id": "mark_N_Alic",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              162.87,
+              817.714,
+              215.53
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              62.0,
+              189.2
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              92.0,
+              201.59,
+              817.714,
+              215.53
+            ],
+            "mark_center_px": [
+              454.857,
+              208.56
+            ],
+            "mark_fill_rgb": [
+              189,
+              81,
+              188
+            ],
+            "mark_outline_rgb": [
+              104,
+              45,
+              103
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Zebe",
+            "series_rank": 2,
+            "value": 20
+          },
+          "entity_id": "mark_N_Zebe",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              57.0,
+              259.67,
+              781.429,
+              312.33
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              62.0,
+              286.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              259.67,
+              128.286,
+              273.61
+            ],
+            "mark_center_px": [
+              110.143,
+              266.64
+            ],
+            "mark_fill_rgb": [
+              148,
+              208,
+              101
+            ],
+            "mark_outline_rgb": [
+              81,
+              114,
+              56
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Seta",
+            "series_rank": 0,
+            "value": 1
+          },
+          "entity_id": "mark_J_Seta",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              57.0,
+              259.67,
+              781.429,
+              312.33
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              62.0,
+              286.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              279.03,
+              636.286,
+              292.97
+            ],
+            "mark_center_px": [
+              364.143,
+              286.0
+            ],
+            "mark_fill_rgb": [
+              198,
+              65,
+              81
+            ],
+            "mark_outline_rgb": [
+              109,
+              36,
+              45
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Alic",
+            "series_rank": 1,
+            "value": 15
+          },
+          "entity_id": "mark_J_Alic",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              57.0,
+              259.67,
+              781.429,
+              312.33
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              62.0,
+              286.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              298.39,
+              781.429,
+              312.33
+            ],
+            "mark_center_px": [
+              436.714,
+              305.36
+            ],
+            "mark_fill_rgb": [
+              189,
+              81,
+              188
+            ],
+            "mark_outline_rgb": [
+              104,
+              45,
+              103
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Zebe",
+            "series_rank": 2,
+            "value": 19
+          },
+          "entity_id": "mark_J_Zebe",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              356.47,
+              382.286,
+              409.13
+            ],
+            "category_label": "K",
+            "category_label_center_px": [
+              62.0,
+              382.8
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              356.47,
+              382.286,
+              370.41
+            ],
+            "mark_center_px": [
+              237.143,
+              363.44
+            ],
+            "mark_fill_rgb": [
+              148,
+              208,
+              101
+            ],
+            "mark_outline_rgb": [
+              81,
+              114,
+              56
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Seta",
+            "series_rank": 0,
+            "value": 8
+          },
+          "entity_id": "mark_K_Seta",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              356.47,
+              382.286,
+              409.13
+            ],
+            "category_label": "K",
+            "category_label_center_px": [
+              62.0,
+              382.8
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              375.83,
+              346.0,
+              389.77
+            ],
+            "mark_center_px": [
+              219.0,
+              382.8
+            ],
+            "mark_fill_rgb": [
+              198,
+              65,
+              81
+            ],
+            "mark_outline_rgb": [
+              109,
+              36,
+              45
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Alic",
+            "series_rank": 1,
+            "value": 7
+          },
+          "entity_id": "mark_K_Alic",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              356.47,
+              382.286,
+              409.13
+            ],
+            "category_label": "K",
+            "category_label_center_px": [
+              62.0,
+              382.8
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              395.19,
+              273.429,
+              409.13
+            ],
+            "mark_center_px": [
+              182.714,
+              402.16
+            ],
+            "mark_fill_rgb": [
+              189,
+              81,
+              188
+            ],
+            "mark_outline_rgb": [
+              104,
+              45,
+              103
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Zebe",
+            "series_rank": 2,
+            "value": 5
+          },
+          "entity_id": "mark_K_Zebe",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              453.27,
+              708.857,
+              505.93
+            ],
+            "category_label": "U",
+            "category_label_center_px": [
+              62.0,
+              479.6
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              453.27,
+              200.857,
+              467.21
+            ],
+            "mark_center_px": [
+              146.429,
+              460.24
+            ],
+            "mark_fill_rgb": [
+              148,
+              208,
+              101
+            ],
+            "mark_outline_rgb": [
+              81,
+              114,
+              56
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Seta",
+            "series_rank": 0,
+            "value": 3
+          },
+          "entity_id": "mark_U_Seta",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              453.27,
+              708.857,
+              505.93
+            ],
+            "category_label": "U",
+            "category_label_center_px": [
+              62.0,
+              479.6
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              472.63,
+              309.714,
+              486.57
+            ],
+            "mark_center_px": [
+              200.857,
+              479.6
+            ],
+            "mark_fill_rgb": [
+              198,
+              65,
+              81
+            ],
+            "mark_outline_rgb": [
+              109,
+              36,
+              45
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Alic",
+            "series_rank": 1,
+            "value": 6
+          },
+          "entity_id": "mark_U_Alic",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              453.27,
+              708.857,
+              505.93
+            ],
+            "category_label": "U",
+            "category_label_center_px": [
+              62.0,
+              479.6
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              491.99,
+              708.857,
+              505.93
+            ],
+            "mark_center_px": [
+              400.429,
+              498.96
+            ],
+            "mark_fill_rgb": [
+              189,
+              81,
+              188
+            ],
+            "mark_outline_rgb": [
+              104,
+              45,
+              103
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Zebe",
+            "series_rank": 2,
+            "value": 17
+          },
+          "entity_id": "mark_U_Zebe",
+          "entity_type": "bar"
+        }
+      ],
+      "relations": {
+        "comparison": "greater_than",
+        "evidence_labels": [
+          "K"
+        ],
+        "queried_series_labels": [
+          "Seta",
+          "Zebe"
+        ],
+        "scene_variant": "grouped_horizontal_bar",
+        "task_variant": "series_a_gt_b_count"
+      },
+      "scene_kind": "chart_grouped_horizontal_bar_multiseries"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "K"
+      ],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

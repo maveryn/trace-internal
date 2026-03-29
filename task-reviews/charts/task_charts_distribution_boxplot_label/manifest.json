@@ -1,0 +1,15 @@
+{
+  "inspection_count": 75,
+  "task_id": "task_charts_distribution_boxplot_label",
+  "variants": {
+    "highest_median": 25,
+    "largest_iqr": 25,
+    "smallest_iqr": 25
+  },
+  "workbook": "charts/task_charts_distribution_boxplot_label/task_charts_distribution_boxplot_label.xlsx",
+  "workbook_sheets": {
+    "highest_median": "highest_median",
+    "largest_iqr": "largest_iqr",
+    "smallest_iqr": "smallest_iqr"
+  }
+}

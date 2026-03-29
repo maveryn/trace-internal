@@ -1,0 +1,15 @@
+{
+  "inspection_count": 75,
+  "task_id": "task_puzzles_logic_grid_completion_label",
+  "variants": {
+    "column_uniqueness": 25,
+    "row_and_column_uniqueness": 25,
+    "row_uniqueness": 25
+  },
+  "workbook": "puzzles/task_puzzles_logic_grid_completion_label/task_puzzles_logic_grid_completion_label.xlsx",
+  "workbook_sheets": {
+    "column_uniqueness": "column_uniqueness",
+    "row_and_column_uniqueness": "row_and_column_uniqueness",
+    "row_uniqueness": "row_uniqueness"
+  }
+}

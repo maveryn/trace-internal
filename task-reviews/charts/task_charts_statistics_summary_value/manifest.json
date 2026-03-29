@@ -1,0 +1,23 @@
+{
+  "inspection_count": 175,
+  "task_id": "task_charts_statistics_summary_value",
+  "variants": {
+    "max": 25,
+    "mean": 25,
+    "median": 25,
+    "min": 25,
+    "mode": 25,
+    "range": 25,
+    "sum": 25
+  },
+  "workbook": "charts/task_charts_statistics_summary_value/task_charts_statistics_summary_value.xlsx",
+  "workbook_sheets": {
+    "max": "max",
+    "mean": "mean",
+    "median": "median",
+    "min": "min",
+    "mode": "mode",
+    "range": "range",
+    "sum": "sum"
+  }
+}

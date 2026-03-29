@@ -14,5 +14,7 @@ Guidance:
    - operand-unknown equations are harder,
    - more operands, more operator variety, and the presence of multiplication can increase difficulty inside the same task.
    - balance-panel tasks should usually rise with panel count, total box count, and how many symbolic values must be chained before the query box can be solved.
+   - arithmetic-grid tasks should usually rise with row count, whether the hidden cell is an operand or a result, and whether the repeated row rule uses multiplication rather than simple addition.
+   - fold-hole spatial tasks should usually rise with more folds, more punched holes, and option sets that contain stronger near-miss symmetries.
 4. Use `scene_variant_load` only when the task genuinely supports multiple visible scene grammars inside the same task.
 5. If a later puzzle family uses only one stable presentation, give `scene_variant_load` zero weight for that task/family instead of inventing fake variation.

@@ -30,7 +30,7 @@ Use this whenever the task lives under `domain=puzzles`.
 ## Early-family guidance
 - `arithmetic`: visual equations, balance/weight puzzles, digit-placement puzzles, number-grid puzzles with explicit unknowns.
 - `logic`: option filtering under placement/adjacency/consistency constraints.
-- `spatial`: cube views/nets, block stacks, assembly/cut-and-build puzzles.
+- `spatial`: fold/hole-punch puzzles, cube views/nets, block stacks, assembly/cut-and-build puzzles.
 - `topology`: equivalence under deformation, region/inside-outside reasoning, connected-structure invariants.
 - `symbolic` later: letter/word/path puzzles and symbol-mapping tasks once text-rendering needs are clear.
 
@@ -52,9 +52,23 @@ Use this whenever the task lives under `domain=puzzles`.
 - The first arithmetic puzzle tasks should center on explicit unknown slots rather than free-form expression comparison.
 - Good early arithmetic variants are those like “what number should replace the question mark?” or “what is the value of the box?” where one queried bbox grounds the answer.
 - For a clean first arithmetic contract, prefer one flat equation row with `2..5` boxed operands on the left, one boxed result on the right, and the `?` allowed in either an operand box or the result box.
-- For early balance-style arithmetic tasks, prefer `2..3` equality panels plus one dedicated highlighted query box; keep the solver structure in the panels, but keep prompt-facing evidence on the local query box.
+- For early balance-style arithmetic tasks, prefer `2..3` explicit equality panels with visible `+` and `=` signs plus a final query row rendered like `symbol = ?`; project evidence from the `?` box rather than from the symbol box, and if the row spacing looks too rigid, add only small seeded jitter while keeping the local gaps readable and near-uniform.
+- For early arithmetic grid tasks, prefer `3..5` rows with exactly `3` columns and no headers so at least two complete example rows remain after hiding the `?` cell.
+- When a puzzle grid repeats a hidden arithmetic row rule, require the complete visible rows to support exactly one operator family; do not accept rows that also fit multiple rule types.
 - When an arithmetic unknown-slot family starts feeling too tiny, increase structural variety inside that same one-box contract first: vary operand count, operator mix, and whether the unknown is on the left or right before inventing a new task id.
 - Avoid early arithmetic tasks like “largest possible number” or broad expression ranking unless the evidence contract is already well-defined and locally grounded.
+
+## Early logic lessons
+- For early logic puzzles, MCQ-style image options are often cleaner than open-vocabulary answers like `"triangle"` or `"red"`.
+- If a logic task uses option panels, keep the answer format as `option_letter` and ground prompt-facing evidence on the winning option panel bbox.
+- Prefer logic boards with one explicit `?` cell and a stable set of labeled option panels so the user interaction stays consistent even when the hidden rule changes across variants.
+- For early logic families, make the semantic rule vary inside `task_variant` (for example row uniqueness vs column uniqueness vs both) before creating new task ids for near-identical board-and-options layouts.
+
+## Early spatial lessons
+- For early spatial puzzles, prefer benchmark-like fold/hole or other explicit step-diagram tasks over hidden spatial conventions that the image does not make clear.
+- For fold-hole tasks, keep the fold direction explicit in the image with visible fold lines and arrows instead of expecting the solver to infer an arbitrary folding convention.
+- For option-based spatial puzzles, keep `answer_gt.type = option_letter` and ground prompt-facing evidence on the winning option panel bbox, not on many explanatory regions.
+- When a second puzzle family needs labeled image options, reuse shared puzzle option-panel chrome instead of copying panel/label/content-box layout into another scene renderer.
 
 ## Benchmark alignment
 - MathVision-style useful puzzle coverage includes arithmetic, logic, spatial, topology, and competition-style visual problem solving.

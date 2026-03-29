@@ -1,0 +1,19 @@
+{
+  "inspection_count": 125,
+  "task_id": "task_charts_readout_subset_value",
+  "variants": {
+    "difference_two_abs": 25,
+    "max_two": 25,
+    "mean_two": 25,
+    "min_two": 25,
+    "sum_two": 25
+  },
+  "workbook": "charts/task_charts_readout_subset_value/task_charts_readout_subset_value.xlsx",
+  "workbook_sheets": {
+    "difference_two_abs": "difference_two_abs",
+    "max_two": "max_two",
+    "mean_two": "mean_two",
+    "min_two": "min_two",
+    "sum_two": "sum_two"
+  }
+}

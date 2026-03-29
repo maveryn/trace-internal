@@ -1,0 +1,15 @@
+{
+  "inspection_count": 75,
+  "task_id": "task_charts_counting_value_count",
+  "variants": {
+    "above_threshold": 25,
+    "below_threshold": 25,
+    "in_interval": 25
+  },
+  "workbook": "charts/task_charts_counting_value_count/task_charts_counting_value_count.xlsx",
+  "workbook_sheets": {
+    "above_threshold": "above_threshold",
+    "below_threshold": "below_threshold",
+    "in_interval": "in_interval"
+  }
+}

@@ -1,0 +1,1316 @@
+{
+  "answer_gt": {
+    "type": "string",
+    "value": "Kobi"
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        286.08,
+        233.333,
+        486.72,
+        322.0
+      ],
+      [
+        687.36,
+        233.333,
+        888.0,
+        322.0
+      ],
+      [
+        286.08,
+        322.0,
+        486.72,
+        410.667
+      ],
+      [
+        687.36,
+        322.0,
+        888.0,
+        410.667
+      ],
+      [
+        286.08,
+        499.333,
+        486.72,
+        588.0
+      ],
+      [
+        687.36,
+        499.333,
+        888.0,
+        588.0
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "tables/task_tables_statistics_filtered_subset_label/images/filtered_argmin/0015.png"
+  },
+  "instance_seed": 1133593059418144,
+  "prompt": "Use the table in the image. It shows a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Use the table values to filter the rows and then identify the winning row in the named target column. Using only the rows with values in Age from 28 to 32 inclusive, determine which row has the minimum value in Rate.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the ordered supporting cell pairs [filter cell, target cell] for each selected row in top-to-bottom row order.\nAnswer rule: set \"answer\" to the exact row-name string from the filtered rows.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],\"answer\":\"Milo\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the table in the image. It shows a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Use the table values to filter the rows and then identify the winning row in the named target column. Using only the rows with values in Age from 28 to 32 inclusive, determine which row has the minimum value in Rate.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the ordered supporting cell pairs [filter cell, target cell] for each selected row in top-to-bottom row order.\nAnswer rule: set \"answer\" to the exact row-name string from the filtered rows.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],\"answer\":\"Milo\"}",
+    "answer_only": "Use the table in the image. It shows a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Use the table values to filter the rows and then identify the winning row in the named target column. Using only the rows with values in Age from 28 to 32 inclusive, determine which row has the minimum value in Rate.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact row-name string from the filtered rows.\nExample JSON:\n{\"answer\":\"Milo\"}"
+  },
+  "task": "task_tables_statistics_filtered_subset_label",
+  "task_variant": "filtered_argmin",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_row_index": 2,
+      "answer_row_label": "Kobi",
+      "answer_value": 12,
+      "column_headers": [
+        "Age",
+        "Mass",
+        "Rate"
+      ],
+      "filter_column": "Age",
+      "filter_column_index": 0,
+      "filter_variant": "in_interval",
+      "interval_max": 32,
+      "interval_min": 28,
+      "numeric_column_count": 3,
+      "numeric_column_count_range": [
+        3,
+        5
+      ],
+      "question_format": "filtered_subset_label",
+      "row_count": 5,
+      "row_count_range": [
+        5,
+        10
+      ],
+      "row_labels": [
+        "Etti",
+        "Gris",
+        "Kobi",
+        "Munn",
+        "Kei"
+      ],
+      "scene_variant": "spreadsheet",
+      "scene_variant_probabilities": {
+        "card_table": 0.25,
+        "ledger": 0.25,
+        "spreadsheet": 0.25,
+        "zebra": 0.25
+      },
+      "selected_row_indices": [
+        1,
+        2,
+        4
+      ],
+      "selected_row_labels": [
+        "Gris",
+        "Kobi",
+        "Kei"
+      ],
+      "supporting_cell_ids": [
+        "cell_r2_c1",
+        "cell_r2_c3",
+        "cell_r3_c1",
+        "cell_r3_c3",
+        "cell_r5_c1",
+        "cell_r5_c3"
+      ],
+      "target_column": "Rate",
+      "target_column_index": 2,
+      "task_variant": "filtered_argmin",
+      "task_variant_probabilities": {
+        "filtered_argmax": 0.0,
+        "filtered_argmin": 1.0
+      },
+      "value_range": [
+        1,
+        32
+      ],
+      "values_by_row": {
+        "Etti": {
+          "Age": 12,
+          "Mass": 20,
+          "Rate": 20
+        },
+        "Gris": {
+          "Age": 32,
+          "Mass": 6,
+          "Rate": 23
+        },
+        "Kei": {
+          "Age": 30,
+          "Mass": 17,
+          "Rate": 25
+        },
+        "Kobi": {
+          "Age": 30,
+          "Mass": 29,
+          "Rate": 12
+        },
+        "Munn": {
+          "Age": 21,
+          "Mass": 4,
+          "Rate": 16
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          286.08,
+          233.333,
+          486.72,
+          322.0
+        ],
+        [
+          687.36,
+          233.333,
+          888.0,
+          322.0
+        ],
+        [
+          286.08,
+          322.0,
+          486.72,
+          410.667
+        ],
+        [
+          687.36,
+          322.0,
+          888.0,
+          410.667
+        ],
+        [
+          286.08,
+          499.333,
+          486.72,
+          588.0
+        ],
+        [
+          687.36,
+          499.333,
+          888.0,
+          588.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "filter_column": "Age",
+        "filter_variant": "in_interval",
+        "numeric_column_count": 3,
+        "row_count": 5,
+        "scene_variant": "spreadsheet",
+        "scene_variant_probabilities": {
+          "card_table": 0.25,
+          "ledger": 0.25,
+          "spreadsheet": 0.25,
+          "zebra": 0.25
+        },
+        "target_column": "Rate",
+        "task_variant": "filtered_argmin",
+        "task_variant_probabilities": {
+          "filtered_argmax": 0.0,
+          "filtered_argmin": 1.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "tables_statistics_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the exact row-name string from the filtered rows",
+          "evidence_hint": "set \"evidence\" to an array containing the ordered supporting cell pairs [filter cell, target cell] for each selected row in top-to-bottom row order",
+          "filter_condition": "values in Age from 28 to 32 inclusive",
+          "json_example": "{\"evidence\":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],\"answer\":\"Milo\"}",
+          "json_example_answer_only": "{\"answer\":\"Milo\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row",
+          "query_filter_column": "Age",
+          "query_target_column": "Rate"
+        },
+        "task_family_key": "styled_table_statistics",
+        "task_family_variant_index": 1,
+        "task_key": "filtered_subset_label_query",
+        "task_variant_index": 2,
+        "task_variant_key": "filtered_argmin",
+        "task_variant_template_index": 2,
+        "template_paths": [
+          "tables/statistics/tables_statistics_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:filtered_subset_label_query": 5,
+          "task_family:styled_table_statistics": 5,
+          "task_variant:filtered_argmin": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "tables_statistics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact row-name string from the filtered rows",
+              "evidence_hint": "set \"evidence\" to an array containing the ordered supporting cell pairs [filter cell, target cell] for each selected row in top-to-bottom row order",
+              "filter_condition": "values in Age from 28 to 32 inclusive",
+              "json_example": "{\"evidence\":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],\"answer\":\"Milo\"}",
+              "json_example_answer_only": "{\"answer\":\"Milo\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row",
+              "query_filter_column": "Age",
+              "query_target_column": "Rate"
+            },
+            "task_family_key": "styled_table_statistics",
+            "task_family_variant_index": 1,
+            "task_key": "filtered_subset_label_query",
+            "task_variant_index": 2,
+            "task_variant_key": "filtered_argmin",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "tables/statistics/tables_statistics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:filtered_subset_label_query": 5,
+              "task_family:styled_table_statistics": 5,
+              "task_variant:filtered_argmin": 5
+            }
+          },
+          "prompt": "Use the table in the image. It shows a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Use the table values to filter the rows and then identify the winning row in the named target column. Using only the rows with values in Age from 28 to 32 inclusive, determine which row has the minimum value in Rate.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing the ordered supporting cell pairs [filter cell, target cell] for each selected row in top-to-bottom row order.\nAnswer rule: set \"answer\" to the exact row-name string from the filtered rows.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],\"answer\":\"Milo\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "tables_statistics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact row-name string from the filtered rows",
+              "evidence_hint": "set \"evidence\" to an array containing the ordered supporting cell pairs [filter cell, target cell] for each selected row in top-to-bottom row order",
+              "filter_condition": "values in Age from 28 to 32 inclusive",
+              "json_example": "{\"evidence\":[[260,180,372,236],[374,180,486,236],[260,236,372,292],[374,236,486,292]],\"answer\":\"Milo\"}",
+              "json_example_answer_only": "{\"answer\":\"Milo\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row",
+              "query_filter_column": "Age",
+              "query_target_column": "Rate"
+            },
+            "task_family_key": "styled_table_statistics",
+            "task_family_variant_index": 1,
+            "task_key": "filtered_subset_label_query",
+            "task_variant_index": 2,
+            "task_variant_key": "filtered_argmin",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "tables/statistics/tables_statistics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:filtered_subset_label_query": 5,
+              "task_family:styled_table_statistics": 5,
+              "task_variant:filtered_argmin": 5
+            }
+          },
+          "prompt": "Use the table in the image. It shows a spreadsheet-style table with one Name column, several numeric columns, full grid lines, and a shaded header row. Use the table values to filter the rows and then identify the winning row in the named target column. Using only the rows with values in Age from 28 to 32 inclusive, determine which row has the minimum value in Rate.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact row-name string from the filtered rows.\nExample JSON:\n{\"answer\":\"Milo\"}"
+        }
+      },
+      "task_variant": "filtered_argmin",
+      "template_id": "tables_statistics_v1"
+    },
+    "render_map": {
+      "cell_bboxes_px": {
+        "cell_r0_c0": [
+          52.0,
+          56.0,
+          286.08,
+          144.667
+        ],
+        "cell_r0_c1": [
+          286.08,
+          56.0,
+          486.72,
+          144.667
+        ],
+        "cell_r0_c2": [
+          486.72,
+          56.0,
+          687.36,
+          144.667
+        ],
+        "cell_r0_c3": [
+          687.36,
+          56.0,
+          888.0,
+          144.667
+        ],
+        "cell_r1_c0": [
+          52.0,
+          144.667,
+          286.08,
+          233.333
+        ],
+        "cell_r1_c1": [
+          286.08,
+          144.667,
+          486.72,
+          233.333
+        ],
+        "cell_r1_c2": [
+          486.72,
+          144.667,
+          687.36,
+          233.333
+        ],
+        "cell_r1_c3": [
+          687.36,
+          144.667,
+          888.0,
+          233.333
+        ],
+        "cell_r2_c0": [
+          52.0,
+          233.333,
+          286.08,
+          322.0
+        ],
+        "cell_r2_c1": [
+          286.08,
+          233.333,
+          486.72,
+          322.0
+        ],
+        "cell_r2_c2": [
+          486.72,
+          233.333,
+          687.36,
+          322.0
+        ],
+        "cell_r2_c3": [
+          687.36,
+          233.333,
+          888.0,
+          322.0
+        ],
+        "cell_r3_c0": [
+          52.0,
+          322.0,
+          286.08,
+          410.667
+        ],
+        "cell_r3_c1": [
+          286.08,
+          322.0,
+          486.72,
+          410.667
+        ],
+        "cell_r3_c2": [
+          486.72,
+          322.0,
+          687.36,
+          410.667
+        ],
+        "cell_r3_c3": [
+          687.36,
+          322.0,
+          888.0,
+          410.667
+        ],
+        "cell_r4_c0": [
+          52.0,
+          410.667,
+          286.08,
+          499.333
+        ],
+        "cell_r4_c1": [
+          286.08,
+          410.667,
+          486.72,
+          499.333
+        ],
+        "cell_r4_c2": [
+          486.72,
+          410.667,
+          687.36,
+          499.333
+        ],
+        "cell_r4_c3": [
+          687.36,
+          410.667,
+          888.0,
+          499.333
+        ],
+        "cell_r5_c0": [
+          52.0,
+          499.333,
+          286.08,
+          588.0
+        ],
+        "cell_r5_c1": [
+          286.08,
+          499.333,
+          486.72,
+          588.0
+        ],
+        "cell_r5_c2": [
+          486.72,
+          499.333,
+          687.36,
+          588.0
+        ],
+        "cell_r5_c3": [
+          687.36,
+          499.333,
+          888.0,
+          588.0
+        ]
+      },
+      "column_region_bboxes_px": {
+        "Age": [
+          286.08,
+          144.667,
+          486.72,
+          588.0
+        ],
+        "Mass": [
+          486.72,
+          144.667,
+          687.36,
+          588.0
+        ],
+        "Rate": [
+          687.36,
+          144.667,
+          888.0,
+          588.0
+        ]
+      },
+      "header_bboxes_px": {
+        "Age": [
+          286.08,
+          56.0,
+          486.72,
+          144.667
+        ],
+        "Mass": [
+          486.72,
+          56.0,
+          687.36,
+          144.667
+        ],
+        "Rate": [
+          687.36,
+          56.0,
+          888.0,
+          144.667
+        ]
+      },
+      "image_id": "img0",
+      "row_label_bboxes_px": {
+        "Etti": [
+          52.0,
+          144.667,
+          286.08,
+          233.333
+        ],
+        "Gris": [
+          52.0,
+          233.333,
+          286.08,
+          322.0
+        ],
+        "Kei": [
+          52.0,
+          499.333,
+          286.08,
+          588.0
+        ],
+        "Kobi": [
+          52.0,
+          322.0,
+          286.08,
+          410.667
+        ],
+        "Munn": [
+          52.0,
+          410.667,
+          286.08,
+          499.333
+        ]
+      },
+      "row_region_bboxes_px": {
+        "Etti": [
+          286.08,
+          144.667,
+          888.0,
+          233.333
+        ],
+        "Gris": [
+          286.08,
+          233.333,
+          888.0,
+          322.0
+        ],
+        "Kei": [
+          286.08,
+          499.333,
+          888.0,
+          588.0
+        ],
+        "Kobi": [
+          286.08,
+          322.0,
+          888.0,
+          410.667
+        ],
+        "Munn": [
+          286.08,
+          410.667,
+          888.0,
+          499.333
+        ]
+      },
+      "table_bbox_px": [
+        52.0,
+        56.0,
+        888.0,
+        588.0
+      ]
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 640,
+      "canvas_width": 940,
+      "coord_space": "pixel",
+      "grid_style": {
+        "border_width_px": 2,
+        "grid_width_px": 1
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "spreadsheet",
+      "table_bbox_px": [
+        52.0,
+        56.0,
+        888.0,
+        588.0
+      ],
+      "text_style": {
+        "label_font_size_px": 24,
+        "value_font_size_px": 22
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Name",
+            "text_bbox_px": [
+              130.54,
+              91.333,
+              207.54,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            56.0,
+            286.08,
+            144.667
+          ],
+          "entity_id": "cell_r0_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Age",
+            "text_bbox_px": [
+              360.4,
+              88.833,
+              412.4,
+              111.833
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            286.08,
+            56.0,
+            486.72,
+            144.667
+          ],
+          "entity_id": "cell_r0_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Mass",
+            "column_index": 2,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Mass",
+            "text_bbox_px": [
+              553.04,
+              91.333,
+              621.04,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            486.72,
+            56.0,
+            687.36,
+            144.667
+          ],
+          "entity_id": "cell_r0_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Rate",
+            "column_index": 3,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Rate",
+            "text_bbox_px": [
+              757.18,
+              91.333,
+              818.18,
+              109.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            687.36,
+            56.0,
+            888.0,
+            144.667
+          ],
+          "entity_id": "cell_r0_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 1,
+            "row_label": "Etti",
+            "text": "Etti",
+            "text_bbox_px": [
+              66.0,
+              180.0,
+              112.0,
+              198.0
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            144.667,
+            286.08,
+            233.333
+          ],
+          "entity_id": "cell_r1_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 1,
+            "row_label": "Etti",
+            "text": "12",
+            "text_bbox_px": [
+              372.4,
+              181.0,
+              400.4,
+              197.0
+            ],
+            "value": 12
+          },
+          "bbox_px": [
+            286.08,
+            144.667,
+            486.72,
+            233.333
+          ],
+          "entity_id": "cell_r1_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Mass",
+            "column_index": 2,
+            "row_index": 1,
+            "row_label": "Etti",
+            "text": "20",
+            "text_bbox_px": [
+              573.04,
+              181.0,
+              601.04,
+              197.0
+            ],
+            "value": 20
+          },
+          "bbox_px": [
+            486.72,
+            144.667,
+            687.36,
+            233.333
+          ],
+          "entity_id": "cell_r1_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Rate",
+            "column_index": 3,
+            "row_index": 1,
+            "row_label": "Etti",
+            "text": "20",
+            "text_bbox_px": [
+              773.68,
+              181.0,
+              801.68,
+              197.0
+            ],
+            "value": 20
+          },
+          "bbox_px": [
+            687.36,
+            144.667,
+            888.0,
+            233.333
+          ],
+          "entity_id": "cell_r1_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 2,
+            "row_label": "Gris",
+            "text": "Gris",
+            "text_bbox_px": [
+              66.0,
+              268.667,
+              120.0,
+              286.667
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            233.333,
+            286.08,
+            322.0
+          ],
+          "entity_id": "cell_r2_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 2,
+            "row_label": "Gris",
+            "text": "32",
+            "text_bbox_px": [
+              372.4,
+              269.667,
+              400.4,
+              285.667
+            ],
+            "value": 32
+          },
+          "bbox_px": [
+            286.08,
+            233.333,
+            486.72,
+            322.0
+          ],
+          "entity_id": "cell_r2_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Mass",
+            "column_index": 2,
+            "row_index": 2,
+            "row_label": "Gris",
+            "text": "6",
+            "text_bbox_px": [
+              580.04,
+              269.667,
+              594.04,
+              285.667
+            ],
+            "value": 6
+          },
+          "bbox_px": [
+            486.72,
+            233.333,
+            687.36,
+            322.0
+          ],
+          "entity_id": "cell_r2_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Rate",
+            "column_index": 3,
+            "row_index": 2,
+            "row_label": "Gris",
+            "text": "23",
+            "text_bbox_px": [
+              773.68,
+              269.667,
+              801.68,
+              285.667
+            ],
+            "value": 23
+          },
+          "bbox_px": [
+            687.36,
+            233.333,
+            888.0,
+            322.0
+          ],
+          "entity_id": "cell_r2_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 3,
+            "row_label": "Kobi",
+            "text": "Kobi",
+            "text_bbox_px": [
+              66.0,
+              357.333,
+              126.0,
+              375.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            322.0,
+            286.08,
+            410.667
+          ],
+          "entity_id": "cell_r3_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 3,
+            "row_label": "Kobi",
+            "text": "30",
+            "text_bbox_px": [
+              372.4,
+              358.333,
+              400.4,
+              374.333
+            ],
+            "value": 30
+          },
+          "bbox_px": [
+            286.08,
+            322.0,
+            486.72,
+            410.667
+          ],
+          "entity_id": "cell_r3_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Mass",
+            "column_index": 2,
+            "row_index": 3,
+            "row_label": "Kobi",
+            "text": "29",
+            "text_bbox_px": [
+              573.04,
+              358.333,
+              601.04,
+              374.333
+            ],
+            "value": 29
+          },
+          "bbox_px": [
+            486.72,
+            322.0,
+            687.36,
+            410.667
+          ],
+          "entity_id": "cell_r3_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Rate",
+            "column_index": 3,
+            "row_index": 3,
+            "row_label": "Kobi",
+            "text": "12",
+            "text_bbox_px": [
+              773.68,
+              358.333,
+              801.68,
+              374.333
+            ],
+            "value": 12
+          },
+          "bbox_px": [
+            687.36,
+            322.0,
+            888.0,
+            410.667
+          ],
+          "entity_id": "cell_r3_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 4,
+            "row_label": "Munn",
+            "text": "Munn",
+            "text_bbox_px": [
+              66.0,
+              446.0,
+              141.0,
+              464.0
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            410.667,
+            286.08,
+            499.333
+          ],
+          "entity_id": "cell_r4_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 4,
+            "row_label": "Munn",
+            "text": "21",
+            "text_bbox_px": [
+              372.4,
+              447.0,
+              400.4,
+              463.0
+            ],
+            "value": 21
+          },
+          "bbox_px": [
+            286.08,
+            410.667,
+            486.72,
+            499.333
+          ],
+          "entity_id": "cell_r4_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Mass",
+            "column_index": 2,
+            "row_index": 4,
+            "row_label": "Munn",
+            "text": "4",
+            "text_bbox_px": [
+              580.04,
+              447.0,
+              594.04,
+              463.0
+            ],
+            "value": 4
+          },
+          "bbox_px": [
+            486.72,
+            410.667,
+            687.36,
+            499.333
+          ],
+          "entity_id": "cell_r4_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Rate",
+            "column_index": 3,
+            "row_index": 4,
+            "row_label": "Munn",
+            "text": "16",
+            "text_bbox_px": [
+              773.68,
+              447.0,
+              801.68,
+              463.0
+            ],
+            "value": 16
+          },
+          "bbox_px": [
+            687.36,
+            410.667,
+            888.0,
+            499.333
+          ],
+          "entity_id": "cell_r4_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 5,
+            "row_label": "Kei",
+            "text": "Kei",
+            "text_bbox_px": [
+              66.0,
+              534.667,
+              109.0,
+              552.667
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            499.333,
+            286.08,
+            588.0
+          ],
+          "entity_id": "cell_r5_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 5,
+            "row_label": "Kei",
+            "text": "30",
+            "text_bbox_px": [
+              372.4,
+              535.667,
+              400.4,
+              551.667
+            ],
+            "value": 30
+          },
+          "bbox_px": [
+            286.08,
+            499.333,
+            486.72,
+            588.0
+          ],
+          "entity_id": "cell_r5_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Mass",
+            "column_index": 2,
+            "row_index": 5,
+            "row_label": "Kei",
+            "text": "17",
+            "text_bbox_px": [
+              573.04,
+              535.667,
+              601.04,
+              551.667
+            ],
+            "value": 17
+          },
+          "bbox_px": [
+            486.72,
+            499.333,
+            687.36,
+            588.0
+          ],
+          "entity_id": "cell_r5_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Rate",
+            "column_index": 3,
+            "row_index": 5,
+            "row_label": "Kei",
+            "text": "25",
+            "text_bbox_px": [
+              773.68,
+              535.667,
+              801.68,
+              551.667
+            ],
+            "value": 25
+          },
+          "bbox_px": [
+            687.36,
+            499.333,
+            888.0,
+            588.0
+          ],
+          "entity_id": "cell_r5_c3",
+          "entity_type": "table_cell"
+        }
+      ],
+      "relations": {
+        "answer_row_index": 2,
+        "answer_row_label": "Kobi",
+        "answer_value": 12,
+        "filter_column": "Age",
+        "filter_variant": "in_interval",
+        "interval_max": 32,
+        "interval_min": 28,
+        "scene_variant": "spreadsheet",
+        "selected_row_labels": [
+          "Gris",
+          "Kobi",
+          "Kei"
+        ],
+        "supporting_cell_ids": [
+          "cell_r2_c1",
+          "cell_r2_c3",
+          "cell_r3_c1",
+          "cell_r3_c3",
+          "cell_r5_c1",
+          "cell_r5_c3"
+        ],
+        "target_column": "Rate",
+        "task_variant": "filtered_argmin"
+      },
+      "scene_kind": "table_spreadsheet_statistics"
+    },
+    "witness_symbolic": {
+      "type": "bbox_set",
+      "value": [
+        [
+          286.08,
+          233.333,
+          486.72,
+          322.0
+        ],
+        [
+          687.36,
+          233.333,
+          888.0,
+          322.0
+        ],
+        [
+          286.08,
+          322.0,
+          486.72,
+          410.667
+        ],
+        [
+          687.36,
+          322.0,
+          888.0,
+          410.667
+        ],
+        [
+          286.08,
+          499.333,
+          486.72,
+          588.0
+        ],
+        [
+          687.36,
+          499.333,
+          888.0,
+          588.0
+        ]
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

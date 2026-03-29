@@ -1,0 +1,1312 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 4
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "C",
+      "D",
+      "E",
+      "Y"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_gt_b_count/0000.png"
+  },
+  "instance_seed": 5045451565232570,
+  "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Count the category labels where Mun exceeds Skip.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Count the category labels where Mun exceeds Skip.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+    "answer_only": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Count the category labels where Mun exceeds Skip.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_charts_multiseries_pairwise_comparison_count",
+  "task_variant": "series_a_gt_b_count",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 4,
+      "category_count": 9,
+      "category_count_range": [
+        5,
+        10
+      ],
+      "category_labels": [
+        "N",
+        "E",
+        "Q",
+        "Y",
+        "K",
+        "L",
+        "C",
+        "D",
+        "P"
+      ],
+      "comparison": "greater_than",
+      "evidence_labels": [
+        "C",
+        "D",
+        "E",
+        "Y"
+      ],
+      "left_series_label": "Mun",
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb_palette",
+      "queried_series_labels": [
+        "Mun",
+        "Skip"
+      ],
+      "question_format": "numeric_open",
+      "right_series_label": "Skip",
+      "scene_variant": "multi_line",
+      "scene_variant_probabilities": {
+        "grouped_bar": 0.25,
+        "grouped_horizontal_bar": 0.25,
+        "grouped_lollipop": 0.25,
+        "multi_line": 0.25
+      },
+      "series_count": 2,
+      "series_count_range": [
+        2,
+        3
+      ],
+      "series_fill_palette_rgb": [
+        [
+          85,
+          171,
+          170
+        ],
+        [
+          207,
+          204,
+          116
+        ]
+      ],
+      "series_labels": [
+        "Mun",
+        "Skip"
+      ],
+      "series_outline_palette_rgb": [
+        [
+          47,
+          94,
+          94
+        ],
+        [
+          114,
+          112,
+          64
+        ]
+      ],
+      "target_answer": 4,
+      "target_answer_range": [
+        0,
+        8
+      ],
+      "task_variant": "series_a_gt_b_count",
+      "task_variant_probabilities": {
+        "series_a_gt_b_count": 0.5,
+        "series_a_lt_b_count": 0.5
+      },
+      "values_by_category": {
+        "C": {
+          "Mun": 18,
+          "Skip": 4
+        },
+        "D": {
+          "Mun": 11,
+          "Skip": 7
+        },
+        "E": {
+          "Mun": 11,
+          "Skip": 8
+        },
+        "K": {
+          "Mun": 7,
+          "Skip": 9
+        },
+        "L": {
+          "Mun": 14,
+          "Skip": 18
+        },
+        "N": {
+          "Mun": 8,
+          "Skip": 20
+        },
+        "P": {
+          "Mun": 2,
+          "Skip": 12
+        },
+        "Q": {
+          "Mun": 1,
+          "Skip": 15
+        },
+        "Y": {
+          "Mun": 11,
+          "Skip": 6
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          634.333,
+          105.143,
+          650.333,
+          562.0
+        ],
+        [
+          718.0,
+          266.476,
+          736.0,
+          562.0
+        ],
+        [
+          211.0,
+          266.476,
+          227.0,
+          562.0
+        ],
+        [
+          379.333,
+          266.476,
+          397.333,
+          562.0
+        ]
+      ],
+      "label_set": [
+        "C",
+        "D",
+        "E",
+        "Y"
+      ],
+      "pixel_point_map": {
+        "C": [
+          642.333,
+          554.0
+        ],
+        "D": [
+          727.0,
+          554.0
+        ],
+        "E": [
+          219.0,
+          554.0
+        ],
+        "Y": [
+          388.333,
+          554.0
+        ]
+      },
+      "pixel_point_set": [
+        [
+          642.333,
+          554.0
+        ],
+        [
+          727.0,
+          554.0
+        ],
+        [
+          219.0,
+          554.0
+        ],
+        [
+          388.333,
+          554.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "category_count": 9,
+        "category_count_range": [
+          5,
+          10
+        ],
+        "comparison": "greater_than",
+        "queried_series_labels": [
+          "Mun",
+          "Skip"
+        ],
+        "scene_variant": "multi_line",
+        "scene_variant_probabilities": {
+          "grouped_bar": 0.25,
+          "grouped_horizontal_bar": 0.25,
+          "grouped_lollipop": 0.25,
+          "multi_line": 0.25
+        },
+        "series_count": 2,
+        "series_count_range": [
+          2,
+          3
+        ],
+        "target_answer": 4,
+        "target_answer_range": [
+          0,
+          8
+        ],
+        "task_variant": "series_a_gt_b_count",
+        "task_variant_probabilities": {
+          "series_a_gt_b_count": 0.5,
+          "series_a_lt_b_count": 0.5
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "charts_multiseries_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series",
+          "json_example": "{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "left_series": "Mun",
+          "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+          "right_series": "Skip"
+        },
+        "task_family_key": "multiseries_chart_comparison",
+        "task_family_variant_index": 2,
+        "task_key": "pairwise_comparison_count_query",
+        "task_variant_index": 4,
+        "task_variant_key": "series_a_gt_b_count",
+        "task_variant_template_index": 1,
+        "template_paths": [
+          "charts/multiseries/charts_multiseries_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:pairwise_comparison_count_query": 5,
+          "task_family:multiseries_chart_comparison": 5,
+          "task_variant:series_a_gt_b_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series",
+              "json_example": "{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Mun",
+              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+              "right_series": "Skip"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 2,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 4,
+            "task_variant_key": "series_a_gt_b_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_gt_b_count": 5
+            }
+          },
+          "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Count the category labels where Mun exceeds Skip.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series",
+              "json_example": "{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Mun",
+              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+              "right_series": "Skip"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 2,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 4,
+            "task_variant_key": "series_a_gt_b_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_gt_b_count": 5
+            }
+          },
+          "prompt": "Work from the multiseries chart shown in the image: a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Work category by category and count the labels where the requested series comparison is true. Count the category labels where Mun exceeds Skip.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "series_a_gt_b_count",
+      "template_id": "charts_multiseries_v1"
+    },
+    "render_map": {
+      "category_label_centers_px": {
+        "C": [
+          642.333,
+          554.0
+        ],
+        "D": [
+          727.0,
+          554.0
+        ],
+        "E": [
+          219.0,
+          554.0
+        ],
+        "K": [
+          473.0,
+          554.0
+        ],
+        "L": [
+          557.667,
+          554.0
+        ],
+        "N": [
+          134.333,
+          554.0
+        ],
+        "P": [
+          811.667,
+          554.0
+        ],
+        "Q": [
+          303.667,
+          554.0
+        ],
+        "Y": [
+          388.333,
+          554.0
+        ]
+      },
+      "image_id": "img0",
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 620,
+      "canvas_width": 1100,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "sampling_policy": "random_rgb_palette",
+        "series_fill_palette_rgb": [
+          [
+            85,
+            171,
+            170
+          ],
+          [
+            207,
+            204,
+            116
+          ]
+        ],
+        "series_outline_palette_rgb": [
+          [
+            47,
+            94,
+            94
+          ],
+          [
+            114,
+            112,
+            64
+          ]
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "multi_line",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 21,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              125.333,
+              59.048,
+              143.333,
+              562.0
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              134.333,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              126.333,
+              335.619,
+              142.333,
+              351.619
+            ],
+            "mark_center_px": [
+              134.333,
+              343.619
+            ],
+            "mark_fill_rgb": [
+              85,
+              171,
+              170
+            ],
+            "mark_outline_rgb": [
+              47,
+              94,
+              94
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Mun",
+            "series_rank": 0,
+            "value": 8
+          },
+          "entity_id": "mark_N_Mun",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              125.333,
+              59.048,
+              143.333,
+              562.0
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              134.333,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              126.333,
+              59.048,
+              142.333,
+              75.048
+            ],
+            "mark_center_px": [
+              134.333,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              207,
+              204,
+              116
+            ],
+            "mark_outline_rgb": [
+              114,
+              112,
+              64
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Skip",
+            "series_rank": 1,
+            "value": 20
+          },
+          "entity_id": "mark_N_Skip",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              211.0,
+              266.476,
+              227.0,
+              562.0
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              219.0,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              211.0,
+              266.476,
+              227.0,
+              282.476
+            ],
+            "mark_center_px": [
+              219.0,
+              274.476
+            ],
+            "mark_fill_rgb": [
+              85,
+              171,
+              170
+            ],
+            "mark_outline_rgb": [
+              47,
+              94,
+              94
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Mun",
+            "series_rank": 0,
+            "value": 11
+          },
+          "entity_id": "mark_E_Mun",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              211.0,
+              266.476,
+              227.0,
+              562.0
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              219.0,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              211.0,
+              335.619,
+              227.0,
+              351.619
+            ],
+            "mark_center_px": [
+              219.0,
+              343.619
+            ],
+            "mark_fill_rgb": [
+              207,
+              204,
+              116
+            ],
+            "mark_outline_rgb": [
+              114,
+              112,
+              64
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Skip",
+            "series_rank": 1,
+            "value": 8
+          },
+          "entity_id": "mark_E_Skip",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              294.167,
+              174.286,
+              313.167,
+              563.5
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              303.667,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              295.667,
+              496.952,
+              311.667,
+              512.952
+            ],
+            "mark_center_px": [
+              303.667,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              85,
+              171,
+              170
+            ],
+            "mark_outline_rgb": [
+              47,
+              94,
+              94
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Mun",
+            "series_rank": 0,
+            "value": 1
+          },
+          "entity_id": "mark_Q_Mun",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              294.167,
+              174.286,
+              313.167,
+              563.5
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              303.667,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              295.667,
+              174.286,
+              311.667,
+              190.286
+            ],
+            "mark_center_px": [
+              303.667,
+              182.286
+            ],
+            "mark_fill_rgb": [
+              207,
+              204,
+              116
+            ],
+            "mark_outline_rgb": [
+              114,
+              112,
+              64
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Skip",
+            "series_rank": 1,
+            "value": 15
+          },
+          "entity_id": "mark_Q_Skip",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              379.333,
+              266.476,
+              397.333,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              388.333,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              380.333,
+              266.476,
+              396.333,
+              282.476
+            ],
+            "mark_center_px": [
+              388.333,
+              274.476
+            ],
+            "mark_fill_rgb": [
+              85,
+              171,
+              170
+            ],
+            "mark_outline_rgb": [
+              47,
+              94,
+              94
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Mun",
+            "series_rank": 0,
+            "value": 11
+          },
+          "entity_id": "mark_Y_Mun",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              379.333,
+              266.476,
+              397.333,
+              562.0
+            ],
+            "category_label": "Y",
+            "category_label_center_px": [
+              388.333,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              380.333,
+              381.714,
+              396.333,
+              397.714
+            ],
+            "mark_center_px": [
+              388.333,
+              389.714
+            ],
+            "mark_fill_rgb": [
+              207,
+              204,
+              116
+            ],
+            "mark_outline_rgb": [
+              114,
+              112,
+              64
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Skip",
+            "series_rank": 1,
+            "value": 6
+          },
+          "entity_id": "mark_Y_Skip",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              464.0,
+              312.571,
+              482.0,
+              562.0
+            ],
+            "category_label": "K",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              465.0,
+              358.667,
+              481.0,
+              374.667
+            ],
+            "mark_center_px": [
+              473.0,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              85,
+              171,
+              170
+            ],
+            "mark_outline_rgb": [
+              47,
+              94,
+              94
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Mun",
+            "series_rank": 0,
+            "value": 7
+          },
+          "entity_id": "mark_K_Mun",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              464.0,
+              312.571,
+              482.0,
+              562.0
+            ],
+            "category_label": "K",
+            "category_label_center_px": [
+              473.0,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              465.0,
+              312.571,
+              481.0,
+              328.571
+            ],
+            "mark_center_px": [
+              473.0,
+              320.571
+            ],
+            "mark_fill_rgb": [
+              207,
+              204,
+              116
+            ],
+            "mark_outline_rgb": [
+              114,
+              112,
+              64
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Skip",
+            "series_rank": 1,
+            "value": 9
+          },
+          "entity_id": "mark_K_Skip",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              549.667,
+              105.143,
+              565.667,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              557.667,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              549.667,
+              197.333,
+              565.667,
+              213.333
+            ],
+            "mark_center_px": [
+              557.667,
+              205.333
+            ],
+            "mark_fill_rgb": [
+              85,
+              171,
+              170
+            ],
+            "mark_outline_rgb": [
+              47,
+              94,
+              94
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Mun",
+            "series_rank": 0,
+            "value": 14
+          },
+          "entity_id": "mark_L_Mun",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              549.667,
+              105.143,
+              565.667,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              557.667,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              549.667,
+              105.143,
+              565.667,
+              121.143
+            ],
+            "mark_center_px": [
+              557.667,
+              113.143
+            ],
+            "mark_fill_rgb": [
+              207,
+              204,
+              116
+            ],
+            "mark_outline_rgb": [
+              114,
+              112,
+              64
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Skip",
+            "series_rank": 1,
+            "value": 18
+          },
+          "entity_id": "mark_L_Skip",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              634.333,
+              105.143,
+              650.333,
+              562.0
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              642.333,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              634.333,
+              105.143,
+              650.333,
+              121.143
+            ],
+            "mark_center_px": [
+              642.333,
+              113.143
+            ],
+            "mark_fill_rgb": [
+              85,
+              171,
+              170
+            ],
+            "mark_outline_rgb": [
+              47,
+              94,
+              94
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Mun",
+            "series_rank": 0,
+            "value": 18
+          },
+          "entity_id": "mark_C_Mun",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              634.333,
+              105.143,
+              650.333,
+              562.0
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              642.333,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              634.333,
+              427.81,
+              650.333,
+              443.81
+            ],
+            "mark_center_px": [
+              642.333,
+              435.81
+            ],
+            "mark_fill_rgb": [
+              207,
+              204,
+              116
+            ],
+            "mark_outline_rgb": [
+              114,
+              112,
+              64
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Skip",
+            "series_rank": 1,
+            "value": 4
+          },
+          "entity_id": "mark_C_Skip",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              718.0,
+              266.476,
+              736.0,
+              562.0
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              727.0,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              719.0,
+              266.476,
+              735.0,
+              282.476
+            ],
+            "mark_center_px": [
+              727.0,
+              274.476
+            ],
+            "mark_fill_rgb": [
+              85,
+              171,
+              170
+            ],
+            "mark_outline_rgb": [
+              47,
+              94,
+              94
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Mun",
+            "series_rank": 0,
+            "value": 11
+          },
+          "entity_id": "mark_D_Mun",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              718.0,
+              266.476,
+              736.0,
+              562.0
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              727.0,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              719.0,
+              358.667,
+              735.0,
+              374.667
+            ],
+            "mark_center_px": [
+              727.0,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              207,
+              204,
+              116
+            ],
+            "mark_outline_rgb": [
+              114,
+              112,
+              64
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Skip",
+            "series_rank": 1,
+            "value": 7
+          },
+          "entity_id": "mark_D_Skip",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              803.667,
+              243.429,
+              819.667,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              811.667,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              803.667,
+              473.905,
+              819.667,
+              489.905
+            ],
+            "mark_center_px": [
+              811.667,
+              481.905
+            ],
+            "mark_fill_rgb": [
+              85,
+              171,
+              170
+            ],
+            "mark_outline_rgb": [
+              47,
+              94,
+              94
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Mun",
+            "series_rank": 0,
+            "value": 2
+          },
+          "entity_id": "mark_P_Mun",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              803.667,
+              243.429,
+              819.667,
+              562.0
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              811.667,
+              554.0
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              803.667,
+              243.429,
+              819.667,
+              259.429
+            ],
+            "mark_center_px": [
+              811.667,
+              251.429
+            ],
+            "mark_fill_rgb": [
+              207,
+              204,
+              116
+            ],
+            "mark_outline_rgb": [
+              114,
+              112,
+              64
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Skip",
+            "series_rank": 1,
+            "value": 12
+          },
+          "entity_id": "mark_P_Skip",
+          "entity_type": "point"
+        }
+      ],
+      "relations": {
+        "comparison": "greater_than",
+        "evidence_labels": [
+          "C",
+          "D",
+          "E",
+          "Y"
+        ],
+        "queried_series_labels": [
+          "Mun",
+          "Skip"
+        ],
+        "scene_variant": "multi_line",
+        "task_variant": "series_a_gt_b_count"
+      },
+      "scene_kind": "chart_multi_line_multiseries"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "C",
+        "D",
+        "E",
+        "Y"
+      ],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

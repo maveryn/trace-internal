@@ -1,0 +1,13 @@
+{
+  "inspection_count": 50,
+  "task_id": "task_tables_relation_row_compare_label",
+  "variants": {
+    "higher_of_two_rows": 25,
+    "lower_of_two_rows": 25
+  },
+  "workbook": "tables/task_tables_relation_row_compare_label/task_tables_relation_row_compare_label.xlsx",
+  "workbook_sheets": {
+    "higher_of_two_rows": "higher_of_two_rows",
+    "lower_of_two_rows": "lower_of_two_rows"
+  }
+}

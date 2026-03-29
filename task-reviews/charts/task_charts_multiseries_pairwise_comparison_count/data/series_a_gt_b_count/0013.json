@@ -1,0 +1,1658 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 8
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "B",
+      "F",
+      "S",
+      "T",
+      "V",
+      "W",
+      "X",
+      "Z"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_gt_b_count/0013.png"
+  },
+  "instance_seed": 6547221079731797,
+  "prompt": "The image shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Find how many category labels show Veno higher than Buff.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Find how many category labels show Veno higher than Buff.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+    "answer_only": "The image shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Find how many category labels show Veno higher than Buff.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_charts_multiseries_pairwise_comparison_count",
+  "task_variant": "series_a_gt_b_count",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 8,
+      "category_count": 8,
+      "category_count_range": [
+        5,
+        10
+      ],
+      "category_labels": [
+        "X",
+        "B",
+        "V",
+        "F",
+        "W",
+        "T",
+        "Z",
+        "S"
+      ],
+      "comparison": "greater_than",
+      "evidence_labels": [
+        "B",
+        "F",
+        "S",
+        "T",
+        "V",
+        "W",
+        "X",
+        "Z"
+      ],
+      "left_series_label": "Veno",
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb_palette",
+      "queried_series_labels": [
+        "Veno",
+        "Buff"
+      ],
+      "question_format": "numeric_open",
+      "right_series_label": "Buff",
+      "scene_variant": "grouped_lollipop",
+      "scene_variant_probabilities": {
+        "grouped_bar": 0.25,
+        "grouped_horizontal_bar": 0.25,
+        "grouped_lollipop": 0.25,
+        "multi_line": 0.25
+      },
+      "series_count": 3,
+      "series_count_range": [
+        2,
+        3
+      ],
+      "series_fill_palette_rgb": [
+        [
+          219,
+          19,
+          218
+        ],
+        [
+          139,
+          102,
+          7
+        ],
+        [
+          182,
+          82,
+          127
+        ]
+      ],
+      "series_labels": [
+        "Veno",
+        "Koah",
+        "Buff"
+      ],
+      "series_outline_palette_rgb": [
+        [
+          120,
+          10,
+          120
+        ],
+        [
+          76,
+          56,
+          4
+        ],
+        [
+          100,
+          45,
+          70
+        ]
+      ],
+      "target_answer": 8,
+      "target_answer_range": [
+        0,
+        8
+      ],
+      "task_variant": "series_a_gt_b_count",
+      "task_variant_probabilities": {
+        "series_a_gt_b_count": 0.5,
+        "series_a_lt_b_count": 0.5
+      },
+      "values_by_category": {
+        "B": {
+          "Buff": 12,
+          "Koah": 14,
+          "Veno": 15
+        },
+        "F": {
+          "Buff": 8,
+          "Koah": 13,
+          "Veno": 17
+        },
+        "S": {
+          "Buff": 3,
+          "Koah": 7,
+          "Veno": 11
+        },
+        "T": {
+          "Buff": 2,
+          "Koah": 8,
+          "Veno": 16
+        },
+        "V": {
+          "Buff": 1,
+          "Koah": 9,
+          "Veno": 14
+        },
+        "W": {
+          "Buff": 6,
+          "Koah": 16,
+          "Veno": 18
+        },
+        "X": {
+          "Buff": 4,
+          "Koah": 6,
+          "Veno": 18
+        },
+        "Z": {
+          "Buff": 8,
+          "Koah": 10,
+          "Veno": 13
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          207.825,
+          137.895,
+          261.925,
+          562.0
+        ],
+        [
+          398.325,
+          86.947,
+          452.425,
+          562.0
+        ],
+        [
+          779.325,
+          239.789,
+          833.425,
+          562.0
+        ],
+        [
+          588.825,
+          112.421,
+          642.925,
+          562.0
+        ],
+        [
+          303.075,
+          163.368,
+          357.175,
+          562.0
+        ],
+        [
+          493.575,
+          61.474,
+          547.675,
+          562.0
+        ],
+        [
+          112.575,
+          61.474,
+          166.675,
+          562.0
+        ],
+        [
+          684.075,
+          188.842,
+          738.175,
+          562.0
+        ]
+      ],
+      "label_set": [
+        "B",
+        "F",
+        "S",
+        "T",
+        "V",
+        "W",
+        "X",
+        "Z"
+      ],
+      "pixel_point_map": {
+        "B": [
+          234.875,
+          554.0
+        ],
+        "F": [
+          425.375,
+          554.0
+        ],
+        "S": [
+          806.375,
+          554.0
+        ],
+        "T": [
+          615.875,
+          554.0
+        ],
+        "V": [
+          330.125,
+          554.0
+        ],
+        "W": [
+          520.625,
+          554.0
+        ],
+        "X": [
+          139.625,
+          554.0
+        ],
+        "Z": [
+          711.125,
+          554.0
+        ]
+      },
+      "pixel_point_set": [
+        [
+          234.875,
+          554.0
+        ],
+        [
+          425.375,
+          554.0
+        ],
+        [
+          806.375,
+          554.0
+        ],
+        [
+          615.875,
+          554.0
+        ],
+        [
+          330.125,
+          554.0
+        ],
+        [
+          520.625,
+          554.0
+        ],
+        [
+          139.625,
+          554.0
+        ],
+        [
+          711.125,
+          554.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "category_count": 8,
+        "category_count_range": [
+          5,
+          10
+        ],
+        "comparison": "greater_than",
+        "queried_series_labels": [
+          "Veno",
+          "Buff"
+        ],
+        "scene_variant": "grouped_lollipop",
+        "scene_variant_probabilities": {
+          "grouped_bar": 0.25,
+          "grouped_horizontal_bar": 0.25,
+          "grouped_lollipop": 0.25,
+          "multi_line": 0.25
+        },
+        "series_count": 3,
+        "series_count_range": [
+          2,
+          3
+        ],
+        "target_answer": 8,
+        "target_answer_range": [
+          0,
+          8
+        ],
+        "task_variant": "series_a_gt_b_count",
+        "task_variant_probabilities": {
+          "series_a_gt_b_count": 0.5,
+          "series_a_lt_b_count": 0.5
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "charts_multiseries_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series",
+          "json_example": "{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "left_series": "Veno",
+          "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
+          "right_series": "Buff"
+        },
+        "task_family_key": "multiseries_chart_comparison",
+        "task_family_variant_index": 0,
+        "task_key": "pairwise_comparison_count_query",
+        "task_variant_index": 3,
+        "task_variant_key": "series_a_gt_b_count",
+        "task_variant_template_index": 4,
+        "template_paths": [
+          "charts/multiseries/charts_multiseries_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:pairwise_comparison_count_query": 5,
+          "task_family:multiseries_chart_comparison": 5,
+          "task_variant:series_a_gt_b_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series",
+              "json_example": "{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Veno",
+              "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
+              "right_series": "Buff"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 0,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 3,
+            "task_variant_key": "series_a_gt_b_count",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_gt_b_count": 5
+            }
+          },
+          "prompt": "The image shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Find how many category labels show Veno higher than Buff.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer format: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series",
+              "json_example": "{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Veno",
+              "object_description": "a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis",
+              "right_series": "Buff"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 0,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 3,
+            "task_variant_key": "series_a_gt_b_count",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_gt_b_count": 5
+            }
+          },
+          "prompt": "The image shows a grouped lollipop chart with labeled categories on the horizontal axis and a legend on the right. Each colored point gives that series value for its category on the vertical axis. Read the chart values and count the categories where the stated series relation holds. Find how many category labels show Veno higher than Buff.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "series_a_gt_b_count",
+      "template_id": "charts_multiseries_v1"
+    },
+    "render_map": {
+      "category_label_centers_px": {
+        "B": [
+          234.875,
+          554.0
+        ],
+        "F": [
+          425.375,
+          554.0
+        ],
+        "S": [
+          806.375,
+          554.0
+        ],
+        "T": [
+          615.875,
+          554.0
+        ],
+        "V": [
+          330.125,
+          554.0
+        ],
+        "W": [
+          520.625,
+          554.0
+        ],
+        "X": [
+          139.625,
+          554.0
+        ],
+        "Z": [
+          711.125,
+          554.0
+        ]
+      },
+      "image_id": "img0",
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 620,
+      "canvas_width": 1100,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "sampling_policy": "random_rgb_palette",
+        "series_fill_palette_rgb": [
+          [
+            219,
+            19,
+            218
+          ],
+          [
+            139,
+            102,
+            7
+          ],
+          [
+            182,
+            82,
+            127
+          ]
+        ],
+        "series_outline_palette_rgb": [
+          [
+            120,
+            10,
+            120
+          ],
+          [
+            76,
+            56,
+            4
+          ],
+          [
+            100,
+            45,
+            70
+          ]
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "grouped_lollipop",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 19,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              112.575,
+              61.474,
+              166.675,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              139.625,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              112.575,
+              61.474,
+              128.575,
+              77.474
+            ],
+            "mark_center_px": [
+              120.575,
+              69.474
+            ],
+            "mark_fill_rgb": [
+              219,
+              19,
+              218
+            ],
+            "mark_outline_rgb": [
+              120,
+              10,
+              120
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Veno",
+            "series_rank": 0,
+            "value": 18
+          },
+          "entity_id": "mark_X_Veno",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              112.575,
+              61.474,
+              166.675,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              139.625,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              131.625,
+              367.158,
+              147.625,
+              383.158
+            ],
+            "mark_center_px": [
+              139.625,
+              375.158
+            ],
+            "mark_fill_rgb": [
+              139,
+              102,
+              7
+            ],
+            "mark_outline_rgb": [
+              76,
+              56,
+              4
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Koah",
+            "series_rank": 1,
+            "value": 6
+          },
+          "entity_id": "mark_X_Koah",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              112.575,
+              61.474,
+              166.675,
+              562.0
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              139.625,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              150.675,
+              418.105,
+              166.675,
+              434.105
+            ],
+            "mark_center_px": [
+              158.675,
+              426.105
+            ],
+            "mark_fill_rgb": [
+              182,
+              82,
+              127
+            ],
+            "mark_outline_rgb": [
+              100,
+              45,
+              70
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Buff",
+            "series_rank": 2,
+            "value": 4
+          },
+          "entity_id": "mark_X_Buff",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              207.825,
+              137.895,
+              261.925,
+              562.0
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              234.875,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              207.825,
+              137.895,
+              223.825,
+              153.895
+            ],
+            "mark_center_px": [
+              215.825,
+              145.895
+            ],
+            "mark_fill_rgb": [
+              219,
+              19,
+              218
+            ],
+            "mark_outline_rgb": [
+              120,
+              10,
+              120
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Veno",
+            "series_rank": 0,
+            "value": 15
+          },
+          "entity_id": "mark_B_Veno",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              207.825,
+              137.895,
+              261.925,
+              562.0
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              234.875,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              226.875,
+              163.368,
+              242.875,
+              179.368
+            ],
+            "mark_center_px": [
+              234.875,
+              171.368
+            ],
+            "mark_fill_rgb": [
+              139,
+              102,
+              7
+            ],
+            "mark_outline_rgb": [
+              76,
+              56,
+              4
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Koah",
+            "series_rank": 1,
+            "value": 14
+          },
+          "entity_id": "mark_B_Koah",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              207.825,
+              137.895,
+              261.925,
+              562.0
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              234.875,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              245.925,
+              214.316,
+              261.925,
+              230.316
+            ],
+            "mark_center_px": [
+              253.925,
+              222.316
+            ],
+            "mark_fill_rgb": [
+              182,
+              82,
+              127
+            ],
+            "mark_outline_rgb": [
+              100,
+              45,
+              70
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Buff",
+            "series_rank": 2,
+            "value": 12
+          },
+          "entity_id": "mark_B_Buff",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              303.075,
+              163.368,
+              357.175,
+              562.0
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              330.125,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              303.075,
+              163.368,
+              319.075,
+              179.368
+            ],
+            "mark_center_px": [
+              311.075,
+              171.368
+            ],
+            "mark_fill_rgb": [
+              219,
+              19,
+              218
+            ],
+            "mark_outline_rgb": [
+              120,
+              10,
+              120
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Veno",
+            "series_rank": 0,
+            "value": 14
+          },
+          "entity_id": "mark_V_Veno",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              303.075,
+              163.368,
+              357.175,
+              562.0
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              330.125,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              322.125,
+              290.737,
+              338.125,
+              306.737
+            ],
+            "mark_center_px": [
+              330.125,
+              298.737
+            ],
+            "mark_fill_rgb": [
+              139,
+              102,
+              7
+            ],
+            "mark_outline_rgb": [
+              76,
+              56,
+              4
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Koah",
+            "series_rank": 1,
+            "value": 9
+          },
+          "entity_id": "mark_V_Koah",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              303.075,
+              163.368,
+              357.175,
+              562.0
+            ],
+            "category_label": "V",
+            "category_label_center_px": [
+              330.125,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              341.175,
+              494.526,
+              357.175,
+              510.526
+            ],
+            "mark_center_px": [
+              349.175,
+              502.526
+            ],
+            "mark_fill_rgb": [
+              182,
+              82,
+              127
+            ],
+            "mark_outline_rgb": [
+              100,
+              45,
+              70
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Buff",
+            "series_rank": 2,
+            "value": 1
+          },
+          "entity_id": "mark_V_Buff",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              398.325,
+              86.947,
+              452.425,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              425.375,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              398.325,
+              86.947,
+              414.325,
+              102.947
+            ],
+            "mark_center_px": [
+              406.325,
+              94.947
+            ],
+            "mark_fill_rgb": [
+              219,
+              19,
+              218
+            ],
+            "mark_outline_rgb": [
+              120,
+              10,
+              120
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Veno",
+            "series_rank": 0,
+            "value": 17
+          },
+          "entity_id": "mark_F_Veno",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              398.325,
+              86.947,
+              452.425,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              425.375,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              417.375,
+              188.842,
+              433.375,
+              204.842
+            ],
+            "mark_center_px": [
+              425.375,
+              196.842
+            ],
+            "mark_fill_rgb": [
+              139,
+              102,
+              7
+            ],
+            "mark_outline_rgb": [
+              76,
+              56,
+              4
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Koah",
+            "series_rank": 1,
+            "value": 13
+          },
+          "entity_id": "mark_F_Koah",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              398.325,
+              86.947,
+              452.425,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              425.375,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              436.425,
+              316.211,
+              452.425,
+              332.211
+            ],
+            "mark_center_px": [
+              444.425,
+              324.211
+            ],
+            "mark_fill_rgb": [
+              182,
+              82,
+              127
+            ],
+            "mark_outline_rgb": [
+              100,
+              45,
+              70
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Buff",
+            "series_rank": 2,
+            "value": 8
+          },
+          "entity_id": "mark_F_Buff",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              493.575,
+              61.474,
+              547.675,
+              562.0
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              520.625,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              493.575,
+              61.474,
+              509.575,
+              77.474
+            ],
+            "mark_center_px": [
+              501.575,
+              69.474
+            ],
+            "mark_fill_rgb": [
+              219,
+              19,
+              218
+            ],
+            "mark_outline_rgb": [
+              120,
+              10,
+              120
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Veno",
+            "series_rank": 0,
+            "value": 18
+          },
+          "entity_id": "mark_W_Veno",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              493.575,
+              61.474,
+              547.675,
+              562.0
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              520.625,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              512.625,
+              112.421,
+              528.625,
+              128.421
+            ],
+            "mark_center_px": [
+              520.625,
+              120.421
+            ],
+            "mark_fill_rgb": [
+              139,
+              102,
+              7
+            ],
+            "mark_outline_rgb": [
+              76,
+              56,
+              4
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Koah",
+            "series_rank": 1,
+            "value": 16
+          },
+          "entity_id": "mark_W_Koah",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              493.575,
+              61.474,
+              547.675,
+              562.0
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              520.625,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              531.675,
+              367.158,
+              547.675,
+              383.158
+            ],
+            "mark_center_px": [
+              539.675,
+              375.158
+            ],
+            "mark_fill_rgb": [
+              182,
+              82,
+              127
+            ],
+            "mark_outline_rgb": [
+              100,
+              45,
+              70
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Buff",
+            "series_rank": 2,
+            "value": 6
+          },
+          "entity_id": "mark_W_Buff",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              588.825,
+              112.421,
+              642.925,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              615.875,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              588.825,
+              112.421,
+              604.825,
+              128.421
+            ],
+            "mark_center_px": [
+              596.825,
+              120.421
+            ],
+            "mark_fill_rgb": [
+              219,
+              19,
+              218
+            ],
+            "mark_outline_rgb": [
+              120,
+              10,
+              120
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Veno",
+            "series_rank": 0,
+            "value": 16
+          },
+          "entity_id": "mark_T_Veno",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              588.825,
+              112.421,
+              642.925,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              615.875,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              607.875,
+              316.211,
+              623.875,
+              332.211
+            ],
+            "mark_center_px": [
+              615.875,
+              324.211
+            ],
+            "mark_fill_rgb": [
+              139,
+              102,
+              7
+            ],
+            "mark_outline_rgb": [
+              76,
+              56,
+              4
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Koah",
+            "series_rank": 1,
+            "value": 8
+          },
+          "entity_id": "mark_T_Koah",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              588.825,
+              112.421,
+              642.925,
+              562.0
+            ],
+            "category_label": "T",
+            "category_label_center_px": [
+              615.875,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              626.925,
+              469.053,
+              642.925,
+              485.053
+            ],
+            "mark_center_px": [
+              634.925,
+              477.053
+            ],
+            "mark_fill_rgb": [
+              182,
+              82,
+              127
+            ],
+            "mark_outline_rgb": [
+              100,
+              45,
+              70
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Buff",
+            "series_rank": 2,
+            "value": 2
+          },
+          "entity_id": "mark_T_Buff",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              684.075,
+              188.842,
+              738.175,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              711.125,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              684.075,
+              188.842,
+              700.075,
+              204.842
+            ],
+            "mark_center_px": [
+              692.075,
+              196.842
+            ],
+            "mark_fill_rgb": [
+              219,
+              19,
+              218
+            ],
+            "mark_outline_rgb": [
+              120,
+              10,
+              120
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Veno",
+            "series_rank": 0,
+            "value": 13
+          },
+          "entity_id": "mark_Z_Veno",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              684.075,
+              188.842,
+              738.175,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              711.125,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              703.125,
+              265.263,
+              719.125,
+              281.263
+            ],
+            "mark_center_px": [
+              711.125,
+              273.263
+            ],
+            "mark_fill_rgb": [
+              139,
+              102,
+              7
+            ],
+            "mark_outline_rgb": [
+              76,
+              56,
+              4
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Koah",
+            "series_rank": 1,
+            "value": 10
+          },
+          "entity_id": "mark_Z_Koah",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              684.075,
+              188.842,
+              738.175,
+              562.0
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              711.125,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              722.175,
+              316.211,
+              738.175,
+              332.211
+            ],
+            "mark_center_px": [
+              730.175,
+              324.211
+            ],
+            "mark_fill_rgb": [
+              182,
+              82,
+              127
+            ],
+            "mark_outline_rgb": [
+              100,
+              45,
+              70
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Buff",
+            "series_rank": 2,
+            "value": 8
+          },
+          "entity_id": "mark_Z_Buff",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              779.325,
+              239.789,
+              833.425,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              806.375,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              779.325,
+              239.789,
+              795.325,
+              255.789
+            ],
+            "mark_center_px": [
+              787.325,
+              247.789
+            ],
+            "mark_fill_rgb": [
+              219,
+              19,
+              218
+            ],
+            "mark_outline_rgb": [
+              120,
+              10,
+              120
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Veno",
+            "series_rank": 0,
+            "value": 11
+          },
+          "entity_id": "mark_S_Veno",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              779.325,
+              239.789,
+              833.425,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              806.375,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              798.375,
+              341.684,
+              814.375,
+              357.684
+            ],
+            "mark_center_px": [
+              806.375,
+              349.684
+            ],
+            "mark_fill_rgb": [
+              139,
+              102,
+              7
+            ],
+            "mark_outline_rgb": [
+              76,
+              56,
+              4
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Koah",
+            "series_rank": 1,
+            "value": 7
+          },
+          "entity_id": "mark_S_Koah",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              779.325,
+              239.789,
+              833.425,
+              562.0
+            ],
+            "category_label": "S",
+            "category_label_center_px": [
+              806.375,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              817.425,
+              443.579,
+              833.425,
+              459.579
+            ],
+            "mark_center_px": [
+              825.425,
+              451.579
+            ],
+            "mark_fill_rgb": [
+              182,
+              82,
+              127
+            ],
+            "mark_outline_rgb": [
+              100,
+              45,
+              70
+            ],
+            "scene_variant": "grouped_lollipop",
+            "series_label": "Buff",
+            "series_rank": 2,
+            "value": 3
+          },
+          "entity_id": "mark_S_Buff",
+          "entity_type": "point"
+        }
+      ],
+      "relations": {
+        "comparison": "greater_than",
+        "evidence_labels": [
+          "B",
+          "F",
+          "S",
+          "T",
+          "V",
+          "W",
+          "X",
+          "Z"
+        ],
+        "queried_series_labels": [
+          "Veno",
+          "Buff"
+        ],
+        "scene_variant": "grouped_lollipop",
+        "task_variant": "series_a_gt_b_count"
+      },
+      "scene_kind": "chart_grouped_lollipop_multiseries"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "B",
+        "F",
+        "S",
+        "T",
+        "V",
+        "W",
+        "X",
+        "Z"
+      ],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

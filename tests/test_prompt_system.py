@@ -173,6 +173,8 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
         ("tables", "temporal", "tables_temporal_v1"),
         ("tables", "statistics", "tables_statistics_v1"),
         ("puzzles", "arithmetic", "puzzles_arithmetic_v1"),
+        ("puzzles", "logic", "puzzles_logic_v1"),
+        ("puzzles", "spatial", "puzzles_spatial_v1"),
         ("tile", "count", "tile_count_v1"),
         ("tile", "pattern", "tile_pattern_v1"),
         ("tile", "relation", "tile_relation_v1"),
@@ -581,7 +583,26 @@ def test_puzzles_arithmetic_bundle_supports_balance_variants() -> None:
     assert len(bundle.task_variant_templates["sum_pair_unknown"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_variant_templates["two_panel_chain_unknown"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_variant_templates["three_panel_chain_unknown"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["task_family:arithmetic_balance_query_puzzle"]) == [
+
+
+def test_puzzles_logic_bundle_supports_grid_completion_variants() -> None:
+    bundle = load_prompt_bundle("puzzles", "logic", "puzzles_logic_v1")
+    assert len(bundle.task_templates["grid_completion_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["row_uniqueness"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["column_uniqueness"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["row_and_column_uniqueness"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_family:logic_option_completion_puzzle"]) == [
+        "object_description",
+    ]
+
+
+def test_puzzles_spatial_bundle_supports_fold_hole_variants() -> None:
+    bundle = load_prompt_bundle("puzzles", "spatial", "puzzles_spatial_v1")
+    assert len(bundle.task_templates["unfold_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["single_fold_single_hole"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["single_fold_two_holes"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["double_fold_single_hole"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_family:spatial_fold_hole_puzzle"]) == [
         "object_description",
     ]
 

@@ -110,6 +110,8 @@ Active bundles:
    - `prompts/temporal/timeline/temporal_timeline_v1.json`
 8. Puzzles:
    - `prompts/puzzles/arithmetic/puzzles_arithmetic_v1.json`
+   - `prompts/puzzles/logic/puzzles_logic_v1.json`
+   - `prompts/puzzles/spatial/puzzles_spatial_v1.json`
 
 Active task-to-bundle mapping:
 1. Geometry comparison tasks (`task_geometry_comparison_angle|area|length|perimeter`) -> `geometry_comparison_v1`
@@ -167,4 +169,6 @@ Active task-to-bundle mapping:
    - `task_tables_ranking_label` -> `tables_ranking_v1`
    - `task_tables_temporal_value` -> `tables_temporal_v1`
 12. Puzzles:
-   - `task_puzzles_arithmetic_equation_value|task_puzzles_arithmetic_balance_value` -> `puzzles_arithmetic_v1`
+   - `task_puzzles_arithmetic_equation_value|task_puzzles_arithmetic_balance_value|task_puzzles_arithmetic_grid_value` -> `puzzles_arithmetic_v1`
+   - `task_puzzles_logic_grid_completion_label` -> `puzzles_logic_v1`
+   - `task_puzzles_spatial_fold_hole_label` -> `puzzles_spatial_v1`

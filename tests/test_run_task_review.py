@@ -80,6 +80,17 @@ def test_build_inspection_rows_passes_requested_task_variant(
     assert beta_payload["task_variant"] == "variant_beta"
 
 
+def test_resolve_task_review_dir_uses_domain_scoped_layout() -> None:
+    dummy_task = _DummyVariantTask()
+    out_root = Path("/tmp/task-reviews")
+    task_dir = review._resolve_task_review_dir(
+        out_root=out_root,
+        task_id="task_dummy_review_variant",
+        task_obj=dummy_task,
+    )
+    assert task_dir == out_root / "dummy" / "task_dummy_review_variant"
+
+
 def test_review_cli_defaults_to_all_visible_cpus(monkeypatch) -> None:
     monkeypatch.setattr(review.os, "cpu_count", lambda: 12)
     monkeypatch.setattr(sys, "argv", ["run_task_review.py"])

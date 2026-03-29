@@ -1,0 +1,19 @@
+{
+  "inspection_count": 125,
+  "task_id": "task_tables_temporal_value",
+  "variants": {
+    "absolute_difference_between_years": 25,
+    "delta_between_years": 25,
+    "mean_over_year_interval": 25,
+    "sum_over_year_interval": 25,
+    "value_at_year": 25
+  },
+  "workbook": "tables/task_tables_temporal_value/task_tables_temporal_value.xlsx",
+  "workbook_sheets": {
+    "absolute_difference_between_years": "absolute_difference_between_yea",
+    "delta_between_years": "delta_between_years",
+    "mean_over_year_interval": "mean_over_year_interval",
+    "sum_over_year_interval": "sum_over_year_interval",
+    "value_at_year": "value_at_year"
+  }
+}

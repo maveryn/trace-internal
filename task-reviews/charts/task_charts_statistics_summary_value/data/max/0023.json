@@ -1,0 +1,601 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 5
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "L"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_statistics_summary_value/images/max/0023.png"
+  },
+  "instance_seed": 2416825679351141,
+  "prompt": "Work from the labeled chart shown in the image: a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Answer this question. What is the maximum value in the chart?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the label of the unique maximum-value mark.\nAnswer format: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"evidence\":[\"D\"],\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the labeled chart shown in the image: a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Answer this question. What is the maximum value in the chart?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the label of the unique maximum-value mark.\nAnswer format: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"evidence\":[\"D\"],\"answer\":8}",
+    "answer_only": "Work from the labeled chart shown in the image: a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Answer this question. What is the maximum value in the chart?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_charts_statistics_summary_value",
+  "task_variant": "max",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 5,
+      "evidence_labels": [
+        "L"
+      ],
+      "labels": [
+        "T",
+        "P",
+        "X",
+        "N",
+        "K",
+        "L"
+      ],
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb",
+      "mark_count": 6,
+      "mark_count_range": [
+        5,
+        10
+      ],
+      "mark_fill_rgb": [
+        108,
+        141,
+        55
+      ],
+      "mark_outline_rgb": [
+        59,
+        78,
+        30
+      ],
+      "question_format": "numeric_open",
+      "scene_variant": "lollipop",
+      "scene_variant_probabilities": {
+        "area": 0.14285714285714285,
+        "bar": 0.14285714285714285,
+        "dot_plot": 0.14285714285714285,
+        "horizontal_bar": 0.14285714285714285,
+        "line": 0.14285714285714285,
+        "lollipop": 0.14285714285714285,
+        "scatter": 0.14285714285714285
+      },
+      "target_answer": 5,
+      "target_answer_range": [
+        4,
+        12
+      ],
+      "task_variant": "max",
+      "task_variant_probabilities": {
+        "max": 0.14285714285714285,
+        "mean": 0.14285714285714285,
+        "median": 0.14285714285714285,
+        "min": 0.14285714285714285,
+        "mode": 0.14285714285714285,
+        "range": 0.14285714285714285,
+        "sum": 0.14285714285714285
+      },
+      "value_max": 20,
+      "value_min": 1,
+      "values": [
+        3,
+        1,
+        2,
+        2,
+        3,
+        5
+      ],
+      "values_by_label": {
+        "K": 3,
+        "L": 5,
+        "N": 2,
+        "P": 1,
+        "T": 3,
+        "X": 2
+      },
+      "winning_label": "L"
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          690.833,
+          113.333,
+          706.833,
+          129.333
+        ]
+      ],
+      "label_set": [
+        "L"
+      ],
+      "pixel_point_map": {
+        "L": [
+          698.833,
+          121.333
+        ]
+      },
+      "pixel_point_set": [
+        [
+          698.833,
+          121.333
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "mark_count": 6,
+        "scene_variant": "lollipop",
+        "scene_variant_probabilities": {
+          "area": 0.14285714285714285,
+          "bar": 0.14285714285714285,
+          "dot_plot": 0.14285714285714285,
+          "horizontal_bar": 0.14285714285714285,
+          "line": 0.14285714285714285,
+          "lollipop": 0.14285714285714285,
+          "scatter": 0.14285714285714285
+        },
+        "target_answer": 5,
+        "target_answer_range": [
+          4,
+          12
+        ],
+        "task_variant": "max",
+        "task_variant_probabilities": {
+          "max": 0.14285714285714285,
+          "mean": 0.14285714285714285,
+          "median": 0.14285714285714285,
+          "min": 0.14285714285714285,
+          "mode": 0.14285714285714285,
+          "range": 0.14285714285714285,
+          "sum": 0.14285714285714285
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "charts_statistics_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the requested statistic as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the label of the unique maximum-value mark",
+          "json_example": "{\"evidence\":[\"D\"],\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+        },
+        "task_family_key": "labeled_chart_statistics",
+        "task_family_variant_index": 2,
+        "task_key": "summary_value_query",
+        "task_variant_index": 0,
+        "task_variant_key": "max",
+        "task_variant_template_index": 3,
+        "template_paths": [
+          "charts/statistics/charts_statistics_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:summary_value_query": 5,
+          "task_family:labeled_chart_statistics": 5,
+          "task_variant:max": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "charts_statistics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested statistic as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the label of the unique maximum-value mark",
+              "json_example": "{\"evidence\":[\"D\"],\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+            },
+            "task_family_key": "labeled_chart_statistics",
+            "task_family_variant_index": 2,
+            "task_key": "summary_value_query",
+            "task_variant_index": 0,
+            "task_variant_key": "max",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "charts/statistics/charts_statistics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:summary_value_query": 5,
+              "task_family:labeled_chart_statistics": 5,
+              "task_variant:max": 5
+            }
+          },
+          "prompt": "Work from the labeled chart shown in the image: a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Answer this question. What is the maximum value in the chart?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing the label of the unique maximum-value mark.\nAnswer format: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"evidence\":[\"D\"],\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "charts_statistics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested statistic as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the label of the unique maximum-value mark",
+              "json_example": "{\"evidence\":[\"D\"],\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+            },
+            "task_family_key": "labeled_chart_statistics",
+            "task_family_variant_index": 2,
+            "task_key": "summary_value_query",
+            "task_variant_index": 0,
+            "task_variant_key": "max",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "charts/statistics/charts_statistics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:summary_value_query": 5,
+              "task_family:labeled_chart_statistics": 5,
+              "task_variant:max": 5
+            }
+          },
+          "prompt": "Work from the labeled chart shown in the image: a labeled lollipop chart. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Answer this question. What is the maximum value in the chart?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "max",
+      "template_id": "charts_statistics_v1"
+    },
+    "render_map": {
+      "image_id": "img0",
+      "label_centers_px": {
+        "K": [
+          588.5,
+          254.0
+        ],
+        "L": [
+          698.833,
+          99.333
+        ],
+        "N": [
+          478.167,
+          331.333
+        ],
+        "P": [
+          257.5,
+          408.667
+        ],
+        "T": [
+          147.167,
+          254.0
+        ],
+        "X": [
+          367.833,
+          331.333
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 600,
+      "canvas_width": 800,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "mark_fill_rgb": [
+          108,
+          141,
+          55
+        ],
+        "mark_outline_rgb": [
+          59,
+          78,
+          30
+        ],
+        "sampling_policy": "random_rgb"
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "lollipop",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 6,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "label": "T",
+            "label_center_px": [
+              147.167,
+              254.0
+            ],
+            "mark_bbox_px": [
+              139.167,
+              268.0,
+              155.167,
+              284.0
+            ],
+            "mark_center_px": [
+              147.167,
+              276.0
+            ],
+            "mark_fill_rgb": [
+              108,
+              141,
+              55
+            ],
+            "mark_outline_rgb": [
+              59,
+              78,
+              30
+            ],
+            "scene_variant": "lollipop",
+            "value": 3,
+            "x_rank": 0
+          },
+          "entity_id": "mark_T",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "P",
+            "label_center_px": [
+              257.5,
+              408.667
+            ],
+            "mark_bbox_px": [
+              249.5,
+              422.667,
+              265.5,
+              438.667
+            ],
+            "mark_center_px": [
+              257.5,
+              430.667
+            ],
+            "mark_fill_rgb": [
+              108,
+              141,
+              55
+            ],
+            "mark_outline_rgb": [
+              59,
+              78,
+              30
+            ],
+            "scene_variant": "lollipop",
+            "value": 1,
+            "x_rank": 1
+          },
+          "entity_id": "mark_P",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "X",
+            "label_center_px": [
+              367.833,
+              331.333
+            ],
+            "mark_bbox_px": [
+              359.833,
+              345.333,
+              375.833,
+              361.333
+            ],
+            "mark_center_px": [
+              367.833,
+              353.333
+            ],
+            "mark_fill_rgb": [
+              108,
+              141,
+              55
+            ],
+            "mark_outline_rgb": [
+              59,
+              78,
+              30
+            ],
+            "scene_variant": "lollipop",
+            "value": 2,
+            "x_rank": 2
+          },
+          "entity_id": "mark_X",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "N",
+            "label_center_px": [
+              478.167,
+              331.333
+            ],
+            "mark_bbox_px": [
+              470.167,
+              345.333,
+              486.167,
+              361.333
+            ],
+            "mark_center_px": [
+              478.167,
+              353.333
+            ],
+            "mark_fill_rgb": [
+              108,
+              141,
+              55
+            ],
+            "mark_outline_rgb": [
+              59,
+              78,
+              30
+            ],
+            "scene_variant": "lollipop",
+            "value": 2,
+            "x_rank": 3
+          },
+          "entity_id": "mark_N",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "K",
+            "label_center_px": [
+              588.5,
+              254.0
+            ],
+            "mark_bbox_px": [
+              580.5,
+              268.0,
+              596.5,
+              284.0
+            ],
+            "mark_center_px": [
+              588.5,
+              276.0
+            ],
+            "mark_fill_rgb": [
+              108,
+              141,
+              55
+            ],
+            "mark_outline_rgb": [
+              59,
+              78,
+              30
+            ],
+            "scene_variant": "lollipop",
+            "value": 3,
+            "x_rank": 4
+          },
+          "entity_id": "mark_K",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "L",
+            "label_center_px": [
+              698.833,
+              99.333
+            ],
+            "mark_bbox_px": [
+              690.833,
+              113.333,
+              706.833,
+              129.333
+            ],
+            "mark_center_px": [
+              698.833,
+              121.333
+            ],
+            "mark_fill_rgb": [
+              108,
+              141,
+              55
+            ],
+            "mark_outline_rgb": [
+              59,
+              78,
+              30
+            ],
+            "scene_variant": "lollipop",
+            "value": 5,
+            "x_rank": 5
+          },
+          "entity_id": "mark_L",
+          "entity_type": "point"
+        }
+      ],
+      "relations": {
+        "evidence_labels": [
+          "L"
+        ],
+        "scene_variant": "lollipop",
+        "task_variant": "max"
+      },
+      "scene_kind": "chart_lollipop_statistics"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "L"
+      ],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

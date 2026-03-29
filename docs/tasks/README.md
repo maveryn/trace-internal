@@ -90,3 +90,6 @@ Current task docs:
 80. [task_temporal_calendar_month_view.md](task_temporal_calendar_month_view.md)
 81. [task_temporal_schedule_day_planner.md](task_temporal_schedule_day_planner.md)
 82. [task_temporal_timeline_milestones.md](task_temporal_timeline_milestones.md)
+83. [task_puzzles_arithmetic_grid_value.md](task_puzzles_arithmetic_grid_value.md)
+84. [task_puzzles_logic_grid_completion_label.md](task_puzzles_logic_grid_completion_label.md)
+85. [task_puzzles_spatial_fold_hole_label.md](task_puzzles_spatial_fold_hole_label.md)

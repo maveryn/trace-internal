@@ -88,9 +88,20 @@ Define how we split tasks into reusable families so each dataset slice stays com
 4. `task_puzzles_arithmetic_equation_value` uses visual `scene_variant` values `equation_strip`, `equation_card`, and `equation_outline`.
 5. `task_puzzles_arithmetic_balance_value` uses semantic `task_variant` values `sum_pair_unknown`, `two_panel_chain_unknown`, and `three_panel_chain_unknown`.
 6. `task_puzzles_arithmetic_balance_value` uses visual `scene_variant` values `balance_strip`, `balance_card`, and `balance_outline`.
-7. The active equation-scene grammar uses one flat equation row with `2..5` left-side operand boxes, operators sampled from `+`, `-`, and `×`, one right-side result box, and the `?` randomly placed on either side according to `task_variant`.
-8. The active balance-scene grammar uses `2..3` stacked balance panels with boxed symbols and numbers plus one highlighted query box below the panels.
-9. Prompt-facing arithmetic evidence should stay as one-box `bbox_set` grounding on the queried unknown slot or highlighted query box; do not widen to explanatory multi-box evidence unless a later family truly needs ordered witnesses.
+7. `task_puzzles_arithmetic_grid_value` uses semantic `task_variant` values `sum_rule_missing`, `difference_rule_missing`, and `product_rule_missing`.
+8. `task_puzzles_arithmetic_grid_value` uses visual `scene_variant` values `grid_strip`, `grid_card`, and `grid_outline`.
+9. The active equation-scene grammar uses one flat equation row with `2..5` left-side operand boxes, operators sampled from `+`, `-`, and `×`, one right-side result box, and the `?` randomly placed on either side according to `task_variant`.
+10. The active balance-scene grammar uses `2..3` stacked equality panels with boxed symbols and numbers, explicit `+` and `=` signs, and a final query row shaped like `symbol = ?`.
+11. The active arithmetic-grid grammar uses `3..5` rows, exactly `3` columns, no headers, and a repeated hidden row rule `a op b = c` with one explicit `?` cell.
+12. Prompt-facing arithmetic evidence should stay as one-box `bbox_set` grounding on the queried unknown slot, final question-mark query box, or question-mark grid cell; do not widen to explanatory multi-box evidence unless a later family truly needs ordered witnesses.
+13. `task_puzzles_logic_grid_completion_label` uses semantic `task_variant` values `row_uniqueness`, `column_uniqueness`, and `row_and_column_uniqueness`.
+14. `task_puzzles_logic_grid_completion_label` uses visual `scene_variant` values `logic_strip`, `logic_card`, and `logic_outline`.
+15. The active logic-grid grammar uses one square `3x3` through `5x5` board with one explicit `?` cell and exactly six labeled image options.
+16. Prompt-facing logic evidence should stay as one-box `bbox_set` grounding on the winning option panel; keep the query interaction stable as option selection even when later logic families vary the rule structure.
+17. `task_puzzles_spatial_fold_hole_label` uses semantic `task_variant` values `single_fold_single_hole`, `single_fold_two_holes`, and `double_fold_single_hole`.
+18. `task_puzzles_spatial_fold_hole_label` uses visual `scene_variant` values `fold_strip`, `fold_card`, and `fold_outline`.
+19. The active spatial fold-hole grammar uses three reference step panels above exactly six labeled unfolded-paper options; keep the fold directions explicit in the step panels rather than implicit in the final packet alone.
+20. Prompt-facing spatial evidence should stay as one-box `bbox_set` grounding on the winning option panel; do not widen early option-based spatial tasks to multi-region explanatory evidence.
 
 ## Temporal direction (current)
 1. Temporal tasks should group by visual time artifact (`clock`, `calendar`, `schedule`, `timeline`) rather than by one exact question stem.

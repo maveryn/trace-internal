@@ -1,0 +1,611 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 7
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "Q"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_statistics_summary_value/images/min/0000.png"
+  },
+  "instance_seed": 721764527171410,
+  "prompt": "Use the chart in the image. It shows a labeled bar chart. Each bar's numeric height can be read from the vertical axis. Read the chart values and answer the question. What is the minimum value in the chart?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the label of the unique minimum-value mark.\nAnswer: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"evidence\":[\"B\"],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the chart in the image. It shows a labeled bar chart. Each bar's numeric height can be read from the vertical axis. Read the chart values and answer the question. What is the minimum value in the chart?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the label of the unique minimum-value mark.\nAnswer: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"evidence\":[\"B\"],\"answer\":2}",
+    "answer_only": "Use the chart in the image. It shows a labeled bar chart. Each bar's numeric height can be read from the vertical axis. Read the chart values and answer the question. What is the minimum value in the chart?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_charts_statistics_summary_value",
+  "task_variant": "min",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 7,
+      "evidence_labels": [
+        "Q"
+      ],
+      "labels": [
+        "N",
+        "C",
+        "Q",
+        "Z",
+        "F",
+        "W"
+      ],
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb",
+      "mark_count": 6,
+      "mark_count_range": [
+        5,
+        10
+      ],
+      "mark_fill_rgb": [
+        25,
+        77,
+        149
+      ],
+      "mark_outline_rgb": [
+        14,
+        42,
+        82
+      ],
+      "question_format": "numeric_open",
+      "scene_variant": "bar",
+      "scene_variant_probabilities": {
+        "area": 0.14285714285714285,
+        "bar": 0.14285714285714285,
+        "dot_plot": 0.14285714285714285,
+        "horizontal_bar": 0.14285714285714285,
+        "line": 0.14285714285714285,
+        "lollipop": 0.14285714285714285,
+        "scatter": 0.14285714285714285
+      },
+      "target_answer": 7,
+      "target_answer_range": [
+        1,
+        8
+      ],
+      "task_variant": "min",
+      "task_variant_probabilities": {
+        "max": 0.14285714285714285,
+        "mean": 0.14285714285714285,
+        "median": 0.14285714285714285,
+        "min": 0.14285714285714285,
+        "mode": 0.14285714285714285,
+        "range": 0.14285714285714285,
+        "sum": 0.14285714285714285
+      },
+      "value_max": 20,
+      "value_min": 1,
+      "values": [
+        8,
+        15,
+        7,
+        9,
+        14,
+        9
+      ],
+      "values_by_label": {
+        "C": 15,
+        "F": 14,
+        "N": 8,
+        "Q": 7,
+        "W": 9,
+        "Z": 9
+      },
+      "winning_label": "Q"
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          335.837,
+          305.0,
+          399.83,
+          508.0
+        ]
+      ],
+      "label_set": [
+        "Q"
+      ],
+      "pixel_point_map": {
+        "Q": [
+          367.833,
+          305.0
+        ]
+      },
+      "pixel_point_set": [
+        [
+          367.833,
+          305.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "mark_count": 6,
+        "scene_variant": "bar",
+        "scene_variant_probabilities": {
+          "area": 0.14285714285714285,
+          "bar": 0.14285714285714285,
+          "dot_plot": 0.14285714285714285,
+          "horizontal_bar": 0.14285714285714285,
+          "line": 0.14285714285714285,
+          "lollipop": 0.14285714285714285,
+          "scatter": 0.14285714285714285
+        },
+        "target_answer": 7,
+        "target_answer_range": [
+          1,
+          8
+        ],
+        "task_variant": "min",
+        "task_variant_probabilities": {
+          "max": 0.14285714285714285,
+          "mean": 0.14285714285714285,
+          "median": 0.14285714285714285,
+          "min": 0.14285714285714285,
+          "mode": 0.14285714285714285,
+          "range": 0.14285714285714285,
+          "sum": 0.14285714285714285
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "charts_statistics_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the requested statistic as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the label of the unique minimum-value mark",
+          "json_example": "{\"evidence\":[\"B\"],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a labeled bar chart. Each bar's numeric height can be read from the vertical axis"
+        },
+        "task_family_key": "labeled_chart_statistics",
+        "task_family_variant_index": 1,
+        "task_key": "summary_value_query",
+        "task_variant_index": 4,
+        "task_variant_key": "min",
+        "task_variant_template_index": 3,
+        "template_paths": [
+          "charts/statistics/charts_statistics_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:summary_value_query": 5,
+          "task_family:labeled_chart_statistics": 5,
+          "task_variant:min": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "charts_statistics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested statistic as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the label of the unique minimum-value mark",
+              "json_example": "{\"evidence\":[\"B\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled bar chart. Each bar's numeric height can be read from the vertical axis"
+            },
+            "task_family_key": "labeled_chart_statistics",
+            "task_family_variant_index": 1,
+            "task_key": "summary_value_query",
+            "task_variant_index": 4,
+            "task_variant_key": "min",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "charts/statistics/charts_statistics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:summary_value_query": 5,
+              "task_family:labeled_chart_statistics": 5,
+              "task_variant:min": 5
+            }
+          },
+          "prompt": "Use the chart in the image. It shows a labeled bar chart. Each bar's numeric height can be read from the vertical axis. Read the chart values and answer the question. What is the minimum value in the chart?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the label of the unique minimum-value mark.\nAnswer: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"evidence\":[\"B\"],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "charts_statistics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested statistic as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the label of the unique minimum-value mark",
+              "json_example": "{\"evidence\":[\"B\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled bar chart. Each bar's numeric height can be read from the vertical axis"
+            },
+            "task_family_key": "labeled_chart_statistics",
+            "task_family_variant_index": 1,
+            "task_key": "summary_value_query",
+            "task_variant_index": 4,
+            "task_variant_key": "min",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "charts/statistics/charts_statistics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:summary_value_query": 5,
+              "task_family:labeled_chart_statistics": 5,
+              "task_variant:min": 5
+            }
+          },
+          "prompt": "Use the chart in the image. It shows a labeled bar chart. Each bar's numeric height can be read from the vertical axis. Read the chart values and answer the question. What is the minimum value in the chart?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested statistic as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "min",
+      "template_id": "charts_statistics_v1"
+    },
+    "render_map": {
+      "image_id": "img0",
+      "label_centers_px": {
+        "C": [
+          257.5,
+          534.0
+        ],
+        "F": [
+          588.5,
+          534.0
+        ],
+        "N": [
+          147.167,
+          534.0
+        ],
+        "Q": [
+          367.833,
+          534.0
+        ],
+        "W": [
+          698.833,
+          534.0
+        ],
+        "Z": [
+          478.167,
+          534.0
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 600,
+      "canvas_width": 800,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "mark_fill_rgb": [
+          25,
+          77,
+          149
+        ],
+        "mark_outline_rgb": [
+          14,
+          42,
+          82
+        ],
+        "sampling_policy": "random_rgb"
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "bar",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 16,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "label": "N",
+            "label_center_px": [
+              147.167,
+              534.0
+            ],
+            "mark_bbox_px": [
+              115.17,
+              276.0,
+              179.163,
+              508.0
+            ],
+            "mark_center_px": [
+              147.167,
+              276.0
+            ],
+            "mark_fill_rgb": [
+              25,
+              77,
+              149
+            ],
+            "mark_outline_rgb": [
+              14,
+              42,
+              82
+            ],
+            "scene_variant": "bar",
+            "value": 8,
+            "x_rank": 0
+          },
+          "entity_id": "mark_N",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "label": "C",
+            "label_center_px": [
+              257.5,
+              534.0
+            ],
+            "mark_bbox_px": [
+              225.503,
+              73.0,
+              289.497,
+              508.0
+            ],
+            "mark_center_px": [
+              257.5,
+              73.0
+            ],
+            "mark_fill_rgb": [
+              25,
+              77,
+              149
+            ],
+            "mark_outline_rgb": [
+              14,
+              42,
+              82
+            ],
+            "scene_variant": "bar",
+            "value": 15,
+            "x_rank": 1
+          },
+          "entity_id": "mark_C",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "label": "Q",
+            "label_center_px": [
+              367.833,
+              534.0
+            ],
+            "mark_bbox_px": [
+              335.837,
+              305.0,
+              399.83,
+              508.0
+            ],
+            "mark_center_px": [
+              367.833,
+              305.0
+            ],
+            "mark_fill_rgb": [
+              25,
+              77,
+              149
+            ],
+            "mark_outline_rgb": [
+              14,
+              42,
+              82
+            ],
+            "scene_variant": "bar",
+            "value": 7,
+            "x_rank": 2
+          },
+          "entity_id": "mark_Q",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "label": "Z",
+            "label_center_px": [
+              478.167,
+              534.0
+            ],
+            "mark_bbox_px": [
+              446.17,
+              247.0,
+              510.163,
+              508.0
+            ],
+            "mark_center_px": [
+              478.167,
+              247.0
+            ],
+            "mark_fill_rgb": [
+              25,
+              77,
+              149
+            ],
+            "mark_outline_rgb": [
+              14,
+              42,
+              82
+            ],
+            "scene_variant": "bar",
+            "value": 9,
+            "x_rank": 3
+          },
+          "entity_id": "mark_Z",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "label": "F",
+            "label_center_px": [
+              588.5,
+              534.0
+            ],
+            "mark_bbox_px": [
+              556.503,
+              102.0,
+              620.497,
+              508.0
+            ],
+            "mark_center_px": [
+              588.5,
+              102.0
+            ],
+            "mark_fill_rgb": [
+              25,
+              77,
+              149
+            ],
+            "mark_outline_rgb": [
+              14,
+              42,
+              82
+            ],
+            "scene_variant": "bar",
+            "value": 14,
+            "x_rank": 4
+          },
+          "entity_id": "mark_F",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "label": "W",
+            "label_center_px": [
+              698.833,
+              534.0
+            ],
+            "mark_bbox_px": [
+              666.837,
+              247.0,
+              730.83,
+              508.0
+            ],
+            "mark_center_px": [
+              698.833,
+              247.0
+            ],
+            "mark_fill_rgb": [
+              25,
+              77,
+              149
+            ],
+            "mark_outline_rgb": [
+              14,
+              42,
+              82
+            ],
+            "scene_variant": "bar",
+            "value": 9,
+            "x_rank": 5
+          },
+          "entity_id": "mark_W",
+          "entity_type": "bar"
+        }
+      ],
+      "relations": {
+        "evidence_labels": [
+          "Q"
+        ],
+        "scene_variant": "bar",
+        "task_variant": "min"
+      },
+      "scene_kind": "chart_bar_statistics"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "Q"
+      ],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

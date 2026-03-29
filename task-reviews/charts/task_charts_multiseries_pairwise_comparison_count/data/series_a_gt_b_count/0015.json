@@ -1,0 +1,1293 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 3
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "P",
+      "Q",
+      "W"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_gt_b_count/0015.png"
+  },
+  "instance_seed": 3316098967261039,
+  "prompt": "Use the chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Count the category labels where Joan exceeds Nole.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Count the category labels where Joan exceeds Nole.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+    "answer_only": "Use the chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Count the category labels where Joan exceeds Nole.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_charts_multiseries_pairwise_comparison_count",
+  "task_variant": "series_a_gt_b_count",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 3,
+      "category_count": 9,
+      "category_count_range": [
+        5,
+        10
+      ],
+      "category_labels": [
+        "X",
+        "U",
+        "P",
+        "A",
+        "W",
+        "Q",
+        "H",
+        "N",
+        "Z"
+      ],
+      "comparison": "greater_than",
+      "evidence_labels": [
+        "P",
+        "Q",
+        "W"
+      ],
+      "left_series_label": "Joan",
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb_palette",
+      "queried_series_labels": [
+        "Joan",
+        "Nole"
+      ],
+      "question_format": "numeric_open",
+      "right_series_label": "Nole",
+      "scene_variant": "grouped_horizontal_bar",
+      "scene_variant_probabilities": {
+        "grouped_bar": 0.25,
+        "grouped_horizontal_bar": 0.25,
+        "grouped_lollipop": 0.25,
+        "multi_line": 0.25
+      },
+      "series_count": 2,
+      "series_count_range": [
+        2,
+        3
+      ],
+      "series_fill_palette_rgb": [
+        [
+          22,
+          141,
+          168
+        ],
+        [
+          123,
+          212,
+          56
+        ]
+      ],
+      "series_labels": [
+        "Joan",
+        "Nole"
+      ],
+      "series_outline_palette_rgb": [
+        [
+          12,
+          78,
+          92
+        ],
+        [
+          68,
+          117,
+          31
+        ]
+      ],
+      "target_answer": 3,
+      "target_answer_range": [
+        0,
+        8
+      ],
+      "task_variant": "series_a_gt_b_count",
+      "task_variant_probabilities": {
+        "series_a_gt_b_count": 0.5,
+        "series_a_lt_b_count": 0.5
+      },
+      "values_by_category": {
+        "A": {
+          "Joan": 2,
+          "Nole": 12
+        },
+        "H": {
+          "Joan": 8,
+          "Nole": 19
+        },
+        "N": {
+          "Joan": 5,
+          "Nole": 19
+        },
+        "P": {
+          "Joan": 16,
+          "Nole": 8
+        },
+        "Q": {
+          "Joan": 7,
+          "Nole": 6
+        },
+        "U": {
+          "Joan": 1,
+          "Nole": 20
+        },
+        "W": {
+          "Joan": 16,
+          "Nole": 15
+        },
+        "X": {
+          "Joan": 4,
+          "Nole": 6
+        },
+        "Z": {
+          "Joan": 6,
+          "Nole": 13
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          54.0,
+          164.57,
+          672.571,
+          192.319
+        ],
+        [
+          52.5,
+          325.903,
+          346.0,
+          353.652
+        ],
+        [
+          50.0,
+          272.125,
+          672.571,
+          299.875
+        ]
+      ],
+      "label_set": [
+        "P",
+        "Q",
+        "W"
+      ],
+      "pixel_point_map": {
+        "P": [
+          62.0,
+          178.444
+        ],
+        "Q": [
+          62.0,
+          339.778
+        ],
+        "W": [
+          62.0,
+          286.0
+        ]
+      },
+      "pixel_point_set": [
+        [
+          62.0,
+          178.444
+        ],
+        [
+          62.0,
+          339.778
+        ],
+        [
+          62.0,
+          286.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "category_count": 9,
+        "category_count_range": [
+          5,
+          10
+        ],
+        "comparison": "greater_than",
+        "queried_series_labels": [
+          "Joan",
+          "Nole"
+        ],
+        "scene_variant": "grouped_horizontal_bar",
+        "scene_variant_probabilities": {
+          "grouped_bar": 0.25,
+          "grouped_horizontal_bar": 0.25,
+          "grouped_lollipop": 0.25,
+          "multi_line": 0.25
+        },
+        "series_count": 2,
+        "series_count_range": [
+          2,
+          3
+        ],
+        "target_answer": 3,
+        "target_answer_range": [
+          0,
+          8
+        ],
+        "task_variant": "series_a_gt_b_count",
+        "task_variant_probabilities": {
+          "series_a_gt_b_count": 0.5,
+          "series_a_lt_b_count": 0.5
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "charts_multiseries_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series",
+          "json_example": "{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "left_series": "Joan",
+          "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+          "right_series": "Nole"
+        },
+        "task_family_key": "multiseries_chart_comparison",
+        "task_family_variant_index": 1,
+        "task_key": "pairwise_comparison_count_query",
+        "task_variant_index": 4,
+        "task_variant_key": "series_a_gt_b_count",
+        "task_variant_template_index": 1,
+        "template_paths": [
+          "charts/multiseries/charts_multiseries_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:pairwise_comparison_count_query": 5,
+          "task_family:multiseries_chart_comparison": 5,
+          "task_variant:series_a_gt_b_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series",
+              "json_example": "{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Joan",
+              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+              "right_series": "Nole"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 1,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 4,
+            "task_variant_key": "series_a_gt_b_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_gt_b_count": 5
+            }
+          },
+          "prompt": "Use the chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Count the category labels where Joan exceeds Nole.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer requirement: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series",
+              "json_example": "{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Joan",
+              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+              "right_series": "Nole"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 1,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 4,
+            "task_variant_key": "series_a_gt_b_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_gt_b_count": 5
+            }
+          },
+          "prompt": "Use the chart in the image. It shows a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Work category by category and count the labels where the requested series comparison is true. Count the category labels where Joan exceeds Nole.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "series_a_gt_b_count",
+      "template_id": "charts_multiseries_v1"
+    },
+    "render_map": {
+      "category_label_centers_px": {
+        "A": [
+          62.0,
+          232.222
+        ],
+        "H": [
+          62.0,
+          393.556
+        ],
+        "N": [
+          62.0,
+          447.333
+        ],
+        "P": [
+          62.0,
+          178.444
+        ],
+        "Q": [
+          62.0,
+          339.778
+        ],
+        "U": [
+          62.0,
+          124.667
+        ],
+        "W": [
+          62.0,
+          286.0
+        ],
+        "X": [
+          62.0,
+          70.889
+        ],
+        "Z": [
+          62.0,
+          501.111
+        ]
+      },
+      "image_id": "img0",
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 620,
+      "canvas_width": 1100,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "sampling_policy": "random_rgb_palette",
+        "series_fill_palette_rgb": [
+          [
+            22,
+            141,
+            168
+          ],
+          [
+            123,
+            212,
+            56
+          ]
+        ],
+        "series_outline_palette_rgb": [
+          [
+            12,
+            78,
+            92
+          ],
+          [
+            68,
+            117,
+            31
+          ]
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "grouped_horizontal_bar",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 21,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              57.014,
+              309.714,
+              84.764
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              62.0,
+              70.889
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              92.0,
+              57.014,
+              237.143,
+              68.63
+            ],
+            "mark_center_px": [
+              164.571,
+              62.822
+            ],
+            "mark_fill_rgb": [
+              22,
+              141,
+              168
+            ],
+            "mark_outline_rgb": [
+              12,
+              78,
+              92
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Joan",
+            "series_rank": 0,
+            "value": 4
+          },
+          "entity_id": "mark_X_Joan",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              57.014,
+              309.714,
+              84.764
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              62.0,
+              70.889
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              92.0,
+              73.148,
+              309.714,
+              84.764
+            ],
+            "mark_center_px": [
+              200.857,
+              78.956
+            ],
+            "mark_fill_rgb": [
+              123,
+              212,
+              56
+            ],
+            "mark_outline_rgb": [
+              68,
+              117,
+              31
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Nole",
+            "series_rank": 1,
+            "value": 6
+          },
+          "entity_id": "mark_X_Nole",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              110.792,
+              817.714,
+              138.541
+            ],
+            "category_label": "U",
+            "category_label_center_px": [
+              62.0,
+              124.667
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              92.0,
+              110.792,
+              128.286,
+              122.408
+            ],
+            "mark_center_px": [
+              110.143,
+              116.6
+            ],
+            "mark_fill_rgb": [
+              22,
+              141,
+              168
+            ],
+            "mark_outline_rgb": [
+              12,
+              78,
+              92
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Joan",
+            "series_rank": 0,
+            "value": 1
+          },
+          "entity_id": "mark_U_Joan",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              110.792,
+              817.714,
+              138.541
+            ],
+            "category_label": "U",
+            "category_label_center_px": [
+              62.0,
+              124.667
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              92.0,
+              126.925,
+              817.714,
+              138.541
+            ],
+            "mark_center_px": [
+              454.857,
+              132.733
+            ],
+            "mark_fill_rgb": [
+              123,
+              212,
+              56
+            ],
+            "mark_outline_rgb": [
+              68,
+              117,
+              31
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Nole",
+            "series_rank": 1,
+            "value": 20
+          },
+          "entity_id": "mark_U_Nole",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.0,
+              164.57,
+              672.571,
+              192.319
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              62.0,
+              178.444
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              164.57,
+              672.571,
+              176.186
+            ],
+            "mark_center_px": [
+              382.286,
+              170.378
+            ],
+            "mark_fill_rgb": [
+              22,
+              141,
+              168
+            ],
+            "mark_outline_rgb": [
+              12,
+              78,
+              92
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Joan",
+            "series_rank": 0,
+            "value": 16
+          },
+          "entity_id": "mark_P_Joan",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.0,
+              164.57,
+              672.571,
+              192.319
+            ],
+            "category_label": "P",
+            "category_label_center_px": [
+              62.0,
+              178.444
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              180.703,
+              382.286,
+              192.319
+            ],
+            "mark_center_px": [
+              237.143,
+              186.511
+            ],
+            "mark_fill_rgb": [
+              123,
+              212,
+              56
+            ],
+            "mark_outline_rgb": [
+              68,
+              117,
+              31
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Nole",
+            "series_rank": 1,
+            "value": 8
+          },
+          "entity_id": "mark_P_Nole",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              218.348,
+              527.429,
+              246.097
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              62.0,
+              232.222
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              218.348,
+              164.571,
+              229.964
+            ],
+            "mark_center_px": [
+              128.286,
+              224.156
+            ],
+            "mark_fill_rgb": [
+              22,
+              141,
+              168
+            ],
+            "mark_outline_rgb": [
+              12,
+              78,
+              92
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Joan",
+            "series_rank": 0,
+            "value": 2
+          },
+          "entity_id": "mark_A_Joan",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              218.348,
+              527.429,
+              246.097
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              62.0,
+              232.222
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              234.481,
+              527.429,
+              246.097
+            ],
+            "mark_center_px": [
+              309.714,
+              240.289
+            ],
+            "mark_fill_rgb": [
+              123,
+              212,
+              56
+            ],
+            "mark_outline_rgb": [
+              68,
+              117,
+              31
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Nole",
+            "series_rank": 1,
+            "value": 12
+          },
+          "entity_id": "mark_A_Nole",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              50.0,
+              272.125,
+              672.571,
+              299.875
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              62.0,
+              286.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              272.125,
+              672.571,
+              283.741
+            ],
+            "mark_center_px": [
+              382.286,
+              277.933
+            ],
+            "mark_fill_rgb": [
+              22,
+              141,
+              168
+            ],
+            "mark_outline_rgb": [
+              12,
+              78,
+              92
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Joan",
+            "series_rank": 0,
+            "value": 16
+          },
+          "entity_id": "mark_W_Joan",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              50.0,
+              272.125,
+              672.571,
+              299.875
+            ],
+            "category_label": "W",
+            "category_label_center_px": [
+              62.0,
+              286.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              288.259,
+              636.286,
+              299.875
+            ],
+            "mark_center_px": [
+              364.143,
+              294.067
+            ],
+            "mark_fill_rgb": [
+              123,
+              212,
+              56
+            ],
+            "mark_outline_rgb": [
+              68,
+              117,
+              31
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Nole",
+            "series_rank": 1,
+            "value": 15
+          },
+          "entity_id": "mark_W_Nole",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              52.5,
+              325.903,
+              346.0,
+              353.652
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              62.0,
+              339.778
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              92.0,
+              325.903,
+              346.0,
+              337.519
+            ],
+            "mark_center_px": [
+              219.0,
+              331.711
+            ],
+            "mark_fill_rgb": [
+              22,
+              141,
+              168
+            ],
+            "mark_outline_rgb": [
+              12,
+              78,
+              92
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Joan",
+            "series_rank": 0,
+            "value": 7
+          },
+          "entity_id": "mark_Q_Joan",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              52.5,
+              325.903,
+              346.0,
+              353.652
+            ],
+            "category_label": "Q",
+            "category_label_center_px": [
+              62.0,
+              339.778
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              92.0,
+              342.036,
+              309.714,
+              353.652
+            ],
+            "mark_center_px": [
+              200.857,
+              347.844
+            ],
+            "mark_fill_rgb": [
+              123,
+              212,
+              56
+            ],
+            "mark_outline_rgb": [
+              68,
+              117,
+              31
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Nole",
+            "series_rank": 1,
+            "value": 6
+          },
+          "entity_id": "mark_Q_Nole",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              379.681,
+              781.429,
+              407.43
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              62.0,
+              393.556
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              92.0,
+              379.681,
+              382.286,
+              391.297
+            ],
+            "mark_center_px": [
+              237.143,
+              385.489
+            ],
+            "mark_fill_rgb": [
+              22,
+              141,
+              168
+            ],
+            "mark_outline_rgb": [
+              12,
+              78,
+              92
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Joan",
+            "series_rank": 0,
+            "value": 8
+          },
+          "entity_id": "mark_H_Joan",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              379.681,
+              781.429,
+              407.43
+            ],
+            "category_label": "H",
+            "category_label_center_px": [
+              62.0,
+              393.556
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              92.0,
+              395.814,
+              781.429,
+              407.43
+            ],
+            "mark_center_px": [
+              436.714,
+              401.622
+            ],
+            "mark_fill_rgb": [
+              123,
+              212,
+              56
+            ],
+            "mark_outline_rgb": [
+              68,
+              117,
+              31
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Nole",
+            "series_rank": 1,
+            "value": 19
+          },
+          "entity_id": "mark_H_Nole",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              433.459,
+              781.429,
+              461.208
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              62.0,
+              447.333
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              92.0,
+              433.459,
+              273.429,
+              445.075
+            ],
+            "mark_center_px": [
+              182.714,
+              439.267
+            ],
+            "mark_fill_rgb": [
+              22,
+              141,
+              168
+            ],
+            "mark_outline_rgb": [
+              12,
+              78,
+              92
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Joan",
+            "series_rank": 0,
+            "value": 5
+          },
+          "entity_id": "mark_N_Joan",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              433.459,
+              781.429,
+              461.208
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              62.0,
+              447.333
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              92.0,
+              449.592,
+              781.429,
+              461.208
+            ],
+            "mark_center_px": [
+              436.714,
+              455.4
+            ],
+            "mark_fill_rgb": [
+              123,
+              212,
+              56
+            ],
+            "mark_outline_rgb": [
+              68,
+              117,
+              31
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Nole",
+            "series_rank": 1,
+            "value": 19
+          },
+          "entity_id": "mark_N_Nole",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.0,
+              487.236,
+              563.714,
+              514.986
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              62.0,
+              501.111
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              92.0,
+              487.236,
+              309.714,
+              498.852
+            ],
+            "mark_center_px": [
+              200.857,
+              493.044
+            ],
+            "mark_fill_rgb": [
+              22,
+              141,
+              168
+            ],
+            "mark_outline_rgb": [
+              12,
+              78,
+              92
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Joan",
+            "series_rank": 0,
+            "value": 6
+          },
+          "entity_id": "mark_Z_Joan",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              54.0,
+              487.236,
+              563.714,
+              514.986
+            ],
+            "category_label": "Z",
+            "category_label_center_px": [
+              62.0,
+              501.111
+            ],
+            "category_rank": 8,
+            "mark_bbox_px": [
+              92.0,
+              503.37,
+              563.714,
+              514.986
+            ],
+            "mark_center_px": [
+              327.857,
+              509.178
+            ],
+            "mark_fill_rgb": [
+              123,
+              212,
+              56
+            ],
+            "mark_outline_rgb": [
+              68,
+              117,
+              31
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Nole",
+            "series_rank": 1,
+            "value": 13
+          },
+          "entity_id": "mark_Z_Nole",
+          "entity_type": "bar"
+        }
+      ],
+      "relations": {
+        "comparison": "greater_than",
+        "evidence_labels": [
+          "P",
+          "Q",
+          "W"
+        ],
+        "queried_series_labels": [
+          "Joan",
+          "Nole"
+        ],
+        "scene_variant": "grouped_horizontal_bar",
+        "task_variant": "series_a_gt_b_count"
+      },
+      "scene_kind": "chart_grouped_horizontal_bar_multiseries"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "P",
+        "Q",
+        "W"
+      ],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

@@ -1,0 +1,1771 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 4
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        486.72,
+        292.444,
+        687.36,
+        351.556
+      ],
+      [
+        286.08,
+        292.444,
+        486.72,
+        351.556
+      ],
+      [
+        486.72,
+        351.556,
+        687.36,
+        410.667
+      ],
+      [
+        286.08,
+        351.556,
+        486.72,
+        410.667
+      ],
+      [
+        486.72,
+        469.778,
+        687.36,
+        528.889
+      ],
+      [
+        286.08,
+        469.778,
+        486.72,
+        528.889
+      ],
+      [
+        486.72,
+        528.889,
+        687.36,
+        588.0
+      ],
+      [
+        286.08,
+        528.889,
+        486.72,
+        588.0
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "tables/task_tables_counting_value_count/images/col_a_lt_col_b/0007.png"
+  },
+  "instance_seed": 3766111387020182,
+  "prompt": "Use the table in the image. It shows a zebra-striped table with one Name column, several numeric columns, alternating row shading, and a shaded header row. Use the table values to count rows where the first named column relation holds against the second. Determine how many rows have a smaller value in Dist than in Age.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every matching row, ordered top-to-bottom, with the two queried column cells kept in the same order as the prompt for each row; use [] if none match.\nAnswer format: set \"answer\" to the exact integer count of matching rows.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":1}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the table in the image. It shows a zebra-striped table with one Name column, several numeric columns, alternating row shading, and a shaded header row. Use the table values to count rows where the first named column relation holds against the second. Determine how many rows have a smaller value in Dist than in Age.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every matching row, ordered top-to-bottom, with the two queried column cells kept in the same order as the prompt for each row; use [] if none match.\nAnswer format: set \"answer\" to the exact integer count of matching rows.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":1}",
+    "answer_only": "Use the table in the image. It shows a zebra-striped table with one Name column, several numeric columns, alternating row shading, and a shaded header row. Use the table values to count rows where the first named column relation holds against the second. Determine how many rows have a smaller value in Dist than in Age.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact integer count of matching rows.\nExample JSON:\n{\"answer\":1}"
+  },
+  "task": "task_tables_counting_value_count",
+  "task_variant": "col_a_lt_col_b",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 4,
+      "column_headers": [
+        "Age",
+        "Dist",
+        "Temp"
+      ],
+      "matching_row_indices": [
+        3,
+        4,
+        6,
+        7
+      ],
+      "matching_row_labels": [
+        "Deva",
+        "Chun",
+        "Dalt",
+        "Dall"
+      ],
+      "numeric_column_count": 3,
+      "numeric_column_count_range": [
+        3,
+        5
+      ],
+      "query_column_a": "Dist",
+      "query_column_a_index": 1,
+      "query_column_b": "Age",
+      "query_column_b_index": 0,
+      "question_format": "column_pair_count",
+      "row_count": 8,
+      "row_count_range": [
+        5,
+        10
+      ],
+      "row_labels": [
+        "Alec",
+        "Nihi",
+        "Bass",
+        "Deva",
+        "Chun",
+        "Don",
+        "Dalt",
+        "Dall"
+      ],
+      "scene_variant": "zebra",
+      "scene_variant_probabilities": {
+        "card_table": 0.25,
+        "ledger": 0.25,
+        "spreadsheet": 0.25,
+        "zebra": 0.25
+      },
+      "supporting_cell_ids": [
+        "cell_r4_c2",
+        "cell_r4_c1",
+        "cell_r5_c2",
+        "cell_r5_c1",
+        "cell_r7_c2",
+        "cell_r7_c1",
+        "cell_r8_c2",
+        "cell_r8_c1"
+      ],
+      "task_variant": "col_a_lt_col_b",
+      "task_variant_probabilities": {
+        "above_threshold": 0.0,
+        "below_threshold": 0.0,
+        "col_a_gt_col_b": 0.0,
+        "col_a_lt_col_b": 1.0,
+        "in_interval": 0.0
+      },
+      "value_range": [
+        1,
+        32
+      ],
+      "values_by_row": {
+        "Alec": {
+          "Age": 25,
+          "Dist": 27,
+          "Temp": 12
+        },
+        "Bass": {
+          "Age": 19,
+          "Dist": 24,
+          "Temp": 20
+        },
+        "Chun": {
+          "Age": 27,
+          "Dist": 12,
+          "Temp": 21
+        },
+        "Dall": {
+          "Age": 29,
+          "Dist": 17,
+          "Temp": 2
+        },
+        "Dalt": {
+          "Age": 24,
+          "Dist": 17,
+          "Temp": 22
+        },
+        "Deva": {
+          "Age": 27,
+          "Dist": 9,
+          "Temp": 10
+        },
+        "Don": {
+          "Age": 22,
+          "Dist": 29,
+          "Temp": 1
+        },
+        "Nihi": {
+          "Age": 17,
+          "Dist": 30,
+          "Temp": 17
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          486.72,
+          292.444,
+          687.36,
+          351.556
+        ],
+        [
+          286.08,
+          292.444,
+          486.72,
+          351.556
+        ],
+        [
+          486.72,
+          351.556,
+          687.36,
+          410.667
+        ],
+        [
+          286.08,
+          351.556,
+          486.72,
+          410.667
+        ],
+        [
+          486.72,
+          469.778,
+          687.36,
+          528.889
+        ],
+        [
+          286.08,
+          469.778,
+          486.72,
+          528.889
+        ],
+        [
+          486.72,
+          528.889,
+          687.36,
+          588.0
+        ],
+        [
+          286.08,
+          528.889,
+          486.72,
+          588.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "numeric_column_count": 3,
+        "query_column_a": "Dist",
+        "query_column_b": "Age",
+        "row_count": 8,
+        "scene_variant": "zebra",
+        "scene_variant_probabilities": {
+          "card_table": 0.25,
+          "ledger": 0.25,
+          "spreadsheet": 0.25,
+          "zebra": 0.25
+        },
+        "task_variant": "col_a_lt_col_b",
+        "task_variant_probabilities": {
+          "above_threshold": 0.0,
+          "below_threshold": 0.0,
+          "col_a_gt_col_b": 0.0,
+          "col_a_lt_col_b": 1.0,
+          "in_interval": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "tables_counting_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the exact integer count of matching rows",
+          "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every matching row, ordered top-to-bottom, with the two queried column cells kept in the same order as the prompt for each row; use [] if none match",
+          "json_example": "{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":1}",
+          "json_example_answer_only": "{\"answer\":1}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a zebra-striped table with one Name column, several numeric columns, alternating row shading, and a shaded header row",
+          "query_column_a": "Dist",
+          "query_column_b": "Age"
+        },
+        "task_family_key": "styled_table_counting",
+        "task_family_variant_index": 1,
+        "task_key": "column_pair_count_query",
+        "task_variant_index": 2,
+        "task_variant_key": "col_a_lt_col_b",
+        "task_variant_template_index": 3,
+        "template_paths": [
+          "tables/counting/tables_counting_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:column_pair_count_query": 5,
+          "task_family:styled_table_counting": 5,
+          "task_variant:col_a_lt_col_b": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "tables_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact integer count of matching rows",
+              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every matching row, ordered top-to-bottom, with the two queried column cells kept in the same order as the prompt for each row; use [] if none match",
+              "json_example": "{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":1}",
+              "json_example_answer_only": "{\"answer\":1}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a zebra-striped table with one Name column, several numeric columns, alternating row shading, and a shaded header row",
+              "query_column_a": "Dist",
+              "query_column_b": "Age"
+            },
+            "task_family_key": "styled_table_counting",
+            "task_family_variant_index": 1,
+            "task_key": "column_pair_count_query",
+            "task_variant_index": 2,
+            "task_variant_key": "col_a_lt_col_b",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "tables/counting/tables_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:column_pair_count_query": 5,
+              "task_family:styled_table_counting": 5,
+              "task_variant:col_a_lt_col_b": 5
+            }
+          },
+          "prompt": "Use the table in the image. It shows a zebra-striped table with one Name column, several numeric columns, alternating row shading, and a shaded header row. Use the table values to count rows where the first named column relation holds against the second. Determine how many rows have a smaller value in Dist than in Age.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every matching row, ordered top-to-bottom, with the two queried column cells kept in the same order as the prompt for each row; use [] if none match.\nAnswer format: set \"answer\" to the exact integer count of matching rows.\nExample JSON:\n{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":1}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "tables_counting_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact integer count of matching rows",
+              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every matching row, ordered top-to-bottom, with the two queried column cells kept in the same order as the prompt for each row; use [] if none match",
+              "json_example": "{\"evidence\":[[260,180,372,236],[374,180,486,236]],\"answer\":1}",
+              "json_example_answer_only": "{\"answer\":1}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a zebra-striped table with one Name column, several numeric columns, alternating row shading, and a shaded header row",
+              "query_column_a": "Dist",
+              "query_column_b": "Age"
+            },
+            "task_family_key": "styled_table_counting",
+            "task_family_variant_index": 1,
+            "task_key": "column_pair_count_query",
+            "task_variant_index": 2,
+            "task_variant_key": "col_a_lt_col_b",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "tables/counting/tables_counting_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:column_pair_count_query": 5,
+              "task_family:styled_table_counting": 5,
+              "task_variant:col_a_lt_col_b": 5
+            }
+          },
+          "prompt": "Use the table in the image. It shows a zebra-striped table with one Name column, several numeric columns, alternating row shading, and a shaded header row. Use the table values to count rows where the first named column relation holds against the second. Determine how many rows have a smaller value in Dist than in Age.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact integer count of matching rows.\nExample JSON:\n{\"answer\":1}"
+        }
+      },
+      "task_variant": "col_a_lt_col_b",
+      "template_id": "tables_counting_v1"
+    },
+    "render_map": {
+      "cell_bboxes_px": {
+        "cell_r0_c0": [
+          52.0,
+          56.0,
+          286.08,
+          115.111
+        ],
+        "cell_r0_c1": [
+          286.08,
+          56.0,
+          486.72,
+          115.111
+        ],
+        "cell_r0_c2": [
+          486.72,
+          56.0,
+          687.36,
+          115.111
+        ],
+        "cell_r0_c3": [
+          687.36,
+          56.0,
+          888.0,
+          115.111
+        ],
+        "cell_r1_c0": [
+          52.0,
+          115.111,
+          286.08,
+          174.222
+        ],
+        "cell_r1_c1": [
+          286.08,
+          115.111,
+          486.72,
+          174.222
+        ],
+        "cell_r1_c2": [
+          486.72,
+          115.111,
+          687.36,
+          174.222
+        ],
+        "cell_r1_c3": [
+          687.36,
+          115.111,
+          888.0,
+          174.222
+        ],
+        "cell_r2_c0": [
+          52.0,
+          174.222,
+          286.08,
+          233.333
+        ],
+        "cell_r2_c1": [
+          286.08,
+          174.222,
+          486.72,
+          233.333
+        ],
+        "cell_r2_c2": [
+          486.72,
+          174.222,
+          687.36,
+          233.333
+        ],
+        "cell_r2_c3": [
+          687.36,
+          174.222,
+          888.0,
+          233.333
+        ],
+        "cell_r3_c0": [
+          52.0,
+          233.333,
+          286.08,
+          292.444
+        ],
+        "cell_r3_c1": [
+          286.08,
+          233.333,
+          486.72,
+          292.444
+        ],
+        "cell_r3_c2": [
+          486.72,
+          233.333,
+          687.36,
+          292.444
+        ],
+        "cell_r3_c3": [
+          687.36,
+          233.333,
+          888.0,
+          292.444
+        ],
+        "cell_r4_c0": [
+          52.0,
+          292.444,
+          286.08,
+          351.556
+        ],
+        "cell_r4_c1": [
+          286.08,
+          292.444,
+          486.72,
+          351.556
+        ],
+        "cell_r4_c2": [
+          486.72,
+          292.444,
+          687.36,
+          351.556
+        ],
+        "cell_r4_c3": [
+          687.36,
+          292.444,
+          888.0,
+          351.556
+        ],
+        "cell_r5_c0": [
+          52.0,
+          351.556,
+          286.08,
+          410.667
+        ],
+        "cell_r5_c1": [
+          286.08,
+          351.556,
+          486.72,
+          410.667
+        ],
+        "cell_r5_c2": [
+          486.72,
+          351.556,
+          687.36,
+          410.667
+        ],
+        "cell_r5_c3": [
+          687.36,
+          351.556,
+          888.0,
+          410.667
+        ],
+        "cell_r6_c0": [
+          52.0,
+          410.667,
+          286.08,
+          469.778
+        ],
+        "cell_r6_c1": [
+          286.08,
+          410.667,
+          486.72,
+          469.778
+        ],
+        "cell_r6_c2": [
+          486.72,
+          410.667,
+          687.36,
+          469.778
+        ],
+        "cell_r6_c3": [
+          687.36,
+          410.667,
+          888.0,
+          469.778
+        ],
+        "cell_r7_c0": [
+          52.0,
+          469.778,
+          286.08,
+          528.889
+        ],
+        "cell_r7_c1": [
+          286.08,
+          469.778,
+          486.72,
+          528.889
+        ],
+        "cell_r7_c2": [
+          486.72,
+          469.778,
+          687.36,
+          528.889
+        ],
+        "cell_r7_c3": [
+          687.36,
+          469.778,
+          888.0,
+          528.889
+        ],
+        "cell_r8_c0": [
+          52.0,
+          528.889,
+          286.08,
+          588.0
+        ],
+        "cell_r8_c1": [
+          286.08,
+          528.889,
+          486.72,
+          588.0
+        ],
+        "cell_r8_c2": [
+          486.72,
+          528.889,
+          687.36,
+          588.0
+        ],
+        "cell_r8_c3": [
+          687.36,
+          528.889,
+          888.0,
+          588.0
+        ]
+      },
+      "column_region_bboxes_px": {
+        "Age": [
+          286.08,
+          115.111,
+          486.72,
+          588.0
+        ],
+        "Dist": [
+          486.72,
+          115.111,
+          687.36,
+          588.0
+        ],
+        "Temp": [
+          687.36,
+          115.111,
+          888.0,
+          588.0
+        ]
+      },
+      "header_bboxes_px": {
+        "Age": [
+          286.08,
+          56.0,
+          486.72,
+          115.111
+        ],
+        "Dist": [
+          486.72,
+          56.0,
+          687.36,
+          115.111
+        ],
+        "Temp": [
+          687.36,
+          56.0,
+          888.0,
+          115.111
+        ]
+      },
+      "image_id": "img0",
+      "row_label_bboxes_px": {
+        "Alec": [
+          52.0,
+          115.111,
+          286.08,
+          174.222
+        ],
+        "Bass": [
+          52.0,
+          233.333,
+          286.08,
+          292.444
+        ],
+        "Chun": [
+          52.0,
+          351.556,
+          286.08,
+          410.667
+        ],
+        "Dall": [
+          52.0,
+          528.889,
+          286.08,
+          588.0
+        ],
+        "Dalt": [
+          52.0,
+          469.778,
+          286.08,
+          528.889
+        ],
+        "Deva": [
+          52.0,
+          292.444,
+          286.08,
+          351.556
+        ],
+        "Don": [
+          52.0,
+          410.667,
+          286.08,
+          469.778
+        ],
+        "Nihi": [
+          52.0,
+          174.222,
+          286.08,
+          233.333
+        ]
+      },
+      "row_region_bboxes_px": {
+        "Alec": [
+          286.08,
+          115.111,
+          888.0,
+          174.222
+        ],
+        "Bass": [
+          286.08,
+          233.333,
+          888.0,
+          292.444
+        ],
+        "Chun": [
+          286.08,
+          351.556,
+          888.0,
+          410.667
+        ],
+        "Dall": [
+          286.08,
+          528.889,
+          888.0,
+          588.0
+        ],
+        "Dalt": [
+          286.08,
+          469.778,
+          888.0,
+          528.889
+        ],
+        "Deva": [
+          286.08,
+          292.444,
+          888.0,
+          351.556
+        ],
+        "Don": [
+          286.08,
+          410.667,
+          888.0,
+          469.778
+        ],
+        "Nihi": [
+          286.08,
+          174.222,
+          888.0,
+          233.333
+        ]
+      },
+      "table_bbox_px": [
+        52.0,
+        56.0,
+        888.0,
+        588.0
+      ]
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 640,
+      "canvas_width": 940,
+      "coord_space": "pixel",
+      "grid_style": {
+        "border_width_px": 2,
+        "grid_width_px": 1
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "zebra",
+      "table_bbox_px": [
+        52.0,
+        56.0,
+        888.0,
+        588.0
+      ],
+      "text_style": {
+        "label_font_size_px": 24,
+        "value_font_size_px": 22
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Name",
+            "text_bbox_px": [
+              130.54,
+              76.556,
+              207.54,
+              94.556
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            56.0,
+            286.08,
+            115.111
+          ],
+          "entity_id": "cell_r0_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Age",
+            "text_bbox_px": [
+              360.4,
+              74.056,
+              412.4,
+              97.056
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            286.08,
+            56.0,
+            486.72,
+            115.111
+          ],
+          "entity_id": "cell_r0_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Dist",
+            "column_index": 2,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Dist",
+            "text_bbox_px": [
+              560.54,
+              76.556,
+              613.54,
+              94.556
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            486.72,
+            56.0,
+            687.36,
+            115.111
+          ],
+          "entity_id": "cell_r0_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "header",
+            "column_header": "Temp",
+            "column_index": 3,
+            "row_index": 0,
+            "row_label": null,
+            "text": "Temp",
+            "text_bbox_px": [
+              750.68,
+              74.056,
+              824.68,
+              97.056
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            687.36,
+            56.0,
+            888.0,
+            115.111
+          ],
+          "entity_id": "cell_r0_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 1,
+            "row_label": "Alec",
+            "text": "Alec",
+            "text_bbox_px": [
+              66.0,
+              135.667,
+              123.0,
+              153.667
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            115.111,
+            286.08,
+            174.222
+          ],
+          "entity_id": "cell_r1_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 1,
+            "row_label": "Alec",
+            "text": "25",
+            "text_bbox_px": [
+              372.4,
+              136.667,
+              400.4,
+              152.667
+            ],
+            "value": 25
+          },
+          "bbox_px": [
+            286.08,
+            115.111,
+            486.72,
+            174.222
+          ],
+          "entity_id": "cell_r1_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 2,
+            "row_index": 1,
+            "row_label": "Alec",
+            "text": "27",
+            "text_bbox_px": [
+              573.04,
+              136.667,
+              601.04,
+              152.667
+            ],
+            "value": 27
+          },
+          "bbox_px": [
+            486.72,
+            115.111,
+            687.36,
+            174.222
+          ],
+          "entity_id": "cell_r1_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 3,
+            "row_index": 1,
+            "row_label": "Alec",
+            "text": "12",
+            "text_bbox_px": [
+              773.68,
+              136.667,
+              801.68,
+              152.667
+            ],
+            "value": 12
+          },
+          "bbox_px": [
+            687.36,
+            115.111,
+            888.0,
+            174.222
+          ],
+          "entity_id": "cell_r1_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 2,
+            "row_label": "Nihi",
+            "text": "Nihi",
+            "text_bbox_px": [
+              66.0,
+              194.778,
+              119.0,
+              212.778
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            174.222,
+            286.08,
+            233.333
+          ],
+          "entity_id": "cell_r2_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 2,
+            "row_label": "Nihi",
+            "text": "17",
+            "text_bbox_px": [
+              372.4,
+              195.778,
+              400.4,
+              211.778
+            ],
+            "value": 17
+          },
+          "bbox_px": [
+            286.08,
+            174.222,
+            486.72,
+            233.333
+          ],
+          "entity_id": "cell_r2_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 2,
+            "row_index": 2,
+            "row_label": "Nihi",
+            "text": "30",
+            "text_bbox_px": [
+              573.04,
+              195.778,
+              601.04,
+              211.778
+            ],
+            "value": 30
+          },
+          "bbox_px": [
+            486.72,
+            174.222,
+            687.36,
+            233.333
+          ],
+          "entity_id": "cell_r2_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 3,
+            "row_index": 2,
+            "row_label": "Nihi",
+            "text": "17",
+            "text_bbox_px": [
+              773.68,
+              195.778,
+              801.68,
+              211.778
+            ],
+            "value": 17
+          },
+          "bbox_px": [
+            687.36,
+            174.222,
+            888.0,
+            233.333
+          ],
+          "entity_id": "cell_r2_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 3,
+            "row_label": "Bass",
+            "text": "Bass",
+            "text_bbox_px": [
+              66.0,
+              253.889,
+              128.0,
+              271.889
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            233.333,
+            286.08,
+            292.444
+          ],
+          "entity_id": "cell_r3_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 3,
+            "row_label": "Bass",
+            "text": "19",
+            "text_bbox_px": [
+              372.4,
+              254.889,
+              400.4,
+              270.889
+            ],
+            "value": 19
+          },
+          "bbox_px": [
+            286.08,
+            233.333,
+            486.72,
+            292.444
+          ],
+          "entity_id": "cell_r3_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 2,
+            "row_index": 3,
+            "row_label": "Bass",
+            "text": "24",
+            "text_bbox_px": [
+              573.04,
+              254.889,
+              601.04,
+              270.889
+            ],
+            "value": 24
+          },
+          "bbox_px": [
+            486.72,
+            233.333,
+            687.36,
+            292.444
+          ],
+          "entity_id": "cell_r3_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 3,
+            "row_index": 3,
+            "row_label": "Bass",
+            "text": "20",
+            "text_bbox_px": [
+              773.68,
+              254.889,
+              801.68,
+              270.889
+            ],
+            "value": 20
+          },
+          "bbox_px": [
+            687.36,
+            233.333,
+            888.0,
+            292.444
+          ],
+          "entity_id": "cell_r3_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 4,
+            "row_label": "Deva",
+            "text": "Deva",
+            "text_bbox_px": [
+              66.0,
+              313.0,
+              134.0,
+              331.0
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            292.444,
+            286.08,
+            351.556
+          ],
+          "entity_id": "cell_r4_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 4,
+            "row_label": "Deva",
+            "text": "27",
+            "text_bbox_px": [
+              372.4,
+              314.0,
+              400.4,
+              330.0
+            ],
+            "value": 27
+          },
+          "bbox_px": [
+            286.08,
+            292.444,
+            486.72,
+            351.556
+          ],
+          "entity_id": "cell_r4_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 2,
+            "row_index": 4,
+            "row_label": "Deva",
+            "text": "9",
+            "text_bbox_px": [
+              580.04,
+              314.0,
+              594.04,
+              330.0
+            ],
+            "value": 9
+          },
+          "bbox_px": [
+            486.72,
+            292.444,
+            687.36,
+            351.556
+          ],
+          "entity_id": "cell_r4_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 3,
+            "row_index": 4,
+            "row_label": "Deva",
+            "text": "10",
+            "text_bbox_px": [
+              773.68,
+              314.0,
+              801.68,
+              330.0
+            ],
+            "value": 10
+          },
+          "bbox_px": [
+            687.36,
+            292.444,
+            888.0,
+            351.556
+          ],
+          "entity_id": "cell_r4_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 5,
+            "row_label": "Chun",
+            "text": "Chun",
+            "text_bbox_px": [
+              66.0,
+              372.111,
+              135.0,
+              390.111
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            351.556,
+            286.08,
+            410.667
+          ],
+          "entity_id": "cell_r5_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 5,
+            "row_label": "Chun",
+            "text": "27",
+            "text_bbox_px": [
+              372.4,
+              373.111,
+              400.4,
+              389.111
+            ],
+            "value": 27
+          },
+          "bbox_px": [
+            286.08,
+            351.556,
+            486.72,
+            410.667
+          ],
+          "entity_id": "cell_r5_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 2,
+            "row_index": 5,
+            "row_label": "Chun",
+            "text": "12",
+            "text_bbox_px": [
+              573.04,
+              373.111,
+              601.04,
+              389.111
+            ],
+            "value": 12
+          },
+          "bbox_px": [
+            486.72,
+            351.556,
+            687.36,
+            410.667
+          ],
+          "entity_id": "cell_r5_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 3,
+            "row_index": 5,
+            "row_label": "Chun",
+            "text": "21",
+            "text_bbox_px": [
+              773.68,
+              373.111,
+              801.68,
+              389.111
+            ],
+            "value": 21
+          },
+          "bbox_px": [
+            687.36,
+            351.556,
+            888.0,
+            410.667
+          ],
+          "entity_id": "cell_r5_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 6,
+            "row_label": "Don",
+            "text": "Don",
+            "text_bbox_px": [
+              66.0,
+              431.222,
+              119.0,
+              449.222
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            410.667,
+            286.08,
+            469.778
+          ],
+          "entity_id": "cell_r6_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 6,
+            "row_label": "Don",
+            "text": "22",
+            "text_bbox_px": [
+              372.4,
+              432.222,
+              400.4,
+              448.222
+            ],
+            "value": 22
+          },
+          "bbox_px": [
+            286.08,
+            410.667,
+            486.72,
+            469.778
+          ],
+          "entity_id": "cell_r6_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 2,
+            "row_index": 6,
+            "row_label": "Don",
+            "text": "29",
+            "text_bbox_px": [
+              573.04,
+              432.222,
+              601.04,
+              448.222
+            ],
+            "value": 29
+          },
+          "bbox_px": [
+            486.72,
+            410.667,
+            687.36,
+            469.778
+          ],
+          "entity_id": "cell_r6_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 3,
+            "row_index": 6,
+            "row_label": "Don",
+            "text": "1",
+            "text_bbox_px": [
+              780.68,
+              432.222,
+              794.68,
+              448.222
+            ],
+            "value": 1
+          },
+          "bbox_px": [
+            687.36,
+            410.667,
+            888.0,
+            469.778
+          ],
+          "entity_id": "cell_r6_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 7,
+            "row_label": "Dalt",
+            "text": "Dalt",
+            "text_bbox_px": [
+              66.0,
+              490.333,
+              121.0,
+              508.333
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            469.778,
+            286.08,
+            528.889
+          ],
+          "entity_id": "cell_r7_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 7,
+            "row_label": "Dalt",
+            "text": "24",
+            "text_bbox_px": [
+              372.4,
+              491.333,
+              400.4,
+              507.333
+            ],
+            "value": 24
+          },
+          "bbox_px": [
+            286.08,
+            469.778,
+            486.72,
+            528.889
+          ],
+          "entity_id": "cell_r7_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 2,
+            "row_index": 7,
+            "row_label": "Dalt",
+            "text": "17",
+            "text_bbox_px": [
+              573.04,
+              491.333,
+              601.04,
+              507.333
+            ],
+            "value": 17
+          },
+          "bbox_px": [
+            486.72,
+            469.778,
+            687.36,
+            528.889
+          ],
+          "entity_id": "cell_r7_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 3,
+            "row_index": 7,
+            "row_label": "Dalt",
+            "text": "22",
+            "text_bbox_px": [
+              773.68,
+              491.333,
+              801.68,
+              507.333
+            ],
+            "value": 22
+          },
+          "bbox_px": [
+            687.36,
+            469.778,
+            888.0,
+            528.889
+          ],
+          "entity_id": "cell_r7_c3",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "row_label",
+            "column_header": "Name",
+            "column_index": 0,
+            "row_index": 8,
+            "row_label": "Dall",
+            "text": "Dall",
+            "text_bbox_px": [
+              66.0,
+              549.444,
+              118.0,
+              567.444
+            ],
+            "value": null
+          },
+          "bbox_px": [
+            52.0,
+            528.889,
+            286.08,
+            588.0
+          ],
+          "entity_id": "cell_r8_c0",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Age",
+            "column_index": 1,
+            "row_index": 8,
+            "row_label": "Dall",
+            "text": "29",
+            "text_bbox_px": [
+              372.4,
+              550.444,
+              400.4,
+              566.444
+            ],
+            "value": 29
+          },
+          "bbox_px": [
+            286.08,
+            528.889,
+            486.72,
+            588.0
+          ],
+          "entity_id": "cell_r8_c1",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Dist",
+            "column_index": 2,
+            "row_index": 8,
+            "row_label": "Dall",
+            "text": "17",
+            "text_bbox_px": [
+              573.04,
+              550.444,
+              601.04,
+              566.444
+            ],
+            "value": 17
+          },
+          "bbox_px": [
+            486.72,
+            528.889,
+            687.36,
+            588.0
+          ],
+          "entity_id": "cell_r8_c2",
+          "entity_type": "table_cell"
+        },
+        {
+          "attrs": {
+            "cell_role": "value",
+            "column_header": "Temp",
+            "column_index": 3,
+            "row_index": 8,
+            "row_label": "Dall",
+            "text": "2",
+            "text_bbox_px": [
+              780.68,
+              550.444,
+              794.68,
+              566.444
+            ],
+            "value": 2
+          },
+          "bbox_px": [
+            687.36,
+            528.889,
+            888.0,
+            588.0
+          ],
+          "entity_id": "cell_r8_c3",
+          "entity_type": "table_cell"
+        }
+      ],
+      "relations": {
+        "answer_value": 4,
+        "query_column_a": "Dist",
+        "query_column_b": "Age",
+        "scene_variant": "zebra",
+        "supporting_cell_ids": [
+          "cell_r4_c2",
+          "cell_r4_c1",
+          "cell_r5_c2",
+          "cell_r5_c1",
+          "cell_r7_c2",
+          "cell_r7_c1",
+          "cell_r8_c2",
+          "cell_r8_c1"
+        ],
+        "task_variant": "col_a_lt_col_b"
+      },
+      "scene_kind": "table_zebra_counting"
+    },
+    "witness_symbolic": {
+      "type": "bbox_set",
+      "value": [
+        [
+          486.72,
+          292.444,
+          687.36,
+          351.556
+        ],
+        [
+          286.08,
+          292.444,
+          486.72,
+          351.556
+        ],
+        [
+          486.72,
+          351.556,
+          687.36,
+          410.667
+        ],
+        [
+          286.08,
+          351.556,
+          486.72,
+          410.667
+        ],
+        [
+          486.72,
+          469.778,
+          687.36,
+          528.889
+        ],
+        [
+          286.08,
+          469.778,
+          486.72,
+          528.889
+        ],
+        [
+          486.72,
+          528.889,
+          687.36,
+          588.0
+        ],
+        [
+          286.08,
+          528.889,
+          486.72,
+          588.0
+        ]
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

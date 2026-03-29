@@ -1,0 +1,1238 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 5
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "B",
+      "G",
+      "L",
+      "M",
+      "U"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_gt_b_count/0017.png"
+  },
+  "instance_seed": 2393817145317553,
+  "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Min higher than Sall.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Min higher than Sall.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+    "answer_only": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Min higher than Sall.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+  },
+  "task": "task_charts_multiseries_pairwise_comparison_count",
+  "task_variant": "series_a_gt_b_count",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 5,
+      "category_count": 8,
+      "category_count_range": [
+        5,
+        10
+      ],
+      "category_labels": [
+        "X",
+        "J",
+        "M",
+        "B",
+        "G",
+        "L",
+        "U",
+        "D"
+      ],
+      "comparison": "greater_than",
+      "evidence_labels": [
+        "B",
+        "G",
+        "L",
+        "M",
+        "U"
+      ],
+      "left_series_label": "Min",
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb_palette",
+      "queried_series_labels": [
+        "Min",
+        "Sall"
+      ],
+      "question_format": "numeric_open",
+      "right_series_label": "Sall",
+      "scene_variant": "grouped_horizontal_bar",
+      "scene_variant_probabilities": {
+        "grouped_bar": 0.25,
+        "grouped_horizontal_bar": 0.25,
+        "grouped_lollipop": 0.25,
+        "multi_line": 0.25
+      },
+      "series_count": 2,
+      "series_count_range": [
+        2,
+        3
+      ],
+      "series_fill_palette_rgb": [
+        [
+          80,
+          18,
+          55
+        ],
+        [
+          93,
+          201,
+          171
+        ]
+      ],
+      "series_labels": [
+        "Min",
+        "Sall"
+      ],
+      "series_outline_palette_rgb": [
+        [
+          44,
+          10,
+          30
+        ],
+        [
+          51,
+          111,
+          94
+        ]
+      ],
+      "target_answer": 5,
+      "target_answer_range": [
+        0,
+        8
+      ],
+      "task_variant": "series_a_gt_b_count",
+      "task_variant_probabilities": {
+        "series_a_gt_b_count": 0.5,
+        "series_a_lt_b_count": 0.5
+      },
+      "values_by_category": {
+        "B": {
+          "Min": 20,
+          "Sall": 2
+        },
+        "D": {
+          "Min": 8,
+          "Sall": 15
+        },
+        "G": {
+          "Min": 8,
+          "Sall": 5
+        },
+        "J": {
+          "Min": 7,
+          "Sall": 20
+        },
+        "L": {
+          "Min": 13,
+          "Sall": 11
+        },
+        "M": {
+          "Min": 12,
+          "Sall": 1
+        },
+        "U": {
+          "Min": 20,
+          "Sall": 1
+        },
+        "X": {
+          "Min": 1,
+          "Sall": 17
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          53.5,
+          240.141,
+          817.714,
+          271.359
+        ],
+        [
+          53.0,
+          300.641,
+          382.286,
+          331.859
+        ],
+        [
+          55.0,
+          361.141,
+          563.714,
+          392.359
+        ],
+        [
+          51.0,
+          179.641,
+          527.429,
+          210.859
+        ],
+        [
+          53.0,
+          421.641,
+          817.714,
+          452.859
+        ]
+      ],
+      "label_set": [
+        "B",
+        "G",
+        "L",
+        "M",
+        "U"
+      ],
+      "pixel_point_map": {
+        "B": [
+          62.0,
+          255.75
+        ],
+        "G": [
+          62.0,
+          316.25
+        ],
+        "L": [
+          62.0,
+          376.75
+        ],
+        "M": [
+          62.0,
+          195.25
+        ],
+        "U": [
+          62.0,
+          437.25
+        ]
+      },
+      "pixel_point_set": [
+        [
+          62.0,
+          255.75
+        ],
+        [
+          62.0,
+          316.25
+        ],
+        [
+          62.0,
+          376.75
+        ],
+        [
+          62.0,
+          195.25
+        ],
+        [
+          62.0,
+          437.25
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "category_count": 8,
+        "category_count_range": [
+          5,
+          10
+        ],
+        "comparison": "greater_than",
+        "queried_series_labels": [
+          "Min",
+          "Sall"
+        ],
+        "scene_variant": "grouped_horizontal_bar",
+        "scene_variant_probabilities": {
+          "grouped_bar": 0.25,
+          "grouped_horizontal_bar": 0.25,
+          "grouped_lollipop": 0.25,
+          "multi_line": 0.25
+        },
+        "series_count": 2,
+        "series_count_range": [
+          2,
+          3
+        ],
+        "target_answer": 5,
+        "target_answer_range": [
+          0,
+          8
+        ],
+        "task_variant": "series_a_gt_b_count",
+        "task_variant_probabilities": {
+          "series_a_gt_b_count": 0.5,
+          "series_a_lt_b_count": 0.5
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "charts_multiseries_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series",
+          "json_example": "{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+          "json_example_answer_only": "{\"answer\":3}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "left_series": "Min",
+          "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+          "right_series": "Sall"
+        },
+        "task_family_key": "multiseries_chart_comparison",
+        "task_family_variant_index": 2,
+        "task_key": "pairwise_comparison_count_query",
+        "task_variant_index": 0,
+        "task_variant_key": "series_a_gt_b_count",
+        "task_variant_template_index": 4,
+        "template_paths": [
+          "charts/multiseries/charts_multiseries_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:pairwise_comparison_count_query": 5,
+          "task_family:multiseries_chart_comparison": 5,
+          "task_variant:series_a_gt_b_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series",
+              "json_example": "{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Min",
+              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+              "right_series": "Sall"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 2,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 0,
+            "task_variant_key": "series_a_gt_b_count",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_gt_b_count": 5
+            }
+          },
+          "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Min higher than Sall.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is higher than the second queried series",
+              "json_example": "{\"evidence\":[\"B\",\"M\",\"Q\"],\"answer\":3}",
+              "json_example_answer_only": "{\"answer\":3}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Min",
+              "object_description": "a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category",
+              "right_series": "Sall"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 2,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 0,
+            "task_variant_key": "series_a_gt_b_count",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_gt_b_count": 5
+            }
+          },
+          "prompt": "Work from the multiseries chart shown in the image: a grouped horizontal bar chart with labeled category groups on the vertical axis and a legend on the right. Each colored bar length gives that series value for its category. Compare the two queried series category by category. Find how many category labels show Min higher than Sall.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":3}"
+        }
+      },
+      "task_variant": "series_a_gt_b_count",
+      "template_id": "charts_multiseries_v1"
+    },
+    "render_map": {
+      "category_label_centers_px": {
+        "B": [
+          62.0,
+          255.75
+        ],
+        "D": [
+          62.0,
+          497.75
+        ],
+        "G": [
+          62.0,
+          316.25
+        ],
+        "J": [
+          62.0,
+          134.75
+        ],
+        "L": [
+          62.0,
+          376.75
+        ],
+        "M": [
+          62.0,
+          195.25
+        ],
+        "U": [
+          62.0,
+          437.25
+        ],
+        "X": [
+          62.0,
+          74.25
+        ]
+      },
+      "image_id": "img0",
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 620,
+      "canvas_width": 1100,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "sampling_policy": "random_rgb_palette",
+        "series_fill_palette_rgb": [
+          [
+            80,
+            18,
+            55
+          ],
+          [
+            93,
+            201,
+            171
+          ]
+        ],
+        "series_outline_palette_rgb": [
+          [
+            44,
+            10,
+            30
+          ],
+          [
+            51,
+            111,
+            94
+          ]
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "grouped_horizontal_bar",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 21,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              58.641,
+              708.857,
+              89.859
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              62.0,
+              74.25
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              92.0,
+              58.641,
+              128.286,
+              71.709
+            ],
+            "mark_center_px": [
+              110.143,
+              65.175
+            ],
+            "mark_fill_rgb": [
+              80,
+              18,
+              55
+            ],
+            "mark_outline_rgb": [
+              44,
+              10,
+              30
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Min",
+            "series_rank": 0,
+            "value": 1
+          },
+          "entity_id": "mark_X_Min",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              58.641,
+              708.857,
+              89.859
+            ],
+            "category_label": "X",
+            "category_label_center_px": [
+              62.0,
+              74.25
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              92.0,
+              76.791,
+              708.857,
+              89.859
+            ],
+            "mark_center_px": [
+              400.429,
+              83.325
+            ],
+            "mark_fill_rgb": [
+              93,
+              201,
+              171
+            ],
+            "mark_outline_rgb": [
+              51,
+              111,
+              94
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Sall",
+            "series_rank": 1,
+            "value": 17
+          },
+          "entity_id": "mark_X_Sall",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              57.0,
+              119.141,
+              817.714,
+              150.359
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              62.0,
+              134.75
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              92.0,
+              119.141,
+              346.0,
+              132.209
+            ],
+            "mark_center_px": [
+              219.0,
+              125.675
+            ],
+            "mark_fill_rgb": [
+              80,
+              18,
+              55
+            ],
+            "mark_outline_rgb": [
+              44,
+              10,
+              30
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Min",
+            "series_rank": 0,
+            "value": 7
+          },
+          "entity_id": "mark_J_Min",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              57.0,
+              119.141,
+              817.714,
+              150.359
+            ],
+            "category_label": "J",
+            "category_label_center_px": [
+              62.0,
+              134.75
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              92.0,
+              137.291,
+              817.714,
+              150.359
+            ],
+            "mark_center_px": [
+              454.857,
+              143.825
+            ],
+            "mark_fill_rgb": [
+              93,
+              201,
+              171
+            ],
+            "mark_outline_rgb": [
+              51,
+              111,
+              94
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Sall",
+            "series_rank": 1,
+            "value": 20
+          },
+          "entity_id": "mark_J_Sall",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              51.0,
+              179.641,
+              527.429,
+              210.859
+            ],
+            "category_label": "M",
+            "category_label_center_px": [
+              62.0,
+              195.25
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              179.641,
+              527.429,
+              192.709
+            ],
+            "mark_center_px": [
+              309.714,
+              186.175
+            ],
+            "mark_fill_rgb": [
+              80,
+              18,
+              55
+            ],
+            "mark_outline_rgb": [
+              44,
+              10,
+              30
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Min",
+            "series_rank": 0,
+            "value": 12
+          },
+          "entity_id": "mark_M_Min",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              51.0,
+              179.641,
+              527.429,
+              210.859
+            ],
+            "category_label": "M",
+            "category_label_center_px": [
+              62.0,
+              195.25
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              92.0,
+              197.791,
+              128.286,
+              210.859
+            ],
+            "mark_center_px": [
+              110.143,
+              204.325
+            ],
+            "mark_fill_rgb": [
+              93,
+              201,
+              171
+            ],
+            "mark_outline_rgb": [
+              51,
+              111,
+              94
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Sall",
+            "series_rank": 1,
+            "value": 1
+          },
+          "entity_id": "mark_M_Sall",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              240.141,
+              817.714,
+              271.359
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              62.0,
+              255.75
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              240.141,
+              817.714,
+              253.209
+            ],
+            "mark_center_px": [
+              454.857,
+              246.675
+            ],
+            "mark_fill_rgb": [
+              80,
+              18,
+              55
+            ],
+            "mark_outline_rgb": [
+              44,
+              10,
+              30
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Min",
+            "series_rank": 0,
+            "value": 20
+          },
+          "entity_id": "mark_B_Min",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.5,
+              240.141,
+              817.714,
+              271.359
+            ],
+            "category_label": "B",
+            "category_label_center_px": [
+              62.0,
+              255.75
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              92.0,
+              258.291,
+              164.571,
+              271.359
+            ],
+            "mark_center_px": [
+              128.286,
+              264.825
+            ],
+            "mark_fill_rgb": [
+              93,
+              201,
+              171
+            ],
+            "mark_outline_rgb": [
+              51,
+              111,
+              94
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Sall",
+            "series_rank": 1,
+            "value": 2
+          },
+          "entity_id": "mark_B_Sall",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              300.641,
+              382.286,
+              331.859
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              62.0,
+              316.25
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              300.641,
+              382.286,
+              313.709
+            ],
+            "mark_center_px": [
+              237.143,
+              307.175
+            ],
+            "mark_fill_rgb": [
+              80,
+              18,
+              55
+            ],
+            "mark_outline_rgb": [
+              44,
+              10,
+              30
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Min",
+            "series_rank": 0,
+            "value": 8
+          },
+          "entity_id": "mark_G_Min",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              300.641,
+              382.286,
+              331.859
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              62.0,
+              316.25
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              92.0,
+              318.791,
+              273.429,
+              331.859
+            ],
+            "mark_center_px": [
+              182.714,
+              325.325
+            ],
+            "mark_fill_rgb": [
+              93,
+              201,
+              171
+            ],
+            "mark_outline_rgb": [
+              51,
+              111,
+              94
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Sall",
+            "series_rank": 1,
+            "value": 5
+          },
+          "entity_id": "mark_G_Sall",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              55.0,
+              361.141,
+              563.714,
+              392.359
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              62.0,
+              376.75
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              92.0,
+              361.141,
+              563.714,
+              374.209
+            ],
+            "mark_center_px": [
+              327.857,
+              367.675
+            ],
+            "mark_fill_rgb": [
+              80,
+              18,
+              55
+            ],
+            "mark_outline_rgb": [
+              44,
+              10,
+              30
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Min",
+            "series_rank": 0,
+            "value": 13
+          },
+          "entity_id": "mark_L_Min",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              55.0,
+              361.141,
+              563.714,
+              392.359
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              62.0,
+              376.75
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              92.0,
+              379.291,
+              491.143,
+              392.359
+            ],
+            "mark_center_px": [
+              291.571,
+              385.825
+            ],
+            "mark_fill_rgb": [
+              93,
+              201,
+              171
+            ],
+            "mark_outline_rgb": [
+              51,
+              111,
+              94
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Sall",
+            "series_rank": 1,
+            "value": 11
+          },
+          "entity_id": "mark_L_Sall",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              421.641,
+              817.714,
+              452.859
+            ],
+            "category_label": "U",
+            "category_label_center_px": [
+              62.0,
+              437.25
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              92.0,
+              421.641,
+              817.714,
+              434.709
+            ],
+            "mark_center_px": [
+              454.857,
+              428.175
+            ],
+            "mark_fill_rgb": [
+              80,
+              18,
+              55
+            ],
+            "mark_outline_rgb": [
+              44,
+              10,
+              30
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Min",
+            "series_rank": 0,
+            "value": 20
+          },
+          "entity_id": "mark_U_Min",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              421.641,
+              817.714,
+              452.859
+            ],
+            "category_label": "U",
+            "category_label_center_px": [
+              62.0,
+              437.25
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              92.0,
+              439.791,
+              128.286,
+              452.859
+            ],
+            "mark_center_px": [
+              110.143,
+              446.325
+            ],
+            "mark_fill_rgb": [
+              93,
+              201,
+              171
+            ],
+            "mark_outline_rgb": [
+              51,
+              111,
+              94
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Sall",
+            "series_rank": 1,
+            "value": 1
+          },
+          "entity_id": "mark_U_Sall",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              482.141,
+              636.286,
+              513.359
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              62.0,
+              497.75
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              92.0,
+              482.141,
+              382.286,
+              495.209
+            ],
+            "mark_center_px": [
+              237.143,
+              488.675
+            ],
+            "mark_fill_rgb": [
+              80,
+              18,
+              55
+            ],
+            "mark_outline_rgb": [
+              44,
+              10,
+              30
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Min",
+            "series_rank": 0,
+            "value": 8
+          },
+          "entity_id": "mark_D_Min",
+          "entity_type": "bar"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              53.0,
+              482.141,
+              636.286,
+              513.359
+            ],
+            "category_label": "D",
+            "category_label_center_px": [
+              62.0,
+              497.75
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              92.0,
+              500.291,
+              636.286,
+              513.359
+            ],
+            "mark_center_px": [
+              364.143,
+              506.825
+            ],
+            "mark_fill_rgb": [
+              93,
+              201,
+              171
+            ],
+            "mark_outline_rgb": [
+              51,
+              111,
+              94
+            ],
+            "scene_variant": "grouped_horizontal_bar",
+            "series_label": "Sall",
+            "series_rank": 1,
+            "value": 15
+          },
+          "entity_id": "mark_D_Sall",
+          "entity_type": "bar"
+        }
+      ],
+      "relations": {
+        "comparison": "greater_than",
+        "evidence_labels": [
+          "B",
+          "G",
+          "L",
+          "M",
+          "U"
+        ],
+        "queried_series_labels": [
+          "Min",
+          "Sall"
+        ],
+        "scene_variant": "grouped_horizontal_bar",
+        "task_variant": "series_a_gt_b_count"
+      },
+      "scene_kind": "chart_grouped_horizontal_bar_multiseries"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "B",
+        "G",
+        "L",
+        "M",
+        "U"
+      ],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

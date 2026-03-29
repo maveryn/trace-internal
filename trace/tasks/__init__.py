@@ -73,6 +73,9 @@ from .temporal.clock import compare as _task_temporal_clock_compare
 from .temporal.clock import readout as _task_temporal_clock_readout
 from .temporal.schedule import day_planner as _task_temporal_schedule_day_planner
 from .temporal.timeline import milestones as _task_temporal_timeline_milestones
+from .puzzles.arithmetic import grid_value as _task_puzzles_arithmetic_grid_value
+from .puzzles.logic import grid_completion_label as _task_puzzles_logic_grid_completion_label
+from .puzzles.spatial import fold_hole_label as _task_puzzles_spatial_fold_hole_label
 from .tile import count_color_components as _task_tile_count_color_components
 from .tile import count_color_count as _task_tile_count_color_count
 from .tile import count_largest_component_size as _task_tile_count_largest_component_size

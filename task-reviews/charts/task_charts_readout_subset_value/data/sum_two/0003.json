@@ -1,0 +1,680 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 12
+  },
+  "evidence_gt": {
+    "type": "integer_list",
+    "value": [
+      2,
+      10
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_readout_subset_value/images/sum_two/0003.png"
+  },
+  "instance_seed": 1033528959011719,
+  "prompt": "Look at the chart in the image. It shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Use the chart values for the specified labels and answer the question. What is the total of the values shown for labels T and S?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[7,11],\"answer\":18}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the chart in the image. It shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Use the chart values for the specified labels and answer the question. What is the total of the values shown for labels T and S?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[7,11],\"answer\":18}",
+    "answer_only": "Look at the chart in the image. It shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Use the chart values for the specified labels and answer the question. What is the total of the values shown for labels T and S?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":18}"
+  },
+  "task": "task_charts_readout_subset_value",
+  "task_variant": "sum_two",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 12,
+      "labels": [
+        "F",
+        "P",
+        "Y",
+        "T",
+        "S",
+        "K"
+      ],
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb",
+      "mark_count": 6,
+      "mark_count_range": [
+        5,
+        7
+      ],
+      "mark_fill_rgb": [
+        22,
+        92,
+        37
+      ],
+      "mark_outline_rgb": [
+        12,
+        51,
+        20
+      ],
+      "query_labels": [
+        "T",
+        "S"
+      ],
+      "query_values": [
+        2,
+        10
+      ],
+      "question_format": "numeric_open",
+      "scene_variant": "radar",
+      "scene_variant_probabilities": {
+        "area": 0.1,
+        "bar": 0.1,
+        "donut": 0.1,
+        "dot_plot": 0.1,
+        "horizontal_bar": 0.1,
+        "line": 0.1,
+        "lollipop": 0.1,
+        "pie": 0.1,
+        "radar": 0.1,
+        "scatter": 0.1
+      },
+      "target_answer": 12,
+      "target_answer_range": [
+        2,
+        40
+      ],
+      "task_variant": "sum_two",
+      "task_variant_probabilities": {
+        "difference_two_abs": 0.2,
+        "max_two": 0.2,
+        "mean_two": 0.2,
+        "min_two": 0.2,
+        "sum_two": 0.2
+      },
+      "value_max": 20,
+      "value_min": 1,
+      "values": [
+        17,
+        8,
+        8,
+        2,
+        10,
+        13
+      ],
+      "values_by_label": {
+        "F": 17,
+        "K": 13,
+        "P": 8,
+        "S": 10,
+        "T": 2,
+        "Y": 8
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          415.0,
+          285.778,
+          431.0,
+          301.778
+        ],
+        [
+          338.02,
+          312.444,
+          354.02,
+          328.444
+        ]
+      ],
+      "integer_list": [
+        2,
+        10
+      ],
+      "pixel_point_map": {
+        "S": [
+          346.02,
+          320.444
+        ],
+        "T": [
+          423.0,
+          293.778
+        ]
+      },
+      "pixel_point_set": [
+        [
+          423.0,
+          293.778
+        ],
+        [
+          346.02,
+          320.444
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "mark_count": 6,
+        "query_labels": [
+          "T",
+          "S"
+        ],
+        "scene_variant": "radar",
+        "scene_variant_probabilities": {
+          "area": 0.1,
+          "bar": 0.1,
+          "donut": 0.1,
+          "dot_plot": 0.1,
+          "horizontal_bar": 0.1,
+          "line": 0.1,
+          "lollipop": 0.1,
+          "pie": 0.1,
+          "radar": 0.1,
+          "scatter": 0.1
+        },
+        "target_answer": 12,
+        "target_answer_range": [
+          2,
+          40
+        ],
+        "task_variant": "sum_two",
+        "task_variant_probabilities": {
+          "difference_two_abs": 0.2,
+          "max_two": 0.2,
+          "mean_two": 0.2,
+          "min_two": 0.2,
+          "sum_two": 0.2
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "charts_readout_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the requested integer value",
+          "evidence_hint": "set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question",
+          "json_example": "{\"evidence\":[7,11],\"answer\":18}",
+          "json_example_answer_only": "{\"answer\":18}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points",
+          "query_label_a": "T",
+          "query_label_b": "S"
+        },
+        "task_family_key": "labeled_chart_readout",
+        "task_family_variant_index": 3,
+        "task_key": "subset_value_query",
+        "task_variant_index": 1,
+        "task_variant_key": "sum_two",
+        "task_variant_template_index": 2,
+        "template_paths": [
+          "charts/readout/charts_readout_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:subset_value_query": 5,
+          "task_family:labeled_chart_readout": 5,
+          "task_variant:sum_two": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "charts_readout_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested integer value",
+              "evidence_hint": "set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question",
+              "json_example": "{\"evidence\":[7,11],\"answer\":18}",
+              "json_example_answer_only": "{\"answer\":18}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points",
+              "query_label_a": "T",
+              "query_label_b": "S"
+            },
+            "task_family_key": "labeled_chart_readout",
+            "task_family_variant_index": 3,
+            "task_key": "subset_value_query",
+            "task_variant_index": 1,
+            "task_variant_key": "sum_two",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "charts/readout/charts_readout_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:subset_value_query": 5,
+              "task_family:labeled_chart_readout": 5,
+              "task_variant:sum_two": 5
+            }
+          },
+          "prompt": "Look at the chart in the image. It shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Use the chart values for the specified labels and answer the question. What is the total of the values shown for labels T and S?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question.\nAnswer: set \"answer\" to the requested integer value.\nExample JSON:\n{\"evidence\":[7,11],\"answer\":18}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "charts_readout_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested integer value",
+              "evidence_hint": "set \"evidence\" to an array [v1, v2] containing the two queried values in the same label order as the question",
+              "json_example": "{\"evidence\":[7,11],\"answer\":18}",
+              "json_example_answer_only": "{\"answer\":18}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points",
+              "query_label_a": "T",
+              "query_label_b": "S"
+            },
+            "task_family_key": "labeled_chart_readout",
+            "task_family_variant_index": 3,
+            "task_key": "subset_value_query",
+            "task_variant_index": 1,
+            "task_variant_key": "sum_two",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "charts/readout/charts_readout_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:subset_value_query": 5,
+              "task_family:labeled_chart_readout": 5,
+              "task_variant:sum_two": 5
+            }
+          },
+          "prompt": "Look at the chart in the image. It shows a labeled radar chart with one spoke per label. Each label marks one plotted point on the radar polygon, and the relevant values are the printed values near those points. Use the chart values for the specified labels and answer the question. What is the total of the values shown for labels T and S?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer value.\nExample JSON:\n{\"answer\":18}"
+        }
+      },
+      "task_variant": "sum_two",
+      "template_id": "charts_readout_v1"
+    },
+    "render_map": {
+      "image_id": "img0",
+      "label_centers_px": {
+        "F": [
+          423.0,
+          86.0
+        ],
+        "K": [
+          258.455,
+          181.0
+        ],
+        "P": [
+          587.545,
+          181.0
+        ],
+        "S": [
+          258.455,
+          371.0
+        ],
+        "T": [
+          423.0,
+          466.0
+        ],
+        "Y": [
+          587.545,
+          371.0
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 600,
+      "canvas_width": 800,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "mark_fill_rgb": [
+          22,
+          92,
+          37
+        ],
+        "mark_outline_rgb": [
+          12,
+          51,
+          20
+        ],
+        "sampling_policy": "random_rgb"
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "radar",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 18,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "label": "F",
+            "label_center_px": [
+              423.0,
+              86.0
+            ],
+            "mark_bbox_px": [
+              415.0,
+              116.889,
+              431.0,
+              132.889
+            ],
+            "mark_center_px": [
+              423.0,
+              124.889
+            ],
+            "mark_fill_rgb": [
+              22,
+              92,
+              37
+            ],
+            "mark_outline_rgb": [
+              12,
+              51,
+              20
+            ],
+            "scene_variant": "radar",
+            "value": 17,
+            "value_center_px": [
+              423.0,
+              142.889
+            ],
+            "x_rank": 0
+          },
+          "entity_id": "mark_F",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "P",
+            "label_center_px": [
+              587.545,
+              181.0
+            ],
+            "mark_bbox_px": [
+              476.584,
+              232.444,
+              492.584,
+              248.444
+            ],
+            "mark_center_px": [
+              484.584,
+              240.444
+            ],
+            "mark_fill_rgb": [
+              22,
+              92,
+              37
+            ],
+            "mark_outline_rgb": [
+              12,
+              51,
+              20
+            ],
+            "scene_variant": "radar",
+            "value": 8,
+            "value_center_px": [
+              468.996,
+              249.444
+            ],
+            "x_rank": 1
+          },
+          "entity_id": "mark_P",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "Y",
+            "label_center_px": [
+              587.545,
+              371.0
+            ],
+            "mark_bbox_px": [
+              476.584,
+              303.556,
+              492.584,
+              319.556
+            ],
+            "mark_center_px": [
+              484.584,
+              311.556
+            ],
+            "mark_fill_rgb": [
+              22,
+              92,
+              37
+            ],
+            "mark_outline_rgb": [
+              12,
+              51,
+              20
+            ],
+            "scene_variant": "radar",
+            "value": 8,
+            "value_center_px": [
+              468.996,
+              302.556
+            ],
+            "x_rank": 2
+          },
+          "entity_id": "mark_Y",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "T",
+            "label_center_px": [
+              423.0,
+              466.0
+            ],
+            "mark_bbox_px": [
+              415.0,
+              285.778,
+              431.0,
+              301.778
+            ],
+            "mark_center_px": [
+              423.0,
+              293.778
+            ],
+            "mark_fill_rgb": [
+              22,
+              92,
+              37
+            ],
+            "mark_outline_rgb": [
+              12,
+              51,
+              20
+            ],
+            "scene_variant": "radar",
+            "value": 2,
+            "value_center_px": [
+              423.0,
+              294.0
+            ],
+            "x_rank": 3
+          },
+          "entity_id": "mark_T",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "S",
+            "label_center_px": [
+              258.455,
+              371.0
+            ],
+            "mark_bbox_px": [
+              338.02,
+              312.444,
+              354.02,
+              328.444
+            ],
+            "mark_center_px": [
+              346.02,
+              320.444
+            ],
+            "mark_fill_rgb": [
+              22,
+              92,
+              37
+            ],
+            "mark_outline_rgb": [
+              12,
+              51,
+              20
+            ],
+            "scene_variant": "radar",
+            "value": 10,
+            "value_center_px": [
+              361.608,
+              311.444
+            ],
+            "x_rank": 4
+          },
+          "entity_id": "mark_S",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "K",
+            "label_center_px": [
+              258.455,
+              181.0
+            ],
+            "mark_bbox_px": [
+              314.926,
+              210.222,
+              330.926,
+              226.222
+            ],
+            "mark_center_px": [
+              322.926,
+              218.222
+            ],
+            "mark_fill_rgb": [
+              22,
+              92,
+              37
+            ],
+            "mark_outline_rgb": [
+              12,
+              51,
+              20
+            ],
+            "scene_variant": "radar",
+            "value": 13,
+            "value_center_px": [
+              338.514,
+              227.222
+            ],
+            "x_rank": 5
+          },
+          "entity_id": "mark_K",
+          "entity_type": "point"
+        }
+      ],
+      "relations": {
+        "answer_value": 12,
+        "query_labels": [
+          "T",
+          "S"
+        ],
+        "query_values": [
+          2,
+          10
+        ],
+        "scene_variant": "radar",
+        "task_variant": "sum_two"
+      },
+      "scene_kind": "chart_radar_readout"
+    },
+    "witness_symbolic": {
+      "query_labels": [
+        "T",
+        "S"
+      ],
+      "type": "integer_list",
+      "values": [
+        2,
+        10
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

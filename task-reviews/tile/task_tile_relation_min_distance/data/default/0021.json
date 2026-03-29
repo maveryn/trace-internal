@@ -1,0 +1,1890 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 4
+  },
+  "evidence_gt": {
+    "type": "grid_point_path",
+    "value": [
+      [
+        2,
+        1
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        2,
+        5
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "tile/task_tile_relation_min_distance/images/default/0021.png"
+  },
+  "instance_seed": 5835652516112260,
+  "prompt": "Use the single rectangular tile board in the image. It has 6 rows and 6 columns, with rows labeled on the left and columns labeled on the top. Find the minimum orthogonal tile distance between the purple [#963ACA] component and the orange [#EE881A] component on the white [#FFFFFF] board.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to the ordered list of [row, col] coordinates for one unique shortest path between the closest queried-color tiles, including both endpoints.\nAnswer requirement: set \"answer\" to the minimum number of orthogonal steps between the two queried colors as an integer.\nExample JSON:\n{\"evidence\":[[1,1],[1,2],[1,3]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the single rectangular tile board in the image. It has 6 rows and 6 columns, with rows labeled on the left and columns labeled on the top. Find the minimum orthogonal tile distance between the purple [#963ACA] component and the orange [#EE881A] component on the white [#FFFFFF] board.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to the ordered list of [row, col] coordinates for one unique shortest path between the closest queried-color tiles, including both endpoints.\nAnswer requirement: set \"answer\" to the minimum number of orthogonal steps between the two queried colors as an integer.\nExample JSON:\n{\"evidence\":[[1,1],[1,2],[1,3]],\"answer\":2}",
+    "answer_only": "Use the single rectangular tile board in the image. It has 6 rows and 6 columns, with rows labeled on the left and columns labeled on the top. Find the minimum orthogonal tile distance between the purple [#963ACA] component and the orange [#EE881A] component on the white [#FFFFFF] board.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the minimum number of orthogonal steps between the two queried colors as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_tile_relation_min_distance",
+  "task_variant": "min_distance",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 4,
+      "background_color_hex": "#FFFFFF",
+      "background_color_label": "white [#FFFFFF]",
+      "background_color_name": "white",
+      "background_color_rgb": [
+        255,
+        255,
+        255
+      ],
+      "closest_pair_coords": [
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          5
+        ]
+      ],
+      "closest_pair_ids": [
+        "cell_2_1",
+        "cell_2_5"
+      ],
+      "color_a_component_count": 1,
+      "color_a_coords": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "color_a_hex": "#963ACA",
+      "color_a_ids": [
+        "cell_0_0",
+        "cell_1_0",
+        "cell_2_0",
+        "cell_2_1",
+        "cell_3_0"
+      ],
+      "color_a_label": "purple [#963ACA]",
+      "color_a_name": "purple",
+      "color_a_rgb": [
+        150,
+        58,
+        202
+      ],
+      "color_a_tip_coord": [
+        2,
+        1
+      ],
+      "color_a_tip_id": "cell_2_1",
+      "color_b_component_count": 1,
+      "color_b_coords": [
+        [
+          2,
+          5
+        ]
+      ],
+      "color_b_hex": "#EE881A",
+      "color_b_ids": [
+        "cell_2_5"
+      ],
+      "color_b_label": "orange [#EE881A]",
+      "color_b_name": "orange",
+      "color_b_rgb": [
+        238,
+        136,
+        26
+      ],
+      "color_b_tip_coord": [
+        2,
+        5
+      ],
+      "color_b_tip_id": "cell_2_5",
+      "cols": 6,
+      "component_size_range": [
+        1,
+        6
+      ],
+      "distance_axis": "horizontal",
+      "palette": [
+        {
+          "hex": "#963ACA",
+          "label": "purple [#963ACA]",
+          "name": "purple",
+          "rgb": [
+            150,
+            58,
+            202
+          ]
+        },
+        {
+          "hex": "#FFFFFF",
+          "label": "white [#FFFFFF]",
+          "name": "white",
+          "rgb": [
+            255,
+            255,
+            255
+          ]
+        },
+        {
+          "hex": "#EE881A",
+          "label": "orange [#EE881A]",
+          "name": "orange",
+          "rgb": [
+            238,
+            136,
+            26
+          ]
+        }
+      ],
+      "rows": 6,
+      "shortest_path_coords": [
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          2,
+          5
+        ]
+      ],
+      "shortest_path_ids": [
+        "cell_2_1",
+        "cell_2_2",
+        "cell_2_3",
+        "cell_2_4",
+        "cell_2_5"
+      ],
+      "target_distance": 4,
+      "target_distance_range": [
+        2,
+        6
+      ],
+      "task_variant": "min_distance",
+      "unique_closest_pair": true
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          133.0,
+          125.0,
+          190.0,
+          158.0
+        ],
+        [
+          190.0,
+          125.0,
+          247.0,
+          158.0
+        ],
+        [
+          247.0,
+          125.0,
+          304.0,
+          158.0
+        ],
+        [
+          304.0,
+          125.0,
+          361.0,
+          158.0
+        ],
+        [
+          361.0,
+          125.0,
+          418.0,
+          158.0
+        ]
+      ],
+      "grid_point_path": [
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          2,
+          5
+        ]
+      ],
+      "pixel_point_path": [
+        [
+          161.5,
+          141.5
+        ],
+        [
+          218.5,
+          141.5
+        ],
+        [
+          275.5,
+          141.5
+        ],
+        [
+          332.5,
+          141.5
+        ],
+        [
+          389.5,
+          141.5
+        ]
+      ]
+    },
+    "query_spec": {
+      "dsl_program": [
+        {
+          "entity_type": "tile_cell",
+          "op": "select",
+          "out": "cells"
+        },
+        {
+          "in": "cells",
+          "op": "filter",
+          "out": "color_a_tiles",
+          "predicate": {
+            "is_color_a": true
+          }
+        },
+        {
+          "in": "cells",
+          "op": "filter",
+          "out": "color_b_tiles",
+          "predicate": {
+            "is_color_b": true
+          }
+        },
+        {
+          "expect_unique": true,
+          "goal": "cell_2_5",
+          "op": "shortest_path",
+          "out": "closest_pair_path",
+          "relation": "adjacency_open",
+          "start": "cell_2_1"
+        },
+        {
+          "coord_space": "tile_grid",
+          "coord_type": "grid_point_path",
+          "in": "closest_pair_path",
+          "op": "project_coords",
+          "ordering": "path",
+          "out": "evidence"
+        },
+        {
+          "left": "color_a_tiles",
+          "metric": "orthogonal_steps",
+          "op": "min_distance_between_sets",
+          "out": "answer",
+          "right": "color_b_tiles"
+        }
+      ],
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "tile_relation_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the minimum number of orthogonal steps between the two queried colors as an integer",
+          "background_color": "white [#FFFFFF]",
+          "color_a": "purple [#963ACA]",
+          "color_b": "orange [#EE881A]",
+          "cols": 6,
+          "evidence_hint": "set \"evidence\" to the ordered list of [row, col] coordinates for one unique shortest path between the closest queried-color tiles, including both endpoints",
+          "json_example": "{\"evidence\":[[1,1],[1,2],[1,3]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "rows": 6
+        },
+        "task_family_key": "rectangular_tile_board",
+        "task_family_variant_index": 1,
+        "task_key": "min_distance_query",
+        "task_variant_index": 4,
+        "task_variant_key": null,
+        "task_variant_template_index": null,
+        "template_paths": [
+          "tile/relation/tile_relation_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:min_distance_query": 5,
+          "task_family:rectangular_tile_board": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "tile_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the minimum number of orthogonal steps between the two queried colors as an integer",
+              "background_color": "white [#FFFFFF]",
+              "color_a": "purple [#963ACA]",
+              "color_b": "orange [#EE881A]",
+              "cols": 6,
+              "evidence_hint": "set \"evidence\" to the ordered list of [row, col] coordinates for one unique shortest path between the closest queried-color tiles, including both endpoints",
+              "json_example": "{\"evidence\":[[1,1],[1,2],[1,3]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "rows": 6
+            },
+            "task_family_key": "rectangular_tile_board",
+            "task_family_variant_index": 1,
+            "task_key": "min_distance_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "tile/relation/tile_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:min_distance_query": 5,
+              "task_family:rectangular_tile_board": 5
+            }
+          },
+          "prompt": "Use the single rectangular tile board in the image. It has 6 rows and 6 columns, with rows labeled on the left and columns labeled on the top. Find the minimum orthogonal tile distance between the purple [#963ACA] component and the orange [#EE881A] component on the white [#FFFFFF] board.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to the ordered list of [row, col] coordinates for one unique shortest path between the closest queried-color tiles, including both endpoints.\nAnswer requirement: set \"answer\" to the minimum number of orthogonal steps between the two queried colors as an integer.\nExample JSON:\n{\"evidence\":[[1,1],[1,2],[1,3]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "tile_relation_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the minimum number of orthogonal steps between the two queried colors as an integer",
+              "background_color": "white [#FFFFFF]",
+              "color_a": "purple [#963ACA]",
+              "color_b": "orange [#EE881A]",
+              "cols": 6,
+              "evidence_hint": "set \"evidence\" to the ordered list of [row, col] coordinates for one unique shortest path between the closest queried-color tiles, including both endpoints",
+              "json_example": "{\"evidence\":[[1,1],[1,2],[1,3]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "rows": 6
+            },
+            "task_family_key": "rectangular_tile_board",
+            "task_family_variant_index": 1,
+            "task_key": "min_distance_query",
+            "task_variant_index": 4,
+            "task_variant_key": null,
+            "task_variant_template_index": null,
+            "template_paths": [
+              "tile/relation/tile_relation_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:min_distance_query": 5,
+              "task_family:rectangular_tile_board": 5
+            }
+          },
+          "prompt": "Use the single rectangular tile board in the image. It has 6 rows and 6 columns, with rows labeled on the left and columns labeled on the top. Find the minimum orthogonal tile distance between the purple [#963ACA] component and the orange [#EE881A] component on the white [#FFFFFF] board.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the minimum number of orthogonal steps between the two queried colors as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "min_distance",
+      "template_id": "min_distance_v1"
+    },
+    "render_map": {
+      "anchors": {
+        "cell_0_0": {
+          "bbox": [
+            76.0,
+            59.0,
+            133.0,
+            92.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            104.5,
+            75.5
+          ]
+        },
+        "cell_0_1": {
+          "bbox": [
+            133.0,
+            59.0,
+            190.0,
+            92.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            161.5,
+            75.5
+          ]
+        },
+        "cell_0_2": {
+          "bbox": [
+            190.0,
+            59.0,
+            247.0,
+            92.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            218.5,
+            75.5
+          ]
+        },
+        "cell_0_3": {
+          "bbox": [
+            247.0,
+            59.0,
+            304.0,
+            92.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            275.5,
+            75.5
+          ]
+        },
+        "cell_0_4": {
+          "bbox": [
+            304.0,
+            59.0,
+            361.0,
+            92.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            332.5,
+            75.5
+          ]
+        },
+        "cell_0_5": {
+          "bbox": [
+            361.0,
+            59.0,
+            418.0,
+            92.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            389.5,
+            75.5
+          ]
+        },
+        "cell_1_0": {
+          "bbox": [
+            76.0,
+            92.0,
+            133.0,
+            125.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            104.5,
+            108.5
+          ]
+        },
+        "cell_1_1": {
+          "bbox": [
+            133.0,
+            92.0,
+            190.0,
+            125.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            161.5,
+            108.5
+          ]
+        },
+        "cell_1_2": {
+          "bbox": [
+            190.0,
+            92.0,
+            247.0,
+            125.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            218.5,
+            108.5
+          ]
+        },
+        "cell_1_3": {
+          "bbox": [
+            247.0,
+            92.0,
+            304.0,
+            125.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            275.5,
+            108.5
+          ]
+        },
+        "cell_1_4": {
+          "bbox": [
+            304.0,
+            92.0,
+            361.0,
+            125.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            332.5,
+            108.5
+          ]
+        },
+        "cell_1_5": {
+          "bbox": [
+            361.0,
+            92.0,
+            418.0,
+            125.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            389.5,
+            108.5
+          ]
+        },
+        "cell_2_0": {
+          "bbox": [
+            76.0,
+            125.0,
+            133.0,
+            158.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            104.5,
+            141.5
+          ]
+        },
+        "cell_2_1": {
+          "bbox": [
+            133.0,
+            125.0,
+            190.0,
+            158.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            161.5,
+            141.5
+          ]
+        },
+        "cell_2_2": {
+          "bbox": [
+            190.0,
+            125.0,
+            247.0,
+            158.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            218.5,
+            141.5
+          ]
+        },
+        "cell_2_3": {
+          "bbox": [
+            247.0,
+            125.0,
+            304.0,
+            158.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            275.5,
+            141.5
+          ]
+        },
+        "cell_2_4": {
+          "bbox": [
+            304.0,
+            125.0,
+            361.0,
+            158.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            332.5,
+            141.5
+          ]
+        },
+        "cell_2_5": {
+          "bbox": [
+            361.0,
+            125.0,
+            418.0,
+            158.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            389.5,
+            141.5
+          ]
+        },
+        "cell_3_0": {
+          "bbox": [
+            76.0,
+            158.0,
+            133.0,
+            191.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            104.5,
+            174.5
+          ]
+        },
+        "cell_3_1": {
+          "bbox": [
+            133.0,
+            158.0,
+            190.0,
+            191.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            161.5,
+            174.5
+          ]
+        },
+        "cell_3_2": {
+          "bbox": [
+            190.0,
+            158.0,
+            247.0,
+            191.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            218.5,
+            174.5
+          ]
+        },
+        "cell_3_3": {
+          "bbox": [
+            247.0,
+            158.0,
+            304.0,
+            191.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            275.5,
+            174.5
+          ]
+        },
+        "cell_3_4": {
+          "bbox": [
+            304.0,
+            158.0,
+            361.0,
+            191.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            332.5,
+            174.5
+          ]
+        },
+        "cell_3_5": {
+          "bbox": [
+            361.0,
+            158.0,
+            418.0,
+            191.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            389.5,
+            174.5
+          ]
+        },
+        "cell_4_0": {
+          "bbox": [
+            76.0,
+            191.0,
+            133.0,
+            224.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            104.5,
+            207.5
+          ]
+        },
+        "cell_4_1": {
+          "bbox": [
+            133.0,
+            191.0,
+            190.0,
+            224.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            161.5,
+            207.5
+          ]
+        },
+        "cell_4_2": {
+          "bbox": [
+            190.0,
+            191.0,
+            247.0,
+            224.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            218.5,
+            207.5
+          ]
+        },
+        "cell_4_3": {
+          "bbox": [
+            247.0,
+            191.0,
+            304.0,
+            224.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            275.5,
+            207.5
+          ]
+        },
+        "cell_4_4": {
+          "bbox": [
+            304.0,
+            191.0,
+            361.0,
+            224.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            332.5,
+            207.5
+          ]
+        },
+        "cell_4_5": {
+          "bbox": [
+            361.0,
+            191.0,
+            418.0,
+            224.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            389.5,
+            207.5
+          ]
+        },
+        "cell_5_0": {
+          "bbox": [
+            76.0,
+            224.0,
+            133.0,
+            257.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            104.5,
+            240.5
+          ]
+        },
+        "cell_5_1": {
+          "bbox": [
+            133.0,
+            224.0,
+            190.0,
+            257.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            161.5,
+            240.5
+          ]
+        },
+        "cell_5_2": {
+          "bbox": [
+            190.0,
+            224.0,
+            247.0,
+            257.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            218.5,
+            240.5
+          ]
+        },
+        "cell_5_3": {
+          "bbox": [
+            247.0,
+            224.0,
+            304.0,
+            257.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            275.5,
+            240.5
+          ]
+        },
+        "cell_5_4": {
+          "bbox": [
+            304.0,
+            224.0,
+            361.0,
+            257.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            332.5,
+            240.5
+          ]
+        },
+        "cell_5_5": {
+          "bbox": [
+            361.0,
+            224.0,
+            418.0,
+            257.0
+          ],
+          "coord_space": "pixel",
+          "point": [
+            389.5,
+            240.5
+          ]
+        }
+      },
+      "image_id": "img0"
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            246,
+            246,
+            246
+          ],
+          "kind": "solid"
+        }
+      },
+      "board_origin_px": [
+        76,
+        59
+      ],
+      "board_size_px": [
+        342,
+        198
+      ],
+      "canvas_height_px": 276,
+      "canvas_width_px": 462,
+      "cols": 6,
+      "coord_space": "tile_grid",
+      "coordinate_gutters_px": {
+        "left": 41,
+        "top": 31
+      },
+      "label_style": {
+        "font_size_px": 15,
+        "stroke_width_px": 2
+      },
+      "outer_padding_px": {
+        "x": 32,
+        "y": 19
+      },
+      "placement_offset_px": {
+        "x": 3,
+        "y": 9
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "rows": 6,
+      "tile_aspect_ratio": 1.734715,
+      "tile_height_px": 33,
+      "tile_orientation": "wide",
+      "tile_outline_width_px": 2,
+      "tile_width_px": 57,
+      "tiling_type": "rectangular_tiling"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "purple",
+            "fill_rgb": [
+              150,
+              58,
+              202
+            ],
+            "is_background": false,
+            "is_color_a": true,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 5,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 0
+          },
+          "entity_id": "cell_0_5",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "purple",
+            "fill_rgb": [
+              150,
+              58,
+              202
+            ],
+            "is_background": false,
+            "is_color_a": true,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 5,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 1
+          },
+          "entity_id": "cell_1_5",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "purple",
+            "fill_rgb": [
+              150,
+              58,
+              202
+            ],
+            "is_background": false,
+            "is_color_a": true,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 2
+          },
+          "entity_id": "cell_2_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "purple",
+            "fill_rgb": [
+              150,
+              58,
+              202
+            ],
+            "is_background": false,
+            "is_color_a": true,
+            "is_color_b": false,
+            "is_min_distance_endpoint": true,
+            "is_min_distance_path": true,
+            "row": 2
+          },
+          "entity_id": "cell_2_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": true,
+            "row": 2
+          },
+          "entity_id": "cell_2_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": true,
+            "row": 2
+          },
+          "entity_id": "cell_2_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": true,
+            "row": 2
+          },
+          "entity_id": "cell_2_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 5,
+            "color_name": "orange",
+            "fill_rgb": [
+              238,
+              136,
+              26
+            ],
+            "is_background": false,
+            "is_color_a": false,
+            "is_color_b": true,
+            "is_min_distance_endpoint": true,
+            "is_min_distance_path": true,
+            "row": 2
+          },
+          "entity_id": "cell_2_5",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "purple",
+            "fill_rgb": [
+              150,
+              58,
+              202
+            ],
+            "is_background": false,
+            "is_color_a": true,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 3
+          },
+          "entity_id": "cell_3_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 3
+          },
+          "entity_id": "cell_3_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 3
+          },
+          "entity_id": "cell_3_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 3
+          },
+          "entity_id": "cell_3_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 3
+          },
+          "entity_id": "cell_3_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 5,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 3
+          },
+          "entity_id": "cell_3_5",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 4
+          },
+          "entity_id": "cell_4_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 4
+          },
+          "entity_id": "cell_4_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 4
+          },
+          "entity_id": "cell_4_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 4
+          },
+          "entity_id": "cell_4_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 4
+          },
+          "entity_id": "cell_4_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 5,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 4
+          },
+          "entity_id": "cell_4_5",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 0,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 5
+          },
+          "entity_id": "cell_5_0",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 1,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 5
+          },
+          "entity_id": "cell_5_1",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 2,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 5
+          },
+          "entity_id": "cell_5_2",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 3,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 5
+          },
+          "entity_id": "cell_5_3",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 4,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 5
+          },
+          "entity_id": "cell_5_4",
+          "entity_type": "tile_cell"
+        },
+        {
+          "attrs": {
+            "col": 5,
+            "color_name": "white",
+            "fill_rgb": [
+              255,
+              255,
+              255
+            ],
+            "is_background": true,
+            "is_color_a": false,
+            "is_color_b": false,
+            "is_min_distance_endpoint": false,
+            "is_min_distance_path": false,
+            "row": 5
+          },
+          "entity_id": "cell_5_5",
+          "entity_type": "tile_cell"
+        }
+      ],
+      "relations": {
+        "adjacency_open": {
+          "cell_0_0": [
+            "cell_0_1",
+            "cell_1_0"
+          ],
+          "cell_0_1": [
+            "cell_0_0",
+            "cell_0_2",
+            "cell_1_1"
+          ],
+          "cell_0_2": [
+            "cell_0_1",
+            "cell_0_3",
+            "cell_1_2"
+          ],
+          "cell_0_3": [
+            "cell_0_2",
+            "cell_0_4",
+            "cell_1_3"
+          ],
+          "cell_0_4": [
+            "cell_0_3",
+            "cell_0_5",
+            "cell_1_4"
+          ],
+          "cell_0_5": [
+            "cell_0_4",
+            "cell_1_5"
+          ],
+          "cell_1_0": [
+            "cell_0_0",
+            "cell_1_1",
+            "cell_2_0"
+          ],
+          "cell_1_1": [
+            "cell_0_1",
+            "cell_1_0",
+            "cell_1_2",
+            "cell_2_1"
+          ],
+          "cell_1_2": [
+            "cell_0_2",
+            "cell_1_1",
+            "cell_1_3",
+            "cell_2_2"
+          ],
+          "cell_1_3": [
+            "cell_0_3",
+            "cell_1_2",
+            "cell_1_4",
+            "cell_2_3"
+          ],
+          "cell_1_4": [
+            "cell_0_4",
+            "cell_1_3",
+            "cell_1_5",
+            "cell_2_4"
+          ],
+          "cell_1_5": [
+            "cell_0_5",
+            "cell_1_4",
+            "cell_2_5"
+          ],
+          "cell_2_0": [
+            "cell_1_0",
+            "cell_2_1",
+            "cell_3_0"
+          ],
+          "cell_2_1": [
+            "cell_1_1",
+            "cell_2_0",
+            "cell_2_2",
+            "cell_3_1"
+          ],
+          "cell_2_2": [
+            "cell_1_2",
+            "cell_2_1",
+            "cell_2_3",
+            "cell_3_2"
+          ],
+          "cell_2_3": [
+            "cell_1_3",
+            "cell_2_2",
+            "cell_2_4",
+            "cell_3_3"
+          ],
+          "cell_2_4": [
+            "cell_1_4",
+            "cell_2_3",
+            "cell_2_5",
+            "cell_3_4"
+          ],
+          "cell_2_5": [
+            "cell_1_5",
+            "cell_2_4",
+            "cell_3_5"
+          ],
+          "cell_3_0": [
+            "cell_2_0",
+            "cell_3_1",
+            "cell_4_0"
+          ],
+          "cell_3_1": [
+            "cell_2_1",
+            "cell_3_0",
+            "cell_3_2",
+            "cell_4_1"
+          ],
+          "cell_3_2": [
+            "cell_2_2",
+            "cell_3_1",
+            "cell_3_3",
+            "cell_4_2"
+          ],
+          "cell_3_3": [
+            "cell_2_3",
+            "cell_3_2",
+            "cell_3_4",
+            "cell_4_3"
+          ],
+          "cell_3_4": [
+            "cell_2_4",
+            "cell_3_3",
+            "cell_3_5",
+            "cell_4_4"
+          ],
+          "cell_3_5": [
+            "cell_2_5",
+            "cell_3_4",
+            "cell_4_5"
+          ],
+          "cell_4_0": [
+            "cell_3_0",
+            "cell_4_1",
+            "cell_5_0"
+          ],
+          "cell_4_1": [
+            "cell_3_1",
+            "cell_4_0",
+            "cell_4_2",
+            "cell_5_1"
+          ],
+          "cell_4_2": [
+            "cell_3_2",
+            "cell_4_1",
+            "cell_4_3",
+            "cell_5_2"
+          ],
+          "cell_4_3": [
+            "cell_3_3",
+            "cell_4_2",
+            "cell_4_4",
+            "cell_5_3"
+          ],
+          "cell_4_4": [
+            "cell_3_4",
+            "cell_4_3",
+            "cell_4_5",
+            "cell_5_4"
+          ],
+          "cell_4_5": [
+            "cell_3_5",
+            "cell_4_4",
+            "cell_5_5"
+          ],
+          "cell_5_0": [
+            "cell_4_0",
+            "cell_5_1"
+          ],
+          "cell_5_1": [
+            "cell_4_1",
+            "cell_5_0",
+            "cell_5_2"
+          ],
+          "cell_5_2": [
+            "cell_4_2",
+            "cell_5_1",
+            "cell_5_3"
+          ],
+          "cell_5_3": [
+            "cell_4_3",
+            "cell_5_2",
+            "cell_5_4"
+          ],
+          "cell_5_4": [
+            "cell_4_4",
+            "cell_5_3",
+            "cell_5_5"
+          ],
+          "cell_5_5": [
+            "cell_4_5",
+            "cell_5_4"
+          ]
+        }
+      },
+      "scene_kind": "rectangular_tile_min_distance_board"
+    },
+    "witness_symbolic": {
+      "ids": [
+        "cell_2_1",
+        "cell_2_2",
+        "cell_2_3",
+        "cell_2_4",
+        "cell_2_5"
+      ],
+      "type": "id_path"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

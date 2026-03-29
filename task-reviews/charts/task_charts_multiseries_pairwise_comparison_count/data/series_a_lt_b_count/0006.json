@@ -1,0 +1,1584 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 4
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "C",
+      "E",
+      "G",
+      "L"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_multiseries_pairwise_comparison_count/images/series_a_lt_b_count/0006.png"
+  },
+  "instance_seed": 3545718198985953,
+  "prompt": "Use the chart in the image. It shows a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Determine how many category labels satisfy the requested pairwise series comparison. How many labeled categories have Ivah under Rima?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the chart in the image. It shows a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Determine how many category labels satisfy the requested pairwise series comparison. How many labeled categories have Ivah under Rima?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+    "answer_only": "Use the chart in the image. It shows a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Determine how many category labels satisfy the requested pairwise series comparison. How many labeled categories have Ivah under Rima?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_charts_multiseries_pairwise_comparison_count",
+  "task_variant": "series_a_lt_b_count",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 4,
+      "category_count": 8,
+      "category_count_range": [
+        5,
+        10
+      ],
+      "category_labels": [
+        "F",
+        "N",
+        "C",
+        "A",
+        "L",
+        "K",
+        "E",
+        "G"
+      ],
+      "comparison": "less_than",
+      "evidence_labels": [
+        "C",
+        "E",
+        "G",
+        "L"
+      ],
+      "left_series_label": "Ivah",
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb_palette",
+      "queried_series_labels": [
+        "Ivah",
+        "Rima"
+      ],
+      "question_format": "numeric_open",
+      "right_series_label": "Rima",
+      "scene_variant": "multi_line",
+      "scene_variant_probabilities": {
+        "grouped_bar": 0.25,
+        "grouped_horizontal_bar": 0.25,
+        "grouped_lollipop": 0.25,
+        "multi_line": 0.25
+      },
+      "series_count": 3,
+      "series_count_range": [
+        2,
+        3
+      ],
+      "series_fill_palette_rgb": [
+        [
+          52,
+          148,
+          214
+        ],
+        [
+          7,
+          110,
+          96
+        ],
+        [
+          115,
+          47,
+          45
+        ]
+      ],
+      "series_labels": [
+        "Ivah",
+        "Rima",
+        "Bork"
+      ],
+      "series_outline_palette_rgb": [
+        [
+          29,
+          81,
+          118
+        ],
+        [
+          4,
+          61,
+          53
+        ],
+        [
+          63,
+          26,
+          25
+        ]
+      ],
+      "target_answer": 4,
+      "target_answer_range": [
+        0,
+        8
+      ],
+      "task_variant": "series_a_lt_b_count",
+      "task_variant_probabilities": {
+        "series_a_gt_b_count": 0.5,
+        "series_a_lt_b_count": 0.5
+      },
+      "values_by_category": {
+        "A": {
+          "Bork": 5,
+          "Ivah": 13,
+          "Rima": 3
+        },
+        "C": {
+          "Bork": 2,
+          "Ivah": 1,
+          "Rima": 3
+        },
+        "E": {
+          "Bork": 16,
+          "Ivah": 6,
+          "Rima": 18
+        },
+        "F": {
+          "Bork": 16,
+          "Ivah": 19,
+          "Rima": 8
+        },
+        "G": {
+          "Bork": 12,
+          "Ivah": 3,
+          "Rima": 13
+        },
+        "K": {
+          "Bork": 17,
+          "Ivah": 20,
+          "Rima": 5
+        },
+        "L": {
+          "Bork": 7,
+          "Ivah": 2,
+          "Rima": 13
+        },
+        "N": {
+          "Bork": 15,
+          "Ivah": 16,
+          "Rima": 3
+        }
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          322.125,
+          450.857,
+          338.125,
+          562.0
+        ],
+        [
+          703.125,
+          105.143,
+          719.125,
+          562.0
+        ],
+        [
+          797.375,
+          220.381,
+          815.375,
+          562.0
+        ],
+        [
+          512.625,
+          220.381,
+          528.625,
+          562.0
+        ]
+      ],
+      "label_set": [
+        "C",
+        "E",
+        "G",
+        "L"
+      ],
+      "pixel_point_map": {
+        "C": [
+          330.125,
+          554.0
+        ],
+        "E": [
+          711.125,
+          554.0
+        ],
+        "G": [
+          806.375,
+          554.0
+        ],
+        "L": [
+          520.625,
+          554.0
+        ]
+      },
+      "pixel_point_set": [
+        [
+          330.125,
+          554.0
+        ],
+        [
+          711.125,
+          554.0
+        ],
+        [
+          806.375,
+          554.0
+        ],
+        [
+          520.625,
+          554.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "category_count": 8,
+        "category_count_range": [
+          5,
+          10
+        ],
+        "comparison": "less_than",
+        "queried_series_labels": [
+          "Ivah",
+          "Rima"
+        ],
+        "scene_variant": "multi_line",
+        "scene_variant_probabilities": {
+          "grouped_bar": 0.25,
+          "grouped_horizontal_bar": 0.25,
+          "grouped_lollipop": 0.25,
+          "multi_line": 0.25
+        },
+        "series_count": 3,
+        "series_count_range": [
+          2,
+          3
+        ],
+        "target_answer": 4,
+        "target_answer_range": [
+          0,
+          8
+        ],
+        "task_variant": "series_a_lt_b_count",
+        "task_variant_probabilities": {
+          "series_a_gt_b_count": 0.5,
+          "series_a_lt_b_count": 0.5
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "charts_multiseries_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+          "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "left_series": "Ivah",
+          "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+          "right_series": "Rima"
+        },
+        "task_family_key": "multiseries_chart_comparison",
+        "task_family_variant_index": 1,
+        "task_key": "pairwise_comparison_count_query",
+        "task_variant_index": 2,
+        "task_variant_key": "series_a_lt_b_count",
+        "task_variant_template_index": 2,
+        "template_paths": [
+          "charts/multiseries/charts_multiseries_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:pairwise_comparison_count_query": 5,
+          "task_family:multiseries_chart_comparison": 5,
+          "task_variant:series_a_lt_b_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+              "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Ivah",
+              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+              "right_series": "Rima"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 1,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 2,
+            "task_variant_key": "series_a_lt_b_count",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_lt_b_count": 5
+            }
+          },
+          "prompt": "Use the chart in the image. It shows a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Determine how many category labels satisfy the requested pairwise series comparison. How many labeled categories have Ivah under Rima?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series.\nAnswer: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"evidence\":[\"A\",\"T\"],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "charts_multiseries_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the category labels where the first queried series is lower than the second queried series",
+              "json_example": "{\"evidence\":[\"A\",\"T\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "left_series": "Ivah",
+              "object_description": "a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis",
+              "right_series": "Rima"
+            },
+            "task_family_key": "multiseries_chart_comparison",
+            "task_family_variant_index": 1,
+            "task_key": "pairwise_comparison_count_query",
+            "task_variant_index": 2,
+            "task_variant_key": "series_a_lt_b_count",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "charts/multiseries/charts_multiseries_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:pairwise_comparison_count_query": 5,
+              "task_family:multiseries_chart_comparison": 5,
+              "task_variant:series_a_lt_b_count": 5
+            }
+          },
+          "prompt": "Use the chart in the image. It shows a multi-line chart with labeled categories on the horizontal axis and a legend on the right. Each colored series has one point per category, and the relevant values are the points' y-values on the vertical axis. Determine how many category labels satisfy the requested pairwise series comparison. How many labeled categories have Ivah under Rima?\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the number of category labels satisfying the requested series comparison as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "series_a_lt_b_count",
+      "template_id": "charts_multiseries_v1"
+    },
+    "render_map": {
+      "category_label_centers_px": {
+        "A": [
+          425.375,
+          554.0
+        ],
+        "C": [
+          330.125,
+          554.0
+        ],
+        "E": [
+          711.125,
+          554.0
+        ],
+        "F": [
+          139.625,
+          554.0
+        ],
+        "G": [
+          806.375,
+          554.0
+        ],
+        "K": [
+          615.875,
+          554.0
+        ],
+        "L": [
+          520.625,
+          554.0
+        ],
+        "N": [
+          234.875,
+          554.0
+        ]
+      },
+      "image_id": "img0",
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 620,
+      "canvas_width": 1100,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "sampling_policy": "random_rgb_palette",
+        "series_fill_palette_rgb": [
+          [
+            52,
+            148,
+            214
+          ],
+          [
+            7,
+            110,
+            96
+          ],
+          [
+            115,
+            47,
+            45
+          ]
+        ],
+        "series_outline_palette_rgb": [
+          [
+            29,
+            81,
+            118
+          ],
+          [
+            4,
+            61,
+            53
+          ],
+          [
+            63,
+            26,
+            25
+          ]
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        854,
+        528
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "multi_line",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 21,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              131.625,
+              82.095,
+              147.625,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              139.625,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              131.625,
+              82.095,
+              147.625,
+              98.095
+            ],
+            "mark_center_px": [
+              139.625,
+              90.095
+            ],
+            "mark_fill_rgb": [
+              52,
+              148,
+              214
+            ],
+            "mark_outline_rgb": [
+              29,
+              81,
+              118
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Ivah",
+            "series_rank": 0,
+            "value": 19
+          },
+          "entity_id": "mark_F_Ivah",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              131.625,
+              82.095,
+              147.625,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              139.625,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              131.625,
+              335.619,
+              147.625,
+              351.619
+            ],
+            "mark_center_px": [
+              139.625,
+              343.619
+            ],
+            "mark_fill_rgb": [
+              7,
+              110,
+              96
+            ],
+            "mark_outline_rgb": [
+              4,
+              61,
+              53
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Rima",
+            "series_rank": 1,
+            "value": 8
+          },
+          "entity_id": "mark_F_Rima",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              131.625,
+              82.095,
+              147.625,
+              562.0
+            ],
+            "category_label": "F",
+            "category_label_center_px": [
+              139.625,
+              554.0
+            ],
+            "category_rank": 0,
+            "mark_bbox_px": [
+              131.625,
+              151.238,
+              147.625,
+              167.238
+            ],
+            "mark_center_px": [
+              139.625,
+              159.238
+            ],
+            "mark_fill_rgb": [
+              115,
+              47,
+              45
+            ],
+            "mark_outline_rgb": [
+              63,
+              26,
+              25
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Bork",
+            "series_rank": 2,
+            "value": 16
+          },
+          "entity_id": "mark_F_Bork",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              225.875,
+              151.238,
+              243.875,
+              562.0
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              234.875,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              226.875,
+              151.238,
+              242.875,
+              167.238
+            ],
+            "mark_center_px": [
+              234.875,
+              159.238
+            ],
+            "mark_fill_rgb": [
+              52,
+              148,
+              214
+            ],
+            "mark_outline_rgb": [
+              29,
+              81,
+              118
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Ivah",
+            "series_rank": 0,
+            "value": 16
+          },
+          "entity_id": "mark_N_Ivah",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              225.875,
+              151.238,
+              243.875,
+              562.0
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              234.875,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              226.875,
+              450.857,
+              242.875,
+              466.857
+            ],
+            "mark_center_px": [
+              234.875,
+              458.857
+            ],
+            "mark_fill_rgb": [
+              7,
+              110,
+              96
+            ],
+            "mark_outline_rgb": [
+              4,
+              61,
+              53
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Rima",
+            "series_rank": 1,
+            "value": 3
+          },
+          "entity_id": "mark_N_Rima",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              225.875,
+              151.238,
+              243.875,
+              562.0
+            ],
+            "category_label": "N",
+            "category_label_center_px": [
+              234.875,
+              554.0
+            ],
+            "category_rank": 1,
+            "mark_bbox_px": [
+              226.875,
+              174.286,
+              242.875,
+              190.286
+            ],
+            "mark_center_px": [
+              234.875,
+              182.286
+            ],
+            "mark_fill_rgb": [
+              115,
+              47,
+              45
+            ],
+            "mark_outline_rgb": [
+              63,
+              26,
+              25
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Bork",
+            "series_rank": 2,
+            "value": 15
+          },
+          "entity_id": "mark_N_Bork",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              322.125,
+              450.857,
+              338.125,
+              562.0
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              330.125,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              322.125,
+              496.952,
+              338.125,
+              512.952
+            ],
+            "mark_center_px": [
+              330.125,
+              504.952
+            ],
+            "mark_fill_rgb": [
+              52,
+              148,
+              214
+            ],
+            "mark_outline_rgb": [
+              29,
+              81,
+              118
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Ivah",
+            "series_rank": 0,
+            "value": 1
+          },
+          "entity_id": "mark_C_Ivah",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              322.125,
+              450.857,
+              338.125,
+              562.0
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              330.125,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              322.125,
+              450.857,
+              338.125,
+              466.857
+            ],
+            "mark_center_px": [
+              330.125,
+              458.857
+            ],
+            "mark_fill_rgb": [
+              7,
+              110,
+              96
+            ],
+            "mark_outline_rgb": [
+              4,
+              61,
+              53
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Rima",
+            "series_rank": 1,
+            "value": 3
+          },
+          "entity_id": "mark_C_Rima",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              322.125,
+              450.857,
+              338.125,
+              562.0
+            ],
+            "category_label": "C",
+            "category_label_center_px": [
+              330.125,
+              554.0
+            ],
+            "category_rank": 2,
+            "mark_bbox_px": [
+              322.125,
+              473.905,
+              338.125,
+              489.905
+            ],
+            "mark_center_px": [
+              330.125,
+              481.905
+            ],
+            "mark_fill_rgb": [
+              115,
+              47,
+              45
+            ],
+            "mark_outline_rgb": [
+              63,
+              26,
+              25
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Bork",
+            "series_rank": 2,
+            "value": 2
+          },
+          "entity_id": "mark_C_Bork",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              416.875,
+              220.381,
+              433.875,
+              562.0
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              425.375,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              417.375,
+              220.381,
+              433.375,
+              236.381
+            ],
+            "mark_center_px": [
+              425.375,
+              228.381
+            ],
+            "mark_fill_rgb": [
+              52,
+              148,
+              214
+            ],
+            "mark_outline_rgb": [
+              29,
+              81,
+              118
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Ivah",
+            "series_rank": 0,
+            "value": 13
+          },
+          "entity_id": "mark_A_Ivah",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              416.875,
+              220.381,
+              433.875,
+              562.0
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              425.375,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              417.375,
+              450.857,
+              433.375,
+              466.857
+            ],
+            "mark_center_px": [
+              425.375,
+              458.857
+            ],
+            "mark_fill_rgb": [
+              7,
+              110,
+              96
+            ],
+            "mark_outline_rgb": [
+              4,
+              61,
+              53
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Rima",
+            "series_rank": 1,
+            "value": 3
+          },
+          "entity_id": "mark_A_Rima",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              416.875,
+              220.381,
+              433.875,
+              562.0
+            ],
+            "category_label": "A",
+            "category_label_center_px": [
+              425.375,
+              554.0
+            ],
+            "category_rank": 3,
+            "mark_bbox_px": [
+              417.375,
+              404.762,
+              433.375,
+              420.762
+            ],
+            "mark_center_px": [
+              425.375,
+              412.762
+            ],
+            "mark_fill_rgb": [
+              115,
+              47,
+              45
+            ],
+            "mark_outline_rgb": [
+              63,
+              26,
+              25
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Bork",
+            "series_rank": 2,
+            "value": 5
+          },
+          "entity_id": "mark_A_Bork",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              512.625,
+              220.381,
+              528.625,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              520.625,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              512.625,
+              473.905,
+              528.625,
+              489.905
+            ],
+            "mark_center_px": [
+              520.625,
+              481.905
+            ],
+            "mark_fill_rgb": [
+              52,
+              148,
+              214
+            ],
+            "mark_outline_rgb": [
+              29,
+              81,
+              118
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Ivah",
+            "series_rank": 0,
+            "value": 2
+          },
+          "entity_id": "mark_L_Ivah",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              512.625,
+              220.381,
+              528.625,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              520.625,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              512.625,
+              220.381,
+              528.625,
+              236.381
+            ],
+            "mark_center_px": [
+              520.625,
+              228.381
+            ],
+            "mark_fill_rgb": [
+              7,
+              110,
+              96
+            ],
+            "mark_outline_rgb": [
+              4,
+              61,
+              53
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Rima",
+            "series_rank": 1,
+            "value": 13
+          },
+          "entity_id": "mark_L_Rima",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              512.625,
+              220.381,
+              528.625,
+              562.0
+            ],
+            "category_label": "L",
+            "category_label_center_px": [
+              520.625,
+              554.0
+            ],
+            "category_rank": 4,
+            "mark_bbox_px": [
+              512.625,
+              358.667,
+              528.625,
+              374.667
+            ],
+            "mark_center_px": [
+              520.625,
+              366.667
+            ],
+            "mark_fill_rgb": [
+              115,
+              47,
+              45
+            ],
+            "mark_outline_rgb": [
+              63,
+              26,
+              25
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Bork",
+            "series_rank": 2,
+            "value": 7
+          },
+          "entity_id": "mark_L_Bork",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              606.875,
+              59.048,
+              624.875,
+              562.0
+            ],
+            "category_label": "K",
+            "category_label_center_px": [
+              615.875,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              607.875,
+              59.048,
+              623.875,
+              75.048
+            ],
+            "mark_center_px": [
+              615.875,
+              67.048
+            ],
+            "mark_fill_rgb": [
+              52,
+              148,
+              214
+            ],
+            "mark_outline_rgb": [
+              29,
+              81,
+              118
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Ivah",
+            "series_rank": 0,
+            "value": 20
+          },
+          "entity_id": "mark_K_Ivah",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              606.875,
+              59.048,
+              624.875,
+              562.0
+            ],
+            "category_label": "K",
+            "category_label_center_px": [
+              615.875,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              607.875,
+              404.762,
+              623.875,
+              420.762
+            ],
+            "mark_center_px": [
+              615.875,
+              412.762
+            ],
+            "mark_fill_rgb": [
+              7,
+              110,
+              96
+            ],
+            "mark_outline_rgb": [
+              4,
+              61,
+              53
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Rima",
+            "series_rank": 1,
+            "value": 5
+          },
+          "entity_id": "mark_K_Rima",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              606.875,
+              59.048,
+              624.875,
+              562.0
+            ],
+            "category_label": "K",
+            "category_label_center_px": [
+              615.875,
+              554.0
+            ],
+            "category_rank": 5,
+            "mark_bbox_px": [
+              607.875,
+              128.19,
+              623.875,
+              144.19
+            ],
+            "mark_center_px": [
+              615.875,
+              136.19
+            ],
+            "mark_fill_rgb": [
+              115,
+              47,
+              45
+            ],
+            "mark_outline_rgb": [
+              63,
+              26,
+              25
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Bork",
+            "series_rank": 2,
+            "value": 17
+          },
+          "entity_id": "mark_K_Bork",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              703.125,
+              105.143,
+              719.125,
+              562.0
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              711.125,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              703.125,
+              381.714,
+              719.125,
+              397.714
+            ],
+            "mark_center_px": [
+              711.125,
+              389.714
+            ],
+            "mark_fill_rgb": [
+              52,
+              148,
+              214
+            ],
+            "mark_outline_rgb": [
+              29,
+              81,
+              118
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Ivah",
+            "series_rank": 0,
+            "value": 6
+          },
+          "entity_id": "mark_E_Ivah",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              703.125,
+              105.143,
+              719.125,
+              562.0
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              711.125,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              703.125,
+              105.143,
+              719.125,
+              121.143
+            ],
+            "mark_center_px": [
+              711.125,
+              113.143
+            ],
+            "mark_fill_rgb": [
+              7,
+              110,
+              96
+            ],
+            "mark_outline_rgb": [
+              4,
+              61,
+              53
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Rima",
+            "series_rank": 1,
+            "value": 18
+          },
+          "entity_id": "mark_E_Rima",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              703.125,
+              105.143,
+              719.125,
+              562.0
+            ],
+            "category_label": "E",
+            "category_label_center_px": [
+              711.125,
+              554.0
+            ],
+            "category_rank": 6,
+            "mark_bbox_px": [
+              703.125,
+              151.238,
+              719.125,
+              167.238
+            ],
+            "mark_center_px": [
+              711.125,
+              159.238
+            ],
+            "mark_fill_rgb": [
+              115,
+              47,
+              45
+            ],
+            "mark_outline_rgb": [
+              63,
+              26,
+              25
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Bork",
+            "series_rank": 2,
+            "value": 16
+          },
+          "entity_id": "mark_E_Bork",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              797.375,
+              220.381,
+              815.375,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              806.375,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              798.375,
+              450.857,
+              814.375,
+              466.857
+            ],
+            "mark_center_px": [
+              806.375,
+              458.857
+            ],
+            "mark_fill_rgb": [
+              52,
+              148,
+              214
+            ],
+            "mark_outline_rgb": [
+              29,
+              81,
+              118
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Ivah",
+            "series_rank": 0,
+            "value": 3
+          },
+          "entity_id": "mark_G_Ivah",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              797.375,
+              220.381,
+              815.375,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              806.375,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              798.375,
+              220.381,
+              814.375,
+              236.381
+            ],
+            "mark_center_px": [
+              806.375,
+              228.381
+            ],
+            "mark_fill_rgb": [
+              7,
+              110,
+              96
+            ],
+            "mark_outline_rgb": [
+              4,
+              61,
+              53
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Rima",
+            "series_rank": 1,
+            "value": 13
+          },
+          "entity_id": "mark_G_Rima",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "category_group_bbox_px": [
+              797.375,
+              220.381,
+              815.375,
+              562.0
+            ],
+            "category_label": "G",
+            "category_label_center_px": [
+              806.375,
+              554.0
+            ],
+            "category_rank": 7,
+            "mark_bbox_px": [
+              798.375,
+              243.429,
+              814.375,
+              259.429
+            ],
+            "mark_center_px": [
+              806.375,
+              251.429
+            ],
+            "mark_fill_rgb": [
+              115,
+              47,
+              45
+            ],
+            "mark_outline_rgb": [
+              63,
+              26,
+              25
+            ],
+            "scene_variant": "multi_line",
+            "series_label": "Bork",
+            "series_rank": 2,
+            "value": 12
+          },
+          "entity_id": "mark_G_Bork",
+          "entity_type": "point"
+        }
+      ],
+      "relations": {
+        "comparison": "less_than",
+        "evidence_labels": [
+          "C",
+          "E",
+          "G",
+          "L"
+        ],
+        "queried_series_labels": [
+          "Ivah",
+          "Rima"
+        ],
+        "scene_variant": "multi_line",
+        "task_variant": "series_a_lt_b_count"
+      },
+      "scene_kind": "chart_multi_line_multiseries"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "C",
+        "E",
+        "G",
+        "L"
+      ],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

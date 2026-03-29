@@ -1,0 +1,647 @@
+{
+  "answer_gt": {
+    "type": "option_letter",
+    "value": "V"
+  },
+  "evidence_gt": {
+    "type": "integer",
+    "value": 6
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_statistics_summary_label/images/argmin/0000.png"
+  },
+  "instance_seed": 1125487927406769,
+  "prompt": "The image shows a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the chart values and name the matching label. Find the label of the minimum-value mark.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to the minimum value as an integer.\nAnswer requirement: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":2,\"answer\":\"B\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "The image shows a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the chart values and name the matching label. Find the label of the minimum-value mark.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to the minimum value as an integer.\nAnswer requirement: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":2,\"answer\":\"B\"}",
+    "answer_only": "The image shows a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the chart values and name the matching label. Find the label of the minimum-value mark.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"answer\":\"B\"}"
+  },
+  "task": "task_charts_statistics_summary_label",
+  "task_variant": "argmin",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_label": "V",
+      "evidence_value": 6,
+      "labels": [
+        "G",
+        "V",
+        "T",
+        "N",
+        "J",
+        "Y",
+        "R"
+      ],
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb",
+      "mark_count": 7,
+      "mark_count_range": [
+        5,
+        10
+      ],
+      "mark_fill_rgb": [
+        188,
+        31,
+        90
+      ],
+      "mark_outline_rgb": [
+        103,
+        17,
+        50
+      ],
+      "question_format": "label_open",
+      "scene_variant": "dot_plot",
+      "scene_variant_probabilities": {
+        "area": 0.1,
+        "bar": 0.1,
+        "donut": 0.1,
+        "dot_plot": 0.1,
+        "horizontal_bar": 0.1,
+        "line": 0.1,
+        "lollipop": 0.1,
+        "pie": 0.1,
+        "radar": 0.1,
+        "scatter": 0.1
+      },
+      "statistic_kind": "min",
+      "target_answer": 6,
+      "target_answer_range": [
+        1,
+        8
+      ],
+      "task_variant": "argmin",
+      "task_variant_probabilities": {
+        "argmax": 0.3333333333333333,
+        "argmin": 0.3333333333333333,
+        "median_label": 0.3333333333333333
+      },
+      "value_max": 20,
+      "value_min": 1,
+      "values": [
+        13,
+        6,
+        9,
+        18,
+        11,
+        16,
+        11
+      ],
+      "values_by_label": {
+        "G": 13,
+        "J": 11,
+        "N": 18,
+        "R": 11,
+        "T": 9,
+        "V": 6,
+        "Y": 16
+      },
+      "winning_label": "V"
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          225.857,
+          353.474,
+          241.857,
+          369.474
+        ]
+      ],
+      "integer": 6,
+      "pixel_point_map": {
+        "V": [
+          233.857,
+          361.474
+        ]
+      },
+      "pixel_point_set": [
+        [
+          233.857,
+          361.474
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "mark_count": 7,
+        "scene_variant": "dot_plot",
+        "scene_variant_probabilities": {
+          "area": 0.1,
+          "bar": 0.1,
+          "donut": 0.1,
+          "dot_plot": 0.1,
+          "horizontal_bar": 0.1,
+          "line": 0.1,
+          "lollipop": 0.1,
+          "pie": 0.1,
+          "radar": 0.1,
+          "scatter": 0.1
+        },
+        "statistic_kind": "min",
+        "target_answer": 6,
+        "target_answer_range": [
+          1,
+          8
+        ],
+        "task_variant": "argmin",
+        "task_variant_probabilities": {
+          "argmax": 0.3333333333333333,
+          "argmin": 0.3333333333333333,
+          "median_label": 0.3333333333333333
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "charts_statistics_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the single uppercase label of the requested mark",
+          "evidence_hint": "set \"evidence\" to the minimum value as an integer",
+          "json_example": "{\"evidence\":2,\"answer\":\"B\"}",
+          "json_example_answer_only": "{\"answer\":\"B\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+        },
+        "task_family_key": "labeled_chart_statistics",
+        "task_family_variant_index": 0,
+        "task_key": "summary_label_query",
+        "task_variant_index": 4,
+        "task_variant_key": "argmin",
+        "task_variant_template_index": 1,
+        "template_paths": [
+          "charts/statistics/charts_statistics_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:summary_label_query": 5,
+          "task_family:labeled_chart_statistics": 5,
+          "task_variant:argmin": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "charts_statistics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single uppercase label of the requested mark",
+              "evidence_hint": "set \"evidence\" to the minimum value as an integer",
+              "json_example": "{\"evidence\":2,\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+            },
+            "task_family_key": "labeled_chart_statistics",
+            "task_family_variant_index": 0,
+            "task_key": "summary_label_query",
+            "task_variant_index": 4,
+            "task_variant_key": "argmin",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/statistics/charts_statistics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:summary_label_query": 5,
+              "task_family:labeled_chart_statistics": 5,
+              "task_variant:argmin": 5
+            }
+          },
+          "prompt": "The image shows a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the chart values and name the matching label. Find the label of the minimum-value mark.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to the minimum value as an integer.\nAnswer requirement: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"evidence\":2,\"answer\":\"B\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "charts_statistics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the single uppercase label of the requested mark",
+              "evidence_hint": "set \"evidence\" to the minimum value as an integer",
+              "json_example": "{\"evidence\":2,\"answer\":\"B\"}",
+              "json_example_answer_only": "{\"answer\":\"B\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+            },
+            "task_family_key": "labeled_chart_statistics",
+            "task_family_variant_index": 0,
+            "task_key": "summary_label_query",
+            "task_variant_index": 4,
+            "task_variant_key": "argmin",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "charts/statistics/charts_statistics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:summary_label_query": 5,
+              "task_family:labeled_chart_statistics": 5,
+              "task_variant:argmin": 5
+            }
+          },
+          "prompt": "The image shows a labeled dot plot. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the chart values and name the matching label. Find the label of the minimum-value mark.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the single uppercase label of the requested mark.\nExample JSON:\n{\"answer\":\"B\"}"
+        }
+      },
+      "task_variant": "argmin",
+      "template_id": "charts_statistics_v1"
+    },
+    "render_map": {
+      "image_id": "img0",
+      "label_centers_px": {
+        "G": [
+          139.286,
+          168.526
+        ],
+        "J": [
+          517.571,
+          217.368
+        ],
+        "N": [
+          423.0,
+          46.421
+        ],
+        "R": [
+          706.714,
+          217.368
+        ],
+        "T": [
+          328.429,
+          266.211
+        ],
+        "V": [
+          233.857,
+          339.474
+        ],
+        "Y": [
+          612.143,
+          95.263
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 600,
+      "canvas_width": 800,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "mark_fill_rgb": [
+          188,
+          31,
+          90
+        ],
+        "mark_outline_rgb": [
+          103,
+          17,
+          50
+        ],
+        "sampling_policy": "random_rgb"
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "dot_plot",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 19,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "label": "G",
+            "label_center_px": [
+              139.286,
+              168.526
+            ],
+            "mark_bbox_px": [
+              131.286,
+              182.526,
+              147.286,
+              198.526
+            ],
+            "mark_center_px": [
+              139.286,
+              190.526
+            ],
+            "mark_fill_rgb": [
+              188,
+              31,
+              90
+            ],
+            "mark_outline_rgb": [
+              103,
+              17,
+              50
+            ],
+            "scene_variant": "dot_plot",
+            "value": 13,
+            "x_rank": 0
+          },
+          "entity_id": "mark_G",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "V",
+            "label_center_px": [
+              233.857,
+              339.474
+            ],
+            "mark_bbox_px": [
+              225.857,
+              353.474,
+              241.857,
+              369.474
+            ],
+            "mark_center_px": [
+              233.857,
+              361.474
+            ],
+            "mark_fill_rgb": [
+              188,
+              31,
+              90
+            ],
+            "mark_outline_rgb": [
+              103,
+              17,
+              50
+            ],
+            "scene_variant": "dot_plot",
+            "value": 6,
+            "x_rank": 1
+          },
+          "entity_id": "mark_V",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "T",
+            "label_center_px": [
+              328.429,
+              266.211
+            ],
+            "mark_bbox_px": [
+              320.429,
+              280.211,
+              336.429,
+              296.211
+            ],
+            "mark_center_px": [
+              328.429,
+              288.211
+            ],
+            "mark_fill_rgb": [
+              188,
+              31,
+              90
+            ],
+            "mark_outline_rgb": [
+              103,
+              17,
+              50
+            ],
+            "scene_variant": "dot_plot",
+            "value": 9,
+            "x_rank": 2
+          },
+          "entity_id": "mark_T",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "N",
+            "label_center_px": [
+              423.0,
+              46.421
+            ],
+            "mark_bbox_px": [
+              415.0,
+              60.421,
+              431.0,
+              76.421
+            ],
+            "mark_center_px": [
+              423.0,
+              68.421
+            ],
+            "mark_fill_rgb": [
+              188,
+              31,
+              90
+            ],
+            "mark_outline_rgb": [
+              103,
+              17,
+              50
+            ],
+            "scene_variant": "dot_plot",
+            "value": 18,
+            "x_rank": 3
+          },
+          "entity_id": "mark_N",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "J",
+            "label_center_px": [
+              517.571,
+              217.368
+            ],
+            "mark_bbox_px": [
+              509.571,
+              231.368,
+              525.571,
+              247.368
+            ],
+            "mark_center_px": [
+              517.571,
+              239.368
+            ],
+            "mark_fill_rgb": [
+              188,
+              31,
+              90
+            ],
+            "mark_outline_rgb": [
+              103,
+              17,
+              50
+            ],
+            "scene_variant": "dot_plot",
+            "value": 11,
+            "x_rank": 4
+          },
+          "entity_id": "mark_J",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "Y",
+            "label_center_px": [
+              612.143,
+              95.263
+            ],
+            "mark_bbox_px": [
+              604.143,
+              109.263,
+              620.143,
+              125.263
+            ],
+            "mark_center_px": [
+              612.143,
+              117.263
+            ],
+            "mark_fill_rgb": [
+              188,
+              31,
+              90
+            ],
+            "mark_outline_rgb": [
+              103,
+              17,
+              50
+            ],
+            "scene_variant": "dot_plot",
+            "value": 16,
+            "x_rank": 5
+          },
+          "entity_id": "mark_Y",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "R",
+            "label_center_px": [
+              706.714,
+              217.368
+            ],
+            "mark_bbox_px": [
+              698.714,
+              231.368,
+              714.714,
+              247.368
+            ],
+            "mark_center_px": [
+              706.714,
+              239.368
+            ],
+            "mark_fill_rgb": [
+              188,
+              31,
+              90
+            ],
+            "mark_outline_rgb": [
+              103,
+              17,
+              50
+            ],
+            "scene_variant": "dot_plot",
+            "value": 11,
+            "x_rank": 6
+          },
+          "entity_id": "mark_R",
+          "entity_type": "point"
+        }
+      ],
+      "relations": {
+        "answer_label": "V",
+        "evidence_value": 6,
+        "scene_variant": "dot_plot",
+        "statistic_kind": "min",
+        "task_variant": "argmin"
+      },
+      "scene_kind": "chart_dot_plot_statistics"
+    },
+    "witness_symbolic": {
+      "type": "integer",
+      "value": 6
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

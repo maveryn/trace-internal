@@ -1,0 +1,77 @@
+{
+  "bundle_id": "puzzles_spatial_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "spatial_fold_hole_puzzle": [
+      "The image shows {object_description}.",
+      "Look at the folded-paper puzzle in the image: {object_description}.",
+      "You are given {object_description}.",
+      "Work from the fold-and-hole puzzle shown in the image: {object_description}.",
+      "Use the folded-paper diagram and labeled options in the image: {object_description}."
+    ]
+  },
+  "task_templates": {
+    "unfold_query": [
+      "Choose the correct unfolded-paper option.",
+      "Determine which labeled option is correct after the paper is unfolded.",
+      "Use the fold steps to identify the correct image option.",
+      "Find the labeled option that shows the unfolded paper.",
+      "Work from the fold diagram and choose the correct option."
+    ]
+  },
+  "task_variant_templates": {
+    "single_fold_single_hole": [
+      "Which option shows the paper after it is unfolded? Answer with the option letter.",
+      "Select the labeled option that matches the unfolded paper. Answer with the option letter.",
+      "Which labeled option is the correct unfolded result? Answer with the option letter.",
+      "Choose the option that shows the unfolded paper after the fold and punch. Answer with the option letter.",
+      "Which option gives the correct unfolded hole pattern? Answer with the option letter."
+    ],
+    "single_fold_two_holes": [
+      "Which option shows the paper after it is unfolded? Answer with the option letter.",
+      "Select the labeled option that matches the unfolded paper. Answer with the option letter.",
+      "Which labeled option is the correct unfolded result? Answer with the option letter.",
+      "Choose the option that shows the unfolded paper after the fold and punches. Answer with the option letter.",
+      "Which option gives the correct unfolded hole pattern? Answer with the option letter."
+    ],
+    "double_fold_single_hole": [
+      "Which option shows the paper after it is unfolded? Answer with the option letter.",
+      "Select the labeled option that matches the unfolded paper. Answer with the option letter.",
+      "Which labeled option is the correct unfolded result? Answer with the option letter.",
+      "Choose the option that shows the unfolded paper after both folds are reversed. Answer with the option letter.",
+      "Which option gives the correct unfolded hole pattern? Answer with the option letter."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:spatial_fold_hole_puzzle": [
+      "object_description"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

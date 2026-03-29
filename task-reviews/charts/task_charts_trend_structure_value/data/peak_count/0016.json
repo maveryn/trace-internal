@@ -1,0 +1,780 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 1
+  },
+  "evidence_gt": {
+    "type": "label_set",
+    "value": [
+      "Q"
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "charts/task_charts_trend_structure_value/images/peak_count/0016.png"
+  },
+  "instance_seed": 1491784969169121,
+  "prompt": "Use the chart in the image. It shows an ordered labeled lollipop chart with points arranged from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the labels in their displayed order. Read the chart order carefully and compute the requested trend value. Determine the number of local peaks. Each peak is higher than the labels immediately before and after it in displayed order.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the labels of all local peaks.\nAnswer: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"C\",\"Q\"],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the chart in the image. It shows an ordered labeled lollipop chart with points arranged from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the labels in their displayed order. Read the chart order carefully and compute the requested trend value. Determine the number of local peaks. Each peak is higher than the labels immediately before and after it in displayed order.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the labels of all local peaks.\nAnswer: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"C\",\"Q\"],\"answer\":2}",
+    "answer_only": "Use the chart in the image. It shows an ordered labeled lollipop chart with points arranged from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the labels in their displayed order. Read the chart order carefully and compute the requested trend value. Determine the number of local peaks. Each peak is higher than the labels immediately before and after it in displayed order.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_charts_trend_structure_value",
+  "task_variant": "peak_count",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_value": 1,
+      "evidence_labels": [
+        "Q"
+      ],
+      "evidence_point_indices": [
+        6
+      ],
+      "labels": [
+        "Z",
+        "F",
+        "L",
+        "H",
+        "G",
+        "R",
+        "Q",
+        "S",
+        "M"
+      ],
+      "mark_color_distance_space": "lab",
+      "mark_color_min_distance": 40.0,
+      "mark_color_sampling_policy": "random_rgb",
+      "mark_count": 9,
+      "mark_count_range": [
+        6,
+        10
+      ],
+      "mark_fill_rgb": [
+        123,
+        171,
+        64
+      ],
+      "mark_outline_rgb": [
+        68,
+        94,
+        35
+      ],
+      "ordered_evidence_labels": [
+        "Q"
+      ],
+      "question_format": "numeric_open",
+      "scene_variant": "lollipop",
+      "scene_variant_probabilities": {
+        "area": 0.16666666666666666,
+        "bar": 0.16666666666666666,
+        "dot_plot": 0.16666666666666666,
+        "horizontal_bar": 0.16666666666666666,
+        "line": 0.16666666666666666,
+        "lollipop": 0.16666666666666666
+      },
+      "step_directions": [
+        "down",
+        "down",
+        "down",
+        "down",
+        "down",
+        "up",
+        "down",
+        "down"
+      ],
+      "step_signs": [
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        1,
+        -1,
+        -1
+      ],
+      "target_answer": 1,
+      "target_answer_range": [
+        0,
+        4
+      ],
+      "task_variant": "peak_count",
+      "task_variant_probabilities": {
+        "longest_decreasing_streak": 0.25,
+        "longest_increasing_streak": 0.25,
+        "peak_count": 0.25,
+        "trough_count": 0.25
+      },
+      "turning_kind": "peak",
+      "value_max": 20,
+      "value_min": 1,
+      "values": [
+        16,
+        14,
+        12,
+        10,
+        8,
+        6,
+        8,
+        6,
+        4
+      ],
+      "values_by_label": {
+        "F": 14,
+        "G": 8,
+        "H": 10,
+        "L": 12,
+        "M": 4,
+        "Q": 8,
+        "R": 6,
+        "S": 6,
+        "Z": 16
+      }
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          562.111,
+          281.647,
+          578.111,
+          297.647
+        ]
+      ],
+      "label_set": [
+        "Q"
+      ],
+      "pixel_point_map": {
+        "Q": [
+          570.111,
+          289.647
+        ]
+      },
+      "pixel_point_set": [
+        [
+          570.111,
+          289.647
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "mark_count": 9,
+        "scene_variant": "lollipop",
+        "scene_variant_probabilities": {
+          "area": 0.16666666666666666,
+          "bar": 0.16666666666666666,
+          "dot_plot": 0.16666666666666666,
+          "horizontal_bar": 0.16666666666666666,
+          "line": 0.16666666666666666,
+          "lollipop": 0.16666666666666666
+        },
+        "target_answer": 1,
+        "target_answer_range": [
+          0,
+          4
+        ],
+        "task_variant": "peak_count",
+        "task_variant_probabilities": {
+          "longest_decreasing_streak": 0.25,
+          "longest_increasing_streak": 0.25,
+          "peak_count": 0.25,
+          "trough_count": 0.25
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "charts_trend_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the requested count or streak length as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing the labels of all local peaks",
+          "json_example": "{\"evidence\":[\"C\",\"Q\"],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "an ordered labeled lollipop chart with points arranged from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+        },
+        "task_family_key": "ordered_chart_trend",
+        "task_family_variant_index": 1,
+        "task_key": "structure_value_query",
+        "task_variant_index": 3,
+        "task_variant_key": "peak_count",
+        "task_variant_template_index": 3,
+        "template_paths": [
+          "charts/trend/charts_trend_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:structure_value_query": 5,
+          "task_family:ordered_chart_trend": 5,
+          "task_variant:peak_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "charts_trend_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested count or streak length as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the labels of all local peaks",
+              "json_example": "{\"evidence\":[\"C\",\"Q\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an ordered labeled lollipop chart with points arranged from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+            },
+            "task_family_key": "ordered_chart_trend",
+            "task_family_variant_index": 1,
+            "task_key": "structure_value_query",
+            "task_variant_index": 3,
+            "task_variant_key": "peak_count",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "charts/trend/charts_trend_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:structure_value_query": 5,
+              "task_family:ordered_chart_trend": 5,
+              "task_variant:peak_count": 5
+            }
+          },
+          "prompt": "Use the chart in the image. It shows an ordered labeled lollipop chart with points arranged from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the labels in their displayed order. Read the chart order carefully and compute the requested trend value. Determine the number of local peaks. Each peak is higher than the labels immediately before and after it in displayed order.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing the labels of all local peaks.\nAnswer: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"evidence\":[\"C\",\"Q\"],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "charts_trend_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested count or streak length as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing the labels of all local peaks",
+              "json_example": "{\"evidence\":[\"C\",\"Q\"],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an ordered labeled lollipop chart with points arranged from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis"
+            },
+            "task_family_key": "ordered_chart_trend",
+            "task_family_variant_index": 1,
+            "task_key": "structure_value_query",
+            "task_variant_index": 3,
+            "task_variant_key": "peak_count",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "charts/trend/charts_trend_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:structure_value_query": 5,
+              "task_family:ordered_chart_trend": 5,
+              "task_variant:peak_count": 5
+            }
+          },
+          "prompt": "Use the chart in the image. It shows an ordered labeled lollipop chart with points arranged from left to right. Each label marks one plotted point, and the relevant values are the points' y-values on the vertical axis. Read the labels in their displayed order. Read the chart order carefully and compute the requested trend value. Determine the number of local peaks. Each peak is higher than the labels immediately before and after it in displayed order.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the requested count or streak length as an integer.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "peak_count",
+      "template_id": "charts_trend_v1"
+    },
+    "render_map": {
+      "image_id": "img0",
+      "label_centers_px": {
+        "F": [
+          202.333,
+          103.882
+        ],
+        "G": [
+          423.0,
+          267.647
+        ],
+        "H": [
+          349.444,
+          213.059
+        ],
+        "L": [
+          275.889,
+          158.471
+        ],
+        "M": [
+          717.222,
+          376.824
+        ],
+        "Q": [
+          570.111,
+          267.647
+        ],
+        "R": [
+          496.556,
+          322.235
+        ],
+        "S": [
+          643.667,
+          322.235
+        ],
+        "Z": [
+          128.778,
+          49.294
+        ]
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ]
+    },
+    "render_spec": {
+      "axis_style": {
+        "axis_line_width_px": 2,
+        "grid_line_width_px": 1,
+        "tick_length_px": 8
+      },
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 600,
+      "canvas_width": 800,
+      "coord_space": "pixel",
+      "mark_style": {
+        "mark_color_distance_space": "lab",
+        "mark_color_min_distance": 40.0,
+        "mark_fill_rgb": [
+          123,
+          171,
+          64
+        ],
+        "mark_outline_rgb": [
+          68,
+          94,
+          35
+        ],
+        "sampling_policy": "random_rgb"
+      },
+      "plot_bbox_px": [
+        92,
+        44,
+        754,
+        508
+      ],
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_variant": "lollipop",
+      "text_style": {
+        "label_font_size_px": 22,
+        "label_stroke_width_px": 2,
+        "tick_font_size_px": 18
+      },
+      "y_axis_max": 17,
+      "y_ticks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ]
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "label": "Z",
+            "label_center_px": [
+              128.778,
+              49.294
+            ],
+            "mark_bbox_px": [
+              120.778,
+              63.294,
+              136.778,
+              79.294
+            ],
+            "mark_center_px": [
+              128.778,
+              71.294
+            ],
+            "mark_fill_rgb": [
+              123,
+              171,
+              64
+            ],
+            "mark_outline_rgb": [
+              68,
+              94,
+              35
+            ],
+            "scene_variant": "lollipop",
+            "value": 16,
+            "x_rank": 0
+          },
+          "entity_id": "mark_Z",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "F",
+            "label_center_px": [
+              202.333,
+              103.882
+            ],
+            "mark_bbox_px": [
+              194.333,
+              117.882,
+              210.333,
+              133.882
+            ],
+            "mark_center_px": [
+              202.333,
+              125.882
+            ],
+            "mark_fill_rgb": [
+              123,
+              171,
+              64
+            ],
+            "mark_outline_rgb": [
+              68,
+              94,
+              35
+            ],
+            "scene_variant": "lollipop",
+            "value": 14,
+            "x_rank": 1
+          },
+          "entity_id": "mark_F",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "L",
+            "label_center_px": [
+              275.889,
+              158.471
+            ],
+            "mark_bbox_px": [
+              267.889,
+              172.471,
+              283.889,
+              188.471
+            ],
+            "mark_center_px": [
+              275.889,
+              180.471
+            ],
+            "mark_fill_rgb": [
+              123,
+              171,
+              64
+            ],
+            "mark_outline_rgb": [
+              68,
+              94,
+              35
+            ],
+            "scene_variant": "lollipop",
+            "value": 12,
+            "x_rank": 2
+          },
+          "entity_id": "mark_L",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "H",
+            "label_center_px": [
+              349.444,
+              213.059
+            ],
+            "mark_bbox_px": [
+              341.444,
+              227.059,
+              357.444,
+              243.059
+            ],
+            "mark_center_px": [
+              349.444,
+              235.059
+            ],
+            "mark_fill_rgb": [
+              123,
+              171,
+              64
+            ],
+            "mark_outline_rgb": [
+              68,
+              94,
+              35
+            ],
+            "scene_variant": "lollipop",
+            "value": 10,
+            "x_rank": 3
+          },
+          "entity_id": "mark_H",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "G",
+            "label_center_px": [
+              423.0,
+              267.647
+            ],
+            "mark_bbox_px": [
+              415.0,
+              281.647,
+              431.0,
+              297.647
+            ],
+            "mark_center_px": [
+              423.0,
+              289.647
+            ],
+            "mark_fill_rgb": [
+              123,
+              171,
+              64
+            ],
+            "mark_outline_rgb": [
+              68,
+              94,
+              35
+            ],
+            "scene_variant": "lollipop",
+            "value": 8,
+            "x_rank": 4
+          },
+          "entity_id": "mark_G",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "R",
+            "label_center_px": [
+              496.556,
+              322.235
+            ],
+            "mark_bbox_px": [
+              488.556,
+              336.235,
+              504.556,
+              352.235
+            ],
+            "mark_center_px": [
+              496.556,
+              344.235
+            ],
+            "mark_fill_rgb": [
+              123,
+              171,
+              64
+            ],
+            "mark_outline_rgb": [
+              68,
+              94,
+              35
+            ],
+            "scene_variant": "lollipop",
+            "value": 6,
+            "x_rank": 5
+          },
+          "entity_id": "mark_R",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "Q",
+            "label_center_px": [
+              570.111,
+              267.647
+            ],
+            "mark_bbox_px": [
+              562.111,
+              281.647,
+              578.111,
+              297.647
+            ],
+            "mark_center_px": [
+              570.111,
+              289.647
+            ],
+            "mark_fill_rgb": [
+              123,
+              171,
+              64
+            ],
+            "mark_outline_rgb": [
+              68,
+              94,
+              35
+            ],
+            "scene_variant": "lollipop",
+            "value": 8,
+            "x_rank": 6
+          },
+          "entity_id": "mark_Q",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "S",
+            "label_center_px": [
+              643.667,
+              322.235
+            ],
+            "mark_bbox_px": [
+              635.667,
+              336.235,
+              651.667,
+              352.235
+            ],
+            "mark_center_px": [
+              643.667,
+              344.235
+            ],
+            "mark_fill_rgb": [
+              123,
+              171,
+              64
+            ],
+            "mark_outline_rgb": [
+              68,
+              94,
+              35
+            ],
+            "scene_variant": "lollipop",
+            "value": 6,
+            "x_rank": 7
+          },
+          "entity_id": "mark_S",
+          "entity_type": "point"
+        },
+        {
+          "attrs": {
+            "label": "M",
+            "label_center_px": [
+              717.222,
+              376.824
+            ],
+            "mark_bbox_px": [
+              709.222,
+              390.824,
+              725.222,
+              406.824
+            ],
+            "mark_center_px": [
+              717.222,
+              398.824
+            ],
+            "mark_fill_rgb": [
+              123,
+              171,
+              64
+            ],
+            "mark_outline_rgb": [
+              68,
+              94,
+              35
+            ],
+            "scene_variant": "lollipop",
+            "value": 4,
+            "x_rank": 8
+          },
+          "entity_id": "mark_M",
+          "entity_type": "point"
+        }
+      ],
+      "relations": {
+        "evidence_labels": [
+          "Q"
+        ],
+        "evidence_point_indices": [
+          6
+        ],
+        "ordered_evidence_labels": [
+          "Q"
+        ],
+        "scene_variant": "lollipop",
+        "step_directions": [
+          "down",
+          "down",
+          "down",
+          "down",
+          "down",
+          "up",
+          "down",
+          "down"
+        ],
+        "step_signs": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          1,
+          -1,
+          -1
+        ],
+        "task_variant": "peak_count",
+        "turning_kind": "peak"
+      },
+      "scene_kind": "chart_lollipop_trend"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "Q"
+      ],
+      "type": "label_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

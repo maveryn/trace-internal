@@ -74,6 +74,7 @@ Use this whenever the task lives under `domain=puzzles`.
 - For option-based spatial puzzles, keep `answer_gt.type = option_letter` and ground prompt-facing evidence on the winning option image bbox, not on many explanatory regions.
 - Not every option-based puzzle needs boxed option cards. If bare image choices with labels below are clearer, prefer the simpler layout and project evidence from the image region itself.
 - For spatial block-comparison puzzles such as cube-removal counting, ground prompt-facing evidence on the ordered pair of visible structures rather than inventing image-space bboxes for cubes that have already been removed.
+- For spatial assembly puzzles, make the transform policy explicit in both prompt and solver. A good default is: use all pieces exactly once; rotation allowed; flipping not allowed.
 
 ## Early topology lessons
 - For first topology tasks, prefer bead-loop or similar closed-curve puzzles where the invariant can be stated exactly in the prompt.

@@ -2,6 +2,13 @@
   "bundle_id": "puzzles_spatial_v1",
   "schema_version": "v1",
   "task_family_templates": {
+    "spatial_assembly_puzzle": [
+      "The image shows {object_description}.",
+      "Look at the shape-assembly puzzle in the image: {object_description}.",
+      "You are given {object_description}.",
+      "Work from the shown pieces and labeled silhouette options: {object_description}.",
+      "Use the pieces above and the labeled target-shape options below: {object_description}."
+    ],
     "spatial_fold_result_puzzle": [
       "The image shows {object_description}.",
       "Look at the paper-fold puzzle in the image: {object_description}.",
@@ -18,6 +25,13 @@
     ]
   },
   "task_templates": {
+    "assembly_label_query": [
+      "Which option can be formed by using all the pieces exactly once if pieces may be rotated but not flipped?",
+      "Use all the shown pieces exactly once. Which labeled option can be built if pieces may be rotated but not flipped?",
+      "Which option can be assembled from all the pieces exactly once, allowing rotation but not flipping?",
+      "Determine which labeled silhouette can be built from the pieces when every piece must be used exactly once and pieces may be rotated but not flipped.",
+      "Choose the option that can be formed using all the pieces exactly once. Pieces may be rotated but not flipped."
+    ],
     "fold_result_query": [
       "Fold the paper along the dashed line in the direction of the outside arrows, then choose the correct option.",
       "Use the fold line and outside arrows to determine which labeled option shows the folded result.",
@@ -34,6 +48,13 @@
     ]
   },
   "task_variant_templates": {
+    "can_be_built": [
+      "Answer with the option letter.",
+      "Select the correct option and answer with the option letter.",
+      "Choose the correct labeled silhouette and answer with the option letter.",
+      "Return the option letter of the buildable target shape.",
+      "Respond with the option letter of the shape that can be built."
+    ],
     "vertical_fold_result": [
       "Which option shows the paper after it is folded? Answer with the option letter.",
       "Select the labeled option that matches the folded paper. Answer with the option letter.",
@@ -57,6 +78,9 @@
     ]
   },
   "required_slots_by_key": {
+    "task_family:spatial_assembly_puzzle": [
+      "object_description"
+    ],
     "task_family:spatial_fold_result_puzzle": [
       "object_description"
     ],

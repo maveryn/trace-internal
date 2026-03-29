@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Sequence
 
+from trace.tasks.puzzles.shared.assembly_common import can_tile_polyomino_with_pieces
 from trace.tasks.puzzles.shared.spatial_blocks_common import total_cubes_from_height_rows
+from trace.tasks.puzzles.spatial.assembly_label import PuzzlesSpatialAssemblyLabelTask
 from trace.tasks.puzzles.spatial.cube_removal_count import PuzzlesSpatialCubeRemovalCountTask
 from trace.tasks.puzzles.spatial.fold_result_label import PuzzlesSpatialFoldResultLabelTask
 from tests.helpers import extract_prompt_json_example
@@ -164,6 +166,91 @@ def test_puzzle_spatial_answer_letters_cover_six_option_range() -> None:
 def test_total_cubes_helper_matches_height_grid_sum() -> None:
     assert int(total_cubes_from_height_rows([[2, 2], [2, 2]])) == 8
     assert int(total_cubes_from_height_rows([[3, 1], [2, 4]])) == 10
+
+
+def test_assembly_tiling_helper_accepts_rotation_only_match() -> None:
+    target = ((0, 0), (1, 0), (0, 1), (1, 1))
+    pieces = [
+        ((0, 0), (1, 0), (0, 1)),
+        ((0, 0),),
+    ]
+    assert can_tile_polyomino_with_pieces(target, pieces)
+
+
+def test_puzzle_spatial_assembly_label_contract_matches_winning_option_panel() -> None:
+    task = PuzzlesSpatialAssemblyLabelTask()
+    scene_variants = ("assembly_strip", "assembly_card", "assembly_outline")
+
+    for scene_index, scene_variant in enumerate(scene_variants):
+        seed = 27020 + scene_index
+        out = task.generate(
+            seed,
+            params={"scene_variant": scene_variant},
+            max_attempts=10,
+        )
+        trace = out.trace_payload
+        execution = trace["execution_trace"]
+        render = trace["render_spec"]
+        render_map = trace["render_map"]
+        evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
+
+        assert str(out.task_variant) == "can_be_built"
+        assert out.answer_gt.type == "option_letter"
+        assert out.evidence_gt.type == "bbox_set"
+        assert len(evidence_bboxes) == 1
+        assert str(execution["scene_variant"]) == str(scene_variant)
+        assert str(render["scene_variant"]) == str(scene_variant)
+        assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
+        assert str(execution["question_format"]) == "assembly_can_be_built"
+        assert str(execution["view_family"]) == "assembly_option_puzzle"
+        assert 3 <= int(execution["piece_count"]) <= 4
+        assert 5 <= int(execution["option_count"]) <= 7
+        assert 8 <= int(execution["target_cell_count"]) <= 11
+        assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
+        assert str(out.answer_gt.value) == str(execution["answer_option_label"])
+
+        expected_bbox = [
+            float(value)
+            for value in render_map["option_panel_bboxes_px"][str(execution["correct_option_panel_id"])]
+        ]
+        assert evidence_bboxes[0] == expected_bbox
+        assert [str(item) for item in execution["supporting_option_panel_ids"]] == [
+            str(execution["correct_option_panel_id"])
+        ]
+
+        option_specs = execution["option_specs"]
+        piece_specs = execution["piece_specs"]
+        assert sum(1 for option in option_specs if bool(option["is_correct"])) == 1
+        assert sum(1 for option in option_specs if bool(option["is_tileable"])) == 1
+        assert len(piece_specs) == int(execution["piece_count"])
+
+        piece_shapes = [tuple((int(cell[0]), int(cell[1])) for cell in piece["cells"]) for piece in piece_specs]
+        for option in option_specs:
+            option_cells = tuple((int(cell[0]), int(cell[1])) for cell in option["cells"])
+            assert bool(option["is_tileable"]) == can_tile_polyomino_with_pieces(option_cells, piece_shapes)
+
+
+def test_puzzle_spatial_assembly_prompt_examples_match_selected_variant() -> None:
+    task = PuzzlesSpatialAssemblyLabelTask()
+    out = task.generate(27090, params={}, max_attempts=10)
+    answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
+    assert answer_and_evidence == {"evidence": [[222, 488, 398, 692]], "answer": "C"}
+    assert answer_only == {"answer": "C"}
+
+
+def test_puzzle_spatial_assembly_label_task_is_deterministic() -> None:
+    task = PuzzlesSpatialAssemblyLabelTask()
+    params = {"scene_variant": "assembly_card"}
+    out_a = task.generate(27110, params=params, max_attempts=10)
+    out_b = task.generate(27110, params=params, max_attempts=10)
+
+    assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
+    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
+    assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
+    assert out_a.prompt == out_b.prompt
+    assert out_a.image.tobytes() == out_b.image.tobytes()
 
 
 def test_puzzle_spatial_cube_removal_count_contract_matches_structure_bboxes() -> None:

@@ -473,6 +473,15 @@ def test_puzzles_spatial_bundle_supports_cube_removal_variant() -> None:
     ]
 
 
+def test_puzzles_spatial_bundle_supports_assembly_variant() -> None:
+    bundle = load_prompt_bundle("puzzles", "spatial", "puzzles_spatial_v1")
+    assert len(bundle.task_templates["assembly_label_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["can_be_built"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_family:spatial_assembly_puzzle"]) == [
+        "object_description",
+    ]
+
+
 def test_puzzles_topology_bundle_supports_bead_equivalence_variants() -> None:
     bundle = load_prompt_bundle("puzzles", "topology", "puzzles_topology_v1")
     assert len(bundle.task_templates["bead_equivalence_count_query"]) == REQUIRED_PROMPT_VARIANTS

@@ -1,5 +1,21 @@
 generation:
   task_overrides:
+    task_puzzles_spatial_assembly_label:
+      piece_count_min: 3
+      piece_count_max: 4
+      option_count_min: 5
+      option_count_max: 7
+      target_cell_count_min: 8
+      target_cell_count_max: 11
+      target_bbox_max_dim: 5
+      balanced_task_variant_sampling: true
+      balanced_scene_variant_sampling: true
+      task_variant_weights:
+        can_be_built: 1.0
+      scene_variant_weights:
+        assembly_strip: 1.0
+        assembly_card: 1.0
+        assembly_outline: 1.0
     task_puzzles_spatial_fold_result_label:
       option_count_min: 6
       option_count_max: 6
@@ -36,6 +52,39 @@ generation:
 
 rendering:
   task_overrides:
+    task_puzzles_spatial_assembly_label:
+      canvas_width: 1200
+      canvas_height: 980
+      scene_margin_left_px: 64
+      scene_margin_right_px: 64
+      scene_margin_top_px: 56
+      scene_margin_bottom_px: 56
+      piece_card_size_px: 144
+      piece_gap_px: 24
+      piece_panel_padding_px: 24
+      piece_to_options_gap_px: 56
+      option_panel_width_px: 176
+      option_panel_height_px: 204
+      option_gap_px: 22
+      option_row_gap_px: 22
+      option_shape_box_size_px: 126
+      option_label_gap_px: 16
+      panel_corner_radius_px: 28
+      cell_corner_radius_px: 8
+      border_width_px: 3
+      option_label_font_size_px: 30
+      panel_fill_rgb: [248, 249, 252]
+      piece_card_fill_rgb: [252, 252, 255]
+      option_panel_fill_rgb: [251, 251, 255]
+      option_shape_fill_rgb: [252, 252, 255]
+      border_color_rgb: [86, 94, 108]
+      text_color_rgb: [30, 34, 40]
+      text_stroke_rgb: [255, 255, 255]
+      piece_palette_rgb:
+        - [221, 109, 95]
+        - [87, 160, 133]
+        - [105, 127, 214]
+        - [232, 179, 76]
     task_puzzles_spatial_fold_result_label:
       canvas_width: 1200
       canvas_height: 840
@@ -95,6 +144,15 @@ prompt:
     bundle_id: puzzles_spatial_v1
     answer_hint: set "answer" to the exact option letter of the correct image option
   task_overrides:
+    task_puzzles_spatial_assembly_label:
+      task_family_key: spatial_assembly_puzzle
+      task_key: assembly_label_query
+      object_description_assembly_strip: a shape-assembly puzzle with several colored pieces above labeled silhouette options
+      object_description_assembly_card: a card-style shape-assembly puzzle with several colored pieces above labeled silhouette options
+      object_description_assembly_outline: an outline-style shape-assembly puzzle with several colored pieces above labeled silhouette options
+      evidence_hint_can_be_built: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel
+      json_example_can_be_built: '{"evidence":[[222,488,398,692]],"answer":"C"}'
+      json_example_answer_only_can_be_built: '{"answer":"C"}'
     task_puzzles_spatial_fold_result_label:
       task_family_key: spatial_fold_result_puzzle
       task_key: fold_result_query
@@ -120,6 +178,11 @@ prompt:
 
 complexity:
   task_overrides:
+    task_puzzles_spatial_assembly_label:
+      criteria_weights:
+        visual_scan: 0.38
+        reasoning_load: 0.42
+        scene_variant_load: 0.20
     task_puzzles_spatial_fold_result_label:
       criteria_weights:
         visual_scan: 0.4

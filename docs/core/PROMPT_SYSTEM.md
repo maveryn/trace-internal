@@ -146,5 +146,5 @@ Active task-to-bundle mapping:
 10. Puzzles:
    - `task_puzzles_arithmetic_equation_value|task_puzzles_arithmetic_balance_value|task_puzzles_arithmetic_grid_value` -> `puzzles_arithmetic_v1`
    - `task_puzzles_logic_grid_completion_label` -> `puzzles_logic_v1`
-   - `task_puzzles_spatial_fold_result_label|task_puzzles_spatial_cube_removal_count` -> `puzzles_spatial_v1`
+   - `task_puzzles_spatial_fold_result_label|task_puzzles_spatial_cube_removal_count|task_puzzles_spatial_assembly_label` -> `puzzles_spatial_v1`
    - `task_puzzles_topology_bead_equivalence_count` -> `puzzles_topology_v1`

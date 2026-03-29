@@ -939,6 +939,47 @@ def test_puzzles_spatial_defaults_loaded() -> None:
     }
 
 
+def test_puzzles_spatial_assembly_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("puzzles", "spatial")
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_puzzles_spatial_assembly_label",
+    )
+    assert str(prompt_defaults["task_family_key"]).strip() == "spatial_assembly_puzzle"
+    assert str(prompt_defaults["task_key"]).strip() == "assembly_label_query"
+    assert str(prompt_defaults["object_description_assembly_strip"]).strip()
+    assert generation_defaults["task_variant_weights"] == {"can_be_built": 1.0}
+    assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
+        "assembly_card",
+        "assembly_outline",
+        "assembly_strip",
+    ]
+    assert int(generation_defaults["piece_count_min"]) == 3
+    assert int(generation_defaults["piece_count_max"]) == 4
+    assert int(generation_defaults["option_count_min"]) == 5
+    assert int(generation_defaults["option_count_max"]) == 7
+    assert int(generation_defaults["target_cell_count_min"]) == 8
+    assert int(generation_defaults["target_cell_count_max"]) == 11
+    assert int(generation_defaults["target_bbox_max_dim"]) == 5
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert int(rendering_defaults["piece_card_size_px"]) > 0
+    assert int(rendering_defaults["option_panel_width_px"]) > 0
+    assert int(rendering_defaults["option_shape_box_size_px"]) > 0
+    assert str(prompt_defaults["evidence_hint_can_be_built"]).strip()
+    assert str(prompt_defaults["json_example_can_be_built"]).strip()
+
+    spatial_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_puzzles_spatial_assembly_label",
+    )
+    assert spatial_complexity["criteria_weights"] == {
+        "reasoning_load": pytest.approx(0.42),
+        "scene_variant_load": pytest.approx(0.20),
+        "visual_scan": pytest.approx(0.38),
+    }
+
+
 def test_puzzles_spatial_cube_removal_defaults_loaded() -> None:
     cfg = get_task_group_defaults("puzzles", "spatial")
     generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(

@@ -16,13 +16,14 @@ Capture the active v1 contract for the `puzzles` domain.
    - `task_puzzles_logic_grid_completion_label`
    - `task_puzzles_spatial_fold_result_label`
    - `task_puzzles_spatial_cube_removal_count`
+   - `task_puzzles_spatial_assembly_label`
    - `task_puzzles_topology_bead_equivalence_count`
 
 ## Family contract
 1. Puzzle families are hidden-rule / hidden-variable reasoning families, not generic icon grids or mini tables.
 2. The active arithmetic family centers on explicit local query targets so the prompt-facing evidence can stay local and simple.
 3. The active logic family currently centers on one missing grid cell plus six labeled image options, so the answer format can stay `option_letter` while the evidence stays local to one option panel.
-4. The active spatial family currently mixes option-based fold-result puzzles and integer cube-removal comparison puzzles, while keeping the prompt-facing evidence local to one winning option image or one ordered pair of visible structure regions.
+4. The active spatial family currently mixes option-based fold-result puzzles, integer cube-removal comparison puzzles, and option-based 2D assembly puzzles, while keeping the prompt-facing evidence local to one winning option image or one ordered pair of visible structure regions.
 5. The active topology family currently uses one reference bead loop plus several labeled option loops and counts the options that preserve a cyclic order rule under deformation.
 6. Puzzle variants should widen `task_variant` before creating a new task id when the same scene grammar and evidence contract still hold.
 
@@ -196,6 +197,32 @@ Capture the active v1 contract for the `puzzles` domain.
    - `execution_trace` stores `original_height_rows`, `remaining_height_rows`, `row_count`, `col_count`, `original_max_height`, `original_total_cubes`, `remaining_total_cubes`, `removal_count`, `changed_column_count`, `original_cube_records`, `remaining_cube_records`, `removed_cube_records`, `original_structure_bbox_id`, `remaining_structure_bbox_id`, `supporting_structure_ids`, and `solver_trace`,
    - prompt-facing evidence is projected from the ordered visible structure ids, not from fake removed-cube image boxes.
 
+## `task_puzzles_spatial_assembly_label`
+1. Supported `task_variant` values:
+   - `can_be_built`
+2. Supported `scene_variant` values:
+   - `assembly_strip`
+   - `assembly_card`
+   - `assembly_outline`
+3. Answer contract:
+   - `answer_gt.type = option_letter`
+4. Evidence contract:
+   - `evidence_gt.type = bbox_set`
+   - exactly one bbox for the winning option panel
+5. Scene contract:
+   - one assembly puzzle per image,
+   - `3..4` colored polyomino pieces appear above `5..7` labeled silhouette options,
+   - every option has the same total occupied area as the shown pieces,
+   - the prompt explicitly states that all pieces must be used exactly once,
+   - the prompt explicitly states that pieces may be rotated but not flipped,
+   - the answer is the option letter of the one buildable silhouette.
+6. Trace contract:
+   - `scene_ir.entities` includes `puzzle_assembly_piece_card`, `puzzle_assembly_piece_cell`, `puzzle_assembly_option_panel`, `puzzle_assembly_option_label`, `puzzle_assembly_option_shape_box`, and `puzzle_assembly_option_shape_cell` entities,
+   - `render_map.piece_card_bboxes_px` stores the reference piece-card bboxes keyed by `piece_id`,
+   - `render_map.option_panel_bboxes_px` stores the option-panel bboxes keyed by `option_panel_id`,
+   - `execution_trace` stores `piece_specs`, `piece_count`, `piece_count_range`, `option_specs`, `option_count`, `option_count_range`, `target_cells`, `target_bbox_dims`, `target_cell_count`, `target_cell_count_range`, `answer_option_label`, `correct_option_index`, `correct_option_panel_id`, `supporting_option_panel_ids`, and `solver_trace`,
+   - prompt-facing evidence is projected from `correct_option_panel_id`, not from inferred assembly overlays.
+
 ## `task_puzzles_topology_bead_equivalence_count`
 1. Supported `task_variant` values:
    - `color_cycle_count`
@@ -292,6 +319,17 @@ Capture the active v1 contract for the `puzzles` domain.
    - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
 6. Prompt-facing evidence wording should always make the two-box contract explicit: the returned bboxes are ordered `[original block on the left, remaining block on the right]`.
 
+## Prompt contract for `task_puzzles_spatial_assembly_label`
+1. Bundle: `puzzles_spatial_v1`
+2. `task_family_key`: `spatial_assembly_puzzle`
+3. `task_key`: `assembly_label_query`
+4. `task_variant_key`: `can_be_built`
+5. Required slots:
+   - task-family: `object_description`
+   - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
+   - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
+6. Prompt-facing evidence wording should always make the one-box contract explicit: the returned bbox is the winning option panel.
+
 ## Prompt contract for `task_puzzles_topology_bead_equivalence_count`
 1. Bundle: `puzzles_topology_v1`
 2. `task_family_key`: `topology_bead_equivalence_puzzle`
@@ -306,10 +344,10 @@ Capture the active v1 contract for the `puzzles` domain.
 ## Visual policy
 1. Puzzles use the same light solid background baseline as the other clean synthetic domains.
 2. Arithmetic scene variants vary panel chrome and outline treatment, not the semantic layouts of the equation row, equality panels, or arithmetic grids.
-3. The equation unknown slot, equality query answer box, arithmetic-grid question-mark cell, logic-grid winning option panel, spatial fold-result winning option image, and hidden-cube visible structure should stay visually salient relative to the other boxes.
+3. The equation unknown slot, equality query answer box, arithmetic-grid question-mark cell, logic-grid winning option panel, spatial fold-result winning option image, spatial assembly winning option panel, and cube-removal visible structures should stay visually salient relative to the other boxes.
 
 ## Determinism + review
 1. Deterministic generation/rendering from `instance_seed`.
 2. `task_variant` and `scene_variant` are sampled independently at the task policy level.
-3. No semantic auto-relaxation: every generated puzzle has exactly one valid integer answer.
-4. Review/sample overlays should use the recorded bbox maps (`render_map.slot_bboxes_px[query_slot_id]`, `render_map.box_bboxes_px[query_box_id]`, `render_map.cell_bboxes_px[query_cell_id]`, `render_map.option_panel_bboxes_px[correct_option_panel_id]`, `render_map.option_choice_bboxes_px[correct_option_choice_id]`, or `render_map.structure_bboxes_px[structure_bbox_id]`) for the prompt-facing witness.
+3. No semantic auto-relaxation: every generated puzzle has exactly one valid answer under its declared answer type.
+4. Review/sample overlays should use the recorded bbox maps (`render_map.slot_bboxes_px[query_slot_id]`, `render_map.box_bboxes_px[query_box_id]`, `render_map.cell_bboxes_px[query_cell_id]`, `render_map.option_panel_bboxes_px[correct_option_panel_id]`, `render_map.option_choice_bboxes_px[correct_option_choice_id]`, `render_map.structure_bboxes_px[structure_bbox_id]`, or `render_map.piece_card_bboxes_px[piece_id]` when inspecting reference-piece geometry) for the prompt-facing witness.

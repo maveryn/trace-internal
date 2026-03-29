@@ -56,6 +56,7 @@ from .puzzles.arithmetic import balance_value as _task_puzzles_arithmetic_balanc
 from .puzzles.arithmetic import equation_value as _task_puzzles_arithmetic_equation_value
 from .puzzles.arithmetic import grid_value as _task_puzzles_arithmetic_grid_value
 from .puzzles.logic import grid_completion_label as _task_puzzles_logic_grid_completion_label
+from .puzzles.spatial import assembly_label as _task_puzzles_spatial_assembly_label
 from .puzzles.spatial import cube_removal_count as _task_puzzles_spatial_cube_removal_count
 from .puzzles.spatial import fold_result_label as _task_puzzles_spatial_fold_result_label
 from .puzzles.topology import bead_equivalence_count as _task_puzzles_topology_bead_equivalence_count

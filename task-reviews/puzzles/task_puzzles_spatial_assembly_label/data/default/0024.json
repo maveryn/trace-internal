@@ -1,0 +1,2025 @@
+{
+  "answer_gt": {
+    "type": "option_letter",
+    "value": "C"
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        710.0,
+        375.0,
+        886.0,
+        579.0
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "puzzles/task_puzzles_spatial_assembly_label/images/default/0024.png"
+  },
+  "instance_seed": 3084362009793774,
+  "prompt": "Use the pieces above and the labeled target-shape options below: a shape-assembly puzzle with several colored pieces above labeled silhouette options. Which option can be formed by using all the pieces exactly once if pieces may be rotated but not flipped? Answer with the option letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel.\nAnswer format: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"evidence\":[[222,488,398,692]],\"answer\":\"C\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the pieces above and the labeled target-shape options below: a shape-assembly puzzle with several colored pieces above labeled silhouette options. Which option can be formed by using all the pieces exactly once if pieces may be rotated but not flipped? Answer with the option letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel.\nAnswer format: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"evidence\":[[222,488,398,692]],\"answer\":\"C\"}",
+    "answer_only": "Use the pieces above and the labeled target-shape options below: a shape-assembly puzzle with several colored pieces above labeled silhouette options. Which option can be formed by using all the pieces exactly once if pieces may be rotated but not flipped? Answer with the option letter.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"answer\":\"C\"}"
+  },
+  "task": "task_puzzles_spatial_assembly_label",
+  "task_variant": "can_be_built",
+  "trace_payload": {
+    "execution_trace": {
+      "answer_option_label": "C",
+      "correct_option_index": 2,
+      "correct_option_panel_id": "option_panel_3",
+      "option_count": 5,
+      "option_count_range": [
+        5,
+        7
+      ],
+      "option_specs": [
+        {
+          "bbox_dims": [
+            4,
+            4
+          ],
+          "cell_count": 10,
+          "cells": [
+            [
+              0,
+              1
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              0,
+              3
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              1,
+              3
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              2,
+              2
+            ],
+            [
+              3,
+              0
+            ],
+            [
+              3,
+              1
+            ],
+            [
+              3,
+              2
+            ]
+          ],
+          "is_correct": false,
+          "is_tileable": false,
+          "option_label": "A",
+          "option_panel_id": "option_panel_1"
+        },
+        {
+          "bbox_dims": [
+            5,
+            3
+          ],
+          "cell_count": 10,
+          "cells": [
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              2,
+              2
+            ],
+            [
+              3,
+              0
+            ],
+            [
+              3,
+              1
+            ],
+            [
+              4,
+              0
+            ],
+            [
+              4,
+              1
+            ]
+          ],
+          "is_correct": false,
+          "is_tileable": false,
+          "option_label": "B",
+          "option_panel_id": "option_panel_2"
+        },
+        {
+          "bbox_dims": [
+            5,
+            3
+          ],
+          "cell_count": 10,
+          "cells": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              2,
+              2
+            ],
+            [
+              3,
+              0
+            ],
+            [
+              3,
+              1
+            ],
+            [
+              4,
+              0
+            ],
+            [
+              4,
+              1
+            ]
+          ],
+          "is_correct": true,
+          "is_tileable": true,
+          "option_label": "C",
+          "option_panel_id": "option_panel_3"
+        },
+        {
+          "bbox_dims": [
+            5,
+            4
+          ],
+          "cell_count": 10,
+          "cells": [
+            [
+              0,
+              3
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              1,
+              3
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              2,
+              2
+            ],
+            [
+              3,
+              0
+            ],
+            [
+              3,
+              1
+            ],
+            [
+              3,
+              2
+            ],
+            [
+              4,
+              0
+            ]
+          ],
+          "is_correct": false,
+          "is_tileable": false,
+          "option_label": "D",
+          "option_panel_id": "option_panel_4"
+        },
+        {
+          "bbox_dims": [
+            4,
+            4
+          ],
+          "cell_count": 10,
+          "cells": [
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              2,
+              2
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              3,
+              1
+            ],
+            [
+              3,
+              2
+            ]
+          ],
+          "is_correct": false,
+          "is_tileable": false,
+          "option_label": "E",
+          "option_panel_id": "option_panel_5"
+        }
+      ],
+      "piece_count": 3,
+      "piece_count_range": [
+        3,
+        4
+      ],
+      "piece_specs": [
+        {
+          "bbox_dims": [
+            3,
+            2
+          ],
+          "cell_count": 4,
+          "cells": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              0
+            ]
+          ],
+          "piece_id": "piece_1",
+          "rotation_count": 2
+        },
+        {
+          "bbox_dims": [
+            2,
+            2
+          ],
+          "cell_count": 4,
+          "cells": [
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              1,
+              1
+            ]
+          ],
+          "piece_id": "piece_2",
+          "rotation_count": 1
+        },
+        {
+          "bbox_dims": [
+            2,
+            1
+          ],
+          "cell_count": 2,
+          "cells": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              0
+            ]
+          ],
+          "piece_id": "piece_3",
+          "rotation_count": 2
+        }
+      ],
+      "question_format": "assembly_can_be_built",
+      "scene_variant": "assembly_strip",
+      "solver_trace": {
+        "correct_option_index": 2,
+        "correct_option_label": "C",
+        "correct_option_panel_id": "option_panel_3",
+        "option_count": 5,
+        "option_tileability": {
+          "option_panel_1": false,
+          "option_panel_2": false,
+          "option_panel_3": true,
+          "option_panel_4": false,
+          "option_panel_5": false
+        },
+        "piece_count": 3,
+        "piece_shapes": [
+          [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              0
+            ]
+          ],
+          [
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              1,
+              1
+            ]
+          ],
+          [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              0
+            ]
+          ]
+        ],
+        "target_bbox_dims": [
+          5,
+          3
+        ],
+        "target_cell_count": 10,
+        "target_cells": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            4,
+            1
+          ]
+        ],
+        "task_variant": "can_be_built"
+      },
+      "supporting_option_panel_ids": [
+        "option_panel_3"
+      ],
+      "target_bbox_dims": [
+        5,
+        3
+      ],
+      "target_cell_count": 10,
+      "target_cell_count_range": [
+        8,
+        11
+      ],
+      "target_cells": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          1
+        ]
+      ],
+      "task_variant": "can_be_built",
+      "view_family": "assembly_option_puzzle"
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          710.0,
+          375.0,
+          886.0,
+          579.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "option_count": 5,
+        "option_count_range": [
+          5,
+          7
+        ],
+        "piece_count": 3,
+        "piece_count_range": [
+          3,
+          4
+        ],
+        "scene_variant": "assembly_strip",
+        "scene_variant_probabilities": {
+          "assembly_card": 0.3333333333333333,
+          "assembly_outline": 0.3333333333333333,
+          "assembly_strip": 0.3333333333333333
+        },
+        "target_cell_count": 10,
+        "target_cell_count_range": [
+          8,
+          11
+        ],
+        "task_variant": "can_be_built",
+        "task_variant_probabilities": {
+          "can_be_built": 1.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "puzzles_spatial_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the exact option letter of the correct image option",
+          "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel",
+          "json_example": "{\"evidence\":[[222,488,398,692]],\"answer\":\"C\"}",
+          "json_example_answer_only": "{\"answer\":\"C\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a shape-assembly puzzle with several colored pieces above labeled silhouette options"
+        },
+        "task_family_key": "spatial_assembly_puzzle",
+        "task_family_variant_index": 4,
+        "task_key": "assembly_label_query",
+        "task_variant_index": 0,
+        "task_variant_key": "can_be_built",
+        "task_variant_template_index": 0,
+        "template_paths": [
+          "puzzles/spatial/puzzles_spatial_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:assembly_label_query": 5,
+          "task_family:spatial_assembly_puzzle": 5,
+          "task_variant:can_be_built": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "puzzles_spatial_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact option letter of the correct image option",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel",
+              "json_example": "{\"evidence\":[[222,488,398,692]],\"answer\":\"C\"}",
+              "json_example_answer_only": "{\"answer\":\"C\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a shape-assembly puzzle with several colored pieces above labeled silhouette options"
+            },
+            "task_family_key": "spatial_assembly_puzzle",
+            "task_family_variant_index": 4,
+            "task_key": "assembly_label_query",
+            "task_variant_index": 0,
+            "task_variant_key": "can_be_built",
+            "task_variant_template_index": 0,
+            "template_paths": [
+              "puzzles/spatial/puzzles_spatial_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:assembly_label_query": 5,
+              "task_family:spatial_assembly_puzzle": 5,
+              "task_variant:can_be_built": 5
+            }
+          },
+          "prompt": "Use the pieces above and the labeled target-shape options below: a shape-assembly puzzle with several colored pieces above labeled silhouette options. Which option can be formed by using all the pieces exactly once if pieces may be rotated but not flipped? Answer with the option letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel.\nAnswer format: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"evidence\":[[222,488,398,692]],\"answer\":\"C\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "puzzles_spatial_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact option letter of the correct image option",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel",
+              "json_example": "{\"evidence\":[[222,488,398,692]],\"answer\":\"C\"}",
+              "json_example_answer_only": "{\"answer\":\"C\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a shape-assembly puzzle with several colored pieces above labeled silhouette options"
+            },
+            "task_family_key": "spatial_assembly_puzzle",
+            "task_family_variant_index": 4,
+            "task_key": "assembly_label_query",
+            "task_variant_index": 0,
+            "task_variant_key": "can_be_built",
+            "task_variant_template_index": 0,
+            "template_paths": [
+              "puzzles/spatial/puzzles_spatial_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:assembly_label_query": 5,
+              "task_family:spatial_assembly_puzzle": 5,
+              "task_variant:can_be_built": 5
+            }
+          },
+          "prompt": "Use the pieces above and the labeled target-shape options below: a shape-assembly puzzle with several colored pieces above labeled silhouette options. Which option can be formed by using all the pieces exactly once if pieces may be rotated but not flipped? Answer with the option letter.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact option letter of the correct image option.\nExample JSON:\n{\"answer\":\"C\"}"
+        }
+      },
+      "task_variant": "can_be_built",
+      "template_id": "puzzles_spatial_v1"
+    },
+    "render_map": {
+      "image_id": "img0",
+      "option_panel_bboxes_px": {
+        "option_panel_1": [
+          314.0,
+          375.0,
+          490.0,
+          579.0
+        ],
+        "option_panel_2": [
+          512.0,
+          375.0,
+          688.0,
+          579.0
+        ],
+        "option_panel_3": [
+          710.0,
+          375.0,
+          886.0,
+          579.0
+        ],
+        "option_panel_4": [
+          314.0,
+          601.0,
+          490.0,
+          805.0
+        ],
+        "option_panel_5": [
+          512.0,
+          601.0,
+          688.0,
+          805.0
+        ]
+      },
+      "piece_card_bboxes_px": {
+        "piece_1": [
+          360.0,
+          175.0,
+          504.0,
+          319.0
+        ],
+        "piece_2": [
+          528.0,
+          175.0,
+          672.0,
+          319.0
+        ],
+        "piece_3": [
+          696.0,
+          175.0,
+          840.0,
+          319.0
+        ]
+      },
+      "scene_bbox_px": [
+        290.0,
+        151.0,
+        910.0,
+        829.0
+      ]
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 980,
+      "canvas_width": 1200,
+      "coord_space": "pixel",
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_bbox_px": [
+        290.0,
+        151.0,
+        910.0,
+        829.0
+      ],
+      "scene_variant": "assembly_strip",
+      "text_style": {
+        "option_label_font_size_px": 30
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "cell_count": 4,
+            "piece_index": 0
+          },
+          "bbox_px": [
+            360.0,
+            175.0,
+            504.0,
+            319.0
+          ],
+          "entity_id": "piece_1",
+          "entity_type": "puzzle_assembly_piece_card"
+        },
+        {
+          "attrs": {
+            "fill_rgb": [
+              221,
+              109,
+              95
+            ],
+            "piece_id": "piece_1",
+            "piece_index": 0
+          },
+          "bbox_px": [
+            376.0,
+            249.0,
+            410.667,
+            283.667
+          ],
+          "entity_id": "piece_1_cell_1",
+          "entity_type": "puzzle_assembly_piece_cell"
+        },
+        {
+          "attrs": {
+            "fill_rgb": [
+              221,
+              109,
+              95
+            ],
+            "piece_id": "piece_1",
+            "piece_index": 0
+          },
+          "bbox_px": [
+            414.667,
+            210.333,
+            449.333,
+            245.0
+          ],
+          "entity_id": "piece_1_cell_2",
+          "entity_type": "puzzle_assembly_piece_cell"
+        },
+        {
+          "attrs": {
+            "fill_rgb": [
+              221,
+              109,
+              95
+            ],
+            "piece_id": "piece_1",
+            "piece_index": 0
+          },
+          "bbox_px": [
+            414.667,
+            249.0,
+            449.333,
+            283.667
+          ],
+          "entity_id": "piece_1_cell_3",
+          "entity_type": "puzzle_assembly_piece_cell"
+        },
+        {
+          "attrs": {
+            "fill_rgb": [
+              221,
+              109,
+              95
+            ],
+            "piece_id": "piece_1",
+            "piece_index": 0
+          },
+          "bbox_px": [
+            453.333,
+            210.333,
+            488.0,
+            245.0
+          ],
+          "entity_id": "piece_1_cell_4",
+          "entity_type": "puzzle_assembly_piece_cell"
+        },
+        {
+          "attrs": {
+            "cell_count": 4,
+            "piece_index": 1
+          },
+          "bbox_px": [
+            528.0,
+            175.0,
+            672.0,
+            319.0
+          ],
+          "entity_id": "piece_2",
+          "entity_type": "puzzle_assembly_piece_card"
+        },
+        {
+          "attrs": {
+            "fill_rgb": [
+              87,
+              160,
+              133
+            ],
+            "piece_id": "piece_2",
+            "piece_index": 1
+          },
+          "bbox_px": [
+            544.0,
+            191.0,
+            598.0,
+            245.0
+          ],
+          "entity_id": "piece_2_cell_1",
+          "entity_type": "puzzle_assembly_piece_cell"
+        },
+        {
+          "attrs": {
+            "fill_rgb": [
+              87,
+              160,
+              133
+            ],
+            "piece_id": "piece_2",
+            "piece_index": 1
+          },
+          "bbox_px": [
+            544.0,
+            249.0,
+            598.0,
+            303.0
+          ],
+          "entity_id": "piece_2_cell_2",
+          "entity_type": "puzzle_assembly_piece_cell"
+        },
+        {
+          "attrs": {
+            "fill_rgb": [
+              87,
+              160,
+              133
+            ],
+            "piece_id": "piece_2",
+            "piece_index": 1
+          },
+          "bbox_px": [
+            602.0,
+            191.0,
+            656.0,
+            245.0
+          ],
+          "entity_id": "piece_2_cell_3",
+          "entity_type": "puzzle_assembly_piece_cell"
+        },
+        {
+          "attrs": {
+            "fill_rgb": [
+              87,
+              160,
+              133
+            ],
+            "piece_id": "piece_2",
+            "piece_index": 1
+          },
+          "bbox_px": [
+            602.0,
+            249.0,
+            656.0,
+            303.0
+          ],
+          "entity_id": "piece_2_cell_4",
+          "entity_type": "puzzle_assembly_piece_cell"
+        },
+        {
+          "attrs": {
+            "cell_count": 2,
+            "piece_index": 2
+          },
+          "bbox_px": [
+            696.0,
+            175.0,
+            840.0,
+            319.0
+          ],
+          "entity_id": "piece_3",
+          "entity_type": "puzzle_assembly_piece_card"
+        },
+        {
+          "attrs": {
+            "fill_rgb": [
+              105,
+              127,
+              214
+            ],
+            "piece_id": "piece_3",
+            "piece_index": 2
+          },
+          "bbox_px": [
+            712.0,
+            220.0,
+            766.0,
+            274.0
+          ],
+          "entity_id": "piece_3_cell_1",
+          "entity_type": "puzzle_assembly_piece_cell"
+        },
+        {
+          "attrs": {
+            "fill_rgb": [
+              105,
+              127,
+              214
+            ],
+            "piece_id": "piece_3",
+            "piece_index": 2
+          },
+          "bbox_px": [
+            770.0,
+            220.0,
+            824.0,
+            274.0
+          ],
+          "entity_id": "piece_3_cell_2",
+          "entity_type": "puzzle_assembly_piece_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_index": 0,
+            "option_label": "A"
+          },
+          "bbox_px": [
+            314.0,
+            375.0,
+            490.0,
+            579.0
+          ],
+          "entity_id": "option_panel_1",
+          "entity_type": "puzzle_assembly_option_panel"
+        },
+        {
+          "attrs": {
+            "option_label": "A",
+            "option_panel_id": "option_panel_1"
+          },
+          "bbox_px": [
+            389.0,
+            391.0,
+            415.0,
+            415.0
+          ],
+          "entity_id": "option_panel_1_label",
+          "entity_type": "puzzle_assembly_option_label"
+        },
+        {
+          "attrs": {
+            "option_panel_id": "option_panel_1"
+          },
+          "bbox_px": [
+            339.0,
+            431.0,
+            465.0,
+            557.0
+          ],
+          "entity_id": "option_panel_1_shape_box",
+          "entity_type": "puzzle_assembly_option_shape_box"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "A",
+            "option_panel_id": "option_panel_1"
+          },
+          "bbox_px": [
+            339.0,
+            463.5,
+            367.5,
+            492.0
+          ],
+          "entity_id": "option_panel_1_cell_1",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "A",
+            "option_panel_id": "option_panel_1"
+          },
+          "bbox_px": [
+            339.0,
+            496.0,
+            367.5,
+            524.5
+          ],
+          "entity_id": "option_panel_1_cell_2",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "A",
+            "option_panel_id": "option_panel_1"
+          },
+          "bbox_px": [
+            339.0,
+            528.5,
+            367.5,
+            557.0
+          ],
+          "entity_id": "option_panel_1_cell_3",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "A",
+            "option_panel_id": "option_panel_1"
+          },
+          "bbox_px": [
+            371.5,
+            496.0,
+            400.0,
+            524.5
+          ],
+          "entity_id": "option_panel_1_cell_4",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "A",
+            "option_panel_id": "option_panel_1"
+          },
+          "bbox_px": [
+            371.5,
+            528.5,
+            400.0,
+            557.0
+          ],
+          "entity_id": "option_panel_1_cell_5",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "A",
+            "option_panel_id": "option_panel_1"
+          },
+          "bbox_px": [
+            404.0,
+            431.0,
+            432.5,
+            459.5
+          ],
+          "entity_id": "option_panel_1_cell_6",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "A",
+            "option_panel_id": "option_panel_1"
+          },
+          "bbox_px": [
+            404.0,
+            496.0,
+            432.5,
+            524.5
+          ],
+          "entity_id": "option_panel_1_cell_7",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "A",
+            "option_panel_id": "option_panel_1"
+          },
+          "bbox_px": [
+            436.5,
+            431.0,
+            465.0,
+            459.5
+          ],
+          "entity_id": "option_panel_1_cell_8",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "A",
+            "option_panel_id": "option_panel_1"
+          },
+          "bbox_px": [
+            436.5,
+            463.5,
+            465.0,
+            492.0
+          ],
+          "entity_id": "option_panel_1_cell_9",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "A",
+            "option_panel_id": "option_panel_1"
+          },
+          "bbox_px": [
+            436.5,
+            496.0,
+            465.0,
+            524.5
+          ],
+          "entity_id": "option_panel_1_cell_10",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_index": 1,
+            "option_label": "B"
+          },
+          "bbox_px": [
+            512.0,
+            375.0,
+            688.0,
+            579.0
+          ],
+          "entity_id": "option_panel_2",
+          "entity_type": "puzzle_assembly_option_panel"
+        },
+        {
+          "attrs": {
+            "option_label": "B",
+            "option_panel_id": "option_panel_2"
+          },
+          "bbox_px": [
+            587.5,
+            391.0,
+            612.5,
+            415.0
+          ],
+          "entity_id": "option_panel_2_label",
+          "entity_type": "puzzle_assembly_option_label"
+        },
+        {
+          "attrs": {
+            "option_panel_id": "option_panel_2"
+          },
+          "bbox_px": [
+            537.0,
+            431.0,
+            663.0,
+            557.0
+          ],
+          "entity_id": "option_panel_2_shape_box",
+          "entity_type": "puzzle_assembly_option_shape_box"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "B",
+            "option_panel_id": "option_panel_2"
+          },
+          "bbox_px": [
+            537.0,
+            509.0,
+            559.0,
+            531.0
+          ],
+          "entity_id": "option_panel_2_cell_1",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "B",
+            "option_panel_id": "option_panel_2"
+          },
+          "bbox_px": [
+            563.0,
+            483.0,
+            585.0,
+            505.0
+          ],
+          "entity_id": "option_panel_2_cell_2",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "B",
+            "option_panel_id": "option_panel_2"
+          },
+          "bbox_px": [
+            563.0,
+            509.0,
+            585.0,
+            531.0
+          ],
+          "entity_id": "option_panel_2_cell_3",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "B",
+            "option_panel_id": "option_panel_2"
+          },
+          "bbox_px": [
+            589.0,
+            457.0,
+            611.0,
+            479.0
+          ],
+          "entity_id": "option_panel_2_cell_4",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "B",
+            "option_panel_id": "option_panel_2"
+          },
+          "bbox_px": [
+            589.0,
+            483.0,
+            611.0,
+            505.0
+          ],
+          "entity_id": "option_panel_2_cell_5",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "B",
+            "option_panel_id": "option_panel_2"
+          },
+          "bbox_px": [
+            589.0,
+            509.0,
+            611.0,
+            531.0
+          ],
+          "entity_id": "option_panel_2_cell_6",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "B",
+            "option_panel_id": "option_panel_2"
+          },
+          "bbox_px": [
+            615.0,
+            457.0,
+            637.0,
+            479.0
+          ],
+          "entity_id": "option_panel_2_cell_7",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "B",
+            "option_panel_id": "option_panel_2"
+          },
+          "bbox_px": [
+            615.0,
+            483.0,
+            637.0,
+            505.0
+          ],
+          "entity_id": "option_panel_2_cell_8",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "B",
+            "option_panel_id": "option_panel_2"
+          },
+          "bbox_px": [
+            641.0,
+            457.0,
+            663.0,
+            479.0
+          ],
+          "entity_id": "option_panel_2_cell_9",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "B",
+            "option_panel_id": "option_panel_2"
+          },
+          "bbox_px": [
+            641.0,
+            483.0,
+            663.0,
+            505.0
+          ],
+          "entity_id": "option_panel_2_cell_10",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": true,
+            "option_index": 2,
+            "option_label": "C"
+          },
+          "bbox_px": [
+            710.0,
+            375.0,
+            886.0,
+            579.0
+          ],
+          "entity_id": "option_panel_3",
+          "entity_type": "puzzle_assembly_option_panel"
+        },
+        {
+          "attrs": {
+            "option_label": "C",
+            "option_panel_id": "option_panel_3"
+          },
+          "bbox_px": [
+            786.0,
+            391.0,
+            810.0,
+            415.0
+          ],
+          "entity_id": "option_panel_3_label",
+          "entity_type": "puzzle_assembly_option_label"
+        },
+        {
+          "attrs": {
+            "option_panel_id": "option_panel_3"
+          },
+          "bbox_px": [
+            735.0,
+            431.0,
+            861.0,
+            557.0
+          ],
+          "entity_id": "option_panel_3_shape_box",
+          "entity_type": "puzzle_assembly_option_shape_box"
+        },
+        {
+          "attrs": {
+            "is_correct": true,
+            "option_label": "C",
+            "option_panel_id": "option_panel_3"
+          },
+          "bbox_px": [
+            735.0,
+            483.0,
+            757.0,
+            505.0
+          ],
+          "entity_id": "option_panel_3_cell_1",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": true,
+            "option_label": "C",
+            "option_panel_id": "option_panel_3"
+          },
+          "bbox_px": [
+            761.0,
+            457.0,
+            783.0,
+            479.0
+          ],
+          "entity_id": "option_panel_3_cell_2",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": true,
+            "option_label": "C",
+            "option_panel_id": "option_panel_3"
+          },
+          "bbox_px": [
+            761.0,
+            483.0,
+            783.0,
+            505.0
+          ],
+          "entity_id": "option_panel_3_cell_3",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": true,
+            "option_label": "C",
+            "option_panel_id": "option_panel_3"
+          },
+          "bbox_px": [
+            787.0,
+            457.0,
+            809.0,
+            479.0
+          ],
+          "entity_id": "option_panel_3_cell_4",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": true,
+            "option_label": "C",
+            "option_panel_id": "option_panel_3"
+          },
+          "bbox_px": [
+            787.0,
+            483.0,
+            809.0,
+            505.0
+          ],
+          "entity_id": "option_panel_3_cell_5",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": true,
+            "option_label": "C",
+            "option_panel_id": "option_panel_3"
+          },
+          "bbox_px": [
+            787.0,
+            509.0,
+            809.0,
+            531.0
+          ],
+          "entity_id": "option_panel_3_cell_6",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": true,
+            "option_label": "C",
+            "option_panel_id": "option_panel_3"
+          },
+          "bbox_px": [
+            813.0,
+            457.0,
+            835.0,
+            479.0
+          ],
+          "entity_id": "option_panel_3_cell_7",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": true,
+            "option_label": "C",
+            "option_panel_id": "option_panel_3"
+          },
+          "bbox_px": [
+            813.0,
+            483.0,
+            835.0,
+            505.0
+          ],
+          "entity_id": "option_panel_3_cell_8",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": true,
+            "option_label": "C",
+            "option_panel_id": "option_panel_3"
+          },
+          "bbox_px": [
+            839.0,
+            457.0,
+            861.0,
+            479.0
+          ],
+          "entity_id": "option_panel_3_cell_9",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": true,
+            "option_label": "C",
+            "option_panel_id": "option_panel_3"
+          },
+          "bbox_px": [
+            839.0,
+            483.0,
+            861.0,
+            505.0
+          ],
+          "entity_id": "option_panel_3_cell_10",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_index": 3,
+            "option_label": "D"
+          },
+          "bbox_px": [
+            314.0,
+            601.0,
+            490.0,
+            805.0
+          ],
+          "entity_id": "option_panel_4",
+          "entity_type": "puzzle_assembly_option_panel"
+        },
+        {
+          "attrs": {
+            "option_label": "D",
+            "option_panel_id": "option_panel_4"
+          },
+          "bbox_px": [
+            388.5,
+            617.0,
+            415.5,
+            641.0
+          ],
+          "entity_id": "option_panel_4_label",
+          "entity_type": "puzzle_assembly_option_label"
+        },
+        {
+          "attrs": {
+            "option_panel_id": "option_panel_4"
+          },
+          "bbox_px": [
+            339.0,
+            657.0,
+            465.0,
+            783.0
+          ],
+          "entity_id": "option_panel_4_shape_box",
+          "entity_type": "puzzle_assembly_option_shape_box"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "D",
+            "option_panel_id": "option_panel_4"
+          },
+          "bbox_px": [
+            339.0,
+            748.0,
+            361.0,
+            770.0
+          ],
+          "entity_id": "option_panel_4_cell_1",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "D",
+            "option_panel_id": "option_panel_4"
+          },
+          "bbox_px": [
+            365.0,
+            722.0,
+            387.0,
+            744.0
+          ],
+          "entity_id": "option_panel_4_cell_2",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "D",
+            "option_panel_id": "option_panel_4"
+          },
+          "bbox_px": [
+            365.0,
+            748.0,
+            387.0,
+            770.0
+          ],
+          "entity_id": "option_panel_4_cell_3",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "D",
+            "option_panel_id": "option_panel_4"
+          },
+          "bbox_px": [
+            391.0,
+            670.0,
+            413.0,
+            692.0
+          ],
+          "entity_id": "option_panel_4_cell_4",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "D",
+            "option_panel_id": "option_panel_4"
+          },
+          "bbox_px": [
+            391.0,
+            696.0,
+            413.0,
+            718.0
+          ],
+          "entity_id": "option_panel_4_cell_5",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "D",
+            "option_panel_id": "option_panel_4"
+          },
+          "bbox_px": [
+            391.0,
+            722.0,
+            413.0,
+            744.0
+          ],
+          "entity_id": "option_panel_4_cell_6",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "D",
+            "option_panel_id": "option_panel_4"
+          },
+          "bbox_px": [
+            417.0,
+            670.0,
+            439.0,
+            692.0
+          ],
+          "entity_id": "option_panel_4_cell_7",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "D",
+            "option_panel_id": "option_panel_4"
+          },
+          "bbox_px": [
+            417.0,
+            696.0,
+            439.0,
+            718.0
+          ],
+          "entity_id": "option_panel_4_cell_8",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "D",
+            "option_panel_id": "option_panel_4"
+          },
+          "bbox_px": [
+            417.0,
+            722.0,
+            439.0,
+            744.0
+          ],
+          "entity_id": "option_panel_4_cell_9",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "D",
+            "option_panel_id": "option_panel_4"
+          },
+          "bbox_px": [
+            443.0,
+            670.0,
+            465.0,
+            692.0
+          ],
+          "entity_id": "option_panel_4_cell_10",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_index": 4,
+            "option_label": "E"
+          },
+          "bbox_px": [
+            512.0,
+            601.0,
+            688.0,
+            805.0
+          ],
+          "entity_id": "option_panel_5",
+          "entity_type": "puzzle_assembly_option_panel"
+        },
+        {
+          "attrs": {
+            "option_label": "E",
+            "option_panel_id": "option_panel_5"
+          },
+          "bbox_px": [
+            588.5,
+            617.0,
+            611.5,
+            641.0
+          ],
+          "entity_id": "option_panel_5_label",
+          "entity_type": "puzzle_assembly_option_label"
+        },
+        {
+          "attrs": {
+            "option_panel_id": "option_panel_5"
+          },
+          "bbox_px": [
+            537.0,
+            657.0,
+            663.0,
+            783.0
+          ],
+          "entity_id": "option_panel_5_shape_box",
+          "entity_type": "puzzle_assembly_option_shape_box"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "E",
+            "option_panel_id": "option_panel_5"
+          },
+          "bbox_px": [
+            537.0,
+            657.0,
+            565.5,
+            685.5
+          ],
+          "entity_id": "option_panel_5_cell_1",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "E",
+            "option_panel_id": "option_panel_5"
+          },
+          "bbox_px": [
+            537.0,
+            689.5,
+            565.5,
+            718.0
+          ],
+          "entity_id": "option_panel_5_cell_2",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "E",
+            "option_panel_id": "option_panel_5"
+          },
+          "bbox_px": [
+            537.0,
+            722.0,
+            565.5,
+            750.5
+          ],
+          "entity_id": "option_panel_5_cell_3",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "E",
+            "option_panel_id": "option_panel_5"
+          },
+          "bbox_px": [
+            569.5,
+            689.5,
+            598.0,
+            718.0
+          ],
+          "entity_id": "option_panel_5_cell_4",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "E",
+            "option_panel_id": "option_panel_5"
+          },
+          "bbox_px": [
+            569.5,
+            722.0,
+            598.0,
+            750.5
+          ],
+          "entity_id": "option_panel_5_cell_5",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "E",
+            "option_panel_id": "option_panel_5"
+          },
+          "bbox_px": [
+            602.0,
+            689.5,
+            630.5,
+            718.0
+          ],
+          "entity_id": "option_panel_5_cell_6",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "E",
+            "option_panel_id": "option_panel_5"
+          },
+          "bbox_px": [
+            602.0,
+            722.0,
+            630.5,
+            750.5
+          ],
+          "entity_id": "option_panel_5_cell_7",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "E",
+            "option_panel_id": "option_panel_5"
+          },
+          "bbox_px": [
+            602.0,
+            754.5,
+            630.5,
+            783.0
+          ],
+          "entity_id": "option_panel_5_cell_8",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "E",
+            "option_panel_id": "option_panel_5"
+          },
+          "bbox_px": [
+            634.5,
+            689.5,
+            663.0,
+            718.0
+          ],
+          "entity_id": "option_panel_5_cell_9",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        },
+        {
+          "attrs": {
+            "is_correct": false,
+            "option_label": "E",
+            "option_panel_id": "option_panel_5"
+          },
+          "bbox_px": [
+            634.5,
+            722.0,
+            663.0,
+            750.5
+          ],
+          "entity_id": "option_panel_5_cell_10",
+          "entity_type": "puzzle_assembly_option_shape_cell"
+        }
+      ],
+      "relations": {
+        "answer_option_label": "C",
+        "correct_option_panel_id": "option_panel_3",
+        "scene_variant": "assembly_strip",
+        "task_variant": "can_be_built",
+        "view_family": "assembly_option_puzzle"
+      },
+      "scene_kind": "puzzle_spatial_assembly_strip"
+    },
+    "witness_symbolic": {
+      "type": "bbox_set",
+      "value": [
+        [
+          710.0,
+          375.0,
+          886.0,
+          579.0
+        ]
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

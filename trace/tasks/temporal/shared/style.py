@@ -342,12 +342,9 @@ def build_temporal_timeline_theme(accent_color_name: str, style_variant: str) ->
     event_outline_rgb = tuple(int(channel) for channel in accent_dark_rgb)
     event_text_rgb = tuple(int(channel) for channel in neutral_dark_rgb)
     event_subtext_rgb = tuple(int(channel) for channel in accent_deep_rgb)
-    primary_reference_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.52)
-    primary_reference_outline_rgb = tuple(int(channel) for channel in accent_deep_rgb)
-    primary_reference_text_rgb = tuple(int(channel) for channel in accent_deep_rgb)
-    secondary_reference_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.26)
-    secondary_reference_outline_rgb = tuple(int(channel) for channel in accent_dark_rgb)
-    secondary_reference_text_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+    reference_fill_rgb = tuple(int(channel) for channel in accent_rgb)
+    reference_outline_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+    reference_text_rgb: Color = (255, 255, 255) if _relative_luminance(reference_fill_rgb) < 0.60 else tuple(int(channel) for channel in neutral_dark_rgb)
 
     if variant == "accented":
         panel_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.07)
@@ -360,8 +357,6 @@ def build_temporal_timeline_theme(accent_color_name: str, style_variant: str) ->
         event_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.18)
         event_outline_rgb = tuple(int(channel) for channel in accent_dark_rgb)
         event_subtext_rgb = tuple(int(channel) for channel in accent_dark_rgb)
-        primary_reference_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.62)
-        secondary_reference_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.36)
     elif variant == "marker":
         panel_fill_rgb = (255, 255, 255)
         panel_outline_rgb = tuple(int(channel) for channel in accent_deep_rgb)
@@ -374,11 +369,6 @@ def build_temporal_timeline_theme(accent_color_name: str, style_variant: str) ->
         event_fill_rgb = (255, 255, 255)
         event_outline_rgb = tuple(int(channel) for channel in accent_dark_rgb)
         event_subtext_rgb = tuple(int(channel) for channel in accent_dark_rgb)
-        primary_reference_fill_rgb = (255, 255, 255)
-        primary_reference_outline_rgb = tuple(int(channel) for channel in accent_rgb)
-        primary_reference_text_rgb = tuple(int(channel) for channel in accent_deep_rgb)
-        secondary_reference_fill_rgb = (255, 255, 255)
-        secondary_reference_outline_rgb = tuple(int(channel) for channel in accent_dark_rgb)
 
     return TemporalTimelineTheme(
         accent_color_name=str(accent_color_name),
@@ -396,12 +386,12 @@ def build_temporal_timeline_theme(accent_color_name: str, style_variant: str) ->
         event_outline_rgb=tuple(int(channel) for channel in event_outline_rgb),
         event_text_rgb=tuple(int(channel) for channel in event_text_rgb),
         event_subtext_rgb=tuple(int(channel) for channel in event_subtext_rgb),
-        primary_reference_fill_rgb=tuple(int(channel) for channel in primary_reference_fill_rgb),
-        primary_reference_outline_rgb=tuple(int(channel) for channel in primary_reference_outline_rgb),
-        primary_reference_text_rgb=tuple(int(channel) for channel in primary_reference_text_rgb),
-        secondary_reference_fill_rgb=tuple(int(channel) for channel in secondary_reference_fill_rgb),
-        secondary_reference_outline_rgb=tuple(int(channel) for channel in secondary_reference_outline_rgb),
-        secondary_reference_text_rgb=tuple(int(channel) for channel in secondary_reference_text_rgb),
+        primary_reference_fill_rgb=tuple(int(channel) for channel in reference_fill_rgb),
+        primary_reference_outline_rgb=tuple(int(channel) for channel in reference_outline_rgb),
+        primary_reference_text_rgb=tuple(int(channel) for channel in reference_text_rgb),
+        secondary_reference_fill_rgb=tuple(int(channel) for channel in reference_fill_rgb),
+        secondary_reference_outline_rgb=tuple(int(channel) for channel in reference_outline_rgb),
+        secondary_reference_text_rgb=tuple(int(channel) for channel in reference_text_rgb),
     )
 
 

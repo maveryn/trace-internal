@@ -77,3 +77,5 @@ Current task docs:
 67. [task_puzzles_spatial_cube_removal_count.md](task_puzzles_spatial_cube_removal_count.md)
 68. [task_puzzles_spatial_assembly_label.md](task_puzzles_spatial_assembly_label.md)
 69. [task_puzzles_topology_bead_equivalence_count.md](task_puzzles_topology_bead_equivalence_count.md)
+70. [task_puzzles_spatial_overlay_result_label.md](task_puzzles_spatial_overlay_result_label.md)
+71. [task_puzzles_logic_adjacency_completion_label.md](task_puzzles_logic_adjacency_completion_label.md)

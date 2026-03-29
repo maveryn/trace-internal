@@ -983,6 +983,85 @@ def test_puzzles_spatial_assembly_defaults_loaded() -> None:
     }
 
 
+def test_puzzles_spatial_overlay_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("puzzles", "spatial")
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_puzzles_spatial_overlay_result_label",
+    )
+    assert str(prompt_defaults["task_family_key"]).strip() == "spatial_overlay_puzzle"
+    assert str(prompt_defaults["task_key"]).strip() == "overlay_result_query"
+    assert str(prompt_defaults["object_description_overlay_strip"]).strip()
+    assert generation_defaults["task_variant_weights"] == {"overlay_union_same_grid": 1.0}
+    assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
+        "overlay_card",
+        "overlay_outline",
+        "overlay_strip",
+    ]
+    assert int(generation_defaults["option_count_min"]) == 5
+    assert int(generation_defaults["option_count_max"]) == 6
+    assert int(generation_defaults["grid_size_min"]) == 4
+    assert int(generation_defaults["grid_size_max"]) == 5
+    assert int(generation_defaults["sheet_mark_count_min"]) == 2
+    assert int(generation_defaults["sheet_mark_count_max"]) == 5
+    assert int(generation_defaults["overlap_count_min"]) == 1
+    assert int(generation_defaults["overlap_count_max"]) == 2
+    assert int(rendering_defaults["source_paper_size_px"]) > 0
+    assert int(rendering_defaults["option_paper_size_px"]) > 0
+    assert int(rendering_defaults["source_paper_size_px"]) == int(rendering_defaults["option_paper_size_px"])
+    assert int(rendering_defaults["combine_symbol_font_size_px"]) > 0
+    assert list(rendering_defaults["mark_fill_rgb"]) == [53, 96, 164]
+    assert str(prompt_defaults["evidence_hint_overlay_union_same_grid"]).strip()
+    assert str(prompt_defaults["json_example_overlay_union_same_grid"]).strip()
+
+    spatial_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_puzzles_spatial_overlay_result_label",
+    )
+    assert spatial_complexity["criteria_weights"] == {
+        "reasoning_load": pytest.approx(0.40),
+        "scene_variant_load": pytest.approx(0.20),
+        "visual_scan": pytest.approx(0.40),
+    }
+
+
+def test_puzzles_logic_adjacency_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("puzzles", "logic")
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_puzzles_logic_adjacency_completion_label",
+    )
+    assert str(prompt_defaults["task_family_key"]).strip() == "logic_option_completion_puzzle"
+    assert str(prompt_defaults["task_key"]).strip() == "adjacency_completion_query"
+    assert str(prompt_defaults["object_description_logic_strip"]).strip()
+    assert generation_defaults["task_variant_weights"] == {"king_non_touch": 1.0}
+    assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
+        "logic_card",
+        "logic_outline",
+        "logic_strip",
+    ]
+    assert int(generation_defaults["board_size_min"]) == 3
+    assert int(generation_defaults["board_size_max"]) == 5
+    assert int(generation_defaults["option_count"]) == 6
+    assert int(rendering_defaults["cell_size_px"]) > 0
+    assert int(rendering_defaults["option_panel_width_px"]) > 0
+    assert list(rendering_defaults["accent_color_rgb"]) == [54, 102, 180]
+    assert str(prompt_defaults["evidence_hint_king_non_touch"]).strip()
+    assert str(prompt_defaults["json_example_king_non_touch"]).strip()
+
+    logic_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_puzzles_logic_adjacency_completion_label",
+    )
+    assert logic_complexity["criteria_weights"] == {
+        "reasoning_load": pytest.approx(0.35),
+        "scene_variant_load": pytest.approx(0.33),
+        "visual_scan": pytest.approx(0.32),
+    }
+
+
 def test_puzzles_spatial_cube_removal_defaults_loaded() -> None:
     cfg = get_task_group_defaults("puzzles", "spatial")
     generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(

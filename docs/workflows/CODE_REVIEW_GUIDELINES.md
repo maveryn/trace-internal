@@ -157,6 +157,8 @@ Use this checklist during implementation and refactor reviews.
 139. For puzzle tasks that ask how many cubes were removed between two visible block structures, ground prompt-facing `bbox_set` evidence on the ordered pair of visible structures `[original, remaining]` instead of inventing image-space bboxes for the missing cubes.
 140. For topology bead-loop puzzles, make the equivalence rule explicit in both prompt text and generation: if flipping/reflection is disallowed, valid options must match the reference only up to cyclic rotation, and the prompt should say so directly instead of leaving reflection ambiguous.
 141. Whenever a task's reasoning depends on color identity, enforce or validate per-instance color separation in Lab space through the shared color-distance utilities; do not assume a hand-picked RGB palette is distinct enough by inspection.
+142. For transparent-sheet overlay puzzles, keep the two source sheets and all option images on the same paper frame and hidden-grid alignment, and state explicitly that no rotation or flipping is allowed; do not make the answer depend on hidden rescaling, translation, or unspoken transform rules.
+143. For explicit-rule logic adjacency puzzles, make the prompt name the full touch scope (edge-only vs edge-and-corner) and verify the visible neighborhood plus option pool leave exactly one valid candidate; do not assume a local non-touch rule is unique unless the generator proves it.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

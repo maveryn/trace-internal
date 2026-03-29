@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
@@ -11,6 +10,7 @@ from PIL import Image, ImageDraw
 from ...shared.text_rendering import load_font
 from .assembly_common import PuzzleAssemblyRenderParams, SUPPORTED_PUZZLE_ASSEMBLY_SCENE_VARIANTS, polyomino_bbox_dims
 from .drawing import draw_rounded_rect
+from .option_layout import centered_option_grid_shape, centered_option_row_counts
 from .option_panels import render_puzzle_option_panel
 
 
@@ -74,31 +74,6 @@ def _draw_polyomino(
     return bboxes
 
 
-def _option_grid_shape(option_count: int) -> Tuple[int, int]:
-    """Return `(cols, rows)` for the assembly option layout."""
-
-    if int(option_count) <= 4:
-        cols = int(option_count)
-    elif int(option_count) <= 6:
-        cols = 3
-    else:
-        cols = 4
-    rows = int(math.ceil(float(option_count) / float(cols)))
-    return int(cols), int(rows)
-
-
-def _option_row_counts(option_count: int, cols: int) -> Tuple[int, ...]:
-    """Return the number of options rendered in each row."""
-
-    remaining = int(option_count)
-    counts: List[int] = []
-    while remaining > 0:
-        row_count = int(min(int(cols), int(remaining)))
-        counts.append(int(row_count))
-        remaining -= int(row_count)
-    return tuple(counts)
-
-
 def render_puzzle_assembly_scene(
     background: Image.Image,
     *,
@@ -132,8 +107,8 @@ def render_puzzle_assembly_scene(
     option_panel_height = float(render_params.option_panel_height_px)
     option_gap = float(render_params.option_gap_px)
     option_row_gap = float(render_params.option_row_gap_px)
-    option_cols, option_rows = _option_grid_shape(len(options))
-    option_row_counts = _option_row_counts(len(options), option_cols)
+    option_cols, option_rows = centered_option_grid_shape(len(options))
+    option_row_counts = centered_option_row_counts(len(options), option_cols)
     options_width = float((option_cols * option_panel_width) + max(0, option_cols - 1) * option_gap)
     options_height = float((option_rows * option_panel_height) + max(0, option_rows - 1) * option_row_gap)
     piece_to_options_gap = float(render_params.piece_to_options_gap_px)

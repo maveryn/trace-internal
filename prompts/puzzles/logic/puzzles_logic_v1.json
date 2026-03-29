@@ -11,6 +11,13 @@
     ]
   },
   "task_templates": {
+    "adjacency_completion_query": [
+      "Choose the option that correctly completes the puzzle grid under the stated touch rule.",
+      "Determine which labeled option belongs in the question-mark cell while obeying the no-touch rule.",
+      "Use the adjacency rule to identify the correct image option.",
+      "Find the labeled option that should replace the question mark without breaking the touch rule.",
+      "Work from the puzzle grid and choose the option that satisfies the no-touch rule."
+    ],
     "grid_completion_query": [
       "Choose the option that correctly completes the puzzle grid.",
       "Determine which labeled option belongs in the question-mark cell.",
@@ -20,6 +27,13 @@
     ]
   },
   "task_variant_templates": {
+    "king_non_touch": [
+      "Identical symbols may not touch edge-to-edge or corner-to-corner. Which option correctly completes the question-mark cell? Answer with the option letter.",
+      "Use the rule that matching symbols cannot touch, even diagonally. Which labeled option fits the question-mark cell? Answer with the option letter.",
+      "Complete the puzzle so that no two identical symbols touch horizontally, vertically, or diagonally. Which option is correct? Answer with the option letter.",
+      "Every identical-symbol pair must stay separated by at least one cell in every direction. Which option belongs in the missing cell? Answer with the option letter.",
+      "Which option correctly fills the question-mark cell if identical symbols are forbidden from touching by edge or by corner? Answer with the option letter."
+    ],
     "row_uniqueness": [
       "Each row should contain each visible symbol exactly once. Which option correctly completes the question-mark cell? Answer with the option letter.",
       "Use the rule that every row contains one of each symbol. Which labeled option fits the question-mark cell? Answer with the option letter.",

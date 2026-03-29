@@ -86,23 +86,29 @@ Define how we split tasks into reusable families so each dataset slice stays com
 10. The active balance-scene grammar uses `2..3` stacked equality panels with boxed symbols and numbers, explicit `+` and `=` signs, and a final query row shaped like `symbol = ?`.
 11. The active arithmetic-grid grammar uses `3..5` rows, exactly `3` columns, no headers, and a repeated hidden row rule `a op b = c` with one explicit `?` cell.
 12. Prompt-facing arithmetic evidence should stay as one-box `bbox_set` grounding on the queried unknown slot, final question-mark query box, or question-mark grid cell; do not widen to explanatory multi-box evidence unless a later family truly needs ordered witnesses.
-13. `task_puzzles_logic_grid_completion_label` uses semantic `task_variant` values `row_uniqueness`, `column_uniqueness`, and `row_and_column_uniqueness`.
-14. `task_puzzles_logic_grid_completion_label` uses visual `scene_variant` values `logic_strip`, `logic_card`, and `logic_outline`.
-15. The active logic-grid grammar uses one square `3x3` through `5x5` board with one explicit `?` cell and exactly six labeled image options.
-16. Prompt-facing logic evidence should stay as one-box `bbox_set` grounding on the winning option panel; keep the query interaction stable as option selection even when later logic families vary the rule structure.
-17. `task_puzzles_spatial_fold_result_label` uses semantic `task_variant` values `vertical_fold_result` and `horizontal_fold_result`.
-18. `task_puzzles_spatial_fold_result_label` uses visual `scene_variant` values `fold_strip`, `fold_card`, and `fold_outline`.
-19. The active spatial fold-result grammar uses one marked paper sheet with an explicit dashed fold line and arrow above exactly six labeled folded-result options; keep the fold direction explicit in the reference sheet rather than implicit in the options alone.
-20. `task_puzzles_spatial_cube_removal_count` uses semantic `task_variant` value `cube_removal_count`.
-21. `task_puzzles_spatial_cube_removal_count` uses visual `scene_variant` values `stack_strip`, `stack_card`, and `stack_outline`.
-22. The active cube-removal grammar uses one fixed-view side-by-side isometric comparison of an original block stack and the remaining stack after cubes were removed, and asks for the exact removal count.
-23. `task_puzzles_spatial_assembly_label` uses semantic `task_variant` value `can_be_built`.
-24. `task_puzzles_spatial_assembly_label` uses visual `scene_variant` values `assembly_strip`, `assembly_card`, and `assembly_outline`.
-25. The active assembly grammar uses `2..4` polyomino pieces above `5..6` labeled silhouette options, keeps one shared polyomino cell size across the top pieces and the option silhouettes, and asks which option can be built by using all pieces exactly once.
-26. Prompt-facing spatial evidence should stay as one-box `bbox_set` grounding on the winning option image/panel for fold-result and assembly tasks or as the ordered two-box structure pair `[original left, remaining right]` for cube-removal tasks; do not invent fake per-missing-cube or explanatory assembly bboxes.
-27. `task_puzzles_topology_bead_equivalence_count` uses semantic `task_variant` values `color_cycle_count`, `shape_cycle_count`, and `mixed_cycle_count`.
-28. `task_puzzles_topology_bead_equivalence_count` uses visual `scene_variant` values `loop_strip`, `loop_card`, and `loop_outline`.
-29. The active topology bead-loop grammar uses one reference loop above `6..7` labeled option loops, `4..6` beads per loop, and counts the options whose bead order matches the reference up to cyclic rotation only; color-bearing variants should use Lab-separated colors, prompt-facing evidence should be the ordered set of valid option-image bboxes, and the prompt must explicitly say that flipping/reflection is not allowed.
+13. `task_puzzles_logic_adjacency_completion_label` uses semantic `task_variant` value `king_non_touch`.
+14. `task_puzzles_logic_adjacency_completion_label` uses visual `scene_variant` values `logic_strip`, `logic_card`, and `logic_outline`.
+15. `task_puzzles_logic_grid_completion_label` uses semantic `task_variant` values `row_uniqueness`, `column_uniqueness`, and `row_and_column_uniqueness`.
+16. `task_puzzles_logic_grid_completion_label` uses visual `scene_variant` values `logic_strip`, `logic_card`, and `logic_outline`.
+17. The active logic-board grammar uses one square `3x3` through `5x5` board with one explicit `?` cell and exactly six labeled image options.
+18. The explicit adjacency logic variant must state whether matching symbols are forbidden by edge only or by edge and corner; the current `king_non_touch` rule forbids both and uses the full six-shape option set so the answer stays unique from the visible neighborhood.
+19. Prompt-facing logic evidence should stay as one-box `bbox_set` grounding on the winning option panel; keep the query interaction stable as option selection even when later logic families vary the rule structure.
+20. `task_puzzles_spatial_fold_result_label` uses semantic `task_variant` values `vertical_fold_result` and `horizontal_fold_result`.
+21. `task_puzzles_spatial_fold_result_label` uses visual `scene_variant` values `fold_strip`, `fold_card`, and `fold_outline`.
+22. The active spatial fold-result grammar uses one marked paper sheet with an explicit dashed fold line and arrow above exactly six labeled folded-result options; keep the fold direction explicit in the reference sheet rather than implicit in the options alone.
+23. `task_puzzles_spatial_cube_removal_count` uses semantic `task_variant` value `cube_removal_count`.
+24. `task_puzzles_spatial_cube_removal_count` uses visual `scene_variant` values `stack_strip`, `stack_card`, and `stack_outline`.
+25. The active cube-removal grammar uses one fixed-view side-by-side isometric comparison of an original block stack and the remaining stack after cubes were removed, and asks for the exact removal count.
+26. `task_puzzles_spatial_assembly_label` uses semantic `task_variant` value `can_be_built`.
+27. `task_puzzles_spatial_assembly_label` uses visual `scene_variant` values `assembly_strip`, `assembly_card`, and `assembly_outline`.
+28. The active assembly grammar uses `2..4` polyomino pieces above `5..6` labeled silhouette options, keeps one shared polyomino cell size across the top pieces and the option silhouettes, and asks which option can be built by using all pieces exactly once.
+29. `task_puzzles_spatial_overlay_result_label` uses semantic `task_variant` value `overlay_union_same_grid`.
+30. `task_puzzles_spatial_overlay_result_label` uses visual `scene_variant` values `overlay_strip`, `overlay_card`, and `overlay_outline`.
+31. The active transparent-sheet overlay grammar uses two aligned source sheets above `5..6` labeled result options, keeps the paper frames and hidden grid alignment fixed across both source sheets and all options, and asks which option matches the union of the two source mark sets when no rotation or flipping is allowed.
+32. Prompt-facing spatial evidence should stay as one-box `bbox_set` grounding on the winning option image/panel for fold-result, assembly, and overlay tasks or as the ordered two-box structure pair `[original left, remaining right]` for cube-removal tasks; do not invent fake per-missing-cube or explanatory assembly bboxes.
+33. `task_puzzles_topology_bead_equivalence_count` uses semantic `task_variant` values `color_cycle_count`, `shape_cycle_count`, and `mixed_cycle_count`.
+34. `task_puzzles_topology_bead_equivalence_count` uses visual `scene_variant` values `loop_strip`, `loop_card`, and `loop_outline`.
+35. The active topology bead-loop grammar uses one reference loop above `6..7` labeled option loops, `4..6` beads per loop, and counts the options whose bead order matches the reference up to cyclic rotation only; color-bearing variants should use Lab-separated colors, prompt-facing evidence should be the ordered set of valid option-image bboxes, and the prompt must explicitly say that flipping/reflection is not allowed.
 
 ## Planned geometry measurement variants
 1. **Angle measurement**

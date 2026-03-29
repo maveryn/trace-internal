@@ -65,6 +65,7 @@ Use this whenever the task lives under `domain=puzzles`.
 - If a logic task uses option panels, keep the answer format as `option_letter` and ground prompt-facing evidence on the winning option panel bbox.
 - Prefer logic boards with one explicit `?` cell and a stable set of labeled option panels so the user interaction stays consistent even when the hidden rule changes across variants.
 - For early logic families, make the semantic rule vary inside `task_variant` (for example row uniqueness vs column uniqueness vs both) before creating new task ids for near-identical board-and-options layouts.
+- For explicit-rule adjacency logic tasks, state the full touch scope in the prompt (for example edge-only vs edge-and-corner), and if uniqueness depends on the local neighborhood, make sure the option pool and visible neighbors actually force one remaining valid symbol.
 
 ## Early spatial lessons
 - For early spatial puzzles, prefer benchmark-like paper-fold or other explicit spatial-diagram tasks over hidden spatial conventions that the image does not make clear.
@@ -75,6 +76,7 @@ Use this whenever the task lives under `domain=puzzles`.
 - Not every option-based puzzle needs boxed option cards. If bare image choices with labels below are clearer, prefer the simpler layout and project evidence from the image region itself.
 - For spatial block-comparison puzzles such as cube-removal counting, ground prompt-facing evidence on the ordered pair of visible structures rather than inventing image-space bboxes for cubes that have already been removed.
 - For spatial assembly puzzles, make the transform policy explicit in both prompt and solver. A good default is: use all pieces exactly once; rotation allowed; flipping not allowed.
+- For transparent-sheet overlay puzzles, keep the two source sheets and all option images on the same paper frame and hidden-grid alignment, and state explicitly that no rotation or flipping is allowed so the task tests overlay composition rather than hidden transform conventions.
 
 ## Early topology lessons
 - For first topology tasks, prefer bead-loop or similar closed-curve puzzles where the invariant can be stated exactly in the prompt.

@@ -9,6 +9,13 @@
       "Work from the shown pieces and labeled silhouette options: {object_description}.",
       "Use the pieces above and the labeled target-shape options below: {object_description}."
     ],
+    "spatial_overlay_puzzle": [
+      "The image shows {object_description}.",
+      "Look at the transparent-sheet overlay puzzle in the image: {object_description}.",
+      "You are given {object_description}.",
+      "Work from the two aligned source sheets and the labeled result options: {object_description}.",
+      "Use the two transparent sheets above and the labeled result options below: {object_description}."
+    ],
     "spatial_fold_result_puzzle": [
       "The image shows {object_description}.",
       "Look at the paper-fold puzzle in the image: {object_description}.",
@@ -32,6 +39,13 @@
       "Determine which labeled silhouette can be built from the pieces when every piece must be used exactly once and pieces may be rotated but not flipped.",
       "Choose the option that can be formed using all the pieces exactly once. Pieces may be rotated but not flipped."
     ],
+    "overlay_result_query": [
+      "If the two transparent sheets are placed exactly on top of each other with no rotation or flipping, which option shows the combined pattern?",
+      "Place the two transparent sheets exactly on top of each other without rotating or flipping them. Which labeled option shows the result?",
+      "When the two aligned transparent sheets are overlaid directly on top of each other, which option matches the combined pattern?",
+      "Determine which option shows the combined pattern after placing the two transparent sheets exactly on top of each other with no rotation or flipping.",
+      "Which labeled option shows the result of overlaying the two transparent sheets exactly as shown, without rotating or flipping either sheet?"
+    ],
     "fold_result_query": [
       "Fold the paper along the dashed line in the direction of the outside arrows, then choose the correct option.",
       "Use the fold line and outside arrows to determine which labeled option shows the folded result.",
@@ -54,6 +68,13 @@
       "Choose the correct labeled silhouette and answer with the option letter.",
       "Return the option letter of the buildable target shape.",
       "Respond with the option letter of the shape that can be built."
+    ],
+    "overlay_union_same_grid": [
+      "Answer with the option letter.",
+      "Select the correct option and answer with the option letter.",
+      "Choose the labeled result that matches the combined pattern and answer with the option letter.",
+      "Return the option letter of the correctly combined pattern.",
+      "Respond with the option letter of the correct overlay result."
     ],
     "vertical_fold_result": [
       "Which option shows the paper after it is folded? Answer with the option letter.",
@@ -79,6 +100,9 @@
   },
   "required_slots_by_key": {
     "task_family:spatial_assembly_puzzle": [
+      "object_description"
+    ],
+    "task_family:spatial_overlay_puzzle": [
       "object_description"
     ],
     "task_family:spatial_fold_result_puzzle": [

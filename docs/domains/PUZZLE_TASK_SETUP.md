@@ -13,17 +13,19 @@ Capture the active v1 contract for the `puzzles` domain.
    - `task_puzzles_arithmetic_equation_value`
    - `task_puzzles_arithmetic_balance_value`
    - `task_puzzles_arithmetic_grid_value`
+   - `task_puzzles_logic_adjacency_completion_label`
    - `task_puzzles_logic_grid_completion_label`
    - `task_puzzles_spatial_fold_result_label`
    - `task_puzzles_spatial_cube_removal_count`
    - `task_puzzles_spatial_assembly_label`
+   - `task_puzzles_spatial_overlay_result_label`
    - `task_puzzles_topology_bead_equivalence_count`
 
 ## Family contract
 1. Puzzle families are hidden-rule / hidden-variable reasoning families, not generic icon grids or mini tables.
 2. The active arithmetic family centers on explicit local query targets so the prompt-facing evidence can stay local and simple.
-3. The active logic family currently centers on one missing grid cell plus six labeled image options, so the answer format can stay `option_letter` while the evidence stays local to one option panel.
-4. The active spatial family currently mixes option-based fold-result puzzles, integer cube-removal comparison puzzles, and option-based 2D assembly puzzles, while keeping the prompt-facing evidence local to one winning option image or one ordered pair of visible structure regions.
+3. The active logic family currently centers on one missing grid cell plus six labeled image options, so the answer format can stay `option_letter` while the evidence stays local to one option panel whether the rule is hidden (row/column uniqueness) or explicit (adjacency non-touch).
+4. The active spatial family currently mixes option-based fold-result puzzles, integer cube-removal comparison puzzles, option-based 2D assembly puzzles, and transparent-sheet overlay puzzles, while keeping the prompt-facing evidence local to one winning option image or one ordered pair of visible structure regions.
 5. The active topology family currently uses one reference bead loop plus several labeled option loops and counts the options that preserve a cyclic order rule under deformation.
 6. Puzzle variants should widen `task_variant` before creating a new task id when the same scene grammar and evidence contract still hold.
 
@@ -110,6 +112,32 @@ Capture the active v1 contract for the `puzzles` domain.
    - `render_map.cell_bboxes_px` stores each grid-cell bbox keyed by cell id,
    - `execution_trace` stores `grid_rows`, `row_values`, `visible_example_rows`, `solver_trace`, `query_cell_id`, `query_row_index`, `query_col_index`, `row_count`, `row_count_range`, `cell_count`, and `cell_count_range`,
    - prompt-facing evidence is projected from `query_cell_id`, not inferred from pixels.
+
+## `task_puzzles_logic_adjacency_completion_label`
+1. Supported `task_variant` values:
+   - `king_non_touch`
+2. Supported `scene_variant` values:
+   - `logic_strip`
+   - `logic_card`
+   - `logic_outline`
+3. Answer contract:
+   - `answer_gt.type = option_letter`
+4. Evidence contract:
+   - `evidence_gt.type = bbox_set`
+   - exactly one bbox for the winning option panel
+5. Scene contract:
+   - one square logic grid per image,
+   - board size ranges from `3x3` through `5x5`,
+   - exactly one board cell shows `?`,
+   - exactly six labeled image options (`A..F`) appear below the board,
+   - the prompt explicitly states that identical symbols may not touch edge-to-edge or corner-to-corner,
+   - the answer is the option letter, not the shape name.
+6. Trace contract:
+   - `scene_ir.entities` includes `puzzle_logic_cell`, `puzzle_logic_option_panel`, `puzzle_logic_option_label`, and `puzzle_logic_option_symbol_box` entities,
+   - `render_map.cell_bboxes_px` stores each board-cell bbox keyed by `cell_id`,
+   - `render_map.option_panel_bboxes_px` stores each option-panel bbox keyed by `option_panel_id`,
+   - `execution_trace` stores `board_values`, `grid_rows`, `symbol_pool`, `query_cell_id`, `query_row_index`, `query_col_index`, `neighbor_coords`, `forced_neighbor_coords`, `forced_neighbor_types`, `query_neighbor_object_types`, `valid_option_object_types`, `answer_object_type`, `answer_option_label`, `correct_option_index`, `correct_option_panel_id`, `option_specs`, `board_size`, `board_size_range`, `cell_count`, `cell_count_range`, `option_count`, and `solver_trace`,
+   - prompt-facing evidence is projected from `correct_option_panel_id`, not inferred from pixels.
 
 ## `task_puzzles_logic_grid_completion_label`
 1. Supported `task_variant` values:
@@ -224,6 +252,31 @@ Capture the active v1 contract for the `puzzles` domain.
    - `execution_trace` stores `piece_specs`, `piece_count`, `piece_count_range`, `option_specs`, `option_count`, `option_count_range`, `target_cells`, `target_bbox_dims`, `target_cell_count`, `target_cell_count_range`, `answer_option_label`, `correct_option_index`, `correct_option_panel_id`, `supporting_option_panel_ids`, and `solver_trace`,
    - prompt-facing evidence is projected from `correct_option_panel_id`, not from inferred assembly overlays.
 
+## `task_puzzles_spatial_overlay_result_label`
+1. Supported `task_variant` values:
+   - `overlay_union_same_grid`
+2. Supported `scene_variant` values:
+   - `overlay_strip`
+   - `overlay_card`
+   - `overlay_outline`
+3. Answer contract:
+   - `answer_gt.type = option_letter`
+4. Evidence contract:
+   - `evidence_gt.type = bbox_set`
+   - exactly one bbox for the winning option image
+5. Scene contract:
+   - one transparent-sheet overlay puzzle per image,
+   - two aligned source sheets appear above `5..6` labeled result options,
+   - the prompt explicitly says the sheets are placed exactly on top of each other,
+   - the prompt explicitly says no rotation or flipping is allowed,
+   - the active rule is union over the two source-sheet mark sets,
+   - the answer is the option letter of the one correct combined result.
+6. Trace contract:
+   - `scene_ir.entities` includes `puzzle_overlay_reference_panel`, `puzzle_overlay_source_sheet`, `puzzle_overlay_operator`, `puzzle_overlay_mark`, `puzzle_overlay_option_choice`, `puzzle_overlay_option_label`, `puzzle_overlay_option_paper`, and `puzzle_overlay_option_mark` entities,
+   - `render_map.reference_panel_bbox_px`, `render_map.source_sheet_bboxes_px`, and `render_map.option_choice_bboxes_px` store the traced visible geometry for the source sheets and labeled result options,
+   - `execution_trace` stores `grid_size`, `grid_size_range`, `option_count`, `option_count_range`, `sheet_mark_count_range`, `overlap_count_range`, `left_cells`, `right_cells`, `overlap_cells`, `union_cells`, `left_mark_specs`, `right_mark_specs`, `left_mark_count`, `right_mark_count`, `overlap_count`, `union_mark_count`, `option_specs`, `answer_option_label`, `correct_option_index`, `correct_option_choice_id`, `supporting_option_choice_ids`, and `solver_trace`,
+   - prompt-facing evidence is projected from `correct_option_choice_id`, not from the source sheets.
+
 ## `task_puzzles_topology_bead_equivalence_count`
 1. Supported `task_variant` values:
    - `color_cycle_count`
@@ -298,6 +351,17 @@ Capture the active v1 contract for the `puzzles` domain.
    - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
 6. Prompt-facing evidence wording should always make the one-box contract explicit: the returned bbox is the winning option image.
 
+## Prompt contract for `task_puzzles_logic_adjacency_completion_label`
+1. Bundle: `puzzles_logic_v1`
+2. `task_family_key`: `logic_option_completion_puzzle`
+3. `task_key`: `adjacency_completion_query`
+4. `task_variant_key`: `king_non_touch`
+5. Required slots:
+   - task-family: `object_description`
+   - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
+   - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
+6. Prompt-facing wording should make the rule explicit: identical symbols may not touch by edge or by corner, and the returned bbox is the winning option image.
+
 ## Prompt contract for `task_puzzles_spatial_fold_result_label`
 1. Bundle: `puzzles_spatial_v1`
 2. `task_family_key`: `spatial_fold_result_puzzle`
@@ -330,6 +394,17 @@ Capture the active v1 contract for the `puzzles` domain.
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
    - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
 6. Prompt-facing evidence wording should always make the one-box contract explicit: the returned bbox is the winning option panel.
+
+## Prompt contract for `task_puzzles_spatial_overlay_result_label`
+1. Bundle: `puzzles_spatial_v1`
+2. `task_family_key`: `spatial_overlay_puzzle`
+3. `task_key`: `overlay_result_query`
+4. `task_variant_key`: `overlay_union_same_grid`
+5. Required slots:
+   - task-family: `object_description`
+   - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
+   - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
+6. Prompt-facing evidence wording should always make the one-box contract explicit: the returned bbox is the winning option image.
 
 ## Prompt contract for `task_puzzles_topology_bead_equivalence_count`
 1. Bundle: `puzzles_topology_v1`

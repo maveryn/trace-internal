@@ -16,6 +16,23 @@ generation:
         assembly_strip: 1.0
         assembly_card: 1.0
         assembly_outline: 1.0
+    task_puzzles_spatial_overlay_result_label:
+      option_count_min: 5
+      option_count_max: 6
+      grid_size_min: 4
+      grid_size_max: 5
+      sheet_mark_count_min: 2
+      sheet_mark_count_max: 5
+      overlap_count_min: 1
+      overlap_count_max: 2
+      balanced_task_variant_sampling: true
+      balanced_scene_variant_sampling: true
+      task_variant_weights:
+        overlay_union_same_grid: 1.0
+      scene_variant_weights:
+        overlay_strip: 1.0
+        overlay_card: 1.0
+        overlay_outline: 1.0
     task_puzzles_spatial_fold_result_label:
       option_count_min: 6
       option_count_max: 6
@@ -83,6 +100,36 @@ rendering:
       border_color_rgb: [86, 94, 108]
       text_color_rgb: [30, 34, 40]
       text_stroke_rgb: [255, 255, 255]
+    task_puzzles_spatial_overlay_result_label:
+      canvas_width: 1200
+      canvas_height: 860
+      scene_margin_left_px: 64
+      scene_margin_right_px: 64
+      scene_margin_top_px: 56
+      scene_margin_bottom_px: 56
+      reference_panel_height_px: 294
+      reference_panel_padding_px: 24
+      source_paper_size_px: 158
+      source_gap_px: 120
+      reference_to_options_gap_px: 34
+      option_paper_size_px: 158
+      option_gap_px: 22
+      option_row_gap_px: 22
+      option_label_gap_px: 12
+      paper_corner_radius_px: 18
+      panel_corner_radius_px: 28
+      border_width_px: 3
+      option_label_font_size_px: 28
+      combine_symbol_font_size_px: 46
+      panel_fill_rgb: [248, 249, 252]
+      paper_fill_rgb: [255, 252, 245]
+      paper_shadow_rgb: [236, 230, 215]
+      border_color_rgb: [86, 94, 108]
+      text_color_rgb: [30, 34, 40]
+      text_stroke_rgb: [255, 255, 255]
+      mark_fill_rgb: [53, 96, 164]
+      mark_outline_rgb: [36, 48, 66]
+      instruction_fill_rgb: [238, 243, 250]
     task_puzzles_spatial_fold_result_label:
       canvas_width: 1200
       canvas_height: 840
@@ -151,6 +198,15 @@ prompt:
       evidence_hint_can_be_built: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel
       json_example_can_be_built: '{"evidence":[[222,488,398,692]],"answer":"C"}'
       json_example_answer_only_can_be_built: '{"answer":"C"}'
+    task_puzzles_spatial_overlay_result_label:
+      task_family_key: spatial_overlay_puzzle
+      task_key: overlay_result_query
+      object_description_overlay_strip: a transparent-sheet overlay puzzle with two aligned source sheets above labeled result options
+      object_description_overlay_card: a card-style transparent-sheet overlay puzzle with two aligned source sheets above labeled result options
+      object_description_overlay_outline: an outline-style transparent-sheet overlay puzzle with two aligned source sheets above labeled result options
+      evidence_hint_overlay_union_same_grid: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option image
+      json_example_overlay_union_same_grid: '{"evidence":[[521,384,679,542]],"answer":"B"}'
+      json_example_answer_only_overlay_union_same_grid: '{"answer":"B"}'
     task_puzzles_spatial_fold_result_label:
       task_family_key: spatial_fold_result_puzzle
       task_key: fold_result_query
@@ -180,6 +236,11 @@ complexity:
       criteria_weights:
         visual_scan: 0.38
         reasoning_load: 0.42
+        scene_variant_load: 0.20
+    task_puzzles_spatial_overlay_result_label:
+      criteria_weights:
+        visual_scan: 0.40
+        reasoning_load: 0.40
         scene_variant_load: 0.20
     task_puzzles_spatial_fold_result_label:
       criteria_weights:

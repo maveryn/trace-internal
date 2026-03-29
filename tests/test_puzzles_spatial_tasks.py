@@ -9,6 +9,7 @@ from trace.tasks.puzzles.shared.spatial_blocks_common import total_cubes_from_he
 from trace.tasks.puzzles.spatial.assembly_label import PuzzlesSpatialAssemblyLabelTask
 from trace.tasks.puzzles.spatial.cube_removal_count import PuzzlesSpatialCubeRemovalCountTask
 from trace.tasks.puzzles.spatial.fold_result_label import PuzzlesSpatialFoldResultLabelTask
+from trace.tasks.puzzles.spatial.overlay_result_label import PuzzlesSpatialOverlayResultLabelTask
 from tests.helpers import extract_prompt_json_example
 
 
@@ -36,6 +37,108 @@ def _bboxes_overlap(a: Sequence[float], b: Sequence[float]) -> bool:
         or float(a[3]) <= float(b[1])
         or float(b[3]) <= float(a[1])
     )
+
+
+def _cell_signature(cells: list[list[int]] | list[dict[str, object]]) -> tuple[tuple[int, int], ...]:
+    """Return a hashable row-major cell signature."""
+
+    if cells and isinstance(cells[0], dict):
+        return tuple(sorted((int(item["cell"][0]), int(item["cell"][1])) for item in cells))  # type: ignore[index]
+    return tuple(sorted((int(cell[0]), int(cell[1])) for cell in cells))  # type: ignore[index]
+
+
+def test_puzzle_spatial_overlay_result_label_contract_matches_winning_option_choice() -> None:
+    task = PuzzlesSpatialOverlayResultLabelTask()
+    scene_variants = ("overlay_strip", "overlay_card", "overlay_outline")
+
+    for scene_index, scene_variant in enumerate(scene_variants):
+        seed = 25920 + scene_index
+        out = task.generate(seed, params={"scene_variant": scene_variant}, max_attempts=10)
+        trace = out.trace_payload
+        execution = trace["execution_trace"]
+        render = trace["render_spec"]
+        render_map = trace["render_map"]
+        evidence_bboxes = [[float(value) for value in bbox] for bbox in out.evidence_gt.value]
+
+        assert str(out.task_variant) == "overlay_union_same_grid"
+        assert out.answer_gt.type == "option_letter"
+        assert out.evidence_gt.type == "bbox_set"
+        assert len(evidence_bboxes) == 1
+        assert str(execution["scene_variant"]) == str(scene_variant)
+        assert str(render["scene_variant"]) == str(scene_variant)
+        assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
+        assert str(execution["question_format"]) == "overlay_union_mcq"
+        assert str(execution["view_family"]) == "transparent_sheet_overlay_mcq"
+        assert 4 <= int(execution["grid_size"]) <= 5
+        assert 5 <= int(execution["option_count"]) <= 6
+        assert 2 <= int(execution["left_mark_count"]) <= 5
+        assert 2 <= int(execution["right_mark_count"]) <= 5
+        assert 1 <= int(execution["overlap_count"]) <= 2
+        assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
+        assert str(out.answer_gt.value) == str(execution["answer_option_label"])
+
+        expected_bbox = [
+            float(value)
+            for value in render_map["option_choice_bboxes_px"][str(execution["correct_option_choice_id"])]
+        ]
+        assert evidence_bboxes[0] == expected_bbox
+        assert [str(item) for item in execution["supporting_option_choice_ids"]] == [
+            str(execution["correct_option_choice_id"])
+        ]
+
+        left_signature = _cell_signature(execution["left_cells"])
+        right_signature = _cell_signature(execution["right_cells"])
+        overlap_signature = _cell_signature(execution["overlap_cells"])
+        union_signature = _cell_signature(execution["union_cells"])
+        assert set(overlap_signature) <= set(left_signature)
+        assert set(overlap_signature) <= set(right_signature)
+        assert set(left_signature) | set(right_signature) == set(union_signature)
+        assert set(left_signature) & set(right_signature) == set(overlap_signature)
+
+        option_specs = execution["option_specs"]
+        assert sum(1 for option in option_specs if bool(option["is_correct"])) == 1
+        assert len({_cell_signature(option["cells"]) for option in option_specs}) == int(execution["option_count"])
+        source_bboxes = [
+            [float(value) for value in render_map["source_sheet_bboxes_px"][sheet_id]]
+            for sheet_id in ("source_sheet_left", "source_sheet_right")
+        ]
+        option_bbox = expected_bbox
+        option_width = option_bbox[2] - option_bbox[0]
+        option_height = option_bbox[3] - option_bbox[1]
+        assert all((bbox[2] - bbox[0]) == option_width for bbox in source_bboxes)
+        assert all((bbox[3] - bbox[1]) == option_height for bbox in source_bboxes)
+        divider_entities = [
+            entity for entity in trace["scene_ir"]["entities"] if str(entity["entity_type"]) == "puzzle_overlay_divider"
+        ]
+        assert len(divider_entities) == 1
+
+        winning_option = next(option for option in option_specs if bool(option["is_correct"]))
+        assert str(winning_option["option_label"]) == str(out.answer_gt.value)
+        assert str(winning_option["option_choice_id"]) == str(execution["correct_option_choice_id"])
+        assert _cell_signature(winning_option["cells"]) == union_signature
+
+
+def test_puzzle_spatial_overlay_prompt_examples_match_selected_variant() -> None:
+    task = PuzzlesSpatialOverlayResultLabelTask()
+    out = task.generate(25990, params={}, max_attempts=10)
+    answer_and_evidence = extract_prompt_json_example(out.prompt_variants["answer_and_evidence"])
+    answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
+    assert answer_and_evidence == {"evidence": [[521, 384, 679, 542]], "answer": "B"}
+    assert answer_only == {"answer": "B"}
+
+
+def test_puzzle_spatial_overlay_result_label_task_is_deterministic() -> None:
+    task = PuzzlesSpatialOverlayResultLabelTask()
+    params = {"scene_variant": "overlay_card"}
+    out_a = task.generate(26010, params=params, max_attempts=10)
+    out_b = task.generate(26010, params=params, max_attempts=10)
+
+    assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
+    assert out_a.evidence_gt.to_dict() == out_b.evidence_gt.to_dict()
+    assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
+    assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
+    assert out_a.prompt == out_b.prompt
+    assert out_a.image.tobytes() == out_b.image.tobytes()
 
 
 def test_puzzle_spatial_fold_result_label_contract_matches_winning_option_choice() -> None:

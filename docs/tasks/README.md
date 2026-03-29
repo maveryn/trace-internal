@@ -73,4 +73,5 @@ Current task docs:
 63. [task_puzzles_arithmetic_balance_value.md](task_puzzles_arithmetic_balance_value.md)
 64. [task_puzzles_arithmetic_grid_value.md](task_puzzles_arithmetic_grid_value.md)
 65. [task_puzzles_logic_grid_completion_label.md](task_puzzles_logic_grid_completion_label.md)
-66. [task_puzzles_spatial_fold_hole_label.md](task_puzzles_spatial_fold_hole_label.md)
+66. [task_puzzles_spatial_fold_result_label.md](task_puzzles_spatial_fold_result_label.md)
+67. [task_puzzles_spatial_cube_removal_count.md](task_puzzles_spatial_cube_removal_count.md)

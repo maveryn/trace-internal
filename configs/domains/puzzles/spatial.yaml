@@ -1,84 +1,132 @@
 generation:
   task_overrides:
-    task_puzzles_spatial_fold_hole_label:
+    task_puzzles_spatial_fold_result_label:
       option_count_min: 6
       option_count_max: 6
       grid_size: 6
+      mark_count_min: 3
+      mark_count_max: 5
       balanced_task_variant_sampling: true
       balanced_scene_variant_sampling: true
       task_variant_weights:
-        single_fold_single_hole: 1.0
-        single_fold_two_holes: 1.0
-        double_fold_single_hole: 1.0
+        vertical_fold_result: 1.0
+        horizontal_fold_result: 1.0
       scene_variant_weights:
         fold_strip: 1.0
         fold_card: 1.0
         fold_outline: 1.0
+    task_puzzles_spatial_cube_removal_count:
+      width_min: 2
+      width_max: 4
+      depth_min: 2
+      depth_max: 4
+      original_max_height_min: 2
+      original_max_height_max: 5
+      total_cubes_max: 22
+      removal_count_min: 1
+      removal_count_max: 6
+      balanced_task_variant_sampling: true
+      balanced_scene_variant_sampling: true
+      task_variant_weights:
+        cube_removal_count: 1.0
+      scene_variant_weights:
+        stack_strip: 1.0
+        stack_card: 1.0
+        stack_outline: 1.0
 
 rendering:
   task_overrides:
-    task_puzzles_spatial_fold_hole_label:
-      canvas_width: 1260
-      canvas_height: 860
+    task_puzzles_spatial_fold_result_label:
+      canvas_width: 1200
+      canvas_height: 840
       scene_margin_left_px: 64
       scene_margin_right_px: 64
       scene_margin_top_px: 56
       scene_margin_bottom_px: 56
-      reference_panel_height_px: 316
+      reference_panel_height_px: 304
       reference_panel_padding_px: 28
-      step_panel_width_px: 208
-      step_panel_height_px: 208
-      step_panel_gap_px: 28
-      step_arrow_gap_px: 12
-      reference_to_options_gap_px: 48
-      option_panel_width_px: 148
-      option_panel_height_px: 188
-      option_gap_px: 18
-      option_label_gap_px: 16
-      option_content_box_size_px: 102
-      option_content_padding_px: 10
+      reference_to_options_gap_px: 28
+      option_gap_px: 16
+      option_row_gap_px: 18
+      option_label_gap_px: 10
       paper_corner_radius_px: 18
       panel_corner_radius_px: 28
       border_width_px: 3
-      option_label_font_size_px: 30
+      option_label_font_size_px: 28
       panel_fill_rgb: [248, 249, 252]
-      option_panel_fill_rgb: [251, 251, 255]
-      option_content_fill_rgb: [252, 252, 255]
       paper_fill_rgb: [255, 252, 245]
       paper_shadow_rgb: [236, 230, 215]
       border_color_rgb: [86, 94, 108]
       text_color_rgb: [30, 34, 40]
       text_stroke_rgb: [255, 255, 255]
       fold_line_rgb: [100, 116, 145]
-      hole_fill_rgb: [30, 34, 40]
+      grid_line_rgb: [209, 214, 223]
       arrow_rgb: [54, 102, 180]
       instruction_fill_rgb: [238, 243, 250]
+    task_puzzles_spatial_cube_removal_count:
+      canvas_width: 1200
+      canvas_height: 760
+      scene_margin_left_px: 64
+      scene_margin_right_px: 64
+      scene_margin_top_px: 56
+      scene_margin_bottom_px: 56
+      structure_padding_px: 44
+      structure_pair_gap_px: 96
+      caption_gap_px: 16
+      caption_font_size_px: 30
+      panel_corner_radius_px: 30
+      border_width_px: 3
+      arrow_width_px: 6
+      arrow_head_length_px: 18
+      arrow_head_width_px: 18
+      panel_fill_rgb: [248, 249, 252]
+      border_color_rgb: [86, 94, 108]
+      face_top_rgb: [240, 194, 108]
+      face_right_rgb: [213, 161, 73]
+      face_left_rgb: [187, 136, 56]
+      face_shadow_rgb: [150, 104, 38]
+      instruction_fill_rgb: [238, 243, 250]
+      caption_fill_rgb: [32, 38, 46]
+      caption_stroke_rgb: [255, 255, 255]
+      arrow_rgb: [75, 88, 107]
 
 prompt:
   shared:
     bundle_id: puzzles_spatial_v1
     answer_hint: set "answer" to the exact option letter of the correct image option
   task_overrides:
-    task_puzzles_spatial_fold_hole_label:
-      task_family_key: spatial_fold_hole_puzzle
-      task_key: unfold_query
-      object_description_fold_strip: a folded-paper hole-punch puzzle with three fold steps above six labeled unfolded-paper options
-      object_description_fold_card: a card-style folded-paper hole-punch puzzle with three fold steps above six labeled unfolded-paper options
-      object_description_fold_outline: an outline-style folded-paper hole-punch puzzle with three fold steps above six labeled unfolded-paper options
-      evidence_hint_single_fold_single_hole: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel
-      evidence_hint_single_fold_two_holes: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel
-      evidence_hint_double_fold_single_hole: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct option panel
-      json_example_single_fold_single_hole: '{"evidence":[[333,616,481,804]],"answer":"B"}'
-      json_example_single_fold_two_holes: '{"evidence":[[499,616,647,804]],"answer":"C"}'
-      json_example_double_fold_single_hole: '{"evidence":[[665,616,813,804]],"answer":"D"}'
-      json_example_answer_only_single_fold_single_hole: '{"answer":"B"}'
-      json_example_answer_only_single_fold_two_holes: '{"answer":"C"}'
-      json_example_answer_only_double_fold_single_hole: '{"answer":"D"}'
+    task_puzzles_spatial_fold_result_label:
+      task_family_key: spatial_fold_result_puzzle
+      task_key: fold_result_query
+      object_description_fold_strip: a paper-fold puzzle with one marked sheet above six labeled folded-result options
+      object_description_fold_card: a card-style paper-fold puzzle with one marked sheet above six labeled folded-result options
+      object_description_fold_outline: an outline-style paper-fold puzzle with one marked sheet above six labeled folded-result options
+      evidence_hint_vertical_fold_result: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct folded-result option image
+      evidence_hint_horizontal_fold_result: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct folded-result option image
+      json_example_vertical_fold_result: '{"evidence":[[206,388,324,613]],"answer":"A"}'
+      json_example_horizontal_fold_result: '{"evidence":[[482,388,718,500]],"answer":"B"}'
+      json_example_answer_only_vertical_fold_result: '{"answer":"A"}'
+      json_example_answer_only_horizontal_fold_result: '{"answer":"B"}'
+    task_puzzles_spatial_cube_removal_count:
+      task_family_key: spatial_cube_removal_puzzle
+      task_key: cube_removal_count_query
+      answer_hint: set "answer" to the exact number of cubes removed as an integer
+      object_description_stack_strip: a block-comparison puzzle with the original block on the left and the remaining block on the right
+      object_description_stack_card: a card-style block-comparison puzzle with the original block on the left and the remaining block on the right
+      object_description_stack_outline: an outline-style block-comparison puzzle with the original block on the left and the remaining block on the right
+      evidence_hint_cube_removal_count: set "evidence" to an array containing exactly two bounding boxes [x1, y1, x2, y2], first for the original block on the left and second for the remaining block on the right
+      json_example_cube_removal_count: '{"evidence":[[132,175,459,656],[750,207,1080,656]],"answer":4}'
+      json_example_answer_only_cube_removal_count: '{"answer":4}'
 
 complexity:
   task_overrides:
-    task_puzzles_spatial_fold_hole_label:
+    task_puzzles_spatial_fold_result_label:
       criteria_weights:
         visual_scan: 0.4
         reasoning_load: 0.35
         scene_variant_load: 0.25
+    task_puzzles_spatial_cube_removal_count:
+      criteria_weights:
+        visual_scan: 0.45
+        reasoning_load: 0.4
+        scene_variant_load: 0.15

@@ -900,15 +900,14 @@ def test_puzzles_spatial_defaults_loaded() -> None:
 
     generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_puzzles_spatial_fold_hole_label",
+        task_id="task_puzzles_spatial_fold_result_label",
     )
-    assert str(prompt_defaults["task_family_key"]).strip() == "spatial_fold_hole_puzzle"
-    assert str(prompt_defaults["task_key"]).strip() == "unfold_query"
+    assert str(prompt_defaults["task_family_key"]).strip() == "spatial_fold_result_puzzle"
+    assert str(prompt_defaults["task_key"]).strip() == "fold_result_query"
     assert str(prompt_defaults["object_description_fold_strip"]).strip()
     assert sorted(generation_defaults["task_variant_weights"].keys()) == [
-        "double_fold_single_hole",
-        "single_fold_single_hole",
-        "single_fold_two_holes",
+        "horizontal_fold_result",
+        "vertical_fold_result",
     ]
     assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
         "fold_card",
@@ -917,24 +916,67 @@ def test_puzzles_spatial_defaults_loaded() -> None:
     ]
     assert int(generation_defaults["option_count_min"]) == 6
     assert int(generation_defaults["option_count_max"]) == 6
+    assert int(generation_defaults["mark_count_min"]) == 3
+    assert int(generation_defaults["mark_count_max"]) == 5
     assert int(rendering_defaults["canvas_width"]) > 0
     assert int(rendering_defaults["reference_panel_height_px"]) > 0
-    assert int(rendering_defaults["option_panel_width_px"]) > 0
-    assert str(prompt_defaults["evidence_hint_single_fold_single_hole"]).strip()
-    assert str(prompt_defaults["evidence_hint_single_fold_two_holes"]).strip()
-    assert str(prompt_defaults["evidence_hint_double_fold_single_hole"]).strip()
-    assert str(prompt_defaults["json_example_single_fold_single_hole"]).strip()
-    assert str(prompt_defaults["json_example_answer_only_double_fold_single_hole"]).strip()
+    assert int(rendering_defaults["option_gap_px"]) >= 0
+    assert int(rendering_defaults["option_row_gap_px"]) >= 0
+    assert str(prompt_defaults["evidence_hint_vertical_fold_result"]).strip()
+    assert str(prompt_defaults["evidence_hint_horizontal_fold_result"]).strip()
+    assert str(prompt_defaults["json_example_vertical_fold_result"]).strip()
+    assert str(prompt_defaults["json_example_answer_only_horizontal_fold_result"]).strip()
 
     spatial_complexity = resolve_task_group_section_defaults(
         cfg,
         "complexity",
-        task_id="task_puzzles_spatial_fold_hole_label",
+        task_id="task_puzzles_spatial_fold_result_label",
     )
     assert spatial_complexity["criteria_weights"] == {
         "reasoning_load": pytest.approx(0.35),
         "scene_variant_load": pytest.approx(0.25),
         "visual_scan": pytest.approx(0.4),
+    }
+
+
+def test_puzzles_spatial_cube_removal_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("puzzles", "spatial")
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_puzzles_spatial_cube_removal_count",
+    )
+    assert str(prompt_defaults["task_family_key"]).strip() == "spatial_cube_removal_puzzle"
+    assert str(prompt_defaults["task_key"]).strip() == "cube_removal_count_query"
+    assert str(prompt_defaults["answer_hint"]).strip()
+    assert str(prompt_defaults["object_description_stack_strip"]).strip()
+    assert generation_defaults["task_variant_weights"] == {"cube_removal_count": 1.0}
+    assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
+        "stack_card",
+        "stack_outline",
+        "stack_strip",
+    ]
+    assert int(generation_defaults["width_min"]) == 2
+    assert int(generation_defaults["width_max"]) == 4
+    assert int(generation_defaults["original_max_height_min"]) == 2
+    assert int(generation_defaults["original_max_height_max"]) == 5
+    assert int(generation_defaults["removal_count_min"]) == 1
+    assert int(generation_defaults["removal_count_max"]) == 6
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert int(rendering_defaults["structure_padding_px"]) > 0
+    assert int(rendering_defaults["structure_pair_gap_px"]) > 0
+    assert int(rendering_defaults["caption_font_size_px"]) > 0
+    assert str(prompt_defaults["evidence_hint_cube_removal_count"]).strip()
+    assert str(prompt_defaults["json_example_cube_removal_count"]).strip()
+
+    spatial_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_puzzles_spatial_cube_removal_count",
+    )
+    assert spatial_complexity["criteria_weights"] == {
+        "reasoning_load": pytest.approx(0.4),
+        "scene_variant_load": pytest.approx(0.15),
+        "visual_scan": pytest.approx(0.45),
     }
 
 

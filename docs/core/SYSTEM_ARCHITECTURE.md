@@ -133,7 +133,8 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/puzzles/arithmetic/balance_value.py`
    - `trace/tasks/puzzles/arithmetic/grid_value.py`
    - `trace/tasks/puzzles/logic/grid_completion_label.py`
-   - `trace/tasks/puzzles/spatial/fold_hole_label.py`
+   - `trace/tasks/puzzles/spatial/fold_result_label.py`
+   - `trace/tasks/puzzles/spatial/cube_removal_count.py`
 
 ## 5) Architecture invariants
 1. Determinism from config + seeds + versions.

@@ -2,48 +2,65 @@
   "bundle_id": "puzzles_spatial_v1",
   "schema_version": "v1",
   "task_family_templates": {
-    "spatial_fold_hole_puzzle": [
+    "spatial_fold_result_puzzle": [
       "The image shows {object_description}.",
-      "Look at the folded-paper puzzle in the image: {object_description}.",
+      "Look at the paper-fold puzzle in the image: {object_description}.",
       "You are given {object_description}.",
-      "Work from the fold-and-hole puzzle shown in the image: {object_description}.",
-      "Use the folded-paper diagram and labeled options in the image: {object_description}."
+      "Work from the paper-fold diagram shown in the image: {object_description}.",
+      "Use the marked paper and labeled options in the image: {object_description}."
+    ],
+    "spatial_cube_removal_puzzle": [
+      "The image shows {object_description}.",
+      "Look at the block-comparison puzzle in the image: {object_description}.",
+      "You are given {object_description}.",
+      "Work from the two shown block structures in the image: {object_description}.",
+      "Use the original block on the left and the remaining block on the right: {object_description}."
     ]
   },
   "task_templates": {
-    "unfold_query": [
-      "Choose the correct unfolded-paper option.",
-      "Determine which labeled option is correct after the paper is unfolded.",
-      "Use the fold steps to identify the correct image option.",
-      "Find the labeled option that shows the unfolded paper.",
-      "Work from the fold diagram and choose the correct option."
+    "fold_result_query": [
+      "Fold the paper along the dashed line in the direction of the outside arrows, then choose the correct option.",
+      "Use the fold line and outside arrows to determine which labeled option shows the folded result.",
+      "Work from the marked sheet and choose the option that matches the paper after it is folded.",
+      "Determine which option shows the paper after folding along the dashed line in the direction shown by the outside arrows.",
+      "Use the paper-fold diagram to find the correct folded result option."
+    ],
+    "cube_removal_count_query": [
+      "The left structure is the original block and the right structure is the block after some cubes were taken away. How many cubes were removed?",
+      "Compare the original block on the left with the remaining block on the right. How many cubes have been taken from the block?",
+      "Use the two shown block structures to determine how many cubes were removed from the original block.",
+      "The right block is formed by removing cubes from the left block. How many cubes were removed?",
+      "How many cubes have been taken away to turn the left block into the right block?"
     ]
   },
   "task_variant_templates": {
-    "single_fold_single_hole": [
-      "Which option shows the paper after it is unfolded? Answer with the option letter.",
-      "Select the labeled option that matches the unfolded paper. Answer with the option letter.",
-      "Which labeled option is the correct unfolded result? Answer with the option letter.",
-      "Choose the option that shows the unfolded paper after the fold and punch. Answer with the option letter.",
-      "Which option gives the correct unfolded hole pattern? Answer with the option letter."
+    "vertical_fold_result": [
+      "Which option shows the paper after it is folded? Answer with the option letter.",
+      "Select the labeled option that matches the folded paper. Answer with the option letter.",
+      "Which labeled option is the correct folded result? Answer with the option letter.",
+      "Choose the option that shows the paper after the indicated fold. Answer with the option letter.",
+      "Which option gives the correct folded-paper result? Answer with the option letter."
     ],
-    "single_fold_two_holes": [
-      "Which option shows the paper after it is unfolded? Answer with the option letter.",
-      "Select the labeled option that matches the unfolded paper. Answer with the option letter.",
-      "Which labeled option is the correct unfolded result? Answer with the option letter.",
-      "Choose the option that shows the unfolded paper after the fold and punches. Answer with the option letter.",
-      "Which option gives the correct unfolded hole pattern? Answer with the option letter."
+    "horizontal_fold_result": [
+      "Which option shows the paper after it is folded? Answer with the option letter.",
+      "Select the labeled option that matches the folded paper. Answer with the option letter.",
+      "Which labeled option is the correct folded result? Answer with the option letter.",
+      "Choose the option that shows the paper after the indicated fold. Answer with the option letter.",
+      "Which option gives the correct folded-paper result? Answer with the option letter."
     ],
-    "double_fold_single_hole": [
-      "Which option shows the paper after it is unfolded? Answer with the option letter.",
-      "Select the labeled option that matches the unfolded paper. Answer with the option letter.",
-      "Which labeled option is the correct unfolded result? Answer with the option letter.",
-      "Choose the option that shows the unfolded paper after both folds are reversed. Answer with the option letter.",
-      "Which option gives the correct unfolded hole pattern? Answer with the option letter."
+    "cube_removal_count": [
+      "Answer with the removed cube count as an integer.",
+      "Return the number of cubes removed as an integer.",
+      "Give the exact removed cube count as an integer.",
+      "Provide the number of cubes taken away as an integer.",
+      "Respond with the removed cube count as an integer."
     ]
   },
   "required_slots_by_key": {
-    "task_family:spatial_fold_hole_puzzle": [
+    "task_family:spatial_fold_result_puzzle": [
+      "object_description"
+    ],
+    "task_family:spatial_cube_removal_puzzle": [
       "object_description"
     ],
     "answer_or_evidence:answer_only": [

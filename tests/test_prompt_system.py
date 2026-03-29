@@ -453,13 +453,21 @@ def test_puzzles_logic_bundle_supports_grid_completion_variants() -> None:
     ]
 
 
-def test_puzzles_spatial_bundle_supports_fold_hole_variants() -> None:
+def test_puzzles_spatial_bundle_supports_fold_result_variants() -> None:
     bundle = load_prompt_bundle("puzzles", "spatial", "puzzles_spatial_v1")
-    assert len(bundle.task_templates["unfold_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_variant_templates["single_fold_single_hole"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_variant_templates["single_fold_two_holes"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_variant_templates["double_fold_single_hole"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["task_family:spatial_fold_hole_puzzle"]) == [
+    assert len(bundle.task_templates["fold_result_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["vertical_fold_result"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["horizontal_fold_result"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_family:spatial_fold_result_puzzle"]) == [
+        "object_description",
+    ]
+
+
+def test_puzzles_spatial_bundle_supports_cube_removal_variant() -> None:
+    bundle = load_prompt_bundle("puzzles", "spatial", "puzzles_spatial_v1")
+    assert len(bundle.task_templates["cube_removal_count_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["cube_removal_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_family:spatial_cube_removal_puzzle"]) == [
         "object_description",
     ]
 

@@ -30,7 +30,7 @@ Use this whenever the task lives under `domain=puzzles`.
 ## Early-family guidance
 - `arithmetic`: visual equations, balance/weight puzzles, digit-placement puzzles, number-grid puzzles with explicit unknowns.
 - `logic`: option filtering under placement/adjacency/consistency constraints.
-- `spatial`: fold/hole-punch puzzles, cube views/nets, block stacks, assembly/cut-and-build puzzles.
+- `spatial`: paper-fold result puzzles, cube views/nets, block stacks, assembly/cut-and-build puzzles.
 - `topology`: equivalence under deformation, region/inside-outside reasoning, connected-structure invariants.
 - `symbolic` later: letter/word/path puzzles and symbol-mapping tasks once text-rendering needs are clear.
 
@@ -65,10 +65,13 @@ Use this whenever the task lives under `domain=puzzles`.
 - For early logic families, make the semantic rule vary inside `task_variant` (for example row uniqueness vs column uniqueness vs both) before creating new task ids for near-identical board-and-options layouts.
 
 ## Early spatial lessons
-- For early spatial puzzles, prefer benchmark-like fold/hole or other explicit step-diagram tasks over hidden spatial conventions that the image does not make clear.
-- For fold-hole tasks, keep the fold direction explicit in the image with visible fold lines and arrows instead of expecting the solver to infer an arbitrary folding convention.
-- For option-based spatial puzzles, keep `answer_gt.type = option_letter` and ground prompt-facing evidence on the winning option panel bbox, not on many explanatory regions.
-- When a second puzzle family needs labeled image options, reuse shared puzzle option-panel chrome instead of copying panel/label/content-box layout into another scene renderer.
+- For early spatial puzzles, prefer benchmark-like paper-fold or other explicit spatial-diagram tasks over hidden spatial conventions that the image does not make clear.
+- For paper-fold tasks, keep the fold direction explicit in the image with a visible dashed fold line and outside arrows instead of expecting the solver to infer an arbitrary folding convention.
+- If the fold marks are the point of the task, avoid decorative graph-paper overlays on the reference sheet; keep the paper clean enough that the marks and fold direction remain the most salient signals.
+- For fold-result tasks whose options show only the visible folded paper, prefer reflection-invariant marks so the task tests folding rather than hidden orientation conventions.
+- For option-based spatial puzzles, keep `answer_gt.type = option_letter` and ground prompt-facing evidence on the winning option image bbox, not on many explanatory regions.
+- Not every option-based puzzle needs boxed option cards. If bare image choices with labels below are clearer, prefer the simpler layout and project evidence from the image region itself.
+- For spatial block-comparison puzzles such as cube-removal counting, ground prompt-facing evidence on the ordered pair of visible structures rather than inventing image-space bboxes for cubes that have already been removed.
 
 ## Benchmark alignment
 - MathVision-style useful puzzle coverage includes arithmetic, logic, spatial, topology, and competition-style visual problem solving.

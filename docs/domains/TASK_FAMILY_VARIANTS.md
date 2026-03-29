@@ -90,10 +90,13 @@ Define how we split tasks into reusable families so each dataset slice stays com
 14. `task_puzzles_logic_grid_completion_label` uses visual `scene_variant` values `logic_strip`, `logic_card`, and `logic_outline`.
 15. The active logic-grid grammar uses one square `3x3` through `5x5` board with one explicit `?` cell and exactly six labeled image options.
 16. Prompt-facing logic evidence should stay as one-box `bbox_set` grounding on the winning option panel; keep the query interaction stable as option selection even when later logic families vary the rule structure.
-17. `task_puzzles_spatial_fold_hole_label` uses semantic `task_variant` values `single_fold_single_hole`, `single_fold_two_holes`, and `double_fold_single_hole`.
-18. `task_puzzles_spatial_fold_hole_label` uses visual `scene_variant` values `fold_strip`, `fold_card`, and `fold_outline`.
-19. The active spatial fold-hole grammar uses three reference step panels above exactly six labeled unfolded-paper options; keep the fold directions explicit in the step panels rather than implicit in the final packet alone.
-20. Prompt-facing spatial evidence should stay as one-box `bbox_set` grounding on the winning option panel; do not widen early option-based spatial tasks to multi-region explanatory evidence.
+17. `task_puzzles_spatial_fold_result_label` uses semantic `task_variant` values `vertical_fold_result` and `horizontal_fold_result`.
+18. `task_puzzles_spatial_fold_result_label` uses visual `scene_variant` values `fold_strip`, `fold_card`, and `fold_outline`.
+19. The active spatial fold-result grammar uses one marked paper sheet with an explicit dashed fold line and arrow above exactly six labeled folded-result options; keep the fold direction explicit in the reference sheet rather than implicit in the options alone.
+20. `task_puzzles_spatial_cube_removal_count` uses semantic `task_variant` value `cube_removal_count`.
+21. `task_puzzles_spatial_cube_removal_count` uses visual `scene_variant` values `stack_strip`, `stack_card`, and `stack_outline`.
+22. The active cube-removal grammar uses one fixed-view side-by-side isometric comparison of an original block stack and the remaining stack after cubes were removed, and asks for the exact removal count.
+23. Prompt-facing spatial evidence should stay as one-box `bbox_set` grounding on the winning option image for fold-result tasks or as the ordered two-box structure pair `[original left, remaining right]` for cube-removal tasks; do not invent fake per-missing-cube bboxes.
 
 ## Planned geometry measurement variants
 1. **Angle measurement**

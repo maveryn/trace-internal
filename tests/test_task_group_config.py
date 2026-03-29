@@ -3395,3 +3395,31 @@ def test_temporal_clock_compare_defaults_loaded() -> None:
     assert str(prompt_defaults["object_description_classic"]).strip()
     assert str(prompt_defaults["evidence_hint"]).strip()
     assert str(prompt_defaults["answer_hint"]).strip()
+
+
+def test_temporal_calendar_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("temporal", "calendar")
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_temporal_calendar_month_view",
+    )
+
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "count_marked_weekend_days",
+        "date_of_weekday_occurrence",
+        "days_between_marked_dates",
+    ]
+    assert bool(generation_defaults["balanced_task_variant_sampling"]) is True
+    assert list(generation_defaults["weekend_weekday_indices"]) == [5, 6]
+    assert list(generation_defaults["date_occurrence_support"]) == [1, 2, 3, 4, 5]
+    assert list(generation_defaults["marked_weekend_count_support"]) == [0, 1, 2, 3, 4]
+    assert list(generation_defaults["day_gap_support"]) == list(range(1, 21))
+
+    assert int(rendering_defaults["canvas_width"]) == 860
+    assert int(rendering_defaults["canvas_height"]) == 760
+    assert int(rendering_defaults["title_font_size_px"]) == 30
+    assert int(rendering_defaults["date_font_size_px"]) == 22
+
+    assert str(prompt_defaults["bundle_id"]).strip() == "temporal_calendar_v1"
+    assert str(prompt_defaults["task_family_key"]).strip() == "month_calendar"
+    assert str(prompt_defaults["task_key"]).strip() == "calendar_month_query"

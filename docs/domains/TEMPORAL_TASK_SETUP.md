@@ -3,16 +3,20 @@
 ## Purpose
 Capture the active v1 contract for the `temporal` domain.
 
-## Active family
-1. Current active `task_group`: `clock`
+## Active families
+1. Current active `task_group` values:
+   - `clock`
+   - `calendar`
 2. Current active tasks:
    - `task_temporal_clock_readout`
    - `task_temporal_clock_compare`
+   - `task_temporal_calendar_month_view`
 
 ## Family contract
 1. Temporal tasks use familiar time-structured visual artifacts rather than generic tables or charts.
 2. Early temporal tasks should prefer displays with one visually obvious queried object so prompt-facing evidence can stay local and reviewable.
 3. The active clock family now covers both one-clock readout and multi-clock comparison while keeping one stable analog-clock grammar shared across the task group.
+4. The active calendar family now uses one stable month-view scaffold and widens question diversity through `task_variant` rather than changing the calendar scene grammar itself.
 
 ## `task_temporal_clock_readout`
 1. Supported `task_variant` values:
@@ -47,18 +51,23 @@ Capture the active v1 contract for the `temporal` domain.
    - prompt-facing evidence is projected from the recorded hand geometry, not inferred from pixels.
 
 ## Prompt contract
-1. Bundle: `temporal_clock_v1`
+1. Bundles:
+   - `temporal_clock_v1`
+   - `temporal_calendar_v1`
 2. `task_temporal_clock_readout` uses `task_family_key=single_analog_clock` and `task_key=clock_readout_query`.
 3. `task_temporal_clock_compare` uses `task_family_key=multi_analog_clock` and `task_key=clock_compare_query`.
-4. `task_variant_key` values stay task-specific:
+4. `task_temporal_calendar_month_view` uses `task_family_key=month_calendar` and `task_key=calendar_month_query`.
+5. `task_variant_key` values stay task-specific:
    - `shown_time|minutes_after|minutes_before` for readout
    - `earliest_time|latest_time` for compare
-5. Required slots:
+   - `date_of_weekday_occurrence|count_marked_weekend_days|days_between_marked_dates` for calendar
+6. Required slots:
    - task-family: `object_description`
    - task-variant: `delta_minutes` for the readout offset variants only
+   - task-variant: `ordinal`, `weekday_name` for `date_of_weekday_occurrence`
    - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
    - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
-6. Prompt-facing examples must match the active query semantics; for readout offset variants, do not reuse the shown-time example answer unchanged.
+7. Prompt-facing examples must match the active query semantics; for readout offset variants, do not reuse the shown-time example answer unchanged.
 
 ## Visual policy
 1. Temporal clocks use the same light solid background baseline as the other clean synthetic domains.
@@ -101,3 +110,31 @@ Capture the active v1 contract for the `temporal` domain.
    - `render_map.clocks_by_label` stores one face bbox plus both hand bboxes/tips for every visible clock,
    - `render_map.winning_clock_bbox_px` stores the prompt-facing witness,
    - `execution_trace` records `clock_count`, the full label pool, the shown time for every visible label, and the unique winning label.
+
+## `task_temporal_calendar_month_view`
+1. Supported `task_variant` values:
+   - `date_of_weekday_occurrence`
+   - `count_marked_weekend_days`
+   - `days_between_marked_dates`
+2. Supported `scene_variant` values:
+   - `classic`
+   - `minimal`
+   - `outline`
+3. Supported non-semantic visual axes:
+   - `style_variant`: `studio|accented|marker`
+   - `accent_color_name`: shared named-color palette
+4. Answer contract:
+   - `answer_gt.type = integer`
+5. Evidence contract:
+   - `evidence_gt.type = bbox_set`
+   - one or more date-cell bboxes, depending on the active variant
+6. Scene contract:
+   - one real Gregorian month-view calendar per image,
+   - weekday headers are Monday-first,
+   - the month may occupy `4`, `5`, or `6` visible week rows,
+   - marked dates appear only for the marked-date variants,
+   - prompt-facing evidence always stays on date cells rather than header rows or title regions.
+7. Trace contract:
+   - `render_map.date_cells_by_day` stores the pixel bbox for every valid day in the month,
+   - `render_map.marked_dates` stores the marked date numbers when present,
+   - `execution_trace` records the month/year metadata, the sampled row count, the marked/evidence dates, and any query-specific fields such as nth-weekday metadata or the targeted day gap.

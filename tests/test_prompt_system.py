@@ -165,6 +165,7 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
         ("icons", "relation", "icons_relation_v1"),
         ("icons", "sequence", "icons_sequence_v1"),
         ("icons", "transformation", "icons_transformation_v1"),
+        ("temporal", "calendar", "temporal_calendar_v1"),
         ("temporal", "clock", "temporal_clock_v1"),
         ("tables", "readout", "tables_readout_v1"),
         ("tables", "relation", "tables_relation_v1"),
@@ -325,6 +326,17 @@ def test_temporal_clock_bundle_supports_offset_variants() -> None:
     assert list(bundle.required_slots_by_key["task_family:multi_analog_clock"]) == ["object_description"]
     assert list(bundle.required_slots_by_key["task_variant:minutes_after"]) == ["delta_minutes"]
     assert list(bundle.required_slots_by_key["task_variant:minutes_before"]) == ["delta_minutes"]
+
+
+def test_temporal_calendar_bundle_supports_month_view_variants() -> None:
+    bundle = load_prompt_bundle("temporal", "calendar", "temporal_calendar_v1")
+    assert "month_calendar" in bundle.task_family_templates
+    assert len(bundle.task_templates["calendar_month_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["date_of_weekday_occurrence"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["count_marked_weekend_days"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_variant_templates["days_between_marked_dates"]) == REQUIRED_PROMPT_VARIANTS
+    assert list(bundle.required_slots_by_key["task_family:month_calendar"]) == ["object_description"]
+    assert list(bundle.required_slots_by_key["task_variant:date_of_weekday_occurrence"]) == ["ordinal", "weekday_name"]
 
 
 def test_graph_optimization_bundle_supports_minimum_spanning_tree_weight_query() -> None:

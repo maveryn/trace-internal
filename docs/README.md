@@ -22,7 +22,7 @@ Repo-local skills live under `skills/`, but skills are operational overlays. Can
 8. `docs/domains/TABLE_TASK_SETUP.md` — concrete v1 contract for the first tables-domain task family.
 9. `docs/domains/GRAPH_TASK_SETUP.md` — concrete v1 contract for the active graph-domain task families.
 10. `docs/domains/PUZZLE_TASK_SETUP.md` — concrete v1 setup for puzzle hidden-variable tasks.
-11. `docs/domains/TEMPORAL_TASK_SETUP.md` — concrete v1 setup for the active temporal-domain clock family.
+11. `docs/domains/TEMPORAL_TASK_SETUP.md` — concrete v1 setup for the active temporal-domain families.
 12. `docs/core/PROMPT_SYSTEM.md` — prompt bundles, variants, and metadata.
 13. `docs/workflows/SHARED_UTILITIES.md` — helper placement and reuse rules.
 14. `docs/workflows/BUILD_VALIDATION.md` + `docs/workflows/VALIDATION_ERROR_CODES.md` — pre-finalize checks and error taxonomy.

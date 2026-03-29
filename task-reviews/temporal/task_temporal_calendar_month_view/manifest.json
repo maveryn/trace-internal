@@ -1,0 +1,15 @@
+{
+  "inspection_count": 75,
+  "task_id": "task_temporal_calendar_month_view",
+  "variants": {
+    "count_marked_weekend_days": 25,
+    "date_of_weekday_occurrence": 25,
+    "days_between_marked_dates": 25
+  },
+  "workbook": "temporal/task_temporal_calendar_month_view/task_temporal_calendar_month_view.xlsx",
+  "workbook_sheets": {
+    "count_marked_weekend_days": "count_marked_weekend_days",
+    "date_of_weekday_occurrence": "date_of_weekday_occurrence",
+    "days_between_marked_dates": "days_between_marked_dates"
+  }
+}

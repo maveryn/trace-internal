@@ -1,4 +1,4 @@
-"""Shared temporal-domain visual-theme helpers for analog clocks."""
+"""Shared temporal-domain visual-theme helpers for clocks and calendars."""
 
 from __future__ import annotations
 
@@ -9,12 +9,14 @@ from ...shared.named_colors import available_named_colors, darken_color, named_c
 
 
 Color = Tuple[int, int, int]
-SUPPORTED_TEMPORAL_CLOCK_STYLE_VARIANTS: Tuple[str, ...] = (
+SUPPORTED_TEMPORAL_STYLE_VARIANTS: Tuple[str, ...] = (
     "studio",
     "accented",
     "marker",
 )
-SUPPORTED_TEMPORAL_CLOCK_COLOR_NAMES: Tuple[str, ...] = tuple(str(name) for name, _ in available_named_colors())
+SUPPORTED_TEMPORAL_COLOR_NAMES: Tuple[str, ...] = tuple(str(name) for name, _ in available_named_colors())
+SUPPORTED_TEMPORAL_CLOCK_STYLE_VARIANTS: Tuple[str, ...] = SUPPORTED_TEMPORAL_STYLE_VARIANTS
+SUPPORTED_TEMPORAL_CLOCK_COLOR_NAMES: Tuple[str, ...] = SUPPORTED_TEMPORAL_COLOR_NAMES
 
 
 @dataclass(frozen=True)
@@ -32,6 +34,26 @@ class TemporalClockTheme:
     center_dot_color_rgb: Color
     inner_ring_rgb: Color | None
     minor_tick_mode: str
+
+
+@dataclass(frozen=True)
+class TemporalCalendarTheme:
+    """Resolved per-instance calendar theme derived from one named accent color."""
+
+    accent_color_name: str
+    style_variant: str
+    panel_fill_rgb: Color
+    panel_outline_rgb: Color
+    title_text_rgb: Color
+    weekday_fill_rgb: Color
+    weekday_text_rgb: Color
+    grid_line_rgb: Color
+    date_text_rgb: Color
+    inactive_date_text_rgb: Color
+    marker_fill_rgb: Color
+    marker_outline_rgb: Color
+    marker_text_rgb: Color
+    marker_kind: str
 
 
 def _blend_with_white(color: Sequence[int], *, color_weight: float) -> Color:
@@ -114,9 +136,74 @@ def build_temporal_clock_theme(accent_color_name: str, style_variant: str) -> Te
     )
 
 
+def build_temporal_calendar_theme(accent_color_name: str, style_variant: str) -> TemporalCalendarTheme:
+    """Resolve one readable month-calendar theme from a named accent color and style."""
+
+    accent_rgb = tuple(int(channel) for channel in named_color(str(accent_color_name)))
+    accent_dark_rgb = darken_color(accent_rgb, factor=0.58)
+    accent_deep_rgb = darken_color(accent_rgb, factor=0.42)
+    neutral_dark_rgb = (46, 52, 62)
+
+    variant = str(style_variant)
+    panel_fill_rgb = (255, 255, 255)
+    panel_outline_rgb = _blend_with_white(accent_deep_rgb, color_weight=0.30)
+    title_text_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+    weekday_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.14)
+    weekday_text_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+    grid_line_rgb = _blend_with_white(accent_deep_rgb, color_weight=0.18)
+    date_text_rgb = tuple(int(channel) for channel in neutral_dark_rgb)
+    inactive_date_text_rgb = (170, 176, 186)
+    marker_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.28)
+    marker_outline_rgb = tuple(int(channel) for channel in accent_dark_rgb)
+    marker_text_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+    marker_kind = "fill"
+
+    if variant == "accented":
+        panel_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.06)
+        panel_outline_rgb = tuple(int(channel) for channel in accent_dark_rgb)
+        weekday_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.22)
+        weekday_text_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+        grid_line_rgb = _blend_with_white(accent_dark_rgb, color_weight=0.24)
+        marker_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.44)
+        marker_outline_rgb = tuple(int(channel) for channel in accent_dark_rgb)
+        marker_text_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+    elif variant == "marker":
+        panel_fill_rgb = (255, 255, 255)
+        panel_outline_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+        title_text_rgb = tuple(int(channel) for channel in accent_dark_rgb)
+        weekday_fill_rgb = (255, 255, 255)
+        weekday_text_rgb = tuple(int(channel) for channel in accent_dark_rgb)
+        grid_line_rgb = _blend_with_white(accent_dark_rgb, color_weight=0.28)
+        marker_fill_rgb = (255, 255, 255)
+        marker_outline_rgb = tuple(int(channel) for channel in accent_rgb)
+        marker_text_rgb = tuple(int(channel) for channel in accent_deep_rgb)
+        marker_kind = "ring"
+
+    return TemporalCalendarTheme(
+        accent_color_name=str(accent_color_name),
+        style_variant=variant,
+        panel_fill_rgb=tuple(int(channel) for channel in panel_fill_rgb),
+        panel_outline_rgb=tuple(int(channel) for channel in panel_outline_rgb),
+        title_text_rgb=tuple(int(channel) for channel in title_text_rgb),
+        weekday_fill_rgb=tuple(int(channel) for channel in weekday_fill_rgb),
+        weekday_text_rgb=tuple(int(channel) for channel in weekday_text_rgb),
+        grid_line_rgb=tuple(int(channel) for channel in grid_line_rgb),
+        date_text_rgb=tuple(int(channel) for channel in date_text_rgb),
+        inactive_date_text_rgb=tuple(int(channel) for channel in inactive_date_text_rgb),
+        marker_fill_rgb=tuple(int(channel) for channel in marker_fill_rgb),
+        marker_outline_rgb=tuple(int(channel) for channel in marker_outline_rgb),
+        marker_text_rgb=tuple(int(channel) for channel in marker_text_rgb),
+        marker_kind=str(marker_kind),
+    )
+
+
 __all__ = [
+    "SUPPORTED_TEMPORAL_COLOR_NAMES",
+    "SUPPORTED_TEMPORAL_STYLE_VARIANTS",
     "SUPPORTED_TEMPORAL_CLOCK_COLOR_NAMES",
     "SUPPORTED_TEMPORAL_CLOCK_STYLE_VARIANTS",
+    "TemporalCalendarTheme",
     "TemporalClockTheme",
+    "build_temporal_calendar_theme",
     "build_temporal_clock_theme",
 ]

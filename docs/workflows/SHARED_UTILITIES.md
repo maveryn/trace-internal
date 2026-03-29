@@ -128,10 +128,11 @@ Promote helpers when a second consumer appears.
   - `style.py` is the canonical graph-domain visual-theme helper; keep named-color graph palettes and other non-semantic whole-image graph styling there instead of re-deriving per-task RGB themes.
   - `visual_defaults.py` is the canonical graph-domain background/noise loader layer shared across future graph task groups.
   - `complexity.py` is the shared graph-domain complexity layer; it owns normalized `[0,1]` score construction, config-weight resolution, and weighted-mean `TaskComplexity` construction, while graph tasks still own their task-local raw-to-normalized difficulty measurements.
-6. Temporal: `trace/tasks/temporal/shared/time_format.py`, `clock_scene.py`, `style.py`, `task_support.py`, `visual_defaults.py`, `complexity.py`
-   - `time_format.py` is the canonical temporal-domain helper layer for 12-hour clock normalization, formatting, and minute offsets; keep wraparound rules there instead of re-encoding `HH:MM` clock math per task.
+6. Temporal: `trace/tasks/temporal/shared/time_format.py`, `calendar_scene.py`, `clock_scene.py`, `style.py`, `task_support.py`, `visual_defaults.py`, `complexity.py`
+   - `time_format.py` is the canonical temporal-domain helper layer for 12-hour clock normalization, formatting, minute offsets, and reusable calendar/date labels such as weekday abbreviations or ordinal strings; keep wraparound and date-label rules there instead of re-encoding them per task.
+   - `calendar_scene.py` is the canonical month-calendar renderer for temporal calendar tasks; keep date-cell geometry, month-grid layout, shared calendar render-param resolution, and date-cell trace projections there instead of task-local drawing.
    - `clock_scene.py` is the canonical analog-clock renderer for temporal clock tasks; keep hand geometry, face styling, shared clock render-param resolution, single-clock draw helpers, and hand-bbox/tip trace projections there instead of task-local drawing.
-   - `style.py` is the canonical temporal-domain visual-theme helper; keep named-color clock palettes and other non-semantic whole-clock styling there instead of re-deriving RGB themes per task.
+   - `style.py` is the canonical temporal-domain visual-theme helper; keep named-color clock/calendar palettes and other non-semantic temporal styling there instead of re-deriving RGB themes per task.
    - `task_support.py` is the canonical temporal-task support layer for balanced named variant axes such as `task_variant` and `scene_variant`.
    - `visual_defaults.py` is the canonical temporal-domain background/noise loader layer shared across future temporal task groups.
    - `complexity.py` is the shared temporal-domain complexity layer; it owns normalized `[0,1]` score construction, config-weight resolution, and weighted-mean `TaskComplexity` construction, while temporal tasks still own their task-local raw-to-normalized difficulty measurements.

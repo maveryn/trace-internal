@@ -1,4 +1,4 @@
-"""Shared temporal-domain helpers for analog-clock time formatting and offsets."""
+"""Shared temporal-domain helpers for clocks and calendar/date formatting."""
 
 from __future__ import annotations
 
@@ -6,6 +6,23 @@ from typing import Tuple
 
 
 MINUTES_PER_CLOCK_CYCLE = 12 * 60
+WEEKDAY_NAMES: Tuple[str, ...] = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+WEEKDAY_ABBREVIATIONS: Tuple[str, ...] = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+MONTH_NAMES: Tuple[str, ...] = (
+    "",
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+)
 
 
 def clock_total_minutes(hour_12: int, minute: int) -> int:
@@ -54,11 +71,58 @@ def add_clock_minutes(total_minutes: int, delta_minutes: int) -> int:
     return int(int(total_minutes) + int(delta_minutes)) % int(MINUTES_PER_CLOCK_CYCLE)
 
 
+def weekday_name(weekday_index: int) -> str:
+    """Return the full weekday name for a Monday-first weekday index."""
+
+    index = int(weekday_index)
+    if not 0 <= index < len(WEEKDAY_NAMES):
+        raise ValueError("weekday_index must be in 0..6")
+    return str(WEEKDAY_NAMES[index])
+
+
+def weekday_abbreviation(weekday_index: int) -> str:
+    """Return the short weekday label for a Monday-first weekday index."""
+
+    index = int(weekday_index)
+    if not 0 <= index < len(WEEKDAY_ABBREVIATIONS):
+        raise ValueError("weekday_index must be in 0..6")
+    return str(WEEKDAY_ABBREVIATIONS[index])
+
+
+def month_name(month_index: int) -> str:
+    """Return the full month name for a one-based Gregorian month index."""
+
+    index = int(month_index)
+    if not 1 <= index <= 12:
+        raise ValueError("month_index must be in 1..12")
+    return str(MONTH_NAMES[index])
+
+
+def ordinal_label(value: int) -> str:
+    """Return one English ordinal label such as ``1st`` or ``3rd``."""
+
+    number = int(value)
+    if number <= 0:
+        raise ValueError("ordinal_label requires a positive integer")
+    if 10 <= (number % 100) <= 20:
+        suffix = "th"
+    else:
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(number % 10, "th")
+    return f"{number}{suffix}"
+
+
 __all__ = [
+    "MONTH_NAMES",
     "MINUTES_PER_CLOCK_CYCLE",
+    "WEEKDAY_ABBREVIATIONS",
+    "WEEKDAY_NAMES",
     "add_clock_minutes",
     "clock_hand_angle_gap_deg",
     "clock_total_minutes",
     "format_clock_hhmm",
+    "month_name",
+    "ordinal_label",
     "split_clock_total_minutes",
+    "weekday_abbreviation",
+    "weekday_name",
 ]

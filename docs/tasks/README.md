@@ -87,3 +87,4 @@ Current task docs:
 77. [task_graph_order_topological_position.md](task_graph_order_topological_position.md)
 78. [task_temporal_clock_readout.md](task_temporal_clock_readout.md)
 79. [task_temporal_clock_compare.md](task_temporal_clock_compare.md)
+80. [task_temporal_calendar_month_view.md](task_temporal_calendar_month_view.md)

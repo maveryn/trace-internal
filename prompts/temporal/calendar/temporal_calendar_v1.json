@@ -1,0 +1,81 @@
+{
+  "bundle_id": "temporal_calendar_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "month_calendar": [
+      "The image shows {object_description}.",
+      "Look at the month-view calendar in the image. It shows {object_description}.",
+      "You are given an image with {object_description}.",
+      "Work from the month-view calendar shown in the image: {object_description}.",
+      "Use the calendar in the image. It shows {object_description}."
+    ]
+  },
+  "task_templates": {
+    "calendar_month_query": [
+      "Answer the question using the calendar.",
+      "Use the month-view calendar to answer the question.",
+      "Read the calendar carefully and answer the question.",
+      "Work from the full calendar grid to answer the question.",
+      "Determine the answer from the shown calendar."
+    ]
+  },
+  "task_variant_templates": {
+    "date_of_weekday_occurrence": [
+      "What date is the {ordinal} {weekday_name} of this month?",
+      "Find the {ordinal} {weekday_name} in this month. What date number is it?",
+      "Which date number is the {ordinal} {weekday_name} of this month?",
+      "Identify the date of the {ordinal} {weekday_name} shown in this calendar month.",
+      "What is the date number for the {ordinal} {weekday_name} of this month?"
+    ],
+    "count_marked_weekend_days": [
+      "How many marked dates are on a weekend?",
+      "Count the marked dates that fall on Saturday or Sunday.",
+      "Among the marked dates, how many are on the weekend?",
+      "How many marked calendar dates fall on Saturday or Sunday?",
+      "Count the marked weekend dates in this month."
+    ],
+    "days_between_marked_dates": [
+      "How many days are between the two marked dates?",
+      "Count the number of days between the two marked dates.",
+      "What is the day difference between the two marked dates?",
+      "How many calendar days separate the two marked dates?",
+      "Find the number of days between the marked dates."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:month_calendar": [
+      "object_description"
+    ],
+    "task_variant:date_of_weekday_occurrence": [
+      "ordinal",
+      "weekday_name"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

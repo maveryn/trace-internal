@@ -8,7 +8,7 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_temporal_clock_compare"
+      "task_temporal_calendar_month_view"
     ],
     "workers": 16
   },
@@ -21,19 +21,20 @@
     {
       "distribution_pass": true,
       "domain": "temporal",
-      "inspection_count": 50,
-      "inspection_workbook": "temporal/task_temporal_clock_compare/task_temporal_clock_compare.xlsx",
+      "inspection_count": 75,
+      "inspection_workbook": "temporal/task_temporal_calendar_month_view/task_temporal_calendar_month_view.xlsx",
       "inspection_workbook_sheets": {
-        "earliest_time": "earliest_time",
-        "latest_time": "latest_time"
+        "count_marked_weekend_days": "count_marked_weekend_days",
+        "date_of_weekday_occurrence": "date_of_weekday_occurrence",
+        "days_between_marked_dates": "days_between_marked_dates"
       },
       "reports": {
-        "distribution_review": "temporal/task_temporal_clock_compare/distribution_review.json",
-        "inspection_manifest": "temporal/task_temporal_clock_compare/manifest.json",
-        "random_review": "temporal/task_temporal_clock_compare/random_review_100.json"
+        "distribution_review": "temporal/task_temporal_calendar_month_view/distribution_review.json",
+        "inspection_manifest": "temporal/task_temporal_calendar_month_view/manifest.json",
+        "random_review": "temporal/task_temporal_calendar_month_view/random_review_100.json"
       },
-      "task_group": "clock",
-      "task_id": "task_temporal_clock_compare"
+      "task_group": "calendar",
+      "task_id": "task_temporal_calendar_month_view"
     }
   ]
 }

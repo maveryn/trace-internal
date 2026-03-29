@@ -1,0 +1,571 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 0
+  },
+  "evidence_gt": {
+    "type": "graph_point_set",
+    "value": []
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_coordinate_relation/images/perpendicular_count/0024.png"
+  },
+  "instance_seed": 3936667436739212,
+  "prompt": "Look at the graph-paper coordinate diagram. It shows a coordinate-plane diagram with target segment AB and six other unlabeled segments. Read the coordinate-plane diagram carefully, then answer the question. Count the segments, excluding AB itself, that are perpendicular to segment AB.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper point coordinate [x, y] that is an endpoint of a segment satisfying the question.\nAnswer rule: set \"answer\" to the integer count requested by the question.\nExample JSON:\n{\"evidence\":[],\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the graph-paper coordinate diagram. It shows a coordinate-plane diagram with target segment AB and six other unlabeled segments. Read the coordinate-plane diagram carefully, then answer the question. Count the segments, excluding AB itself, that are perpendicular to segment AB.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper point coordinate [x, y] that is an endpoint of a segment satisfying the question.\nAnswer rule: set \"answer\" to the integer count requested by the question.\nExample JSON:\n{\"evidence\":[],\"answer\":8}",
+    "answer_only": "Look at the graph-paper coordinate diagram. It shows a coordinate-plane diagram with target segment AB and six other unlabeled segments. Read the coordinate-plane diagram carefully, then answer the question. Count the segments, excluding AB itself, that are perpendicular to segment AB.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the integer count requested by the question.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_geometry_coordinate_relation",
+  "task_variant": "perpendicular_count",
+  "trace_payload": {
+    "execution_trace": {
+      "query_variant": "perpendicular_count",
+      "query_variant_probabilities": {
+        "collinear_count": 0.0,
+        "parallel_count": 0.0,
+        "perpendicular_count": 1.0,
+        "point_in_shape_count": 0.0,
+        "same_quadrant_count": 0.0
+      },
+      "question_format": "count_segments_satisfying_relation",
+      "required_evidence_labels": [],
+      "scene_variant": "segment_set",
+      "scene_variant_probabilities": {
+        "line_points": 0.0,
+        "polygon_lattice": 0.0,
+        "quadrant_points": 0.0,
+        "segment_set": 1.0
+      },
+      "target_count": 0,
+      "target_count_probabilities": {
+        "0": 0.14285714285714285,
+        "1": 0.14285714285714285,
+        "2": 0.14285714285714285,
+        "3": 0.14285714285714285,
+        "4": 0.14285714285714285,
+        "5": 0.14285714285714285,
+        "6": 0.14285714285714285
+      },
+      "task_variant": "perpendicular_count",
+      "task_variant_probabilities": {
+        "collinear_count": 0.0,
+        "parallel_count": 0.0,
+        "perpendicular_count": 1.0,
+        "point_in_shape_count": 0.0,
+        "same_quadrant_count": 0.0
+      }
+    },
+    "projected_evidence": {
+      "grid_point_set": [],
+      "pixel_point_set": [],
+      "type": "graph_point_set"
+    },
+    "query_spec": {
+      "params": {
+        "query_variant": "perpendicular_count",
+        "query_variant_probabilities": {
+          "collinear_count": 0.0,
+          "parallel_count": 0.0,
+          "perpendicular_count": 1.0,
+          "point_in_shape_count": 0.0,
+          "same_quadrant_count": 0.0
+        },
+        "scene_variant": "segment_set",
+        "scene_variant_probabilities": {
+          "line_points": 0.0,
+          "polygon_lattice": 0.0,
+          "quadrant_points": 0.0,
+          "segment_set": 1.0
+        },
+        "target_count": 0,
+        "target_count_probabilities": {
+          "0": 0.14285714285714285,
+          "1": 0.14285714285714285,
+          "2": 0.14285714285714285,
+          "3": 0.14285714285714285,
+          "4": 0.14285714285714285,
+          "5": 0.14285714285714285,
+          "6": 0.14285714285714285
+        },
+        "task_variant": "perpendicular_count",
+        "variant_probabilities": {
+          "collinear_count": 0.0,
+          "parallel_count": 0.0,
+          "perpendicular_count": 1.0,
+          "point_in_shape_count": 0.0,
+          "same_quadrant_count": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "geometry_coordinate_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the integer count requested by the question",
+          "evidence_hint": "set \"evidence\" to an array of every graph-paper point coordinate [x, y] that is an endpoint of a segment satisfying the question",
+          "json_example": "{\"evidence\":[],\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a coordinate-plane diagram with target segment AB and six other unlabeled segments"
+        },
+        "task_family_key": "coordinate_graph_scene",
+        "task_family_variant_index": 1,
+        "task_key": "coordinate_query",
+        "task_variant_index": 2,
+        "task_variant_key": "perpendicular_count",
+        "task_variant_template_index": 4,
+        "template_paths": [
+          "geometry/coordinate/geometry_coordinate_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:coordinate_query": 5,
+          "task_family:coordinate_graph_scene": 5,
+          "task_variant:perpendicular_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_coordinate_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the integer count requested by the question",
+              "evidence_hint": "set \"evidence\" to an array of every graph-paper point coordinate [x, y] that is an endpoint of a segment satisfying the question",
+              "json_example": "{\"evidence\":[],\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a coordinate-plane diagram with target segment AB and six other unlabeled segments"
+            },
+            "task_family_key": "coordinate_graph_scene",
+            "task_family_variant_index": 1,
+            "task_key": "coordinate_query",
+            "task_variant_index": 2,
+            "task_variant_key": "perpendicular_count",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "geometry/coordinate/geometry_coordinate_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:coordinate_query": 5,
+              "task_family:coordinate_graph_scene": 5,
+              "task_variant:perpendicular_count": 5
+            }
+          },
+          "prompt": "Look at the graph-paper coordinate diagram. It shows a coordinate-plane diagram with target segment AB and six other unlabeled segments. Read the coordinate-plane diagram carefully, then answer the question. Count the segments, excluding AB itself, that are perpendicular to segment AB.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of every graph-paper point coordinate [x, y] that is an endpoint of a segment satisfying the question.\nAnswer rule: set \"answer\" to the integer count requested by the question.\nExample JSON:\n{\"evidence\":[],\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "geometry_coordinate_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the integer count requested by the question",
+              "evidence_hint": "set \"evidence\" to an array of every graph-paper point coordinate [x, y] that is an endpoint of a segment satisfying the question",
+              "json_example": "{\"evidence\":[],\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a coordinate-plane diagram with target segment AB and six other unlabeled segments"
+            },
+            "task_family_key": "coordinate_graph_scene",
+            "task_family_variant_index": 1,
+            "task_key": "coordinate_query",
+            "task_variant_index": 2,
+            "task_variant_key": "perpendicular_count",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "geometry/coordinate/geometry_coordinate_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:coordinate_query": 5,
+              "task_family:coordinate_graph_scene": 5,
+              "task_variant:perpendicular_count": 5
+            }
+          },
+          "prompt": "Look at the graph-paper coordinate diagram. It shows a coordinate-plane diagram with target segment AB and six other unlabeled segments. Read the coordinate-plane diagram carefully, then answer the question. Count the segments, excluding AB itself, that are perpendicular to segment AB.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the integer count requested by the question.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "perpendicular_count",
+      "template_id": "geometry_coordinate_v1"
+    },
+    "render_map": {
+      "candidate_segments_graph": {
+        "segment_1": [
+          [
+            -7,
+            -8
+          ],
+          [
+            -7,
+            -2
+          ]
+        ],
+        "segment_2": [
+          [
+            2,
+            4
+          ],
+          [
+            6,
+            0
+          ]
+        ],
+        "segment_3": [
+          [
+            -5,
+            1
+          ],
+          [
+            -3,
+            7
+          ]
+        ],
+        "segment_4": [
+          [
+            4,
+            -8
+          ],
+          [
+            4,
+            -2
+          ]
+        ],
+        "segment_5": [
+          [
+            2,
+            5
+          ],
+          [
+            8,
+            7
+          ]
+        ],
+        "segment_6": [
+          [
+            -3,
+            -5
+          ],
+          [
+            3,
+            -7
+          ]
+        ]
+      },
+      "image_id": "img0",
+      "matching_segment_ids": [],
+      "reference_segment_graph": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          7
+        ]
+      ]
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "graph_paper",
+        "style_spec": {
+          "axis_arrow_size": 10,
+          "axis_arrows_enabled": true,
+          "axis_color": [
+            185,
+            190,
+            197
+          ],
+          "axis_darken_range": [
+            32,
+            48
+          ],
+          "axis_enabled": true,
+          "axis_line_width": 2,
+          "axis_scale_label_max_abs": 0,
+          "axis_scale_labels_enabled": true,
+          "base_color": [
+            255,
+            255,
+            255
+          ],
+          "base_color_jitter": [
+            0,
+            0
+          ],
+          "center_point_color": [
+            174,
+            179,
+            186
+          ],
+          "center_point_darken_extra_range": [
+            8,
+            14
+          ],
+          "center_point_enabled": true,
+          "center_point_radius": 2,
+          "color_variation_applied": true,
+          "color_variation_enabled": true,
+          "color_variation_sampled": {
+            "axis_darken": 39,
+            "base_color_delta": 0,
+            "center_point_darken_extra": 11,
+            "line_color_delta": 0,
+            "major_line_darken": 9,
+            "origin_label_darken_extra": 9
+          },
+          "kind": "grid",
+          "line_color": [
+            224,
+            229,
+            236
+          ],
+          "line_color_jitter": [
+            -5,
+            5
+          ],
+          "line_width": 1,
+          "major_every": 0,
+          "major_line_color": [
+            215,
+            220,
+            227
+          ],
+          "major_line_darken_range": [
+            6,
+            14
+          ],
+          "major_line_width": 1,
+          "origin_fraction_x": 0.5,
+          "origin_fraction_y": 0.5,
+          "origin_label_color": [
+            176,
+            181,
+            188
+          ],
+          "origin_label_darken_extra_range": [
+            6,
+            12
+          ],
+          "origin_label_enabled": false,
+          "origin_label_text": "0",
+          "outer_margin_px": 16,
+          "scene_supersample_scale": 3,
+          "spacing": 40,
+          "supersample_scale": 1
+        }
+      },
+      "canvas_size": 711,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 16,
+        "full_cells_y": 16,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
+        "origin_pixel": [
+          355,
+          355
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 40,
+        "target_cells_x": 18,
+        "target_cells_y": 18,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 16,
+        "full_cells_y": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 40,
+        "target_cells_x": 18,
+        "target_cells_y": 18
+      },
+      "point_style": {
+        "radius_px": 3
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "scene_variant": "segment_set",
+      "shape_style": {
+        "label_color": [
+          134,
+          35,
+          166
+        ],
+        "label_stroke_color": [
+          252,
+          251,
+          248
+        ],
+        "line_color": [
+          134,
+          35,
+          166
+        ]
+      },
+      "text_style": {
+        "font_size_px": 84,
+        "stroke_width_px": 3
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "endpoints_graph": [
+            [
+              0,
+              1
+            ],
+            [
+              0,
+              7
+            ]
+          ],
+          "entity_id": "reference_segment_ab",
+          "entity_type": "reference_segment",
+          "label": "AB"
+        },
+        {
+          "endpoints_graph": [
+            [
+              -7,
+              -8
+            ],
+            [
+              -7,
+              -2
+            ]
+          ],
+          "entity_id": "segment_1",
+          "entity_type": "candidate_segment",
+          "matches_query": false
+        },
+        {
+          "endpoints_graph": [
+            [
+              2,
+              4
+            ],
+            [
+              6,
+              0
+            ]
+          ],
+          "entity_id": "segment_2",
+          "entity_type": "candidate_segment",
+          "matches_query": false
+        },
+        {
+          "endpoints_graph": [
+            [
+              -5,
+              1
+            ],
+            [
+              -3,
+              7
+            ]
+          ],
+          "entity_id": "segment_3",
+          "entity_type": "candidate_segment",
+          "matches_query": false
+        },
+        {
+          "endpoints_graph": [
+            [
+              4,
+              -8
+            ],
+            [
+              4,
+              -2
+            ]
+          ],
+          "entity_id": "segment_4",
+          "entity_type": "candidate_segment",
+          "matches_query": false
+        },
+        {
+          "endpoints_graph": [
+            [
+              2,
+              5
+            ],
+            [
+              8,
+              7
+            ]
+          ],
+          "entity_id": "segment_5",
+          "entity_type": "candidate_segment",
+          "matches_query": false
+        },
+        {
+          "endpoints_graph": [
+            [
+              -3,
+              -5
+            ],
+            [
+              3,
+              -7
+            ]
+          ],
+          "entity_id": "segment_6",
+          "entity_type": "candidate_segment",
+          "matches_query": false
+        }
+      ],
+      "relations": {
+        "query_variant": "perpendicular_count",
+        "scene_variant": "segment_set",
+        "task_variant": "perpendicular_count"
+      },
+      "scene_kind": "geometry_coordinate_relation"
+    },
+    "witness_symbolic": {
+      "labels": [],
+      "type": "matching_segment_endpoints"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

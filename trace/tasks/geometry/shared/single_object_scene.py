@@ -45,6 +45,7 @@ def resolve_graph_scene_context(
     fallback_cells_min: int,
     fallback_cells_max: int,
     require_graph_paper_background: bool = True,
+    graph_style_overrides: Mapping[str, Any] | None = None,
 ) -> GraphSceneContext:
     """Resolve deterministic graph-space scene parameters for one instance."""
     canvas_size = resolve_square_canvas_size(
@@ -75,6 +76,8 @@ def resolve_graph_scene_context(
     )
     scene_scale = int(max(1, int(base_graph_style.get("scene_supersample_scale", 1))))
     graph_style = dict(base_graph_style)
+    if isinstance(graph_style_overrides, Mapping):
+        graph_style.update(dict(graph_style_overrides))
     graph_style["spacing"] = int(graph_spacing)
     outer_margin_px = int(max(0, int(graph_style.get("outer_margin_px", 0))))
     graph_frame = build_graph_coordinate_frame(
@@ -82,6 +85,8 @@ def resolve_graph_scene_context(
         spacing=int(graph_spacing),
         target_cells=int(graph_cells),
         outer_margin_px=int(outer_margin_px),
+        origin_fraction_x=float(graph_style.get("origin_fraction_x", 0.5)),
+        origin_fraction_y=float(graph_style.get("origin_fraction_y", 0.5)),
     )
     graph_origin = (
         float(graph_frame["origin_pixel"][0]),

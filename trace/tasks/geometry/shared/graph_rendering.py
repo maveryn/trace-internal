@@ -176,12 +176,20 @@ def build_graph_coordinate_frame(
     spacing: int,
     target_cells: int,
     outer_margin_px: int = 0,
+    origin_fraction_x: float = 0.5,
+    origin_fraction_y: float = 0.5,
 ) -> Dict[str, Any]:
     """Build graph-unit coordinate-frame metadata for trace payloads."""
     spacing_px = max(1, int(spacing))
     size_px = int(canvas_size)
     inset_px = max(0, int(outer_margin_px))
-    origin = compute_grid_axis_origin(canvas_size=size_px, spacing=spacing_px, inset=int(inset_px))
+    origin = compute_grid_axis_origin(
+        canvas_size=size_px,
+        spacing=spacing_px,
+        inset=int(inset_px),
+        x_fraction=float(origin_fraction_x),
+        y_fraction=float(origin_fraction_y),
+    )
     left = max(0, int(inset_px))
     top = max(0, int(inset_px))
     right = max(int(left), int(size_px) - 1 - int(inset_px))
@@ -201,6 +209,8 @@ def build_graph_coordinate_frame(
     return {
         "coord_space": "graph_unit",
         "origin_pixel": [int(origin[0]), int(origin[1])],
+        "origin_fraction_x": float(origin_fraction_x),
+        "origin_fraction_y": float(origin_fraction_y),
         "outer_margin_px": int(inset_px),
         "spacing_px": int(spacing_px),
         "target_cells_x": int(target_cells),

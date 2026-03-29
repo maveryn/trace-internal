@@ -505,6 +505,105 @@ def build_geometry_similarity_complexity(
     )
 
 
+def geometry_coordinate_relation_reasoning_score(*, query_variant: str, scene_variant: str) -> float:
+    """Return normalized reasoning load for one coordinate-relation query."""
+
+    query_key = str(query_variant).strip().lower()
+    scene_key = str(scene_variant).strip().lower()
+    score_by_query = {
+        "parallel_count": 0.46,
+        "perpendicular_count": 0.58,
+        "collinear_count": 0.44,
+        "same_quadrant_count": 0.36,
+        "point_in_shape_count": 0.58,
+    }
+    if query_key not in score_by_query:
+        raise ValueError(f"unsupported geometry coordinate query_variant: {query_variant}")
+    scene_bonus = {
+        "segment_set": 0.00,
+        "line_points": 0.04,
+        "quadrant_points": 0.00,
+        "polygon_lattice": 0.12,
+    }.get(scene_key)
+    if scene_bonus is None:
+        raise ValueError(f"unsupported geometry coordinate scene_variant: {scene_variant}")
+    return clamp_unit_interval(float(score_by_query[query_key]) + float(scene_bonus))
+
+
+def build_geometry_coordinate_relation_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    scene_variant: str,
+    query_variant: str,
+    object_count: int,
+    target_count: int | None,
+    evidence_type: str,
+    evidence_count: int,
+) -> TaskComplexity:
+    """Build one normalized coordinate-relation complexity payload."""
+
+    weights = resolve_geometry_complexity_weights(task_group_defaults, task_id=task_id)
+    normalized_scene = str(scene_variant).strip().lower()
+    normalized_query = str(query_variant).strip().lower()
+    if normalized_scene == "polygon_lattice":
+        visual_scan = normalize_linear(
+            float(object_count),
+            min_value=3.0,
+            max_value=5.0,
+        )
+    elif normalized_scene == "line_points":
+        visual_scan = normalize_linear(
+            float(object_count),
+            min_value=6.0,
+            max_value=8.0,
+        )
+    else:
+        visual_scan = normalize_linear(
+            float(object_count),
+            min_value=6.0,
+            max_value=8.0,
+        )
+    if normalized_query in {"parallel_count", "perpendicular_count"}:
+        ambiguity = {
+            "parallel_count": 0.40,
+            "perpendicular_count": 0.54,
+        }[normalized_query]
+    else:
+        density_balance = geometry_counting_density_balance(
+            target_count=int(target_count or 0),
+            object_count=int(object_count),
+        )
+        scene_bonus = 0.10 if normalized_scene == "polygon_lattice" else (0.04 if normalized_scene == "line_points" else 0.0)
+        query_bonus = 0.04 if normalized_query == "collinear_count" else 0.0
+        ambiguity = clamp_unit_interval((0.58 * float(density_balance)) + 0.16 + float(scene_bonus) + float(query_bonus))
+
+    if str(evidence_type) == "graph_point_set":
+        output_burden = geometry_graph_point_output_burden(
+            evidence_point_count=int(evidence_count),
+        )
+    elif str(evidence_type) == "label_set":
+        output_burden = geometry_label_set_output_burden(
+            target_count=int(target_count or 0),
+            object_count=int(object_count),
+        )
+    else:
+        raise ValueError(f"unsupported geometry coordinate evidence_type: {evidence_type}")
+
+    return build_geometry_task_complexity(
+        weights=weights,
+        components={
+            "visual_scan": float(visual_scan),
+            "coordinate_reasoning": geometry_coordinate_relation_reasoning_score(
+                query_variant=str(query_variant),
+                scene_variant=str(scene_variant),
+            ),
+            "ambiguity": float(ambiguity),
+            "output_burden": float(output_burden),
+        },
+    )
+
+
 def geometry_analytical_reasoning_score(*, task_kind: str, task_variant: str) -> float:
     """Return normalized reasoning load for one analytical geometry variant."""
 
@@ -687,6 +786,7 @@ def build_geometry_analytical_complexity(
 __all__ = [
     "build_geometry_analytical_complexity",
     "build_geometry_counting_complexity",
+    "build_geometry_coordinate_relation_complexity",
     "build_geometry_comparison_complexity",
     "build_geometry_measurement_complexity",
     "build_geometry_similarity_complexity",
@@ -698,6 +798,7 @@ __all__ = [
     "geometry_analytical_variant_ambiguity_score",
     "geometry_answer_format_output_burden",
     "geometry_comparison_reasoning_score",
+    "geometry_coordinate_relation_reasoning_score",
     "geometry_counting_classification_reasoning_score",
     "geometry_counting_density_balance",
     "geometry_counting_variant_ambiguity_score",

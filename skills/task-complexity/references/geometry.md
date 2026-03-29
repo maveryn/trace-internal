@@ -102,6 +102,20 @@ Measure:
 - target-density balance over the matching subset,
 - unordered `label_set` evidence burden (`0..4` labels).
 
+### `coordinate`
+```yaml
+visual_scan: 0.25
+coordinate_reasoning: 0.35
+ambiguity: 0.25
+output_burden: 0.15
+```
+
+Measure:
+- visible candidate count across segments, labeled points, or polygon vertices,
+- relation difficulty (`same_quadrant_count` < `collinear_count` < `parallel_count` < `point_in_shape_count` < `perpendicular_count`),
+- scene-family bonus when the task requires strict interior lattice counting inside a polygon instead of plain quadrant membership,
+- witness burden from either matching-segment endpoint coordinates, collinear graph-point sets, same-quadrant graph-point sets, or interior graph-point sets.
+
 ## Notes
 - Domain-level criteria must apply to every geometry task; keep `measurement_precision`, `comparison_reasoning`, `classification_reasoning`, and `analytical_reasoning` at task-group scope rather than forcing them onto unrelated families.
 - Geometry usually wants criterion values from explicit `scene_variant` / `query_variant` structure, not from answer magnitude alone.
@@ -110,3 +124,4 @@ Measure:
 - In the consolidated geometry surface, use the broad task group to choose the criteria vocabulary, then let `scene_variant` and `query_variant` determine the per-instance component values.
 - Geometry transformation tasks should stay evidence-first: if a variant’s cue changes the winning object but not the witness format, keep one family weighting policy and vary only `transformation_reasoning` / `ambiguity` from the resolved cue type.
 - Geometry similarity tasks should stay evidence-first too: prefer count/list questions whose witness is the matching candidate-label subset, and keep scale/shape-family difficulty inside `similarity_reasoning` / `ambiguity` rather than splitting the family into separate tiny weight tables.
+- Geometry coordinate-relation tasks should keep the evidence contract aligned to the queried object type: segment-count variants should expose coordinate-grounded endpoint evidence for every matching segment, while point-membership/count variants should expose graph-point evidence whenever the visible witness is an unlabeled point set rather than a label identity problem.

@@ -121,12 +121,13 @@ Define how we split tasks into reusable families so each dataset slice stays com
 15. For milestone-timeline tasks, keep evidence on visible event cards rather than the full axis or connector lines, even when the answer depends on temporal order across multiple events.
 
 ## Geometry direction (current)
-1. Geometry now exposes seven active task ids:
+1. Geometry now exposes eight active task ids:
    - `task_geometry_measurement_value`
    - `task_geometry_comparison_value`
    - `task_geometry_counting_value`
    - `task_geometry_analytical_2d_value`
    - `task_geometry_analytical_3d_value`
+   - `task_geometry_coordinate_relation`
    - `task_geometry_similarity_count`
    - `task_geometry_transformation_match`
 2. Geometry follows a chart-style two-axis policy:
@@ -161,7 +162,15 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - uses scene variants `triangle|quadrilateral`
    - uses query variants `congruent_count|similar_count`
    - keeps integer answers with unordered `label_set` evidence over the matching candidate labels
-11. For the five consolidated value tasks, `execution_trace`, `query_spec.params`, and `scene_ir.relations` should expose the consolidated `scene_variant` / `query_variant` pair, while preserving `legacy_task_id` and other `legacy_*` trace slots for auditability.
+11. `task_geometry_coordinate_relation`
+   - uses scene variants `segment_set|line_points|quadrant_points|polygon_lattice`
+   - uses query variants `parallel_count|perpendicular_count|collinear_count|same_quadrant_count|point_in_shape_count`
+   - uses integer answers plus unordered `graph_point_set` evidence for segment-count variants, where the witness is the set of matching-segment endpoint coordinates relative to target segment `AB`
+   - uses integer answers plus unordered `graph_point_set` evidence for `collinear_count`, where the witness is the set of dot-point coordinates lying on the line through `A` and `B`
+   - keeps segment scenes on centered `20 x 20` graph paper and samples the target plus candidate segments anywhere in the window as long as their endpoints stay off the border and no segments intersect
+   - uses integer answers plus unordered `graph_point_set` evidence for `same_quadrant_count`, where the witness is the set of dot-point coordinates in the same quadrant as the X-marked reference point
+   - uses integer answers plus `graph_point_set` evidence for `point_in_shape_count`, where the witness is the set of integer lattice points strictly inside the polygon
+12. For the five consolidated value tasks, `execution_trace`, `query_spec.params`, and `scene_ir.relations` should expose the consolidated `scene_variant` / `query_variant` pair, while preserving `legacy_task_id` and other `legacy_*` trace slots for auditability.
 16. **Icons counting type (`task_icons_counting_type`)**
    - One two-panel image with a `Reference` icon and a `Scene` panel of icons.
    - Query: how many scene icons have the same icon type as the reference.

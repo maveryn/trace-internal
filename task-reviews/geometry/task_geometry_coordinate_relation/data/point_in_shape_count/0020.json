@@ -1,0 +1,522 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 2
+  },
+  "evidence_gt": {
+    "type": "graph_point_set",
+    "value": [
+      [
+        -6,
+        -4
+      ],
+      [
+        -5,
+        -4
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "geometry/task_geometry_coordinate_relation/images/point_in_shape_count/0020.png"
+  },
+  "instance_seed": 1569231065209682,
+  "prompt": "The graph-paper image shows a coordinate-plane diagram with one polygon drawn on graph paper. Read the coordinate-plane diagram carefully, then answer the question. Count the integer graph-paper points that are strictly inside the polygon.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of every integer graph-paper point [x, y] that lies strictly inside the polygon.\nAnswer requirement: set \"answer\" to the integer count requested by the question.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "The graph-paper image shows a coordinate-plane diagram with one polygon drawn on graph paper. Read the coordinate-plane diagram carefully, then answer the question. Count the integer graph-paper points that are strictly inside the polygon.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of every integer graph-paper point [x, y] that lies strictly inside the polygon.\nAnswer requirement: set \"answer\" to the integer count requested by the question.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
+    "answer_only": "The graph-paper image shows a coordinate-plane diagram with one polygon drawn on graph paper. Read the coordinate-plane diagram carefully, then answer the question. Count the integer graph-paper points that are strictly inside the polygon.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the integer count requested by the question.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_geometry_coordinate_relation",
+  "task_variant": "point_in_shape_count",
+  "trace_payload": {
+    "execution_trace": {
+      "query_variant": "point_in_shape_count",
+      "query_variant_probabilities": {
+        "collinear_count": 0.0,
+        "parallel_count": 0.0,
+        "perpendicular_count": 0.0,
+        "point_in_shape_count": 1.0,
+        "same_quadrant_count": 0.0
+      },
+      "question_format": "count_points_in_polygon_interior",
+      "required_evidence_labels": [
+        "point_1",
+        "point_2"
+      ],
+      "scene_variant": "polygon_lattice",
+      "scene_variant_probabilities": {
+        "line_points": 0.0,
+        "polygon_lattice": 1.0,
+        "quadrant_points": 0.0,
+        "segment_set": 0.0
+      },
+      "target_count": 2,
+      "target_count_probabilities": {
+        "0": 0.1111111111111111,
+        "1": 0.1111111111111111,
+        "2": 0.1111111111111111,
+        "3": 0.1111111111111111,
+        "4": 0.1111111111111111,
+        "5": 0.1111111111111111,
+        "6": 0.1111111111111111,
+        "7": 0.1111111111111111,
+        "8": 0.1111111111111111
+      },
+      "task_variant": "point_in_shape_count",
+      "task_variant_probabilities": {
+        "collinear_count": 0.0,
+        "parallel_count": 0.0,
+        "perpendicular_count": 0.0,
+        "point_in_shape_count": 1.0,
+        "same_quadrant_count": 0.0
+      }
+    },
+    "projected_evidence": {
+      "grid_point_map": {
+        "point_1": [
+          -6,
+          -4
+        ],
+        "point_2": [
+          -5,
+          -4
+        ]
+      },
+      "grid_point_path": [
+        [
+          -6,
+          -4
+        ],
+        [
+          -5,
+          -4
+        ]
+      ],
+      "grid_point_set": [
+        [
+          -6,
+          -4
+        ],
+        [
+          -5,
+          -4
+        ]
+      ],
+      "pixel_point_map": {
+        "point_1": [
+          120.0,
+          510.0
+        ],
+        "point_2": [
+          159.0,
+          510.0
+        ]
+      },
+      "pixel_point_path": [
+        [
+          120.0,
+          510.0
+        ],
+        [
+          159.0,
+          510.0
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          120.0,
+          510.0
+        ],
+        [
+          159.0,
+          510.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "query_variant": "point_in_shape_count",
+        "query_variant_probabilities": {
+          "collinear_count": 0.0,
+          "parallel_count": 0.0,
+          "perpendicular_count": 0.0,
+          "point_in_shape_count": 1.0,
+          "same_quadrant_count": 0.0
+        },
+        "scene_variant": "polygon_lattice",
+        "scene_variant_probabilities": {
+          "line_points": 0.0,
+          "polygon_lattice": 1.0,
+          "quadrant_points": 0.0,
+          "segment_set": 0.0
+        },
+        "target_count": 2,
+        "target_count_probabilities": {
+          "0": 0.1111111111111111,
+          "1": 0.1111111111111111,
+          "2": 0.1111111111111111,
+          "3": 0.1111111111111111,
+          "4": 0.1111111111111111,
+          "5": 0.1111111111111111,
+          "6": 0.1111111111111111,
+          "7": 0.1111111111111111,
+          "8": 0.1111111111111111
+        },
+        "task_variant": "point_in_shape_count",
+        "variant_probabilities": {
+          "collinear_count": 0.0,
+          "parallel_count": 0.0,
+          "perpendicular_count": 0.0,
+          "point_in_shape_count": 1.0,
+          "same_quadrant_count": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "geometry_coordinate_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the integer count requested by the question",
+          "evidence_hint": "set \"evidence\" to an array of every integer graph-paper point [x, y] that lies strictly inside the polygon",
+          "json_example": "{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a coordinate-plane diagram with one polygon drawn on graph paper"
+        },
+        "task_family_key": "coordinate_graph_scene",
+        "task_family_variant_index": 0,
+        "task_key": "coordinate_query",
+        "task_variant_index": 2,
+        "task_variant_key": "point_in_shape_count",
+        "task_variant_template_index": 1,
+        "template_paths": [
+          "geometry/coordinate/geometry_coordinate_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:coordinate_query": 5,
+          "task_family:coordinate_graph_scene": 5,
+          "task_variant:point_in_shape_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "geometry_coordinate_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the integer count requested by the question",
+              "evidence_hint": "set \"evidence\" to an array of every integer graph-paper point [x, y] that lies strictly inside the polygon",
+              "json_example": "{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a coordinate-plane diagram with one polygon drawn on graph paper"
+            },
+            "task_family_key": "coordinate_graph_scene",
+            "task_family_variant_index": 0,
+            "task_key": "coordinate_query",
+            "task_variant_index": 2,
+            "task_variant_key": "point_in_shape_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "geometry/coordinate/geometry_coordinate_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:coordinate_query": 5,
+              "task_family:coordinate_graph_scene": 5,
+              "task_variant:point_in_shape_count": 5
+            }
+          },
+          "prompt": "The graph-paper image shows a coordinate-plane diagram with one polygon drawn on graph paper. Read the coordinate-plane diagram carefully, then answer the question. Count the integer graph-paper points that are strictly inside the polygon.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array of every integer graph-paper point [x, y] that lies strictly inside the polygon.\nAnswer requirement: set \"answer\" to the integer count requested by the question.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "geometry_coordinate_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the integer count requested by the question",
+              "evidence_hint": "set \"evidence\" to an array of every integer graph-paper point [x, y] that lies strictly inside the polygon",
+              "json_example": "{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a coordinate-plane diagram with one polygon drawn on graph paper"
+            },
+            "task_family_key": "coordinate_graph_scene",
+            "task_family_variant_index": 0,
+            "task_key": "coordinate_query",
+            "task_variant_index": 2,
+            "task_variant_key": "point_in_shape_count",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "geometry/coordinate/geometry_coordinate_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:coordinate_query": 5,
+              "task_family:coordinate_graph_scene": 5,
+              "task_variant:point_in_shape_count": 5
+            }
+          },
+          "prompt": "The graph-paper image shows a coordinate-plane diagram with one polygon drawn on graph paper. Read the coordinate-plane diagram carefully, then answer the question. Count the integer graph-paper points that are strictly inside the polygon.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the integer count requested by the question.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "point_in_shape_count",
+      "template_id": "geometry_coordinate_v1"
+    },
+    "render_map": {
+      "image_id": "img0",
+      "polygon_vertices_graph": [
+        [
+          -7,
+          -5
+        ],
+        [
+          -3,
+          -5
+        ],
+        [
+          -6,
+          -3
+        ]
+      ],
+      "scene_variant": "polygon_lattice",
+      "strict_interior_points_graph": [
+        [
+          -6,
+          -4
+        ],
+        [
+          -5,
+          -4
+        ]
+      ]
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "graph_paper"
+        ],
+        "enabled": true,
+        "render_scale": 3,
+        "selected_style": "graph_paper",
+        "style_spec": {
+          "axis_arrow_size": 10,
+          "axis_arrows_enabled": true,
+          "axis_color": [
+            189,
+            194,
+            201
+          ],
+          "axis_darken_range": [
+            32,
+            48
+          ],
+          "axis_enabled": true,
+          "axis_line_width": 2,
+          "axis_scale_label_max_abs": 0,
+          "axis_scale_labels_enabled": true,
+          "base_color": [
+            255,
+            255,
+            255
+          ],
+          "base_color_jitter": [
+            0,
+            0
+          ],
+          "center_point_color": [
+            178,
+            183,
+            190
+          ],
+          "center_point_darken_extra_range": [
+            8,
+            14
+          ],
+          "center_point_enabled": true,
+          "center_point_radius": 2,
+          "color_variation_applied": true,
+          "color_variation_enabled": true,
+          "color_variation_sampled": {
+            "axis_darken": 36,
+            "base_color_delta": 0,
+            "center_point_darken_extra": 11,
+            "line_color_delta": 1,
+            "major_line_darken": 9,
+            "origin_label_darken_extra": 12
+          },
+          "kind": "grid",
+          "line_color": [
+            225,
+            230,
+            237
+          ],
+          "line_color_jitter": [
+            -5,
+            5
+          ],
+          "line_width": 1,
+          "major_every": 0,
+          "major_line_color": [
+            216,
+            221,
+            228
+          ],
+          "major_line_darken_range": [
+            6,
+            14
+          ],
+          "major_line_width": 1,
+          "origin_fraction_x": 0.5,
+          "origin_fraction_y": 0.5,
+          "origin_label_color": [
+            177,
+            182,
+            189
+          ],
+          "origin_label_darken_extra_range": [
+            6,
+            12
+          ],
+          "origin_label_enabled": false,
+          "origin_label_text": "0",
+          "outer_margin_px": 16,
+          "scene_supersample_scale": 3,
+          "spacing": 39,
+          "supersample_scale": 1
+        }
+      },
+      "canvas_size": 708,
+      "coord_space": "pixel",
+      "graph_coordinate_frame": {
+        "coord_space": "graph_unit",
+        "full_cells_x": 16,
+        "full_cells_y": 16,
+        "origin_fraction_x": 0.5,
+        "origin_fraction_y": 0.5,
+        "origin_pixel": [
+          354,
+          354
+        ],
+        "outer_margin_px": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 39,
+        "target_cells_x": 18,
+        "target_cells_y": 18,
+        "x_positive": "right",
+        "y_positive": "up"
+      },
+      "graph_paper_grid": {
+        "full_cells_x": 16,
+        "full_cells_y": 16,
+        "partial_edge_cells": true,
+        "spacing_px": 39,
+        "target_cells_x": 18,
+        "target_cells_y": 18
+      },
+      "point_style": {
+        "radius_px": 4
+      },
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.5,
+        "edit_count_range": [
+          1,
+          1
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": true
+      },
+      "scene_variant": "polygon_lattice",
+      "shape_style": {
+        "label_color": [
+          105,
+          19,
+          113
+        ],
+        "label_stroke_color": [
+          252,
+          249,
+          254
+        ],
+        "line_color": [
+          105,
+          19,
+          113
+        ]
+      },
+      "text_style": {
+        "font_size_px": 84,
+        "stroke_width_px": 3
+      }
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "entity_id": "polygon_region",
+          "entity_type": "polygon",
+          "strict_interior_points_graph": [
+            [
+              -6,
+              -4
+            ],
+            [
+              -5,
+              -4
+            ]
+          ],
+          "vertices_graph": [
+            [
+              -7,
+              -5
+            ],
+            [
+              -3,
+              -5
+            ],
+            [
+              -6,
+              -3
+            ]
+          ]
+        }
+      ],
+      "relations": {
+        "query_variant": "point_in_shape_count",
+        "scene_variant": "polygon_lattice",
+        "task_variant": "point_in_shape_count"
+      },
+      "scene_kind": "geometry_coordinate_relation"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "point_1",
+        "point_2"
+      ],
+      "type": "strict_interior_lattice_points"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

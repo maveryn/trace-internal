@@ -10,6 +10,7 @@ from trace.core.seed import hash64
 from trace.tasks.geometry.analytical_2d.value import GeometryAnalytical2DValueTask
 from trace.tasks.geometry.analytical_3d.value import GeometryAnalytical3DValueTask
 from trace.tasks.geometry.comparison.value import GeometryComparisonValueTask
+from trace.tasks.geometry.coordinate.relation import GeometryCoordinateRelationTask, _resolve_axes as _resolve_coordinate_axes
 from trace.tasks.geometry.counting.value import GeometryCountingValueTask
 from trace.tasks.geometry.measurement.value import GeometryMeasurementValueTask
 from trace.tasks.geometry.similarity.count import GeometrySimilarityCountTask, _resolve_axes as _resolve_similarity_axes
@@ -20,6 +21,7 @@ from trace.tasks import TASK_REGISTRY
 EXPECTED_GEOMETRY_TASKS = {
     "task_geometry_measurement_value",
     "task_geometry_comparison_value",
+    "task_geometry_coordinate_relation",
     "task_geometry_counting_value",
     "task_geometry_analytical_2d_value",
     "task_geometry_analytical_3d_value",
@@ -285,3 +287,81 @@ def test_geometry_similarity_count_balances_target_counts_across_review_seed_str
     for query_variant, counts in per_variant_counts.items():
         assert set(counts.keys()) == {0, 1, 2, 3, 4, 5}
         assert max(counts.values()) <= 25, query_variant
+
+
+@pytest.mark.parametrize(
+    ("scene_variant", "query_variant", "answer_type", "evidence_type"),
+    (
+        ("segment_set", "parallel_count", "integer", "graph_point_set"),
+        ("segment_set", "perpendicular_count", "integer", "graph_point_set"),
+        ("line_points", "collinear_count", "integer", "graph_point_set"),
+        ("quadrant_points", "same_quadrant_count", "integer", "graph_point_set"),
+        ("polygon_lattice", "point_in_shape_count", "integer", "graph_point_set"),
+    ),
+)
+def test_geometry_coordinate_relation_tracks_scene_and_query_variants(
+    scene_variant: str,
+    query_variant: str,
+    answer_type: str,
+    evidence_type: str,
+) -> None:
+    task = GeometryCoordinateRelationTask()
+    params = {"scene_variant": scene_variant, "query_variant": query_variant}
+    if query_variant in {"parallel_count", "perpendicular_count", "collinear_count"}:
+        params["target_count"] = 2
+    elif query_variant == "same_quadrant_count":
+        params["target_count"] = 2
+    elif query_variant == "point_in_shape_count":
+        params["target_count"] = 4
+    out = task.generate(23081, params=params, max_attempts=30)
+    trace = out.trace_payload
+    assert out.answer_gt.type == answer_type
+    assert out.evidence_gt.type == evidence_type
+    assert out.task_variant == query_variant
+    assert trace["execution_trace"]["scene_variant"] == scene_variant
+    assert trace["execution_trace"]["query_variant"] == query_variant
+    assert trace["execution_trace"]["task_variant"] == query_variant
+    assert trace["execution_trace"]["task_variant_probabilities"] == trace["execution_trace"]["query_variant_probabilities"]
+    assert trace["query_spec"]["params"]["variant_probabilities"] == trace["query_spec"]["params"]["query_variant_probabilities"]
+
+
+def test_geometry_coordinate_relation_balances_count_targets_across_review_seed_stream() -> None:
+    per_variant_counts: dict[str, Counter[int]] = {
+        "parallel_count": Counter(),
+        "perpendicular_count": Counter(),
+        "collinear_count": Counter(),
+        "same_quadrant_count": Counter(),
+        "point_in_shape_count": Counter(),
+    }
+    collected_counts = {key: 0 for key in per_variant_counts}
+
+    for index in range(10_000):
+        if all(int(value) >= 100 for value in collected_counts.values()):
+            break
+        instance_seed = hash64(0, "task_geometry_coordinate_relation", index)
+        resolved = _resolve_coordinate_axes(int(instance_seed), params={})
+        query_variant = str(resolved.query_variant)
+        if query_variant not in per_variant_counts:
+            continue
+        if int(collected_counts[query_variant]) >= 100:
+            continue
+        collected_counts[query_variant] += 1
+        per_variant_counts[query_variant][int(resolved.target_count)] += 1
+
+    assert collected_counts == {
+        "parallel_count": 100,
+        "perpendicular_count": 100,
+        "collinear_count": 100,
+        "same_quadrant_count": 100,
+        "point_in_shape_count": 100,
+    }
+    assert set(per_variant_counts["parallel_count"].keys()) == {0, 1, 2, 3, 4, 5, 6}
+    assert max(per_variant_counts["parallel_count"].values()) <= 25
+    assert set(per_variant_counts["perpendicular_count"].keys()) == {0, 1, 2, 3, 4, 5, 6}
+    assert max(per_variant_counts["perpendicular_count"].values()) <= 25
+    assert set(per_variant_counts["collinear_count"].keys()) == {0, 1, 2, 3, 4, 5, 6}
+    assert max(per_variant_counts["collinear_count"].values()) <= 25
+    assert set(per_variant_counts["same_quadrant_count"].keys()) == {0, 1, 2, 3, 4, 5, 6}
+    assert max(per_variant_counts["same_quadrant_count"].values()) <= 25
+    assert set(per_variant_counts["point_in_shape_count"].keys()) == {0, 1, 2, 3, 4, 5, 6, 7, 8}
+    assert max(per_variant_counts["point_in_shape_count"].values()) <= 20

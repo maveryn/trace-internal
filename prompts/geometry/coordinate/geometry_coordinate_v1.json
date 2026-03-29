@@ -1,0 +1,91 @@
+{
+  "bundle_id": "geometry_coordinate_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "coordinate_graph_scene": [
+      "The graph-paper image shows {object_description}.",
+      "Look at the graph-paper coordinate diagram. It shows {object_description}.",
+      "Use the graph-paper coordinate image showing {object_description}.",
+      "Work from the graph-paper coordinate diagram showing {object_description}.",
+      "You are given a graph-paper coordinate image with {object_description}."
+    ]
+  },
+  "task_templates": {
+    "coordinate_query": [
+      "Answer the question using the full coordinate-plane diagram.",
+      "Use the complete graph-paper coordinate scene to answer the question.",
+      "Read the coordinate-plane diagram carefully, then answer the question.",
+      "Work from the full coordinate graph to answer the question.",
+      "Determine the answer from the graph-paper coordinate relation diagram."
+    ]
+  },
+  "task_variant_templates": {
+    "parallel_count": [
+      "How many other segments are parallel to segment AB?",
+      "Count the other segments that are parallel to segment AB.",
+      "Use segment AB as the reference. How many other segments are parallel to it?",
+      "How many other segments have the same direction as segment AB?",
+      "Count the segments, excluding AB itself, that are parallel to segment AB."
+    ],
+    "perpendicular_count": [
+      "How many other segments are perpendicular to segment AB?",
+      "Count the other segments that are perpendicular to segment AB.",
+      "Use segment AB as the reference. How many other segments are perpendicular to it?",
+      "How many other segments form a right angle with segment AB?",
+      "Count the segments, excluding AB itself, that are perpendicular to segment AB."
+    ],
+    "collinear_count": [
+      "How many dot points lie on the same line as points A and B?",
+      "Count the dot points that are collinear with points A and B.",
+      "Using A and B as the reference line, how many dot points lie on that same line?",
+      "How many other points lie on the line through A and B?",
+      "Count the dot points, excluding A and B themselves, that lie on the same line as A and B."
+    ],
+    "same_quadrant_count": [
+      "How many dot points lie in the same quadrant as the X-marked point?",
+      "Count the dot points that are in the same quadrant as the marked X point.",
+      "How many other points lie in the same quadrant as the X-marked point?",
+      "Ignoring the marked X point itself, how many dot points lie in its quadrant?",
+      "Count the dot points that share a quadrant with the X-marked point."
+    ],
+    "point_in_shape_count": [
+      "How many integer lattice points lie strictly inside the shown polygon?",
+      "Count the integer graph-paper points that are strictly inside the polygon.",
+      "How many graph-coordinate lattice points are strictly inside the polygon?",
+      "Count the integer lattice points that lie inside the polygon, not on its boundary.",
+      "How many integer graph-paper points lie in the interior of the polygon?"
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:coordinate_graph_scene": [
+      "object_description"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

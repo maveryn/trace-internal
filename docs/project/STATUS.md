@@ -23,25 +23,26 @@ Date: 2026-03-29
 18. `task_geometry_comparison_value` spans `angle|segment|rectangle` scene families with extremum-style `query_variant` values (`largest_*` / `smallest_*`), preserving `option_letter` answers and winner-specific geometry evidence.
 19. `task_geometry_transformation_match` adds the first post-consolidation geometry visual-family expansion: one graph-paper scene with a `Reference` polygon, an explicit transformation cue, and six labeled candidate polygons. It uses `scene_variant` values `triangle|quadrilateral`, `query_variant` values `translation_match|reflection_match|rotation_match`, `option_letter` answers, and winning-polygon `graph_point_set` evidence.
 20. `task_geometry_similarity_count` adds the second post-consolidation geometry visual-family expansion: one graph-paper scene with a `Reference` polygon and five labeled candidate polygons. It uses `scene_variant` values `triangle|quadrilateral`, `query_variant` values `congruent_count|similar_count`, integer answers, and unordered `label_set` evidence over the matching candidate labels.
-21. `task_geometry_counting_value` spans `angle|triangle|quadrilateral|mixed_shape|polygon` scene families, moving the counted class into `query_variant` while preserving integer answers plus unordered `label_set` evidence.
-22. Analytical 2D shape-unit scaling is now decoupled from graph-paper `graph_cells` limits via dedicated render params (`analytical_unit_spacing_px`, `analytical_unit_padding_px`, `analytical_scene_fill_ratio`).
-23. Geometry measurement area/perimeter tasks now use unlabeled coordinate-only evidence (`graph_point_set` for polygons, `graph_point` for ellipse/circle) and keep shape vertices/reference points strictly inside the plotted graph-paper interior.
-24. `task_geometry_analytical_2d_value` now spans `rectangle|triangle|parallelogram|trapezoid|rhombus|circle|ellipse|composite_region` scene families with `query_variant` values `area|length|perimeter|composite_area`, while `task_geometry_analytical_3d_value` spans `rectangular_prism|triangular_prism|square_pyramid|cylinder|cone|sphere` with `query_variant` values `volume|surface_area`; both preserve structured `measurement_ref_map` evidence and legacy analytical answer typing.
-25. Analytical 2D length rendering now reserves explicit scene margin and uses local collision-aware text placement so labels/value annotations stay off geometry and away from the canvas edge more reliably.
-26. Tile tasks now keep concrete task modules flat under `trace/tasks/tile/<task_group>_<task_name>.py` and route shared helpers/noise-default loading through `trace/tasks/tile/shared/` instead of per-task-group wrapper packages.
-27. Tile count now includes `task_tile_count_color_count`, `task_tile_count_color_components`, and `task_tile_count_largest_component_size`, single-board `rectangular_tiling` tasks with dynamic canvas sizing, left/top coordinate gutters, coordinate-grounded `grid_point_set` evidence, shared rectangular-board count-family helpers, a reusable per-color component catalog, target-answer-balanced component-count queries, and unique-largest-component evidence for extremum-style component questions.
-28. Tile shared 4-neighbor graph helpers now live under `trace/tasks/tile/shared/grid_graph.py`, which is reused across pathfinding and color-component counting instead of staying under a path-specific module name.
-29. Tile reachability now includes `task_tile_reachability_region_size`, a single-board rectangular blocked-grid task with one start tile sampled from the shared 10-color named palette, black obstacle tiles, row/column coordinate gutters, coordinate-grounded reachable-set evidence, and a default reachable-answer cap of `12`.
-30. Shared rectangular tile-board defaults now cap board sides at `7` instead of `8`; example/strict-repro configs plus `task_tile_path_shortest_path` are aligned to that ceiling, and shortest-path generation now samples exact target path lengths while emitting `grid_point_path` tile-coordinate evidence on the same labeled square-cell board contract as the other tile tasks.
-31. Tile symmetry now includes `task_tile_symmetry_violation_count`, a single-board rectangular named-color task with deterministic `vertical` / `horizontal` variants, exact target-count construction over a uniform `1..10` violation range, and counted-side `grid_point_set` evidence.
-32. Tile pattern now includes `task_tile_pattern_match3_run_count`, a single-board rectangular named-color task with deterministic `rows` / `cols` variants, exact target-count construction over qualifying-line counts, fixed run length `3`, query-color prompts with hex labels, and one canonical witness run per counted line.
-33. Tile transition now includes `task_tile_transition_gravity_max_drop`, a single-board rectangular state-transition task with one colored tile per column, black bottom-contiguous obstacles, uniformly sampled target max-drop distances, a unique winning column by construction, and `grid_point_path` trajectory evidence for the winning drop.
-34. Tile path now also includes `task_tile_path_reachable_target_count`, a square-cell blocked-grid task with one green start tile, multiple red marked targets, exact target-answer sampling over reachable-target counts `0..6`, and `grid_point_set` evidence for only the reachable targets.
-35. Tile relation now also includes `task_tile_relation_min_distance`, a white-background rectangular-board task with exactly two connected colored regions, uniform target-answer sampling over minimum orthogonal distances `2..6`, and a unique straight `grid_point_path` witness between the unique closest pair.
-36. Geometry analytical_2d perimeter task supports five derived annotated-scene variants (right triangle, rectangle, rhombus, isosceles trapezoid, inscribed square) with decimal answers rounded to one decimal place and structured `measurement_ref_map` evidence.
-37. Shared analytical 2D scene rendering now supports reusable polygon fill semantics (`shaded`, `background`) so composite/shaded objectives can reuse one collision-aware render stack instead of task-local draw overlays.
-38. Consolidated geometry sampling/evidence adapters now live in `trace/tasks/geometry/shared/consolidated_sampling.py` and `trace/tasks/geometry/shared/consolidated_legacy.py`, which resolve compatible `scene_variant` / `query_variant` pairs and normalize delegated legacy traces to the active value-task geometry surface.
-39. The active geometry value wrappers preserve legacy scene construction and verifier logic while removing the old task-id inflation: measurement/comparison/counting now widen through scene/query axes instead of separate quantity-specific task ids, and analytical 2D/3D now expose shape/solid families plus query families under the same consolidated contract.
+21. `task_geometry_coordinate_relation` adds coordinate-plane relation reasoning as the third post-consolidation geometry visual-family expansion: `segment_set` scenes ask `parallel_count|perpendicular_count` questions with integer answers plus unordered `graph_point_set` evidence over the endpoints of every matching segment relative to target segment `AB`, `line_points` scenes ask `collinear_count` with integer answers plus unordered `graph_point_set` evidence over the dot points lying on the same line as labeled points `A` and `B`, `quadrant_points` scenes ask `same_quadrant_count` with integer answers plus unordered `graph_point_set` evidence over the dot points sharing a quadrant with the X-marked reference point, and `polygon_lattice` scenes ask `point_in_shape_count` with integer answers plus `graph_point_set` evidence over the integer lattice points strictly inside the polygon. The family now uses centered fixed `20 x 20` graph-paper windows, lets the segment scene place the target and candidate segments anywhere on the uniform `-10..10` grid as long as all endpoints stay off the border and no segments intersect each other, and keeps polygon scenes outline-only so interior lattice points stay readable.
+22. `task_geometry_counting_value` spans `angle|triangle|quadrilateral|mixed_shape|polygon` scene families, moving the counted class into `query_variant` while preserving integer answers plus unordered `label_set` evidence.
+23. Analytical 2D shape-unit scaling is now decoupled from graph-paper `graph_cells` limits via dedicated render params (`analytical_unit_spacing_px`, `analytical_unit_padding_px`, `analytical_scene_fill_ratio`).
+24. Geometry measurement area/perimeter tasks now use unlabeled coordinate-only evidence (`graph_point_set` for polygons, `graph_point` for ellipse/circle) and keep shape vertices/reference points strictly inside the plotted graph-paper interior.
+25. `task_geometry_analytical_2d_value` now spans `rectangle|triangle|parallelogram|trapezoid|rhombus|circle|ellipse|composite_region` scene families with `query_variant` values `area|length|perimeter|composite_area`, while `task_geometry_analytical_3d_value` spans `rectangular_prism|triangular_prism|square_pyramid|cylinder|cone|sphere` with `query_variant` values `volume|surface_area`; both preserve structured `measurement_ref_map` evidence and legacy analytical answer typing.
+26. Analytical 2D length rendering now reserves explicit scene margin and uses local collision-aware text placement so labels/value annotations stay off geometry and away from the canvas edge more reliably.
+27. Tile tasks now keep concrete task modules flat under `trace/tasks/tile/<task_group>_<task_name>.py` and route shared helpers/noise-default loading through `trace/tasks/tile/shared/` instead of per-task-group wrapper packages.
+28. Tile count now includes `task_tile_count_color_count`, `task_tile_count_color_components`, and `task_tile_count_largest_component_size`, single-board `rectangular_tiling` tasks with dynamic canvas sizing, left/top coordinate gutters, coordinate-grounded `grid_point_set` evidence, shared rectangular-board count-family helpers, a reusable per-color component catalog, target-answer-balanced component-count queries, and unique-largest-component evidence for extremum-style component questions.
+29. Tile shared 4-neighbor graph helpers now live under `trace/tasks/tile/shared/grid_graph.py`, which is reused across pathfinding and color-component counting instead of staying under a path-specific module name.
+30. Tile reachability now includes `task_tile_reachability_region_size`, a single-board rectangular blocked-grid task with one start tile sampled from the shared 10-color named palette, black obstacle tiles, row/column coordinate gutters, coordinate-grounded reachable-set evidence, and a default reachable-answer cap of `12`.
+31. Shared rectangular tile-board defaults now cap board sides at `7` instead of `8`; example/strict-repro configs plus `task_tile_path_shortest_path` are aligned to that ceiling, and shortest-path generation now samples exact target path lengths while emitting `grid_point_path` tile-coordinate evidence on the same labeled square-cell board contract as the other tile tasks.
+32. Tile symmetry now includes `task_tile_symmetry_violation_count`, a single-board rectangular named-color task with deterministic `vertical` / `horizontal` variants, exact target-count construction over a uniform `1..10` violation range, and counted-side `grid_point_set` evidence.
+33. Tile pattern now includes `task_tile_pattern_match3_run_count`, a single-board rectangular named-color task with deterministic `rows` / `cols` variants, exact target-count construction over qualifying-line counts, fixed run length `3`, query-color prompts with hex labels, and one canonical witness run per counted line.
+34. Tile transition now includes `task_tile_transition_gravity_max_drop`, a single-board rectangular state-transition task with one colored tile per column, black bottom-contiguous obstacles, uniformly sampled target max-drop distances, a unique winning column by construction, and `grid_point_path` trajectory evidence for the winning drop.
+35. Tile path now also includes `task_tile_path_reachable_target_count`, a square-cell blocked-grid task with one green start tile, multiple red marked targets, exact target-answer sampling over reachable-target counts `0..6`, and `grid_point_set` evidence for only the reachable targets.
+36. Tile relation now also includes `task_tile_relation_min_distance`, a white-background rectangular-board task with exactly two connected colored regions, uniform target-answer sampling over minimum orthogonal distances `2..6`, and a unique straight `grid_point_path` witness between the unique closest pair.
+37. Geometry analytical_2d perimeter task supports five derived annotated-scene variants (right triangle, rectangle, rhombus, isosceles trapezoid, inscribed square) with decimal answers rounded to one decimal place and structured `measurement_ref_map` evidence.
+38. Shared analytical 2D scene rendering now supports reusable polygon fill semantics (`shaded`, `background`) so composite/shaded objectives can reuse one collision-aware render stack instead of task-local draw overlays.
+39. Consolidated geometry sampling/evidence adapters now live in `trace/tasks/geometry/shared/consolidated_sampling.py` and `trace/tasks/geometry/shared/consolidated_legacy.py`, which resolve compatible `scene_variant` / `query_variant` pairs and normalize delegated legacy traces to the active value-task geometry surface.
+40. The active geometry value wrappers preserve legacy scene construction and verifier logic while removing the old task-id inflation: measurement/comparison/counting now widen through scene/query axes instead of separate quantity-specific task ids, and analytical 2D/3D now expose shape/solid families plus query families under the same consolidated contract.
 40. Icons counting now includes `task_icons_counting_type`, `task_icons_counting_orientation`, `task_icons_counting_color`, `task_icons_counting_attribute_binding`, and `task_icons_counting_size_relation`, all using integer answers and scene-only `bbox_set` evidence in final image coordinates. Type counting matches icon identity against the curated 3000-icon Prism pool, orientation counting uses the curated asymmetric subset and same-icon scenes with rotation-based orientation queries, color counting uses same-icon scenes so tint is the only varying predicate (with a stricter Lab-distance threshold `60`), attribute-binding counting binds icon type + color + orientation together using structured partial-match distractors from the asymmetric pool, and size-relation counting uses same-icon scenes with randomized tint/rotation plus a Prism-style nominal-size gap so the only matching predicate is whether a scene icon is smaller or larger than the reference. The first four counting tasks use the shared two-panel `Reference` + `Scene` layout and sample `target_count` independently in `0..10` with `distractor_count` independently in `1..10`; the size-relation task uses tighter `0..8` / `1..8` count caps to keep larger-icon scenes readable. All five place icons randomly in the scene panel with at most `10%` pairwise overlap (normalized by the smaller box area) and apply per-icon subtle noise before compositing; the sampled palette, overlap/noise config, final tints, nominal sizes, and per-instance noise edits are recorded in trace metadata.
 41. Icons transformation now includes `task_icons_transformation_pair_count`, a two-panel `Reference` + labeled `Scene` grid task with integer answers and sorted `label_set` evidence; the Reference pair shows one canonical D4 transform, Scene cells each show `icon -> transformed icon`, and the task counts how many cells apply the same rule. The task uses the curated asymmetric icon pool, rejects icon/transform pairs that collapse visually under rendered-silhouette checks, and records the sampled transform ids plus per-icon subtle noise in trace metadata.
 42. Icons relation now includes `task_icons_relation_relative_position_type`, a two-panel `Reference` + `Scene` task with one marked Anchor icon, integer answers, and scene-only `bbox_set` evidence; query variants ask for matches left/right/above/below the Anchor, target counts are capped at `5`, distractors are capped at `10` with a target-conditioned floor of `target_count + 1`, spatial membership is evaluated strictly from rendered candidate/Anchor bboxes, and distractors are mixed across same-type wrong-side and different-type queried-side cases so the task requires both icon-type matching and directional reasoning instead of letting side occupancy become a cue. Same-type wrong-side distractors now follow Prism-style relaxed spatial margins, requiring at least `75%` of the distractor bbox area to lie outside the queried region so near-miss positives are rejected.
@@ -89,68 +90,69 @@ Date: 2026-03-29
 13. `task_geometry_comparison_value` (`domain=geometry`, `task_group=comparison`)
 14. `task_geometry_counting_value` (`domain=geometry`, `task_group=counting`)
 15. `task_geometry_measurement_value` (`domain=geometry`, `task_group=measurement`)
-16. `task_geometry_similarity_count` (`domain=geometry`, `task_group=similarity`)
-17. `task_geometry_transformation_match` (`domain=geometry`, `task_group=transformation`)
-18. `task_graph_comparison_largest_component_size` (`domain=graph`, `task_group=comparison`)
-19. `task_graph_counting_articulation_point_count` (`domain=graph`, `task_group=counting`)
-20. `task_graph_counting_bridge_count` (`domain=graph`, `task_group=counting`)
-21. `task_graph_counting_degree_count` (`domain=graph`, `task_group=counting`)
-22. `task_graph_optimization_minimum_spanning_tree_weight` (`domain=graph`, `task_group=optimization`)
-23. `task_graph_order_topological_position` (`domain=graph`, `task_group=order`)
-24. `task_graph_path_shortest_path_length` (`domain=graph`, `task_group=path`)
-25. `task_graph_relation_reachable_count` (`domain=graph`, `task_group=relation`)
-26. `task_graph_relation_same_component_count` (`domain=graph`, `task_group=relation`)
-27. `task_graph_relation_unique_cycle_size` (`domain=graph`, `task_group=relation`)
-28. `task_icons_counting_attribute_binding` (`domain=icons`, `task_group=counting`)
-29. `task_icons_counting_color` (`domain=icons`, `task_group=counting`)
-30. `task_icons_counting_orientation` (`domain=icons`, `task_group=counting`)
-31. `task_icons_counting_singleton_type` (`domain=icons`, `task_group=counting`)
-32. `task_icons_counting_size_relation` (`domain=icons`, `task_group=counting`)
-33. `task_icons_counting_type` (`domain=icons`, `task_group=counting`)
-34. `task_icons_pattern_grid_rotation_violation` (`domain=icons`, `task_group=pattern`)
-35. `task_icons_pattern_grid_size_violation` (`domain=icons`, `task_group=pattern`)
-36. `task_icons_relation_between_two_anchors_count` (`domain=icons`, `task_group=relation`)
-37. `task_icons_relation_mirror_symmetry` (`domain=icons`, `task_group=relation`)
-38. `task_icons_relation_occlusion_order` (`domain=icons`, `task_group=relation`)
-39. `task_icons_relation_relative_position_type` (`domain=icons`, `task_group=relation`)
-40. `task_icons_sequence_missing_count` (`domain=icons`, `task_group=sequence`)
-41. `task_icons_sequence_rotation_violation` (`domain=icons`, `task_group=sequence`)
-42. `task_icons_transformation_pair_count` (`domain=icons`, `task_group=transformation`)
-43. `task_puzzles_arithmetic_balance_value` (`domain=puzzles`, `task_group=arithmetic`)
-44. `task_puzzles_arithmetic_equation_value` (`domain=puzzles`, `task_group=arithmetic`)
-45. `task_puzzles_arithmetic_grid_value` (`domain=puzzles`, `task_group=arithmetic`)
-46. `task_puzzles_logic_grid_completion_label` (`domain=puzzles`, `task_group=logic`)
-47. `task_puzzles_spatial_fold_hole_label` (`domain=puzzles`, `task_group=spatial`)
-48. `task_tables_counting_value_count` (`domain=tables`, `task_group=counting`)
-49. `task_tables_ranking_label` (`domain=tables`, `task_group=ranking`)
-50. `task_tables_readout_subset_value` (`domain=tables`, `task_group=readout`)
-51. `task_tables_relation_extremum_transfer_value` (`domain=tables`, `task_group=relation`)
-52. `task_tables_relation_row_compare_label` (`domain=tables`, `task_group=relation`)
-53. `task_tables_statistics_filtered_subset_label` (`domain=tables`, `task_group=statistics`)
-54. `task_tables_statistics_filtered_subset_value` (`domain=tables`, `task_group=statistics`)
-55. `task_tables_statistics_summary_label` (`domain=tables`, `task_group=statistics`)
-56. `task_tables_statistics_summary_value` (`domain=tables`, `task_group=statistics`)
-57. `task_tables_temporal_value` (`domain=tables`, `task_group=temporal`)
-58. `task_temporal_calendar_month_view` (`domain=temporal`, `task_group=calendar`)
-59. `task_temporal_clock_compare` (`domain=temporal`, `task_group=clock`)
-60. `task_temporal_clock_readout` (`domain=temporal`, `task_group=clock`)
-61. `task_temporal_schedule_day_planner` (`domain=temporal`, `task_group=schedule`)
-62. `task_temporal_timeline_milestones` (`domain=temporal`, `task_group=timeline`)
-63. `task_tile_count_color_components` (`domain=tile`, `task_group=count`)
-64. `task_tile_count_color_count` (`domain=tile`, `task_group=count`)
-65. `task_tile_count_largest_component_size` (`domain=tile`, `task_group=count`)
-66. `task_tile_path_reachable_target_count` (`domain=tile`, `task_group=path`)
-67. `task_tile_path_shortest_path` (`domain=tile`, `task_group=path`)
-68. `task_tile_pattern_match3_run_count` (`domain=tile`, `task_group=pattern`)
-69. `task_tile_reachability_region_size` (`domain=tile`, `task_group=reachability`)
-70. `task_tile_relation_min_distance` (`domain=tile`, `task_group=relation`)
-71. `task_tile_symmetry_violation_count` (`domain=tile`, `task_group=symmetry`)
-72. `task_tile_transition_gravity_max_drop` (`domain=tile`, `task_group=transition`)
+16. `task_geometry_coordinate_relation` (`domain=geometry`, `task_group=coordinate`)
+17. `task_geometry_similarity_count` (`domain=geometry`, `task_group=similarity`)
+18. `task_geometry_transformation_match` (`domain=geometry`, `task_group=transformation`)
+19. `task_graph_comparison_largest_component_size` (`domain=graph`, `task_group=comparison`)
+20. `task_graph_counting_articulation_point_count` (`domain=graph`, `task_group=counting`)
+21. `task_graph_counting_bridge_count` (`domain=graph`, `task_group=counting`)
+22. `task_graph_counting_degree_count` (`domain=graph`, `task_group=counting`)
+23. `task_graph_optimization_minimum_spanning_tree_weight` (`domain=graph`, `task_group=optimization`)
+24. `task_graph_order_topological_position` (`domain=graph`, `task_group=order`)
+25. `task_graph_path_shortest_path_length` (`domain=graph`, `task_group=path`)
+26. `task_graph_relation_reachable_count` (`domain=graph`, `task_group=relation`)
+27. `task_graph_relation_same_component_count` (`domain=graph`, `task_group=relation`)
+28. `task_graph_relation_unique_cycle_size` (`domain=graph`, `task_group=relation`)
+29. `task_icons_counting_attribute_binding` (`domain=icons`, `task_group=counting`)
+30. `task_icons_counting_color` (`domain=icons`, `task_group=counting`)
+31. `task_icons_counting_orientation` (`domain=icons`, `task_group=counting`)
+32. `task_icons_counting_singleton_type` (`domain=icons`, `task_group=counting`)
+33. `task_icons_counting_size_relation` (`domain=icons`, `task_group=counting`)
+34. `task_icons_counting_type` (`domain=icons`, `task_group=counting`)
+35. `task_icons_pattern_grid_rotation_violation` (`domain=icons`, `task_group=pattern`)
+36. `task_icons_pattern_grid_size_violation` (`domain=icons`, `task_group=pattern`)
+37. `task_icons_relation_between_two_anchors_count` (`domain=icons`, `task_group=relation`)
+38. `task_icons_relation_mirror_symmetry` (`domain=icons`, `task_group=relation`)
+39. `task_icons_relation_occlusion_order` (`domain=icons`, `task_group=relation`)
+40. `task_icons_relation_relative_position_type` (`domain=icons`, `task_group=relation`)
+41. `task_icons_sequence_missing_count` (`domain=icons`, `task_group=sequence`)
+42. `task_icons_sequence_rotation_violation` (`domain=icons`, `task_group=sequence`)
+43. `task_icons_transformation_pair_count` (`domain=icons`, `task_group=transformation`)
+44. `task_puzzles_arithmetic_balance_value` (`domain=puzzles`, `task_group=arithmetic`)
+45. `task_puzzles_arithmetic_equation_value` (`domain=puzzles`, `task_group=arithmetic`)
+46. `task_puzzles_arithmetic_grid_value` (`domain=puzzles`, `task_group=arithmetic`)
+47. `task_puzzles_logic_grid_completion_label` (`domain=puzzles`, `task_group=logic`)
+48. `task_puzzles_spatial_fold_hole_label` (`domain=puzzles`, `task_group=spatial`)
+49. `task_tables_counting_value_count` (`domain=tables`, `task_group=counting`)
+50. `task_tables_ranking_label` (`domain=tables`, `task_group=ranking`)
+51. `task_tables_readout_subset_value` (`domain=tables`, `task_group=readout`)
+52. `task_tables_relation_extremum_transfer_value` (`domain=tables`, `task_group=relation`)
+53. `task_tables_relation_row_compare_label` (`domain=tables`, `task_group=relation`)
+54. `task_tables_statistics_filtered_subset_label` (`domain=tables`, `task_group=statistics`)
+55. `task_tables_statistics_filtered_subset_value` (`domain=tables`, `task_group=statistics`)
+56. `task_tables_statistics_summary_label` (`domain=tables`, `task_group=statistics`)
+57. `task_tables_statistics_summary_value` (`domain=tables`, `task_group=statistics`)
+58. `task_tables_temporal_value` (`domain=tables`, `task_group=temporal`)
+59. `task_temporal_calendar_month_view` (`domain=temporal`, `task_group=calendar`)
+60. `task_temporal_clock_compare` (`domain=temporal`, `task_group=clock`)
+61. `task_temporal_clock_readout` (`domain=temporal`, `task_group=clock`)
+62. `task_temporal_schedule_day_planner` (`domain=temporal`, `task_group=schedule`)
+63. `task_temporal_timeline_milestones` (`domain=temporal`, `task_group=timeline`)
+64. `task_tile_count_color_components` (`domain=tile`, `task_group=count`)
+65. `task_tile_count_color_count` (`domain=tile`, `task_group=count`)
+66. `task_tile_count_largest_component_size` (`domain=tile`, `task_group=count`)
+67. `task_tile_path_reachable_target_count` (`domain=tile`, `task_group=path`)
+68. `task_tile_path_shortest_path` (`domain=tile`, `task_group=path`)
+69. `task_tile_pattern_match3_run_count` (`domain=tile`, `task_group=pattern`)
+70. `task_tile_reachability_region_size` (`domain=tile`, `task_group=reachability`)
+71. `task_tile_relation_min_distance` (`domain=tile`, `task_group=relation`)
+72. `task_tile_symmetry_violation_count` (`domain=tile`, `task_group=symmetry`)
+73. `task_tile_transition_gravity_max_drop` (`domain=tile`, `task_group=transition`)
 ## Current quality baseline
 1. Tests are required to pass before finalize.
 2. Distribution QA uses `scripts/check_task_answer_distribution.py` with per-variant answer-only checks (`unique_answers >= 5`, `max_answer_frequency < 25%`) and multithreaded sample generation (`--workers`); numeric 5-bin summaries remain reported for review but are not hard pass/fail gates.
 3. Task-review tooling writes per-task artifacts under `task-reviews/<domain>/<task_id>/`, including one inspection workbook named `<task_id>.xlsx` with one sheet per task variant.
-4. There are currently `70` active tasks total: `10` graph, `10` tile, `5` geometry, `15` icons, `10` charts, `10` tables, `5` puzzles, and `5` temporal. The refreshed 5-task consolidated geometry surface now passes distribution review under the active gates, and `task_icons_relation_mirror_symmetry` remains the only active task still explicitly marked `needs_refresh` in `task-reviews/REVIEW_STATUS.md`.
+4. There are currently `73` active tasks total: `10` graph, `10` tile, `8` geometry, `15` icons, `10` charts, `10` tables, `5` puzzles, and `5` temporal. The refreshed consolidated geometry surface plus the newer transformation/similarity/coordinate families now pass distribution review under the active gates, and `task_icons_relation_mirror_symmetry` remains the only active task still explicitly marked `needs_refresh` in `task-reviews/REVIEW_STATUS.md`.
 
 ## Next priorities
 1. Extend the new temporal domain beyond the current clock + calendar + schedule + timeline tasks with additional time-structured visual artifacts while keeping each task tied to one stable visual scaffold and a local evidence contract.

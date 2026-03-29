@@ -58,6 +58,7 @@ Train records should store:
 Active bundles:
 1. Geometry:
    - `prompts/geometry/comparison/geometry_comparison_v1.json`
+   - `prompts/geometry/coordinate/geometry_coordinate_v1.json`
    - `prompts/geometry/counting/geometry_counting_v1.json`
    - `prompts/geometry/measurement/geometry_angle_measure_v1.json`
    - `prompts/geometry/measurement/geometry_measurement_v1.json`
@@ -131,25 +132,26 @@ Active task-to-bundle mapping:
    - `geometry_analytical_surface_area_v1`
 6. Geometry transformation task (`task_geometry_transformation_match`) delegates to `geometry_transformation_v1`
 7. Geometry similarity task (`task_geometry_similarity_count`) delegates to `geometry_similarity_v1`
-8. Icons:
+8. Geometry coordinate task (`task_geometry_coordinate_relation`) delegates to `geometry_coordinate_v1`
+9. Icons:
    - `task_icons_counting_type|orientation|color|attribute_binding|size_relation|singleton_type` -> `icons_counting_v1`
    - `task_icons_pattern_grid_rotation_violation|task_icons_pattern_grid_size_violation` -> `icons_pattern_v1`
    - `task_icons_relation_relative_position_type|between_two_anchors_count|mirror_symmetry|occlusion_order` -> `icons_relation_v1`
    - `task_icons_sequence_missing_count|rotation_violation` -> `icons_sequence_v1`
    - `task_icons_transformation_pair_count` -> `icons_transformation_v1`
-9. Graph:
+10. Graph:
    - `task_graph_counting_degree_count|articulation_point_count|bridge_count` -> `graph_counting_v1`
    - `task_graph_comparison_largest_component_size` -> `graph_comparison_v1`
    - `task_graph_order_topological_position` -> `graph_order_v1`
    - `task_graph_optimization_minimum_spanning_tree_weight` -> `graph_optimization_v1`
    - `task_graph_path_shortest_path_length` -> `graph_path_v1`
    - `task_graph_relation_same_component_count|reachable_count|unique_cycle_size` -> `graph_relation_v1`
-9. Temporal:
+11. Temporal:
    - `task_temporal_clock_readout|task_temporal_clock_compare` -> `temporal_clock_v1`
    - `task_temporal_calendar_month_view` -> `temporal_calendar_v1`
    - `task_temporal_schedule_day_planner` -> `temporal_schedule_v1`
    - `task_temporal_timeline_milestones` -> `temporal_timeline_v1`
-10. Tile:
+12. Tile:
    - `task_tile_count_color_count|color_components|largest_component_size` -> `tile_count_v1`
    - `task_tile_path_shortest_path|reachable_target_count` -> `tile_path_v1`
    - `task_tile_pattern_match3_run_count` -> `tile_pattern_v1`
@@ -157,7 +159,7 @@ Active task-to-bundle mapping:
    - `task_tile_relation_min_distance` -> `tile_relation_v1`
    - `task_tile_symmetry_violation_count` -> `tile_symmetry_v1`
    - `task_tile_transition_gravity_max_drop` -> `tile_transition_v1`
-11. Charts:
+13. Charts:
    - `task_charts_statistics_summary_value|summary_label` -> `charts_statistics_v1`
    - `task_charts_counting_value_count` -> `charts_counting_v1`
    - `task_charts_readout_subset_value` -> `charts_readout_v1`
@@ -165,14 +167,14 @@ Active task-to-bundle mapping:
    - `task_charts_distribution_histogram_count|boxplot_label|density_label` -> `charts_distribution_v1`
    - `task_charts_trend_structure_value` -> `charts_trend_v1`
    - `task_charts_composition_subset_value` -> `charts_composition_v1`
-12. Tables:
+14. Tables:
    - `task_tables_statistics_summary_label|summary_value|filtered_subset_value|filtered_subset_label` -> `tables_statistics_v1`
    - `task_tables_counting_value_count` -> `tables_counting_v1`
    - `task_tables_readout_subset_value` -> `tables_readout_v1`
    - `task_tables_relation_row_compare_label|extremum_transfer_value` -> `tables_relation_v1`
    - `task_tables_ranking_label` -> `tables_ranking_v1`
    - `task_tables_temporal_value` -> `tables_temporal_v1`
-12. Puzzles:
+15. Puzzles:
    - `task_puzzles_arithmetic_equation_value|task_puzzles_arithmetic_balance_value|task_puzzles_arithmetic_grid_value` -> `puzzles_arithmetic_v1`
    - `task_puzzles_logic_grid_completion_label` -> `puzzles_logic_v1`
    - `task_puzzles_spatial_fold_hole_label` -> `puzzles_spatial_v1`

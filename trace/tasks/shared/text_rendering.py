@@ -249,9 +249,11 @@ def resolve_text_label_center(
     offset_px: float,
     font: ImageFont.ImageFont,
     blocked_segments: Sequence[Segment] | None = None,
+    blocked_points: Sequence[Point] | None = None,
     occupied_boxes: Sequence[BBox] | None = None,
     stroke_width: int | None = None,
     line_clearance_px: float = 2.0,
+    point_clearance_px: float = 6.0,
     canvas_size: int | None = None,
 ) -> Tuple[Point, BBox]:
     """Choose one nearby text center that minimizes overlap with line segments.
@@ -269,6 +271,15 @@ def resolve_text_label_center(
     offset = float(max(4.0, float(offset_px)))
     min_required = float(0.5 * math.hypot(width, height) + max(1.0, float(line_clearance_px)))
     segments = list(blocked_segments or ())
+    blocked_point_boxes = [
+        _bbox_from_center(
+            (float(point[0]), float(point[1])),
+            width=0.0,
+            height=0.0,
+            padding=max(0.0, float(point_clearance_px)),
+        )
+        for point in list(blocked_points or ())
+    ]
     occupied = list(occupied_boxes or ())
 
     angle_offsets = (0, 20, -20, 35, -35, 50, -50, 70, -70, 90, -90, 120, -120, 150, -150, 180)
@@ -287,6 +298,7 @@ def resolve_text_label_center(
             out_of_bounds = 0
             if canvas_size is not None and not _bbox_within_square_canvas(bbox, int(canvas_size), margin=1.0):
                 out_of_bounds = 1
+            point_overlap = 1 if any(_bbox_overlaps(bbox, point_bbox) for point_bbox in blocked_point_boxes) else 0
             label_overlap = 1 if any(_bbox_overlaps(bbox, existing) for existing in occupied) else 0
             if segments:
                 min_distance = min(
@@ -300,6 +312,7 @@ def resolve_text_label_center(
             score = (
                 float(out_of_bounds),
                 float(line_overlap),
+                float(point_overlap),
                 float(label_overlap),
                 float(clearance_deficit),
                 float(radius),

@@ -70,33 +70,16 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/tile/relation_min_distance.py`
    - `trace/tasks/tile/symmetry_violation_count.py`
    - `trace/tasks/tile/transition_gravity_max_drop.py`
-2. Geometry comparison:
-   - `trace/tasks/geometry/comparison/angle.py`
-   - `trace/tasks/geometry/comparison/area.py`
-   - `trace/tasks/geometry/comparison/length.py`
-   - `trace/tasks/geometry/comparison/perimeter.py`
-3. Geometry counting:
-   - `trace/tasks/geometry/counting/angle.py`
-   - `trace/tasks/geometry/counting/triangle.py`
-   - `trace/tasks/geometry/counting/quadrilateral.py`
-   - `trace/tasks/geometry/counting/shape_type.py`
-   - `trace/tasks/geometry/counting/convexity.py`
-4. Geometry measurement:
-   - `trace/tasks/geometry/measurement/angle.py`
-   - `trace/tasks/geometry/measurement/area.py`
-   - `trace/tasks/geometry/measurement/perimeter.py`
-   - `trace/tasks/geometry/measurement/length.py`
-   - `trace/tasks/geometry/measurement/slope.py`
-5. Geometry analytical 2D/3D:
-   - `trace/tasks/geometry/analytical_2d/area.py`
-   - `trace/tasks/geometry/analytical_2d/composite_area.py`
-   - `trace/tasks/geometry/analytical_2d/length.py`
-   - `trace/tasks/geometry/analytical_2d/perimeter.py`
-   - `trace/tasks/geometry/analytical_3d/volume.py`
-   - `trace/tasks/geometry/analytical_3d/surface_area.py`
-6. Geometry transformation:
+2. Geometry:
+   - `trace/tasks/geometry/measurement/value.py`
+   - `trace/tasks/geometry/comparison/value.py`
+   - `trace/tasks/geometry/counting/value.py`
+   - `trace/tasks/geometry/analytical_2d/value.py`
+   - `trace/tasks/geometry/analytical_3d/value.py`
    - `trace/tasks/geometry/transformation/match.py`
-7. Icons:
+   - `trace/tasks/geometry/similarity/count.py`
+   - `trace/tasks/geometry/coordinate/relation.py`
+3. Icons:
    - `trace/tasks/icons/counting/type.py`
    - `trace/tasks/icons/counting/orientation.py`
    - `trace/tasks/icons/counting/color.py`
@@ -112,7 +95,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/icons/sequence/missing_count.py`
    - `trace/tasks/icons/sequence/rotation_violation.py`
    - `trace/tasks/icons/transformation/pair_count.py`
-8. Charts:
+4. Charts:
    - `trace/tasks/charts/statistics/summary_value.py`
    - `trace/tasks/charts/statistics/summary_label.py`
    - `trace/tasks/charts/counting/value_count.py`
@@ -123,7 +106,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/charts/distribution/density_label.py`
    - `trace/tasks/charts/trend/structure_value.py`
    - `trace/tasks/charts/composition/subset_value.py`
-9. Tables:
+5. Tables:
    - `trace/tasks/tables/statistics/summary_label.py`
    - `trace/tasks/tables/statistics/summary_value.py`
    - `trace/tasks/tables/statistics/filtered_subset_value.py`
@@ -134,32 +117,29 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/tables/relation/extremum_transfer_value.py`
    - `trace/tasks/tables/ranking/label.py`
    - `trace/tasks/tables/temporal/value.py`
-10. Graph:
+6. Graph:
    - `trace/tasks/graph/counting/degree_count.py`
    - `trace/tasks/graph/counting/articulation_point_count.py`
    - `trace/tasks/graph/counting/bridge_count.py`
    - `trace/tasks/graph/comparison/largest_component_size.py`
    - `trace/tasks/graph/optimization/minimum_spanning_tree_weight.py`
+   - `trace/tasks/graph/order/topological_position.py`
    - `trace/tasks/graph/path/shortest_path_length.py`
    - `trace/tasks/graph/relation/reachable_count.py`
    - `trace/tasks/graph/relation/same_component_count.py`
    - `trace/tasks/graph/relation/unique_cycle_size.py`
-11. Temporal:
+7. Temporal:
    - `trace/tasks/temporal/calendar/month_view.py`
    - `trace/tasks/temporal/clock/readout.py`
    - `trace/tasks/temporal/clock/compare.py`
    - `trace/tasks/temporal/schedule/day_planner.py`
    - `trace/tasks/temporal/timeline/milestones.py`
-12. Puzzles:
+8. Puzzles:
    - `trace/tasks/puzzles/arithmetic/equation_value.py`
    - `trace/tasks/puzzles/arithmetic/balance_value.py`
    - `trace/tasks/puzzles/arithmetic/grid_value.py`
    - `trace/tasks/puzzles/logic/grid_completion_label.py`
    - `trace/tasks/puzzles/spatial/fold_hole_label.py`
-13. Additional geometry visual families:
-   - `trace/tasks/geometry/transformation/match.py`
-   - `trace/tasks/geometry/similarity/count.py`
-
 ## 5) Architecture invariants
 1. Determinism from config + seeds + versions.
 2. `TrainInstance` stays lightweight; heavy replay metadata stays in sidecar trace.

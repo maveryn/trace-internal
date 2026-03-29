@@ -8,7 +8,7 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_geometry_similarity_count"
+      "task_geometry_coordinate_relation"
     ],
     "workers": 16
   },
@@ -21,19 +21,22 @@
     {
       "distribution_pass": true,
       "domain": "geometry",
-      "inspection_count": 50,
-      "inspection_workbook": "geometry/task_geometry_similarity_count/task_geometry_similarity_count.xlsx",
+      "inspection_count": 125,
+      "inspection_workbook": "geometry/task_geometry_coordinate_relation/task_geometry_coordinate_relation.xlsx",
       "inspection_workbook_sheets": {
-        "congruent_count": "congruent_count",
-        "similar_count": "similar_count"
+        "collinear_count": "collinear_count",
+        "parallel_count": "parallel_count",
+        "perpendicular_count": "perpendicular_count",
+        "point_in_shape_count": "point_in_shape_count",
+        "same_quadrant_count": "same_quadrant_count"
       },
       "reports": {
-        "distribution_review": "geometry/task_geometry_similarity_count/distribution_review.json",
-        "inspection_manifest": "geometry/task_geometry_similarity_count/manifest.json",
-        "random_review": "geometry/task_geometry_similarity_count/random_review_100.json"
+        "distribution_review": "geometry/task_geometry_coordinate_relation/distribution_review.json",
+        "inspection_manifest": "geometry/task_geometry_coordinate_relation/manifest.json",
+        "random_review": "geometry/task_geometry_coordinate_relation/random_review_100.json"
       },
-      "task_group": "similarity",
-      "task_id": "task_geometry_similarity_count"
+      "task_group": "coordinate",
+      "task_id": "task_geometry_coordinate_relation"
     }
   ]
 }

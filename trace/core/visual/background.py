@@ -56,6 +56,8 @@ _DEFAULT_GRID_STYLE: Dict[str, Any] = {
     "origin_label_enabled": False,
     "origin_label_text": "(0,0)",
     "origin_label_color": [220, 220, 220],
+    "origin_fraction_x": 0.5,
+    "origin_fraction_y": 0.5,
     "supersample_scale": 1,
 }
 
@@ -89,6 +91,12 @@ def _to_bool(value: Any, fallback: bool) -> bool:
         if text in {"0", "false", "no", "n", "off"}:
             return False
     return bool(fallback)
+
+
+def _clamp_fraction(value: Any, fallback: float) -> float:
+    """Clamp one fractional placement control into a safe interior band."""
+
+    return max(0.10, min(0.90, _to_float(value, fallback)))
 
 
 def _normalize_rgb(value: Any, fallback: Tuple[int, int, int]) -> Tuple[int, int, int]:
@@ -220,6 +228,14 @@ def coerce_grid_style_spec(
         "origin_label_enabled": _to_bool(merged.get("origin_label_enabled"), False),
         "origin_label_text": str(merged.get("origin_label_text", "(0,0)")).strip() or "(0,0)",
         "origin_label_color": list(_normalize_rgb(merged.get("origin_label_color"), axis_color)),
+        "origin_fraction_x": _clamp_fraction(
+            merged.get("origin_fraction_x"),
+            _to_float(fallback.get("origin_fraction_x", 0.5), 0.5),
+        ),
+        "origin_fraction_y": _clamp_fraction(
+            merged.get("origin_fraction_y"),
+            _to_float(fallback.get("origin_fraction_y", 0.5), 0.5),
+        ),
         "supersample_scale": max(1, min(4, _to_int(merged.get("supersample_scale"), 1))),
     }
 
@@ -379,14 +395,14 @@ def _draw_grid_lines(
         draw.rectangle([int(left), y_start, int(right), min(int(bottom), y_start + width_px - 1)], fill=color)
 
 
-def _axis_origin_for_bounds(*, lower: int, upper: int, spacing: int) -> int:
-    """Return centered axis coordinate within one bounded drawable interval."""
+def _axis_origin_for_bounds(*, lower: int, upper: int, spacing: int, fraction: float = 0.5) -> int:
+    """Return one axis coordinate within one bounded drawable interval."""
     lo = int(lower)
     hi = int(upper)
     if hi < lo:
         return int(lo)
-    center = (float(lo) + float(hi)) / 2.0
-    return max(int(lo), min(int(round(center)), int(hi)))
+    placement = float(lo) + (max(0.0, min(1.0, float(fraction))) * float(hi - lo))
+    return max(int(lo), min(int(round(placement)), int(hi)))
 
 
 def _lattice_positions_within_bounds(*, lower: int, upper: int, spacing: int, origin: int) -> List[int]:
@@ -402,7 +418,15 @@ def _lattice_positions_within_bounds(*, lower: int, upper: int, spacing: int, or
     return [int(value) for value in range(int(start), int(hi) + 1, int(step))]
 
 
-def compute_grid_axis_origin_for_canvas(*, width: int, height: int, spacing: int, inset: int = 0) -> Tuple[int, int]:
+def compute_grid_axis_origin_for_canvas(
+    *,
+    width: int,
+    height: int,
+    spacing: int,
+    inset: int = 0,
+    x_fraction: float = 0.5,
+    y_fraction: float = 0.5,
+) -> Tuple[int, int]:
     """Compute graph-paper center-origin pixel coordinates for one rectangular canvas."""
     canvas_width = max(1, int(width))
     canvas_height = max(1, int(height))
@@ -410,18 +434,37 @@ def compute_grid_axis_origin_for_canvas(*, width: int, height: int, spacing: int
     top = max(0, int(inset))
     right = max(int(left), int(canvas_width) - 1 - int(inset))
     bottom = max(int(top), int(canvas_height) - 1 - int(inset))
-    x = _axis_origin_for_bounds(lower=int(left), upper=int(right), spacing=int(spacing))
-    y = _axis_origin_for_bounds(lower=int(top), upper=int(bottom), spacing=int(spacing))
+    x = _axis_origin_for_bounds(
+        lower=int(left),
+        upper=int(right),
+        spacing=int(spacing),
+        fraction=float(x_fraction),
+    )
+    y = _axis_origin_for_bounds(
+        lower=int(top),
+        upper=int(bottom),
+        spacing=int(spacing),
+        fraction=float(y_fraction),
+    )
     return (x, y)
 
 
-def compute_grid_axis_origin(*, canvas_size: int, spacing: int, inset: int = 0) -> Tuple[int, int]:
+def compute_grid_axis_origin(
+    *,
+    canvas_size: int,
+    spacing: int,
+    inset: int = 0,
+    x_fraction: float = 0.5,
+    y_fraction: float = 0.5,
+) -> Tuple[int, int]:
     """Compute graph-paper center-origin pixel coordinates for square canvases."""
     return compute_grid_axis_origin_for_canvas(
         width=int(canvas_size),
         height=int(canvas_size),
         spacing=int(spacing),
         inset=int(inset),
+        x_fraction=float(x_fraction),
+        y_fraction=float(y_fraction),
     )
 
 
@@ -814,6 +857,8 @@ def _render_style(canvas_width: int, canvas_height: int, style_spec: Mapping[str
             height=int(render_height),
             spacing=int(scaled_spacing),
             inset=int(scaled_outer_margin_px),
+            x_fraction=float(resolved_spec.get("origin_fraction_x", 0.5)),
+            y_fraction=float(resolved_spec.get("origin_fraction_y", 0.5)),
         )
         resolved_spec["origin_pixel"] = [int(centered_origin[0]), int(centered_origin[1])]
         _draw_grid_lines(

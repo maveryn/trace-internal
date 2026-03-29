@@ -19,9 +19,9 @@
     "path": "graph/task_graph_order_topological_position/images/default/0012.png"
   },
   "instance_seed": 3469672806011217,
-  "prompt": "Use the image containing a labeled directed acyclic graph with a unique topological order. Question: What is the position of node 6 in the unique topological order, counting from 1?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an ordered array containing all node labels in the unique topological order from first to last.\nAnswer format: set \"answer\" to the 1-based position of node 6 in that order as an integer.\nExample JSON:\n{\"evidence\":[\"2\",\"5\",\"8\",\"9\"],\"answer\":3}",
+  "prompt": "Use the image containing a labeled directed acyclic graph with a unique topological order. Question: What is the position of node 6 in the unique topological order, counting from 1?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an ordered array containing all node labels in the unique topological order from first to last.\nAnswer format: set \"answer\" to the 1-based position of node 6 in that order as an integer.\nExample JSON:\n{\"evidence\":[\"1\",\"2\",\"3\",\"4\",\"5\"],\"answer\":3}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the image containing a labeled directed acyclic graph with a unique topological order. Question: What is the position of node 6 in the unique topological order, counting from 1?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an ordered array containing all node labels in the unique topological order from first to last.\nAnswer format: set \"answer\" to the 1-based position of node 6 in that order as an integer.\nExample JSON:\n{\"evidence\":[\"2\",\"5\",\"8\",\"9\"],\"answer\":3}",
+    "answer_and_evidence": "Use the image containing a labeled directed acyclic graph with a unique topological order. Question: What is the position of node 6 in the unique topological order, counting from 1?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an ordered array containing all node labels in the unique topological order from first to last.\nAnswer format: set \"answer\" to the 1-based position of node 6 in that order as an integer.\nExample JSON:\n{\"evidence\":[\"1\",\"2\",\"3\",\"4\",\"5\"],\"answer\":3}",
     "answer_only": "Use the image containing a labeled directed acyclic graph with a unique topological order. Question: What is the position of node 6 in the unique topological order, counting from 1?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the 1-based position of node 6 in that order as an integer.\nExample JSON:\n{\"answer\":3}"
   },
   "task": "task_graph_order_topological_position",
@@ -258,7 +258,7 @@
         "slot_values": {
           "answer_hint": "set \"answer\" to the 1-based position of node 6 in that order as an integer",
           "evidence_hint": "set \"evidence\" to an ordered array containing all node labels in the unique topological order from first to last",
-          "json_example": "{\"evidence\":[\"2\",\"5\",\"8\",\"9\"],\"answer\":3}",
+          "json_example": "{\"evidence\":[\"1\",\"2\",\"3\",\"4\",\"5\"],\"answer\":3}",
           "json_example_answer_only": "{\"answer\":3}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -291,7 +291,7 @@
             "slot_values": {
               "answer_hint": "set \"answer\" to the 1-based position of node 6 in that order as an integer",
               "evidence_hint": "set \"evidence\" to an ordered array containing all node labels in the unique topological order from first to last",
-              "json_example": "{\"evidence\":[\"2\",\"5\",\"8\",\"9\"],\"answer\":3}",
+              "json_example": "{\"evidence\":[\"1\",\"2\",\"3\",\"4\",\"5\"],\"answer\":3}",
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
@@ -313,7 +313,7 @@
               "task_family:single_graph_order": 5
             }
           },
-          "prompt": "Use the image containing a labeled directed acyclic graph with a unique topological order. Question: What is the position of node 6 in the unique topological order, counting from 1?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an ordered array containing all node labels in the unique topological order from first to last.\nAnswer format: set \"answer\" to the 1-based position of node 6 in that order as an integer.\nExample JSON:\n{\"evidence\":[\"2\",\"5\",\"8\",\"9\"],\"answer\":3}"
+          "prompt": "Use the image containing a labeled directed acyclic graph with a unique topological order. Question: What is the position of node 6 in the unique topological order, counting from 1?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an ordered array containing all node labels in the unique topological order from first to last.\nAnswer format: set \"answer\" to the 1-based position of node 6 in that order as an integer.\nExample JSON:\n{\"evidence\":[\"1\",\"2\",\"3\",\"4\",\"5\"],\"answer\":3}"
         },
         "answer_only": {
           "metadata": {
@@ -324,7 +324,7 @@
             "slot_values": {
               "answer_hint": "set \"answer\" to the 1-based position of node 6 in that order as an integer",
               "evidence_hint": "set \"evidence\" to an ordered array containing all node labels in the unique topological order from first to last",
-              "json_example": "{\"evidence\":[\"2\",\"5\",\"8\",\"9\"],\"answer\":3}",
+              "json_example": "{\"evidence\":[\"1\",\"2\",\"3\",\"4\",\"5\"],\"answer\":3}",
               "json_example_answer_only": "{\"answer\":3}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",

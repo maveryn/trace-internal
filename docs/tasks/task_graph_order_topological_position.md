@@ -44,7 +44,7 @@
    - answer+evidence mode: `json_output_contract`, `evidence_hint`, `answer_hint`, `json_example`
 5. Modes: `answer_only`, `answer_and_evidence`
 6. Answer-only JSON shape: `{"answer":3}`
-7. Answer+evidence JSON shape: `{"evidence":["B","D","H","J"],"answer":3}`
+7. Answer+evidence JSON shape: `{"evidence":["A","B","C","D","E"],"answer":3}`
 8. Prompt-facing evidence uses an ordered node-label sequence because node order is semantically required, but consecutive labels are not required to form graph edges.
 
 ## 4) Evidence + trace contract

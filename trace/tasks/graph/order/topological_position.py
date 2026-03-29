@@ -126,7 +126,7 @@ _COMPLEXITY_WEIGHTS = resolve_graph_complexity_weights(_TASK_GROUP_DEFAULTS, tas
 def _build_prompt_json_examples(*, label_variant: str) -> Tuple[str, str]:
     """Return prompt examples that match the active node-label format."""
 
-    example_evidence = ["2", "5", "8", "9"] if str(label_variant) == "numbers" else ["B", "D", "H", "J"]
+    example_evidence = ["1", "2", "3", "4", "5"] if str(label_variant) == "numbers" else ["A", "B", "C", "D", "E"]
     return (
         json.dumps({"evidence": example_evidence, "answer": 3}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps({"answer": 3}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),

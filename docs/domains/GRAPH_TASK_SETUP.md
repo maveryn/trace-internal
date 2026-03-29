@@ -27,7 +27,7 @@ Define the concrete v1 setup for the current graph-domain task families.
 ## Scene contract
 1. Use one simple node-link graph per image; keep graphs unweighted by default, and introduce weights only when they are semantically essential to the task.
 2. Keep node labels visible and canonical; v1 uses labels from `A..J`.
-3. Node count support is `5..10` for undirected graph tasks in v1, `5..9` for directed graph variants, and `5..8` for the current weighted MST task so edge labels stay readable.
+3. Node count support is `5..10` for undirected graph tasks in v1, `5..9` for most directed graph variants, `5..7` for the current topological-order task so ordered DAG reasoning stays readable, and `5..8` for the current weighted MST task so edge labels stay readable.
 4. No self-loops or multi-edges.
 5. Directed variants also reject reciprocal edge pairs by default so arrowheads remain readable.
 6. Layout is visual variation only; the task semantics come from adjacency.

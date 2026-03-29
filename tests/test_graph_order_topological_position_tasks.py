@@ -84,8 +84,8 @@ def test_graph_order_topological_position_prompt_examples_follow_label_variant()
     )
     letters_example = _extract_prompt_json_example(letters.prompt_variants["answer_and_evidence"])
     numbers_example = _extract_prompt_json_example(numbers.prompt_variants["answer_and_evidence"])
-    assert letters_example == {"evidence": ["B", "D", "H", "J"], "answer": 3}
-    assert numbers_example == {"evidence": ["2", "5", "8", "9"], "answer": 3}
+    assert letters_example == {"evidence": ["A", "B", "C", "D", "E"], "answer": 3}
+    assert numbers_example == {"evidence": ["1", "2", "3", "4", "5"], "answer": 3}
 
 
 def test_graph_order_topological_position_supports_numeric_labels_and_named_colors() -> None:

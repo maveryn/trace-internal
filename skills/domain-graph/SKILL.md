@@ -35,7 +35,7 @@ Use this whenever the task lives under `domain=graph`.
 - Treat `label_sequence` as ordered semantically; keep the same ordered-label-list JSON shape, but verify it against the task’s ordering rule rather than edge adjacency between consecutive labels.
 - Use one label answer or ordered label path only when the semantics truly require it.
 - Keep node/edge pixel geometry in trace for reviews and overlays, but do not force bbox evidence when labels already provide the natural witness contract.
-- When labels are numeric, keep evidence in ascending numeric label order rather than raw lexicographic string order.
+- When unordered graph evidence uses numeric labels, canonicalize it in ascending numeric label order rather than raw lexicographic string order; do not reorder `label_path` or `label_sequence` witnesses, because their task semantics depend on the emitted order.
 
 ## Variation heuristics
 - Separate topology variation from layout variation.

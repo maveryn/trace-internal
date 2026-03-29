@@ -82,5 +82,5 @@ prompt:
     question_text_topological_position: What is the position of node {query_label} in the unique topological order, counting from 1?
     evidence_hint: set "evidence" to an ordered array containing all node labels in the unique topological order from first to last
     answer_hint: set "answer" to the 1-based position of node {query_label} in that order as an integer
-    json_example: '{"evidence":["B","D","H","J"],"answer":3}'
+    json_example: '{"evidence":["A","B","C","D","E"],"answer":3}'
     json_example_answer_only: '{"answer":3}'

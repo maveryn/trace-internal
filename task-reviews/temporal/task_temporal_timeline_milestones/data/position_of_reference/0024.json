@@ -507,14 +507,14 @@
             85
           ],
           "primary_reference_fill": [
-            255,
-            255,
-            255
+            150,
+            58,
+            202
           ],
           "secondary_reference_fill": [
-            255,
-            255,
-            255
+            150,
+            58,
+            202
           ]
         },
         "style_variant": "marker",

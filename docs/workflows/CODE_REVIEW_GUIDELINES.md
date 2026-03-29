@@ -178,6 +178,7 @@ Use this checklist during implementation and refactor reviews.
 160. For month-view calendar tasks, review the finalized date-cell map directly: nth-weekday answers, marked-weekend counts, and marked-date gaps should all be computed from the same emitted month metadata plus the same valid date-cell bboxes used for evidence, and prompt-facing evidence should stay on date cells rather than widening to headers or full week rows.
 161. For temporal schedule optimization variants whose evidence is a selected event subset, enforce the optimum subset’s uniqueness by construction and re-check it from the finalized event intervals; do not rely on solver tie-breaking to make one witness set look canonical after the fact.
 162. For temporal milestone-timeline tasks, keep prompt-facing evidence on the event cards themselves rather than widening it to the whole axis or connector stems; the cards are the canonical witness objects even when the answer depends on left-to-right temporal order.
+163. For temporal milestone-timeline tasks that render filled reference cards, review text contrast on the highlighted cards explicitly: bright reference text needs a contrasting stroke/halo rather than the default light outline, otherwise the label can become harder to read after the reference fill is strengthened.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

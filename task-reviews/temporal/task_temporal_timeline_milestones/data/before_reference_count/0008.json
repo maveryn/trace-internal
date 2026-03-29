@@ -462,14 +462,14 @@
             29
           ],
           "primary_reference_fill": [
-            240,
-            128,
-            128
+            230,
+            50,
+            50
           ],
           "secondary_reference_fill": [
-            246,
-            181,
-            181
+            230,
+            50,
+            50
           ]
         },
         "style_variant": "accented",

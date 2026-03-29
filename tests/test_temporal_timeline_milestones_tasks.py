@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections import Counter
 
 from trace.core.seed import hash64
+from trace.tasks.shared.text_rendering import resolve_text_stroke_fill
 from trace.tasks.temporal.shared.style import SUPPORTED_TEMPORAL_COLOR_NAMES, SUPPORTED_TEMPORAL_STYLE_VARIANTS
 from trace.tasks.temporal.timeline.milestones import TemporalTimelineMilestonesTask
 from tests.helpers import extract_prompt_json_example
@@ -60,6 +61,9 @@ def test_temporal_timeline_milestones_contract_matches_trace() -> None:
             assert all(0.0 <= float(value) <= 1.0 for value in out.complexity.complexity_components.values())
             assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
             assert int(out.answer_gt.value) == int(execution["answer_value"])
+            resolved_colors = trace["render_spec"]["timeline_style"]["resolved_colors_rgb"]
+            assert resolved_colors["primary_reference_fill"] == resolved_colors["secondary_reference_fill"]
+            assert resolved_colors["primary_reference_fill"] != resolved_colors["event_fill"]
 
             if str(task_variant) == "before_reference_count":
                 expected_ids = tuple(ordered_event_ids[:primary_reference_index])
@@ -146,3 +150,8 @@ def test_temporal_timeline_milestones_balanced_sampling_defaults_cover_axes() ->
     assert set(style_variants.keys()) == set(SUPPORTED_TEMPORAL_STYLE_VARIANTS)
     assert set(accent_color_names.keys()) == set(SUPPORTED_TEMPORAL_COLOR_NAMES)
     assert set(event_counts.keys()).issubset({6, 7, 8, 9})
+
+
+def test_resolve_text_stroke_fill_tracks_text_luminance() -> None:
+    assert resolve_text_stroke_fill((255, 255, 255)) == (36, 42, 52)
+    assert resolve_text_stroke_fill((44, 52, 64)) == (255, 255, 255)

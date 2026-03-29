@@ -533,14 +533,14 @@
             187
           ],
           "primary_reference_fill": [
-            200,
             150,
-            158
+            54,
+            68
           ],
           "secondary_reference_fill": [
-            228,
-            203,
-            206
+            150,
+            54,
+            68
           ]
         },
         "style_variant": "studio",

@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ...shared.text_rendering import draw_text_centered, fit_font_to_box, load_font
+from ...shared.text_rendering import draw_text_centered, fit_font_to_box, load_font, resolve_text_stroke_fill
 from .style import TemporalTimelineTheme
 
 
@@ -295,10 +295,12 @@ def render_timeline_scene(
         )
         event_bboxes_by_id[str(event.event_id)] = card_bbox
 
+        is_reference = str(event.reference_kind) != "none"
+        connector_width = int(render_params.connector_width_px) + (1 if is_reference else 0)
         draw.line(
             [(anchor_x, axis_y), (anchor_x, stem_end_y)],
             fill=visual_theme.connector_line_rgb,
-            width=int(render_params.connector_width_px),
+            width=int(connector_width),
         )
         draw.line(
             [(anchor_x, axis_y - tick_height), (anchor_x, axis_y + tick_height)],
@@ -306,18 +308,17 @@ def render_timeline_scene(
             width=max(1, int(render_params.marker_outline_width_px)),
         )
 
-        if str(event.reference_kind) == "primary":
+        if is_reference:
             card_fill = visual_theme.primary_reference_fill_rgb
             card_outline = visual_theme.primary_reference_outline_rgb
             card_text = visual_theme.primary_reference_text_rgb
-        elif str(event.reference_kind) == "secondary":
-            card_fill = visual_theme.secondary_reference_fill_rgb
-            card_outline = visual_theme.secondary_reference_outline_rgb
-            card_text = visual_theme.secondary_reference_text_rgb
         else:
             card_fill = visual_theme.event_fill_rgb
             card_outline = visual_theme.event_outline_rgb
             card_text = visual_theme.event_text_rgb
+        text_stroke_fill = resolve_text_stroke_fill(card_text)
+        label_stroke_width = 2 if is_reference else None
+        date_stroke_width = 2 if is_reference else None
 
         _rounded(
             draw,
@@ -325,7 +326,7 @@ def render_timeline_scene(
             radius=int(render_params.card_corner_radius_px),
             fill=card_fill,
             outline=card_outline,
-            width=int(render_params.card_outline_width_px),
+            width=int(render_params.card_outline_width_px) + (1 if is_reference else 0),
         )
         label_center_y = float(card_bbox[1] + (card_height * 0.34))
         date_center_y = float(card_bbox[1] + (card_height * 0.72))
@@ -335,22 +336,26 @@ def render_timeline_scene(
             center=(float((card_bbox[0] + card_bbox[2]) * 0.5), label_center_y),
             font=label_font,
             fill=card_text,
+            stroke_fill=text_stroke_fill,
+            stroke_width=label_stroke_width,
         )
         draw_text_centered(
             draw,
             text=str(event.date_text),
             center=(float((card_bbox[0] + card_bbox[2]) * 0.5), date_center_y),
             font=date_font,
-            fill=visual_theme.event_subtext_rgb if str(event.reference_kind) == "none" else card_text,
+            fill=visual_theme.event_subtext_rgb if not is_reference else card_text,
+            stroke_fill=text_stroke_fill if is_reference else resolve_text_stroke_fill(visual_theme.event_subtext_rgb),
+            stroke_width=date_stroke_width,
         )
 
         _draw_marker(
             draw,
             center=(anchor_x, axis_y),
-            radius=int(marker_radius),
+            radius=int(marker_radius) + (2 if is_reference else 0),
             outline_width=int(render_params.marker_outline_width_px),
-            fill_rgb=visual_theme.marker_fill_rgb if str(event.reference_kind) == "none" else card_fill,
-            outline_rgb=visual_theme.marker_outline_rgb if str(event.reference_kind) == "none" else card_outline,
+            fill_rgb=visual_theme.marker_fill_rgb if not is_reference else card_fill,
+            outline_rgb=visual_theme.marker_outline_rgb if not is_reference else card_outline,
             shape=marker_shape,
         )
         entities.append(

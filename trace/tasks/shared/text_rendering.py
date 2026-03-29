@@ -110,6 +110,31 @@ def _text_size(
         return float(width), float(height)
 
 
+def resolve_text_stroke_fill(
+    text_fill: Color,
+    *,
+    light_stroke_fill: Color = (255, 255, 255),
+    dark_stroke_fill: Color = (36, 42, 52),
+) -> Color:
+    """Return one contrast-preserving text outline color for the given fill.
+
+    The helper intentionally keys off the rendered glyph fill rather than the
+    surrounding panel color so highlighted white-on-accent text gets a dark
+    outline, while darker text on light surfaces keeps the traditional light
+    halo.
+    """
+
+    r, g, b = (max(0, min(255, int(channel))) for channel in text_fill)
+    relative_luminance = (
+        (0.2126 * float(r))
+        + (0.7152 * float(g))
+        + (0.0722 * float(b))
+    ) / 255.0
+    if float(relative_luminance) >= 0.62:
+        return tuple(int(channel) for channel in dark_stroke_fill)
+    return tuple(int(channel) for channel in light_stroke_fill)
+
+
 def fit_font_to_box(
     draw: ImageDraw.ImageDraw,
     *,

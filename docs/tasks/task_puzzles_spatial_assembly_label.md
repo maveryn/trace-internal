@@ -17,8 +17,8 @@
 4. `evidence_gt.type`: `bbox_set`
 5. Scene contract:
    - one assembly puzzle per image,
-   - `3..4` colored polyomino pieces appear above the options,
-   - `5..7` labeled silhouette options appear below the pieces,
+   - `2..4` polyomino pieces appear above the options,
+   - `5..6` labeled silhouette options appear below the pieces,
    - each option uses the same total area as the shown pieces,
    - the prompt states that all pieces must be used exactly once,
    - the prompt states that pieces may be rotated but not flipped,
@@ -87,8 +87,9 @@
 1. Background and post-image noise use the merged puzzles-domain visual defaults from `configs/domains/puzzles/base.yaml`.
 2. V1 assembly scenes keep the pieces and options on the same unit-square drawing grammar so the task is about assembly, not style mismatch.
 3. Scene variants only change outer panel chrome and outline treatment while preserving the same top-pieces / bottom-options layout.
-4. The reference pieces use distinct fills for readability, but the options are neutral silhouettes so the reasoning signal is the shape assembly itself.
-5. Prompt-facing evidence should align to the winning option panel, not to the individual source pieces.
+4. The reference pieces and the options use the same neutral shape fill and the same polyomino cell style so the task reads as one consistent assembly grammar.
+5. Every assembly image uses one shared polyomino cell size across both the top pieces and the option silhouettes; the top pieces are centered with extra whitespace instead of being scaled up to fill their cards.
+6. Prompt-facing evidence should align to the winning option panel, not to the individual source pieces.
 
 ## 6) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.

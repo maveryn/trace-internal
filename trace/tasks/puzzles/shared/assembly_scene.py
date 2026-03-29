@@ -33,24 +33,23 @@ def _draw_polyomino(
     fill_rgb: Sequence[int],
     outline_rgb: Sequence[int],
     border_width_px: int,
+    cell_size_px: float,
     cell_gap_px: float,
     cell_corner_radius_px: int,
 ) -> List[List[float]]:
-    """Draw one polyomino centered inside `bbox` and return its per-cell bboxes."""
+    """Draw one polyomino with a fixed unit cell size centered inside `bbox`."""
 
     canonical = tuple((int(cell[0]), int(cell[1])) for cell in cells)
     width_cells, height_cells = polyomino_bbox_dims(canonical)
     left, top, right, bottom = [float(value) for value in bbox]
     available_width = float(right - left)
     available_height = float(bottom - top)
+    unit = float(cell_size_px)
     cell_gap = max(0.0, float(cell_gap_px))
-    unit = min(
-        (available_width - (max(0, width_cells - 1) * cell_gap)) / float(width_cells),
-        (available_height - (max(0, height_cells - 1) * cell_gap)) / float(height_cells),
-    )
-    unit = max(6.0, float(unit))
     shape_width = float(width_cells * unit + max(0, width_cells - 1) * cell_gap)
     shape_height = float(height_cells * unit + max(0, height_cells - 1) * cell_gap)
+    if shape_width > available_width or shape_height > available_height:
+        raise ValueError("polyomino does not fit inside the target bbox with the fixed cell size")
     origin_x = float(left + 0.5 * (available_width - shape_width))
     origin_y = float(top + 0.5 * (available_height - shape_height))
     bboxes: List[List[float]] = []
@@ -88,6 +87,18 @@ def _option_grid_shape(option_count: int) -> Tuple[int, int]:
     return int(cols), int(rows)
 
 
+def _option_row_counts(option_count: int, cols: int) -> Tuple[int, ...]:
+    """Return the number of options rendered in each row."""
+
+    remaining = int(option_count)
+    counts: List[int] = []
+    while remaining > 0:
+        row_count = int(min(int(cols), int(remaining)))
+        counts.append(int(row_count))
+        remaining -= int(row_count)
+    return tuple(counts)
+
+
 def render_puzzle_assembly_scene(
     background: Image.Image,
     *,
@@ -122,6 +133,7 @@ def render_puzzle_assembly_scene(
     option_gap = float(render_params.option_gap_px)
     option_row_gap = float(render_params.option_row_gap_px)
     option_cols, option_rows = _option_grid_shape(len(options))
+    option_row_counts = _option_row_counts(len(options), option_cols)
     options_width = float((option_cols * option_panel_width) + max(0, option_cols - 1) * option_gap)
     options_height = float((option_rows * option_panel_height) + max(0, option_rows - 1) * option_row_gap)
     piece_to_options_gap = float(render_params.piece_to_options_gap_px)
@@ -194,7 +206,6 @@ def render_puzzle_assembly_scene(
             ]
         )
 
-    piece_palette = list(render_params.piece_palette_rgb)
     for piece_index, piece in enumerate(pieces):
         piece_left = float(pieces_left + piece_index * (piece_card_size + piece_gap))
         piece_top = float(pieces_top)
@@ -205,7 +216,6 @@ def render_puzzle_assembly_scene(
             float(piece_top + piece_card_size),
         )
         piece_id = str(piece["piece_id"])
-        fill_rgb = piece_palette[piece_index % len(piece_palette)]
         draw_rounded_rect(
             draw,
             piece_bbox,
@@ -224,10 +234,11 @@ def render_puzzle_assembly_scene(
                 float(piece_bbox[3] - inner_padding),
             ),
             cells=piece["cells"],
-            fill_rgb=fill_rgb,
+            fill_rgb=render_params.shape_fill_rgb,
             outline_rgb=render_params.border_color_rgb,
             border_width_px=max(1, int(render_params.border_width_px)),
-            cell_gap_px=4.0,
+            cell_size_px=float(render_params.shape_cell_size_px),
+            cell_gap_px=float(render_params.shape_cell_gap_px),
             cell_corner_radius_px=int(render_params.cell_corner_radius_px),
         )
         bbox_list = [round(float(value), 3) for value in piece_bbox]
@@ -252,15 +263,21 @@ def render_puzzle_assembly_scene(
                     "attrs": {
                         "piece_id": str(piece_id),
                         "piece_index": int(piece_index),
-                        "fill_rgb": list(fill_rgb),
+                        "fill_rgb": list(render_params.shape_fill_rgb),
                     },
                 }
             )
 
     for option_index, option in enumerate(options):
         row_index = int(option_index // option_cols)
-        col_index = int(option_index % option_cols)
-        panel_left = float(options_left + col_index * (option_panel_width + option_gap))
+        row_option_count = int(option_row_counts[row_index])
+        row_base_index = int(sum(option_row_counts[:row_index]))
+        col_index = int(option_index - row_base_index)
+        row_width = float(
+            row_option_count * option_panel_width + max(0, row_option_count - 1) * option_gap
+        )
+        row_left = float(options_left + 0.5 * (options_width - row_width))
+        panel_left = float(row_left + col_index * (option_panel_width + option_gap))
         panel_top = float(options_top + row_index * (option_panel_height + option_row_gap))
         panel_bbox = (
             float(panel_left),
@@ -322,10 +339,11 @@ def render_puzzle_assembly_scene(
             draw,
             bbox=tuple(rendered.content_bbox),
             cells=option["cells"],
-            fill_rgb=(66, 97, 148),
+            fill_rgb=render_params.shape_fill_rgb,
             outline_rgb=render_params.border_color_rgb,
             border_width_px=max(1, int(render_params.border_width_px)),
-            cell_gap_px=4.0,
+            cell_size_px=float(render_params.shape_cell_size_px),
+            cell_gap_px=float(render_params.shape_cell_gap_px),
             cell_corner_radius_px=int(render_params.cell_corner_radius_px),
         )
         for cell_index, cell_bbox in enumerate(poly_bboxes, start=1):

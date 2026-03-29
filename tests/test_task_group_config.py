@@ -954,10 +954,10 @@ def test_puzzles_spatial_assembly_defaults_loaded() -> None:
         "assembly_outline",
         "assembly_strip",
     ]
-    assert int(generation_defaults["piece_count_min"]) == 3
+    assert int(generation_defaults["piece_count_min"]) == 2
     assert int(generation_defaults["piece_count_max"]) == 4
     assert int(generation_defaults["option_count_min"]) == 5
-    assert int(generation_defaults["option_count_max"]) == 7
+    assert int(generation_defaults["option_count_max"]) == 6
     assert int(generation_defaults["target_cell_count_min"]) == 8
     assert int(generation_defaults["target_cell_count_max"]) == 11
     assert int(generation_defaults["target_bbox_max_dim"]) == 5
@@ -965,6 +965,9 @@ def test_puzzles_spatial_assembly_defaults_loaded() -> None:
     assert int(rendering_defaults["piece_card_size_px"]) > 0
     assert int(rendering_defaults["option_panel_width_px"]) > 0
     assert int(rendering_defaults["option_shape_box_size_px"]) > 0
+    assert int(rendering_defaults["shape_cell_size_px"]) == 22
+    assert int(rendering_defaults["shape_cell_gap_px"]) == 4
+    assert list(rendering_defaults["shape_fill_rgb"]) == [66, 97, 148]
     assert str(prompt_defaults["evidence_hint_can_be_built"]).strip()
     assert str(prompt_defaults["json_example_can_be_built"]).strip()
 

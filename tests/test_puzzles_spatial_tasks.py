@@ -203,8 +203,8 @@ def test_puzzle_spatial_assembly_label_contract_matches_winning_option_panel() -
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
         assert str(execution["question_format"]) == "assembly_can_be_built"
         assert str(execution["view_family"]) == "assembly_option_puzzle"
-        assert 3 <= int(execution["piece_count"]) <= 4
-        assert 5 <= int(execution["option_count"]) <= 7
+        assert 2 <= int(execution["piece_count"]) <= 4
+        assert 5 <= int(execution["option_count"]) <= 6
         assert 8 <= int(execution["target_cell_count"]) <= 11
         assert trace["projected_evidence"]["bbox_set"] == evidence_bboxes
         assert str(out.answer_gt.value) == str(execution["answer_option_label"])
@@ -229,6 +229,22 @@ def test_puzzle_spatial_assembly_label_contract_matches_winning_option_panel() -
             option_cells = tuple((int(cell[0]), int(cell[1])) for cell in option["cells"])
             assert bool(option["is_tileable"]) == can_tile_polyomino_with_pieces(option_cells, piece_shapes)
 
+        piece_cell_entities = [
+            entity
+            for entity in trace["scene_ir"]["entities"]
+            if str(entity["entity_type"]) == "puzzle_assembly_piece_cell"
+        ]
+        option_cell_entities = [
+            entity
+            for entity in trace["scene_ir"]["entities"]
+            if str(entity["entity_type"]) == "puzzle_assembly_option_shape_cell"
+        ]
+        all_cell_entities = piece_cell_entities + option_cell_entities
+        widths = {round(float(entity["bbox_px"][2]) - float(entity["bbox_px"][0]), 3) for entity in all_cell_entities}
+        heights = {round(float(entity["bbox_px"][3]) - float(entity["bbox_px"][1]), 3) for entity in all_cell_entities}
+        assert widths == {22.0}
+        assert heights == {22.0}
+
 
 def test_puzzle_spatial_assembly_prompt_examples_match_selected_variant() -> None:
     task = PuzzlesSpatialAssemblyLabelTask()
@@ -237,6 +253,41 @@ def test_puzzle_spatial_assembly_prompt_examples_match_selected_variant() -> Non
     answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
     assert answer_and_evidence == {"evidence": [[222, 488, 398, 692]], "answer": "C"}
     assert answer_only == {"answer": "C"}
+
+
+def test_puzzle_spatial_assembly_five_option_layout_centers_bottom_row() -> None:
+    task = PuzzlesSpatialAssemblyLabelTask()
+    out = task.generate(
+        27100,
+        params={"option_count_min": 5, "option_count_max": 5, "scene_variant": "assembly_strip"},
+        max_attempts=10,
+    )
+    option_entities = sorted(
+        (
+            entity
+            for entity in out.trace_payload["scene_ir"]["entities"]
+            if str(entity["entity_type"]) == "puzzle_assembly_option_panel"
+        ),
+        key=lambda entity: int(entity["attrs"]["option_index"]),
+    )
+    row_groups = {}
+    for entity in option_entities:
+        top = round(float(entity["bbox_px"][1]), 3)
+        row_groups.setdefault(top, []).append(entity)
+    ordered_rows = [row_groups[key] for key in sorted(row_groups.keys())]
+    assert [len(row) for row in ordered_rows] == [3, 2]
+
+    top_row = ordered_rows[0]
+    bottom_row = ordered_rows[1]
+    top_left = float(top_row[0]["bbox_px"][0])
+    top_right = float(top_row[-1]["bbox_px"][2])
+    bottom_left = float(bottom_row[0]["bbox_px"][0])
+    bottom_right = float(bottom_row[-1]["bbox_px"][2])
+
+    top_center = 0.5 * (top_left + top_right)
+    bottom_center = 0.5 * (bottom_left + bottom_right)
+    assert abs(top_center - bottom_center) <= 1.0
+    assert bottom_left > top_left
 
 
 def test_puzzle_spatial_assembly_label_task_is_deterministic() -> None:

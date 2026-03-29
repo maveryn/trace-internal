@@ -98,7 +98,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
 22. The active cube-removal grammar uses one fixed-view side-by-side isometric comparison of an original block stack and the remaining stack after cubes were removed, and asks for the exact removal count.
 23. `task_puzzles_spatial_assembly_label` uses semantic `task_variant` value `can_be_built`.
 24. `task_puzzles_spatial_assembly_label` uses visual `scene_variant` values `assembly_strip`, `assembly_card`, and `assembly_outline`.
-25. The active assembly grammar uses `3..4` colored polyomino pieces above `5..7` labeled silhouette options and asks which option can be built by using all pieces exactly once.
+25. The active assembly grammar uses `2..4` polyomino pieces above `5..6` labeled silhouette options, keeps one shared polyomino cell size across the top pieces and the option silhouettes, and asks which option can be built by using all pieces exactly once.
 26. Prompt-facing spatial evidence should stay as one-box `bbox_set` grounding on the winning option image/panel for fold-result and assembly tasks or as the ordered two-box structure pair `[original left, remaining right]` for cube-removal tasks; do not invent fake per-missing-cube or explanatory assembly bboxes.
 27. `task_puzzles_topology_bead_equivalence_count` uses semantic `task_variant` values `color_cycle_count`, `shape_cycle_count`, and `mixed_cycle_count`.
 28. `task_puzzles_topology_bead_equivalence_count` uses visual `scene_variant` values `loop_strip`, `loop_card`, and `loop_outline`.

@@ -168,13 +168,13 @@ class PuzzlesSpatialAssemblyLabelTask:
         answer_gt = TypedValue(type="option_letter", value=str(answer_value))
         evidence_gt = TypedValue(type="bbox_set", value=list(evidence_bboxes))
 
-        visual_scan = 0.55 * normalize_int_with_bounds(int(dataset["piece_count"]), [3, 4]) + 0.45 * normalize_int_with_bounds(
-            int(dataset["option_count"]), [5, 7]
+        visual_scan = 0.55 * normalize_int_with_bounds(int(dataset["piece_count"]), [2, 4]) + 0.45 * normalize_int_with_bounds(
+            int(dataset["option_count"]), [5, 6]
         )
         reasoning_load = clamp_unit_interval(
             float(_REASONING_LOAD_BASE_BY_VARIANT[str(task_variant)])
             + 0.20 * normalize_int_with_bounds(int(dataset["target_cell_count"]), [8, 11])
-            + 0.10 * normalize_int_with_bounds(int(dataset["piece_count"]), [3, 4])
+            + 0.10 * normalize_int_with_bounds(int(dataset["piece_count"]), [2, 4])
         )
         complexity = build_puzzle_complexity(
             weights=_COMPLEXITY_WEIGHTS,

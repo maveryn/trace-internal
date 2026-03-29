@@ -26,7 +26,7 @@ SUPPORTED_PUZZLE_ASSEMBLY_TASK_VARIANTS: Tuple[str, ...] = ("can_be_built",)
 class PuzzleAssemblyDefaults:
     """Stable fallback defaults shared by spatial assembly puzzles."""
 
-    piece_count_min: int = 3
+    piece_count_min: int = 2
     piece_count_max: int = 4
     option_count_min: int = 5
     option_count_max: int = 7
@@ -50,6 +50,8 @@ class PuzzleAssemblyDefaults:
     option_row_gap_px: int = 22
     option_shape_box_size_px: int = 126
     option_label_gap_px: int = 16
+    shape_cell_size_px: int = 22
+    shape_cell_gap_px: int = 4
     panel_corner_radius_px: int = 28
     cell_corner_radius_px: int = 8
     border_width_px: int = 3
@@ -76,6 +78,8 @@ class PuzzleAssemblyRenderParams:
     option_row_gap_px: int
     option_shape_box_size_px: int
     option_label_gap_px: int
+    shape_cell_size_px: int
+    shape_cell_gap_px: int
     panel_corner_radius_px: int
     cell_corner_radius_px: int
     border_width_px: int
@@ -84,10 +88,10 @@ class PuzzleAssemblyRenderParams:
     piece_card_fill_rgb: Tuple[int, int, int]
     option_panel_fill_rgb: Tuple[int, int, int]
     option_shape_fill_rgb: Tuple[int, int, int]
+    shape_fill_rgb: Tuple[int, int, int]
     border_color_rgb: Tuple[int, int, int]
     text_color_rgb: Tuple[int, int, int]
     text_stroke_rgb: Tuple[int, int, int]
-    piece_palette_rgb: Tuple[Tuple[int, int, int], ...]
 
 
 _PIECE_LIBRARY: Tuple[Cells, ...] = (
@@ -165,18 +169,6 @@ def resolve_assembly_render_params(
 ) -> PuzzleAssemblyRenderParams:
     """Resolve rendering params for spatial assembly scenes."""
 
-    palette = render_defaults.get(
-        "piece_palette_rgb",
-        [
-            [221, 109, 95],
-            [87, 160, 133],
-            [105, 127, 214],
-            [232, 179, 76],
-        ],
-    )
-    if not isinstance(palette, Sequence) or len(palette) < 3:
-        raise ValueError("piece_palette_rgb must contain at least three RGB colors")
-
     def _triple(key: str, fallback: Tuple[int, int, int]) -> Tuple[int, int, int]:
         raw = params.get(str(key), group_default(render_defaults, str(key), list(fallback)))
         if not isinstance(raw, Sequence) or len(raw) != 3:
@@ -200,6 +192,8 @@ def resolve_assembly_render_params(
         option_row_gap_px=int(_resolve_int_param(params, render_defaults, "option_row_gap_px", defaults.option_row_gap_px)),
         option_shape_box_size_px=int(_resolve_int_param(params, render_defaults, "option_shape_box_size_px", defaults.option_shape_box_size_px)),
         option_label_gap_px=int(_resolve_int_param(params, render_defaults, "option_label_gap_px", defaults.option_label_gap_px)),
+        shape_cell_size_px=int(_resolve_int_param(params, render_defaults, "shape_cell_size_px", defaults.shape_cell_size_px)),
+        shape_cell_gap_px=int(_resolve_int_param(params, render_defaults, "shape_cell_gap_px", defaults.shape_cell_gap_px)),
         panel_corner_radius_px=int(_resolve_int_param(params, render_defaults, "panel_corner_radius_px", defaults.panel_corner_radius_px)),
         cell_corner_radius_px=int(_resolve_int_param(params, render_defaults, "cell_corner_radius_px", defaults.cell_corner_radius_px)),
         border_width_px=int(_resolve_int_param(params, render_defaults, "border_width_px", defaults.border_width_px)),
@@ -208,10 +202,10 @@ def resolve_assembly_render_params(
         piece_card_fill_rgb=_triple("piece_card_fill_rgb", (252, 252, 255)),
         option_panel_fill_rgb=_triple("option_panel_fill_rgb", (251, 251, 255)),
         option_shape_fill_rgb=_triple("option_shape_fill_rgb", (252, 252, 255)),
+        shape_fill_rgb=_triple("shape_fill_rgb", (66, 97, 148)),
         border_color_rgb=_triple("border_color_rgb", (86, 94, 108)),
         text_color_rgb=_triple("text_color_rgb", (30, 34, 40)),
         text_stroke_rgb=_triple("text_stroke_rgb", (255, 255, 255)),
-        piece_palette_rgb=tuple(tuple(int(channel) for channel in color) for color in palette),
     )
 
 

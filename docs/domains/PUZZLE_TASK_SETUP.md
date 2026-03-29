@@ -211,10 +211,11 @@ Capture the active v1 contract for the `puzzles` domain.
    - exactly one bbox for the winning option panel
 5. Scene contract:
    - one assembly puzzle per image,
-   - `3..4` colored polyomino pieces appear above `5..7` labeled silhouette options,
+   - `2..4` polyomino pieces appear above `5..6` labeled silhouette options,
    - every option has the same total occupied area as the shown pieces,
    - the prompt explicitly states that all pieces must be used exactly once,
    - the prompt explicitly states that pieces may be rotated but not flipped,
+   - every image uses one shared polyomino cell size for both the top pieces and the bottom options,
    - the answer is the option letter of the one buildable silhouette.
 6. Trace contract:
    - `scene_ir.entities` includes `puzzle_assembly_piece_card`, `puzzle_assembly_piece_cell`, `puzzle_assembly_option_panel`, `puzzle_assembly_option_label`, `puzzle_assembly_option_shape_box`, and `puzzle_assembly_option_shape_cell` entities,

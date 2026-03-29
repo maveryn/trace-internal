@@ -10,7 +10,7 @@
     },
     "checks": {
       "max_answer_frequency": {
-        "observed": 0.21,
+        "observed": 0.22,
         "pass": true,
         "threshold": 0.25
       },
@@ -20,47 +20,43 @@
         "status": "not_applicable_non_numeric_answers"
       },
       "min_unique_answers": {
-        "observed": 7,
+        "observed": 6,
         "pass": true,
         "threshold": 5
       }
     },
     "five_bin_numeric": null,
-    "max_answer_count": 21,
-    "max_answer_frequency": 0.21,
+    "max_answer_count": 22,
+    "max_answer_frequency": 0.22,
     "pass": true,
     "sample_count": 100,
     "top_answers": [
       {
         "answer_label": "C",
-        "count": 21
+        "count": 22
       },
       {
-        "answer_label": "B",
-        "count": 18
+        "answer_label": "E",
+        "count": 22
       },
       {
         "answer_label": "A",
         "count": 17
       },
       {
-        "answer_label": "D",
-        "count": 17
+        "answer_label": "B",
+        "count": 16
       },
       {
-        "answer_label": "E",
-        "count": 11
+        "answer_label": "D",
+        "count": 16
       },
       {
         "answer_label": "F",
-        "count": 11
-      },
-      {
-        "answer_label": "G",
-        "count": 5
+        "count": 7
       }
     ],
-    "unique_answers": 7
+    "unique_answers": 6
   },
   "pass": true,
   "per_task_variant": {
@@ -70,7 +66,7 @@
       },
       "checks": {
         "max_answer_frequency": {
-          "observed": 0.21,
+          "observed": 0.22,
           "pass": true,
           "threshold": 0.25
         },
@@ -80,47 +76,43 @@
           "status": "not_applicable_non_numeric_answers"
         },
         "min_unique_answers": {
-          "observed": 7,
+          "observed": 6,
           "pass": true,
           "threshold": 5
         }
       },
       "five_bin_numeric": null,
-      "max_answer_count": 21,
-      "max_answer_frequency": 0.21,
+      "max_answer_count": 22,
+      "max_answer_frequency": 0.22,
       "pass": true,
       "sample_count": 100,
       "top_answers": [
         {
           "answer_label": "C",
-          "count": 21
+          "count": 22
         },
         {
-          "answer_label": "B",
-          "count": 18
+          "answer_label": "E",
+          "count": 22
         },
         {
           "answer_label": "A",
           "count": 17
         },
         {
-          "answer_label": "D",
-          "count": 17
+          "answer_label": "B",
+          "count": 16
         },
         {
-          "answer_label": "E",
-          "count": 11
+          "answer_label": "D",
+          "count": 16
         },
         {
           "answer_label": "F",
-          "count": 11
-        },
-        {
-          "answer_label": "G",
-          "count": 5
+          "count": 7
         }
       ],
-      "unique_answers": 7
+      "unique_answers": 6
     }
   },
   "sampling_axes": {

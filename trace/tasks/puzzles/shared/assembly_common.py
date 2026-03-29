@@ -29,7 +29,7 @@ class PuzzleAssemblyDefaults:
     piece_count_min: int = 2
     piece_count_max: int = 4
     option_count_min: int = 5
-    option_count_max: int = 7
+    option_count_max: int = 6
     target_cell_count_min: int = 8
     target_cell_count_max: int = 11
     target_bbox_max_dim: int = 5

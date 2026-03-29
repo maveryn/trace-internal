@@ -19,10 +19,10 @@
     "path": "puzzles/task_puzzles_arithmetic_equation_value/images/operand_unknown/0021.png"
   },
   "instance_seed": 2018162005253754,
-  "prompt": "The image shows a clean arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Use the boxed numbers and operators to solve for the question-mark slot. Find the missing left-side value in the boxed equation.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark operand slot.\nAnswer: set \"answer\" to the exact integer that belongs in the question-mark slot.\nExample JSON:\n{\"evidence\":[[120,180,240,276]],\"answer\":5}",
+  "prompt": "The image shows a clean arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Use the boxed numbers and operators to solve for the question-mark slot. Find the missing left-side value in the boxed equation.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark operand slot.\nAnswer: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[120,180,240,276]],\"answer\":5}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a clean arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Use the boxed numbers and operators to solve for the question-mark slot. Find the missing left-side value in the boxed equation.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark operand slot.\nAnswer: set \"answer\" to the exact integer that belongs in the question-mark slot.\nExample JSON:\n{\"evidence\":[[120,180,240,276]],\"answer\":5}",
-    "answer_only": "The image shows a clean arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Use the boxed numbers and operators to solve for the question-mark slot. Find the missing left-side value in the boxed equation.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact integer that belongs in the question-mark slot.\nExample JSON:\n{\"answer\":5}"
+    "answer_and_evidence": "The image shows a clean arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Use the boxed numbers and operators to solve for the question-mark slot. Find the missing left-side value in the boxed equation.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark operand slot.\nAnswer: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[120,180,240,276]],\"answer\":5}",
+    "answer_only": "The image shows a clean arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Use the boxed numbers and operators to solve for the question-mark slot. Find the missing left-side value in the boxed equation.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"answer\":5}"
   },
   "task": "task_puzzles_arithmetic_equation_value",
   "task_variant": "operand_unknown",
@@ -55,7 +55,7 @@
           },
           {
             "kind": "operator",
-            "text": "\u00d7"
+            "text": "×"
           },
           {
             "is_unknown": false,
@@ -106,7 +106,7 @@
         "operator_count": 2,
         "operator_symbols": [
           "+",
-          "\u00d7"
+          "×"
         ],
         "operator_variety": 2,
         "result_value": 17,
@@ -167,7 +167,7 @@
         "prompt_bundle_id": "puzzles_arithmetic_v1",
         "schema_version": "v1",
         "slot_values": {
-          "answer_hint": "set \"answer\" to the exact integer that belongs in the question-mark slot",
+          "answer_hint": "set \"answer\" to the exact integer value requested by the puzzle",
           "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark operand slot",
           "json_example": "{\"evidence\":[[120,180,240,276]],\"answer\":5}",
           "json_example_answer_only": "{\"answer\":5}",
@@ -200,7 +200,7 @@
             "prompt_bundle_id": "puzzles_arithmetic_v1",
             "schema_version": "v1",
             "slot_values": {
-              "answer_hint": "set \"answer\" to the exact integer that belongs in the question-mark slot",
+              "answer_hint": "set \"answer\" to the exact integer value requested by the puzzle",
               "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark operand slot",
               "json_example": "{\"evidence\":[[120,180,240,276]],\"answer\":5}",
               "json_example_answer_only": "{\"answer\":5}",
@@ -224,7 +224,7 @@
               "task_variant:operand_unknown": 5
             }
           },
-          "prompt": "The image shows a clean arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Use the boxed numbers and operators to solve for the question-mark slot. Find the missing left-side value in the boxed equation.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark operand slot.\nAnswer: set \"answer\" to the exact integer that belongs in the question-mark slot.\nExample JSON:\n{\"evidence\":[[120,180,240,276]],\"answer\":5}"
+          "prompt": "The image shows a clean arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Use the boxed numbers and operators to solve for the question-mark slot. Find the missing left-side value in the boxed equation.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark operand slot.\nAnswer: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[120,180,240,276]],\"answer\":5}"
         },
         "answer_only": {
           "metadata": {
@@ -233,7 +233,7 @@
             "prompt_bundle_id": "puzzles_arithmetic_v1",
             "schema_version": "v1",
             "slot_values": {
-              "answer_hint": "set \"answer\" to the exact integer that belongs in the question-mark slot",
+              "answer_hint": "set \"answer\" to the exact integer value requested by the puzzle",
               "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark operand slot",
               "json_example": "{\"evidence\":[[120,180,240,276]],\"answer\":5}",
               "json_example_answer_only": "{\"answer\":5}",
@@ -257,7 +257,7 @@
               "task_variant:operand_unknown": 5
             }
           },
-          "prompt": "The image shows a clean arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Use the boxed numbers and operators to solve for the question-mark slot. Find the missing left-side value in the boxed equation.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact integer that belongs in the question-mark slot.\nExample JSON:\n{\"answer\":5}"
+          "prompt": "The image shows a clean arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Use the boxed numbers and operators to solve for the question-mark slot. Find the missing left-side value in the boxed equation.\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"answer\":5}"
         }
       },
       "task_variant": "operand_unknown",
@@ -399,7 +399,7 @@
         {
           "attrs": {
             "row_index": 0,
-            "text": "\u00d7",
+            "text": "×",
             "token_index": 3
           },
           "bbox_px": [

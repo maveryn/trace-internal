@@ -161,6 +161,7 @@ PYTHONPATH=. pytest -q
 6. `docs/workflows/SHARED_UTILITIES.md` (if shared helpers moved/added)
 7. `docs/workflows/BUILD_VALIDATION.md` or `docs/workflows/VALIDATION_ERROR_CODES.md` (if validation behavior changed)
 8. `docs/workflows/CODE_REVIEW_GUIDELINES.md` for reusable findings.
+9. Treat existing-domain task additions/removals the same as first-domain activation for doc hygiene: update the active task docs, status pages, and the core prompt/module inventories together in one change.
 
 ## 8) Reuse anti-patterns
 Use `docs/workflows/CODE_REVIEW_GUIDELINES.md` Section 2 as the canonical anti-pattern list.

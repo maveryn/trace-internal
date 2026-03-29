@@ -187,7 +187,7 @@
       "solver_trace": {
         "complete_rows_unique_operator": true,
         "hidden_position_kind": "operand",
-        "operator_symbol": "\u00d7",
+        "operator_symbol": "×",
         "query_col_index": 1,
         "query_row_index": 2,
         "visible_example_row_count": 4

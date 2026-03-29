@@ -19,10 +19,10 @@
     "path": "puzzles/task_puzzles_arithmetic_equation_value/images/operand_unknown/0002.png"
   },
   "instance_seed": 2121076994281285,
-  "prompt": "Look at the arithmetic puzzle in the image: a card-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Read the boxed expression and infer the missing value. What integer completes the left side of the equation when placed in the question-mark box?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark operand slot.\nAnswer rule: set \"answer\" to the exact integer that belongs in the question-mark slot.\nExample JSON:\n{\"evidence\":[[120,180,240,276]],\"answer\":5}",
+  "prompt": "Look at the arithmetic puzzle in the image: a card-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Read the boxed expression and infer the missing value. What integer completes the left side of the equation when placed in the question-mark box?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark operand slot.\nAnswer rule: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[120,180,240,276]],\"answer\":5}",
   "prompt_variants": {
-    "answer_and_evidence": "Look at the arithmetic puzzle in the image: a card-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Read the boxed expression and infer the missing value. What integer completes the left side of the equation when placed in the question-mark box?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark operand slot.\nAnswer rule: set \"answer\" to the exact integer that belongs in the question-mark slot.\nExample JSON:\n{\"evidence\":[[120,180,240,276]],\"answer\":5}",
-    "answer_only": "Look at the arithmetic puzzle in the image: a card-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Read the boxed expression and infer the missing value. What integer completes the left side of the equation when placed in the question-mark box?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact integer that belongs in the question-mark slot.\nExample JSON:\n{\"answer\":5}"
+    "answer_and_evidence": "Look at the arithmetic puzzle in the image: a card-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Read the boxed expression and infer the missing value. What integer completes the left side of the equation when placed in the question-mark box?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark operand slot.\nAnswer rule: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[120,180,240,276]],\"answer\":5}",
+    "answer_only": "Look at the arithmetic puzzle in the image: a card-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Read the boxed expression and infer the missing value. What integer completes the left side of the equation when placed in the question-mark box?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"answer\":5}"
   },
   "task": "task_puzzles_arithmetic_equation_value",
   "task_variant": "operand_unknown",
@@ -180,7 +180,7 @@
         "prompt_bundle_id": "puzzles_arithmetic_v1",
         "schema_version": "v1",
         "slot_values": {
-          "answer_hint": "set \"answer\" to the exact integer that belongs in the question-mark slot",
+          "answer_hint": "set \"answer\" to the exact integer value requested by the puzzle",
           "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark operand slot",
           "json_example": "{\"evidence\":[[120,180,240,276]],\"answer\":5}",
           "json_example_answer_only": "{\"answer\":5}",
@@ -213,7 +213,7 @@
             "prompt_bundle_id": "puzzles_arithmetic_v1",
             "schema_version": "v1",
             "slot_values": {
-              "answer_hint": "set \"answer\" to the exact integer that belongs in the question-mark slot",
+              "answer_hint": "set \"answer\" to the exact integer value requested by the puzzle",
               "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark operand slot",
               "json_example": "{\"evidence\":[[120,180,240,276]],\"answer\":5}",
               "json_example_answer_only": "{\"answer\":5}",
@@ -237,7 +237,7 @@
               "task_variant:operand_unknown": 5
             }
           },
-          "prompt": "Look at the arithmetic puzzle in the image: a card-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Read the boxed expression and infer the missing value. What integer completes the left side of the equation when placed in the question-mark box?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark operand slot.\nAnswer rule: set \"answer\" to the exact integer that belongs in the question-mark slot.\nExample JSON:\n{\"evidence\":[[120,180,240,276]],\"answer\":5}"
+          "prompt": "Look at the arithmetic puzzle in the image: a card-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Read the boxed expression and infer the missing value. What integer completes the left side of the equation when placed in the question-mark box?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark operand slot.\nAnswer rule: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[120,180,240,276]],\"answer\":5}"
         },
         "answer_only": {
           "metadata": {
@@ -246,7 +246,7 @@
             "prompt_bundle_id": "puzzles_arithmetic_v1",
             "schema_version": "v1",
             "slot_values": {
-              "answer_hint": "set \"answer\" to the exact integer that belongs in the question-mark slot",
+              "answer_hint": "set \"answer\" to the exact integer value requested by the puzzle",
               "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark operand slot",
               "json_example": "{\"evidence\":[[120,180,240,276]],\"answer\":5}",
               "json_example_answer_only": "{\"answer\":5}",
@@ -270,7 +270,7 @@
               "task_variant:operand_unknown": 5
             }
           },
-          "prompt": "Look at the arithmetic puzzle in the image: a card-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Read the boxed expression and infer the missing value. What integer completes the left side of the equation when placed in the question-mark box?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact integer that belongs in the question-mark slot.\nExample JSON:\n{\"answer\":5}"
+          "prompt": "Look at the arithmetic puzzle in the image: a card-style arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Read the boxed expression and infer the missing value. What integer completes the left side of the equation when placed in the question-mark box?\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"answer\":5}"
         }
       },
       "task_variant": "operand_unknown",

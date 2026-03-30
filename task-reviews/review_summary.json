@@ -8,7 +8,7 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_games_reversi_move_count"
+      "task_games_connect_four_move_count"
     ],
     "workers": 16
   },
@@ -21,20 +21,19 @@
     {
       "distribution_pass": true,
       "domain": "games",
-      "inspection_count": 75,
-      "inspection_workbook": "games/task_games_reversi_move_count/task_games_reversi_move_count.xlsx",
+      "inspection_count": 50,
+      "inspection_workbook": "games/task_games_connect_four_move_count/task_games_connect_four_move_count.xlsx",
       "inspection_workbook_sheets": {
-        "corner_move_count": "corner_move_count",
-        "flip_count_for_marked_move": "flip_count_for_marked_move",
-        "legal_move_count": "legal_move_count"
+        "safe_move_count": "safe_move_count",
+        "winning_move_count": "winning_move_count"
       },
       "reports": {
-        "distribution_review": "games/task_games_reversi_move_count/distribution_review.json",
-        "inspection_manifest": "games/task_games_reversi_move_count/manifest.json",
-        "random_review": "games/task_games_reversi_move_count/random_review_100.json"
+        "distribution_review": "games/task_games_connect_four_move_count/distribution_review.json",
+        "inspection_manifest": "games/task_games_connect_four_move_count/manifest.json",
+        "random_review": "games/task_games_connect_four_move_count/random_review_100.json"
       },
-      "task_group": "reversi",
-      "task_id": "task_games_reversi_move_count"
+      "task_group": "connect_four",
+      "task_id": "task_games_connect_four_move_count"
     }
   ]
 }

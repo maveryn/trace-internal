@@ -53,4 +53,4 @@ Update this table after each review run.
 | task_games_cards_hand_count | task_games_cards_hand_count | alright_for_now | distribution pass (single-row/two-row visible card hands with same-suit, higher-rank, exact-pair, and longest-run count variants) |
 | task_games_dominoes_chain_count | task_games_dominoes_chain_count | alright_for_now | distribution pass (top-chain plus loose-domino scenes with matching-end, higher-sum, target-sum, and double-count variants) |
 | task_games_reversi_move_count | task_games_reversi_move_count | alright_for_now | distribution pass (compact/classic visible Reversi boards with legal-move, corner-move, and marked flip-count queries) |
-| task_games_connect_four_move_count | task_games_connect_four_move_count | pending_refresh | variant surface changed to immediate-win + safe-move count; full distribution review refresh still pending |
+| task_games_connect_four_move_count | task_games_connect_four_move_count | alright_for_now | distribution pass (midgame/crowded Connect Four boards with immediate-win and safe-move count variants) |

@@ -1,0 +1,1273 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 0
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": []
+  },
+  "image": {
+    "format": "png",
+    "path": "games/task_games_connect_four_move_count/images/winning_move_count/0005.png"
+  },
+  "instance_seed": 4831252016850614,
+  "prompt": "Use the visible Connect Four board state in the image. It shows one visible Connect Four board in a midgame position with red and yellow discs. Work from the shown Connect Four position to answer the question. It is Red's turn. A move drops one disc into a non-full column, and the disc falls to the lowest empty square in that column. A player wins by completing four of their discs in a row horizontally, vertically, or diagonally. Determine how many legal drops would complete a win immediately for Red. Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every landing square where the current player can win immediately.\nAnswer: set \"answer\" to the number of legal landing squares where the current player wins immediately.\nExample JSON:\n{\"evidence\":[[210,340,300,430],[390,340,480,430]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the visible Connect Four board state in the image. It shows one visible Connect Four board in a midgame position with red and yellow discs. Work from the shown Connect Four position to answer the question. It is Red's turn. A move drops one disc into a non-full column, and the disc falls to the lowest empty square in that column. A player wins by completing four of their discs in a row horizontally, vertically, or diagonally. Determine how many legal drops would complete a win immediately for Red. Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every landing square where the current player can win immediately.\nAnswer: set \"answer\" to the number of legal landing squares where the current player wins immediately.\nExample JSON:\n{\"evidence\":[[210,340,300,430],[390,340,480,430]],\"answer\":2}",
+    "answer_only": "Use the visible Connect Four board state in the image. It shows one visible Connect Four board in a midgame position with red and yellow discs. Work from the shown Connect Four position to answer the question. It is Red's turn. A move drops one disc into a non-full column, and the disc falls to the lowest empty square in that column. A player wins by completing four of their discs in a row horizontally, vertically, or diagonally. Determine how many legal drops would complete a win immediately for Red. Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of legal landing squares where the current player wins immediately.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_games_connect_four_move_count",
+  "task_variant": "winning_move_count",
+  "trace_payload": {
+    "background": {
+      "available_styles": [
+        "felt_green"
+      ],
+      "enabled": true,
+      "selected_style": "felt_green",
+      "style_spec": {
+        "color": [
+          42,
+          92,
+          74
+        ],
+        "kind": "solid"
+      }
+    },
+    "execution_trace": {
+      "board_rows": [
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          -1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          -1,
+          0,
+          1,
+          1,
+          0,
+          0,
+          -1
+        ],
+        [
+          -1,
+          0,
+          1,
+          1,
+          -1,
+          0,
+          -1
+        ]
+      ],
+      "construction_mode": "vertical_threats",
+      "current_player": "Red",
+      "evidence_coords": [],
+      "evidence_entity_ids": [],
+      "occupied_count": 10,
+      "opponent_player": "Yellow",
+      "query_variant": "winning_move_count",
+      "safe_move_coords": [
+        [
+          2,
+          0
+        ]
+      ],
+      "scene_variant": "midgame_board",
+      "style_variant": "soft",
+      "target_answer": 0,
+      "target_answer_support": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "task_variant": "winning_move_count",
+      "winning_move_coords": []
+    },
+    "post_image_noise": {
+      "applied": false,
+      "apply_prob": 0.0,
+      "edit_count_range": [
+        1,
+        2
+      ],
+      "edit_types": [
+        "blur",
+        "downsample",
+        "jpeg",
+        "noise"
+      ],
+      "edits": [],
+      "enabled": false
+    },
+    "projected_evidence": {
+      "bbox_set": []
+    },
+    "query_spec": {
+      "params": {
+        "current_player": "Red",
+        "occupied_count": 10,
+        "opponent_player": "Yellow",
+        "query_variant": "winning_move_count",
+        "query_variant_probabilities": {
+          "safe_move_count": 0.0,
+          "winning_move_count": 1.0
+        },
+        "scene_variant": "midgame_board",
+        "scene_variant_probabilities": {
+          "crowded_board": 0.5,
+          "midgame_board": 0.5
+        },
+        "style_variant": "soft",
+        "style_variant_probabilities": {
+          "classic": 0.3333333333333333,
+          "outlined": 0.3333333333333333,
+          "soft": 0.3333333333333333
+        },
+        "target_answer": 0,
+        "target_answer_probabilities": {
+          "0": 0.2,
+          "1": 0.2,
+          "2": 0.2,
+          "3": 0.2,
+          "4": 0.2
+        },
+        "target_answer_support": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "task_variant": "winning_move_count",
+        "task_variant_probabilities": {
+          "safe_move_count": 0.0,
+          "winning_move_count": 1.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "games_connect_four_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of legal landing squares where the current player wins immediately",
+          "current_player_name": "Red",
+          "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every landing square where the current player can win immediately",
+          "json_example": "{\"evidence\":[[210,340,300,430],[390,340,480,430]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "legal_drop_rule_text": "A move drops one disc into a non-full column, and the disc falls to the lowest empty square in that column.",
+          "object_description": "one visible Connect Four board in a midgame position with red and yellow discs",
+          "opponent_player_name": "Yellow",
+          "safety_rule_text": "A safe move is a legal drop after which the opponent has no immediate winning drop on the next turn.",
+          "winning_rule_text": "A player wins by completing four of their discs in a row horizontally, vertically, or diagonally."
+        },
+        "task_family_key": "visible_connect_four_board",
+        "task_family_variant_index": 4,
+        "task_key": "connect_four_move_query",
+        "task_variant_index": 2,
+        "task_variant_key": "winning_move_count",
+        "task_variant_template_index": 4,
+        "template_paths": [
+          "games/connect_four/games_connect_four_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:connect_four_move_query": 5,
+          "task_family:visible_connect_four_board": 5,
+          "task_variant:winning_move_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "games_connect_four_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of legal landing squares where the current player wins immediately",
+              "current_player_name": "Red",
+              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every landing square where the current player can win immediately",
+              "json_example": "{\"evidence\":[[210,340,300,430],[390,340,480,430]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "legal_drop_rule_text": "A move drops one disc into a non-full column, and the disc falls to the lowest empty square in that column.",
+              "object_description": "one visible Connect Four board in a midgame position with red and yellow discs",
+              "opponent_player_name": "Yellow",
+              "safety_rule_text": "A safe move is a legal drop after which the opponent has no immediate winning drop on the next turn.",
+              "winning_rule_text": "A player wins by completing four of their discs in a row horizontally, vertically, or diagonally."
+            },
+            "task_family_key": "visible_connect_four_board",
+            "task_family_variant_index": 4,
+            "task_key": "connect_four_move_query",
+            "task_variant_index": 2,
+            "task_variant_key": "winning_move_count",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "games/connect_four/games_connect_four_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:connect_four_move_query": 5,
+              "task_family:visible_connect_four_board": 5,
+              "task_variant:winning_move_count": 5
+            }
+          },
+          "prompt": "Use the visible Connect Four board state in the image. It shows one visible Connect Four board in a midgame position with red and yellow discs. Work from the shown Connect Four position to answer the question. It is Red's turn. A move drops one disc into a non-full column, and the disc falls to the lowest empty square in that column. A player wins by completing four of their discs in a row horizontally, vertically, or diagonally. Determine how many legal drops would complete a win immediately for Red. Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every landing square where the current player can win immediately.\nAnswer: set \"answer\" to the number of legal landing squares where the current player wins immediately.\nExample JSON:\n{\"evidence\":[[210,340,300,430],[390,340,480,430]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "games_connect_four_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of legal landing squares where the current player wins immediately",
+              "current_player_name": "Red",
+              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every landing square where the current player can win immediately",
+              "json_example": "{\"evidence\":[[210,340,300,430],[390,340,480,430]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "legal_drop_rule_text": "A move drops one disc into a non-full column, and the disc falls to the lowest empty square in that column.",
+              "object_description": "one visible Connect Four board in a midgame position with red and yellow discs",
+              "opponent_player_name": "Yellow",
+              "safety_rule_text": "A safe move is a legal drop after which the opponent has no immediate winning drop on the next turn.",
+              "winning_rule_text": "A player wins by completing four of their discs in a row horizontally, vertically, or diagonally."
+            },
+            "task_family_key": "visible_connect_four_board",
+            "task_family_variant_index": 4,
+            "task_key": "connect_four_move_query",
+            "task_variant_index": 2,
+            "task_variant_key": "winning_move_count",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "games/connect_four/games_connect_four_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:connect_four_move_query": 5,
+              "task_family:visible_connect_four_board": 5,
+              "task_variant:winning_move_count": 5
+            }
+          },
+          "prompt": "Use the visible Connect Four board state in the image. It shows one visible Connect Four board in a midgame position with red and yellow discs. Work from the shown Connect Four position to answer the question. It is Red's turn. A move drops one disc into a non-full column, and the disc falls to the lowest empty square in that column. A player wins by completing four of their discs in a row horizontally, vertically, or diagonally. Determine how many legal drops would complete a win immediately for Red. Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of legal landing squares where the current player wins immediately.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "winning_move_count",
+      "template_id": "games_connect_four_v1"
+    },
+    "render_map": {
+      "board_bbox_px": [
+        101.0,
+        152.0,
+        878.0,
+        818.0
+      ],
+      "cell_bboxes_px": {
+        "cell_r0_c0": [
+          101.0,
+          152.0,
+          212.0,
+          263.0
+        ],
+        "cell_r0_c1": [
+          212.0,
+          152.0,
+          323.0,
+          263.0
+        ],
+        "cell_r0_c2": [
+          323.0,
+          152.0,
+          434.0,
+          263.0
+        ],
+        "cell_r0_c3": [
+          434.0,
+          152.0,
+          545.0,
+          263.0
+        ],
+        "cell_r0_c4": [
+          545.0,
+          152.0,
+          656.0,
+          263.0
+        ],
+        "cell_r0_c5": [
+          656.0,
+          152.0,
+          767.0,
+          263.0
+        ],
+        "cell_r0_c6": [
+          767.0,
+          152.0,
+          878.0,
+          263.0
+        ],
+        "cell_r1_c0": [
+          101.0,
+          263.0,
+          212.0,
+          374.0
+        ],
+        "cell_r1_c1": [
+          212.0,
+          263.0,
+          323.0,
+          374.0
+        ],
+        "cell_r1_c2": [
+          323.0,
+          263.0,
+          434.0,
+          374.0
+        ],
+        "cell_r1_c3": [
+          434.0,
+          263.0,
+          545.0,
+          374.0
+        ],
+        "cell_r1_c4": [
+          545.0,
+          263.0,
+          656.0,
+          374.0
+        ],
+        "cell_r1_c5": [
+          656.0,
+          263.0,
+          767.0,
+          374.0
+        ],
+        "cell_r1_c6": [
+          767.0,
+          263.0,
+          878.0,
+          374.0
+        ],
+        "cell_r2_c0": [
+          101.0,
+          374.0,
+          212.0,
+          485.0
+        ],
+        "cell_r2_c1": [
+          212.0,
+          374.0,
+          323.0,
+          485.0
+        ],
+        "cell_r2_c2": [
+          323.0,
+          374.0,
+          434.0,
+          485.0
+        ],
+        "cell_r2_c3": [
+          434.0,
+          374.0,
+          545.0,
+          485.0
+        ],
+        "cell_r2_c4": [
+          545.0,
+          374.0,
+          656.0,
+          485.0
+        ],
+        "cell_r2_c5": [
+          656.0,
+          374.0,
+          767.0,
+          485.0
+        ],
+        "cell_r2_c6": [
+          767.0,
+          374.0,
+          878.0,
+          485.0
+        ],
+        "cell_r3_c0": [
+          101.0,
+          485.0,
+          212.0,
+          596.0
+        ],
+        "cell_r3_c1": [
+          212.0,
+          485.0,
+          323.0,
+          596.0
+        ],
+        "cell_r3_c2": [
+          323.0,
+          485.0,
+          434.0,
+          596.0
+        ],
+        "cell_r3_c3": [
+          434.0,
+          485.0,
+          545.0,
+          596.0
+        ],
+        "cell_r3_c4": [
+          545.0,
+          485.0,
+          656.0,
+          596.0
+        ],
+        "cell_r3_c5": [
+          656.0,
+          485.0,
+          767.0,
+          596.0
+        ],
+        "cell_r3_c6": [
+          767.0,
+          485.0,
+          878.0,
+          596.0
+        ],
+        "cell_r4_c0": [
+          101.0,
+          596.0,
+          212.0,
+          707.0
+        ],
+        "cell_r4_c1": [
+          212.0,
+          596.0,
+          323.0,
+          707.0
+        ],
+        "cell_r4_c2": [
+          323.0,
+          596.0,
+          434.0,
+          707.0
+        ],
+        "cell_r4_c3": [
+          434.0,
+          596.0,
+          545.0,
+          707.0
+        ],
+        "cell_r4_c4": [
+          545.0,
+          596.0,
+          656.0,
+          707.0
+        ],
+        "cell_r4_c5": [
+          656.0,
+          596.0,
+          767.0,
+          707.0
+        ],
+        "cell_r4_c6": [
+          767.0,
+          596.0,
+          878.0,
+          707.0
+        ],
+        "cell_r5_c0": [
+          101.0,
+          707.0,
+          212.0,
+          818.0
+        ],
+        "cell_r5_c1": [
+          212.0,
+          707.0,
+          323.0,
+          818.0
+        ],
+        "cell_r5_c2": [
+          323.0,
+          707.0,
+          434.0,
+          818.0
+        ],
+        "cell_r5_c3": [
+          434.0,
+          707.0,
+          545.0,
+          818.0
+        ],
+        "cell_r5_c4": [
+          545.0,
+          707.0,
+          656.0,
+          818.0
+        ],
+        "cell_r5_c5": [
+          656.0,
+          707.0,
+          767.0,
+          818.0
+        ],
+        "cell_r5_c6": [
+          767.0,
+          707.0,
+          878.0,
+          818.0
+        ]
+      },
+      "columns": 7,
+      "disc_bboxes_px": {
+        "cell_r3_c0": [
+          116.54,
+          500.54,
+          196.46,
+          580.46
+        ],
+        "cell_r4_c0": [
+          116.54,
+          611.54,
+          196.46,
+          691.46
+        ],
+        "cell_r4_c2": [
+          338.54,
+          611.54,
+          418.46,
+          691.46
+        ],
+        "cell_r4_c3": [
+          449.54,
+          611.54,
+          529.46,
+          691.46
+        ],
+        "cell_r4_c6": [
+          782.54,
+          611.54,
+          862.46,
+          691.46
+        ],
+        "cell_r5_c0": [
+          116.54,
+          722.54,
+          196.46,
+          802.46
+        ],
+        "cell_r5_c2": [
+          338.54,
+          722.54,
+          418.46,
+          802.46
+        ],
+        "cell_r5_c3": [
+          449.54,
+          722.54,
+          529.46,
+          802.46
+        ],
+        "cell_r5_c4": [
+          560.54,
+          722.54,
+          640.46,
+          802.46
+        ],
+        "cell_r5_c6": [
+          782.54,
+          722.54,
+          862.46,
+          802.46
+        ]
+      },
+      "marked_square_bbox_px": null,
+      "player_badge_bbox_px": [
+        367.0,
+        48.0,
+        612.0,
+        100.0
+      ],
+      "rows": 6,
+      "scene_variant": "midgame_board",
+      "style_variant": "soft"
+    },
+    "render_spec": {
+      "canvas_height": 900,
+      "canvas_width": 980,
+      "scene_variant": "midgame_board",
+      "style_variant": "soft"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox": [
+            101.0,
+            152.0,
+            212.0,
+            263.0
+          ],
+          "col": 0,
+          "entity_id": "cell_r0_c0",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 0
+        },
+        {
+          "bbox": [
+            212.0,
+            152.0,
+            323.0,
+            263.0
+          ],
+          "col": 1,
+          "entity_id": "cell_r0_c1",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 0
+        },
+        {
+          "bbox": [
+            323.0,
+            152.0,
+            434.0,
+            263.0
+          ],
+          "col": 2,
+          "entity_id": "cell_r0_c2",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 0
+        },
+        {
+          "bbox": [
+            434.0,
+            152.0,
+            545.0,
+            263.0
+          ],
+          "col": 3,
+          "entity_id": "cell_r0_c3",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 0
+        },
+        {
+          "bbox": [
+            545.0,
+            152.0,
+            656.0,
+            263.0
+          ],
+          "col": 4,
+          "entity_id": "cell_r0_c4",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 0
+        },
+        {
+          "bbox": [
+            656.0,
+            152.0,
+            767.0,
+            263.0
+          ],
+          "col": 5,
+          "entity_id": "cell_r0_c5",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 0
+        },
+        {
+          "bbox": [
+            767.0,
+            152.0,
+            878.0,
+            263.0
+          ],
+          "col": 6,
+          "entity_id": "cell_r0_c6",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 0
+        },
+        {
+          "bbox": [
+            101.0,
+            263.0,
+            212.0,
+            374.0
+          ],
+          "col": 0,
+          "entity_id": "cell_r1_c0",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 1
+        },
+        {
+          "bbox": [
+            212.0,
+            263.0,
+            323.0,
+            374.0
+          ],
+          "col": 1,
+          "entity_id": "cell_r1_c1",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 1
+        },
+        {
+          "bbox": [
+            323.0,
+            263.0,
+            434.0,
+            374.0
+          ],
+          "col": 2,
+          "entity_id": "cell_r1_c2",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 1
+        },
+        {
+          "bbox": [
+            434.0,
+            263.0,
+            545.0,
+            374.0
+          ],
+          "col": 3,
+          "entity_id": "cell_r1_c3",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 1
+        },
+        {
+          "bbox": [
+            545.0,
+            263.0,
+            656.0,
+            374.0
+          ],
+          "col": 4,
+          "entity_id": "cell_r1_c4",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 1
+        },
+        {
+          "bbox": [
+            656.0,
+            263.0,
+            767.0,
+            374.0
+          ],
+          "col": 5,
+          "entity_id": "cell_r1_c5",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 1
+        },
+        {
+          "bbox": [
+            767.0,
+            263.0,
+            878.0,
+            374.0
+          ],
+          "col": 6,
+          "entity_id": "cell_r1_c6",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 1
+        },
+        {
+          "bbox": [
+            101.0,
+            374.0,
+            212.0,
+            485.0
+          ],
+          "col": 0,
+          "entity_id": "cell_r2_c0",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 2
+        },
+        {
+          "bbox": [
+            212.0,
+            374.0,
+            323.0,
+            485.0
+          ],
+          "col": 1,
+          "entity_id": "cell_r2_c1",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 2
+        },
+        {
+          "bbox": [
+            323.0,
+            374.0,
+            434.0,
+            485.0
+          ],
+          "col": 2,
+          "entity_id": "cell_r2_c2",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 2
+        },
+        {
+          "bbox": [
+            434.0,
+            374.0,
+            545.0,
+            485.0
+          ],
+          "col": 3,
+          "entity_id": "cell_r2_c3",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 2
+        },
+        {
+          "bbox": [
+            545.0,
+            374.0,
+            656.0,
+            485.0
+          ],
+          "col": 4,
+          "entity_id": "cell_r2_c4",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 2
+        },
+        {
+          "bbox": [
+            656.0,
+            374.0,
+            767.0,
+            485.0
+          ],
+          "col": 5,
+          "entity_id": "cell_r2_c5",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 2
+        },
+        {
+          "bbox": [
+            767.0,
+            374.0,
+            878.0,
+            485.0
+          ],
+          "col": 6,
+          "entity_id": "cell_r2_c6",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 2
+        },
+        {
+          "bbox": [
+            101.0,
+            485.0,
+            212.0,
+            596.0
+          ],
+          "col": 0,
+          "disc_bbox": [
+            116.54,
+            500.54,
+            196.46,
+            580.46
+          ],
+          "entity_id": "cell_r3_c0",
+          "entity_type": "board_cell",
+          "occupant": "yellow",
+          "row": 3
+        },
+        {
+          "bbox": [
+            212.0,
+            485.0,
+            323.0,
+            596.0
+          ],
+          "col": 1,
+          "entity_id": "cell_r3_c1",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 3
+        },
+        {
+          "bbox": [
+            323.0,
+            485.0,
+            434.0,
+            596.0
+          ],
+          "col": 2,
+          "entity_id": "cell_r3_c2",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 3
+        },
+        {
+          "bbox": [
+            434.0,
+            485.0,
+            545.0,
+            596.0
+          ],
+          "col": 3,
+          "entity_id": "cell_r3_c3",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 3
+        },
+        {
+          "bbox": [
+            545.0,
+            485.0,
+            656.0,
+            596.0
+          ],
+          "col": 4,
+          "entity_id": "cell_r3_c4",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 3
+        },
+        {
+          "bbox": [
+            656.0,
+            485.0,
+            767.0,
+            596.0
+          ],
+          "col": 5,
+          "entity_id": "cell_r3_c5",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 3
+        },
+        {
+          "bbox": [
+            767.0,
+            485.0,
+            878.0,
+            596.0
+          ],
+          "col": 6,
+          "entity_id": "cell_r3_c6",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 3
+        },
+        {
+          "bbox": [
+            101.0,
+            596.0,
+            212.0,
+            707.0
+          ],
+          "col": 0,
+          "disc_bbox": [
+            116.54,
+            611.54,
+            196.46,
+            691.46
+          ],
+          "entity_id": "cell_r4_c0",
+          "entity_type": "board_cell",
+          "occupant": "yellow",
+          "row": 4
+        },
+        {
+          "bbox": [
+            212.0,
+            596.0,
+            323.0,
+            707.0
+          ],
+          "col": 1,
+          "entity_id": "cell_r4_c1",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 4
+        },
+        {
+          "bbox": [
+            323.0,
+            596.0,
+            434.0,
+            707.0
+          ],
+          "col": 2,
+          "disc_bbox": [
+            338.54,
+            611.54,
+            418.46,
+            691.46
+          ],
+          "entity_id": "cell_r4_c2",
+          "entity_type": "board_cell",
+          "occupant": "red",
+          "row": 4
+        },
+        {
+          "bbox": [
+            434.0,
+            596.0,
+            545.0,
+            707.0
+          ],
+          "col": 3,
+          "disc_bbox": [
+            449.54,
+            611.54,
+            529.46,
+            691.46
+          ],
+          "entity_id": "cell_r4_c3",
+          "entity_type": "board_cell",
+          "occupant": "red",
+          "row": 4
+        },
+        {
+          "bbox": [
+            545.0,
+            596.0,
+            656.0,
+            707.0
+          ],
+          "col": 4,
+          "entity_id": "cell_r4_c4",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 4
+        },
+        {
+          "bbox": [
+            656.0,
+            596.0,
+            767.0,
+            707.0
+          ],
+          "col": 5,
+          "entity_id": "cell_r4_c5",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 4
+        },
+        {
+          "bbox": [
+            767.0,
+            596.0,
+            878.0,
+            707.0
+          ],
+          "col": 6,
+          "disc_bbox": [
+            782.54,
+            611.54,
+            862.46,
+            691.46
+          ],
+          "entity_id": "cell_r4_c6",
+          "entity_type": "board_cell",
+          "occupant": "yellow",
+          "row": 4
+        },
+        {
+          "bbox": [
+            101.0,
+            707.0,
+            212.0,
+            818.0
+          ],
+          "col": 0,
+          "disc_bbox": [
+            116.54,
+            722.54,
+            196.46,
+            802.46
+          ],
+          "entity_id": "cell_r5_c0",
+          "entity_type": "board_cell",
+          "occupant": "yellow",
+          "row": 5
+        },
+        {
+          "bbox": [
+            212.0,
+            707.0,
+            323.0,
+            818.0
+          ],
+          "col": 1,
+          "entity_id": "cell_r5_c1",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 5
+        },
+        {
+          "bbox": [
+            323.0,
+            707.0,
+            434.0,
+            818.0
+          ],
+          "col": 2,
+          "disc_bbox": [
+            338.54,
+            722.54,
+            418.46,
+            802.46
+          ],
+          "entity_id": "cell_r5_c2",
+          "entity_type": "board_cell",
+          "occupant": "red",
+          "row": 5
+        },
+        {
+          "bbox": [
+            434.0,
+            707.0,
+            545.0,
+            818.0
+          ],
+          "col": 3,
+          "disc_bbox": [
+            449.54,
+            722.54,
+            529.46,
+            802.46
+          ],
+          "entity_id": "cell_r5_c3",
+          "entity_type": "board_cell",
+          "occupant": "red",
+          "row": 5
+        },
+        {
+          "bbox": [
+            545.0,
+            707.0,
+            656.0,
+            818.0
+          ],
+          "col": 4,
+          "disc_bbox": [
+            560.54,
+            722.54,
+            640.46,
+            802.46
+          ],
+          "entity_id": "cell_r5_c4",
+          "entity_type": "board_cell",
+          "occupant": "yellow",
+          "row": 5
+        },
+        {
+          "bbox": [
+            656.0,
+            707.0,
+            767.0,
+            818.0
+          ],
+          "col": 5,
+          "entity_id": "cell_r5_c5",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 5
+        },
+        {
+          "bbox": [
+            767.0,
+            707.0,
+            878.0,
+            818.0
+          ],
+          "col": 6,
+          "disc_bbox": [
+            782.54,
+            722.54,
+            862.46,
+            802.46
+          ],
+          "entity_id": "cell_r5_c6",
+          "entity_type": "board_cell",
+          "occupant": "yellow",
+          "row": 5
+        }
+      ],
+      "relations": {
+        "current_player": "Red",
+        "evidence_entity_ids": [],
+        "occupied_count": 10,
+        "query_variant": "winning_move_count",
+        "scene_variant": "midgame_board",
+        "style_variant": "soft",
+        "target_answer": 0,
+        "task_variant": "winning_move_count"
+      },
+      "scene_kind": "games_connect_four_board_midgame_board"
+    },
+    "witness_symbolic": {
+      "ids": [],
+      "type": "id_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

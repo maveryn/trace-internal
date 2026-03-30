@@ -75,6 +75,7 @@ from .maps.region import association_label as _task_maps_region_association_labe
 from .maps.region import count as _task_maps_region_count
 from .physics.mechanics import force_diagram as _task_physics_mechanics_force_diagram
 from .physics.mechanics import lever_balance as _task_physics_mechanics_lever_balance
+from .physics.mechanics import spring_extension as _task_physics_mechanics_spring_extension
 from .physics.circuits import equivalent_resistance as _task_physics_circuits_equivalent_resistance
 from .physics.optics import ray_trace as _task_physics_optics_ray_trace
 from .tile import count_color_components as _task_tile_count_color_components

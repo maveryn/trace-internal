@@ -247,12 +247,55 @@ def build_physics_optics_ray_trace_complexity(
     )
 
 
+def build_physics_spring_extension_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    scene_variant: str,
+    query_variant: str,
+    target_answer: int,
+    scale_factor: int,
+    shown_measurement_count: int,
+    evidence_count: int,
+) -> TaskComplexity:
+    """Build normalized complexity for spring-extension proportionality scenes."""
+
+    weights = resolve_physics_complexity_weights(task_group_defaults, task_id=task_id)
+    visual_scan = clamp_unit_interval(
+        (0.36 * normalize_linear(float(shown_measurement_count), min_value=1.0, max_value=2.0))
+        + (0.16 * normalize_linear(float(evidence_count), min_value=2.0, max_value=4.0))
+        + (0.10 if str(scene_variant) == "staggered_springs" else 0.0)
+        + (0.14 if str(scene_variant) == "textured_spring" else 0.0)
+    )
+    proportional_reasoning = clamp_unit_interval(
+        (0.44 if str(query_variant) == "extension_difference" else 0.62)
+        + (0.12 * normalize_linear(float(scale_factor), min_value=1.0, max_value=3.0))
+        + (0.10 * normalize_linear(float(target_answer), min_value=1.0, max_value=12.0))
+    )
+    ambiguity = clamp_unit_interval(
+        (0.18 if str(query_variant) == "missing_extension_for_weight" else 0.08)
+        + (0.12 if str(query_variant) == "missing_weight_for_extension" else 0.0)
+        + (0.08 if int(scale_factor) == 1 else 0.0)
+    )
+    output_burden = normalize_linear(float(evidence_count), min_value=2.0, max_value=4.0)
+    return build_physics_complexity(
+        weights=weights,
+        components={
+            "visual_scan": float(visual_scan),
+            "proportional_reasoning": float(proportional_reasoning),
+            "ambiguity": float(ambiguity),
+            "output_burden": float(output_burden),
+        },
+    )
+
+
 __all__ = [
     "build_physics_circuit_resistance_complexity",
     "build_physics_complexity",
     "build_physics_force_diagram_complexity",
     "build_physics_lever_balance_complexity",
     "build_physics_optics_ray_trace_complexity",
+    "build_physics_spring_extension_complexity",
     "clamp_unit_interval",
     "normalize_int_with_bounds",
     "resolve_physics_complexity_weights",

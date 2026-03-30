@@ -172,7 +172,13 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - keeps integer answers with unordered `graph_point_set` evidence over either bounce points or hit target points
    - shows only the initial ray direction in the prompt image, keeps the solved full path in trace/debug artifacts, ties mirror count directly to `scene_variant`, and reserves `quad_mirror` for `bounce_count` while the smaller mirror-count scenes feed `target_hit_count`
    - uses large unlabeled target dots for `target_hit_count`, no separate bounce circles for `bounce_count`, and one non-semantic `accent_color_name` palette for the board and mirrors while the ray keeps a fixed warm contrast color
-8. Early physics tasks should prefer light arithmetic over heavy formula derivations, and prompt-facing evidence should stay on the visible witness objects rather than decorative scene chrome.
+8. `task_physics_mechanics_spring_extension`
+   - uses scene variants `paired_springs|staggered_springs|textured_spring`
+   - uses query variants `missing_weight_for_extension|missing_extension_for_weight|extension_difference`
+   - keeps integer answers with unordered `bbox_set` evidence over either the two compared extension markers (`extension_difference`) or the reference/query weight-marker witness set for the two missing-value variants
+   - keeps the two springs explicitly identical within each instance and encodes the proportionality only through the shown weight/extension pair, not through a printed formula
+   - uses one non-semantic `accent_color_name` palette for the card chrome / support bars / springs while the missing-value placeholders remain red
+9. Early physics tasks should prefer light arithmetic over heavy formula derivations, and prompt-facing evidence should stay on the visible witness objects rather than decorative scene chrome.
 
 ## Geometry direction (current)
 1. Geometry now exposes ten active task ids:

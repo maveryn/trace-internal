@@ -1,0 +1,15 @@
+{
+  "inspection_count": 75,
+  "task_id": "task_physics_mechanics_spring_extension",
+  "variants": {
+    "extension_difference": 25,
+    "missing_extension_for_weight": 25,
+    "missing_weight_for_extension": 25
+  },
+  "workbook": "physics/task_physics_mechanics_spring_extension/task_physics_mechanics_spring_extension.xlsx",
+  "workbook_sheets": {
+    "extension_difference": "extension_difference",
+    "missing_extension_for_weight": "missing_extension_for_weight",
+    "missing_weight_for_extension": "missing_weight_for_extension"
+  }
+}

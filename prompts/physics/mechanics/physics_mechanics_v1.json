@@ -15,6 +15,13 @@
       "You are given an image with {object_description}.",
       "Work from the lever-balance diagram shown in the image: {object_description}.",
       "Use the mechanics lever diagram in the image. It shows {object_description}."
+    ],
+    "paired_spring_diagram": [
+      "The image shows {object_description}.",
+      "Look at the mechanics spring diagram in the image. It shows {object_description}.",
+      "You are given an image with {object_description}.",
+      "Work from the spring-extension diagram shown in the image: {object_description}.",
+      "Use the mechanics spring diagram in the image. It shows {object_description}."
     ]
   },
   "task_templates": {
@@ -31,6 +38,13 @@
       "Work from the beam, fulcrum, weights, and distance marks to answer the question.",
       "Answer using only the information shown in the lever diagram.",
       "Determine the requested lever-balance value from the diagram."
+    ],
+    "spring_extension_query": [
+      "The two springs are identical. Use the shown weights and ruler marks to answer the question.",
+      "Read the spring diagram and determine the requested value.",
+      "Work from the shown weight-extension relationship between the identical springs.",
+      "Answer using only the weights, rulers, and spring markers shown in the diagram.",
+      "Determine the requested spring-extension value from the diagram."
     ]
   },
   "task_variant_templates": {
@@ -82,10 +96,34 @@
       "How large should the marked `?` weight be so the torques on both sides match? Answer with an integer.",
       "Use the shown weights and distances. What value must the marked `?` weight have for the lever to balance? Answer with an integer.",
       "What integer weight is required in the marked `?` block so the beam is balanced about the fulcrum?"
+    ],
+    "missing_weight_for_extension": [
+      "What weight should replace the marked red `?` block on the right spring so the shown extension is correct? Answer with an integer.",
+      "The two springs are identical. What integer weight belongs in the marked red `?` block on the right spring?",
+      "Use the reference spring and the shown right-side extension. What weight should the red `?` block have? Answer with an integer.",
+      "The right spring shows its extension but not its weight. What integer weight would produce that extension on an identical spring?",
+      "Determine the missing right-side weight from the identical-spring diagram. Answer with an integer."
+    ],
+    "missing_extension_for_weight": [
+      "The red `?` tag marks the unknown extension on the right spring. What extension should the shown right-side weight produce? Answer with an integer.",
+      "The two springs are identical. What integer extension belongs at the marked red `?` tag on the right ruler?",
+      "Use the reference spring and the shown right-side weight. What extension should the right spring have? Answer with an integer.",
+      "The right spring's extension is missing. What integer extension would the shown right-side weight produce on an identical spring?",
+      "Determine the missing right-side extension from the identical-spring diagram. Answer with an integer."
+    ],
+    "extension_difference": [
+      "What is the absolute difference between the two shown spring extensions? Answer with an integer.",
+      "Using the two ruler markers, what integer difference in extension do the springs show?",
+      "How many extension units apart are the two shown spring markers? Answer with an integer.",
+      "Read the two spring-extension markers. What is their absolute difference? Answer with an integer.",
+      "Determine the difference in extension between the two identical springs. Answer with an integer."
     ]
   },
   "required_slots_by_key": {
     "task_family:axis_aligned_force_diagram": [
+      "object_description"
+    ],
+    "task_family:paired_spring_diagram": [
       "object_description"
     ],
     "task_variant:balancing_force_horizontal": [

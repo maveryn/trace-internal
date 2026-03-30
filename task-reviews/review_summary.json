@@ -8,7 +8,7 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_physics_optics_ray_trace"
+      "task_physics_mechanics_spring_extension"
     ],
     "workers": 16
   },
@@ -21,19 +21,20 @@
     {
       "distribution_pass": true,
       "domain": "physics",
-      "inspection_count": 50,
-      "inspection_workbook": "physics/task_physics_optics_ray_trace/task_physics_optics_ray_trace.xlsx",
+      "inspection_count": 75,
+      "inspection_workbook": "physics/task_physics_mechanics_spring_extension/task_physics_mechanics_spring_extension.xlsx",
       "inspection_workbook_sheets": {
-        "bounce_count": "bounce_count",
-        "target_hit_count": "target_hit_count"
+        "extension_difference": "extension_difference",
+        "missing_extension_for_weight": "missing_extension_for_weight",
+        "missing_weight_for_extension": "missing_weight_for_extension"
       },
       "reports": {
-        "distribution_review": "physics/task_physics_optics_ray_trace/distribution_review.json",
-        "inspection_manifest": "physics/task_physics_optics_ray_trace/manifest.json",
-        "random_review": "physics/task_physics_optics_ray_trace/random_review_100.json"
+        "distribution_review": "physics/task_physics_mechanics_spring_extension/distribution_review.json",
+        "inspection_manifest": "physics/task_physics_mechanics_spring_extension/manifest.json",
+        "random_review": "physics/task_physics_mechanics_spring_extension/random_review_100.json"
       },
-      "task_group": "optics",
-      "task_id": "task_physics_optics_ray_trace"
+      "task_group": "mechanics",
+      "task_id": "task_physics_mechanics_spring_extension"
     }
   ]
 }

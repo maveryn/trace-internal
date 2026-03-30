@@ -65,6 +65,29 @@ class PhysicsOpticsTheme:
     bounce_outline_rgb: Color
 
 
+@dataclass(frozen=True)
+class PhysicsSpringTheme:
+    """Resolved per-instance spring-extension theme derived from one named accent color."""
+
+    accent_color_name: str
+    card_fill_rgb: Color
+    card_outline_rgb: Color
+    support_fill_rgb: Color
+    support_outline_rgb: Color
+    ruler_rgb: Color
+    ruler_text_rgb: Color
+    spring_rgb: Color
+    weight_fill_rgb: Color
+    weight_outline_rgb: Color
+    weight_text_rgb: Color
+    marker_fill_rgb: Color
+    marker_outline_rgb: Color
+    missing_fill_rgb: Color
+    missing_outline_rgb: Color
+    missing_text_rgb: Color
+    texture_rgb: Color
+
+
 def _blend_with_white(color: Sequence[int], *, color_weight: float) -> Color:
     """Blend one RGB color toward white by the requested color weight."""
 
@@ -156,12 +179,42 @@ def build_physics_optics_theme(accent_color_name: str) -> PhysicsOpticsTheme:
     )
 
 
+def build_physics_spring_theme(accent_color_name: str) -> PhysicsSpringTheme:
+    """Resolve one readable spring-extension theme from a named accent color."""
+
+    accent_rgb = tuple(int(channel) for channel in named_color(str(accent_color_name)))
+    accent_dark_rgb = darken_color(accent_rgb, factor=0.60)
+    accent_deep_rgb = darken_color(accent_rgb, factor=0.42)
+    accent_mid_rgb = darken_color(accent_rgb, factor=0.74)
+    return PhysicsSpringTheme(
+        accent_color_name=str(accent_color_name),
+        card_fill_rgb=_blend_with_white(accent_rgb, color_weight=0.08),
+        card_outline_rgb=tuple(int(channel) for channel in accent_deep_rgb),
+        support_fill_rgb=_blend_with_white(accent_rgb, color_weight=0.30),
+        support_outline_rgb=tuple(int(channel) for channel in accent_deep_rgb),
+        ruler_rgb=tuple(int(channel) for channel in accent_dark_rgb),
+        ruler_text_rgb=(41, 45, 51),
+        spring_rgb=tuple(int(channel) for channel in accent_deep_rgb),
+        weight_fill_rgb=_blend_with_white(accent_rgb, color_weight=0.18),
+        weight_outline_rgb=tuple(int(channel) for channel in accent_dark_rgb),
+        weight_text_rgb=(39, 43, 49),
+        marker_fill_rgb=_blend_with_white(accent_rgb, color_weight=0.52),
+        marker_outline_rgb=tuple(int(channel) for channel in accent_mid_rgb),
+        missing_fill_rgb=(255, 231, 231),
+        missing_outline_rgb=(187, 56, 56),
+        missing_text_rgb=(167, 38, 38),
+        texture_rgb=_blend_with_white(accent_dark_rgb, color_weight=0.30),
+    )
+
+
 __all__ = [
     "PhysicsCircuitTheme",
     "PhysicsLeverTheme",
     "PhysicsOpticsTheme",
+    "PhysicsSpringTheme",
     "SUPPORTED_PHYSICS_COLOR_NAMES",
     "build_physics_circuit_theme",
     "build_physics_lever_theme",
     "build_physics_optics_theme",
+    "build_physics_spring_theme",
 ]

@@ -12,6 +12,7 @@ Use this document for the active `physics` domain contract.
 1. Active tasks:
    - `task_physics_mechanics_force_diagram`
    - `task_physics_mechanics_lever_balance`
+   - `task_physics_mechanics_spring_extension`
 2. `task_physics_mechanics_force_diagram` scene/query surface:
    - `scene_variant`: `free_body_box|textured_block`
    - `query_variant`: `net_horizontal_force|net_vertical_force|balancing_force_horizontal|balancing_force_vertical`
@@ -34,6 +35,17 @@ Use this document for the active `physics` domain contract.
    - keep all needed distances visible on the beam,
    - keep prompt-facing evidence on the weight blocks rather than the beam or fulcrum,
    - allow non-semantic accent-color variation on the beam / fulcrum / shown weights, but keep the marked `?` weight visibly red.
+8. `task_physics_mechanics_spring_extension` scene/query surface:
+   - `scene_variant`: `paired_springs|staggered_springs|textured_spring`
+   - `query_variant`: `missing_weight_for_extension|missing_extension_for_weight|extension_difference`
+9. `task_physics_mechanics_spring_extension` evidence contract:
+   - unordered `bbox_set` over the reference weight + reference extension marker + query-side missing weight / shown weight + query-side extension marker / red `?` extension tag for the two missing-value variants
+   - unordered `bbox_set` over the two shown extension markers for `extension_difference`
+10. `task_physics_mechanics_spring_extension` prompt policy:
+   - say explicitly that the two springs are identical,
+   - keep the arithmetic grounded in the shown weight/extension pairs rather than in an explicit formula label,
+   - keep prompt-facing evidence on the weight blocks and ruler markers,
+   - allow non-semantic accent-color variation on the card chrome / supports / springs while keeping missing-value markers visibly red.
 ### `circuits`
 1. Active tasks:
    - `task_physics_circuits_equivalent_resistance`
@@ -75,7 +87,7 @@ Use this document for the active `physics` domain contract.
 1. `mechanics/lever_balance`
 2. `circuits/equivalent_resistance`
 3. `optics/ray_trace`
-4. `mechanics/spring_extension`
+4. `mechanics/spring_extension` (now active)
 
 ## 5) Shared helper placement
 1. Cross-domain scene/query compatibility sampling now lives in `trace/tasks/shared/variant_sampling.py`.
@@ -84,3 +96,4 @@ Use this document for the active `physics` domain contract.
 4. Physics-domain named accent themes belong in `trace/tasks/physics/shared/style.py`.
 5. Physics-domain resistor-network rendering helpers belong in `trace/tasks/physics/shared/circuit_scene.py`.
 6. Physics-domain optics-board rendering helpers belong in `trace/tasks/physics/shared/optics_scene.py`.
+7. Spring-extension rendering is currently task-local in `trace/tasks/physics/mechanics/spring_extension.py`; only the reusable physics theme / complexity / support helpers live under `trace/tasks/physics/shared/*`.

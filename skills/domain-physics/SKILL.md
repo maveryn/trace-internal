@@ -25,6 +25,7 @@ Use this whenever the task lives under `domain=physics`.
 - `mechanics`
   - `task_physics_mechanics_force_diagram`
   - `task_physics_mechanics_lever_balance`
+  - `task_physics_mechanics_spring_extension`
 - `circuits`
   - `task_physics_circuits_equivalent_resistance`
 - `optics`

@@ -1,0 +1,570 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 7
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        296.0,
+        393.0,
+        350.0,
+        403.0
+      ],
+      [
+        708.0,
+        246.0,
+        762.0,
+        256.0
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "physics/task_physics_mechanics_spring_extension/images/extension_difference/0008.png"
+  },
+  "instance_seed": 3153194644397751,
+  "prompt": "Use the mechanics spring diagram in the image. It shows two identical hanging springs shown in slightly staggered cards, each next to a ruler marked in extension units, with labeled weight blocks beneath or beside the spring. Determine the requested spring-extension value from the diagram. Using the two ruler markers, what integer difference in extension do the springs show?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for the two shown extension markers being compared.\nAnswer: set \"answer\" to the requested integer weight, extension, or extension difference value.\nExample JSON:\n{\"evidence\":[[2,3,4,5],[3,4,5,6]],\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the mechanics spring diagram in the image. It shows two identical hanging springs shown in slightly staggered cards, each next to a ruler marked in extension units, with labeled weight blocks beneath or beside the spring. Determine the requested spring-extension value from the diagram. Using the two ruler markers, what integer difference in extension do the springs show?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for the two shown extension markers being compared.\nAnswer: set \"answer\" to the requested integer weight, extension, or extension difference value.\nExample JSON:\n{\"evidence\":[[2,3,4,5],[3,4,5,6]],\"answer\":8}",
+    "answer_only": "Use the mechanics spring diagram in the image. It shows two identical hanging springs shown in slightly staggered cards, each next to a ruler marked in extension units, with labeled weight blocks beneath or beside the spring. Determine the requested spring-extension value from the diagram. Using the two ruler markers, what integer difference in extension do the springs show?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer weight, extension, or extension difference value.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_physics_mechanics_spring_extension",
+  "task_variant": "extension_difference",
+  "trace_payload": {
+    "background": {
+      "available_styles": [
+        "solid_light"
+      ],
+      "enabled": true,
+      "selected_style": "solid_light",
+      "style_spec": {
+        "color": [
+          248,
+          249,
+          251
+        ],
+        "kind": "solid"
+      }
+    },
+    "execution_trace": {
+      "accent_color_name": "yellow",
+      "evidence_entity_ids": [
+        "left_extension_marker",
+        "right_extension_marker"
+      ],
+      "left_measurement": {
+        "shown_extension_value": 8,
+        "shown_weight_value": 8,
+        "true_extension_value": 8,
+        "true_weight_value": 8
+      },
+      "query_variant": "extension_difference",
+      "right_measurement": {
+        "shown_extension_value": 1,
+        "shown_weight_value": 1,
+        "true_extension_value": 1,
+        "true_weight_value": 1
+      },
+      "scale_factor": 1,
+      "scale_factor_support": [
+        1,
+        2,
+        3
+      ],
+      "scene_variant": "staggered_springs",
+      "target_answer": 7,
+      "target_answer_support": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "task_variant": "extension_difference"
+    },
+    "post_image_noise": {
+      "applied": false,
+      "apply_prob": 0.0,
+      "edit_count_range": [
+        1,
+        2
+      ],
+      "edit_types": [
+        "blur",
+        "downsample",
+        "jpeg",
+        "noise"
+      ],
+      "edits": [],
+      "enabled": false
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          296.0,
+          393.0,
+          350.0,
+          403.0
+        ],
+        [
+          708.0,
+          246.0,
+          762.0,
+          256.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "accent_color_name": "yellow",
+        "accent_color_name_probabilities": {
+          "blue": 0.1,
+          "brown": 0.1,
+          "cyan": 0.1,
+          "green": 0.1,
+          "magenta": 0.1,
+          "maroon": 0.1,
+          "orange": 0.1,
+          "purple": 0.1,
+          "red": 0.1,
+          "yellow": 0.1
+        },
+        "query_variant": "extension_difference",
+        "query_variant_probabilities": {
+          "extension_difference": 1.0,
+          "missing_extension_for_weight": 0.0,
+          "missing_weight_for_extension": 0.0
+        },
+        "scene_variant": "staggered_springs",
+        "scene_variant_probabilities": {
+          "paired_springs": 0.3333333333333333,
+          "staggered_springs": 0.3333333333333333,
+          "textured_spring": 0.3333333333333333
+        },
+        "target_answer": 7,
+        "target_answer_probabilities": {
+          "1": 0.125,
+          "2": 0.125,
+          "3": 0.125,
+          "4": 0.125,
+          "5": 0.125,
+          "6": 0.125,
+          "7": 0.125,
+          "8": 0.125
+        },
+        "task_variant": "extension_difference",
+        "task_variant_probabilities": {
+          "extension_difference": 1.0,
+          "missing_extension_for_weight": 0.0,
+          "missing_weight_for_extension": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 0,
+        "prompt_bundle_id": "physics_mechanics_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the requested integer weight, extension, or extension difference value",
+          "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for the two shown extension markers being compared",
+          "json_example": "{\"evidence\":[[2,3,4,5],[3,4,5,6]],\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "two identical hanging springs shown in slightly staggered cards, each next to a ruler marked in extension units, with labeled weight blocks beneath or beside the spring"
+        },
+        "task_family_key": "paired_spring_diagram",
+        "task_family_variant_index": 4,
+        "task_key": "spring_extension_query",
+        "task_variant_index": 4,
+        "task_variant_key": "extension_difference",
+        "task_variant_template_index": 1,
+        "template_paths": [
+          "physics/mechanics/physics_mechanics_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:spring_extension_query": 5,
+          "task_family:paired_spring_diagram": 5,
+          "task_variant:extension_difference": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "physics_mechanics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested integer weight, extension, or extension difference value",
+              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for the two shown extension markers being compared",
+              "json_example": "{\"evidence\":[[2,3,4,5],[3,4,5,6]],\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "two identical hanging springs shown in slightly staggered cards, each next to a ruler marked in extension units, with labeled weight blocks beneath or beside the spring"
+            },
+            "task_family_key": "paired_spring_diagram",
+            "task_family_variant_index": 4,
+            "task_key": "spring_extension_query",
+            "task_variant_index": 4,
+            "task_variant_key": "extension_difference",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "physics/mechanics/physics_mechanics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:spring_extension_query": 5,
+              "task_family:paired_spring_diagram": 5,
+              "task_variant:extension_difference": 5
+            }
+          },
+          "prompt": "Use the mechanics spring diagram in the image. It shows two identical hanging springs shown in slightly staggered cards, each next to a ruler marked in extension units, with labeled weight blocks beneath or beside the spring. Determine the requested spring-extension value from the diagram. Using the two ruler markers, what integer difference in extension do the springs show?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for the two shown extension markers being compared.\nAnswer: set \"answer\" to the requested integer weight, extension, or extension difference value.\nExample JSON:\n{\"evidence\":[[2,3,4,5],[3,4,5,6]],\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "physics_mechanics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested integer weight, extension, or extension difference value",
+              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for the two shown extension markers being compared",
+              "json_example": "{\"evidence\":[[2,3,4,5],[3,4,5,6]],\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "two identical hanging springs shown in slightly staggered cards, each next to a ruler marked in extension units, with labeled weight blocks beneath or beside the spring"
+            },
+            "task_family_key": "paired_spring_diagram",
+            "task_family_variant_index": 4,
+            "task_key": "spring_extension_query",
+            "task_variant_index": 4,
+            "task_variant_key": "extension_difference",
+            "task_variant_template_index": 1,
+            "template_paths": [
+              "physics/mechanics/physics_mechanics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:spring_extension_query": 5,
+              "task_family:paired_spring_diagram": 5,
+              "task_variant:extension_difference": 5
+            }
+          },
+          "prompt": "Use the mechanics spring diagram in the image. It shows two identical hanging springs shown in slightly staggered cards, each next to a ruler marked in extension units, with labeled weight blocks beneath or beside the spring. Determine the requested spring-extension value from the diagram. Using the two ruler markers, what integer difference in extension do the springs show?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested integer weight, extension, or extension difference value.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "extension_difference",
+      "template_id": "physics_mechanics_v1"
+    },
+    "render_map": {
+      "accent_color_name": "yellow",
+      "columns": {
+        "left": {
+          "card_bbox_px": [
+            86.0,
+            108.0,
+            390.0,
+            578.0
+          ],
+          "column_id": "left",
+          "detached_weight": false,
+          "extension_marker_bbox_px": [
+            296.0,
+            393.0,
+            350.0,
+            403.0
+          ],
+          "hanger_bbox_px": [
+            209.0,
+            158.0,
+            215.0,
+            180.0
+          ],
+          "missing_extension": false,
+          "missing_weight": false,
+          "shown_extension_value": 8,
+          "shown_weight_value": 8,
+          "spring_bbox_px": [
+            191.0,
+            180.0,
+            233.0,
+            398.0
+          ],
+          "true_extension_value": 8,
+          "true_weight_value": 8,
+          "weight_bbox_px": [
+            173.0,
+            398.0,
+            251.0,
+            452.0
+          ]
+        },
+        "right": {
+          "card_bbox_px": [
+            498.0,
+            136.0,
+            802.0,
+            606.0
+          ],
+          "column_id": "right",
+          "detached_weight": false,
+          "extension_marker_bbox_px": [
+            708.0,
+            246.0,
+            762.0,
+            256.0
+          ],
+          "hanger_bbox_px": [
+            621.0,
+            186.0,
+            627.0,
+            208.0
+          ],
+          "missing_extension": false,
+          "missing_weight": false,
+          "shown_extension_value": 1,
+          "shown_weight_value": 1,
+          "spring_bbox_px": [
+            603.0,
+            208.0,
+            645.0,
+            251.0
+          ],
+          "true_extension_value": 1,
+          "true_weight_value": 1,
+          "weight_bbox_px": [
+            585.0,
+            251.0,
+            663.0,
+            305.0
+          ]
+        }
+      },
+      "left_card_bbox_px": [
+        86.0,
+        108.0,
+        390.0,
+        578.0
+      ],
+      "right_card_bbox_px": [
+        498.0,
+        136.0,
+        802.0,
+        606.0
+      ]
+    },
+    "render_spec": {
+      "accent_color_name": "yellow",
+      "canvas_height": 660,
+      "canvas_width": 980,
+      "scene_variant": "staggered_springs"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_px": [
+            86.0,
+            108.0,
+            390.0,
+            578.0
+          ],
+          "entity_id": "left_card",
+          "entity_type": "spring_card",
+          "scene_role": "left"
+        },
+        {
+          "bbox_px": [
+            156.0,
+            142.0,
+            320.0,
+            158.0
+          ],
+          "entity_id": "left_support_bar",
+          "entity_type": "support_bar",
+          "scene_role": "left"
+        },
+        {
+          "bbox_px": [
+            209.0,
+            158.0,
+            215.0,
+            180.0
+          ],
+          "entity_id": "left_spring_hanger",
+          "entity_type": "spring_hanger",
+          "scene_role": "left"
+        },
+        {
+          "bbox_px": [
+            191.0,
+            180.0,
+            233.0,
+            398.0
+          ],
+          "entity_id": "left_spring_body",
+          "entity_type": "spring_body",
+          "missing_extension": false,
+          "scene_role": "left"
+        },
+        {
+          "bbox_px": [
+            284.0,
+            186.0,
+            352.0,
+            510.0
+          ],
+          "entity_id": "left_ruler",
+          "entity_type": "ruler",
+          "scene_role": "left"
+        },
+        {
+          "bbox_px": [
+            296.0,
+            393.0,
+            350.0,
+            403.0
+          ],
+          "entity_id": "left_extension_marker",
+          "entity_type": "extension_marker",
+          "scene_role": "left",
+          "true_value": 8,
+          "value": 8
+        },
+        {
+          "bbox_px": [
+            173.0,
+            398.0,
+            251.0,
+            452.0
+          ],
+          "detached": false,
+          "entity_id": "left_weight_block",
+          "entity_type": "weight_block",
+          "scene_role": "left",
+          "true_value": 8,
+          "value": 8
+        },
+        {
+          "bbox_px": [
+            498.0,
+            136.0,
+            802.0,
+            606.0
+          ],
+          "entity_id": "right_card",
+          "entity_type": "spring_card",
+          "scene_role": "right"
+        },
+        {
+          "bbox_px": [
+            568.0,
+            170.0,
+            732.0,
+            186.0
+          ],
+          "entity_id": "right_support_bar",
+          "entity_type": "support_bar",
+          "scene_role": "right"
+        },
+        {
+          "bbox_px": [
+            621.0,
+            186.0,
+            627.0,
+            208.0
+          ],
+          "entity_id": "right_spring_hanger",
+          "entity_type": "spring_hanger",
+          "scene_role": "right"
+        },
+        {
+          "bbox_px": [
+            603.0,
+            208.0,
+            645.0,
+            251.0
+          ],
+          "entity_id": "right_spring_body",
+          "entity_type": "spring_body",
+          "missing_extension": false,
+          "scene_role": "right"
+        },
+        {
+          "bbox_px": [
+            696.0,
+            214.0,
+            764.0,
+            538.0
+          ],
+          "entity_id": "right_ruler",
+          "entity_type": "ruler",
+          "scene_role": "right"
+        },
+        {
+          "bbox_px": [
+            708.0,
+            246.0,
+            762.0,
+            256.0
+          ],
+          "entity_id": "right_extension_marker",
+          "entity_type": "extension_marker",
+          "scene_role": "right",
+          "true_value": 1,
+          "value": 1
+        },
+        {
+          "bbox_px": [
+            585.0,
+            251.0,
+            663.0,
+            305.0
+          ],
+          "detached": false,
+          "entity_id": "right_weight_block",
+          "entity_type": "weight_block",
+          "scene_role": "right",
+          "true_value": 1,
+          "value": 1
+        }
+      ],
+      "relations": {
+        "accent_color_name": "yellow",
+        "evidence_entity_ids": [
+          "left_extension_marker",
+          "right_extension_marker"
+        ],
+        "query_variant": "extension_difference",
+        "scale_factor": 1,
+        "scene_variant": "staggered_springs",
+        "target_answer": 7,
+        "task_variant": "extension_difference"
+      },
+      "scene_kind": "physics_spring_extension_staggered_springs"
+    },
+    "witness_symbolic": {
+      "ids": [
+        "left_extension_marker",
+        "right_extension_marker"
+      ],
+      "type": "id_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

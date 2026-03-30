@@ -40,18 +40,25 @@ def extract_variant_probability_keys(output: Any) -> List[str]:
     if isinstance(query_spec, Mapping):
         params = query_spec.get("params", {})
         if isinstance(params, Mapping):
+            probabilities = params.get("task_variant_probabilities")
+            if isinstance(probabilities, Mapping):
+                return [str(key) for key, value in probabilities.items() if float(value) > 0.0]
             probabilities = params.get("variant_probabilities")
             if isinstance(probabilities, Mapping):
                 return [str(key) for key, value in probabilities.items() if float(value) > 0.0]
     return []
 
 
-def _generate_single_output(job: tuple[str, int, int]) -> Dict[str, Any]:
+def _generate_single_output(job: tuple[str, int, int, Mapping[str, Any] | None]) -> Dict[str, Any]:
     """Generate one task sample for one deterministic seed job tuple."""
-    task_id, instance_seed, max_attempts = job
+    task_id, instance_seed, max_attempts, params = job
     task = _thread_local_task(str(task_id))
     try:
-        out = task.generate(int(instance_seed), params={}, max_attempts=int(max_attempts))
+        out = task.generate(
+            int(instance_seed),
+            params=dict(params) if isinstance(params, Mapping) else {},
+            max_attempts=int(max_attempts),
+        )
         return {
             "instance_seed": int(instance_seed),
             "output": out,
@@ -73,6 +80,7 @@ def _generate_batch_outputs(
     seed: int,
     max_attempts: int,
     executor: ThreadPoolExecutor | None,
+    params: Mapping[str, Any] | None = None,
 ) -> List[Dict[str, Any]]:
     """Generate one deterministic seed batch, optionally in parallel threads."""
     jobs = [
@@ -80,9 +88,63 @@ def _generate_batch_outputs(
             str(task_id),
             int(hash64(int(seed), str(task_id), int(index))),
             int(max_attempts),
+            dict(params) if isinstance(params, Mapping) else None,
         )
         for index in range(int(start_index), int(start_index) + int(batch_size))
     ]
+    if executor is None:
+        return [_generate_single_output(job) for job in jobs]
+    return list(executor.map(_generate_single_output, jobs))
+
+
+def _generate_explicit_variant_batch(
+    *,
+    task_id: str,
+    expected_variants: Sequence[str],
+    samples_by_variant: Mapping[str, Sequence[Dict[str, Any]]],
+    target_count: int,
+    seed: int,
+    max_attempts: int,
+    executor: ThreadPoolExecutor | None,
+    request_counts_by_variant: Dict[str, int],
+    batch_size: int,
+) -> List[Dict[str, Any]]:
+    """Generate one round-robin batch that explicitly targets missing task variants."""
+
+    pending_variants = [
+        str(variant)
+        for variant in expected_variants
+        if len(samples_by_variant.get(str(variant), [])) < int(target_count)
+    ]
+    if not pending_variants or int(batch_size) <= 0:
+        return []
+
+    jobs: List[tuple[str, int, int, Mapping[str, Any] | None]] = []
+    variant_index = 0
+    while len(jobs) < int(batch_size):
+        pending_variants = [
+            str(variant)
+            for variant in expected_variants
+            if len(samples_by_variant.get(str(variant), [])) < int(target_count)
+        ]
+        if not pending_variants:
+            break
+        variant = str(pending_variants[int(variant_index) % len(pending_variants)])
+        request_index = int(request_counts_by_variant.get(str(variant), 0))
+        request_counts_by_variant[str(variant)] = int(request_index + 1)
+        jobs.append(
+            (
+                str(task_id),
+                int(hash64(int(seed), f"{str(task_id)}|task_variant:{variant}", int(request_index))),
+                int(max_attempts),
+                {
+                    "task_variant": str(variant),
+                    "_sampling_index": int(request_index),
+                },
+            )
+        )
+        variant_index += 1
+
     if executor is None:
         return [_generate_single_output(job) for job in jobs]
     return list(executor.map(_generate_single_output, jobs))
@@ -108,6 +170,7 @@ def collect_variant_samples(
     samples_by_variant: Dict[str, List[Dict[str, Any]]] = {}
     generated_variant_counts: Dict[str, int] = {}
     expected_variants: set[str] = set()
+    request_counts_by_variant: Dict[str, int] = {}
     known_from_probabilities = False
     no_new_variant_streak = 0
     total_generated = 0
@@ -117,19 +180,42 @@ def collect_variant_samples(
     executor = ThreadPoolExecutor(max_workers=max_workers) if int(max_workers) > 1 else None
     try:
         while int(total_generated) < int(max_total_samples_per_task):
+            if expected_variants and all(
+                len(samples_by_variant.get(str(variant), [])) >= int(target_count)
+                for variant in expected_variants
+            ):
+                if known_from_probabilities or int(no_new_variant_streak) >= int(target_count):
+                    break
+
             base_batch = max(16, int(max_workers * 8))
             remaining = int(max_total_samples_per_task) - int(total_generated)
             batch_size = max(1, min(int(base_batch), int(remaining)))
-            rows = _generate_batch_outputs(
-                task_id=str(task_id),
-                start_index=int(total_generated),
-                batch_size=int(batch_size),
-                seed=int(seed),
-                max_attempts=int(max_attempts_per_instance),
-                executor=executor,
-            )
+            if expected_variants and bool(known_from_probabilities):
+                rows = _generate_explicit_variant_batch(
+                    task_id=str(task_id),
+                    expected_variants=sorted(expected_variants),
+                    samples_by_variant=samples_by_variant,
+                    target_count=int(target_count),
+                    seed=int(seed),
+                    max_attempts=int(max_attempts_per_instance),
+                    executor=executor,
+                    request_counts_by_variant=request_counts_by_variant,
+                    batch_size=int(batch_size),
+                )
+            else:
+                rows = _generate_batch_outputs(
+                    task_id=str(task_id),
+                    start_index=int(total_generated),
+                    batch_size=int(batch_size),
+                    seed=int(seed),
+                    max_attempts=int(max_attempts_per_instance),
+                    executor=executor,
+                )
+            if not rows:
+                break
 
             task_complete = False
+            restart_with_explicit = False
             for row in rows:
                 total_generated += 1
                 output = row["output"]
@@ -140,20 +226,30 @@ def collect_variant_samples(
                     continue
                 task_variant = str(getattr(output, "task_variant", "") or "")
                 generated_variant_counts[task_variant] = int(generated_variant_counts.get(task_variant, 0) + 1)
-                variant_rows = samples_by_variant.setdefault(str(task_variant), [])
-                if len(variant_rows) < int(target_count):
-                    variant_rows.append(dict(collector(output, instance_seed)))
 
                 expected_before = len(expected_variants)
                 expected_variants.add(str(task_variant))
                 probability_keys = extract_variant_probability_keys(output)
+                transitioned_to_explicit = False
                 if probability_keys:
+                    if not known_from_probabilities:
+                        transitioned_to_explicit = True
                     known_from_probabilities = True
                     expected_variants.update(str(value) for value in probability_keys)
                 if len(expected_variants) > int(expected_before):
                     no_new_variant_streak = 0
                 else:
                     no_new_variant_streak += 1
+
+                if transitioned_to_explicit:
+                    samples_by_variant = {}
+                    restart_with_explicit = True
+                    break
+
+                if not transitioned_to_explicit:
+                    variant_rows = samples_by_variant.setdefault(str(task_variant), [])
+                    if len(variant_rows) < int(target_count):
+                        variant_rows.append(dict(collector(output, instance_seed)))
 
                 if expected_variants and all(
                     len(samples_by_variant.get(str(variant), [])) >= int(target_count)
@@ -163,6 +259,8 @@ def collect_variant_samples(
                         task_complete = True
                         break
 
+            if restart_with_explicit:
+                continue
             if task_complete:
                 break
     finally:

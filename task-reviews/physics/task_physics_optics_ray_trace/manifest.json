@@ -1,0 +1,13 @@
+{
+  "inspection_count": 50,
+  "task_id": "task_physics_optics_ray_trace",
+  "variants": {
+    "bounce_count": 25,
+    "target_hit_count": 25
+  },
+  "workbook": "physics/task_physics_optics_ray_trace/task_physics_optics_ray_trace.xlsx",
+  "workbook_sheets": {
+    "bounce_count": "bounce_count",
+    "target_hit_count": "target_hit_count"
+  }
+}

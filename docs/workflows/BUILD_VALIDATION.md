@@ -36,6 +36,7 @@ For new or distribution-changing task logic:
 2. Required review scope:
    - random sample review: 100 samples per task (`random_review_100.json`)
    - per-variant distribution review: 100 samples per task variant when variants exist (`distribution_review.json`)
+     - per-variant collection explicitly regenerates each discovered `task_variant` with a deterministic `_sampling_index`, so task-local balancing paths should behave the same way they do under builder-style prefix sampling
    - manual inspection workbook: 25 samples per task variant in `task-reviews/<domain>/<task_id>/<task_id>.xlsx` (one sheet per task variant)
    - review artifacts live under `task-reviews/<domain>/<task_id>/` so the review root stays grouped by domain as task count grows
 3. Required gating checks (computed from answer values only):

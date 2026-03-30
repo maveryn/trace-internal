@@ -200,11 +200,59 @@ def build_physics_circuit_resistance_complexity(
     )
 
 
+def build_physics_optics_ray_trace_complexity(
+    *,
+    task_group_defaults: Mapping[str, Any],
+    task_id: str,
+    scene_variant: str,
+    query_variant: str,
+    mirror_count: int,
+    target_count: int,
+    target_answer: int,
+) -> TaskComplexity:
+    """Build normalized complexity for optics ray-trace scenes."""
+
+    weights = resolve_physics_complexity_weights(task_group_defaults, task_id=task_id)
+    visual_scan = clamp_unit_interval(
+        (0.38 * normalize_linear(float(mirror_count), min_value=1.0, max_value=4.0))
+        + (0.30 * normalize_linear(float(target_count), min_value=3.0, max_value=5.0))
+        + (
+            0.14
+            if str(scene_variant) == "quad_mirror"
+            else 0.10
+            if str(scene_variant) == "triple_mirror"
+            else 0.04
+            if str(scene_variant) == "double_mirror"
+            else 0.0
+        )
+    )
+    path_reasoning = clamp_unit_interval(
+        (0.44 if str(query_variant) == "bounce_count" else 0.58)
+        + (0.16 * normalize_linear(float(mirror_count), min_value=1.0, max_value=4.0))
+        + (0.06 * normalize_linear(float(target_answer), min_value=0.0, max_value=5.0))
+    )
+    ambiguity = clamp_unit_interval(
+        (0.22 * normalize_linear(float(target_count), min_value=3.0, max_value=5.0))
+        + (0.16 if int(target_answer) == 0 else 0.0)
+    )
+    output_burden = normalize_linear(float(target_answer), min_value=0.0, max_value=5.0)
+    return build_physics_complexity(
+        weights=weights,
+        components={
+            "visual_scan": float(visual_scan),
+            "path_reasoning": float(path_reasoning),
+            "ambiguity": float(ambiguity),
+            "output_burden": float(output_burden),
+        },
+    )
+
+
 __all__ = [
     "build_physics_circuit_resistance_complexity",
     "build_physics_complexity",
     "build_physics_force_diagram_complexity",
     "build_physics_lever_balance_complexity",
+    "build_physics_optics_ray_trace_complexity",
     "clamp_unit_interval",
     "normalize_int_with_bounds",
     "resolve_physics_complexity_weights",

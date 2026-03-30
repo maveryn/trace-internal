@@ -1,0 +1,83 @@
+generation:
+  shared:
+    accent_color_name_weights:
+      red: 1.0
+      blue: 1.0
+      green: 1.0
+      yellow: 1.0
+      orange: 1.0
+      purple: 1.0
+      brown: 1.0
+      cyan: 1.0
+      magenta: 1.0
+      maroon: 1.0
+    balanced_accent_color_name_sampling: true
+  task_overrides:
+    task_physics_optics_ray_trace:
+      scene_variant_weights:
+        single_mirror: 1.0
+        double_mirror: 1.0
+        triple_mirror: 1.0
+        quad_mirror: 1.0
+      query_variant_weights:
+        bounce_count: 1.0
+        target_hit_count: 1.0
+      balanced_scene_variant_sampling: true
+      balanced_query_variant_sampling: true
+      balanced_target_answer_sampling: true
+      bounce_count_support_single_mirror: [0, 1]
+      bounce_count_support_double_mirror: [0, 1, 2]
+      bounce_count_support_triple_mirror: [0, 1, 2, 3]
+      bounce_count_support_quad_mirror: [0, 1, 2, 3, 4]
+      target_hit_count_support: [0, 1, 2, 3, 4, 5]
+      target_count_min: 4
+      target_count_max: 6
+
+rendering:
+  shared:
+    canvas_width: 920
+    canvas_height: 560
+    board_left_px: 112
+    board_top_px: 72
+    board_cols: 8
+    board_rows: 8
+    cell_size_px: 52
+    board_grid_width_px: 1
+    board_outline_width_px: 3
+    mirror_width_px: 5
+    mirror_padding_px: 10
+    ray_width_px: 6
+    ray_head_length_px: 16
+    ray_head_width_px: 16
+    target_radius_px: 15
+    source_radius_px: 14
+    bounce_radius_px: 8
+    target_font_size_px: 18
+    source_font_size_px: 16
+    label_stroke_width_px: 3
+  task_overrides: {}
+
+complexity:
+  shared: {}
+  task_overrides:
+    task_physics_optics_ray_trace:
+      criteria_weights:
+        visual_scan: 0.28
+        path_reasoning: 0.48
+        ambiguity: 0.14
+        output_burden: 0.10
+
+prompt:
+  shared:
+    bundle_id: physics_optics_v1
+  task_overrides:
+    task_physics_optics_ray_trace:
+      task_family_key: mirror_ray_diagram
+      task_key: ray_trace_query
+      object_description_single_mirror: one optics diagram on graph paper with an initial ray direction and one diagonal mirror
+      object_description_double_mirror: one optics diagram on graph paper with an initial ray direction and two diagonal mirrors
+      object_description_triple_mirror: one optics diagram on graph paper with an initial ray direction and three diagonal mirrors
+      object_description_quad_mirror: one optics diagram on graph paper with an initial ray direction and four diagonal mirrors
+      evidence_hint_bounce_count: set "evidence" to an array of graph points [x, y] for each mirror-bounce point of the implied ray path
+      evidence_hint_target_hit_count: set "evidence" to an array of graph points [x, y] for each target point touched by the implied ray path
+      answer_hint: set "answer" to the requested count as an integer

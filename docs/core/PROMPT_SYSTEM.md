@@ -192,3 +192,4 @@ Active task-to-bundle mapping:
 17. Physics:
    - `task_physics_mechanics_force_diagram|task_physics_mechanics_lever_balance` -> `physics_mechanics_v1`
    - `task_physics_circuits_equivalent_resistance` -> `physics_circuits_v1`
+   - `task_physics_optics_ray_trace` -> `physics_optics_v1`

@@ -150,7 +150,7 @@ Define how we split tasks into reusable families so each dataset slice stays com
 ## Physics direction (current)
 1. Physics should stay diagram-first: the image should contain the operative values, directions, or placements needed to solve the task.
 2. `task_group` should encode the reasoning family (for example `mechanics`, later `circuits` or `optics`), while `scene_variant` names the scaffold and `query_variant` names the requested quantity.
-3. The active physics families are `mechanics` and `circuits`.
+3. The active physics families are `mechanics`, `circuits`, and `optics`.
 4. `task_physics_mechanics_force_diagram`
    - uses scene variants `free_body_box|textured_block`
    - uses query variants `net_horizontal_force|net_vertical_force|balancing_force_horizontal|balancing_force_vertical`
@@ -166,7 +166,13 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - keeps integer answers with unordered `bbox_set` evidence over either the full asked resistor set (`total_resistance`) or the marked red `?` resistor in the left circuit (`missing_resistor_value`)
    - requires every scene to contain at least one parallel bank; the single-circuit readout uses `3..4` parallel branches or `4..5` total resistors, while the paired missing-resistor variant uses smaller side-by-side circuits with equal total resistance
    - samples one non-semantic `accent_color_name` palette for the wires, terminals, and resistor boxes
-7. Early physics tasks should prefer light arithmetic over heavy formula derivations, and prompt-facing evidence should stay on the visible witness objects rather than decorative scene chrome.
+7. `task_physics_optics_ray_trace`
+   - uses scene variants `single_mirror|double_mirror|triple_mirror|quad_mirror`
+   - uses query variants `bounce_count|target_hit_count`
+   - keeps integer answers with unordered `graph_point_set` evidence over either bounce points or hit target points
+   - shows only the initial ray direction in the prompt image, keeps the solved full path in trace/debug artifacts, ties mirror count directly to `scene_variant`, and reserves `quad_mirror` for `bounce_count` while the smaller mirror-count scenes feed `target_hit_count`
+   - uses large unlabeled target dots for `target_hit_count`, no separate bounce circles for `bounce_count`, and one non-semantic `accent_color_name` palette for the board and mirrors while the ray keeps a fixed warm contrast color
+8. Early physics tasks should prefer light arithmetic over heavy formula derivations, and prompt-facing evidence should stay on the visible witness objects rather than decorative scene chrome.
 
 ## Geometry direction (current)
 1. Geometry now exposes ten active task ids:

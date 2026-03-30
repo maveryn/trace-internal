@@ -1,0 +1,740 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 3
+  },
+  "evidence_gt": {
+    "type": "graph_point_set",
+    "value": [
+      [
+        2,
+        3
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        4,
+        2
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "physics/task_physics_optics_ray_trace/images/bounce_count/0001.png"
+  },
+  "instance_seed": 4865192721038318,
+  "prompt": "You are given an image with one optics diagram on graph paper with an initial ray direction and four diagonal mirrors. Use the shown initial ray direction and the mirrors to infer the full ray path. Follow the implied ray path and count the mirror bounces before exit. What is the count?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of graph points [x, y] for each mirror-bounce point of the implied ray path.\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
+  "prompt_variants": {
+    "answer_and_evidence": "You are given an image with one optics diagram on graph paper with an initial ray direction and four diagonal mirrors. Use the shown initial ray direction and the mirrors to infer the full ray path. Follow the implied ray path and count the mirror bounces before exit. What is the count?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of graph points [x, y] for each mirror-bounce point of the implied ray path.\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
+    "answer_only": "You are given an image with one optics diagram on graph paper with an initial ray direction and four diagonal mirrors. Use the shown initial ray direction and the mirrors to infer the full ray path. Follow the implied ray path and count the mirror bounces before exit. What is the count?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+  },
+  "task": "task_physics_optics_ray_trace",
+  "task_variant": "bounce_count",
+  "trace_payload": {
+    "background": {
+      "available_styles": [
+        "solid_light"
+      ],
+      "enabled": true,
+      "selected_style": "solid_light",
+      "style_spec": {
+        "color": [
+          248,
+          249,
+          251
+        ],
+        "kind": "solid"
+      }
+    },
+    "execution_trace": {
+      "accent_color_name": "orange",
+      "bounce_cells": [
+        [
+          2,
+          4
+        ],
+        [
+          2,
+          5
+        ],
+        [
+          4,
+          5
+        ]
+      ],
+      "evidence_entity_ids": [
+        "bounce_1",
+        "bounce_2",
+        "bounce_3"
+      ],
+      "evidence_graph_points": [
+        [
+          2,
+          3
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          4,
+          2
+        ]
+      ],
+      "mirror_specs": [
+        {
+          "col": 2,
+          "hit": true,
+          "mirror_id": "mirror_1",
+          "orientation": "\\",
+          "row": 4
+        },
+        {
+          "col": 2,
+          "hit": true,
+          "mirror_id": "mirror_2",
+          "orientation": "\\",
+          "row": 5
+        },
+        {
+          "col": 4,
+          "hit": true,
+          "mirror_id": "mirror_3",
+          "orientation": "/",
+          "row": 5
+        },
+        {
+          "col": 2,
+          "hit": false,
+          "mirror_id": "mirror_4",
+          "orientation": "/",
+          "row": 6
+        }
+      ],
+      "path_cells": [
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          2,
+          5
+        ],
+        [
+          3,
+          5
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "query_variant": "bounce_count",
+      "scene_variant": "quad_mirror",
+      "source_row": 4,
+      "target_answer": 3,
+      "target_answer_support": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "target_specs": [],
+      "task_variant": "bounce_count"
+    },
+    "post_image_noise": {
+      "applied": false,
+      "apply_prob": 0.0,
+      "edit_count_range": [
+        1,
+        2
+      ],
+      "edit_types": [
+        "blur",
+        "downsample",
+        "jpeg",
+        "noise"
+      ],
+      "edits": [],
+      "enabled": false
+    },
+    "projected_evidence": {
+      "grid_point_map": {
+        "bounce_1": [
+          2,
+          3
+        ],
+        "bounce_2": [
+          2,
+          2
+        ],
+        "bounce_3": [
+          4,
+          2
+        ]
+      },
+      "grid_point_path": [
+        [
+          2,
+          3
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          4,
+          2
+        ]
+      ],
+      "grid_point_set": [
+        [
+          2,
+          3
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          4,
+          2
+        ]
+      ],
+      "pixel_point_map": {
+        "bounce_1": [
+          242.0,
+          306.0
+        ],
+        "bounce_2": [
+          242.0,
+          358.0
+        ],
+        "bounce_3": [
+          346.0,
+          358.0
+        ]
+      },
+      "pixel_point_path": [
+        [
+          242.0,
+          306.0
+        ],
+        [
+          242.0,
+          358.0
+        ],
+        [
+          346.0,
+          358.0
+        ]
+      ],
+      "pixel_point_set": [
+        [
+          242.0,
+          306.0
+        ],
+        [
+          242.0,
+          358.0
+        ],
+        [
+          346.0,
+          358.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "accent_color_name": "orange",
+        "accent_color_name_probabilities": {
+          "blue": 0.1,
+          "brown": 0.1,
+          "cyan": 0.1,
+          "green": 0.1,
+          "magenta": 0.1,
+          "maroon": 0.1,
+          "orange": 0.1,
+          "purple": 0.1,
+          "red": 0.1,
+          "yellow": 0.1
+        },
+        "query_variant": "bounce_count",
+        "query_variant_probabilities": {
+          "bounce_count": 1.0,
+          "target_hit_count": 0.0
+        },
+        "scene_variant": "quad_mirror",
+        "scene_variant_probabilities": {
+          "double_mirror": 0.0,
+          "quad_mirror": 1.0,
+          "single_mirror": 0.0,
+          "triple_mirror": 0.0
+        },
+        "target_answer": 3,
+        "target_answer_probabilities": {
+          "0": 0.2,
+          "1": 0.2,
+          "2": 0.2,
+          "3": 0.2,
+          "4": 0.2
+        },
+        "task_variant": "bounce_count",
+        "task_variant_probabilities": {
+          "bounce_count": 1.0,
+          "target_hit_count": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "physics_optics_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the requested count as an integer",
+          "evidence_hint": "set \"evidence\" to an array of graph points [x, y] for each mirror-bounce point of the implied ray path",
+          "json_example": "{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
+          "json_example_answer_only": "{\"answer\":8}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "one optics diagram on graph paper with an initial ray direction and four diagonal mirrors"
+        },
+        "task_family_key": "mirror_ray_diagram",
+        "task_family_variant_index": 2,
+        "task_key": "ray_trace_query",
+        "task_variant_index": 0,
+        "task_variant_key": "bounce_count",
+        "task_variant_template_index": 4,
+        "template_paths": [
+          "physics/optics/physics_optics_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:ray_trace_query": 5,
+          "task_family:mirror_ray_diagram": 5,
+          "task_variant:bounce_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "physics_optics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested count as an integer",
+              "evidence_hint": "set \"evidence\" to an array of graph points [x, y] for each mirror-bounce point of the implied ray path",
+              "json_example": "{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "one optics diagram on graph paper with an initial ray direction and four diagonal mirrors"
+            },
+            "task_family_key": "mirror_ray_diagram",
+            "task_family_variant_index": 2,
+            "task_key": "ray_trace_query",
+            "task_variant_index": 0,
+            "task_variant_key": "bounce_count",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "physics/optics/physics_optics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:ray_trace_query": 5,
+              "task_family:mirror_ray_diagram": 5,
+              "task_variant:bounce_count": 5
+            }
+          },
+          "prompt": "You are given an image with one optics diagram on graph paper with an initial ray direction and four diagonal mirrors. Use the shown initial ray direction and the mirrors to infer the full ray path. Follow the implied ray path and count the mirror bounces before exit. What is the count?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of graph points [x, y] for each mirror-bounce point of the implied ray path.\nAnswer format: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"evidence\":[[0,0],[4,0]],\"answer\":8}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "physics_optics_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the requested count as an integer",
+              "evidence_hint": "set \"evidence\" to an array of graph points [x, y] for each mirror-bounce point of the implied ray path",
+              "json_example": "{\"evidence\":[[0,0],[4,0]],\"answer\":8}",
+              "json_example_answer_only": "{\"answer\":8}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "one optics diagram on graph paper with an initial ray direction and four diagonal mirrors"
+            },
+            "task_family_key": "mirror_ray_diagram",
+            "task_family_variant_index": 2,
+            "task_key": "ray_trace_query",
+            "task_variant_index": 0,
+            "task_variant_key": "bounce_count",
+            "task_variant_template_index": 4,
+            "template_paths": [
+              "physics/optics/physics_optics_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:ray_trace_query": 5,
+              "task_family:mirror_ray_diagram": 5,
+              "task_variant:bounce_count": 5
+            }
+          },
+          "prompt": "You are given an image with one optics diagram on graph paper with an initial ray direction and four diagonal mirrors. Use the shown initial ray direction and the mirrors to infer the full ray path. Follow the implied ray path and count the mirror bounces before exit. What is the count?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the requested count as an integer.\nExample JSON:\n{\"answer\":8}"
+        }
+      },
+      "task_variant": "bounce_count",
+      "template_id": "physics_optics_v1"
+    },
+    "render_map": {
+      "accent_color_name": "orange",
+      "board_bbox_px": [
+        112.0,
+        72.0,
+        528.0,
+        488.0
+      ],
+      "bounce_point_map_px": {
+        "bounce_1": [
+          242.0,
+          306.0
+        ],
+        "bounce_2": [
+          242.0,
+          358.0
+        ],
+        "bounce_3": [
+          346.0,
+          358.0
+        ]
+      },
+      "evidence_entity_ids": [
+        "bounce_1",
+        "bounce_2",
+        "bounce_3"
+      ],
+      "graph_origin_px": [
+        138.0,
+        462.0
+      ],
+      "graph_spacing_px": 52,
+      "mirror_bboxes_px": {
+        "mirror_1": [
+          216.0,
+          280.0,
+          268.0,
+          332.0
+        ],
+        "mirror_2": [
+          216.0,
+          332.0,
+          268.0,
+          384.0
+        ],
+        "mirror_3": [
+          320.0,
+          332.0,
+          372.0,
+          384.0
+        ],
+        "mirror_4": [
+          216.0,
+          384.0,
+          268.0,
+          436.0
+        ]
+      },
+      "query_variant": "bounce_count",
+      "ray_polyline_px": [
+        [
+          73.0,
+          306.0
+        ],
+        [
+          138.0,
+          306.0
+        ],
+        [
+          190.0,
+          306.0
+        ],
+        [
+          242.0,
+          306.0
+        ],
+        [
+          242.0,
+          358.0
+        ],
+        [
+          294.0,
+          358.0
+        ],
+        [
+          346.0,
+          358.0
+        ],
+        [
+          346.0,
+          306.0
+        ],
+        [
+          346.0,
+          254.0
+        ],
+        [
+          346.0,
+          202.0
+        ],
+        [
+          346.0,
+          150.0
+        ],
+        [
+          346.0,
+          98.0
+        ],
+        [
+          346.0,
+          43.4
+        ]
+      ],
+      "scene_variant": "quad_mirror",
+      "source_direction_bbox_px": [
+        65.2,
+        296.64,
+        139.56,
+        315.36
+      ],
+      "source_direction_px": [
+        [
+          73.0,
+          306.0
+        ],
+        [
+          131.76,
+          306.0
+        ]
+      ],
+      "target_point_map_px": {}
+    },
+    "render_spec": {
+      "accent_color_name": "orange",
+      "canvas_height": 560,
+      "canvas_width": 920,
+      "scene_variant": "quad_mirror"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_px": [
+            65.2,
+            296.64,
+            139.56,
+            315.36
+          ],
+          "entity_id": "source_direction",
+          "entity_type": "physics_optics_source_direction",
+          "meta": {
+            "entry_direction": "E",
+            "row": 4
+          }
+        },
+        {
+          "bbox_px": [
+            216.0,
+            280.0,
+            268.0,
+            332.0
+          ],
+          "entity_id": "mirror_1",
+          "entity_type": "physics_optics_mirror",
+          "meta": {
+            "col": 2,
+            "graph_point": [
+              2,
+              3
+            ],
+            "hit": true,
+            "orientation": "\\",
+            "row": 4
+          }
+        },
+        {
+          "bbox_px": [
+            216.0,
+            332.0,
+            268.0,
+            384.0
+          ],
+          "entity_id": "mirror_2",
+          "entity_type": "physics_optics_mirror",
+          "meta": {
+            "col": 2,
+            "graph_point": [
+              2,
+              2
+            ],
+            "hit": true,
+            "orientation": "\\",
+            "row": 5
+          }
+        },
+        {
+          "bbox_px": [
+            320.0,
+            332.0,
+            372.0,
+            384.0
+          ],
+          "entity_id": "mirror_3",
+          "entity_type": "physics_optics_mirror",
+          "meta": {
+            "col": 4,
+            "graph_point": [
+              4,
+              2
+            ],
+            "hit": true,
+            "orientation": "/",
+            "row": 5
+          }
+        },
+        {
+          "bbox_px": [
+            216.0,
+            384.0,
+            268.0,
+            436.0
+          ],
+          "entity_id": "mirror_4",
+          "entity_type": "physics_optics_mirror",
+          "meta": {
+            "col": 2,
+            "graph_point": [
+              2,
+              1
+            ],
+            "hit": false,
+            "orientation": "/",
+            "row": 6
+          }
+        },
+        {
+          "bbox_px": [
+            234.0,
+            298.0,
+            250.0,
+            314.0
+          ],
+          "entity_id": "bounce_1",
+          "entity_type": "physics_optics_bounce_point",
+          "meta": {
+            "col": 2,
+            "graph_point": [
+              2,
+              3
+            ],
+            "row": 4
+          }
+        },
+        {
+          "bbox_px": [
+            234.0,
+            350.0,
+            250.0,
+            366.0
+          ],
+          "entity_id": "bounce_2",
+          "entity_type": "physics_optics_bounce_point",
+          "meta": {
+            "col": 2,
+            "graph_point": [
+              2,
+              2
+            ],
+            "row": 5
+          }
+        },
+        {
+          "bbox_px": [
+            338.0,
+            350.0,
+            354.0,
+            366.0
+          ],
+          "entity_id": "bounce_3",
+          "entity_type": "physics_optics_bounce_point",
+          "meta": {
+            "col": 4,
+            "graph_point": [
+              4,
+              2
+            ],
+            "row": 5
+          }
+        }
+      ],
+      "relations": {
+        "accent_color_name": "orange",
+        "evidence_entity_ids": [
+          "bounce_1",
+          "bounce_2",
+          "bounce_3"
+        ],
+        "query_variant": "bounce_count",
+        "scene_variant": "quad_mirror",
+        "target_answer": 3,
+        "task_variant": "bounce_count"
+      },
+      "scene_kind": "physics_optics_ray_trace_quad_mirror"
+    },
+    "witness_symbolic": {
+      "labels": [
+        "bounce_1",
+        "bounce_2",
+        "bounce_3"
+      ],
+      "type": "physics_optics_bounce_points"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

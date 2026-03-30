@@ -93,3 +93,4 @@ Current task docs:
 83. [task_physics_mechanics_force_diagram.md](task_physics_mechanics_force_diagram.md)
 84. [task_physics_mechanics_lever_balance.md](task_physics_mechanics_lever_balance.md)
 85. [task_physics_circuits_equivalent_resistance.md](task_physics_circuits_equivalent_resistance.md)
+86. [task_physics_optics_ray_trace.md](task_physics_optics_ray_trace.md)

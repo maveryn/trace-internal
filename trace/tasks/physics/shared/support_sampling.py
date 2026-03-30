@@ -39,6 +39,7 @@ def resolve_integer_choice(
     fallback_support: Sequence[int],
     namespace: str,
     balanced_flag_key: str,
+    use_instance_seed_cycle: bool = False,
 ) -> Tuple[int, Dict[str, float]]:
     """Resolve one integer choice from explicit support with optional balanced cycling."""
 
@@ -57,11 +58,14 @@ def resolve_integer_choice(
 
     balanced_enabled = bool(params.get(str(balanced_flag_key), group_default(gen_defaults, str(balanced_flag_key), True)))
     if bool(balanced_enabled):
-        selection_index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=str(namespace),
-        )
+        if bool(use_instance_seed_cycle) and params.get("_sampling_index") is None:
+            selection_index = abs(int(instance_seed))
+        else:
+            selection_index = resolve_selection_index(
+                params=params,
+                instance_seed=int(instance_seed),
+                namespace=str(namespace),
+            )
         selected = int(support[int(selection_index) % len(support)])
     else:
         rng = spawn_rng(int(instance_seed), str(namespace))

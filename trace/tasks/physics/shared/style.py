@@ -46,6 +46,25 @@ class PhysicsCircuitTheme:
     terminal_text_rgb: Color
 
 
+@dataclass(frozen=True)
+class PhysicsOpticsTheme:
+    """Resolved per-instance optics theme derived from one named accent color."""
+
+    accent_color_name: str
+    board_grid_rgb: Color
+    board_outline_rgb: Color
+    mirror_rgb: Color
+    target_fill_rgb: Color
+    target_outline_rgb: Color
+    target_text_rgb: Color
+    source_fill_rgb: Color
+    source_outline_rgb: Color
+    source_text_rgb: Color
+    ray_rgb: Color
+    bounce_fill_rgb: Color
+    bounce_outline_rgb: Color
+
+
 def _blend_with_white(color: Sequence[int], *, color_weight: float) -> Color:
     """Blend one RGB color toward white by the requested color weight."""
 
@@ -110,10 +129,39 @@ def build_physics_circuit_theme(accent_color_name: str) -> PhysicsCircuitTheme:
     )
 
 
+def build_physics_optics_theme(accent_color_name: str) -> PhysicsOpticsTheme:
+    """Resolve one readable optics theme from a named accent color."""
+
+    accent_rgb = tuple(int(channel) for channel in named_color(str(accent_color_name)))
+    accent_dark_rgb = darken_color(accent_rgb, factor=0.60)
+    accent_deep_rgb = darken_color(accent_rgb, factor=0.42)
+    board_grid_rgb = _blend_with_white(accent_dark_rgb, color_weight=0.18)
+    board_outline_rgb = _blend_with_white(accent_dark_rgb, color_weight=0.52)
+    target_fill_rgb = tuple(int(channel) for channel in accent_dark_rgb)
+    source_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.74)
+    return PhysicsOpticsTheme(
+        accent_color_name=str(accent_color_name),
+        board_grid_rgb=tuple(int(channel) for channel in board_grid_rgb),
+        board_outline_rgb=tuple(int(channel) for channel in board_outline_rgb),
+        mirror_rgb=tuple(int(channel) for channel in accent_deep_rgb),
+        target_fill_rgb=tuple(int(channel) for channel in target_fill_rgb),
+        target_outline_rgb=tuple(int(channel) for channel in accent_dark_rgb),
+        target_text_rgb=(43, 47, 53),
+        source_fill_rgb=tuple(int(channel) for channel in source_fill_rgb),
+        source_outline_rgb=tuple(int(channel) for channel in accent_deep_rgb),
+        source_text_rgb=(39, 43, 49),
+        ray_rgb=(212, 92, 36),
+        bounce_fill_rgb=(245, 205, 92),
+        bounce_outline_rgb=(176, 116, 22),
+    )
+
+
 __all__ = [
     "PhysicsCircuitTheme",
     "PhysicsLeverTheme",
+    "PhysicsOpticsTheme",
     "SUPPORTED_PHYSICS_COLOR_NAMES",
     "build_physics_circuit_theme",
     "build_physics_lever_theme",
+    "build_physics_optics_theme",
 ]

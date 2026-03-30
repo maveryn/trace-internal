@@ -83,6 +83,9 @@ Promote helpers when a second consumer appears.
 21. `trace/tasks/shared/isometric_projection.py`
    - Canonical cross-domain 3D-to-2D isometric projection helper reused by geometry analytical 3D rendering and puzzle spatial block-stack rendering.
    - Promote new isometric-view consumers here instead of duplicating projection math inside a domain-shared module.
+22. `trace/tasks/shared/graph_point_evidence.py`
+   - Canonical cross-domain graph-point evidence builders for labeled graph maps, single graph points, unordered `graph_point_set` payloads, and empty graph-point-set witnesses.
+   - Use this when a second domain needs graph-paper point evidence instead of importing geometry-local evidence helpers across domains.
 
 ### Domain-shared (current)
 1. Geometry: `trace/tasks/geometry/shared/graph_paper.py`, `graph_rendering.py`, `single_object_scene.py`, `angle_geometry.py`, `multi_angle_scene.py`, `polygon_geometry.py`, `slope_geometry.py`, `shape_style.py`, `background_defaults.py`, `noise_defaults.py`, `render_variation.py`, `annotation_values.py`, `labeled_point_evidence.py`, `point_labels.py`, `prompt_text.py`, `analytical_2d_scene.py`, `analytical_3d_solids.py`, `solid_scene.py`, `function_graph_scene.py`, `analytical_task.py`, `complexity.py`, `consolidated_sampling.py`, `consolidated_legacy.py`
@@ -92,7 +95,7 @@ Promote helpers when a second consumer appears.
    - `shape_style.py` is the canonical geometry ink-style sampler and applies Lab-distance constraints against background anchor colors.
    - `render_variation.py` is the canonical integer render-range sampler (for example line-width ranges).
    - `annotation_values.py` provides canonical value formatting + structured annotation->value evidence map helpers for analytical geometry tasks.
-   - `labeled_point_evidence.py` provides canonical graph-point evidence payload builders for labeled maps (`grid_point_map`), single graph points (`graph_point`), unlabeled graph-point sets (`graph_point_set`), and the canonical empty `graph_point_set` payload for zero-witness geometry count tasks, while keeping projected pixel-space helpers (`pixel_point_map`, `pixel_point_set`, `pixel_point_path`) plus grid-space projections in trace.
+   - `labeled_point_evidence.py` is the geometry-facing wrapper over `trace/tasks/shared/graph_point_evidence.py`; keep geometry imports there for local clarity, but put new cross-domain graph-point evidence behavior in the task-shared module.
    - `point_labels.py` provides overlap-aware labeled-point rendering helpers reused by conic/point-evidence tasks, including avoidance of blocked segments and nearby point markers so labels stay off the figure itself when a clean placement exists.
    - `graph_rendering.graph_units_to_pixel(...)` is the canonical graph-unit-to-pixel projection helper once more than one task group needs hidden graph-unit layout coordinates.
    - `prompt_text.py` provides canonical prompt-fragment helpers such as `append_required_labels_clause(...)` so label-list suffixes keep consistent punctuation across geometry tasks.
@@ -224,11 +227,12 @@ Promote helpers when a second consumer appears.
    - `visual_defaults.py` is the canonical maps-domain background/noise loader layer shared across future maps task groups.
    - `region_common.py` is the shared region-map helper layer; it owns stylized contiguous region-partition generation, ordered legend/category construction, Lab-separated category palette sampling, shared scene-base construction, association/count dataset builders, task/scene variant resolution, and render-param resolution for active region-map tasks.
    - `region_scene.py` is the canonical region+legend renderer for active maps region tasks; it owns the map/legend layout, merged-region rendering over the hidden partition grid, region label placement, legend chrome, and region/legend bbox tracing for the `map_strip|map_card|map_outline|region_map` scene variants, including the atlas-style `region_map` chrome.
-11. Physics: `trace/tasks/physics/shared/circuit_scene.py`, `complexity.py`, `style.py`, `support_sampling.py`, `visual_defaults.py`
+11. Physics: `trace/tasks/physics/shared/circuit_scene.py`, `optics_scene.py`, `complexity.py`, `style.py`, `support_sampling.py`, `visual_defaults.py`
    - `circuit_scene.py` is the shared physics-domain resistor-network renderer; it owns terminal drawing, resistor-box rendering, optional red `?` missing-resistor rendering, wire layout, local-scene origin offsets, and prompt-facing bbox projection for active circuits tasks and later circuit siblings.
-   - `complexity.py` is the shared physics-domain complexity layer; it owns normalized `[0,1]` score construction, complexity-weight resolution, and family builders for active physics tasks (currently mechanics force-diagram and lever-balance reasoning).
-   - `style.py` is the shared physics-domain named-theme layer; it owns reusable accent-color palettes for non-semantic physics styling (currently lever-balance beam / fulcrum / shown weights plus resistor-network wires / terminals / resistor boxes) so new physics tasks do not hardcode separate per-task color mixes.
-   - `support_sampling.py` is the shared physics-domain integer-support resolver layer; use it when multiple physics tasks need the same deterministic support-list parsing and balanced answer cycling behavior instead of keeping parallel local helpers.
+   - `optics_scene.py` is the shared physics-domain optics-board renderer; it owns board/grid rendering, source + mirror + target drawing, bounce-marker placement, ray-polyline rendering, and prompt-facing bbox projection for optics tasks.
+   - `complexity.py` is the shared physics-domain complexity layer; it owns normalized `[0,1]` score construction, complexity-weight resolution, and family builders for active physics tasks (currently mechanics, circuits, and optics reasoning).
+   - `style.py` is the shared physics-domain named-theme layer; it owns reusable accent-color palettes for non-semantic physics styling (currently mechanics, resistor-network, and optics-board scenes) so new physics tasks do not hardcode separate per-task color mixes.
+   - `support_sampling.py` is the shared physics-domain integer-support resolver layer; use it when multiple physics tasks need the same deterministic support-list parsing and balanced answer cycling behavior instead of keeping parallel local helpers. When a physics task has a tiny fixed answer support and review collection samples consecutive seeds, prefer the helper's direct `instance_seed` cycling option over a hashed namespace-only cycle so per-variant distributions stay flat under task review.
    - `visual_defaults.py` is the canonical physics-domain background/noise loader layer shared across future mechanics / circuits / optics task groups.
 
 ## 3) Reuse rules

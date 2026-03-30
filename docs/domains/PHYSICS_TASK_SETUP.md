@@ -49,6 +49,21 @@ Use this document for the active `physics` domain contract.
    - keep prompt-facing evidence on the resistor boxes rather than on the wires,
    - require every active scene to contain a real parallel section rather than a pure series chain,
    - for `missing_resistor_value`, use two side-by-side circuits with an equality cue and keep the missing resistor visibly red in the left circuit.
+### `optics`
+1. Active tasks:
+   - `task_physics_optics_ray_trace`
+2. `task_physics_optics_ray_trace` scene/query surface:
+   - `scene_variant`: `single_mirror|double_mirror|triple_mirror|quad_mirror`
+   - `query_variant`: `bounce_count|target_hit_count`
+3. `task_physics_optics_ray_trace` evidence contract:
+   - unordered `graph_point_set` over the bounce points for `bounce_count`
+   - unordered `graph_point_set` over the hit target points for `target_hit_count`
+4. `task_physics_optics_ray_trace` prompt policy:
+   - ask the user to infer the hidden ray path from the shown initial direction plus the mirrors,
+   - keep only the initial ray direction visible in the prompt image and keep the solved path in trace/debug artifacts,
+   - keep prompt-facing evidence on graph points rather than on mirror/target bboxes,
+   - use large unlabeled target points for `target_hit_count` and no separate bounce circles for `bounce_count`,
+   - reserve `single_mirror|double_mirror|triple_mirror` for `target_hit_count`, while `bounce_count` uses `quad_mirror` so that variant keeps a broad, well-balanced answer support.
 
 ## 3) V1 physics-domain policy
 1. Prefer one stable diagram scaffold per task id; widen scene/query variety inside that task before adding more ids.
@@ -68,3 +83,4 @@ Use this document for the active `physics` domain contract.
 3. Physics-domain normalized complexity helpers belong in `trace/tasks/physics/shared/complexity.py`.
 4. Physics-domain named accent themes belong in `trace/tasks/physics/shared/style.py`.
 5. Physics-domain resistor-network rendering helpers belong in `trace/tasks/physics/shared/circuit_scene.py`.
+6. Physics-domain optics-board rendering helpers belong in `trace/tasks/physics/shared/optics_scene.py`.

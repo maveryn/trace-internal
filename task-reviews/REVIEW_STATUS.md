@@ -48,3 +48,4 @@ Update this table after each review run.
 | task_physics_mechanics_force_diagram | task_physics_mechanics_force_diagram | alright_for_now | distribution pass (axis-aligned free-body/textured-block force-diagram net-force + balancing-force variants) |
 | task_physics_mechanics_lever_balance | task_physics_mechanics_lever_balance | alright_for_now | distribution pass (lever-balance left/right torque + missing-weight variants) |
 | task_physics_circuits_equivalent_resistance | task_physics_circuits_equivalent_resistance | alright_for_now | distribution pass (single-circuit total-resistance scenes plus paired missing-resistor scenes with equal resistance between labeled terminals A and B) |
+| task_physics_optics_ray_trace | task_physics_optics_ray_trace | alright_for_now | distribution pass (hidden-path optics with graph-point evidence over bounce points / hit targets) |

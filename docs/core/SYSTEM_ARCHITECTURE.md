@@ -152,6 +152,7 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
    - `trace/tasks/physics/circuits/equivalent_resistance.py`
    - `trace/tasks/physics/mechanics/force_diagram.py`
    - `trace/tasks/physics/mechanics/lever_balance.py`
+   - `trace/tasks/physics/optics/ray_trace.py`
 ## 5) Architecture invariants
 1. Determinism from config + seeds + versions.
 2. `TrainInstance` stays lightweight; heavy replay metadata stays in sidecar trace.

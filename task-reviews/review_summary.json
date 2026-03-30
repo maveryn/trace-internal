@@ -8,7 +8,7 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_physics_circuits_equivalent_resistance"
+      "task_physics_optics_ray_trace"
     ],
     "workers": 16
   },
@@ -22,18 +22,18 @@
       "distribution_pass": true,
       "domain": "physics",
       "inspection_count": 50,
-      "inspection_workbook": "physics/task_physics_circuits_equivalent_resistance/task_physics_circuits_equivalent_resistance.xlsx",
+      "inspection_workbook": "physics/task_physics_optics_ray_trace/task_physics_optics_ray_trace.xlsx",
       "inspection_workbook_sheets": {
-        "missing_resistor_value": "missing_resistor_value",
-        "total_resistance": "total_resistance"
+        "bounce_count": "bounce_count",
+        "target_hit_count": "target_hit_count"
       },
       "reports": {
-        "distribution_review": "physics/task_physics_circuits_equivalent_resistance/distribution_review.json",
-        "inspection_manifest": "physics/task_physics_circuits_equivalent_resistance/manifest.json",
-        "random_review": "physics/task_physics_circuits_equivalent_resistance/random_review_100.json"
+        "distribution_review": "physics/task_physics_optics_ray_trace/distribution_review.json",
+        "inspection_manifest": "physics/task_physics_optics_ray_trace/manifest.json",
+        "random_review": "physics/task_physics_optics_ray_trace/random_review_100.json"
       },
-      "task_group": "circuits",
-      "task_id": "task_physics_circuits_equivalent_resistance"
+      "task_group": "optics",
+      "task_id": "task_physics_optics_ray_trace"
     }
   ]
 }

@@ -27,6 +27,7 @@ Use this whenever the task lives under `domain=maps`.
 
 ## Early-family guidance
 - `region`: thematic/choropleth maps with labeled regions plus legends.
+- Early `region` scene variants can range from clean card/outline presentations to more atlas-style region maps, as long as they reuse the same region partition + legend semantics and keep evidence grounded on the answer region.
 - `transit` later: subway or rail maps with line colors, transfers, and ordered stations.
 - Avoid OCR-heavy or free-form route-string tasks in the first wave.
 

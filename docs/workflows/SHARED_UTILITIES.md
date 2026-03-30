@@ -190,7 +190,7 @@ Promote helpers when a second consumer appears.
    - `complexity.py` is the shared maps-domain complexity layer; it owns the normalized `[0,1]` scoring helpers, complexity-weight resolution, and weighted-mean `TaskComplexity` construction.
    - `visual_defaults.py` is the canonical maps-domain background/noise loader layer shared across future maps task groups.
    - `region_common.py` is the shared region-map helper layer; it owns stylized contiguous region-partition generation, ordered legend/category construction, Lab-separated category palette sampling, task/scene variant resolution, and render-param resolution for active region-map tasks.
-   - `region_scene.py` is the canonical region+legend renderer for active maps region tasks; it owns the map/legend layout, merged-region rendering over the hidden partition grid, region label placement, legend chrome, and region/legend bbox tracing for the `map_strip|map_card|map_outline` scene variants.
+   - `region_scene.py` is the canonical region+legend renderer for active maps region tasks; it owns the map/legend layout, merged-region rendering over the hidden partition grid, region label placement, legend chrome, and region/legend bbox tracing for the `map_strip|map_card|map_outline|region_map` scene variants, including the atlas-style `region_map` chrome.
 
 ## 3) Reuse rules
 1. Do not duplicate deterministic utilities.

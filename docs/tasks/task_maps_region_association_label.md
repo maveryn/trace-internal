@@ -15,6 +15,7 @@
    - `map_strip`
    - `map_card`
    - `map_outline`
+   - `region_map`
 3. `answer_gt.type`: `option_letter`
 4. `evidence_gt.type`: `bbox_set`
 5. Scene contract:
@@ -61,6 +62,7 @@
    - `map_legend_panel`
    - `map_legend_entry`
    - `map_divider`
+   - optional `map_compass` in the atlas-style `region_map` scene variant
 4. `render_map` includes:
    - `region_bboxes_px`
    - `legend_entry_bboxes_px`
@@ -93,8 +95,9 @@
 1. Background and post-image noise use the merged maps-domain visual defaults from `configs/domains/maps/base.yaml`.
 2. V1 map scenes use one stylized contiguous region partition rather than country-specific outlines, so later region/legend tasks can reuse the same topology without tying the domain to real geography.
 3. Region boundaries remain visible while internal hidden-grid seams are suppressed, so the figure reads as a thematic map rather than a table or tile board.
-4. Legend order is semantically meaningful and stable from low to high.
-5. Color-bearing category palettes must be generated or validated through Lab-space separation, not hand-picked RGB guesses.
+4. The `region_map` scene variant reuses the same hidden region partition but renders it with atlas-style chrome: a water-colored map field, subtle graticule lines, and a north-arrow compass so the task family has a more recognizably map-native visual option without changing the answer/evidence contract.
+5. Legend order is semantically meaningful and stable from low to high.
+6. Color-bearing category palettes must be generated or validated through Lab-space separation, not hand-picked RGB guesses.
 
 ## 6) Determinism + constraints
 1. Deterministic sampling/rendering from `instance_seed`.

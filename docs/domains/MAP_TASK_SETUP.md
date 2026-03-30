@@ -29,6 +29,7 @@ This document captures the concrete reusable setup for the first `maps` task fam
    - `map_strip`
    - `map_card`
    - `map_outline`
+   - `region_map`
 
 ## 4) Evidence policy
 1. Label-answer region tasks should keep prompt-facing evidence local:
@@ -47,4 +48,5 @@ This document captures the concrete reusable setup for the first `maps` task fam
    - the same region partition generator,
    - the same legend panel renderer,
    - the same region bbox projection contract.
+3. When region tasks add new scene variants, keep the core semantic contract fixed: the same region partition/legend semantics should survive across clean card-like scenes and more atlas-style region-map scenes.
 3. If a later map family needs a different visual grammar (for example transit maps), split it into a different task group rather than overloading the region renderer with transit-specific branching.

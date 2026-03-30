@@ -13,7 +13,7 @@ def test_maps_region_association_label_contract_matches_answer_region_bbox() -> 
         "min_category_region",
         "matches_legend_bin",
     )
-    scene_variants = ("map_strip", "map_card", "map_outline")
+    scene_variants = ("map_strip", "map_card", "map_outline", "region_map")
 
     for variant_index, task_variant in enumerate(task_variants):
         for scene_index, scene_variant in enumerate(scene_variants):
@@ -32,6 +32,9 @@ def test_maps_region_association_label_contract_matches_answer_region_bbox() -> 
             assert str(execution["scene_variant"]) == str(scene_variant)
             assert str(render["scene_variant"]) == str(scene_variant)
             assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
+            if str(scene_variant) == "region_map":
+                entity_types = {str(entity["entity_type"]) for entity in trace["scene_ir"]["entities"]}
+                assert "map_compass" in entity_types
             assert 5 <= int(execution["region_count"]) <= 7
             assert 6 <= int(execution["grid_cols"]) <= 7
             assert 4 <= int(execution["grid_rows"]) <= 5
@@ -108,7 +111,7 @@ def test_maps_region_association_prompt_examples_match_variant_contract() -> Non
 
 def test_maps_region_association_label_is_deterministic() -> None:
     task = MapsRegionAssociationLabelTask()
-    params = {"task_variant": "matches_legend_bin", "scene_variant": "map_card"}
+    params = {"task_variant": "matches_legend_bin", "scene_variant": "region_map"}
     out_a = task.generate(30230, params=params, max_attempts=10)
     out_b = task.generate(30230, params=params, max_attempts=10)
 

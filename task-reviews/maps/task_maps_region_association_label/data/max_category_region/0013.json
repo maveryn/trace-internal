@@ -19,10 +19,10 @@
     "path": "maps/task_maps_region_association_label/images/max_category_region/0013.png"
   },
   "instance_seed": 8178654980681806,
-  "prompt": "The image shows an outline-style labeled thematic map with colored regions on the left and a category legend on the right. Using the legend, Which labeled region is in the highest category on the legend? Answer with the region letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region.\nAnswer field: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"evidence\":[[174,129,412,333]],\"answer\":\"C\"}",
+  "prompt": "The image shows a labeled thematic map with colored regions on the left and a category legend on the right. Using the legend, Which labeled region is in the highest category on the legend? Answer with the region letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region.\nAnswer field: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"evidence\":[[174,129,412,333]],\"answer\":\"C\"}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows an outline-style labeled thematic map with colored regions on the left and a category legend on the right. Using the legend, Which labeled region is in the highest category on the legend? Answer with the region letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region.\nAnswer field: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"evidence\":[[174,129,412,333]],\"answer\":\"C\"}",
-    "answer_only": "The image shows an outline-style labeled thematic map with colored regions on the left and a category legend on the right. Using the legend, Which labeled region is in the highest category on the legend? Answer with the region letter.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"answer\":\"C\"}"
+    "answer_and_evidence": "The image shows a labeled thematic map with colored regions on the left and a category legend on the right. Using the legend, Which labeled region is in the highest category on the legend? Answer with the region letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region.\nAnswer field: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"evidence\":[[174,129,412,333]],\"answer\":\"C\"}",
+    "answer_only": "The image shows a labeled thematic map with colored regions on the left and a category legend on the right. Using the legend, Which labeled region is in the highest category on the legend? Answer with the region letter.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"answer\":\"C\"}"
   },
   "task": "task_maps_region_association_label",
   "task_variant": "max_category_region",
@@ -327,7 +327,7 @@
           "region_label": "G"
         }
       ],
-      "scene_variant": "map_outline",
+      "scene_variant": "map_strip",
       "supporting_region_bbox_ids": [
         "region_bbox_A"
       ],
@@ -381,11 +381,12 @@
           5,
           7
         ],
-        "scene_variant": "map_outline",
+        "scene_variant": "map_strip",
         "scene_variant_probabilities": {
-          "map_card": 0.3333333333333333,
-          "map_outline": 0.3333333333333333,
-          "map_strip": 0.3333333333333333
+          "map_card": 0.25,
+          "map_outline": 0.25,
+          "map_strip": 0.25,
+          "region_map": 0.25
         },
         "task_variant": "max_category_region",
         "task_variant_probabilities": {
@@ -406,7 +407,7 @@
           "json_example_answer_only": "{\"answer\":\"C\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "an outline-style labeled thematic map with colored regions on the left and a category legend on the right",
+          "object_description": "a labeled thematic map with colored regions on the left and a category legend on the right",
           "query_category_label": "Very high",
           "question_text": "Which labeled region is in the highest category on the legend?"
         },
@@ -441,7 +442,7 @@
               "json_example_answer_only": "{\"answer\":\"C\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "an outline-style labeled thematic map with colored regions on the left and a category legend on the right",
+              "object_description": "a labeled thematic map with colored regions on the left and a category legend on the right",
               "query_category_label": "Very high",
               "question_text": "Which labeled region is in the highest category on the legend?"
             },
@@ -461,7 +462,7 @@
               "task_variant:max_category_region": 5
             }
           },
-          "prompt": "The image shows an outline-style labeled thematic map with colored regions on the left and a category legend on the right. Using the legend, Which labeled region is in the highest category on the legend? Answer with the region letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region.\nAnswer field: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"evidence\":[[174,129,412,333]],\"answer\":\"C\"}"
+          "prompt": "The image shows a labeled thematic map with colored regions on the left and a category legend on the right. Using the legend, Which labeled region is in the highest category on the legend? Answer with the region letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region.\nAnswer field: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"evidence\":[[174,129,412,333]],\"answer\":\"C\"}"
         },
         "answer_only": {
           "metadata": {
@@ -476,7 +477,7 @@
               "json_example_answer_only": "{\"answer\":\"C\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "an outline-style labeled thematic map with colored regions on the left and a category legend on the right",
+              "object_description": "a labeled thematic map with colored regions on the left and a category legend on the right",
               "query_category_label": "Very high",
               "question_text": "Which labeled region is in the highest category on the legend?"
             },
@@ -496,7 +497,7 @@
               "task_variant:max_category_region": 5
             }
           },
-          "prompt": "The image shows an outline-style labeled thematic map with colored regions on the left and a category legend on the right. Using the legend, Which labeled region is in the highest category on the legend? Answer with the region letter.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"answer\":\"C\"}"
+          "prompt": "The image shows a labeled thematic map with colored regions on the left and a category legend on the right. Using the legend, Which labeled region is in the highest category on the legend? Answer with the region letter.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"answer\":\"C\"}"
         }
       },
       "task_variant": "max_category_region",
@@ -595,6 +596,7 @@
     "render_spec": {
       "canvas_height": 820,
       "canvas_width": 1200,
+      "geometry_seed": 8178654980681806,
       "legend_panel_height_px": 280,
       "legend_panel_width_px": 270,
       "map_panel_height_px": 560,
@@ -602,13 +604,13 @@
       "outer_border_width_px": 3,
       "panel_gap_px": 40,
       "region_border_width_px": 3,
-      "scene_variant": "map_outline"
+      "scene_variant": "map_strip"
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "scene_variant": "map_outline"
+            "scene_variant": "map_strip"
           },
           "bbox_px": [
             56.0,
@@ -1324,11 +1326,11 @@
         "answer_region_bbox_id": "region_bbox_A",
         "answer_region_id": "region_A",
         "answer_region_label": "A",
-        "scene_variant": "map_outline",
+        "scene_variant": "map_strip",
         "task_variant": "max_category_region",
         "view_family": "region_legend_map"
       },
-      "scene_kind": "map_region_map_outline"
+      "scene_kind": "map_region_map_strip"
     },
     "witness_symbolic": {
       "ids": [

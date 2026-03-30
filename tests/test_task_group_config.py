@@ -276,6 +276,7 @@ def test_maps_region_defaults_loaded() -> None:
         "map_card",
         "map_outline",
         "map_strip",
+        "region_map",
     ]
 
     assert int(rendering_defaults["canvas_width"]) > 0
@@ -287,6 +288,7 @@ def test_maps_region_defaults_loaded() -> None:
     assert str(prompt_defaults["task_family_key"]).strip() == "choropleth_region_map"
     assert str(prompt_defaults["task_key"]).strip() == "region_association_query"
     assert str(prompt_defaults["object_description_map_strip"]).strip()
+    assert str(prompt_defaults["object_description_region_map"]).strip()
     assert str(prompt_defaults["evidence_hint_max_category_region"]).strip()
     assert str(prompt_defaults["json_example_matches_legend_bin"]).strip()
 

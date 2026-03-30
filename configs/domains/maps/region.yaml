@@ -21,6 +21,7 @@ generation:
         map_strip: 1.0
         map_card: 1.0
         map_outline: 1.0
+        region_map: 1.0
 
 rendering:
   task_overrides:
@@ -63,6 +64,7 @@ prompt:
       object_description_map_strip: a labeled thematic map with colored regions on the left and a category legend on the right
       object_description_map_card: a card-style labeled thematic map with colored regions on the left and a category legend on the right
       object_description_map_outline: an outline-style labeled thematic map with colored regions on the left and a category legend on the right
+      object_description_region_map: an atlas-style region map with colored administrative areas on the left and a category legend on the right
       evidence_hint_max_category_region: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region
       evidence_hint_min_category_region: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region
       evidence_hint_matches_legend_bin: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region

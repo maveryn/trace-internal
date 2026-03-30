@@ -47,6 +47,7 @@ _SCENE_LOAD_BY_VARIANT = {
     "map_strip": 0.10,
     "map_card": 0.16,
     "map_outline": 0.13,
+    "region_map": 0.18,
 }
 
 _DEFAULTS = MapRegionDefaults()
@@ -101,6 +102,7 @@ class MapsRegionAssociationLabelTask:
         rendered_scene = render_region_map_scene(
             background,
             scene_variant=str(scene_variant),
+            geometry_seed=int(instance_seed),
             grid_cols=int(dataset["grid_cols"]),
             grid_rows=int(dataset["grid_rows"]),
             region_specs=list(dataset["region_specs"]),
@@ -126,6 +128,7 @@ class MapsRegionAssociationLabelTask:
                 "object_description_map_strip",
                 "object_description_map_card",
                 "object_description_map_outline",
+                "object_description_region_map",
                 "evidence_hint_max_category_region",
                 "evidence_hint_min_category_region",
                 "evidence_hint_matches_legend_bin",
@@ -234,6 +237,7 @@ class MapsRegionAssociationLabelTask:
             },
             "render_spec": {
                 "scene_variant": str(scene_variant),
+                "geometry_seed": int(instance_seed),
                 "canvas_width": int(render_params.canvas_width),
                 "canvas_height": int(render_params.canvas_height),
                 "map_panel_width_px": int(render_params.map_panel_width_px),

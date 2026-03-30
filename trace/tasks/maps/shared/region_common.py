@@ -22,6 +22,7 @@ SUPPORTED_MAP_REGION_SCENE_VARIANTS: Tuple[str, ...] = (
     "map_strip",
     "map_card",
     "map_outline",
+    "region_map",
 )
 SUPPORTED_MAP_REGION_TASK_VARIANTS: Tuple[str, ...] = (
     "max_category_region",

@@ -7,10 +7,10 @@
     "type": "bbox_set",
     "value": [
       [
-        407.0,
-        76.0,
-        738.0,
-        336.0
+        393.227,
+        95.078,
+        719.643,
+        342.065
       ]
     ]
   },
@@ -19,10 +19,10 @@
     "path": "maps/task_maps_region_association_label/images/min_category_region/0020.png"
   },
   "instance_seed": 1119452284008923,
-  "prompt": "The image shows a card-style labeled thematic map with colored regions on the left and a category legend on the right. Determine the correct labeled region: Which labeled region is in the lowest category on the legend? Return the labeled region letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region.\nAnswer field: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"evidence\":[[146,360,370,562]],\"answer\":\"A\"}",
+  "prompt": "The image shows an atlas-style region map with colored administrative areas on the left and a category legend on the right. Determine the correct labeled region: Which labeled region is in the lowest category on the legend? Return the labeled region letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region.\nAnswer field: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"evidence\":[[146,360,370,562]],\"answer\":\"A\"}",
   "prompt_variants": {
-    "answer_and_evidence": "The image shows a card-style labeled thematic map with colored regions on the left and a category legend on the right. Determine the correct labeled region: Which labeled region is in the lowest category on the legend? Return the labeled region letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region.\nAnswer field: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"evidence\":[[146,360,370,562]],\"answer\":\"A\"}",
-    "answer_only": "The image shows a card-style labeled thematic map with colored regions on the left and a category legend on the right. Determine the correct labeled region: Which labeled region is in the lowest category on the legend? Return the labeled region letter.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"answer\":\"A\"}"
+    "answer_and_evidence": "The image shows an atlas-style region map with colored administrative areas on the left and a category legend on the right. Determine the correct labeled region: Which labeled region is in the lowest category on the legend? Return the labeled region letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region.\nAnswer field: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"evidence\":[[146,360,370,562]],\"answer\":\"A\"}",
+    "answer_only": "The image shows an atlas-style region map with colored administrative areas on the left and a category legend on the right. Determine the correct labeled region: Which labeled region is in the lowest category on the legend? Return the labeled region letter.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"answer\":\"A\"}"
   },
   "task": "task_maps_region_association_label",
   "task_variant": "min_category_region",
@@ -297,7 +297,7 @@
           "region_label": "F"
         }
       ],
-      "scene_variant": "map_card",
+      "scene_variant": "region_map",
       "supporting_region_bbox_ids": [
         "region_bbox_B"
       ],
@@ -323,10 +323,10 @@
     "projected_evidence": {
       "bbox_set": [
         [
-          407.0,
-          76.0,
-          738.0,
-          336.0
+          393.227,
+          95.078,
+          719.643,
+          342.065
         ]
       ]
     },
@@ -351,11 +351,12 @@
           5,
           7
         ],
-        "scene_variant": "map_card",
+        "scene_variant": "region_map",
         "scene_variant_probabilities": {
-          "map_card": 0.3333333333333333,
-          "map_outline": 0.3333333333333333,
-          "map_strip": 0.3333333333333333
+          "map_card": 0.25,
+          "map_outline": 0.25,
+          "map_strip": 0.25,
+          "region_map": 0.25
         },
         "task_variant": "min_category_region",
         "task_variant_probabilities": {
@@ -376,7 +377,7 @@
           "json_example_answer_only": "{\"answer\":\"A\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a card-style labeled thematic map with colored regions on the left and a category legend on the right",
+          "object_description": "an atlas-style region map with colored administrative areas on the left and a category legend on the right",
           "query_category_label": "Low",
           "question_text": "Which labeled region is in the lowest category on the legend?"
         },
@@ -411,7 +412,7 @@
               "json_example_answer_only": "{\"answer\":\"A\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a card-style labeled thematic map with colored regions on the left and a category legend on the right",
+              "object_description": "an atlas-style region map with colored administrative areas on the left and a category legend on the right",
               "query_category_label": "Low",
               "question_text": "Which labeled region is in the lowest category on the legend?"
             },
@@ -431,7 +432,7 @@
               "task_variant:min_category_region": 5
             }
           },
-          "prompt": "The image shows a card-style labeled thematic map with colored regions on the left and a category legend on the right. Determine the correct labeled region: Which labeled region is in the lowest category on the legend? Return the labeled region letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region.\nAnswer field: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"evidence\":[[146,360,370,562]],\"answer\":\"A\"}"
+          "prompt": "The image shows an atlas-style region map with colored administrative areas on the left and a category legend on the right. Determine the correct labeled region: Which labeled region is in the lowest category on the legend? Return the labeled region letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region.\nAnswer field: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"evidence\":[[146,360,370,562]],\"answer\":\"A\"}"
         },
         "answer_only": {
           "metadata": {
@@ -446,7 +447,7 @@
               "json_example_answer_only": "{\"answer\":\"A\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a card-style labeled thematic map with colored regions on the left and a category legend on the right",
+              "object_description": "an atlas-style region map with colored administrative areas on the left and a category legend on the right",
               "query_category_label": "Low",
               "question_text": "Which labeled region is in the lowest category on the legend?"
             },
@@ -466,7 +467,7 @@
               "task_variant:min_category_region": 5
             }
           },
-          "prompt": "The image shows a card-style labeled thematic map with colored regions on the left and a category legend on the right. Determine the correct labeled region: Which labeled region is in the lowest category on the legend? Return the labeled region letter.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"answer\":\"A\"}"
+          "prompt": "The image shows an atlas-style region map with colored administrative areas on the left and a category legend on the right. Determine the correct labeled region: Which labeled region is in the lowest category on the legend? Return the labeled region letter.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"answer\":\"A\"}"
         }
       },
       "task_variant": "min_category_region",
@@ -512,53 +513,54 @@
         ]
       },
       "map_bbox_px": [
-        76.0,
-        76.0,
-        738.0,
-        596.0
+        104.0,
+        104.0,
+        710.0,
+        568.0
       ],
       "region_bboxes_px": {
         "region_bbox_A": [
-          76.0,
-          76.0,
-          407.0,
-          336.0
+          99.744,
+          93.54,
+          419.206,
+          326.368
         ],
         "region_bbox_B": [
-          407.0,
-          76.0,
-          738.0,
-          336.0
+          393.227,
+          95.078,
+          719.643,
+          342.065
         ],
         "region_bbox_C": [
-          76.0,
-          206.0,
-          186.333,
-          596.0
+          99.744,
+          209.564,
+          220.27,
+          573.206
         ],
         "region_bbox_D": [
-          186.333,
-          206.0,
-          407.0,
-          466.0
+          197.01,
+          221.306,
+          419.206,
+          461.191
         ],
         "region_bbox_E": [
-          407.0,
-          206.0,
-          738.0,
-          596.0
+          402.736,
+          203.645,
+          719.643,
+          576.092
         ],
         "region_bbox_F": [
-          186.333,
-          466.0,
-          517.333,
-          596.0
+          197.01,
+          433.646,
+          521.393,
+          573.206
         ]
       }
     },
     "render_spec": {
       "canvas_height": 820,
       "canvas_width": 1200,
+      "geometry_seed": 1119452284008923,
       "legend_panel_height_px": 280,
       "legend_panel_width_px": 270,
       "map_panel_height_px": 560,
@@ -566,13 +568,13 @@
       "outer_border_width_px": 3,
       "panel_gap_px": 40,
       "region_border_width_px": 3,
-      "scene_variant": "map_card"
+      "scene_variant": "region_map"
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "scene_variant": "map_card"
+            "scene_variant": "region_map"
           },
           "bbox_px": [
             56.0,
@@ -607,6 +609,19 @@
         },
         {
           "attrs": {
+            "direction": "north"
+          },
+          "bbox_px": [
+            76.0,
+            74.56,
+            120.0,
+            124.72
+          ],
+          "entity_id": "map_compass",
+          "entity_type": "map_compass"
+        },
+        {
+          "attrs": {
             "category_index": 3,
             "category_label": "Very high",
             "fill_rgb": [
@@ -617,10 +632,10 @@
             "region_label": "A"
           },
           "bbox_px": [
-            76.0,
-            76.0,
-            407.0,
-            336.0
+            99.744,
+            93.54,
+            419.206,
+            326.368
           ],
           "entity_id": "region_A",
           "entity_type": "map_region"
@@ -630,10 +645,10 @@
             "region_id": "region_A"
           },
           "bbox_px": [
-            76.0,
-            76.0,
-            186.333,
-            206.0
+            99.744,
+            93.54,
+            219.767,
+            221.987
           ],
           "entity_id": "region_A_cell_0",
           "entity_type": "map_region_cell"
@@ -643,10 +658,10 @@
             "region_id": "region_A"
           },
           "bbox_px": [
-            186.333,
-            76.0,
-            296.667,
-            206.0
+            206.275,
+            93.54,
+            304.746,
+            221.987
           ],
           "entity_id": "region_A_cell_1",
           "entity_type": "map_region_cell"
@@ -656,10 +671,10 @@
             "region_id": "region_A"
           },
           "bbox_px": [
-            296.667,
-            76.0,
-            407.0,
-            206.0
+            295.717,
+            100.78,
+            415.932,
+            227.376
           ],
           "entity_id": "region_A_cell_2",
           "entity_type": "map_region_cell"
@@ -669,10 +684,10 @@
             "region_id": "region_A"
           },
           "bbox_px": [
-            296.667,
-            206.0,
-            407.0,
-            336.0
+            291.635,
+            221.306,
+            419.206,
+            326.368
           ],
           "entity_id": "region_A_cell_3",
           "entity_type": "map_region_cell"
@@ -683,10 +698,10 @@
             "region_label": "A"
           },
           "bbox_px": [
-            229.5,
-            194.0,
-            253.5,
-            218.0
+            247.475,
+            197.954,
+            271.475,
+            221.954
           ],
           "entity_id": "region_A_label",
           "entity_type": "map_region_label"
@@ -703,10 +718,10 @@
             "region_label": "B"
           },
           "bbox_px": [
-            407.0,
-            76.0,
-            738.0,
-            336.0
+            393.227,
+            95.078,
+            719.643,
+            342.065
           ],
           "entity_id": "region_B",
           "entity_type": "map_region"
@@ -716,10 +731,10 @@
             "region_id": "region_B"
           },
           "bbox_px": [
-            407.0,
-            76.0,
-            517.333,
-            206.0
+            393.227,
+            95.078,
+            516.112,
+            227.376
           ],
           "entity_id": "region_B_cell_0",
           "entity_type": "map_region_cell"
@@ -729,10 +744,10 @@
             "region_id": "region_B"
           },
           "bbox_px": [
-            517.333,
-            76.0,
-            627.667,
-            206.0
+            495.788,
+            95.078,
+            610.316,
+            226.246
           ],
           "entity_id": "region_B_cell_1",
           "entity_type": "map_region_cell"
@@ -742,10 +757,10 @@
             "region_id": "region_B"
           },
           "bbox_px": [
-            627.667,
-            76.0,
-            738.0,
-            206.0
+            593.393,
+            101.897,
+            715.444,
+            226.246
           ],
           "entity_id": "region_B_cell_2",
           "entity_type": "map_region_cell"
@@ -755,10 +770,10 @@
             "region_id": "region_B"
           },
           "bbox_px": [
-            407.0,
-            206.0,
-            517.333,
-            336.0
+            415.932,
+            203.645,
+            516.112,
+            333.08
           ],
           "entity_id": "region_B_cell_3",
           "entity_type": "map_region_cell"
@@ -768,10 +783,10 @@
             "region_id": "region_B"
           },
           "bbox_px": [
-            627.667,
-            206.0,
-            738.0,
-            336.0
+            593.393,
+            212.525,
+            719.643,
+            342.065
           ],
           "entity_id": "region_B_cell_4",
           "entity_type": "map_region_cell"
@@ -782,10 +797,10 @@
             "region_label": "B"
           },
           "bbox_px": [
-            560.5,
-            194.0,
-            584.5,
-            218.0
+            544.435,
+            206.572,
+            568.435,
+            230.572
           ],
           "entity_id": "region_B_label",
           "entity_type": "map_region_label"
@@ -802,10 +817,10 @@
             "region_label": "C"
           },
           "bbox_px": [
-            76.0,
-            206.0,
-            186.333,
-            596.0
+            99.744,
+            209.564,
+            220.27,
+            573.206
           ],
           "entity_id": "region_C",
           "entity_type": "map_region"
@@ -815,10 +830,10 @@
             "region_id": "region_C"
           },
           "bbox_px": [
-            76.0,
-            206.0,
-            186.333,
-            336.0
+            99.744,
+            209.564,
+            219.767,
+            342.998
           ],
           "entity_id": "region_C_cell_0",
           "entity_type": "map_region_cell"
@@ -828,10 +843,10 @@
             "region_id": "region_C"
           },
           "bbox_px": [
-            76.0,
-            336.0,
-            186.333,
-            466.0
+            99.791,
+            320.65,
+            206.307,
+            461.191
           ],
           "entity_id": "region_C_cell_1",
           "entity_type": "map_region_cell"
@@ -841,10 +856,10 @@
             "region_id": "region_C"
           },
           "bbox_px": [
-            76.0,
-            466.0,
-            186.333,
-            596.0
+            100.75,
+            436.123,
+            220.27,
+            573.206
           ],
           "entity_id": "region_C_cell_2",
           "entity_type": "map_region_cell"
@@ -855,10 +870,10 @@
             "region_label": "C"
           },
           "bbox_px": [
-            119.167,
-            389.0,
-            143.167,
-            413.0
+            148.007,
+            379.385,
+            172.007,
+            403.385
           ],
           "entity_id": "region_C_label",
           "entity_type": "map_region_label"
@@ -875,10 +890,10 @@
             "region_label": "D"
           },
           "bbox_px": [
-            186.333,
-            206.0,
-            407.0,
-            466.0
+            197.01,
+            221.306,
+            419.206,
+            461.191
           ],
           "entity_id": "region_D",
           "entity_type": "map_region"
@@ -888,10 +903,10 @@
             "region_id": "region_D"
           },
           "bbox_px": [
-            186.333,
-            206.0,
-            296.667,
-            336.0
+            206.307,
+            221.306,
+            295.717,
+            324.504
           ],
           "entity_id": "region_D_cell_0",
           "entity_type": "map_region_cell"
@@ -901,10 +916,10 @@
             "region_id": "region_D"
           },
           "bbox_px": [
-            186.333,
-            336.0,
-            296.667,
-            466.0
+            197.01,
+            320.65,
+            317.459,
+            461.191
           ],
           "entity_id": "region_D_cell_1",
           "entity_type": "map_region_cell"
@@ -914,10 +929,10 @@
             "region_id": "region_D"
           },
           "bbox_px": [
-            296.667,
-            336.0,
-            407.0,
-            466.0
+            291.635,
+            324.504,
+            419.206,
+            447.913
           ],
           "entity_id": "region_D_cell_2",
           "entity_type": "map_region_cell"
@@ -928,10 +943,10 @@
             "region_label": "D"
           },
           "bbox_px": [
-            284.667,
-            324.0,
-            308.667,
-            348.0
+            296.108,
+            329.249,
+            320.108,
+            353.249
           ],
           "entity_id": "region_D_label",
           "entity_type": "map_region_label"
@@ -948,10 +963,10 @@
             "region_label": "E"
           },
           "bbox_px": [
-            407.0,
-            206.0,
-            738.0,
-            596.0
+            402.736,
+            203.645,
+            719.643,
+            576.092
           ],
           "entity_id": "region_E",
           "entity_type": "map_region"
@@ -961,10 +976,10 @@
             "region_id": "region_E"
           },
           "bbox_px": [
-            517.333,
-            206.0,
-            627.667,
-            336.0
+            506.065,
+            203.645,
+            604.763,
+            342.065
           ],
           "entity_id": "region_E_cell_0",
           "entity_type": "map_region_cell"
@@ -974,10 +989,10 @@
             "region_id": "region_E"
           },
           "bbox_px": [
-            407.0,
-            336.0,
-            517.333,
-            466.0
+            402.736,
+            326.368,
+            521.393,
+            447.913
           ],
           "entity_id": "region_E_cell_1",
           "entity_type": "map_region_cell"
@@ -987,10 +1002,10 @@
             "region_id": "region_E"
           },
           "bbox_px": [
-            517.333,
-            336.0,
-            627.667,
-            466.0
+            506.065,
+            333.08,
+            606.654,
+            461.797
           ],
           "entity_id": "region_E_cell_2",
           "entity_type": "map_region_cell"
@@ -1000,10 +1015,10 @@
             "region_id": "region_E"
           },
           "bbox_px": [
-            627.667,
-            336.0,
-            738.0,
-            466.0
+            604.763,
+            325.104,
+            719.643,
+            463.053
           ],
           "entity_id": "region_E_cell_3",
           "entity_type": "map_region_cell"
@@ -1013,10 +1028,10 @@
             "region_id": "region_E"
           },
           "bbox_px": [
-            517.333,
-            466.0,
-            627.667,
-            596.0
+            498.565,
+            439.785,
+            606.654,
+            576.092
           ],
           "entity_id": "region_E_cell_4",
           "entity_type": "map_region_cell"
@@ -1026,10 +1041,10 @@
             "region_id": "region_E"
           },
           "bbox_px": [
-            627.667,
-            466.0,
-            738.0,
-            596.0
+            603.948,
+            461.797,
+            711.846,
+            576.092
           ],
           "entity_id": "region_E_cell_5",
           "entity_type": "map_region_cell"
@@ -1040,10 +1055,10 @@
             "region_label": "E"
           },
           "bbox_px": [
-            560.5,
-            389.0,
-            584.5,
-            413.0
+            549.19,
+            377.868,
+            573.19,
+            401.868
           ],
           "entity_id": "region_E_label",
           "entity_type": "map_region_label"
@@ -1060,10 +1075,10 @@
             "region_label": "F"
           },
           "bbox_px": [
-            186.333,
-            466.0,
-            517.333,
-            596.0
+            197.01,
+            433.646,
+            521.393,
+            573.206
           ],
           "entity_id": "region_F",
           "entity_type": "map_region"
@@ -1073,10 +1088,10 @@
             "region_id": "region_F"
           },
           "bbox_px": [
-            186.333,
-            466.0,
-            296.667,
-            596.0
+            197.01,
+            433.646,
+            317.459,
+            573.206
           ],
           "entity_id": "region_F_cell_0",
           "entity_type": "map_region_cell"
@@ -1086,10 +1101,10 @@
             "region_id": "region_F"
           },
           "bbox_px": [
-            296.667,
-            466.0,
-            407.0,
-            596.0
+            311.767,
+            433.646,
+            415.649,
+            571.891
           ],
           "entity_id": "region_F_cell_1",
           "entity_type": "map_region_cell"
@@ -1099,10 +1114,10 @@
             "region_id": "region_F"
           },
           "bbox_px": [
-            407.0,
-            466.0,
-            517.333,
-            596.0
+            402.736,
+            439.785,
+            521.393,
+            570.97
           ],
           "entity_id": "region_F_cell_2",
           "entity_type": "map_region_cell"
@@ -1113,10 +1128,10 @@
             "region_label": "F"
           },
           "bbox_px": [
-            339.833,
-            519.0,
-            363.833,
-            543.0
+            347.201,
+            491.426,
+            371.201,
+            515.426
           ],
           "entity_id": "region_F_label",
           "entity_type": "map_region_label"
@@ -1202,11 +1217,11 @@
         "answer_region_bbox_id": "region_bbox_B",
         "answer_region_id": "region_B",
         "answer_region_label": "B",
-        "scene_variant": "map_card",
+        "scene_variant": "region_map",
         "task_variant": "min_category_region",
         "view_family": "region_legend_map"
       },
-      "scene_kind": "map_region_map_card"
+      "scene_kind": "map_region_region_map"
     },
     "witness_symbolic": {
       "ids": [

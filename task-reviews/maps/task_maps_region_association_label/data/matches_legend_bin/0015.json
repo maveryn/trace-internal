@@ -19,10 +19,10 @@
     "path": "maps/task_maps_region_association_label/images/matches_legend_bin/0015.png"
   },
   "instance_seed": 7586011633778261,
-  "prompt": "Work from the labeled regions and the legend: a card-style labeled thematic map with colored regions on the left and a category legend on the right. Read the legend and then answer this question: Which labeled region is in the 'Moderate' category on the legend? Respond with the correct region letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region.\nAnswer format: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"evidence\":[[438,180,674,420]],\"answer\":\"F\"}",
+  "prompt": "Work from the labeled regions and the legend: an outline-style labeled thematic map with colored regions on the left and a category legend on the right. Read the legend and then answer this question: Which labeled region is in the 'Moderate' category on the legend? Respond with the correct region letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region.\nAnswer format: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"evidence\":[[438,180,674,420]],\"answer\":\"F\"}",
   "prompt_variants": {
-    "answer_and_evidence": "Work from the labeled regions and the legend: a card-style labeled thematic map with colored regions on the left and a category legend on the right. Read the legend and then answer this question: Which labeled region is in the 'Moderate' category on the legend? Respond with the correct region letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region.\nAnswer format: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"evidence\":[[438,180,674,420]],\"answer\":\"F\"}",
-    "answer_only": "Work from the labeled regions and the legend: a card-style labeled thematic map with colored regions on the left and a category legend on the right. Read the legend and then answer this question: Which labeled region is in the 'Moderate' category on the legend? Respond with the correct region letter.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"answer\":\"F\"}"
+    "answer_and_evidence": "Work from the labeled regions and the legend: an outline-style labeled thematic map with colored regions on the left and a category legend on the right. Read the legend and then answer this question: Which labeled region is in the 'Moderate' category on the legend? Respond with the correct region letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region.\nAnswer format: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"evidence\":[[438,180,674,420]],\"answer\":\"F\"}",
+    "answer_only": "Work from the labeled regions and the legend: an outline-style labeled thematic map with colored regions on the left and a category legend on the right. Read the legend and then answer this question: Which labeled region is in the 'Moderate' category on the legend? Respond with the correct region letter.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"answer\":\"F\"}"
   },
   "task": "task_maps_region_association_label",
   "task_variant": "matches_legend_bin",
@@ -283,7 +283,7 @@
           "region_label": "E"
         }
       ],
-      "scene_variant": "map_card",
+      "scene_variant": "map_outline",
       "supporting_region_bbox_ids": [
         "region_bbox_A"
       ],
@@ -337,11 +337,12 @@
           5,
           7
         ],
-        "scene_variant": "map_card",
+        "scene_variant": "map_outline",
         "scene_variant_probabilities": {
-          "map_card": 0.3333333333333333,
-          "map_outline": 0.3333333333333333,
-          "map_strip": 0.3333333333333333
+          "map_card": 0.25,
+          "map_outline": 0.25,
+          "map_strip": 0.25,
+          "region_map": 0.25
         },
         "task_variant": "matches_legend_bin",
         "task_variant_probabilities": {
@@ -362,7 +363,7 @@
           "json_example_answer_only": "{\"answer\":\"F\"}",
           "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
           "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-          "object_description": "a card-style labeled thematic map with colored regions on the left and a category legend on the right",
+          "object_description": "an outline-style labeled thematic map with colored regions on the left and a category legend on the right",
           "query_category_label": "Moderate",
           "question_text": "Which labeled region is in the 'Moderate' category on the legend?"
         },
@@ -397,7 +398,7 @@
               "json_example_answer_only": "{\"answer\":\"F\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a card-style labeled thematic map with colored regions on the left and a category legend on the right",
+              "object_description": "an outline-style labeled thematic map with colored regions on the left and a category legend on the right",
               "query_category_label": "Moderate",
               "question_text": "Which labeled region is in the 'Moderate' category on the legend?"
             },
@@ -417,7 +418,7 @@
               "task_variant:matches_legend_bin": 5
             }
           },
-          "prompt": "Work from the labeled regions and the legend: a card-style labeled thematic map with colored regions on the left and a category legend on the right. Read the legend and then answer this question: Which labeled region is in the 'Moderate' category on the legend? Respond with the correct region letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region.\nAnswer format: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"evidence\":[[438,180,674,420]],\"answer\":\"F\"}"
+          "prompt": "Work from the labeled regions and the legend: an outline-style labeled thematic map with colored regions on the left and a category legend on the right. Read the legend and then answer this question: Which labeled region is in the 'Moderate' category on the legend? Respond with the correct region letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region.\nAnswer format: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"evidence\":[[438,180,674,420]],\"answer\":\"F\"}"
         },
         "answer_only": {
           "metadata": {
@@ -432,7 +433,7 @@
               "json_example_answer_only": "{\"answer\":\"F\"}",
               "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
               "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
-              "object_description": "a card-style labeled thematic map with colored regions on the left and a category legend on the right",
+              "object_description": "an outline-style labeled thematic map with colored regions on the left and a category legend on the right",
               "query_category_label": "Moderate",
               "question_text": "Which labeled region is in the 'Moderate' category on the legend?"
             },
@@ -452,7 +453,7 @@
               "task_variant:matches_legend_bin": 5
             }
           },
-          "prompt": "Work from the labeled regions and the legend: a card-style labeled thematic map with colored regions on the left and a category legend on the right. Read the legend and then answer this question: Which labeled region is in the 'Moderate' category on the legend? Respond with the correct region letter.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"answer\":\"F\"}"
+          "prompt": "Work from the labeled regions and the legend: an outline-style labeled thematic map with colored regions on the left and a category legend on the right. Read the legend and then answer this question: Which labeled region is in the 'Moderate' category on the legend? Respond with the correct region letter.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"answer\":\"F\"}"
         }
       },
       "task_variant": "matches_legend_bin",
@@ -539,6 +540,7 @@
     "render_spec": {
       "canvas_height": 820,
       "canvas_width": 1200,
+      "geometry_seed": 7586011633778261,
       "legend_panel_height_px": 280,
       "legend_panel_width_px": 270,
       "map_panel_height_px": 560,
@@ -546,13 +548,13 @@
       "outer_border_width_px": 3,
       "panel_gap_px": 40,
       "region_border_width_px": 3,
-      "scene_variant": "map_card"
+      "scene_variant": "map_outline"
     },
     "scene_ir": {
       "entities": [
         {
           "attrs": {
-            "scene_variant": "map_card"
+            "scene_variant": "map_outline"
           },
           "bbox_px": [
             56.0,
@@ -1148,11 +1150,11 @@
         "answer_region_bbox_id": "region_bbox_A",
         "answer_region_id": "region_A",
         "answer_region_label": "A",
-        "scene_variant": "map_card",
+        "scene_variant": "map_outline",
         "task_variant": "matches_legend_bin",
         "view_family": "region_legend_map"
       },
-      "scene_kind": "map_region_map_card"
+      "scene_kind": "map_region_map_outline"
     },
     "witness_symbolic": {
       "ids": [

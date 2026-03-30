@@ -1,0 +1,73 @@
+{
+  "bundle_id": "diagrams_flow_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "process_flow_diagram": [
+      "The image shows {object_description}.",
+      "Look at the process diagram in the image: {object_description}.",
+      "You are given {object_description}.",
+      "Work from the labeled steps and arrows: {object_description}.",
+      "Use the process diagram in the image: {object_description}."
+    ]
+  },
+  "task_templates": {
+    "next_step_query": [
+      "{question_text}",
+      "Follow the arrows and answer this question: {question_text}",
+      "Use the diagram structure to answer: {question_text}",
+      "Determine the correct next step from the diagram: {question_text}",
+      "Read the labeled process steps and then answer: {question_text}"
+    ]
+  },
+  "task_variant_templates": {
+    "direct_next_step": [
+      "Answer with the exact step label shown.",
+      "Return the exact visible next-step label.",
+      "Respond with the exact step label from the diagram.",
+      "Give the full next-step label exactly as shown.",
+      "Answer using the exact visible step label."
+    ],
+    "branch_next_step": [
+      "Answer with the exact step label shown.",
+      "Return the exact visible next-step label.",
+      "Respond with the exact step label from the diagram.",
+      "Give the full next-step label exactly as shown.",
+      "Answer using the exact visible step label."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:process_flow_diagram": [
+      "object_description"
+    ],
+    "task:next_step_query": [
+      "question_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

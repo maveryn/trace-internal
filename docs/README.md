@@ -20,17 +20,18 @@ Repo-local skills live under `skills/`, but skills are operational overlays. Can
 6. `docs/domains/CHART_DOMAIN_PLAN.md` — chart-type universe under consideration and the first chart-family rollout plan.
 7. `docs/domains/CHART_TASK_SETUP.md` — concrete v1 contract for the first chart-domain task family.
 8. `docs/domains/GRAPH_TASK_SETUP.md` — concrete v1 contract for the active graph-domain task families.
-9. `docs/domains/DOCUMENT_TASK_SETUP.md` — concrete v1 setup for the first documents-domain family.
-10. `docs/domains/MAP_TASK_SETUP.md` — concrete v1 contract for the first maps-domain task family.
-11. `docs/domains/TABLE_TASK_SETUP.md` — concrete v1 contract for the first tables-domain task family.
-12. `docs/domains/PUZZLE_TASK_SETUP.md` — concrete v1 setup for puzzle hidden-variable tasks.
-13. `docs/domains/TEMPORAL_TASK_SETUP.md` — concrete v1 setup for the active temporal-domain families.
-14. `docs/core/PROMPT_SYSTEM.md` — prompt bundles, variants, and metadata.
-15. `docs/workflows/SHARED_UTILITIES.md` — helper placement and reuse rules.
-16. `docs/workflows/BUILD_VALIDATION.md` + `docs/workflows/VALIDATION_ERROR_CODES.md` — pre-finalize checks and error taxonomy.
-17. `docs/workflows/CODE_DOCUMENTATION.md` + `docs/workflows/CODE_REVIEW_GUIDELINES.md` — quality/process guidance.
-18. `docs/project/STATUS.md` + `docs/project/TODO.md` — current snapshot and backlog.
-19. `../task-reviews/README.md` — task-by-task review workflow and artifacts.
+9. `docs/domains/DIAGRAM_TASK_SETUP.md` — concrete v1 contract for the first diagrams-domain task family.
+10. `docs/domains/DOCUMENT_TASK_SETUP.md` — concrete v1 setup for the first documents-domain family.
+11. `docs/domains/MAP_TASK_SETUP.md` — concrete v1 contract for the first maps-domain task family.
+12. `docs/domains/TABLE_TASK_SETUP.md` — concrete v1 contract for the first tables-domain task family.
+13. `docs/domains/PUZZLE_TASK_SETUP.md` — concrete v1 setup for puzzle hidden-variable tasks.
+14. `docs/domains/TEMPORAL_TASK_SETUP.md` — concrete v1 setup for the active temporal-domain families.
+15. `docs/core/PROMPT_SYSTEM.md` — prompt bundles, variants, and metadata.
+16. `docs/workflows/SHARED_UTILITIES.md` — helper placement and reuse rules.
+17. `docs/workflows/BUILD_VALIDATION.md` + `docs/workflows/VALIDATION_ERROR_CODES.md` — pre-finalize checks and error taxonomy.
+18. `docs/workflows/CODE_DOCUMENTATION.md` + `docs/workflows/CODE_REVIEW_GUIDELINES.md` — quality/process guidance.
+19. `docs/project/STATUS.md` + `docs/project/TODO.md` — current snapshot and backlog.
+20. `../task-reviews/README.md` — task-by-task review workflow and artifacts.
 
 ## Task docs
 - Rules: `docs/tasks/README.md`

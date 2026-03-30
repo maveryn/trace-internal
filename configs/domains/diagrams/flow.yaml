@@ -1,0 +1,73 @@
+generation:
+  task_overrides:
+    task_diagrams_flow_next_step_label:
+      direct_node_count_min: 5
+      direct_node_count_max: 6
+      balanced_task_variant_sampling: true
+      balanced_scene_variant_sampling: true
+      task_variant_weights:
+        direct_next_step: 1.0
+        branch_next_step: 1.0
+      scene_variant_weights:
+        flowchart: 1.0
+        swimlane: 1.0
+
+rendering:
+  task_overrides:
+    task_diagrams_flow_next_step_label:
+      canvas_width: 1200
+      canvas_height: 840
+      outer_margin_px: 52
+      panel_padding_px: 28
+      panel_corner_radius_px: 30
+      title_font_size_px: 32
+      title_band_height_px: 78
+      lane_gutter_width_px: 160
+      lane_label_font_size_px: 24
+      lane_divider_width_px: 3
+      lane_fill_rgb: [243, 246, 251]
+      lane_divider_rgb: [206, 213, 223]
+      node_width_px: 214
+      node_height_px: 84
+      decision_diameter_px: 132
+      node_corner_radius_px: 22
+      node_border_width_px: 3
+      edge_width_px: 5
+      arrow_head_length_px: 18
+      arrow_head_width_px: 16
+      label_font_size_px: 28
+      branch_label_font_size_px: 20
+      branch_label_padding_px: 10
+      panel_fill_rgb: [252, 252, 255]
+      panel_border_rgb: [88, 98, 112]
+      title_color_rgb: [34, 40, 48]
+      node_fill_rgb: [242, 246, 255]
+      decision_fill_rgb: [249, 243, 231]
+      node_border_rgb: [77, 90, 109]
+      edge_color_rgb: [78, 87, 101]
+      label_color_rgb: [29, 34, 41]
+      label_stroke_rgb: [255, 255, 255]
+      branch_label_fill_rgb: [255, 255, 255]
+      branch_label_border_rgb: [173, 181, 192]
+      branch_label_text_rgb: [58, 66, 77]
+
+prompt:
+  shared:
+    bundle_id: diagrams_flow_v1
+    answer_hint: set "answer" to the exact visible next-step label
+  task_overrides:
+    task_diagrams_flow_next_step_label:
+      task_family_key: process_flow_diagram
+      task_key: next_step_query
+      object_description_flowchart: a flowchart with labeled process boxes and arrows
+      object_description_swimlane: a swimlane process diagram with labeled steps and arrows
+      evidence_hint_direct_next_step: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box
+      evidence_hint_branch_next_step: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct next-step box
+
+complexity:
+  task_overrides:
+    task_diagrams_flow_next_step_label:
+      criteria_weights:
+        visual_scan: 0.39
+        reasoning_load: 0.41
+        scene_variant_load: 0.20

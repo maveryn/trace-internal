@@ -93,6 +93,14 @@ Define how we split tasks into reusable families so each dataset slice stays com
 7. Prompt-facing region-label evidence should stay as one-box `bbox_set` grounding on the winning region, while region-count tasks use one ordered bbox per counted region.
 8. When a map task's reasoning depends on legend colors, enforce or validate the active category palette in Lab space and record the threshold in trace metadata.
 
+## Diagrams direction (current)
+1. Diagrams should stay schematic and diagram-native; do not use `diagrams` for generic graph problems or document layouts with a few connectors.
+2. The first active diagrams family is `flow`, where labeled process nodes plus arrows form one reusable scene contract.
+3. `task_diagrams_flow_next_step_label` uses semantic `task_variant` values `direct_next_step` and `branch_next_step`.
+4. `task_diagrams_flow_next_step_label` uses visual `scene_variant` values `flowchart` and `swimlane`.
+5. Prompt-facing flow evidence should stay as one-box `bbox_set` grounding on the target next-step node; keep lane and branch-label geometry in trace unless a later task explicitly queries those elements.
+6. Swimlane remains a visual scene variant inside `flow`, not a separate task group, as long as the reasoning contract is still “follow the visible process structure.”
+
 ## Documents direction (current)
 1. Documents should start with structured page reasoning families such as `readout`, `arithmetic`, `layout`, `relation`, `selection`, and later `line_items`; avoid counting a task as `documents` if it is really a free-form OCR paragraph benchmark.
 2. The active early documents families are `readout`, `arithmetic`, `layout`, `relation`, and `selection`.

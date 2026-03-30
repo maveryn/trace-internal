@@ -188,9 +188,11 @@ Active task-to-bundle mapping:
    - `task_puzzles_logic_grid_completion_label|task_puzzles_logic_adjacency_completion_label` -> `puzzles_logic_v1`
    - `task_puzzles_spatial_fold_result_label|task_puzzles_spatial_cube_removal_count|task_puzzles_spatial_assembly_label|task_puzzles_spatial_overlay_result_label` -> `puzzles_spatial_v1`
    - `task_puzzles_topology_bead_equivalence_count` -> `puzzles_topology_v1`
-16. Maps:
+16. Diagrams:
+   - `task_diagrams_flow_next_step_label` -> `diagrams_flow_v1`
+17. Maps:
    - `task_maps_region_association_label|task_maps_region_count` -> `maps_region_v1`
-17. Documents:
+18. Documents:
    - `task_documents_arithmetic_section_expression_value` -> `documents_arithmetic_v1`
    - `task_documents_layout_section_membership_label` -> `documents_layout_v1`
    - `task_documents_readout_field_value` -> `documents_readout_v1`

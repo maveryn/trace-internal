@@ -1,6 +1,6 @@
 # TRACE Status
 
-Date: 2026-03-29
+Date: 2026-03-30
 
 ## Implemented
 1. Deterministic build pipeline with sidecar trace shards and atomic finalize.
@@ -82,6 +82,7 @@ Date: 2026-03-29
 74. Documents now also includes `task_documents_relation_section_extremum_value`, the first `relation` task under `domain=documents`, with semantic `task_variant` values `earliest_date_in_section|latest_date_in_section|largest_amount_in_section|smallest_amount_in_section`, string answers, and one-box `bbox_set` evidence over the winning value. It reuses the form/invoice/receipt page grammars, adds explicit section chrome so the query targets a named block like `Schedule`, `Dates`, or `Billing Summary`, and keeps the answer grounded in the exact winning visible date or amount.
 75. Documents now also includes `task_documents_selection_checkbox_count`, the first `selection` task under `domain=documents`, with semantic `task_variant` values `checked_box_count|unchecked_box_count`, integer answers, and ordered checkbox-square `bbox_set` evidence over the counted boxes only. It reuses the form/invoice/receipt page grammars, adds explicit checkbox sections like `Delivery Options` or `Contact Preferences`, and keeps the question scoped to one named section instead of the whole page.
 76. Temporal now includes `task_temporal_clock_readout`, `task_temporal_clock_compare`, `task_temporal_calendar_month_view`, `task_temporal_schedule_day_planner`, and `task_temporal_timeline_milestones`, covering analog clock readout/compare, month-view calendars, day-planner schedules, and milestone timelines with local `bbox_set` evidence on hands, clock faces, date cells, event blocks, and event cards.
+77. Diagrams now includes `task_diagrams_flow_next_step_label`, the first `flow` task under `domain=diagrams`, with semantic `task_variant` values `direct_next_step|branch_next_step`, visual `scene_variant` values `flowchart|swimlane`, string answers, and one-box `bbox_set` evidence over the target next-step node. The active renderer keeps one reusable process-diagram contract across plain flowcharts and swimlanes, and branch queries make the selected branch label explicit in the prompt rather than hiding the branch semantics in the image alone.
 
 ## Active tasks
 1. `task_charts_composition_subset_value` (`domain=charts`, `task_group=composition`)
@@ -171,11 +172,12 @@ Date: 2026-03-29
 85. `task_tile_relation_min_distance` (`domain=tile`, `task_group=relation`)
 86. `task_tile_symmetry_violation_count` (`domain=tile`, `task_group=symmetry`)
 87. `task_tile_transition_gravity_max_drop` (`domain=tile`, `task_group=transition`)
+88. `task_diagrams_flow_next_step_label` (`domain=diagrams`, `task_group=flow`)
 ## Current quality baseline
 1. Tests are required to pass before finalize.
 2. Distribution QA uses `scripts/check_task_answer_distribution.py` with per-variant answer-only checks (`unique_answers >= 5`, `max_answer_frequency < 25%`) and multithreaded sample generation (`--workers`); numeric 5-bin summaries remain reported for review but are not hard pass/fail gates.
 3. Task-review tooling writes per-task artifacts under `task-reviews/<domain>/<task_id>/`, including one inspection workbook named `<task_id>.xlsx` with one sheet per task variant.
-4. There are currently `87` active tasks total: `10` charts, `5` documents, `10` geometry, `10` graph, `15` icons, `2` maps, `10` puzzles, `10` tables, `5` temporal, and `10` tile. The active reviewed task set passes distribution review under the current gates, including the consolidated geometry surface, the graph and temporal domains, and the new maps/puzzles/documents additions.
+4. There are currently `88` active tasks total: `10` charts, `1` diagrams, `5` documents, `10` geometry, `10` graph, `15` icons, `2` maps, `10` puzzles, `10` tables, `5` temporal, and `10` tile. The active reviewed task set passes distribution review under the current gates, including the consolidated geometry surface, the graph and temporal domains, and the new maps/puzzles/documents/diagrams additions.
 
 ## Next priorities
 1. Extend the new temporal domain beyond the current clock + calendar + schedule + timeline tasks with additional time-structured visual artifacts while keeping each task tied to one stable visual scaffold and a local evidence contract.
@@ -183,8 +185,9 @@ Date: 2026-03-29
 3. Extend the new graph domain beyond the current degree/component/reachability/path/cycle/cut-vertex baseline with richer topology reasoning while keeping the simple labeled node-link contract stable across both undirected and explicitly directed task variants where appropriate.
 4. Expand the new documents domain beyond `task_documents_readout_field_value|task_documents_arithmetic_section_expression_value|task_documents_layout_section_membership_label|task_documents_relation_section_extremum_value|task_documents_selection_checkbox_count` with additional OCR-light structured-document families (`key_value` and later `line_items`) while keeping evidence contracts local to the queried visible fields, ordered operand values, matching section headers, winning visible values, or counted checkbox squares.
 5. Expand the new maps domain beyond `task_maps_region_association_label|task_maps_region_count` using the same reusable region+legend scene contract first (`region_compare`, `region_lookup`) before adding transit-map families.
-6. Extend icons beyond the current counting/transformation/relation/sequence/pattern set using the curated Prism asset pipeline (`comparison` and richer pattern/transformation variants remain the next natural families).
-7. Expand the charts domain beyond the current `statistics` + `counting` + `readout` + `multiseries` + `distribution` + `trend` + `composition` set and formalize the next chart reasoning families.
-8. Expand the tables domain with richer row/column relation tasks while keeping `bbox_set` as the fixed table evidence contract.
-9. Introduce cross-domain `scene_variant` and role-binding schema in architecture docs/contracts.
-10. Add future polygon variants as deferred tasks (diameter, min-side, max-side) after current scope stabilizes.
+6. Expand the new diagrams domain beyond `task_diagrams_flow_next_step_label` with hierarchy, cycle, and set-diagram tasks while keeping one clean local-evidence schematic contract.
+7. Extend icons beyond the current counting/transformation/relation/sequence/pattern set using the curated Prism asset pipeline (`comparison` and richer pattern/transformation variants remain the next natural families).
+8. Expand the charts domain beyond the current `statistics` + `counting` + `readout` + `multiseries` + `distribution` + `trend` + `composition` set and formalize the next chart reasoning families.
+9. Expand the tables domain with richer row/column relation tasks while keeping `bbox_set` as the fixed table evidence contract.
+10. Introduce cross-domain `scene_variant` and role-binding schema in architecture docs/contracts.
+11. Add future polygon variants as deferred tasks (diameter, min-side, max-side) after current scope stabilizes.

@@ -70,7 +70,6 @@ Promote helpers when a second consumer appears.
    - Canonical deterministic task-variant override/weight/balancing helpers across domains.
    - Use `resolve_variant(...)` plus `apply_balanced_variant_sampling(...)` instead of keeping parallel per-domain variant samplers.
    - Use `sampling_namespace=...` when one task needs more than one independently balanced variant axis (for example semantic variant plus scene variant).
-   - Use `resolve_compatible_scene_query_variants(...)` when a task exposes chart-style compatible `scene_variant` + `query_variant` axes; do not keep that compatibility resolver trapped inside one domain once a second domain needs it.
 18. `trace/tasks/shared/named_colors.py`
    - Canonical repo-wide named-color palette plus deterministic sampling helpers shared across domains.
    - Use this when a second domain needs the same stable prompt/render color inventory instead of reaching into another domain's helper layer.
@@ -83,9 +82,6 @@ Promote helpers when a second consumer appears.
 21. `trace/tasks/shared/isometric_projection.py`
    - Canonical cross-domain 3D-to-2D isometric projection helper reused by geometry analytical 3D rendering and puzzle spatial block-stack rendering.
    - Promote new isometric-view consumers here instead of duplicating projection math inside a domain-shared module.
-22. `trace/tasks/shared/graph_point_evidence.py`
-   - Canonical cross-domain graph-point evidence builders for labeled graph maps, single graph points, unordered `graph_point_set` payloads, and empty graph-point-set witnesses.
-   - Use this when a second domain needs graph-paper point evidence instead of importing geometry-local evidence helpers across domains.
 
 ### Domain-shared (current)
 1. Geometry: `trace/tasks/geometry/shared/graph_paper.py`, `graph_rendering.py`, `single_object_scene.py`, `angle_geometry.py`, `multi_angle_scene.py`, `polygon_geometry.py`, `slope_geometry.py`, `shape_style.py`, `background_defaults.py`, `noise_defaults.py`, `render_variation.py`, `annotation_values.py`, `labeled_point_evidence.py`, `point_labels.py`, `prompt_text.py`, `analytical_2d_scene.py`, `analytical_3d_solids.py`, `solid_scene.py`, `function_graph_scene.py`, `analytical_task.py`, `complexity.py`, `consolidated_sampling.py`, `consolidated_legacy.py`
@@ -95,7 +91,7 @@ Promote helpers when a second consumer appears.
    - `shape_style.py` is the canonical geometry ink-style sampler and applies Lab-distance constraints against background anchor colors.
    - `render_variation.py` is the canonical integer render-range sampler (for example line-width ranges).
    - `annotation_values.py` provides canonical value formatting + structured annotation->value evidence map helpers for analytical geometry tasks.
-   - `labeled_point_evidence.py` is the geometry-facing wrapper over `trace/tasks/shared/graph_point_evidence.py`; keep geometry imports there for local clarity, but put new cross-domain graph-point evidence behavior in the task-shared module.
+   - `labeled_point_evidence.py` provides canonical graph-point evidence payload builders for labeled maps (`grid_point_map`), single graph points (`graph_point`), unlabeled graph-point sets (`graph_point_set`), and the canonical empty `graph_point_set` payload for zero-witness geometry count tasks, while keeping projected pixel-space helpers (`pixel_point_map`, `pixel_point_set`, `pixel_point_path`) plus grid-space projections in trace.
    - `point_labels.py` provides overlap-aware labeled-point rendering helpers reused by conic/point-evidence tasks, including avoidance of blocked segments and nearby point markers so labels stay off the figure itself when a clean placement exists.
    - `graph_rendering.graph_units_to_pixel(...)` is the canonical graph-unit-to-pixel projection helper once more than one task group needs hidden graph-unit layout coordinates.
    - `prompt_text.py` provides canonical prompt-fragment helpers such as `append_required_labels_clause(...)` so label-list suffixes keep consistent punctuation across geometry tasks.
@@ -221,19 +217,46 @@ Promote helpers when a second consumer appears.
    - `bead_loop_common.py` is the shared topology-puzzle helper layer; it owns bead-loop defaults, render-param resolution, cyclic-rotation equivalence checks, deterministic valid/invalid option construction, and the active bead-equivalence dataset builder.
    - `complexity.py` is the shared puzzle-domain complexity layer; it owns the normalized `[0,1]` scoring helpers, complexity-weight resolution, and weighted-mean `TaskComplexity` construction.
    - `visual_defaults.py` is the canonical puzzle-domain background/noise loader layer shared across future puzzle task groups.
-10. Maps: `trace/tasks/maps/shared/common.py`, `complexity.py`, `visual_defaults.py`, `region_common.py`, `region_scene.py`
+12. Maps: `trace/tasks/maps/shared/common.py`, `complexity.py`, `visual_defaults.py`, `region_common.py`, `region_scene.py`
    - `common.py` provides canonical maps-axis resolution and prompt-facing bbox projection for map tasks that sample semantic and visual variants deterministically.
    - `complexity.py` is the shared maps-domain complexity layer; it owns the normalized `[0,1]` scoring helpers, complexity-weight resolution, and weighted-mean `TaskComplexity` construction.
    - `visual_defaults.py` is the canonical maps-domain background/noise loader layer shared across future maps task groups.
    - `region_common.py` is the shared region-map helper layer; it owns stylized contiguous region-partition generation, ordered legend/category construction, Lab-separated category palette sampling, shared scene-base construction, association/count dataset builders, task/scene variant resolution, and render-param resolution for active region-map tasks.
    - `region_scene.py` is the canonical region+legend renderer for active maps region tasks; it owns the map/legend layout, merged-region rendering over the hidden partition grid, region label placement, legend chrome, and region/legend bbox tracing for the `map_strip|map_card|map_outline|region_map` scene variants, including the atlas-style `region_map` chrome.
-11. Physics: `trace/tasks/physics/shared/circuit_scene.py`, `optics_scene.py`, `complexity.py`, `style.py`, `support_sampling.py`, `visual_defaults.py`
+13. Physics: `trace/tasks/physics/shared/circuit_scene.py`, `optics_scene.py`, `complexity.py`, `style.py`, `support_sampling.py`, `visual_defaults.py`
    - `circuit_scene.py` is the shared physics-domain resistor-network renderer; it owns terminal drawing, resistor-box rendering, optional red `?` missing-resistor rendering, wire layout, local-scene origin offsets, and prompt-facing bbox projection for active circuits tasks and later circuit siblings.
    - `optics_scene.py` is the shared physics-domain optics-board renderer; it owns board/grid rendering, source + mirror + target drawing, hidden solved-ray projection, and prompt-facing point grounding for optics tasks.
    - `complexity.py` is the shared physics-domain complexity layer; it owns normalized `[0,1]` score construction, complexity-weight resolution, and family builders for active physics tasks (currently mechanics, circuits, and optics reasoning, including spring-proportionality scenes).
    - `style.py` is the shared physics-domain named-theme layer; it owns reusable accent-color palettes for non-semantic physics styling (currently mechanics, spring cards, resistor-network scenes, and optics boards) so new physics tasks do not hardcode separate per-task color mixes.
    - `support_sampling.py` is the shared physics-domain integer-support resolver layer; use it when multiple physics tasks need the same deterministic support-list parsing and balanced answer cycling behavior instead of keeping parallel local helpers. When a physics task has a tiny fixed answer support and review collection samples consecutive seeds, prefer the helper's direct `instance_seed` cycling option over a hashed namespace-only cycle so per-variant distributions stay flat under task review; when a task balances multiple axes under the same review `_sampling_index`, use the helper's namespace-specific explicit-index decorrelation so scene/query cycling does not alias the answer support.
    - `visual_defaults.py` is the canonical physics-domain background/noise loader layer shared across future mechanics / circuits / optics task groups.
+14. Diagrams: `trace/tasks/diagrams/shared/common.py`, `complexity.py`, `visual_defaults.py`, `flow_common.py`, `flow_scene.py`, `hierarchy_common.py`, `hierarchy_scene.py`, `cycle_common.py`, `cycle_scene.py`, `set_common.py`, `set_scene.py`, `schematic_common.py`, `schematic_scene.py`
+   - `common.py` provides canonical diagrams-axis resolution, prompt-facing bbox projection, and shared panel/title helpers for diagram tasks that sample semantic and visual variants deterministically.
+   - `complexity.py` is the shared diagrams-domain complexity layer; it owns the normalized `[0,1]` scoring helpers, complexity-weight resolution, and weighted-mean `TaskComplexity` construction.
+   - `visual_defaults.py` is the canonical diagrams-domain background/noise loader layer shared across future diagrams task groups.
+   - `flow_common.py` is the shared flow-diagram helper layer; it owns task/scene variant resolution, short visible process-label sampling, reusable topology templates, dataset construction, and render-param resolution for active flow tasks.
+   - `flow_scene.py` is the canonical flowchart/swimlane renderer for active diagrams flow tasks; it owns panel/lane chrome, node and edge drawing, branch-label rendering, and traced lane/node/edge-label bbox maps.
+   - `hierarchy_common.py` is the shared hierarchy-diagram helper layer; it owns task/scene variant resolution, reusable org-chart templates, deterministic label assignment, ancestor-query construction, and render-param resolution for active hierarchy tasks.
+   - `hierarchy_scene.py` is the canonical org-chart renderer for active diagrams hierarchy tasks; it owns tree layout, connector routing, node drawing, and traced node/edge bbox maps.
+   - `cycle_common.py` is the shared cycle-diagram helper layer; it owns task/scene variant resolution, short visible stage-label sampling, `5..10` stage ring construction, `k`-step before/after query construction, and render-param resolution for active cycle tasks.
+   - `cycle_scene.py` is the canonical cycle-ring renderer for active diagrams cycle tasks; it owns panel/title chrome, clockwise badge rendering, directed edge drawing, stage placement, and traced stage/edge bbox maps.
+   - `set_common.py` is the shared set-diagram helper layer; it owns task/scene variant resolution, numeric region-sum dataset construction, Lab-separated base set palette sampling, and render-param resolution for active set-diagram tasks.
+   - `set_scene.py` is the canonical set-overlap renderer for active diagrams set tasks; it owns panel/title chrome, blended overlap-region drawing, set-label placement, digit placement, and traced region/digit bbox maps.
+   - `schematic_common.py` is the shared schematic-diagram helper layer; it owns task/scene variant resolution, part-slot templates, annotated part/callout dataset construction, and render-param resolution for active schematic tasks.
+   - `schematic_scene.py` is the canonical annotated schematic renderer for active diagrams schematic tasks; it owns chassis chrome, part drawing, callout-circle placement, leader routing, and traced part/callout/leader bbox maps.
+15. Documents: `trace/tasks/documents/shared/common.py`, `complexity.py`, `visual_defaults.py`, `text_generation.py`, `document_common.py`, `sectioned_document_common.py`, `arithmetic_common.py`, `layout_common.py`, `relation_common.py`, `selection_common.py`, `document_scene.py`
+   - `common.py` provides canonical documents-axis resolution and prompt-facing bbox evidence projection helpers for document tasks that sample semantic and visual variants deterministically.
+   - `common.py` also owns the canonical field-spec and section-spec builders for structured document tasks that derive prompt/trace fields from typed visible values.
+   - `complexity.py` is the shared documents-domain complexity layer; it owns the normalized `[0,1]` scoring helpers, complexity-weight resolution, and weighted-mean `TaskComplexity` construction.
+   - `visual_defaults.py` is the canonical documents-domain background/noise loader layer shared across future document task groups.
+   - `text_generation.py` is the shared typed field-value generator layer; it owns deterministic names, IDs, dates, contact strings, currency text, and coherent scene-level field-value sets for early structured documents.
+   - `document_common.py` is the shared structured-document helper layer for document tasks; it owns task/scene variant resolution, the canonical scene-title mapping, readout scene field templates, document dataset construction for active field-lookup tasks, and render-param resolution for the shared form/invoice/receipt grammar.
+   - `sectioned_document_common.py` is the shared section-aware field-template layer for the structured documents grammar reused by arithmetic and layout tasks; it owns the canonical sectioned field templates, target amount-section mapping, field-count bounds, and typed visible-value builders for grouped document scenes.
+   - `arithmetic_common.py` is the shared section-local arithmetic helper layer; it owns supported arithmetic variants, expression-operator contracts, and deterministic expression-dataset construction for active document arithmetic tasks.
+   - `layout_common.py` is the shared document-layout helper layer; it owns supported section-membership variants and deterministic dataset construction for tasks that answer with a section title based on a queried field cue.
+   - `relation_common.py` is the shared section-local relation helper layer; it owns supported relation variants, scene-compatibility rules, section-local dataset construction, and deterministic winning-value selection for active document relation tasks.
+   - `selection_common.py` is the shared checkbox-selection helper layer; it owns supported selection variants, scene-specific checkbox-group templates, typed context-field generation, and deterministic checkbox-state assignment for active document selection tasks.
+   - `document_scene.py` is the canonical structured-document renderer for active documents tasks; it owns the form/invoice/receipt page grammars, fitted field-label/value rendering, optional section chrome, checkbox-section rendering, and page/section/field/checkbox bbox tracing.
 
 ## 3) Reuse rules
 1. Do not duplicate deterministic utilities.

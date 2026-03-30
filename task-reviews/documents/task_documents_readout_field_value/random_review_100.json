@@ -1,0 +1,492 @@
+{
+  "answer_distribution": {
+    "answer_type_counts": {
+      "string": 100
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.01,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": null,
+        "pass": null,
+        "status": "not_applicable_non_numeric_answers"
+      },
+      "min_unique_answers": {
+        "observed": 100,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": null,
+    "max_answer_count": 1,
+    "max_answer_frequency": 0.01,
+    "pass": true,
+    "sample_count": 100,
+    "top_answers": [
+      {
+        "answer_label": "$1.40",
+        "count": 1
+      },
+      {
+        "answer_label": "$130.92",
+        "count": 1
+      },
+      {
+        "answer_label": "$156.93",
+        "count": 1
+      },
+      {
+        "answer_label": "$17.41",
+        "count": 1
+      },
+      {
+        "answer_label": "$19.16",
+        "count": 1
+      },
+      {
+        "answer_label": "$3.30",
+        "count": 1
+      },
+      {
+        "answer_label": "$4.63",
+        "count": 1
+      },
+      {
+        "answer_label": "$40.73",
+        "count": 1
+      },
+      {
+        "answer_label": "$58.83",
+        "count": 1
+      },
+      {
+        "answer_label": "$6.13",
+        "count": 1
+      },
+      {
+        "answer_label": "$60.58",
+        "count": 1
+      },
+      {
+        "answer_label": "$94.89",
+        "count": 1
+      },
+      {
+        "answer_label": "(212) 700-8566",
+        "count": 1
+      },
+      {
+        "answer_label": "(310) 862-9003",
+        "count": 1
+      },
+      {
+        "answer_label": "(415) 471-6519",
+        "count": 1
+      },
+      {
+        "answer_label": "(415) 524-3646",
+        "count": 1
+      },
+      {
+        "answer_label": "(415) 713-3946",
+        "count": 1
+      },
+      {
+        "answer_label": "(503) 373-6754",
+        "count": 1
+      },
+      {
+        "answer_label": "(503) 845-7184",
+        "count": 1
+      },
+      {
+        "answer_label": "(503) 862-7031",
+        "count": 1
+      },
+      {
+        "answer_label": "(617) 672-3968",
+        "count": 1
+      },
+      {
+        "answer_label": "(704) 117-3706",
+        "count": 1
+      },
+      {
+        "answer_label": "(818) 875-4568",
+        "count": 1
+      },
+      {
+        "answer_label": "(929) 706-3635",
+        "count": 1
+      },
+      {
+        "answer_label": "01/07/2026",
+        "count": 1
+      },
+      {
+        "answer_label": "03/13/2026",
+        "count": 1
+      },
+      {
+        "answer_label": "05/28/2026",
+        "count": 1
+      },
+      {
+        "answer_label": "2026-02-13",
+        "count": 1
+      },
+      {
+        "answer_label": "2026-02-26",
+        "count": 1
+      },
+      {
+        "answer_label": "2026-03-06",
+        "count": 1
+      },
+      {
+        "answer_label": "2026-04-02",
+        "count": 1
+      },
+      {
+        "answer_label": "ACC-4613",
+        "count": 1
+      },
+      {
+        "answer_label": "ACC-7490",
+        "count": 1
+      },
+      {
+        "answer_label": "ACC-7748",
+        "count": 1
+      },
+      {
+        "answer_label": "ACC-9962",
+        "count": 1
+      },
+      {
+        "answer_label": "Apr 07, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "Apr 22, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "Aria Lopez",
+        "count": 1
+      },
+      {
+        "answer_label": "Ava Hill",
+        "count": 1
+      },
+      {
+        "answer_label": "Ben Miller",
+        "count": 1
+      },
+      {
+        "answer_label": "Blue Oak Market",
+        "count": 1
+      },
+      {
+        "answer_label": "Blue Oak Studio",
+        "count": 1
+      },
+      {
+        "answer_label": "Blue Oak Supply",
+        "count": 1
+      },
+      {
+        "answer_label": "Central Co.",
+        "count": 1
+      },
+      {
+        "answer_label": "Civic Office",
+        "count": 1
+      },
+      {
+        "answer_label": "Clara Patel",
+        "count": 1
+      },
+      {
+        "answer_label": "Eli Garcia",
+        "count": 1
+      },
+      {
+        "answer_label": "Gia Martin",
+        "count": 1
+      },
+      {
+        "answer_label": "Gia Price",
+        "count": 1
+      },
+      {
+        "answer_label": "Harbor Point",
+        "count": 1
+      },
+      {
+        "answer_label": "INV-80840",
+        "count": 1
+      },
+      {
+        "answer_label": "INV-88635",
+        "count": 1
+      },
+      {
+        "answer_label": "Jan 23, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "Lila Price",
+        "count": 1
+      },
+      {
+        "answer_label": "M-5911",
+        "count": 1
+      },
+      {
+        "answer_label": "M-9878",
+        "count": 1
+      },
+      {
+        "answer_label": "Mapleton",
+        "count": 1
+      },
+      {
+        "answer_label": "Mara Young",
+        "count": 1
+      },
+      {
+        "answer_label": "May 19, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "May 29, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "Nia Bailey",
+        "count": 1
+      },
+      {
+        "answer_label": "Northgate",
+        "count": 1
+      },
+      {
+        "answer_label": "Orbit Studio",
+        "count": 1
+      },
+      {
+        "answer_label": "Owen Nguyen",
+        "count": 1
+      },
+      {
+        "answer_label": "R-15146",
+        "count": 1
+      },
+      {
+        "answer_label": "R-83972",
+        "count": 1
+      },
+      {
+        "answer_label": "R-84651",
+        "count": 1
+      },
+      {
+        "answer_label": "REF-12800",
+        "count": 1
+      },
+      {
+        "answer_label": "REF-15721",
+        "count": 1
+      },
+      {
+        "answer_label": "REF-18159",
+        "count": 1
+      },
+      {
+        "answer_label": "REF-20270",
+        "count": 1
+      },
+      {
+        "answer_label": "REF-24438",
+        "count": 1
+      },
+      {
+        "answer_label": "REF-26611",
+        "count": 1
+      },
+      {
+        "answer_label": "REF-31253",
+        "count": 1
+      },
+      {
+        "answer_label": "REF-55875",
+        "count": 1
+      },
+      {
+        "answer_label": "REF-57172",
+        "count": 1
+      },
+      {
+        "answer_label": "REF-58069",
+        "count": 1
+      },
+      {
+        "answer_label": "REF-58480",
+        "count": 1
+      },
+      {
+        "answer_label": "REF-74632",
+        "count": 1
+      },
+      {
+        "answer_label": "REF-81736",
+        "count": 1
+      },
+      {
+        "answer_label": "Silver Partners",
+        "count": 1
+      },
+      {
+        "answer_label": "Windward Studio",
+        "count": 1
+      },
+      {
+        "answer_label": "amberworks@mailhub.net",
+        "count": 1
+      },
+      {
+        "answer_label": "copperpartners@northpost.co",
+        "count": 1
+      },
+      {
+        "answer_label": "coppersupply@example.com",
+        "count": 1
+      },
+      {
+        "answer_label": "copperworks@northpost.co",
+        "count": 1
+      },
+      {
+        "answer_label": "eligarcia@example.com",
+        "count": 1
+      },
+      {
+        "answer_label": "emmachen@brightdesk.io",
+        "count": 1
+      },
+      {
+        "answer_label": "emmaclark@mailhub.net",
+        "count": 1
+      },
+      {
+        "answer_label": "granitesupply@northpost.co",
+        "count": 1
+      },
+      {
+        "answer_label": "jadeprice@northpost.co",
+        "count": 1
+      },
+      {
+        "answer_label": "lakeviewmarket@brightdesk.io",
+        "count": 1
+      },
+      {
+        "answer_label": "leviyoung@brightdesk.io",
+        "count": 1
+      },
+      {
+        "answer_label": "oakstreetstudi@mailhub.net",
+        "count": 1
+      },
+      {
+        "answer_label": "orbitco@example.com",
+        "count": 1
+      },
+      {
+        "answer_label": "orbitmarket@example.com",
+        "count": 1
+      },
+      {
+        "answer_label": "orbitsupply@brightdesk.io",
+        "count": 1
+      },
+      {
+        "answer_label": "riverbendworks@brightdesk.io",
+        "count": 1
+      },
+      {
+        "answer_label": "sunlineworks@example.com",
+        "count": 1
+      },
+      {
+        "answer_label": "trailheadstudi@mailhub.net",
+        "count": 1
+      }
+    ],
+    "unique_answers": 100
+  },
+  "sample_count": 100,
+  "sampling_axes": {
+    "scene_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "form_sheet": 0.3333333333333333,
+        "invoice_sheet": 0.3333333333333333,
+        "receipt_sheet": 0.3333333333333333
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.37,
+      "observed_counts": {
+        "form_sheet": 37,
+        "invoice_sheet": 32,
+        "receipt_sheet": 31
+      },
+      "sample_count": 100
+    },
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "lookup_amount": 0.2,
+        "lookup_contact": 0.2,
+        "lookup_date": 0.2,
+        "lookup_identifier": 0.2,
+        "lookup_name": 0.2
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.3,
+      "observed_counts": {
+        "lookup_amount": 12,
+        "lookup_contact": 30,
+        "lookup_date": 12,
+        "lookup_identifier": 24,
+        "lookup_name": 22
+      },
+      "sample_count": 100
+    }
+  },
+  "task_id": "task_documents_readout_field_value",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {
+      "lookup_amount": 0.2,
+      "lookup_contact": 0.2,
+      "lookup_date": 0.2,
+      "lookup_identifier": 0.2,
+      "lookup_name": 0.2
+    },
+    "expected_source": "query_params",
+    "has_variants": true,
+    "observed_counts": {
+      "lookup_amount": 12,
+      "lookup_contact": 30,
+      "lookup_date": 12,
+      "lookup_identifier": 24,
+      "lookup_name": 22
+    },
+    "status": "reported"
+  }
+}

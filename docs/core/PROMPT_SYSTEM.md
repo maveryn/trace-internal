@@ -118,11 +118,22 @@ Active bundles:
    - `prompts/puzzles/topology/puzzles_topology_v1.json`
 9. Maps:
    - `prompts/maps/region/maps_region_v1.json`
-10. Physics:
+10. Documents:
+   - `prompts/documents/arithmetic/documents_arithmetic_v1.json`
+   - `prompts/documents/layout/documents_layout_v1.json`
+   - `prompts/documents/readout/documents_readout_v1.json`
+   - `prompts/documents/relation/documents_relation_v1.json`
+   - `prompts/documents/selection/documents_selection_v1.json`
+11. Diagrams:
+   - `prompts/diagrams/cycle/diagrams_cycle_v1.json`
+   - `prompts/diagrams/flow/diagrams_flow_v1.json`
+   - `prompts/diagrams/hierarchy/diagrams_hierarchy_v1.json`
+   - `prompts/diagrams/schematic/diagrams_schematic_v1.json`
+   - `prompts/diagrams/set_diagram/diagrams_set_diagram_v1.json`
+12. Physics:
    - `prompts/physics/mechanics/physics_mechanics_v1.json`
    - `prompts/physics/circuits/physics_circuits_v1.json`
    - `prompts/physics/optics/physics_optics_v1.json`
-
 Active task-to-bundle mapping:
 1. Geometry comparison task (`task_geometry_comparison_value`) delegates to `geometry_comparison_v1`
 2. Geometry counting task (`task_geometry_counting_value`) delegates to `geometry_counting_v1`
@@ -186,9 +197,21 @@ Active task-to-bundle mapping:
    - `task_puzzles_logic_grid_completion_label|task_puzzles_logic_adjacency_completion_label` -> `puzzles_logic_v1`
    - `task_puzzles_spatial_fold_result_label|task_puzzles_spatial_cube_removal_count|task_puzzles_spatial_assembly_label|task_puzzles_spatial_overlay_result_label` -> `puzzles_spatial_v1`
    - `task_puzzles_topology_bead_equivalence_count` -> `puzzles_topology_v1`
-16. Maps:
+16. Diagrams:
+   - `task_diagrams_flow_next_step_label` -> `diagrams_flow_v1`
+   - `task_diagrams_hierarchy_ancestor_label` -> `diagrams_hierarchy_v1`
+   - `task_diagrams_cycle_offset_stage_label` -> `diagrams_cycle_v1`
+   - `task_diagrams_set_diagram_region_sum_value` -> `diagrams_set_diagram_v1`
+   - `task_diagrams_schematic_callout_target_label` -> `diagrams_schematic_v1`
+17. Maps:
    - `task_maps_region_association_label|task_maps_region_count` -> `maps_region_v1`
-17. Physics:
+18. Documents:
+   - `task_documents_arithmetic_section_expression_value` -> `documents_arithmetic_v1`
+   - `task_documents_layout_section_membership_label` -> `documents_layout_v1`
+   - `task_documents_readout_field_value` -> `documents_readout_v1`
+   - `task_documents_relation_section_extremum_value` -> `documents_relation_v1`
+   - `task_documents_selection_checkbox_count` -> `documents_selection_v1`
+19. Physics:
    - `task_physics_mechanics_force_diagram|task_physics_mechanics_lever_balance|task_physics_mechanics_spring_extension` -> `physics_mechanics_v1`
    - `task_physics_circuits_equivalent_resistance` -> `physics_circuits_v1`
    - `task_physics_optics_ray_trace` -> `physics_optics_v1`

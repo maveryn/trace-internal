@@ -148,7 +148,19 @@ Implementation map for the contracts in `docs/core/BLUEPRINT.md`.
 9. Maps:
    - `trace/tasks/maps/region/association_label.py`
    - `trace/tasks/maps/region/count.py`
-10. Physics:
+10. Documents:
+   - `trace/tasks/documents/arithmetic/section_expression_value.py`
+   - `trace/tasks/documents/layout/section_membership_label.py`
+   - `trace/tasks/documents/readout/field_value.py`
+   - `trace/tasks/documents/relation/section_extremum_value.py`
+   - `trace/tasks/documents/selection/checkbox_count.py`
+11. Diagrams:
+   - `trace/tasks/diagrams/cycle/offset_stage_label.py`
+   - `trace/tasks/diagrams/flow/next_step_label.py`
+   - `trace/tasks/diagrams/hierarchy/ancestor_label.py`
+   - `trace/tasks/diagrams/schematic/callout_target_label.py`
+   - `trace/tasks/diagrams/set_diagram/region_sum_value.py`
+12. Physics:
    - `trace/tasks/physics/circuits/equivalent_resistance.py`
    - `trace/tasks/physics/mechanics/force_diagram.py`
    - `trace/tasks/physics/mechanics/lever_balance.py`

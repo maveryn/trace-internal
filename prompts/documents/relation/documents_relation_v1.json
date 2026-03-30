@@ -1,0 +1,87 @@
+{
+  "bundle_id": "documents_relation_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "structured_document_sections": [
+      "The image shows {object_description}.",
+      "Look at the document in the image: {object_description}.",
+      "You are given {object_description}.",
+      "Use the structured document in the image: {object_description}.",
+      "Read the named sections in this document: {object_description}."
+    ]
+  },
+  "task_templates": {
+    "section_extremum_query": [
+      "{question_text}",
+      "Read the document and answer this question: {question_text}",
+      "Find the named section and then answer: {question_text}",
+      "Use the section headers and labeled fields to answer: {question_text}",
+      "Locate the relevant section before answering: {question_text}"
+    ]
+  },
+  "task_variant_templates": {
+    "earliest_date_in_section": [
+      "Answer with the exact date text shown.",
+      "Return the exact date as written in the document.",
+      "Respond with the exact winning date text from that section.",
+      "Give the exact date shown for the winning value.",
+      "Answer using the exact date value."
+    ],
+    "latest_date_in_section": [
+      "Answer with the exact date text shown.",
+      "Return the exact date as written in the document.",
+      "Respond with the exact winning date text from that section.",
+      "Give the exact date shown for the winning value.",
+      "Answer using the exact date value."
+    ],
+    "largest_amount_in_section": [
+      "Answer with the exact amount text shown.",
+      "Return the exact amount as written in the document.",
+      "Respond with the exact winning amount text from that section.",
+      "Give the exact amount shown for the winning value.",
+      "Answer using the exact amount value."
+    ],
+    "smallest_amount_in_section": [
+      "Answer with the exact amount text shown.",
+      "Return the exact amount as written in the document.",
+      "Respond with the exact winning amount text from that section.",
+      "Give the exact amount shown for the winning value.",
+      "Answer using the exact amount value."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:structured_document_sections": [
+      "object_description"
+    ],
+    "task:section_extremum_query": [
+      "question_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

@@ -8,11 +8,11 @@
     "random_count": 100,
     "seed": 0,
     "tasks": [
-      "task_physics_circuits_equivalent_resistance",
-      "task_physics_mechanics_force_diagram",
-      "task_physics_mechanics_lever_balance",
-      "task_physics_mechanics_spring_extension",
-      "task_physics_optics_ray_trace"
+      "task_diagrams_cycle_offset_stage_label",
+      "task_diagrams_flow_next_step_label",
+      "task_diagrams_hierarchy_ancestor_label",
+      "task_diagrams_schematic_callout_target_label",
+      "task_diagrams_set_diagram_region_sum_value"
     ],
     "workers": 16
   },
@@ -24,92 +24,91 @@
   "tasks": [
     {
       "distribution_pass": true,
-      "domain": "physics",
+      "domain": "diagrams",
       "inspection_count": 50,
-      "inspection_workbook": "physics/task_physics_circuits_equivalent_resistance/task_physics_circuits_equivalent_resistance.xlsx",
+      "inspection_workbook": "diagrams/task_diagrams_cycle_offset_stage_label/task_diagrams_cycle_offset_stage_label.xlsx",
       "inspection_workbook_sheets": {
-        "missing_resistor_value": "missing_resistor_value",
-        "total_resistance": "total_resistance"
+        "after_k_steps": "after_k_steps",
+        "before_k_steps": "before_k_steps"
       },
       "reports": {
-        "distribution_review": "physics/task_physics_circuits_equivalent_resistance/distribution_review.json",
-        "inspection_manifest": "physics/task_physics_circuits_equivalent_resistance/manifest.json",
-        "random_review": "physics/task_physics_circuits_equivalent_resistance/random_review_100.json"
+        "distribution_review": "diagrams/task_diagrams_cycle_offset_stage_label/distribution_review.json",
+        "inspection_manifest": "diagrams/task_diagrams_cycle_offset_stage_label/manifest.json",
+        "random_review": "diagrams/task_diagrams_cycle_offset_stage_label/random_review_100.json"
       },
-      "task_group": "circuits",
-      "task_id": "task_physics_circuits_equivalent_resistance"
+      "task_group": "cycle",
+      "task_id": "task_diagrams_cycle_offset_stage_label"
     },
     {
       "distribution_pass": true,
-      "domain": "physics",
-      "inspection_count": 100,
-      "inspection_workbook": "physics/task_physics_mechanics_force_diagram/task_physics_mechanics_force_diagram.xlsx",
-      "inspection_workbook_sheets": {
-        "balancing_force_horizontal": "balancing_force_horizontal",
-        "balancing_force_vertical": "balancing_force_vertical",
-        "net_horizontal_force": "net_horizontal_force",
-        "net_vertical_force": "net_vertical_force"
-      },
-      "reports": {
-        "distribution_review": "physics/task_physics_mechanics_force_diagram/distribution_review.json",
-        "inspection_manifest": "physics/task_physics_mechanics_force_diagram/manifest.json",
-        "random_review": "physics/task_physics_mechanics_force_diagram/random_review_100.json"
-      },
-      "task_group": "mechanics",
-      "task_id": "task_physics_mechanics_force_diagram"
-    },
-    {
-      "distribution_pass": true,
-      "domain": "physics",
-      "inspection_count": 75,
-      "inspection_workbook": "physics/task_physics_mechanics_lever_balance/task_physics_mechanics_lever_balance.xlsx",
-      "inspection_workbook_sheets": {
-        "left_torque": "left_torque",
-        "missing_weight_to_balance": "missing_weight_to_balance",
-        "right_torque": "right_torque"
-      },
-      "reports": {
-        "distribution_review": "physics/task_physics_mechanics_lever_balance/distribution_review.json",
-        "inspection_manifest": "physics/task_physics_mechanics_lever_balance/manifest.json",
-        "random_review": "physics/task_physics_mechanics_lever_balance/random_review_100.json"
-      },
-      "task_group": "mechanics",
-      "task_id": "task_physics_mechanics_lever_balance"
-    },
-    {
-      "distribution_pass": true,
-      "domain": "physics",
-      "inspection_count": 75,
-      "inspection_workbook": "physics/task_physics_mechanics_spring_extension/task_physics_mechanics_spring_extension.xlsx",
-      "inspection_workbook_sheets": {
-        "extension_difference": "extension_difference",
-        "missing_extension_for_weight": "missing_extension_for_weight",
-        "missing_weight_for_extension": "missing_weight_for_extension"
-      },
-      "reports": {
-        "distribution_review": "physics/task_physics_mechanics_spring_extension/distribution_review.json",
-        "inspection_manifest": "physics/task_physics_mechanics_spring_extension/manifest.json",
-        "random_review": "physics/task_physics_mechanics_spring_extension/random_review_100.json"
-      },
-      "task_group": "mechanics",
-      "task_id": "task_physics_mechanics_spring_extension"
-    },
-    {
-      "distribution_pass": true,
-      "domain": "physics",
+      "domain": "diagrams",
       "inspection_count": 50,
-      "inspection_workbook": "physics/task_physics_optics_ray_trace/task_physics_optics_ray_trace.xlsx",
+      "inspection_workbook": "diagrams/task_diagrams_flow_next_step_label/task_diagrams_flow_next_step_label.xlsx",
       "inspection_workbook_sheets": {
-        "bounce_count": "bounce_count",
-        "target_hit_count": "target_hit_count"
+        "branch_next_step": "branch_next_step",
+        "direct_next_step": "direct_next_step"
       },
       "reports": {
-        "distribution_review": "physics/task_physics_optics_ray_trace/distribution_review.json",
-        "inspection_manifest": "physics/task_physics_optics_ray_trace/manifest.json",
-        "random_review": "physics/task_physics_optics_ray_trace/random_review_100.json"
+        "distribution_review": "diagrams/task_diagrams_flow_next_step_label/distribution_review.json",
+        "inspection_manifest": "diagrams/task_diagrams_flow_next_step_label/manifest.json",
+        "random_review": "diagrams/task_diagrams_flow_next_step_label/random_review_100.json"
       },
-      "task_group": "optics",
-      "task_id": "task_physics_optics_ray_trace"
+      "task_group": "flow",
+      "task_id": "task_diagrams_flow_next_step_label"
+    },
+    {
+      "distribution_pass": true,
+      "domain": "diagrams",
+      "inspection_count": 50,
+      "inspection_workbook": "diagrams/task_diagrams_hierarchy_ancestor_label/task_diagrams_hierarchy_ancestor_label.xlsx",
+      "inspection_workbook_sheets": {
+        "lowest_common_ancestor_of_two_nodes": "lowest_common_ancestor_of_two_n",
+        "parent_of_node": "parent_of_node"
+      },
+      "reports": {
+        "distribution_review": "diagrams/task_diagrams_hierarchy_ancestor_label/distribution_review.json",
+        "inspection_manifest": "diagrams/task_diagrams_hierarchy_ancestor_label/manifest.json",
+        "random_review": "diagrams/task_diagrams_hierarchy_ancestor_label/random_review_100.json"
+      },
+      "task_group": "hierarchy",
+      "task_id": "task_diagrams_hierarchy_ancestor_label"
+    },
+    {
+      "distribution_pass": true,
+      "domain": "diagrams",
+      "inspection_count": 50,
+      "inspection_workbook": "diagrams/task_diagrams_schematic_callout_target_label/task_diagrams_schematic_callout_target_label.xlsx",
+      "inspection_workbook_sheets": {
+        "callout_for_highlighted_part": "callout_for_highlighted_part",
+        "callout_for_named_part": "callout_for_named_part"
+      },
+      "reports": {
+        "distribution_review": "diagrams/task_diagrams_schematic_callout_target_label/distribution_review.json",
+        "inspection_manifest": "diagrams/task_diagrams_schematic_callout_target_label/manifest.json",
+        "random_review": "diagrams/task_diagrams_schematic_callout_target_label/random_review_100.json"
+      },
+      "task_group": "schematic",
+      "task_id": "task_diagrams_schematic_callout_target_label"
+    },
+    {
+      "distribution_pass": true,
+      "domain": "diagrams",
+      "inspection_count": 125,
+      "inspection_workbook": "diagrams/task_diagrams_set_diagram_region_sum_value/task_diagrams_set_diagram_region_sum_value.xlsx",
+      "inspection_workbook_sheets": {
+        "sum_in_exactly_two_sets": "sum_in_exactly_two_sets",
+        "sum_in_named_intersection": "sum_in_named_intersection",
+        "sum_in_named_set": "sum_in_named_set",
+        "sum_in_named_union": "sum_in_named_union",
+        "sum_only_in_named_set": "sum_only_in_named_set"
+      },
+      "reports": {
+        "distribution_review": "diagrams/task_diagrams_set_diagram_region_sum_value/distribution_review.json",
+        "inspection_manifest": "diagrams/task_diagrams_set_diagram_region_sum_value/manifest.json",
+        "random_review": "diagrams/task_diagrams_set_diagram_region_sum_value/random_review_100.json"
+      },
+      "task_group": "set_diagram",
+      "task_id": "task_diagrams_set_diagram_region_sum_value"
     }
   ]
 }

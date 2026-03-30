@@ -1,0 +1,2627 @@
+{
+  "collection": {
+    "collected_variant_counts": {
+      "earliest_date_in_section": 100,
+      "largest_amount_in_section": 100,
+      "latest_date_in_section": 100,
+      "smallest_amount_in_section": 100
+    },
+    "expected_variants": [
+      "earliest_date_in_section",
+      "largest_amount_in_section",
+      "latest_date_in_section",
+      "smallest_amount_in_section"
+    ],
+    "generated_variant_counts": {
+      "earliest_date_in_section": 100,
+      "largest_amount_in_section": 110,
+      "latest_date_in_section": 115,
+      "smallest_amount_in_section": 110
+    },
+    "generation_error_counts": {},
+    "target_count_per_variant": 100,
+    "total_generated": 435
+  },
+  "domain": "documents",
+  "failed_variants": [],
+  "has_task_variants": true,
+  "incomplete_variants": [],
+  "mode": "per_variant",
+  "no_samples_collected": false,
+  "overall": {
+    "answer_type_counts": {
+      "string": 400
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.0125,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": null,
+        "pass": null,
+        "status": "not_applicable_non_numeric_answers"
+      },
+      "min_unique_answers": {
+        "observed": 296,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": null,
+    "max_answer_count": 5,
+    "max_answer_frequency": 0.0125,
+    "pass": true,
+    "sample_count": 400,
+    "top_answers": [
+      {
+        "answer_label": "02/01/2026",
+        "count": 5
+      },
+      {
+        "answer_label": "02/13/2026",
+        "count": 5
+      },
+      {
+        "answer_label": "02/24/2026",
+        "count": 5
+      },
+      {
+        "answer_label": "2026-03-01",
+        "count": 5
+      },
+      {
+        "answer_label": "2026-03-03",
+        "count": 5
+      },
+      {
+        "answer_label": "2026-04-03",
+        "count": 5
+      },
+      {
+        "answer_label": "02/16/2026",
+        "count": 4
+      },
+      {
+        "answer_label": "02/23/2026",
+        "count": 4
+      },
+      {
+        "answer_label": "03/10/2026",
+        "count": 4
+      },
+      {
+        "answer_label": "2026-03-15",
+        "count": 4
+      },
+      {
+        "answer_label": "2026-03-28",
+        "count": 4
+      },
+      {
+        "answer_label": "2026-03-29",
+        "count": 4
+      },
+      {
+        "answer_label": "Apr 21, 2026",
+        "count": 4
+      },
+      {
+        "answer_label": "Apr 26, 2026",
+        "count": 4
+      },
+      {
+        "answer_label": "Apr 29, 2026",
+        "count": 4
+      },
+      {
+        "answer_label": "02/10/2026",
+        "count": 3
+      },
+      {
+        "answer_label": "02/22/2026",
+        "count": 3
+      },
+      {
+        "answer_label": "03/02/2026",
+        "count": 3
+      },
+      {
+        "answer_label": "03/06/2026",
+        "count": 3
+      },
+      {
+        "answer_label": "03/07/2026",
+        "count": 3
+      },
+      {
+        "answer_label": "03/08/2026",
+        "count": 3
+      },
+      {
+        "answer_label": "03/14/2026",
+        "count": 3
+      },
+      {
+        "answer_label": "2026-03-02",
+        "count": 3
+      },
+      {
+        "answer_label": "2026-03-05",
+        "count": 3
+      },
+      {
+        "answer_label": "2026-03-10",
+        "count": 3
+      },
+      {
+        "answer_label": "2026-03-17",
+        "count": 3
+      },
+      {
+        "answer_label": "2026-03-25",
+        "count": 3
+      },
+      {
+        "answer_label": "Apr 05, 2026",
+        "count": 3
+      },
+      {
+        "answer_label": "Apr 23, 2026",
+        "count": 3
+      },
+      {
+        "answer_label": "Apr 28, 2026",
+        "count": 3
+      },
+      {
+        "answer_label": "02/05/2026",
+        "count": 2
+      },
+      {
+        "answer_label": "02/11/2026",
+        "count": 2
+      },
+      {
+        "answer_label": "02/12/2026",
+        "count": 2
+      },
+      {
+        "answer_label": "02/25/2026",
+        "count": 2
+      },
+      {
+        "answer_label": "02/26/2026",
+        "count": 2
+      },
+      {
+        "answer_label": "03/09/2026",
+        "count": 2
+      },
+      {
+        "answer_label": "2026-03-04",
+        "count": 2
+      },
+      {
+        "answer_label": "2026-03-09",
+        "count": 2
+      },
+      {
+        "answer_label": "2026-03-12",
+        "count": 2
+      },
+      {
+        "answer_label": "2026-03-14",
+        "count": 2
+      },
+      {
+        "answer_label": "2026-03-21",
+        "count": 2
+      },
+      {
+        "answer_label": "2026-03-26",
+        "count": 2
+      },
+      {
+        "answer_label": "2026-03-30",
+        "count": 2
+      },
+      {
+        "answer_label": "2026-04-02",
+        "count": 2
+      },
+      {
+        "answer_label": "2026-04-06",
+        "count": 2
+      },
+      {
+        "answer_label": "Apr 01, 2026",
+        "count": 2
+      },
+      {
+        "answer_label": "Apr 07, 2026",
+        "count": 2
+      },
+      {
+        "answer_label": "Apr 09, 2026",
+        "count": 2
+      },
+      {
+        "answer_label": "Apr 13, 2026",
+        "count": 2
+      },
+      {
+        "answer_label": "Apr 14, 2026",
+        "count": 2
+      },
+      {
+        "answer_label": "Apr 15, 2026",
+        "count": 2
+      },
+      {
+        "answer_label": "Apr 17, 2026",
+        "count": 2
+      },
+      {
+        "answer_label": "Apr 20, 2026",
+        "count": 2
+      },
+      {
+        "answer_label": "$1.25",
+        "count": 1
+      },
+      {
+        "answer_label": "$1.30",
+        "count": 1
+      },
+      {
+        "answer_label": "$1.37",
+        "count": 1
+      },
+      {
+        "answer_label": "$1.45",
+        "count": 1
+      },
+      {
+        "answer_label": "$1.69",
+        "count": 1
+      },
+      {
+        "answer_label": "$1.74",
+        "count": 1
+      },
+      {
+        "answer_label": "$1.76",
+        "count": 1
+      },
+      {
+        "answer_label": "$1.81",
+        "count": 1
+      },
+      {
+        "answer_label": "$1.98",
+        "count": 1
+      },
+      {
+        "answer_label": "$10.42",
+        "count": 1
+      },
+      {
+        "answer_label": "$10.66",
+        "count": 1
+      },
+      {
+        "answer_label": "$101.73",
+        "count": 1
+      },
+      {
+        "answer_label": "$104.50",
+        "count": 1
+      },
+      {
+        "answer_label": "$11.52",
+        "count": 1
+      },
+      {
+        "answer_label": "$11.72",
+        "count": 1
+      },
+      {
+        "answer_label": "$11.80",
+        "count": 1
+      },
+      {
+        "answer_label": "$11.82",
+        "count": 1
+      },
+      {
+        "answer_label": "$11.92",
+        "count": 1
+      },
+      {
+        "answer_label": "$12.09",
+        "count": 1
+      },
+      {
+        "answer_label": "$12.46",
+        "count": 1
+      },
+      {
+        "answer_label": "$12.72",
+        "count": 1
+      },
+      {
+        "answer_label": "$131.49",
+        "count": 1
+      },
+      {
+        "answer_label": "$137.34",
+        "count": 1
+      },
+      {
+        "answer_label": "$138.14",
+        "count": 1
+      },
+      {
+        "answer_label": "$14.39",
+        "count": 1
+      },
+      {
+        "answer_label": "$14.44",
+        "count": 1
+      },
+      {
+        "answer_label": "$14.49",
+        "count": 1
+      },
+      {
+        "answer_label": "$142.31",
+        "count": 1
+      },
+      {
+        "answer_label": "$15.02",
+        "count": 1
+      },
+      {
+        "answer_label": "$15.71",
+        "count": 1
+      },
+      {
+        "answer_label": "$15.84",
+        "count": 1
+      },
+      {
+        "answer_label": "$15.92",
+        "count": 1
+      },
+      {
+        "answer_label": "$158.61",
+        "count": 1
+      },
+      {
+        "answer_label": "$16.44",
+        "count": 1
+      },
+      {
+        "answer_label": "$16.76",
+        "count": 1
+      },
+      {
+        "answer_label": "$164.36",
+        "count": 1
+      },
+      {
+        "answer_label": "$17.46",
+        "count": 1
+      },
+      {
+        "answer_label": "$17.51",
+        "count": 1
+      },
+      {
+        "answer_label": "$17.71",
+        "count": 1
+      },
+      {
+        "answer_label": "$17.77",
+        "count": 1
+      },
+      {
+        "answer_label": "$17.92",
+        "count": 1
+      },
+      {
+        "answer_label": "$175.09",
+        "count": 1
+      },
+      {
+        "answer_label": "$18.22",
+        "count": 1
+      },
+      {
+        "answer_label": "$18.35",
+        "count": 1
+      },
+      {
+        "answer_label": "$183.29",
+        "count": 1
+      },
+      {
+        "answer_label": "$183.93",
+        "count": 1
+      },
+      {
+        "answer_label": "$19.09",
+        "count": 1
+      },
+      {
+        "answer_label": "$19.58",
+        "count": 1
+      },
+      {
+        "answer_label": "$19.70",
+        "count": 1
+      },
+      {
+        "answer_label": "$19.75",
+        "count": 1
+      },
+      {
+        "answer_label": "$2.15",
+        "count": 1
+      },
+      {
+        "answer_label": "$2.19",
+        "count": 1
+      },
+      {
+        "answer_label": "$2.20",
+        "count": 1
+      },
+      {
+        "answer_label": "$2.49",
+        "count": 1
+      },
+      {
+        "answer_label": "$2.62",
+        "count": 1
+      },
+      {
+        "answer_label": "$2.87",
+        "count": 1
+      },
+      {
+        "answer_label": "$2.91",
+        "count": 1
+      },
+      {
+        "answer_label": "$20.46",
+        "count": 1
+      },
+      {
+        "answer_label": "$202.49",
+        "count": 1
+      },
+      {
+        "answer_label": "$21.55",
+        "count": 1
+      },
+      {
+        "answer_label": "$21.68",
+        "count": 1
+      },
+      {
+        "answer_label": "$21.98",
+        "count": 1
+      },
+      {
+        "answer_label": "$212.72",
+        "count": 1
+      },
+      {
+        "answer_label": "$217.06",
+        "count": 1
+      },
+      {
+        "answer_label": "$22.05",
+        "count": 1
+      },
+      {
+        "answer_label": "$23.48",
+        "count": 1
+      },
+      {
+        "answer_label": "$230.64",
+        "count": 1
+      },
+      {
+        "answer_label": "$230.82",
+        "count": 1
+      },
+      {
+        "answer_label": "$232.06",
+        "count": 1
+      },
+      {
+        "answer_label": "$232.38",
+        "count": 1
+      },
+      {
+        "answer_label": "$238.53",
+        "count": 1
+      },
+      {
+        "answer_label": "$239.30",
+        "count": 1
+      },
+      {
+        "answer_label": "$24.50",
+        "count": 1
+      },
+      {
+        "answer_label": "$245.09",
+        "count": 1
+      },
+      {
+        "answer_label": "$249.06",
+        "count": 1
+      },
+      {
+        "answer_label": "$249.56",
+        "count": 1
+      },
+      {
+        "answer_label": "$25.36",
+        "count": 1
+      },
+      {
+        "answer_label": "$25.81",
+        "count": 1
+      },
+      {
+        "answer_label": "$25.89",
+        "count": 1
+      },
+      {
+        "answer_label": "$25.99",
+        "count": 1
+      },
+      {
+        "answer_label": "$257.09",
+        "count": 1
+      },
+      {
+        "answer_label": "$26.17",
+        "count": 1
+      },
+      {
+        "answer_label": "$260.47",
+        "count": 1
+      },
+      {
+        "answer_label": "$270.77",
+        "count": 1
+      },
+      {
+        "answer_label": "$276.40",
+        "count": 1
+      },
+      {
+        "answer_label": "$28.91",
+        "count": 1
+      },
+      {
+        "answer_label": "$287.58",
+        "count": 1
+      },
+      {
+        "answer_label": "$288.48",
+        "count": 1
+      },
+      {
+        "answer_label": "$29.41",
+        "count": 1
+      },
+      {
+        "answer_label": "$294.12",
+        "count": 1
+      },
+      {
+        "answer_label": "$296.82",
+        "count": 1
+      },
+      {
+        "answer_label": "$298.55",
+        "count": 1
+      },
+      {
+        "answer_label": "$3.22",
+        "count": 1
+      },
+      {
+        "answer_label": "$3.28",
+        "count": 1
+      },
+      {
+        "answer_label": "$3.31",
+        "count": 1
+      },
+      {
+        "answer_label": "$301.53",
+        "count": 1
+      },
+      {
+        "answer_label": "$306.97",
+        "count": 1
+      },
+      {
+        "answer_label": "$31.04",
+        "count": 1
+      },
+      {
+        "answer_label": "$31.36",
+        "count": 1
+      },
+      {
+        "answer_label": "$312.21",
+        "count": 1
+      },
+      {
+        "answer_label": "$312.75",
+        "count": 1
+      },
+      {
+        "answer_label": "$318.99",
+        "count": 1
+      },
+      {
+        "answer_label": "$319.34",
+        "count": 1
+      },
+      {
+        "answer_label": "$325.14",
+        "count": 1
+      },
+      {
+        "answer_label": "$326.79",
+        "count": 1
+      },
+      {
+        "answer_label": "$334.56",
+        "count": 1
+      },
+      {
+        "answer_label": "$334.92",
+        "count": 1
+      },
+      {
+        "answer_label": "$35.30",
+        "count": 1
+      },
+      {
+        "answer_label": "$37.19",
+        "count": 1
+      },
+      {
+        "answer_label": "$38.40",
+        "count": 1
+      },
+      {
+        "answer_label": "$39.00",
+        "count": 1
+      },
+      {
+        "answer_label": "$4.40",
+        "count": 1
+      },
+      {
+        "answer_label": "$4.60",
+        "count": 1
+      },
+      {
+        "answer_label": "$4.64",
+        "count": 1
+      },
+      {
+        "answer_label": "$4.77",
+        "count": 1
+      },
+      {
+        "answer_label": "$4.83",
+        "count": 1
+      },
+      {
+        "answer_label": "$4.87",
+        "count": 1
+      },
+      {
+        "answer_label": "$42.46",
+        "count": 1
+      },
+      {
+        "answer_label": "$44.30",
+        "count": 1
+      },
+      {
+        "answer_label": "$45.90",
+        "count": 1
+      },
+      {
+        "answer_label": "$46.60",
+        "count": 1
+      },
+      {
+        "answer_label": "$47.58",
+        "count": 1
+      },
+      {
+        "answer_label": "$47.90",
+        "count": 1
+      },
+      {
+        "answer_label": "$5.13",
+        "count": 1
+      },
+      {
+        "answer_label": "$5.17",
+        "count": 1
+      },
+      {
+        "answer_label": "$5.18",
+        "count": 1
+      },
+      {
+        "answer_label": "$5.36",
+        "count": 1
+      },
+      {
+        "answer_label": "$5.46",
+        "count": 1
+      },
+      {
+        "answer_label": "$5.88",
+        "count": 1
+      },
+      {
+        "answer_label": "$50.18",
+        "count": 1
+      },
+      {
+        "answer_label": "$50.41",
+        "count": 1
+      },
+      {
+        "answer_label": "$50.66",
+        "count": 1
+      },
+      {
+        "answer_label": "$50.93",
+        "count": 1
+      },
+      {
+        "answer_label": "$54.64",
+        "count": 1
+      },
+      {
+        "answer_label": "$55.03",
+        "count": 1
+      },
+      {
+        "answer_label": "$55.55",
+        "count": 1
+      },
+      {
+        "answer_label": "$55.83",
+        "count": 1
+      },
+      {
+        "answer_label": "$58.11",
+        "count": 1
+      },
+      {
+        "answer_label": "$58.43",
+        "count": 1
+      },
+      {
+        "answer_label": "$6.06",
+        "count": 1
+      },
+      {
+        "answer_label": "$6.12",
+        "count": 1
+      },
+      {
+        "answer_label": "$6.24",
+        "count": 1
+      },
+      {
+        "answer_label": "$6.40",
+        "count": 1
+      },
+      {
+        "answer_label": "$6.50",
+        "count": 1
+      },
+      {
+        "answer_label": "$6.53",
+        "count": 1
+      },
+      {
+        "answer_label": "$6.70",
+        "count": 1
+      },
+      {
+        "answer_label": "$6.98",
+        "count": 1
+      },
+      {
+        "answer_label": "$61.68",
+        "count": 1
+      },
+      {
+        "answer_label": "$61.83",
+        "count": 1
+      },
+      {
+        "answer_label": "$62.43",
+        "count": 1
+      },
+      {
+        "answer_label": "$66.47",
+        "count": 1
+      },
+      {
+        "answer_label": "$67.01",
+        "count": 1
+      },
+      {
+        "answer_label": "$67.15",
+        "count": 1
+      },
+      {
+        "answer_label": "$67.67",
+        "count": 1
+      },
+      {
+        "answer_label": "$68.86",
+        "count": 1
+      },
+      {
+        "answer_label": "$69.03",
+        "count": 1
+      },
+      {
+        "answer_label": "$69.04",
+        "count": 1
+      },
+      {
+        "answer_label": "$7.25",
+        "count": 1
+      },
+      {
+        "answer_label": "$7.29",
+        "count": 1
+      },
+      {
+        "answer_label": "$7.31",
+        "count": 1
+      },
+      {
+        "answer_label": "$7.47",
+        "count": 1
+      },
+      {
+        "answer_label": "$7.53",
+        "count": 1
+      },
+      {
+        "answer_label": "$7.56",
+        "count": 1
+      },
+      {
+        "answer_label": "$7.60",
+        "count": 1
+      },
+      {
+        "answer_label": "$7.67",
+        "count": 1
+      },
+      {
+        "answer_label": "$7.84",
+        "count": 1
+      },
+      {
+        "answer_label": "$7.89",
+        "count": 1
+      },
+      {
+        "answer_label": "$70.26",
+        "count": 1
+      },
+      {
+        "answer_label": "$70.31",
+        "count": 1
+      },
+      {
+        "answer_label": "$73.27",
+        "count": 1
+      },
+      {
+        "answer_label": "$73.49",
+        "count": 1
+      },
+      {
+        "answer_label": "$75.30",
+        "count": 1
+      },
+      {
+        "answer_label": "$77.21",
+        "count": 1
+      },
+      {
+        "answer_label": "$77.51",
+        "count": 1
+      },
+      {
+        "answer_label": "$78.61",
+        "count": 1
+      },
+      {
+        "answer_label": "$78.90",
+        "count": 1
+      },
+      {
+        "answer_label": "$79.17",
+        "count": 1
+      },
+      {
+        "answer_label": "$79.81",
+        "count": 1
+      },
+      {
+        "answer_label": "$8.54",
+        "count": 1
+      },
+      {
+        "answer_label": "$8.86",
+        "count": 1
+      },
+      {
+        "answer_label": "$8.91",
+        "count": 1
+      },
+      {
+        "answer_label": "$80.74",
+        "count": 1
+      },
+      {
+        "answer_label": "$81.47",
+        "count": 1
+      },
+      {
+        "answer_label": "$85.74",
+        "count": 1
+      },
+      {
+        "answer_label": "$86.57",
+        "count": 1
+      },
+      {
+        "answer_label": "$88.68",
+        "count": 1
+      },
+      {
+        "answer_label": "$9.03",
+        "count": 1
+      },
+      {
+        "answer_label": "$9.26",
+        "count": 1
+      },
+      {
+        "answer_label": "$9.48",
+        "count": 1
+      },
+      {
+        "answer_label": "$9.53",
+        "count": 1
+      },
+      {
+        "answer_label": "$9.56",
+        "count": 1
+      },
+      {
+        "answer_label": "$9.77",
+        "count": 1
+      },
+      {
+        "answer_label": "$90.31",
+        "count": 1
+      },
+      {
+        "answer_label": "$94.58",
+        "count": 1
+      },
+      {
+        "answer_label": "$94.82",
+        "count": 1
+      },
+      {
+        "answer_label": "$94.83",
+        "count": 1
+      },
+      {
+        "answer_label": "$95.15",
+        "count": 1
+      },
+      {
+        "answer_label": "$95.57",
+        "count": 1
+      },
+      {
+        "answer_label": "$98.28",
+        "count": 1
+      },
+      {
+        "answer_label": "$99.93",
+        "count": 1
+      },
+      {
+        "answer_label": "02/02/2026",
+        "count": 1
+      },
+      {
+        "answer_label": "02/03/2026",
+        "count": 1
+      },
+      {
+        "answer_label": "02/06/2026",
+        "count": 1
+      },
+      {
+        "answer_label": "02/07/2026",
+        "count": 1
+      },
+      {
+        "answer_label": "02/08/2026",
+        "count": 1
+      },
+      {
+        "answer_label": "02/17/2026",
+        "count": 1
+      },
+      {
+        "answer_label": "02/19/2026",
+        "count": 1
+      },
+      {
+        "answer_label": "02/20/2026",
+        "count": 1
+      },
+      {
+        "answer_label": "02/21/2026",
+        "count": 1
+      },
+      {
+        "answer_label": "02/28/2026",
+        "count": 1
+      },
+      {
+        "answer_label": "03/05/2026",
+        "count": 1
+      },
+      {
+        "answer_label": "03/13/2026",
+        "count": 1
+      },
+      {
+        "answer_label": "03/15/2026",
+        "count": 1
+      },
+      {
+        "answer_label": "03/16/2026",
+        "count": 1
+      },
+      {
+        "answer_label": "03/18/2026",
+        "count": 1
+      },
+      {
+        "answer_label": "2026-03-07",
+        "count": 1
+      },
+      {
+        "answer_label": "2026-03-11",
+        "count": 1
+      },
+      {
+        "answer_label": "2026-03-13",
+        "count": 1
+      },
+      {
+        "answer_label": "2026-03-16",
+        "count": 1
+      },
+      {
+        "answer_label": "2026-03-18",
+        "count": 1
+      },
+      {
+        "answer_label": "2026-03-22",
+        "count": 1
+      },
+      {
+        "answer_label": "2026-03-24",
+        "count": 1
+      },
+      {
+        "answer_label": "2026-03-27",
+        "count": 1
+      },
+      {
+        "answer_label": "2026-04-01",
+        "count": 1
+      },
+      {
+        "answer_label": "2026-04-04",
+        "count": 1
+      },
+      {
+        "answer_label": "2026-04-08",
+        "count": 1
+      },
+      {
+        "answer_label": "2026-04-16",
+        "count": 1
+      },
+      {
+        "answer_label": "Apr 02, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "Apr 04, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "Apr 06, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "Apr 10, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "Apr 11, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "Apr 12, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "Apr 18, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "Apr 19, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "Apr 22, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "Apr 24, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "May 02, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "May 03, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "May 06, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "May 07, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "May 08, 2026",
+        "count": 1
+      },
+      {
+        "answer_label": "May 10, 2026",
+        "count": 1
+      }
+    ],
+    "unique_answers": 296
+  },
+  "pass": true,
+  "per_task_variant": {
+    "earliest_date_in_section": {
+      "answer_type_counts": {
+        "string": 100
+      },
+      "checks": {
+        "max_answer_frequency": {
+          "observed": 0.05,
+          "pass": true,
+          "threshold": 0.25
+        },
+        "max_five_bin_frequency": {
+          "observed": null,
+          "pass": null,
+          "status": "not_applicable_non_numeric_answers"
+        },
+        "min_unique_answers": {
+          "observed": 47,
+          "pass": true,
+          "threshold": 5
+        }
+      },
+      "five_bin_numeric": null,
+      "max_answer_count": 5,
+      "max_answer_frequency": 0.05,
+      "pass": true,
+      "sample_count": 100,
+      "top_answers": [
+        {
+          "answer_label": "02/01/2026",
+          "count": 5
+        },
+        {
+          "answer_label": "02/13/2026",
+          "count": 5
+        },
+        {
+          "answer_label": "2026-03-01",
+          "count": 5
+        },
+        {
+          "answer_label": "2026-03-03",
+          "count": 5
+        },
+        {
+          "answer_label": "02/24/2026",
+          "count": 4
+        },
+        {
+          "answer_label": "2026-03-15",
+          "count": 4
+        },
+        {
+          "answer_label": "02/10/2026",
+          "count": 3
+        },
+        {
+          "answer_label": "02/16/2026",
+          "count": 3
+        },
+        {
+          "answer_label": "02/22/2026",
+          "count": 3
+        },
+        {
+          "answer_label": "2026-03-02",
+          "count": 3
+        },
+        {
+          "answer_label": "2026-03-05",
+          "count": 3
+        },
+        {
+          "answer_label": "2026-03-10",
+          "count": 3
+        },
+        {
+          "answer_label": "2026-03-17",
+          "count": 3
+        },
+        {
+          "answer_label": "Apr 05, 2026",
+          "count": 3
+        },
+        {
+          "answer_label": "02/05/2026",
+          "count": 2
+        },
+        {
+          "answer_label": "02/11/2026",
+          "count": 2
+        },
+        {
+          "answer_label": "02/12/2026",
+          "count": 2
+        },
+        {
+          "answer_label": "2026-03-04",
+          "count": 2
+        },
+        {
+          "answer_label": "2026-03-09",
+          "count": 2
+        },
+        {
+          "answer_label": "2026-03-12",
+          "count": 2
+        },
+        {
+          "answer_label": "2026-03-14",
+          "count": 2
+        },
+        {
+          "answer_label": "Apr 01, 2026",
+          "count": 2
+        },
+        {
+          "answer_label": "Apr 07, 2026",
+          "count": 2
+        },
+        {
+          "answer_label": "Apr 09, 2026",
+          "count": 2
+        },
+        {
+          "answer_label": "Apr 14, 2026",
+          "count": 2
+        },
+        {
+          "answer_label": "Apr 15, 2026",
+          "count": 2
+        },
+        {
+          "answer_label": "Apr 17, 2026",
+          "count": 2
+        },
+        {
+          "answer_label": "Apr 20, 2026",
+          "count": 2
+        },
+        {
+          "answer_label": "Apr 21, 2026",
+          "count": 2
+        },
+        {
+          "answer_label": "02/02/2026",
+          "count": 1
+        },
+        {
+          "answer_label": "02/03/2026",
+          "count": 1
+        },
+        {
+          "answer_label": "02/06/2026",
+          "count": 1
+        },
+        {
+          "answer_label": "02/07/2026",
+          "count": 1
+        },
+        {
+          "answer_label": "02/08/2026",
+          "count": 1
+        },
+        {
+          "answer_label": "02/17/2026",
+          "count": 1
+        },
+        {
+          "answer_label": "02/20/2026",
+          "count": 1
+        },
+        {
+          "answer_label": "02/23/2026",
+          "count": 1
+        },
+        {
+          "answer_label": "2026-03-07",
+          "count": 1
+        },
+        {
+          "answer_label": "2026-03-11",
+          "count": 1
+        },
+        {
+          "answer_label": "2026-03-13",
+          "count": 1
+        },
+        {
+          "answer_label": "Apr 02, 2026",
+          "count": 1
+        },
+        {
+          "answer_label": "Apr 04, 2026",
+          "count": 1
+        },
+        {
+          "answer_label": "Apr 06, 2026",
+          "count": 1
+        },
+        {
+          "answer_label": "Apr 10, 2026",
+          "count": 1
+        },
+        {
+          "answer_label": "Apr 11, 2026",
+          "count": 1
+        },
+        {
+          "answer_label": "Apr 12, 2026",
+          "count": 1
+        },
+        {
+          "answer_label": "Apr 13, 2026",
+          "count": 1
+        }
+      ],
+      "unique_answers": 47
+    },
+    "largest_amount_in_section": {
+      "answer_type_counts": {
+        "string": 100
+      },
+      "checks": {
+        "max_answer_frequency": {
+          "observed": 0.01,
+          "pass": true,
+          "threshold": 0.25
+        },
+        "max_five_bin_frequency": {
+          "observed": null,
+          "pass": null,
+          "status": "not_applicable_non_numeric_answers"
+        },
+        "min_unique_answers": {
+          "observed": 100,
+          "pass": true,
+          "threshold": 5
+        }
+      },
+      "five_bin_numeric": null,
+      "max_answer_count": 1,
+      "max_answer_frequency": 0.01,
+      "pass": true,
+      "sample_count": 100,
+      "top_answers": [
+        {
+          "answer_label": "$101.73",
+          "count": 1
+        },
+        {
+          "answer_label": "$104.50",
+          "count": 1
+        },
+        {
+          "answer_label": "$131.49",
+          "count": 1
+        },
+        {
+          "answer_label": "$137.34",
+          "count": 1
+        },
+        {
+          "answer_label": "$138.14",
+          "count": 1
+        },
+        {
+          "answer_label": "$142.31",
+          "count": 1
+        },
+        {
+          "answer_label": "$158.61",
+          "count": 1
+        },
+        {
+          "answer_label": "$164.36",
+          "count": 1
+        },
+        {
+          "answer_label": "$175.09",
+          "count": 1
+        },
+        {
+          "answer_label": "$183.29",
+          "count": 1
+        },
+        {
+          "answer_label": "$183.93",
+          "count": 1
+        },
+        {
+          "answer_label": "$202.49",
+          "count": 1
+        },
+        {
+          "answer_label": "$212.72",
+          "count": 1
+        },
+        {
+          "answer_label": "$217.06",
+          "count": 1
+        },
+        {
+          "answer_label": "$230.64",
+          "count": 1
+        },
+        {
+          "answer_label": "$230.82",
+          "count": 1
+        },
+        {
+          "answer_label": "$232.06",
+          "count": 1
+        },
+        {
+          "answer_label": "$232.38",
+          "count": 1
+        },
+        {
+          "answer_label": "$238.53",
+          "count": 1
+        },
+        {
+          "answer_label": "$239.30",
+          "count": 1
+        },
+        {
+          "answer_label": "$245.09",
+          "count": 1
+        },
+        {
+          "answer_label": "$249.06",
+          "count": 1
+        },
+        {
+          "answer_label": "$249.56",
+          "count": 1
+        },
+        {
+          "answer_label": "$257.09",
+          "count": 1
+        },
+        {
+          "answer_label": "$260.47",
+          "count": 1
+        },
+        {
+          "answer_label": "$270.77",
+          "count": 1
+        },
+        {
+          "answer_label": "$276.40",
+          "count": 1
+        },
+        {
+          "answer_label": "$28.91",
+          "count": 1
+        },
+        {
+          "answer_label": "$287.58",
+          "count": 1
+        },
+        {
+          "answer_label": "$288.48",
+          "count": 1
+        },
+        {
+          "answer_label": "$29.41",
+          "count": 1
+        },
+        {
+          "answer_label": "$294.12",
+          "count": 1
+        },
+        {
+          "answer_label": "$296.82",
+          "count": 1
+        },
+        {
+          "answer_label": "$298.55",
+          "count": 1
+        },
+        {
+          "answer_label": "$301.53",
+          "count": 1
+        },
+        {
+          "answer_label": "$306.97",
+          "count": 1
+        },
+        {
+          "answer_label": "$31.04",
+          "count": 1
+        },
+        {
+          "answer_label": "$31.36",
+          "count": 1
+        },
+        {
+          "answer_label": "$312.21",
+          "count": 1
+        },
+        {
+          "answer_label": "$312.75",
+          "count": 1
+        },
+        {
+          "answer_label": "$318.99",
+          "count": 1
+        },
+        {
+          "answer_label": "$319.34",
+          "count": 1
+        },
+        {
+          "answer_label": "$325.14",
+          "count": 1
+        },
+        {
+          "answer_label": "$326.79",
+          "count": 1
+        },
+        {
+          "answer_label": "$334.56",
+          "count": 1
+        },
+        {
+          "answer_label": "$334.92",
+          "count": 1
+        },
+        {
+          "answer_label": "$35.30",
+          "count": 1
+        },
+        {
+          "answer_label": "$37.19",
+          "count": 1
+        },
+        {
+          "answer_label": "$38.40",
+          "count": 1
+        },
+        {
+          "answer_label": "$39.00",
+          "count": 1
+        },
+        {
+          "answer_label": "$42.46",
+          "count": 1
+        },
+        {
+          "answer_label": "$44.30",
+          "count": 1
+        },
+        {
+          "answer_label": "$45.90",
+          "count": 1
+        },
+        {
+          "answer_label": "$46.60",
+          "count": 1
+        },
+        {
+          "answer_label": "$47.58",
+          "count": 1
+        },
+        {
+          "answer_label": "$47.90",
+          "count": 1
+        },
+        {
+          "answer_label": "$50.18",
+          "count": 1
+        },
+        {
+          "answer_label": "$50.41",
+          "count": 1
+        },
+        {
+          "answer_label": "$50.66",
+          "count": 1
+        },
+        {
+          "answer_label": "$50.93",
+          "count": 1
+        },
+        {
+          "answer_label": "$54.64",
+          "count": 1
+        },
+        {
+          "answer_label": "$55.03",
+          "count": 1
+        },
+        {
+          "answer_label": "$55.55",
+          "count": 1
+        },
+        {
+          "answer_label": "$55.83",
+          "count": 1
+        },
+        {
+          "answer_label": "$58.11",
+          "count": 1
+        },
+        {
+          "answer_label": "$58.43",
+          "count": 1
+        },
+        {
+          "answer_label": "$61.68",
+          "count": 1
+        },
+        {
+          "answer_label": "$61.83",
+          "count": 1
+        },
+        {
+          "answer_label": "$62.43",
+          "count": 1
+        },
+        {
+          "answer_label": "$66.47",
+          "count": 1
+        },
+        {
+          "answer_label": "$67.01",
+          "count": 1
+        },
+        {
+          "answer_label": "$67.15",
+          "count": 1
+        },
+        {
+          "answer_label": "$67.67",
+          "count": 1
+        },
+        {
+          "answer_label": "$68.86",
+          "count": 1
+        },
+        {
+          "answer_label": "$69.03",
+          "count": 1
+        },
+        {
+          "answer_label": "$69.04",
+          "count": 1
+        },
+        {
+          "answer_label": "$70.26",
+          "count": 1
+        },
+        {
+          "answer_label": "$70.31",
+          "count": 1
+        },
+        {
+          "answer_label": "$73.27",
+          "count": 1
+        },
+        {
+          "answer_label": "$73.49",
+          "count": 1
+        },
+        {
+          "answer_label": "$75.30",
+          "count": 1
+        },
+        {
+          "answer_label": "$77.21",
+          "count": 1
+        },
+        {
+          "answer_label": "$77.51",
+          "count": 1
+        },
+        {
+          "answer_label": "$78.61",
+          "count": 1
+        },
+        {
+          "answer_label": "$78.90",
+          "count": 1
+        },
+        {
+          "answer_label": "$79.17",
+          "count": 1
+        },
+        {
+          "answer_label": "$79.81",
+          "count": 1
+        },
+        {
+          "answer_label": "$80.74",
+          "count": 1
+        },
+        {
+          "answer_label": "$81.47",
+          "count": 1
+        },
+        {
+          "answer_label": "$85.74",
+          "count": 1
+        },
+        {
+          "answer_label": "$86.57",
+          "count": 1
+        },
+        {
+          "answer_label": "$88.68",
+          "count": 1
+        },
+        {
+          "answer_label": "$90.31",
+          "count": 1
+        },
+        {
+          "answer_label": "$94.58",
+          "count": 1
+        },
+        {
+          "answer_label": "$94.82",
+          "count": 1
+        },
+        {
+          "answer_label": "$94.83",
+          "count": 1
+        },
+        {
+          "answer_label": "$95.15",
+          "count": 1
+        },
+        {
+          "answer_label": "$95.57",
+          "count": 1
+        },
+        {
+          "answer_label": "$98.28",
+          "count": 1
+        },
+        {
+          "answer_label": "$99.93",
+          "count": 1
+        }
+      ],
+      "unique_answers": 100
+    },
+    "latest_date_in_section": {
+      "answer_type_counts": {
+        "string": 100
+      },
+      "checks": {
+        "max_answer_frequency": {
+          "observed": 0.05,
+          "pass": true,
+          "threshold": 0.25
+        },
+        "max_five_bin_frequency": {
+          "observed": null,
+          "pass": null,
+          "status": "not_applicable_non_numeric_answers"
+        },
+        "min_unique_answers": {
+          "observed": 54,
+          "pass": true,
+          "threshold": 5
+        }
+      },
+      "five_bin_numeric": null,
+      "max_answer_count": 5,
+      "max_answer_frequency": 0.05,
+      "pass": true,
+      "sample_count": 100,
+      "top_answers": [
+        {
+          "answer_label": "2026-04-03",
+          "count": 5
+        },
+        {
+          "answer_label": "03/10/2026",
+          "count": 4
+        },
+        {
+          "answer_label": "2026-03-28",
+          "count": 4
+        },
+        {
+          "answer_label": "2026-03-29",
+          "count": 4
+        },
+        {
+          "answer_label": "Apr 26, 2026",
+          "count": 4
+        },
+        {
+          "answer_label": "Apr 29, 2026",
+          "count": 4
+        },
+        {
+          "answer_label": "02/23/2026",
+          "count": 3
+        },
+        {
+          "answer_label": "03/02/2026",
+          "count": 3
+        },
+        {
+          "answer_label": "03/06/2026",
+          "count": 3
+        },
+        {
+          "answer_label": "03/07/2026",
+          "count": 3
+        },
+        {
+          "answer_label": "03/08/2026",
+          "count": 3
+        },
+        {
+          "answer_label": "03/14/2026",
+          "count": 3
+        },
+        {
+          "answer_label": "2026-03-25",
+          "count": 3
+        },
+        {
+          "answer_label": "Apr 23, 2026",
+          "count": 3
+        },
+        {
+          "answer_label": "Apr 28, 2026",
+          "count": 3
+        },
+        {
+          "answer_label": "02/25/2026",
+          "count": 2
+        },
+        {
+          "answer_label": "02/26/2026",
+          "count": 2
+        },
+        {
+          "answer_label": "03/09/2026",
+          "count": 2
+        },
+        {
+          "answer_label": "2026-03-21",
+          "count": 2
+        },
+        {
+          "answer_label": "2026-03-26",
+          "count": 2
+        },
+        {
+          "answer_label": "2026-03-30",
+          "count": 2
+        },
+        {
+          "answer_label": "2026-04-02",
+          "count": 2
+        },
+        {
+          "answer_label": "2026-04-06",
+          "count": 2
+        },
+        {
+          "answer_label": "Apr 21, 2026",
+          "count": 2
+        },
+        {
+          "answer_label": "02/16/2026",
+          "count": 1
+        },
+        {
+          "answer_label": "02/19/2026",
+          "count": 1
+        },
+        {
+          "answer_label": "02/21/2026",
+          "count": 1
+        },
+        {
+          "answer_label": "02/24/2026",
+          "count": 1
+        },
+        {
+          "answer_label": "02/28/2026",
+          "count": 1
+        },
+        {
+          "answer_label": "03/05/2026",
+          "count": 1
+        },
+        {
+          "answer_label": "03/13/2026",
+          "count": 1
+        },
+        {
+          "answer_label": "03/15/2026",
+          "count": 1
+        },
+        {
+          "answer_label": "03/16/2026",
+          "count": 1
+        },
+        {
+          "answer_label": "03/18/2026",
+          "count": 1
+        },
+        {
+          "answer_label": "2026-03-16",
+          "count": 1
+        },
+        {
+          "answer_label": "2026-03-18",
+          "count": 1
+        },
+        {
+          "answer_label": "2026-03-22",
+          "count": 1
+        },
+        {
+          "answer_label": "2026-03-24",
+          "count": 1
+        },
+        {
+          "answer_label": "2026-03-27",
+          "count": 1
+        },
+        {
+          "answer_label": "2026-04-01",
+          "count": 1
+        },
+        {
+          "answer_label": "2026-04-04",
+          "count": 1
+        },
+        {
+          "answer_label": "2026-04-08",
+          "count": 1
+        },
+        {
+          "answer_label": "2026-04-16",
+          "count": 1
+        },
+        {
+          "answer_label": "Apr 13, 2026",
+          "count": 1
+        },
+        {
+          "answer_label": "Apr 18, 2026",
+          "count": 1
+        },
+        {
+          "answer_label": "Apr 19, 2026",
+          "count": 1
+        },
+        {
+          "answer_label": "Apr 22, 2026",
+          "count": 1
+        },
+        {
+          "answer_label": "Apr 24, 2026",
+          "count": 1
+        },
+        {
+          "answer_label": "May 02, 2026",
+          "count": 1
+        },
+        {
+          "answer_label": "May 03, 2026",
+          "count": 1
+        },
+        {
+          "answer_label": "May 06, 2026",
+          "count": 1
+        },
+        {
+          "answer_label": "May 07, 2026",
+          "count": 1
+        },
+        {
+          "answer_label": "May 08, 2026",
+          "count": 1
+        },
+        {
+          "answer_label": "May 10, 2026",
+          "count": 1
+        }
+      ],
+      "unique_answers": 54
+    },
+    "smallest_amount_in_section": {
+      "answer_type_counts": {
+        "string": 100
+      },
+      "checks": {
+        "max_answer_frequency": {
+          "observed": 0.01,
+          "pass": true,
+          "threshold": 0.25
+        },
+        "max_five_bin_frequency": {
+          "observed": null,
+          "pass": null,
+          "status": "not_applicable_non_numeric_answers"
+        },
+        "min_unique_answers": {
+          "observed": 100,
+          "pass": true,
+          "threshold": 5
+        }
+      },
+      "five_bin_numeric": null,
+      "max_answer_count": 1,
+      "max_answer_frequency": 0.01,
+      "pass": true,
+      "sample_count": 100,
+      "top_answers": [
+        {
+          "answer_label": "$1.25",
+          "count": 1
+        },
+        {
+          "answer_label": "$1.30",
+          "count": 1
+        },
+        {
+          "answer_label": "$1.37",
+          "count": 1
+        },
+        {
+          "answer_label": "$1.45",
+          "count": 1
+        },
+        {
+          "answer_label": "$1.69",
+          "count": 1
+        },
+        {
+          "answer_label": "$1.74",
+          "count": 1
+        },
+        {
+          "answer_label": "$1.76",
+          "count": 1
+        },
+        {
+          "answer_label": "$1.81",
+          "count": 1
+        },
+        {
+          "answer_label": "$1.98",
+          "count": 1
+        },
+        {
+          "answer_label": "$10.42",
+          "count": 1
+        },
+        {
+          "answer_label": "$10.66",
+          "count": 1
+        },
+        {
+          "answer_label": "$11.52",
+          "count": 1
+        },
+        {
+          "answer_label": "$11.72",
+          "count": 1
+        },
+        {
+          "answer_label": "$11.80",
+          "count": 1
+        },
+        {
+          "answer_label": "$11.82",
+          "count": 1
+        },
+        {
+          "answer_label": "$11.92",
+          "count": 1
+        },
+        {
+          "answer_label": "$12.09",
+          "count": 1
+        },
+        {
+          "answer_label": "$12.46",
+          "count": 1
+        },
+        {
+          "answer_label": "$12.72",
+          "count": 1
+        },
+        {
+          "answer_label": "$14.39",
+          "count": 1
+        },
+        {
+          "answer_label": "$14.44",
+          "count": 1
+        },
+        {
+          "answer_label": "$14.49",
+          "count": 1
+        },
+        {
+          "answer_label": "$15.02",
+          "count": 1
+        },
+        {
+          "answer_label": "$15.71",
+          "count": 1
+        },
+        {
+          "answer_label": "$15.84",
+          "count": 1
+        },
+        {
+          "answer_label": "$15.92",
+          "count": 1
+        },
+        {
+          "answer_label": "$16.44",
+          "count": 1
+        },
+        {
+          "answer_label": "$16.76",
+          "count": 1
+        },
+        {
+          "answer_label": "$17.46",
+          "count": 1
+        },
+        {
+          "answer_label": "$17.51",
+          "count": 1
+        },
+        {
+          "answer_label": "$17.71",
+          "count": 1
+        },
+        {
+          "answer_label": "$17.77",
+          "count": 1
+        },
+        {
+          "answer_label": "$17.92",
+          "count": 1
+        },
+        {
+          "answer_label": "$18.22",
+          "count": 1
+        },
+        {
+          "answer_label": "$18.35",
+          "count": 1
+        },
+        {
+          "answer_label": "$19.09",
+          "count": 1
+        },
+        {
+          "answer_label": "$19.58",
+          "count": 1
+        },
+        {
+          "answer_label": "$19.70",
+          "count": 1
+        },
+        {
+          "answer_label": "$19.75",
+          "count": 1
+        },
+        {
+          "answer_label": "$2.15",
+          "count": 1
+        },
+        {
+          "answer_label": "$2.19",
+          "count": 1
+        },
+        {
+          "answer_label": "$2.20",
+          "count": 1
+        },
+        {
+          "answer_label": "$2.49",
+          "count": 1
+        },
+        {
+          "answer_label": "$2.62",
+          "count": 1
+        },
+        {
+          "answer_label": "$2.87",
+          "count": 1
+        },
+        {
+          "answer_label": "$2.91",
+          "count": 1
+        },
+        {
+          "answer_label": "$20.46",
+          "count": 1
+        },
+        {
+          "answer_label": "$21.55",
+          "count": 1
+        },
+        {
+          "answer_label": "$21.68",
+          "count": 1
+        },
+        {
+          "answer_label": "$21.98",
+          "count": 1
+        },
+        {
+          "answer_label": "$22.05",
+          "count": 1
+        },
+        {
+          "answer_label": "$23.48",
+          "count": 1
+        },
+        {
+          "answer_label": "$24.50",
+          "count": 1
+        },
+        {
+          "answer_label": "$25.36",
+          "count": 1
+        },
+        {
+          "answer_label": "$25.81",
+          "count": 1
+        },
+        {
+          "answer_label": "$25.89",
+          "count": 1
+        },
+        {
+          "answer_label": "$25.99",
+          "count": 1
+        },
+        {
+          "answer_label": "$26.17",
+          "count": 1
+        },
+        {
+          "answer_label": "$3.22",
+          "count": 1
+        },
+        {
+          "answer_label": "$3.28",
+          "count": 1
+        },
+        {
+          "answer_label": "$3.31",
+          "count": 1
+        },
+        {
+          "answer_label": "$4.40",
+          "count": 1
+        },
+        {
+          "answer_label": "$4.60",
+          "count": 1
+        },
+        {
+          "answer_label": "$4.64",
+          "count": 1
+        },
+        {
+          "answer_label": "$4.77",
+          "count": 1
+        },
+        {
+          "answer_label": "$4.83",
+          "count": 1
+        },
+        {
+          "answer_label": "$4.87",
+          "count": 1
+        },
+        {
+          "answer_label": "$5.13",
+          "count": 1
+        },
+        {
+          "answer_label": "$5.17",
+          "count": 1
+        },
+        {
+          "answer_label": "$5.18",
+          "count": 1
+        },
+        {
+          "answer_label": "$5.36",
+          "count": 1
+        },
+        {
+          "answer_label": "$5.46",
+          "count": 1
+        },
+        {
+          "answer_label": "$5.88",
+          "count": 1
+        },
+        {
+          "answer_label": "$6.06",
+          "count": 1
+        },
+        {
+          "answer_label": "$6.12",
+          "count": 1
+        },
+        {
+          "answer_label": "$6.24",
+          "count": 1
+        },
+        {
+          "answer_label": "$6.40",
+          "count": 1
+        },
+        {
+          "answer_label": "$6.50",
+          "count": 1
+        },
+        {
+          "answer_label": "$6.53",
+          "count": 1
+        },
+        {
+          "answer_label": "$6.70",
+          "count": 1
+        },
+        {
+          "answer_label": "$6.98",
+          "count": 1
+        },
+        {
+          "answer_label": "$7.25",
+          "count": 1
+        },
+        {
+          "answer_label": "$7.29",
+          "count": 1
+        },
+        {
+          "answer_label": "$7.31",
+          "count": 1
+        },
+        {
+          "answer_label": "$7.47",
+          "count": 1
+        },
+        {
+          "answer_label": "$7.53",
+          "count": 1
+        },
+        {
+          "answer_label": "$7.56",
+          "count": 1
+        },
+        {
+          "answer_label": "$7.60",
+          "count": 1
+        },
+        {
+          "answer_label": "$7.67",
+          "count": 1
+        },
+        {
+          "answer_label": "$7.84",
+          "count": 1
+        },
+        {
+          "answer_label": "$7.89",
+          "count": 1
+        },
+        {
+          "answer_label": "$8.54",
+          "count": 1
+        },
+        {
+          "answer_label": "$8.86",
+          "count": 1
+        },
+        {
+          "answer_label": "$8.91",
+          "count": 1
+        },
+        {
+          "answer_label": "$9.03",
+          "count": 1
+        },
+        {
+          "answer_label": "$9.26",
+          "count": 1
+        },
+        {
+          "answer_label": "$9.48",
+          "count": 1
+        },
+        {
+          "answer_label": "$9.53",
+          "count": 1
+        },
+        {
+          "answer_label": "$9.56",
+          "count": 1
+        },
+        {
+          "answer_label": "$9.77",
+          "count": 1
+        }
+      ],
+      "unique_answers": 100
+    }
+  },
+  "sampling_axes": {
+    "scene_variant": {
+      "expected_conflict": true,
+      "expected_probabilities": {
+        "invoice_sheet": 0.5,
+        "receipt_sheet": 0.5
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.41,
+      "observed_counts": {
+        "form_sheet": 20,
+        "invoice_sheet": 41,
+        "receipt_sheet": 39
+      },
+      "sample_count": 100
+    },
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "earliest_date_in_section": 0.25,
+        "largest_amount_in_section": 0.25,
+        "latest_date_in_section": 0.25,
+        "smallest_amount_in_section": 0.25
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.29,
+      "observed_counts": {
+        "earliest_date_in_section": 21,
+        "largest_amount_in_section": 29,
+        "latest_date_in_section": 25,
+        "smallest_amount_in_section": 25
+      },
+      "sample_count": 100
+    }
+  },
+  "task_group": "relation",
+  "task_id": "task_documents_relation_section_extremum_value",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {
+      "earliest_date_in_section": 0.25,
+      "largest_amount_in_section": 0.25,
+      "latest_date_in_section": 0.25,
+      "smallest_amount_in_section": 0.25
+    },
+    "expected_source": "query_params",
+    "has_variants": true,
+    "observed_counts": {
+      "earliest_date_in_section": 21,
+      "largest_amount_in_section": 29,
+      "latest_date_in_section": 25,
+      "smallest_amount_in_section": 25
+    },
+    "status": "reported"
+  }
+}

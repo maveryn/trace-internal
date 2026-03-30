@@ -3873,3 +3873,165 @@ def test_temporal_timeline_defaults_loaded() -> None:
     assert str(prompt_defaults["bundle_id"]).strip() == "temporal_timeline_v1"
     assert str(prompt_defaults["task_family_key"]).strip() == "milestone_timeline"
     assert str(prompt_defaults["task_key"]).strip() == "timeline_milestone_query"
+
+
+def test_documents_readout_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("documents", "readout")
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_documents_readout_field_value",
+    )
+
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "lookup_amount",
+        "lookup_contact",
+        "lookup_date",
+        "lookup_identifier",
+        "lookup_name",
+    ]
+    assert bool(generation_defaults["balanced_task_variant_sampling"]) is True
+    assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
+        "form_sheet",
+        "invoice_sheet",
+        "receipt_sheet",
+    ]
+    assert bool(generation_defaults["balanced_scene_variant_sampling"]) is True
+
+    assert int(rendering_defaults["canvas_width"]) == 1280
+    assert int(rendering_defaults["canvas_height"]) == 920
+    assert int(rendering_defaults["sheet_page_width_px"]) == 960
+    assert int(rendering_defaults["receipt_page_width_px"]) == 520
+    assert int(rendering_defaults["title_font_size_px"]) == 42
+
+    assert str(prompt_defaults["bundle_id"]).strip() == "documents_readout_v1"
+    assert str(prompt_defaults["task_family_key"]).strip() == "structured_document"
+    assert str(prompt_defaults["task_key"]).strip() == "field_lookup_query"
+    assert str(prompt_defaults["evidence_hint"]).strip()
+
+
+def test_documents_arithmetic_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("documents", "arithmetic")
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_documents_arithmetic_section_expression_value",
+    )
+
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "difference_two_amounts_in_section",
+        "sum_minus_amount_in_section",
+        "sum_two_amounts_in_section",
+    ]
+    assert bool(generation_defaults["balanced_task_variant_sampling"]) is True
+    assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
+        "form_sheet",
+        "invoice_sheet",
+        "receipt_sheet",
+    ]
+    assert bool(generation_defaults["balanced_scene_variant_sampling"]) is True
+
+    assert int(rendering_defaults["canvas_width"]) == 1280
+    assert int(rendering_defaults["canvas_height"]) == 920
+    assert int(rendering_defaults["sheet_page_width_px"]) == 960
+    assert int(rendering_defaults["receipt_page_width_px"]) == 520
+    assert int(rendering_defaults["section_font_size_px"]) == 24
+
+    assert str(prompt_defaults["bundle_id"]).strip() == "documents_arithmetic_v1"
+    assert str(prompt_defaults["task_family_key"]).strip() == "structured_document_sections"
+    assert str(prompt_defaults["task_key"]).strip() == "section_expression_query"
+    assert str(prompt_defaults["evidence_hint"]).strip()
+
+
+def test_documents_layout_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("documents", "layout")
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_documents_layout_section_membership_label",
+    )
+
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "section_of_field_label",
+        "section_of_field_value",
+        "section_of_label_value_pair",
+    ]
+    assert bool(generation_defaults["balanced_task_variant_sampling"]) is True
+    assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
+        "form_sheet",
+        "invoice_sheet",
+        "receipt_sheet",
+    ]
+    assert bool(generation_defaults["balanced_scene_variant_sampling"]) is True
+
+    assert int(rendering_defaults["canvas_width"]) == 1280
+    assert int(rendering_defaults["canvas_height"]) == 920
+    assert int(rendering_defaults["sheet_page_width_px"]) == 960
+    assert int(rendering_defaults["receipt_page_width_px"]) == 520
+    assert int(rendering_defaults["section_font_size_px"]) == 24
+
+    assert str(prompt_defaults["bundle_id"]).strip() == "documents_layout_v1"
+    assert str(prompt_defaults["task_family_key"]).strip() == "structured_document_sections"
+    assert str(prompt_defaults["task_key"]).strip() == "section_membership_query"
+    assert str(prompt_defaults["evidence_hint"]).strip()
+
+
+def test_documents_relation_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("documents", "relation")
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_documents_relation_section_extremum_value",
+    )
+
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "earliest_date_in_section",
+        "largest_amount_in_section",
+        "latest_date_in_section",
+        "smallest_amount_in_section",
+    ]
+    assert bool(generation_defaults["balanced_task_variant_sampling"]) is True
+    assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
+        "form_sheet",
+        "invoice_sheet",
+        "receipt_sheet",
+    ]
+    assert bool(generation_defaults["balanced_scene_variant_sampling"]) is True
+
+    assert int(rendering_defaults["canvas_width"]) == 1280
+    assert int(rendering_defaults["canvas_height"]) == 920
+    assert int(rendering_defaults["sheet_page_width_px"]) == 960
+    assert int(rendering_defaults["receipt_page_width_px"]) == 520
+    assert int(rendering_defaults["section_font_size_px"]) == 24
+
+    assert str(prompt_defaults["bundle_id"]).strip() == "documents_relation_v1"
+    assert str(prompt_defaults["task_family_key"]).strip() == "structured_document_sections"
+    assert str(prompt_defaults["task_key"]).strip() == "section_extremum_query"
+    assert str(prompt_defaults["evidence_hint"]).strip()
+
+
+def test_documents_selection_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("documents", "selection")
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_documents_selection_checkbox_count",
+    )
+
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "checked_box_count",
+        "unchecked_box_count",
+    ]
+    assert bool(generation_defaults["balanced_task_variant_sampling"]) is True
+    assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
+        "form_sheet",
+        "invoice_sheet",
+        "receipt_sheet",
+    ]
+    assert bool(generation_defaults["balanced_scene_variant_sampling"]) is True
+
+    assert int(rendering_defaults["canvas_width"]) == 1280
+    assert int(rendering_defaults["canvas_height"]) == 920
+    assert int(rendering_defaults["sheet_page_width_px"]) == 960
+    assert int(rendering_defaults["receipt_page_width_px"]) == 520
+    assert int(rendering_defaults["section_font_size_px"]) == 24
+
+    assert str(prompt_defaults["bundle_id"]).strip() == "documents_selection_v1"
+    assert str(prompt_defaults["task_family_key"]).strip() == "structured_document_sections"
+    assert str(prompt_defaults["task_key"]).strip() == "checkbox_count_query"
+    assert str(prompt_defaults["evidence_hint"]).strip()

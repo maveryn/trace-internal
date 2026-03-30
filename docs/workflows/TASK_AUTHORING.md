@@ -113,6 +113,7 @@ Use this as the implementation checklist for new or modified tasks.
 39. For scene-internal icon frequency tasks, define frequency over `icon_id` only and let color/rotation vary independently; otherwise the task silently turns into appearance matching instead of type-frequency reasoning.
 26. For map-region tasks whose query depends on category rank, make the legend order explicit in the prompt or ask directly about a named legend category; do not require solvers to infer an unstated darker-is-higher convention from the palette alone.
 27. For map-region count tasks, keep prompt-facing evidence as the ordered set of counted region bboxes in map reading order; do not switch evidence ordering to legend order just because the query references a legend category.
+28. For section-local document checkbox-count tasks, keep prompt-facing evidence on the counted checkbox squares in reading order and allow an empty `bbox_set` when the visible count is zero; do not widen zero-count evidence to the full section or page.
 
 ## 4) Config/defaults rules
 1. Precedence: `domain -> task_group -> task/params`.
@@ -219,6 +220,7 @@ Prompt wording rule:
 - for temporal timeline tasks, prefer event-card `bbox_set` evidence over whole-axis or connector-line evidence; keep the witness anchored to the milestone cards even when the reasoning depends on their left-to-right order.
 - for month-view calendar tasks, keep the visual scaffold fixed to one month grid and vary the question through `task_variant`; date-cell `bbox_set` evidence should stay local to the relevant day cells rather than widening to week rows, headers, or the month title.
 - when a task renders text inside compact glyphs or cells, fit the font against the available box instead of assuming one fixed font size will work for every label variant; multi-character labels and alternate glyph shapes should stay readable without overflowing the witness object.
+- when a second documents-family task reuses the same grouped page grammar, promote the shared section templates and typed scene-value builders into a neutral documents shared helper instead of leaving them under one task-group-specific module.
 
 Use `--mode inspection` when only visual/prompt inspection is needed and distribution checks should be skipped.
 

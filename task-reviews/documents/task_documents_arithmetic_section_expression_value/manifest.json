@@ -1,0 +1,15 @@
+{
+  "inspection_count": 75,
+  "task_id": "task_documents_arithmetic_section_expression_value",
+  "variants": {
+    "difference_two_amounts_in_section": 25,
+    "sum_minus_amount_in_section": 25,
+    "sum_two_amounts_in_section": 25
+  },
+  "workbook": "documents/task_documents_arithmetic_section_expression_value/task_documents_arithmetic_section_expression_value.xlsx",
+  "workbook_sheets": {
+    "difference_two_amounts_in_section": "difference_two_amounts_in_secti",
+    "sum_minus_amount_in_section": "sum_minus_amount_in_section",
+    "sum_two_amounts_in_section": "sum_two_amounts_in_section"
+  }
+}

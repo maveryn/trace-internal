@@ -1,0 +1,68 @@
+generation:
+  task_overrides:
+    task_diagrams_schematic_callout_target_label:
+      part_count_min: 5
+      part_count_max: 7
+      balanced_task_variant_sampling: true
+      balanced_scene_variant_sampling: true
+      task_variant_weights:
+        callout_for_named_part: 1.0
+        callout_for_highlighted_part: 1.0
+      scene_variant_weights:
+        annotated_schematic: 1.0
+
+rendering:
+  task_overrides:
+    task_diagrams_schematic_callout_target_label:
+      canvas_width: 1280
+      canvas_height: 900
+      outer_margin_px: 52
+      panel_padding_px: 28
+      panel_corner_radius_px: 30
+      title_font_size_px: 32
+      title_band_height_px: 78
+      chassis_corner_radius_px: 28
+      chassis_border_width_px: 3
+      chassis_fill_rgb: [246, 249, 253]
+      chassis_border_rgb: [191, 199, 210]
+      bus_width_px: 4
+      bus_color_rgb: [205, 212, 221]
+      part_border_width_px: 3
+      part_corner_radius_px: 20
+      part_label_font_size_px: 24
+      part_border_rgb: [84, 94, 108]
+      part_label_color_rgb: [31, 37, 45]
+      part_label_stroke_rgb: [255, 255, 255]
+      callout_diameter_px: 56
+      callout_border_width_px: 3
+      callout_font_size_px: 28
+      callout_fill_rgb: [250, 251, 254]
+      callout_border_rgb: [184, 191, 202]
+      callout_text_rgb: [49, 57, 69]
+      leader_width_px: 4
+      leader_color_rgb: [126, 135, 147]
+      highlight_fill_rgb: [255, 236, 186]
+      highlight_border_rgb: [184, 128, 31]
+      panel_fill_rgb: [252, 252, 255]
+      panel_border_rgb: [88, 98, 112]
+      title_color_rgb: [34, 40, 48]
+
+prompt:
+  shared:
+    bundle_id: diagrams_schematic_v1
+    answer_hint: set "answer" to the exact visible callout label
+  task_overrides:
+    task_diagrams_schematic_callout_target_label:
+      task_family_key: annotated_schematic_diagram
+      task_key: callout_target_query
+      object_description_annotated_schematic: an annotated schematic with labeled parts and external callout circles connected by leader lines
+      evidence_hint_callout_for_named_part: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the named target part
+      evidence_hint_callout_for_highlighted_part: set "evidence" to an array containing exactly one bounding box [x1, y1, x2, y2] for the highlighted target part
+
+complexity:
+  task_overrides:
+    task_diagrams_schematic_callout_target_label:
+      criteria_weights:
+        visual_scan: 0.35
+        reasoning_load: 0.46
+        scene_variant_load: 0.19

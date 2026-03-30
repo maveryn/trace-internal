@@ -1,6 +1,6 @@
 # TRACE Status
 
-Date: 2026-03-29
+Date: 2026-03-30
 
 ## Implemented
 1. Deterministic build pipeline with sidecar trace shards and atomic finalize.
@@ -76,12 +76,22 @@ Date: 2026-03-29
 68. Puzzles spatial now includes `task_puzzles_spatial_fold_result_label`, `task_puzzles_spatial_cube_removal_count`, `task_puzzles_spatial_assembly_label`, and `task_puzzles_spatial_overlay_result_label`, keeping the family on visually local `bbox_set` evidence over either the winning option image or the ordered visible-structure pair.
 69. Puzzles topology now includes `task_puzzles_topology_bead_equivalence_count`, a count task with ordered option-image `bbox_set` evidence over the valid bead-loop matches.
 70. Maps now includes `task_maps_region_association_label` and `task_maps_region_count`, reusing one stylized region+legend scene contract with one-box or ordered-region `bbox_set` evidence on the map itself.
-71. Temporal now includes `task_temporal_clock_readout`, `task_temporal_clock_compare`, `task_temporal_calendar_month_view`, `task_temporal_schedule_day_planner`, and `task_temporal_timeline_milestones`, covering analog clock readout/compare, month-view calendars, day-planner schedules, and milestone timelines with local `bbox_set` evidence on hands, clock faces, date cells, event blocks, and event cards.
-72. Physics now includes `task_physics_mechanics_force_diagram`, the first `mechanics` family task under `domain=physics`, with `scene_variant` values `free_body_box|textured_block`, `query_variant` values `net_horizontal_force|net_vertical_force|balancing_force_horizontal|balancing_force_vertical`, integer answers, and `bbox_set` evidence over either the shown queried-axis arrows (`net_*`) or the marked red `?` arrow (`balancing_force_*`).
-73. Physics now also includes `task_physics_mechanics_lever_balance`, which adds a second diagram-first mechanics family with `scene_variant` values `center_fulcrum|offset_fulcrum|textured_beam`, `query_variant` values `left_torque|right_torque|missing_weight_to_balance`, integer answers, a non-semantic `accent_color_name` palette for the beam / fulcrum / shown weights, and `bbox_set` evidence over either the queried side’s weight blocks or the marked `?` weight block.
-74. Physics now also includes `task_physics_circuits_equivalent_resistance`, the first `circuits` family task under `domain=physics`, with `scene_variant` values `parallel|simple_series_parallel`, `query_variant` values `total_resistance|missing_resistor_value`, integer answers, a non-semantic `accent_color_name` palette for the wires / terminals / resistor boxes, and `bbox_set` evidence over either the full asked resistor set (`total_resistance`) or the marked red `?` resistor (`missing_resistor_value`). Every active scene contains a real parallel section; the single-circuit readout keeps the higher-count `3..4` branch / `4..5` resistor layouts, while the paired missing-resistor scene uses smaller side-by-side circuits with equal total resistance between `A` and `B`.
-75. Physics now also includes `task_physics_optics_ray_trace`, the first `optics` family task under `domain=physics`, with `scene_variant` values `single_mirror|double_mirror|triple_mirror|quad_mirror`, `query_variant` values `bounce_count|target_hit_count`, integer answers, a non-semantic `accent_color_name` palette for the graph-paper board / mirrors, and `graph_point_set` evidence over either the bounce points or the hit target points. The prompt image shows only the initial ray direction, not the solved full path; `target_hit_count` uses large unlabeled target dots, `bounce_count` omits separate bounce circles, mirror count is tied directly to `scene_variant`, and `bounce_count` remains concentrated on `quad_mirror` scenes for healthier answer spread.
-76. Physics now also includes `task_physics_mechanics_spring_extension`, which adds a third mechanics family with `scene_variant` values `paired_springs|staggered_springs|textured_spring`, `query_variant` values `missing_weight_for_extension|missing_extension_for_weight|extension_difference`, integer answers, a non-semantic `accent_color_name` palette for the spring cards / support bars / springs, and `bbox_set` evidence over either the two shown extension markers or the reference/query weight-marker witness set used by the missing-value variants. The task keeps the springs identical by construction and encodes the proportionality only through the visible weight/extension pair rather than through an explicit formula label.
+71. Documents now includes `task_documents_readout_field_value`, the first `readout` task under `domain=documents`, with semantic `task_variant` values `lookup_identifier|lookup_name|lookup_date|lookup_contact|lookup_amount`, visual `scene_variant` values `form_sheet|invoice_sheet|receipt_sheet`, string answers, and ordered `bbox_set` evidence over the queried field label and value. The active page grammar is structured-random rather than free-form: typed field generators feed reusable form, invoice, and receipt layouts instead of long OCR-heavy prose.
+72. Documents now also includes `task_documents_arithmetic_section_expression_value`, the first `arithmetic` task under `domain=documents`, with semantic `task_variant` values `sum_two_amounts_in_section|difference_two_amounts_in_section|sum_minus_amount_in_section`, string answers, and ordered operand-value `bbox_set` evidence only. It reuses the same form/invoice/receipt page grammars, scopes the query to one named section like `Fees`, `Billing Summary`, or `Totals`, and requires both local value lookup and arithmetic over the rendered amounts.
+73. Documents now also includes `task_documents_layout_section_membership_label`, the first `layout` task under `domain=documents`, with semantic `task_variant` values `section_of_field_label|section_of_field_value|section_of_label_value_pair`, string answers, and one-box `bbox_set` evidence over the matching section header. It reuses the same section-aware form/invoice/receipt grammar as the arithmetic task, but shifts the reasoning to layout localization: the model must decide which named block contains the queried field cue rather than reading or computing a field value.
+74. Documents now also includes `task_documents_relation_section_extremum_value`, the first `relation` task under `domain=documents`, with semantic `task_variant` values `earliest_date_in_section|latest_date_in_section|largest_amount_in_section|smallest_amount_in_section`, string answers, and one-box `bbox_set` evidence over the winning value. It reuses the form/invoice/receipt page grammars, adds explicit section chrome so the query targets a named block like `Schedule`, `Dates`, or `Billing Summary`, and keeps the answer grounded in the exact winning visible date or amount.
+75. Documents now also includes `task_documents_selection_checkbox_count`, the first `selection` task under `domain=documents`, with semantic `task_variant` values `checked_box_count|unchecked_box_count`, integer answers, and ordered checkbox-square `bbox_set` evidence over the counted boxes only. It reuses the form/invoice/receipt page grammars, adds explicit checkbox sections like `Delivery Options` or `Contact Preferences`, and keeps the question scoped to one named section instead of the whole page.
+76. Temporal now includes `task_temporal_clock_readout`, `task_temporal_clock_compare`, `task_temporal_calendar_month_view`, `task_temporal_schedule_day_planner`, and `task_temporal_timeline_milestones`, covering analog clock readout/compare, month-view calendars, day-planner schedules, and milestone timelines with local `bbox_set` evidence on hands, clock faces, date cells, event blocks, and event cards.
+77. Diagrams now includes `task_diagrams_flow_next_step_label`, the first `flow` task under `domain=diagrams`, with semantic `task_variant` values `direct_next_step|branch_next_step`, visual `scene_variant` values `flowchart|swimlane`, string answers, and one-box `bbox_set` evidence over the target next-step node. The active renderer keeps one reusable process-diagram contract across plain flowcharts and swimlanes, and branch queries make the selected branch label explicit in the prompt rather than hiding the branch semantics in the image alone.
+78. Diagrams now also includes `task_diagrams_hierarchy_ancestor_label`, the first `hierarchy` task under `domain=diagrams`, with semantic `task_variant` values `parent_of_node|lowest_common_ancestor_of_two_nodes`, visual `scene_variant` value `org_chart`, string answers, and one-box `bbox_set` evidence over the target ancestor node. It reuses one shared org-chart renderer for both hierarchy queries, keeps the prompt focused on visible parent-child structure, and explicitly scores lowest-common-ancestor queries as harder than direct parent lookup in the task complexity trace.
+79. Diagrams now also includes `task_diagrams_cycle_offset_stage_label`, the first `cycle` task under `domain=diagrams`, with semantic `task_variant` values `after_k_steps|before_k_steps`, visual `scene_variant` value `cycle_ring`, string answers, and one-box `bbox_set` evidence over the target stage. It reuses one shared directed-ring renderer, uses short visible names so the cycle can grow to `5..10` stages without overflowing, and records both stage-count and `k`-step offset difficulty in the task complexity trace.
+80. Diagrams now also includes `task_diagrams_set_diagram_region_sum_value`, the first `set_diagram` task under `domain=diagrams`, with semantic `task_variant` values `sum_only_in_named_set|sum_in_named_set|sum_in_named_union|sum_in_named_intersection|sum_in_exactly_two_sets`, visual `scene_variant` value `set_diagram`, integer answers, and ordered `bbox_set` evidence over the contributing digits. It reuses one shared numeric `3`-set renderer with Lab-separated base set colors and alpha-blended overlaps, keeps the prompts explicit about which set semantics define the sum, and records contributing-region count and arithmetic burden in the task complexity trace.
+81. Diagrams now also includes `task_diagrams_schematic_callout_target_label`, the first `schematic` task under `domain=diagrams`, with semantic `task_variant` values `callout_for_named_part|callout_for_highlighted_part`, visual `scene_variant` value `annotated_schematic`, string answers, and one-box `bbox_set` evidence over the queried target part. It reuses one shared annotated-schematic renderer with labeled parts, external callout badges, and visible leader lines, keeps the answer separate from the evidence by returning the callout label instead of the part text, and explicitly scores named-part queries as harder than highlighted-part queries in the task complexity trace.
+82. Physics now includes `task_physics_mechanics_force_diagram`, the first `mechanics` family task under `domain=physics`, with `scene_variant` values `free_body_box|textured_block`, `query_variant` values `net_horizontal_force|net_vertical_force|balancing_force_horizontal|balancing_force_vertical`, integer answers, and `bbox_set` evidence over either the shown queried-axis arrows (`net_*`) or the marked red `?` arrow (`balancing_force_*`).
+83. Physics now also includes `task_physics_mechanics_lever_balance`, which adds a second diagram-first mechanics family with `scene_variant` values `center_fulcrum|offset_fulcrum|textured_beam`, `query_variant` values `left_torque|right_torque|missing_weight_to_balance`, integer answers, a non-semantic `accent_color_name` palette for the beam / fulcrum / shown weights, and `bbox_set` evidence over either the queried side’s weight blocks or the marked `?` weight block.
+84. Physics now also includes `task_physics_circuits_equivalent_resistance`, the first `circuits` family task under `domain=physics`, with `scene_variant` values `parallel|simple_series_parallel`, `query_variant` values `total_resistance|missing_resistor_value`, integer answers, a non-semantic `accent_color_name` palette for the wires / terminals / resistor boxes, and `bbox_set` evidence over either the full asked resistor set (`total_resistance`) or the marked red `?` resistor (`missing_resistor_value`). Every active scene contains a real parallel section; the single-circuit readout keeps the higher-count `3..4` branch / `4..5` resistor layouts, while the paired missing-resistor scene uses smaller side-by-side circuits with equal total resistance between `A` and `B`.
+85. Physics now also includes `task_physics_optics_ray_trace`, the first `optics` family task under `domain=physics`, with `scene_variant` values `single_mirror|double_mirror|triple_mirror|quad_mirror`, `query_variant` values `bounce_count|target_hit_count`, integer answers, a non-semantic `accent_color_name` palette for the graph-paper board / mirrors, and `graph_point_set` evidence over either the bounce points or the hit target points. The prompt image shows only the initial ray direction, not the solved full path; `target_hit_count` uses large unlabeled target dots, `bounce_count` omits separate bounce circles, mirror count is tied directly to `scene_variant`, and `bounce_count` remains concentrated on `quad_mirror` scenes for healthier answer spread.
+86. Physics now also includes `task_physics_mechanics_spring_extension`, which adds a third mechanics family with `scene_variant` values `paired_springs|staggered_springs|textured_spring`, `query_variant` values `missing_weight_for_extension|missing_extension_for_weight|extension_difference`, integer answers, a non-semantic `accent_color_name` palette for the spring cards / support bars / springs, and `bbox_set` evidence over either the two shown extension markers or the reference/query weight-marker witness set used by the missing-value variants. The task keeps the springs identical by construction and encodes the proportionality only through the visible weight/extension pair rather than through an explicit formula label.
 
 ## Active tasks
 1. `task_charts_composition_subset_value` (`domain=charts`, `task_group=composition`)
@@ -129,62 +139,74 @@ Date: 2026-03-29
 43. `task_icons_sequence_missing_count` (`domain=icons`, `task_group=sequence`)
 44. `task_icons_sequence_rotation_violation` (`domain=icons`, `task_group=sequence`)
 45. `task_icons_transformation_pair_count` (`domain=icons`, `task_group=transformation`)
-46. `task_maps_region_association_label` (`domain=maps`, `task_group=region`)
-47. `task_maps_region_count` (`domain=maps`, `task_group=region`)
-48. `task_puzzles_arithmetic_balance_value` (`domain=puzzles`, `task_group=arithmetic`)
-49. `task_puzzles_arithmetic_equation_value` (`domain=puzzles`, `task_group=arithmetic`)
-50. `task_puzzles_arithmetic_grid_value` (`domain=puzzles`, `task_group=arithmetic`)
-51. `task_puzzles_logic_adjacency_completion_label` (`domain=puzzles`, `task_group=logic`)
-52. `task_puzzles_logic_grid_completion_label` (`domain=puzzles`, `task_group=logic`)
-53. `task_puzzles_spatial_assembly_label` (`domain=puzzles`, `task_group=spatial`)
-54. `task_puzzles_spatial_cube_removal_count` (`domain=puzzles`, `task_group=spatial`)
-55. `task_puzzles_spatial_fold_result_label` (`domain=puzzles`, `task_group=spatial`)
-56. `task_puzzles_spatial_overlay_result_label` (`domain=puzzles`, `task_group=spatial`)
-57. `task_puzzles_topology_bead_equivalence_count` (`domain=puzzles`, `task_group=topology`)
-58. `task_tables_counting_value_count` (`domain=tables`, `task_group=counting`)
-59. `task_tables_ranking_label` (`domain=tables`, `task_group=ranking`)
-60. `task_tables_readout_subset_value` (`domain=tables`, `task_group=readout`)
-61. `task_tables_relation_extremum_transfer_value` (`domain=tables`, `task_group=relation`)
-62. `task_tables_relation_row_compare_label` (`domain=tables`, `task_group=relation`)
-63. `task_tables_statistics_filtered_subset_label` (`domain=tables`, `task_group=statistics`)
-64. `task_tables_statistics_filtered_subset_value` (`domain=tables`, `task_group=statistics`)
-65. `task_tables_statistics_summary_label` (`domain=tables`, `task_group=statistics`)
-66. `task_tables_statistics_summary_value` (`domain=tables`, `task_group=statistics`)
-67. `task_tables_temporal_value` (`domain=tables`, `task_group=temporal`)
-68. `task_temporal_calendar_month_view` (`domain=temporal`, `task_group=calendar`)
-69. `task_temporal_clock_compare` (`domain=temporal`, `task_group=clock`)
-70. `task_temporal_clock_readout` (`domain=temporal`, `task_group=clock`)
-71. `task_temporal_schedule_day_planner` (`domain=temporal`, `task_group=schedule`)
-72. `task_temporal_timeline_milestones` (`domain=temporal`, `task_group=timeline`)
-73. `task_tile_count_color_components` (`domain=tile`, `task_group=count`)
-74. `task_tile_count_color_count` (`domain=tile`, `task_group=count`)
-75. `task_tile_count_largest_component_size` (`domain=tile`, `task_group=count`)
-76. `task_tile_path_reachable_target_count` (`domain=tile`, `task_group=path`)
-77. `task_tile_path_shortest_path` (`domain=tile`, `task_group=path`)
-78. `task_tile_pattern_match3_run_count` (`domain=tile`, `task_group=pattern`)
-79. `task_tile_reachability_region_size` (`domain=tile`, `task_group=reachability`)
-80. `task_tile_relation_min_distance` (`domain=tile`, `task_group=relation`)
-81. `task_tile_symmetry_violation_count` (`domain=tile`, `task_group=symmetry`)
-82. `task_tile_transition_gravity_max_drop` (`domain=tile`, `task_group=transition`)
-83. `task_physics_mechanics_force_diagram` (`domain=physics`, `task_group=mechanics`)
-84. `task_physics_mechanics_lever_balance` (`domain=physics`, `task_group=mechanics`)
-85. `task_physics_mechanics_spring_extension` (`domain=physics`, `task_group=mechanics`)
-86. `task_physics_circuits_equivalent_resistance` (`domain=physics`, `task_group=circuits`)
-87. `task_physics_optics_ray_trace` (`domain=physics`, `task_group=optics`)
+46. `task_documents_readout_field_value` (`domain=documents`, `task_group=readout`)
+47. `task_documents_arithmetic_section_expression_value` (`domain=documents`, `task_group=arithmetic`)
+48. `task_documents_layout_section_membership_label` (`domain=documents`, `task_group=layout`)
+49. `task_documents_relation_section_extremum_value` (`domain=documents`, `task_group=relation`)
+50. `task_documents_selection_checkbox_count` (`domain=documents`, `task_group=selection`)
+51. `task_maps_region_association_label` (`domain=maps`, `task_group=region`)
+52. `task_maps_region_count` (`domain=maps`, `task_group=region`)
+53. `task_puzzles_arithmetic_balance_value` (`domain=puzzles`, `task_group=arithmetic`)
+54. `task_puzzles_arithmetic_equation_value` (`domain=puzzles`, `task_group=arithmetic`)
+55. `task_puzzles_arithmetic_grid_value` (`domain=puzzles`, `task_group=arithmetic`)
+56. `task_puzzles_logic_adjacency_completion_label` (`domain=puzzles`, `task_group=logic`)
+57. `task_puzzles_logic_grid_completion_label` (`domain=puzzles`, `task_group=logic`)
+58. `task_puzzles_spatial_assembly_label` (`domain=puzzles`, `task_group=spatial`)
+59. `task_puzzles_spatial_cube_removal_count` (`domain=puzzles`, `task_group=spatial`)
+60. `task_puzzles_spatial_fold_result_label` (`domain=puzzles`, `task_group=spatial`)
+61. `task_puzzles_spatial_overlay_result_label` (`domain=puzzles`, `task_group=spatial`)
+62. `task_puzzles_topology_bead_equivalence_count` (`domain=puzzles`, `task_group=topology`)
+63. `task_tables_counting_value_count` (`domain=tables`, `task_group=counting`)
+64. `task_tables_ranking_label` (`domain=tables`, `task_group=ranking`)
+65. `task_tables_readout_subset_value` (`domain=tables`, `task_group=readout`)
+66. `task_tables_relation_extremum_transfer_value` (`domain=tables`, `task_group=relation`)
+67. `task_tables_relation_row_compare_label` (`domain=tables`, `task_group=relation`)
+68. `task_tables_statistics_filtered_subset_label` (`domain=tables`, `task_group=statistics`)
+69. `task_tables_statistics_filtered_subset_value` (`domain=tables`, `task_group=statistics`)
+70. `task_tables_statistics_summary_label` (`domain=tables`, `task_group=statistics`)
+71. `task_tables_statistics_summary_value` (`domain=tables`, `task_group=statistics`)
+72. `task_tables_temporal_value` (`domain=tables`, `task_group=temporal`)
+73. `task_temporal_calendar_month_view` (`domain=temporal`, `task_group=calendar`)
+74. `task_temporal_clock_compare` (`domain=temporal`, `task_group=clock`)
+75. `task_temporal_clock_readout` (`domain=temporal`, `task_group=clock`)
+76. `task_temporal_schedule_day_planner` (`domain=temporal`, `task_group=schedule`)
+77. `task_temporal_timeline_milestones` (`domain=temporal`, `task_group=timeline`)
+78. `task_tile_count_color_components` (`domain=tile`, `task_group=count`)
+79. `task_tile_count_color_count` (`domain=tile`, `task_group=count`)
+80. `task_tile_count_largest_component_size` (`domain=tile`, `task_group=count`)
+81. `task_tile_path_reachable_target_count` (`domain=tile`, `task_group=path`)
+82. `task_tile_path_shortest_path` (`domain=tile`, `task_group=path`)
+83. `task_tile_pattern_match3_run_count` (`domain=tile`, `task_group=pattern`)
+84. `task_tile_reachability_region_size` (`domain=tile`, `task_group=reachability`)
+85. `task_tile_relation_min_distance` (`domain=tile`, `task_group=relation`)
+86. `task_tile_symmetry_violation_count` (`domain=tile`, `task_group=symmetry`)
+87. `task_tile_transition_gravity_max_drop` (`domain=tile`, `task_group=transition`)
+88. `task_diagrams_flow_next_step_label` (`domain=diagrams`, `task_group=flow`)
+89. `task_diagrams_hierarchy_ancestor_label` (`domain=diagrams`, `task_group=hierarchy`)
+90. `task_diagrams_cycle_offset_stage_label` (`domain=diagrams`, `task_group=cycle`)
+91. `task_diagrams_set_diagram_region_sum_value` (`domain=diagrams`, `task_group=set_diagram`)
+92. `task_diagrams_schematic_callout_target_label` (`domain=diagrams`, `task_group=schematic`)
+93. `task_physics_mechanics_force_diagram` (`domain=physics`, `task_group=mechanics`)
+94. `task_physics_mechanics_lever_balance` (`domain=physics`, `task_group=mechanics`)
+95. `task_physics_mechanics_spring_extension` (`domain=physics`, `task_group=mechanics`)
+96. `task_physics_circuits_equivalent_resistance` (`domain=physics`, `task_group=circuits`)
+97. `task_physics_optics_ray_trace` (`domain=physics`, `task_group=optics`)
 ## Current quality baseline
 1. Tests are required to pass before finalize.
 2. Distribution QA uses `scripts/check_task_answer_distribution.py` with per-variant answer-only checks (`unique_answers >= 5`, `max_answer_frequency < 25%`) and multithreaded sample generation (`--workers`); numeric 5-bin summaries remain reported for review but are not hard pass/fail gates.
 3. Task-review tooling writes per-task artifacts under `task-reviews/<domain>/<task_id>/`, including one inspection workbook named `<task_id>.xlsx` with one sheet per task variant.
-4. There are currently `87` active tasks total: `10` charts, `10` geometry, `10` graph, `15` icons, `2` maps, `5` physics, `10` puzzles, `10` tables, `5` temporal, and `10` tile. The active reviewed task set passes distribution review under the current gates, including the consolidated geometry surface, the graph and temporal domains, the new maps/puzzles additions, and the growing physics domain.
+4. There are currently `97` active tasks total: `10` charts, `5` diagrams, `5` documents, `10` geometry, `10` graph, `15` icons, `2` maps, `5` physics, `10` puzzles, `10` tables, `5` temporal, and `10` tile. The active reviewed task set passes distribution review under the current gates, including the consolidated geometry surface, the graph and temporal domains, the new maps/puzzles/documents/diagrams additions, and the growing physics domain.
 
 ## Next priorities
 1. Extend the new temporal domain beyond the current clock + calendar + schedule + timeline tasks with additional time-structured visual artifacts while keeping each task tied to one stable visual scaffold and a local evidence contract.
 2. Extend the new puzzles domain beyond the current arithmetic + logic + spatial + topology set with additional spatial/topology families while keeping local evidence contracts clean.
 3. Extend the new graph domain beyond the current degree/component/reachability/path/cycle/cut-vertex baseline with richer topology reasoning while keeping the simple labeled node-link contract stable across both undirected and explicitly directed task variants where appropriate.
-4. Expand the new maps domain beyond `task_maps_region_association_label|task_maps_region_count` using the same reusable region+legend scene contract first (`region_compare`, `region_lookup`) before adding transit-map families.
-5. Expand the physics domain beyond `task_physics_mechanics_force_diagram|task_physics_mechanics_lever_balance|task_physics_mechanics_spring_extension|task_physics_circuits_equivalent_resistance|task_physics_optics_ray_trace` with additional mechanics / circuits / optics families while keeping the tasks diagram-first and evidence local to the operative scene objects.
-6. Extend icons beyond the current counting/transformation/relation/sequence/pattern set using the curated Prism asset pipeline (`comparison` and richer pattern/transformation variants remain the next natural families).
-7. Expand the charts domain beyond the current `statistics` + `counting` + `readout` + `multiseries` + `distribution` + `trend` + `composition` set and formalize the next chart reasoning families.
-8. Expand the tables domain with richer row/column relation tasks while keeping `bbox_set` as the fixed table evidence contract.
-9. Introduce cross-domain `scene_variant` and role-binding schema in architecture docs/contracts.
-10. Add future polygon variants as deferred tasks (diameter, min-side, max-side) after current scope stabilizes.
+4. Expand the new documents domain beyond `task_documents_readout_field_value|task_documents_arithmetic_section_expression_value|task_documents_layout_section_membership_label|task_documents_relation_section_extremum_value|task_documents_selection_checkbox_count` with additional OCR-light structured-document families (`key_value` and later `line_items`) while keeping evidence contracts local to the queried visible fields, ordered operand values, matching section headers, winning visible values, or counted checkbox squares.
+5. Expand the new maps domain beyond `task_maps_region_association_label|task_maps_region_count` using the same reusable region+legend scene contract first (`region_compare`, `region_lookup`) before adding transit-map families.
+6. Expand the new diagrams domain beyond `task_diagrams_flow_next_step_label|task_diagrams_hierarchy_ancestor_label|task_diagrams_cycle_offset_stage_label|task_diagrams_set_diagram_region_sum_value|task_diagrams_schematic_callout_target_label` with richer schematic and flow/set tasks while keeping one clean local-evidence diagram contract.
+7. Expand the physics domain beyond `task_physics_mechanics_force_diagram|task_physics_mechanics_lever_balance|task_physics_mechanics_spring_extension|task_physics_circuits_equivalent_resistance|task_physics_optics_ray_trace` with additional mechanics / circuits / optics families while keeping the tasks diagram-first and evidence local to the operative scene objects.
+8. Extend icons beyond the current counting/transformation/relation/sequence/pattern set using the curated Prism asset pipeline (`comparison` and richer pattern/transformation variants remain the next natural families).
+9. Expand the charts domain beyond the current `statistics` + `counting` + `readout` + `multiseries` + `distribution` + `trend` + `composition` set and formalize the next chart reasoning families.
+10. Expand the tables domain with richer row/column relation tasks while keeping `bbox_set` as the fixed table evidence contract.
+11. Introduce cross-domain `scene_variant` and role-binding schema in architecture docs/contracts.
+12. Add future polygon variants as deferred tasks (diameter, min-side, max-side) after current scope stabilizes.

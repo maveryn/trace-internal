@@ -1,0 +1,442 @@
+{
+  "answer_distribution": {
+    "answer_type_counts": {
+      "string": 100
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.03,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": null,
+        "pass": null,
+        "status": "not_applicable_non_numeric_answers"
+      },
+      "min_unique_answers": {
+        "observed": 91,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": null,
+    "max_answer_count": 3,
+    "max_answer_frequency": 0.03,
+    "pass": true,
+    "sample_count": 100,
+    "top_answers": [
+      {
+        "answer_label": "Package Payment",
+        "count": 3
+      },
+      {
+        "answer_label": "Archive Shipment",
+        "count": 2
+      },
+      {
+        "answer_label": "Check Notice",
+        "count": 2
+      },
+      {
+        "answer_label": "Confirm Form",
+        "count": 2
+      },
+      {
+        "answer_label": "Create Ticket",
+        "count": 2
+      },
+      {
+        "answer_label": "Prepare Booking",
+        "count": 2
+      },
+      {
+        "answer_label": "Record Draft",
+        "count": 2
+      },
+      {
+        "answer_label": "Submit File",
+        "count": 2
+      },
+      {
+        "answer_label": "Approve Order",
+        "count": 1
+      },
+      {
+        "answer_label": "Approve Plan",
+        "count": 1
+      },
+      {
+        "answer_label": "Approve Request",
+        "count": 1
+      },
+      {
+        "answer_label": "Archive Approval",
+        "count": 1
+      },
+      {
+        "answer_label": "Archive Draft",
+        "count": 1
+      },
+      {
+        "answer_label": "Archive Invoice",
+        "count": 1
+      },
+      {
+        "answer_label": "Archive Request",
+        "count": 1
+      },
+      {
+        "answer_label": "Archive Return",
+        "count": 1
+      },
+      {
+        "answer_label": "Check File",
+        "count": 1
+      },
+      {
+        "answer_label": "Check Form",
+        "count": 1
+      },
+      {
+        "answer_label": "Check Report",
+        "count": 1
+      },
+      {
+        "answer_label": "Check Request",
+        "count": 1
+      },
+      {
+        "answer_label": "Check Return",
+        "count": 1
+      },
+      {
+        "answer_label": "Check Shipment",
+        "count": 1
+      },
+      {
+        "answer_label": "Check Summary",
+        "count": 1
+      },
+      {
+        "answer_label": "Close Booking",
+        "count": 1
+      },
+      {
+        "answer_label": "Close Draft",
+        "count": 1
+      },
+      {
+        "answer_label": "Close Form",
+        "count": 1
+      },
+      {
+        "answer_label": "Close Record",
+        "count": 1
+      },
+      {
+        "answer_label": "Close Report",
+        "count": 1
+      },
+      {
+        "answer_label": "Confirm Claim",
+        "count": 1
+      },
+      {
+        "answer_label": "Confirm Packet",
+        "count": 1
+      },
+      {
+        "answer_label": "Confirm Payment",
+        "count": 1
+      },
+      {
+        "answer_label": "Confirm Report",
+        "count": 1
+      },
+      {
+        "answer_label": "Confirm Request",
+        "count": 1
+      },
+      {
+        "answer_label": "Create Plan",
+        "count": 1
+      },
+      {
+        "answer_label": "Deliver Order",
+        "count": 1
+      },
+      {
+        "answer_label": "Deliver Plan",
+        "count": 1
+      },
+      {
+        "answer_label": "Inspect Draft",
+        "count": 1
+      },
+      {
+        "answer_label": "Inspect Form",
+        "count": 1
+      },
+      {
+        "answer_label": "Inspect Order",
+        "count": 1
+      },
+      {
+        "answer_label": "Inspect Packet",
+        "count": 1
+      },
+      {
+        "answer_label": "Inspect Profile",
+        "count": 1
+      },
+      {
+        "answer_label": "Inspect Record",
+        "count": 1
+      },
+      {
+        "answer_label": "Issue Approval",
+        "count": 1
+      },
+      {
+        "answer_label": "Issue File",
+        "count": 1
+      },
+      {
+        "answer_label": "Issue Invoice",
+        "count": 1
+      },
+      {
+        "answer_label": "Issue Summary",
+        "count": 1
+      },
+      {
+        "answer_label": "Issue Ticket",
+        "count": 1
+      },
+      {
+        "answer_label": "Log Packet",
+        "count": 1
+      },
+      {
+        "answer_label": "Log Report",
+        "count": 1
+      },
+      {
+        "answer_label": "Log Request",
+        "count": 1
+      },
+      {
+        "answer_label": "Package Draft",
+        "count": 1
+      },
+      {
+        "answer_label": "Package File",
+        "count": 1
+      },
+      {
+        "answer_label": "Package Order",
+        "count": 1
+      },
+      {
+        "answer_label": "Package Packet",
+        "count": 1
+      },
+      {
+        "answer_label": "Package Plan",
+        "count": 1
+      },
+      {
+        "answer_label": "Package Record",
+        "count": 1
+      },
+      {
+        "answer_label": "Package Report",
+        "count": 1
+      },
+      {
+        "answer_label": "Package Return",
+        "count": 1
+      },
+      {
+        "answer_label": "Prepare Claim",
+        "count": 1
+      },
+      {
+        "answer_label": "Prepare Draft",
+        "count": 1
+      },
+      {
+        "answer_label": "Prepare Packet",
+        "count": 1
+      },
+      {
+        "answer_label": "Prepare Shipment",
+        "count": 1
+      },
+      {
+        "answer_label": "Prepare Ticket",
+        "count": 1
+      },
+      {
+        "answer_label": "Record Report",
+        "count": 1
+      },
+      {
+        "answer_label": "Record Return",
+        "count": 1
+      },
+      {
+        "answer_label": "Release Booking",
+        "count": 1
+      },
+      {
+        "answer_label": "Release Claim",
+        "count": 1
+      },
+      {
+        "answer_label": "Release Form",
+        "count": 1
+      },
+      {
+        "answer_label": "Release Return",
+        "count": 1
+      },
+      {
+        "answer_label": "Review Packet",
+        "count": 1
+      },
+      {
+        "answer_label": "Route Draft",
+        "count": 1
+      },
+      {
+        "answer_label": "Route File",
+        "count": 1
+      },
+      {
+        "answer_label": "Route Form",
+        "count": 1
+      },
+      {
+        "answer_label": "Route Notice",
+        "count": 1
+      },
+      {
+        "answer_label": "Route Packet",
+        "count": 1
+      },
+      {
+        "answer_label": "Route Profile",
+        "count": 1
+      },
+      {
+        "answer_label": "Schedule Claim",
+        "count": 1
+      },
+      {
+        "answer_label": "Schedule Payment",
+        "count": 1
+      },
+      {
+        "answer_label": "Schedule Plan",
+        "count": 1
+      },
+      {
+        "answer_label": "Schedule Request",
+        "count": 1
+      },
+      {
+        "answer_label": "Schedule Ticket",
+        "count": 1
+      },
+      {
+        "answer_label": "Submit Approval",
+        "count": 1
+      },
+      {
+        "answer_label": "Submit Draft",
+        "count": 1
+      },
+      {
+        "answer_label": "Submit Notice",
+        "count": 1
+      },
+      {
+        "answer_label": "Update Approval",
+        "count": 1
+      },
+      {
+        "answer_label": "Update Order",
+        "count": 1
+      },
+      {
+        "answer_label": "Update Return",
+        "count": 1
+      },
+      {
+        "answer_label": "Update Ticket",
+        "count": 1
+      },
+      {
+        "answer_label": "Verify File",
+        "count": 1
+      },
+      {
+        "answer_label": "Verify Notice",
+        "count": 1
+      },
+      {
+        "answer_label": "Verify Profile",
+        "count": 1
+      }
+    ],
+    "unique_answers": 91
+  },
+  "sample_count": 100,
+  "sampling_axes": {
+    "scene_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "flowchart": 0.5,
+        "swimlane": 0.5
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.52,
+      "observed_counts": {
+        "flowchart": 52,
+        "swimlane": 48
+      },
+      "sample_count": 100
+    },
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "branch_next_step": 0.5,
+        "direct_next_step": 0.5
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.57,
+      "observed_counts": {
+        "branch_next_step": 57,
+        "direct_next_step": 43
+      },
+      "sample_count": 100
+    }
+  },
+  "task_id": "task_diagrams_flow_next_step_label",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {
+      "branch_next_step": 0.5,
+      "direct_next_step": 0.5
+    },
+    "expected_source": "query_params",
+    "has_variants": true,
+    "observed_counts": {
+      "branch_next_step": 57,
+      "direct_next_step": 43
+    },
+    "status": "reported"
+  }
+}

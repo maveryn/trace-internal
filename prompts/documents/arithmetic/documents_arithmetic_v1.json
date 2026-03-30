@@ -1,0 +1,80 @@
+{
+  "bundle_id": "documents_arithmetic_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "structured_document_sections": [
+      "The image shows {object_description}.",
+      "Look at the document in the image: {object_description}.",
+      "You are given {object_description}.",
+      "Use the structured document in the image: {object_description}.",
+      "Read the named sections in this document: {object_description}."
+    ]
+  },
+  "task_templates": {
+    "section_expression_query": [
+      "{question_text}",
+      "Read the document and answer this question: {question_text}",
+      "Find the named section and then answer: {question_text}",
+      "Use the visible section headers and values to answer: {question_text}",
+      "Locate the relevant section before computing the answer: {question_text}"
+    ]
+  },
+  "task_variant_templates": {
+    "sum_two_amounts_in_section": [
+      "Compute the exact amount from the shown values.",
+      "Return the computed amount in the same currency format.",
+      "Respond with the exact amount obtained from the visible values.",
+      "Give the computed amount as written in $0.00 format.",
+      "Answer using the resulting amount only."
+    ],
+    "difference_two_amounts_in_section": [
+      "Compute the exact amount from the shown values.",
+      "Return the computed amount in the same currency format.",
+      "Respond with the exact amount obtained from the visible values.",
+      "Give the computed amount as written in $0.00 format.",
+      "Answer using the resulting amount only."
+    ],
+    "sum_minus_amount_in_section": [
+      "Compute the exact amount from the shown values.",
+      "Return the computed amount in the same currency format.",
+      "Respond with the exact amount obtained from the visible values.",
+      "Give the computed amount as written in $0.00 format.",
+      "Answer using the resulting amount only."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:structured_document_sections": [
+      "object_description"
+    ],
+    "task:section_expression_query": [
+      "question_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

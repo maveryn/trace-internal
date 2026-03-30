@@ -1,0 +1,13 @@
+{
+  "inspection_count": 50,
+  "task_id": "task_diagrams_hierarchy_ancestor_label",
+  "variants": {
+    "lowest_common_ancestor_of_two_nodes": 25,
+    "parent_of_node": 25
+  },
+  "workbook": "diagrams/task_diagrams_hierarchy_ancestor_label/task_diagrams_hierarchy_ancestor_label.xlsx",
+  "workbook_sheets": {
+    "lowest_common_ancestor_of_two_nodes": "lowest_common_ancestor_of_two_n",
+    "parent_of_node": "parent_of_node"
+  }
+}

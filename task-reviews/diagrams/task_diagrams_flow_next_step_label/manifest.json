@@ -1,0 +1,13 @@
+{
+  "inspection_count": 50,
+  "task_id": "task_diagrams_flow_next_step_label",
+  "variants": {
+    "branch_next_step": 25,
+    "direct_next_step": 25
+  },
+  "workbook": "diagrams/task_diagrams_flow_next_step_label/task_diagrams_flow_next_step_label.xlsx",
+  "workbook_sheets": {
+    "branch_next_step": "branch_next_step",
+    "direct_next_step": "direct_next_step"
+  }
+}

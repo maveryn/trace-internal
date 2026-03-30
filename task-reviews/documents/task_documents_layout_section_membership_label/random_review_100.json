@@ -1,0 +1,124 @@
+{
+  "answer_distribution": {
+    "answer_type_counts": {
+      "string": 100
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.16,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": null,
+        "pass": null,
+        "status": "not_applicable_non_numeric_answers"
+      },
+      "min_unique_answers": {
+        "observed": 10,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": null,
+    "max_answer_count": 16,
+    "max_answer_frequency": 0.16,
+    "pass": true,
+    "sample_count": 100,
+    "top_answers": [
+      {
+        "answer_label": "Totals",
+        "count": 16
+      },
+      {
+        "answer_label": "Fees",
+        "count": 12
+      },
+      {
+        "answer_label": "Parties",
+        "count": 12
+      },
+      {
+        "answer_label": "Billing Summary",
+        "count": 11
+      },
+      {
+        "answer_label": "Profile",
+        "count": 11
+      },
+      {
+        "answer_label": "Purchase Info",
+        "count": 11
+      },
+      {
+        "answer_label": "Contact",
+        "count": 8
+      },
+      {
+        "answer_label": "Store Details",
+        "count": 8
+      },
+      {
+        "answer_label": "Dates",
+        "count": 6
+      },
+      {
+        "answer_label": "Account",
+        "count": 5
+      }
+    ],
+    "unique_answers": 10
+  },
+  "sample_count": 100,
+  "sampling_axes": {
+    "scene_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "form_sheet": 0.3333333333333333,
+        "invoice_sheet": 0.3333333333333333,
+        "receipt_sheet": 0.3333333333333333
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.35,
+      "observed_counts": {
+        "form_sheet": 31,
+        "invoice_sheet": 34,
+        "receipt_sheet": 35
+      },
+      "sample_count": 100
+    },
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "section_of_field_label": 0.3333333333333333,
+        "section_of_field_value": 0.3333333333333333,
+        "section_of_label_value_pair": 0.3333333333333333
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.35,
+      "observed_counts": {
+        "section_of_field_label": 35,
+        "section_of_field_value": 33,
+        "section_of_label_value_pair": 32
+      },
+      "sample_count": 100
+    }
+  },
+  "task_id": "task_documents_layout_section_membership_label",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {
+      "section_of_field_label": 0.3333333333333333,
+      "section_of_field_value": 0.3333333333333333,
+      "section_of_label_value_pair": 0.3333333333333333
+    },
+    "expected_source": "query_params",
+    "has_variants": true,
+    "observed_counts": {
+      "section_of_field_label": 35,
+      "section_of_field_value": 33,
+      "section_of_label_value_pair": 32
+    },
+    "status": "reported"
+  }
+}

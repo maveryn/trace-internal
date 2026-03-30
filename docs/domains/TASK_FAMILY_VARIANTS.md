@@ -93,6 +93,46 @@ Define how we split tasks into reusable families so each dataset slice stays com
 7. Prompt-facing region-label evidence should stay as one-box `bbox_set` grounding on the winning region, while region-count tasks use one ordered bbox per counted region.
 8. When a map task's reasoning depends on legend colors, enforce or validate the active category palette in Lab space and record the threshold in trace metadata.
 
+## Diagrams direction (current)
+1. Diagrams should stay schematic and diagram-native; do not use `diagrams` for generic graph problems or document layouts with a few connectors.
+2. The active early diagrams families are `flow`, `hierarchy`, `cycle`, `set_diagram`, and `schematic`.
+3. `task_diagrams_flow_next_step_label` uses semantic `task_variant` values `direct_next_step` and `branch_next_step`.
+4. `task_diagrams_flow_next_step_label` uses visual `scene_variant` values `flowchart` and `swimlane`.
+5. `task_diagrams_hierarchy_ancestor_label` uses semantic `task_variant` values `parent_of_node` and `lowest_common_ancestor_of_two_nodes`.
+6. `task_diagrams_hierarchy_ancestor_label` uses visual `scene_variant` value `org_chart`.
+7. `task_diagrams_cycle_offset_stage_label` uses semantic `task_variant` values `after_k_steps` and `before_k_steps`.
+8. `task_diagrams_cycle_offset_stage_label` uses visual `scene_variant` value `cycle_ring`.
+9. `task_diagrams_set_diagram_region_sum_value` uses semantic `task_variant` values `sum_only_in_named_set`, `sum_in_named_set`, `sum_in_named_union`, `sum_in_named_intersection`, and `sum_in_exactly_two_sets`.
+10. `task_diagrams_set_diagram_region_sum_value` uses visual `scene_variant` value `set_diagram`.
+11. `task_diagrams_schematic_callout_target_label` uses semantic `task_variant` values `callout_for_named_part` and `callout_for_highlighted_part`.
+12. `task_diagrams_schematic_callout_target_label` uses visual `scene_variant` value `annotated_schematic`.
+13. Prompt-facing flow evidence should stay as one-box `bbox_set` grounding on the target next-step node; keep lane and branch-label geometry in trace unless a later task explicitly queries those elements.
+14. Prompt-facing hierarchy evidence should stay as one-box `bbox_set` grounding on the target ancestor node; keep connector geometry in trace unless a later task explicitly queries the connectors themselves.
+15. Prompt-facing cycle evidence should stay as one-box `bbox_set` grounding on the target stage; keep arrow and direction-badge geometry in trace unless a later task explicitly queries those elements.
+16. Prompt-facing set-diagram evidence should stay on the contributing digits themselves as an ordered `bbox_set`; keep region geometry in trace unless a later task explicitly queries the regions themselves.
+17. Prompt-facing schematic evidence should stay on the queried target part rather than the answer badge; keep callout-circle and leader-line geometry in trace unless a later task explicitly queries those elements.
+18. Swimlane remains a visual scene variant inside `flow`, not a separate task group, as long as the reasoning contract is still “follow the visible process structure.”
+19. Org-chart hierarchy should stay tree-native; if a later diagram starts depending on arbitrary node-link structure instead of rooted parent-child containment, it likely belongs back in `graph`.
+
+## Documents direction (current)
+1. Documents should start with structured page reasoning families such as `readout`, `arithmetic`, `layout`, `relation`, `selection`, and later `line_items`; avoid counting a task as `documents` if it is really a free-form OCR paragraph benchmark.
+2. The active early documents families are `readout`, `arithmetic`, `layout`, `relation`, and `selection`.
+3. `task_documents_readout_field_value` uses semantic `task_variant` values `lookup_identifier`, `lookup_name`, `lookup_date`, `lookup_contact`, and `lookup_amount`.
+4. `task_documents_arithmetic_section_expression_value` uses semantic `task_variant` values `sum_two_amounts_in_section`, `difference_two_amounts_in_section`, and `sum_minus_amount_in_section`.
+5. `task_documents_layout_section_membership_label` uses semantic `task_variant` values `section_of_field_label`, `section_of_field_value`, and `section_of_label_value_pair`.
+6. `task_documents_relation_section_extremum_value` uses semantic `task_variant` values `earliest_date_in_section`, `latest_date_in_section`, `largest_amount_in_section`, and `smallest_amount_in_section`.
+7. `task_documents_selection_checkbox_count` uses semantic `task_variant` values `checked_box_count` and `unchecked_box_count`.
+8. The active document task families all use visual `scene_variant` values drawn from `form_sheet`, `invoice_sheet`, and `receipt_sheet`.
+9. Document arithmetic, layout, and relation tasks should target a named visible section like `Profile`, `Fees`, `Dates`, `Billing Summary`, or `Totals` so the model must localize the relevant block before answering.
+10. The active structured-document grammar keeps the same label/value semantics across the three page styles:
+   - boxed field grids for forms,
+   - header blocks and summary boxes for invoices,
+   - narrow labeled rows for receipts.
+11. Prompt-facing document readout evidence should stay as one ordered `bbox_set` pair `[label_bbox, value_bbox]`.
+12. Prompt-facing document arithmetic evidence should stay as the ordered operand value boxes only; do not widen it to the whole section or include unrelated labels when the computation is local to visible amount fields.
+13. Prompt-facing document layout evidence should stay as the matching section-header bbox only; do not widen section-membership tasks to the whole section or full page when the answer is one named block.
+14. Document text generation should stay typed and short; prefer IDs, dates, amounts, names, and contact fields over long prose in early families.
+
 ## Puzzles direction (current)
 1. Puzzles use `task_group` for hidden-rule reasoning families such as `arithmetic`, `logic`, `spatial`, and `topology`; avoid splitting families by one-off visual templates when the reasoning contract is still the same.
 2. Early arithmetic puzzle tasks should favor explicit unknown slots so evidence can stay local and visually obvious.

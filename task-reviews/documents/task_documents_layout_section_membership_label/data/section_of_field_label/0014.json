@@ -1,0 +1,1062 @@
+{
+  "answer_gt": {
+    "type": "string",
+    "value": "Totals"
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        410.0,
+        582.0,
+        513.0,
+        604.0
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "documents/task_documents_layout_section_membership_label/images/section_of_field_label/0014.png"
+  },
+  "instance_seed": 5501817052596417,
+  "prompt": "Look at the document in the image: a receipt-style document with visible section headers and labeled totals rows. Which section contains the field labeled Tax? Return the exact section title shown. Give the exact section title shown for the matching block.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer field: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the document in the image: a receipt-style document with visible section headers and labeled totals rows. Which section contains the field labeled Tax? Return the exact section title shown. Give the exact section title shown for the matching block.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer field: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}",
+    "answer_only": "Look at the document in the image: a receipt-style document with visible section headers and labeled totals rows. Which section contains the field labeled Tax? Return the exact section title shown. Give the exact section title shown for the matching block.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"answer\":\"Billing Summary\"}"
+  },
+  "task": "task_documents_layout_section_membership_label",
+  "task_variant": "section_of_field_label",
+  "trace_payload": {
+    "answer_gt": {
+      "type": "string",
+      "value": "Totals"
+    },
+    "background": {
+      "available_styles": [
+        "paper_light"
+      ],
+      "enabled": true,
+      "selected_style": "paper_light",
+      "style_spec": {
+        "color": [
+          241,
+          241,
+          238
+        ],
+        "kind": "solid"
+      }
+    },
+    "evidence_gt": {
+      "type": "bbox_set",
+      "value": [
+        [
+          410.0,
+          582.0,
+          513.0,
+          604.0
+        ]
+      ]
+    },
+    "execution_trace": {
+      "field_count": 9,
+      "field_specs": [
+        {
+          "comparison_kind": "other",
+          "field_id": "store_name",
+          "field_label": "Store Name",
+          "field_value": "Maple Partners",
+          "label_bbox_id": "store_name:label",
+          "section_id": "store_details",
+          "section_label": "Store Details",
+          "value_bbox_id": "store_name:value"
+        },
+        {
+          "comparison_kind": "other",
+          "field_id": "receipt_number",
+          "field_label": "Receipt No.",
+          "field_value": "R-23171",
+          "label_bbox_id": "receipt_number:label",
+          "section_id": "store_details",
+          "section_label": "Store Details",
+          "value_bbox_id": "receipt_number:value"
+        },
+        {
+          "comparison_kind": "other",
+          "field_id": "cashier_name",
+          "field_label": "Cashier",
+          "field_value": "Mara Nguyen",
+          "label_bbox_id": "cashier_name:label",
+          "section_id": "store_details",
+          "section_label": "Store Details",
+          "value_bbox_id": "cashier_name:value"
+        },
+        {
+          "comparison_kind": "other",
+          "field_id": "purchase_date",
+          "field_label": "Purchase Date",
+          "field_value": "Apr 10, 2026",
+          "label_bbox_id": "purchase_date:label",
+          "section_id": "purchase_info",
+          "section_label": "Purchase Info",
+          "value_bbox_id": "purchase_date:value"
+        },
+        {
+          "comparison_kind": "other",
+          "field_id": "member_id",
+          "field_label": "Member ID",
+          "field_value": "M-8905",
+          "label_bbox_id": "member_id:label",
+          "section_id": "purchase_info",
+          "section_label": "Purchase Info",
+          "value_bbox_id": "member_id:value"
+        },
+        {
+          "comparison_kind": "other",
+          "field_id": "register_id",
+          "field_label": "Register ID",
+          "field_value": "REG-496",
+          "label_bbox_id": "register_id:label",
+          "section_id": "purchase_info",
+          "section_label": "Purchase Info",
+          "value_bbox_id": "register_id:value"
+        },
+        {
+          "comparison_kind": "amount",
+          "field_id": "items_total",
+          "field_label": "Items Total",
+          "field_value": "$83.32",
+          "label_bbox_id": "items_total:label",
+          "section_id": "totals",
+          "section_label": "Totals",
+          "value_bbox_id": "items_total:value"
+        },
+        {
+          "comparison_kind": "amount",
+          "field_id": "tax_amount",
+          "field_label": "Tax",
+          "field_value": "$3.97",
+          "label_bbox_id": "tax_amount:label",
+          "section_id": "totals",
+          "section_label": "Totals",
+          "value_bbox_id": "tax_amount:value"
+        },
+        {
+          "comparison_kind": "amount",
+          "field_id": "discount_amount",
+          "field_label": "Discount",
+          "field_value": "$4.63",
+          "label_bbox_id": "discount_amount:label",
+          "section_id": "totals",
+          "section_label": "Totals",
+          "value_bbox_id": "discount_amount:value"
+        }
+      ],
+      "query_field_id": "tax_amount",
+      "query_field_label": "Tax",
+      "query_field_value": "$3.97",
+      "query_section_id": "totals",
+      "query_section_label": "Totals",
+      "query_section_label_bbox_id": "totals",
+      "question_format": "document_section_membership_label",
+      "question_text": "Which section contains the field labeled Tax? Return the exact section title shown.",
+      "scene_title": "Receipt",
+      "scene_variant": "receipt_sheet",
+      "section_specs": [
+        {
+          "field_ids": [
+            "store_name",
+            "receipt_number",
+            "cashier_name"
+          ],
+          "section_id": "store_details",
+          "section_label": "Store Details"
+        },
+        {
+          "field_ids": [
+            "purchase_date",
+            "member_id",
+            "register_id"
+          ],
+          "section_id": "purchase_info",
+          "section_label": "Purchase Info"
+        },
+        {
+          "field_ids": [
+            "items_total",
+            "tax_amount",
+            "discount_amount"
+          ],
+          "section_id": "totals",
+          "section_label": "Totals"
+        }
+      ],
+      "task_variant": "section_of_field_label",
+      "view_family": "structured_document"
+    },
+    "post_image_noise": {
+      "applied": false,
+      "apply_prob": 0.0,
+      "edit_count_range": [
+        1,
+        2
+      ],
+      "edit_types": [
+        "blur",
+        "downsample",
+        "jpeg",
+        "noise"
+      ],
+      "edits": [],
+      "enabled": false
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          410.0,
+          582.0,
+          513.0,
+          604.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "field_count": 9,
+        "field_count_range": [
+          9,
+          11
+        ],
+        "scene_variant": "receipt_sheet",
+        "scene_variant_probabilities": {
+          "form_sheet": 0.3333333333333333,
+          "invoice_sheet": 0.3333333333333333,
+          "receipt_sheet": 0.3333333333333333
+        },
+        "section_count": 3,
+        "task_variant": "section_of_field_label",
+        "task_variant_probabilities": {
+          "section_of_field_label": 1.0,
+          "section_of_field_value": 0.0,
+          "section_of_label_value_pair": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 3,
+        "prompt_bundle_id": "documents_layout_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the exact section title shown in the document",
+          "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box for the matching section header",
+          "json_example": "{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}",
+          "json_example_answer_only": "{\"answer\":\"Billing Summary\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a receipt-style document with visible section headers and labeled totals rows",
+          "question_text": "Which section contains the field labeled Tax? Return the exact section title shown."
+        },
+        "task_family_key": "structured_document_sections",
+        "task_family_variant_index": 1,
+        "task_key": "section_membership_query",
+        "task_variant_index": 0,
+        "task_variant_key": "section_of_field_label",
+        "task_variant_template_index": 3,
+        "template_paths": [
+          "documents/layout/documents_layout_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:section_membership_query": 5,
+          "task_family:structured_document_sections": 5,
+          "task_variant:section_of_field_label": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "documents_layout_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact section title shown in the document",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box for the matching section header",
+              "json_example": "{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}",
+              "json_example_answer_only": "{\"answer\":\"Billing Summary\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a receipt-style document with visible section headers and labeled totals rows",
+              "question_text": "Which section contains the field labeled Tax? Return the exact section title shown."
+            },
+            "task_family_key": "structured_document_sections",
+            "task_family_variant_index": 1,
+            "task_key": "section_membership_query",
+            "task_variant_index": 0,
+            "task_variant_key": "section_of_field_label",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "documents/layout/documents_layout_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:section_membership_query": 5,
+              "task_family:structured_document_sections": 5,
+              "task_variant:section_of_field_label": 5
+            }
+          },
+          "prompt": "Look at the document in the image: a receipt-style document with visible section headers and labeled totals rows. Which section contains the field labeled Tax? Return the exact section title shown. Give the exact section title shown for the matching block.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence field: set \"evidence\" to an array containing exactly one bounding box for the matching section header.\nAnswer field: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "documents_layout_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact section title shown in the document",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box for the matching section header",
+              "json_example": "{\"evidence\":[[132,182,260,214]],\"answer\":\"Billing Summary\"}",
+              "json_example_answer_only": "{\"answer\":\"Billing Summary\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a receipt-style document with visible section headers and labeled totals rows",
+              "question_text": "Which section contains the field labeled Tax? Return the exact section title shown."
+            },
+            "task_family_key": "structured_document_sections",
+            "task_family_variant_index": 1,
+            "task_key": "section_membership_query",
+            "task_variant_index": 0,
+            "task_variant_key": "section_of_field_label",
+            "task_variant_template_index": 3,
+            "template_paths": [
+              "documents/layout/documents_layout_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:section_membership_query": 5,
+              "task_family:structured_document_sections": 5,
+              "task_variant:section_of_field_label": 5
+            }
+          },
+          "prompt": "Look at the document in the image: a receipt-style document with visible section headers and labeled totals rows. Which section contains the field labeled Tax? Return the exact section title shown. Give the exact section title shown for the matching block.\nReturn a valid JSON object with key \"answer\".\nAnswer format: set \"answer\" to the exact section title shown in the document.\nExample JSON:\n{\"answer\":\"Billing Summary\"}"
+        }
+      },
+      "task_variant": "section_of_field_label",
+      "template_id": "documents_layout_v1"
+    },
+    "render_map": {
+      "field_box_bboxes_px": {
+        "cashier_name": [
+          406.0,
+          332.0,
+          874.0,
+          392.0
+        ],
+        "discount_amount": [
+          406.0,
+          752.0,
+          874.0,
+          812.0
+        ],
+        "items_total": [
+          406.0,
+          612.0,
+          874.0,
+          672.0
+        ],
+        "member_id": [
+          406.0,
+          472.0,
+          874.0,
+          532.0
+        ],
+        "purchase_date": [
+          406.0,
+          402.0,
+          874.0,
+          462.0
+        ],
+        "receipt_number": [
+          406.0,
+          262.0,
+          874.0,
+          322.0
+        ],
+        "register_id": [
+          406.0,
+          542.0,
+          874.0,
+          602.0
+        ],
+        "store_name": [
+          406.0,
+          192.0,
+          874.0,
+          252.0
+        ],
+        "tax_amount": [
+          406.0,
+          682.0,
+          874.0,
+          742.0
+        ]
+      },
+      "field_label_bboxes_px": {
+        "cashier_name:label": [
+          416.0,
+          352.5,
+          512.0,
+          371.5
+        ],
+        "discount_amount:label": [
+          416.0,
+          772.5,
+          528.0,
+          791.5
+        ],
+        "items_total:label": [
+          416.0,
+          632.5,
+          560.0,
+          651.5
+        ],
+        "member_id:label": [
+          416.0,
+          492.5,
+          554.0,
+          511.5
+        ],
+        "purchase_date:label": [
+          416.0,
+          423.0,
+          588.0,
+          441.0
+        ],
+        "receipt_number:label": [
+          416.0,
+          280.0,
+          562.0,
+          304.0
+        ],
+        "register_id:label": [
+          416.0,
+          560.0,
+          558.0,
+          584.0
+        ],
+        "store_name:label": [
+          416.0,
+          213.0,
+          565.0,
+          231.0
+        ],
+        "tax_amount:label": [
+          416.0,
+          703.0,
+          462.0,
+          721.0
+        ]
+      },
+      "field_value_bboxes_px": {
+        "cashier_name:value": [
+          674.0,
+          348.0,
+          864.0,
+          376.0
+        ],
+        "discount_amount:value": [
+          781.0,
+          768.5,
+          864.0,
+          795.5
+        ],
+        "items_total:value": [
+          763.0,
+          628.5,
+          864.0,
+          655.5
+        ],
+        "member_id:value": [
+          756.0,
+          491.0,
+          864.0,
+          513.0
+        ],
+        "purchase_date:value": [
+          678.0,
+          418.0,
+          864.0,
+          446.0
+        ],
+        "receipt_number:value": [
+          743.0,
+          281.0,
+          864.0,
+          303.0
+        ],
+        "register_id:value": [
+          739.0,
+          561.0,
+          864.0,
+          583.0
+        ],
+        "store_name:value": [
+          650.0,
+          207.5,
+          864.0,
+          236.5
+        ],
+        "tax_amount:value": [
+          781.0,
+          698.5,
+          864.0,
+          725.5
+        ]
+      },
+      "page_bbox_px": [
+        380.0,
+        80.0,
+        900.0,
+        840.0
+      ],
+      "section_box_bboxes_px": {
+        "purchase_info": [
+          394.0,
+          366.0,
+          886.0,
+          614.0
+        ],
+        "store_details": [
+          394.0,
+          163.5,
+          886.0,
+          404.0
+        ],
+        "totals": [
+          394.0,
+          576.0,
+          886.0,
+          824.0
+        ]
+      },
+      "section_label_bboxes_px": {
+        "purchase_info": [
+          410.0,
+          372.0,
+          608.0,
+          394.0
+        ],
+        "store_details": [
+          410.0,
+          169.5,
+          600.0,
+          187.5
+        ],
+        "totals": [
+          410.0,
+          582.0,
+          513.0,
+          604.0
+        ]
+      },
+      "title_bbox_px": [
+        411.0,
+        100.5,
+        590.0,
+        143.5
+      ]
+    },
+    "render_spec": {
+      "canvas_height": 920,
+      "canvas_width": 1280,
+      "geometry_seed": 5501817052596417,
+      "page_shadow_offset_px": 14,
+      "receipt_page_height_px": 760,
+      "receipt_page_width_px": 520,
+      "scene_variant": "receipt_sheet",
+      "sheet_page_height_px": 760,
+      "sheet_page_width_px": 960
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox_id": "page",
+          "bbox_px": [
+            380.0,
+            80.0,
+            900.0,
+            840.0
+          ],
+          "entity_id": "page",
+          "entity_type": "document_page"
+        },
+        {
+          "bbox_id": "title",
+          "bbox_px": [
+            411.0,
+            100.5,
+            590.0,
+            143.5
+          ],
+          "entity_id": "title",
+          "entity_type": "document_title",
+          "text": "Receipt"
+        },
+        {
+          "bbox_id": "store_details",
+          "bbox_px": [
+            394.0,
+            163.5,
+            886.0,
+            404.0
+          ],
+          "entity_id": "store_details:section",
+          "entity_type": "document_section",
+          "field_ids": [
+            "store_name",
+            "receipt_number",
+            "cashier_name"
+          ],
+          "section_id": "store_details"
+        },
+        {
+          "bbox_id": "purchase_info",
+          "bbox_px": [
+            394.0,
+            366.0,
+            886.0,
+            614.0
+          ],
+          "entity_id": "purchase_info:section",
+          "entity_type": "document_section",
+          "field_ids": [
+            "purchase_date",
+            "member_id",
+            "register_id"
+          ],
+          "section_id": "purchase_info"
+        },
+        {
+          "bbox_id": "totals",
+          "bbox_px": [
+            394.0,
+            576.0,
+            886.0,
+            824.0
+          ],
+          "entity_id": "totals:section",
+          "entity_type": "document_section",
+          "field_ids": [
+            "items_total",
+            "tax_amount",
+            "discount_amount"
+          ],
+          "section_id": "totals"
+        },
+        {
+          "bbox_id": "store_name",
+          "bbox_px": [
+            406.0,
+            192.0,
+            874.0,
+            252.0
+          ],
+          "entity_id": "store_name:field",
+          "entity_type": "document_field_box",
+          "field_id": "store_name"
+        },
+        {
+          "bbox_id": "store_name:label",
+          "bbox_px": [
+            416.0,
+            213.0,
+            565.0,
+            231.0
+          ],
+          "entity_id": "store_name:label",
+          "entity_type": "document_field_label",
+          "field_id": "store_name",
+          "text": "Store Name"
+        },
+        {
+          "bbox_id": "store_name:value",
+          "bbox_px": [
+            650.0,
+            207.5,
+            864.0,
+            236.5
+          ],
+          "entity_id": "store_name:value",
+          "entity_type": "document_field_value",
+          "field_id": "store_name",
+          "text": "Maple Partners"
+        },
+        {
+          "bbox_id": "receipt_number",
+          "bbox_px": [
+            406.0,
+            262.0,
+            874.0,
+            322.0
+          ],
+          "entity_id": "receipt_number:field",
+          "entity_type": "document_field_box",
+          "field_id": "receipt_number"
+        },
+        {
+          "bbox_id": "receipt_number:label",
+          "bbox_px": [
+            416.0,
+            280.0,
+            562.0,
+            304.0
+          ],
+          "entity_id": "receipt_number:label",
+          "entity_type": "document_field_label",
+          "field_id": "receipt_number",
+          "text": "Receipt No."
+        },
+        {
+          "bbox_id": "receipt_number:value",
+          "bbox_px": [
+            743.0,
+            281.0,
+            864.0,
+            303.0
+          ],
+          "entity_id": "receipt_number:value",
+          "entity_type": "document_field_value",
+          "field_id": "receipt_number",
+          "text": "R-23171"
+        },
+        {
+          "bbox_id": "cashier_name",
+          "bbox_px": [
+            406.0,
+            332.0,
+            874.0,
+            392.0
+          ],
+          "entity_id": "cashier_name:field",
+          "entity_type": "document_field_box",
+          "field_id": "cashier_name"
+        },
+        {
+          "bbox_id": "cashier_name:label",
+          "bbox_px": [
+            416.0,
+            352.5,
+            512.0,
+            371.5
+          ],
+          "entity_id": "cashier_name:label",
+          "entity_type": "document_field_label",
+          "field_id": "cashier_name",
+          "text": "Cashier"
+        },
+        {
+          "bbox_id": "cashier_name:value",
+          "bbox_px": [
+            674.0,
+            348.0,
+            864.0,
+            376.0
+          ],
+          "entity_id": "cashier_name:value",
+          "entity_type": "document_field_value",
+          "field_id": "cashier_name",
+          "text": "Mara Nguyen"
+        },
+        {
+          "bbox_id": "purchase_date",
+          "bbox_px": [
+            406.0,
+            402.0,
+            874.0,
+            462.0
+          ],
+          "entity_id": "purchase_date:field",
+          "entity_type": "document_field_box",
+          "field_id": "purchase_date"
+        },
+        {
+          "bbox_id": "purchase_date:label",
+          "bbox_px": [
+            416.0,
+            423.0,
+            588.0,
+            441.0
+          ],
+          "entity_id": "purchase_date:label",
+          "entity_type": "document_field_label",
+          "field_id": "purchase_date",
+          "text": "Purchase Date"
+        },
+        {
+          "bbox_id": "purchase_date:value",
+          "bbox_px": [
+            678.0,
+            418.0,
+            864.0,
+            446.0
+          ],
+          "entity_id": "purchase_date:value",
+          "entity_type": "document_field_value",
+          "field_id": "purchase_date",
+          "text": "Apr 10, 2026"
+        },
+        {
+          "bbox_id": "member_id",
+          "bbox_px": [
+            406.0,
+            472.0,
+            874.0,
+            532.0
+          ],
+          "entity_id": "member_id:field",
+          "entity_type": "document_field_box",
+          "field_id": "member_id"
+        },
+        {
+          "bbox_id": "member_id:label",
+          "bbox_px": [
+            416.0,
+            492.5,
+            554.0,
+            511.5
+          ],
+          "entity_id": "member_id:label",
+          "entity_type": "document_field_label",
+          "field_id": "member_id",
+          "text": "Member ID"
+        },
+        {
+          "bbox_id": "member_id:value",
+          "bbox_px": [
+            756.0,
+            491.0,
+            864.0,
+            513.0
+          ],
+          "entity_id": "member_id:value",
+          "entity_type": "document_field_value",
+          "field_id": "member_id",
+          "text": "M-8905"
+        },
+        {
+          "bbox_id": "register_id",
+          "bbox_px": [
+            406.0,
+            542.0,
+            874.0,
+            602.0
+          ],
+          "entity_id": "register_id:field",
+          "entity_type": "document_field_box",
+          "field_id": "register_id"
+        },
+        {
+          "bbox_id": "register_id:label",
+          "bbox_px": [
+            416.0,
+            560.0,
+            558.0,
+            584.0
+          ],
+          "entity_id": "register_id:label",
+          "entity_type": "document_field_label",
+          "field_id": "register_id",
+          "text": "Register ID"
+        },
+        {
+          "bbox_id": "register_id:value",
+          "bbox_px": [
+            739.0,
+            561.0,
+            864.0,
+            583.0
+          ],
+          "entity_id": "register_id:value",
+          "entity_type": "document_field_value",
+          "field_id": "register_id",
+          "text": "REG-496"
+        },
+        {
+          "bbox_id": "items_total",
+          "bbox_px": [
+            406.0,
+            612.0,
+            874.0,
+            672.0
+          ],
+          "entity_id": "items_total:field",
+          "entity_type": "document_field_box",
+          "field_id": "items_total"
+        },
+        {
+          "bbox_id": "items_total:label",
+          "bbox_px": [
+            416.0,
+            632.5,
+            560.0,
+            651.5
+          ],
+          "entity_id": "items_total:label",
+          "entity_type": "document_field_label",
+          "field_id": "items_total",
+          "text": "Items Total"
+        },
+        {
+          "bbox_id": "items_total:value",
+          "bbox_px": [
+            763.0,
+            628.5,
+            864.0,
+            655.5
+          ],
+          "entity_id": "items_total:value",
+          "entity_type": "document_field_value",
+          "field_id": "items_total",
+          "text": "$83.32"
+        },
+        {
+          "bbox_id": "tax_amount",
+          "bbox_px": [
+            406.0,
+            682.0,
+            874.0,
+            742.0
+          ],
+          "entity_id": "tax_amount:field",
+          "entity_type": "document_field_box",
+          "field_id": "tax_amount"
+        },
+        {
+          "bbox_id": "tax_amount:label",
+          "bbox_px": [
+            416.0,
+            703.0,
+            462.0,
+            721.0
+          ],
+          "entity_id": "tax_amount:label",
+          "entity_type": "document_field_label",
+          "field_id": "tax_amount",
+          "text": "Tax"
+        },
+        {
+          "bbox_id": "tax_amount:value",
+          "bbox_px": [
+            781.0,
+            698.5,
+            864.0,
+            725.5
+          ],
+          "entity_id": "tax_amount:value",
+          "entity_type": "document_field_value",
+          "field_id": "tax_amount",
+          "text": "$3.97"
+        },
+        {
+          "bbox_id": "discount_amount",
+          "bbox_px": [
+            406.0,
+            752.0,
+            874.0,
+            812.0
+          ],
+          "entity_id": "discount_amount:field",
+          "entity_type": "document_field_box",
+          "field_id": "discount_amount"
+        },
+        {
+          "bbox_id": "discount_amount:label",
+          "bbox_px": [
+            416.0,
+            772.5,
+            528.0,
+            791.5
+          ],
+          "entity_id": "discount_amount:label",
+          "entity_type": "document_field_label",
+          "field_id": "discount_amount",
+          "text": "Discount"
+        },
+        {
+          "bbox_id": "discount_amount:value",
+          "bbox_px": [
+            781.0,
+            768.5,
+            864.0,
+            795.5
+          ],
+          "entity_id": "discount_amount:value",
+          "entity_type": "document_field_value",
+          "field_id": "discount_amount",
+          "text": "$4.63"
+        },
+        {
+          "bbox_id": "store_details:label",
+          "bbox_px": [
+            410.0,
+            169.5,
+            600.0,
+            187.5
+          ],
+          "entity_id": "store_details:label",
+          "entity_type": "document_section_label",
+          "section_id": "store_details",
+          "text": "Store Details"
+        },
+        {
+          "bbox_id": "purchase_info:label",
+          "bbox_px": [
+            410.0,
+            372.0,
+            608.0,
+            394.0
+          ],
+          "entity_id": "purchase_info:label",
+          "entity_type": "document_section_label",
+          "section_id": "purchase_info",
+          "text": "Purchase Info"
+        },
+        {
+          "bbox_id": "totals:label",
+          "bbox_px": [
+            410.0,
+            582.0,
+            513.0,
+            604.0
+          ],
+          "entity_id": "totals:label",
+          "entity_type": "document_section_label",
+          "section_id": "totals",
+          "text": "Totals"
+        }
+      ],
+      "relations": {
+        "query_section_id": "totals",
+        "query_section_label": "Totals",
+        "scene_variant": "receipt_sheet",
+        "task_variant": "section_of_field_label",
+        "view_family": "structured_document"
+      },
+      "scene_kind": "document_receipt_sheet"
+    },
+    "witness_symbolic": {
+      "bbox_id_sequence": [
+        "totals"
+      ],
+      "field_id": "tax_amount"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

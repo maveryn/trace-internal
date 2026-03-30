@@ -1,0 +1,73 @@
+{
+  "bundle_id": "documents_selection_v1",
+  "schema_version": "v1",
+  "task_family_templates": {
+    "structured_document_sections": [
+      "The image shows {object_description}.",
+      "Look at the document in the image: {object_description}.",
+      "You are given {object_description}.",
+      "Use the structured document in the image: {object_description}.",
+      "Read the named sections in this document: {object_description}."
+    ]
+  },
+  "task_templates": {
+    "checkbox_count_query": [
+      "{question_text}",
+      "Read the document and answer this question: {question_text}",
+      "Find the named section and then answer: {question_text}",
+      "Use the visible section headers and checkboxes to answer: {question_text}",
+      "Locate the relevant checkbox section before answering: {question_text}"
+    ]
+  },
+  "task_variant_templates": {
+    "checked_box_count": [
+      "Answer with the count as an integer.",
+      "Return only the number of checked boxes.",
+      "Respond with the integer count of checked boxes.",
+      "Give the count of checked boxes as an integer.",
+      "Answer using the checkbox count only."
+    ],
+    "unchecked_box_count": [
+      "Answer with the count as an integer.",
+      "Return only the number of unchecked boxes.",
+      "Respond with the integer count of unchecked boxes.",
+      "Give the count of unchecked boxes as an integer.",
+      "Answer using the checkbox count only."
+    ]
+  },
+  "required_slots_by_key": {
+    "task_family:structured_document_sections": [
+      "object_description"
+    ],
+    "task:checkbox_count_query": [
+      "question_text"
+    ],
+    "answer_or_evidence:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "answer_or_evidence:answer_and_evidence": [
+      "json_output_contract",
+      "evidence_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "answer_or_evidence_templates": {
+    "answer_only": [
+      "{json_output_contract_answer_only}\nAnswer: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+      "{json_output_contract_answer_only}\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+    ],
+    "answer_and_evidence": [
+      "{json_output_contract}\nEvidence: {evidence_hint}.\nAnswer: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence requirement: {evidence_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence format: {evidence_hint}.\nAnswer requirement: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence field: {evidence_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+      "{json_output_contract}\nEvidence rule: {evidence_hint}.\nAnswer rule: {answer_hint}.\nExample JSON:\n{json_example}"
+    ]
+  }
+}

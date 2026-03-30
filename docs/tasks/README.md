@@ -80,3 +80,4 @@ Current task docs:
 70. [task_puzzles_spatial_overlay_result_label.md](task_puzzles_spatial_overlay_result_label.md)
 71. [task_puzzles_logic_adjacency_completion_label.md](task_puzzles_logic_adjacency_completion_label.md)
 72. [task_maps_region_association_label.md](task_maps_region_association_label.md)
+73. [task_maps_region_count.md](task_maps_region_count.md)

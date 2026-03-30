@@ -17,6 +17,13 @@
       "Based on the legend and the labeled regions, {question_text}",
       "Determine the correct labeled region: {question_text}",
       "Read the legend and then answer this question: {question_text}"
+    ],
+    "region_count_query": [
+      "{question_text}",
+      "Using the legend, {question_text}",
+      "Count the matching labeled regions: {question_text}",
+      "Based on the legend and the labeled regions, {question_text}",
+      "Read the legend and then answer this counting question: {question_text}"
     ]
   },
   "task_variant_templates": {
@@ -40,6 +47,27 @@
       "Respond with the correct region letter.",
       "Give the exact region letter.",
       "Answer using the labeled region letter."
+    ],
+    "count_regions_in_category": [
+      "Answer with the count as an integer.",
+      "Return the number of matching regions.",
+      "Respond with the exact count.",
+      "Give the count as an integer.",
+      "Answer using the integer count."
+    ],
+    "count_regions_above_category": [
+      "Answer with the count as an integer.",
+      "Return the number of matching regions.",
+      "Respond with the exact count.",
+      "Give the count as an integer.",
+      "Answer using the integer count."
+    ],
+    "count_regions_below_category": [
+      "Answer with the count as an integer.",
+      "Return the number of matching regions.",
+      "Respond with the exact count.",
+      "Give the count as an integer.",
+      "Answer using the integer count."
     ]
   },
   "required_slots_by_key": {
@@ -47,6 +75,9 @@
       "object_description"
     ],
     "task:region_association_query": [
+      "question_text"
+    ],
+    "task:region_count_query": [
       "question_text"
     ],
     "answer_or_evidence:answer_only": [

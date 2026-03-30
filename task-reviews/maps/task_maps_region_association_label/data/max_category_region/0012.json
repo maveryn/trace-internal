@@ -151,8 +151,8 @@
           "region_label": "A"
         },
         {
-          "category_index": 2,
-          "category_label": "High",
+          "category_index": 1,
+          "category_label": "Moderate",
           "cells": [
             [
               2,
@@ -200,9 +200,9 @@
             ]
           ],
           "fill_rgb": [
-            70,
-            124,
-            80
+            205,
+            216,
+            71
           ],
           "region_bbox_id": "region_bbox_B",
           "region_id": "region_B",
@@ -293,8 +293,8 @@
           "region_label": "D"
         },
         {
-          "category_index": 1,
-          "category_label": "Moderate",
+          "category_index": 0,
+          "category_label": "Low",
           "cells": [
             [
               1,
@@ -318,9 +318,9 @@
             ]
           ],
           "fill_rgb": [
-            205,
-            216,
-            71
+            170,
+            100,
+            155
           ],
           "region_bbox_id": "region_bbox_E",
           "region_id": "region_E",
@@ -732,12 +732,12 @@
         },
         {
           "attrs": {
-            "category_index": 2,
-            "category_label": "High",
+            "category_index": 1,
+            "category_label": "Moderate",
             "fill_rgb": [
-              70,
-              124,
-              80
+              205,
+              216,
+              71
             ],
             "region_label": "B"
           },
@@ -1159,12 +1159,12 @@
         },
         {
           "attrs": {
-            "category_index": 1,
-            "category_label": "Moderate",
+            "category_index": 0,
+            "category_label": "Low",
             "fill_rgb": [
-              205,
-              216,
-              71
+              170,
+              100,
+              155
             ],
             "region_label": "E"
           },

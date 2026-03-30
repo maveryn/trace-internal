@@ -117,8 +117,8 @@
       ],
       "region_specs": [
         {
-          "category_index": 0,
-          "category_label": "Low",
+          "category_index": 2,
+          "category_label": "High",
           "cells": [
             [
               0,
@@ -150,9 +150,9 @@
             ]
           ],
           "fill_rgb": [
-            120,
-            210,
-            111
+            221,
+            93,
+            68
           ],
           "region_bbox_id": "region_bbox_A",
           "region_id": "region_A",
@@ -605,12 +605,12 @@
         },
         {
           "attrs": {
-            "category_index": 0,
-            "category_label": "Low",
+            "category_index": 2,
+            "category_label": "High",
             "fill_rgb": [
-              120,
-              210,
-              111
+              221,
+              93,
+              68
             ],
             "region_label": "A"
           },

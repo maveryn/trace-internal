@@ -21,10 +21,10 @@ This document captures the concrete reusable setup for the first `maps` task fam
 1. `task_group=region`
 2. Active task:
    - `task_maps_region_association_label`
+   - `task_maps_region_count`
 3. Active semantic variants:
-   - `max_category_region`
-   - `min_category_region`
-   - `matches_legend_bin`
+   - association task: `max_category_region`, `min_category_region`, `matches_legend_bin`
+   - count task: `count_regions_in_category`, `count_regions_above_category`, `count_regions_below_category`
 4. Active visual variants:
    - `map_strip`
    - `map_card`
@@ -34,7 +34,7 @@ This document captures the concrete reusable setup for the first `maps` task fam
 ## 4) Evidence policy
 1. Label-answer region tasks should keep prompt-facing evidence local:
    - `bbox_set` with exactly one bbox for the answer region.
-2. Future count-style region tasks may use one bbox per counted region in reading order.
+2. Count-style region tasks should use one bbox per counted region in reading order.
 3. Do not ask for legend swatch evidence unless the task is specifically about the legend item itself.
 
 ## 5) Color policy

@@ -117,8 +117,8 @@
       ],
       "region_specs": [
         {
-          "category_index": 2,
-          "category_label": "High",
+          "category_index": 0,
+          "category_label": "Low",
           "cells": [
             [
               0,
@@ -154,17 +154,17 @@
             ]
           ],
           "fill_rgb": [
+            184,
             71,
-            76,
-            99
+            189
           ],
           "region_bbox_id": "region_bbox_A",
           "region_id": "region_A",
           "region_label": "A"
         },
         {
-          "category_index": 2,
-          "category_label": "High",
+          "category_index": 0,
+          "category_label": "Low",
           "cells": [
             [
               1,
@@ -196,9 +196,9 @@
             ]
           ],
           "fill_rgb": [
+            184,
             71,
-            76,
-            99
+            189
           ],
           "region_bbox_id": "region_bbox_B",
           "region_id": "region_B",
@@ -269,8 +269,8 @@
           "region_label": "D"
         },
         {
-          "category_index": 1,
-          "category_label": "Moderate",
+          "category_index": 2,
+          "category_label": "High",
           "cells": [
             [
               4,
@@ -286,17 +286,17 @@
             ]
           ],
           "fill_rgb": [
-            108,
-            224,
-            95
+            71,
+            76,
+            99
           ],
           "region_bbox_id": "region_bbox_E",
           "region_id": "region_E",
           "region_label": "E"
         },
         {
-          "category_index": 1,
-          "category_label": "Moderate",
+          "category_index": 0,
+          "category_label": "Low",
           "cells": [
             [
               5,
@@ -312,9 +312,9 @@
             ]
           ],
           "fill_rgb": [
-            108,
-            224,
-            95
+            184,
+            71,
+            189
           ],
           "region_bbox_id": "region_bbox_F",
           "region_id": "region_F",
@@ -633,12 +633,12 @@
         },
         {
           "attrs": {
-            "category_index": 2,
-            "category_label": "High",
+            "category_index": 0,
+            "category_label": "Low",
             "fill_rgb": [
+              184,
               71,
-              76,
-              99
+              189
             ],
             "region_label": "A"
           },
@@ -771,12 +771,12 @@
         },
         {
           "attrs": {
-            "category_index": 2,
-            "category_label": "High",
+            "category_index": 0,
+            "category_label": "Low",
             "fill_rgb": [
+              184,
               71,
-              76,
-              99
+              189
             ],
             "region_label": "B"
           },
@@ -1081,12 +1081,12 @@
         },
         {
           "attrs": {
-            "category_index": 1,
-            "category_label": "Moderate",
+            "category_index": 2,
+            "category_label": "High",
             "fill_rgb": [
-              108,
-              224,
-              95
+              71,
+              76,
+              99
             ],
             "region_label": "E"
           },
@@ -1154,12 +1154,12 @@
         },
         {
           "attrs": {
-            "category_index": 1,
-            "category_label": "Moderate",
+            "category_index": 0,
+            "category_label": "Low",
             "fill_rgb": [
-              108,
-              224,
-              95
+              184,
+              71,
+              189
             ],
             "region_label": "F"
           },

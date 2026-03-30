@@ -117,8 +117,8 @@
       ],
       "region_specs": [
         {
-          "category_index": 3,
-          "category_label": "Very high",
+          "category_index": 2,
+          "category_label": "High",
           "cells": [
             [
               0,
@@ -138,9 +138,9 @@
             ]
           ],
           "fill_rgb": [
-            71,
-            132,
-            127
+            133,
+            72,
+            210
           ],
           "region_bbox_id": "region_bbox_A",
           "region_id": "region_A",
@@ -199,8 +199,8 @@
           "region_label": "C"
         },
         {
-          "category_index": 3,
-          "category_label": "Very high",
+          "category_index": 1,
+          "category_label": "Moderate",
           "cells": [
             [
               0,
@@ -220,9 +220,9 @@
             ]
           ],
           "fill_rgb": [
-            71,
-            132,
-            127
+            122,
+            191,
+            91
           ],
           "region_bbox_id": "region_bbox_D",
           "region_id": "region_D",
@@ -653,12 +653,12 @@
         },
         {
           "attrs": {
-            "category_index": 3,
-            "category_label": "Very high",
+            "category_index": 2,
+            "category_label": "High",
             "fill_rgb": [
-              71,
-              132,
-              127
+              133,
+              72,
+              210
             ],
             "region_label": "A"
           },
@@ -885,12 +885,12 @@
         },
         {
           "attrs": {
-            "category_index": 3,
-            "category_label": "Very high",
+            "category_index": 1,
+            "category_label": "Moderate",
             "fill_rgb": [
-              71,
-              132,
-              127
+              122,
+              191,
+              91
             ],
             "region_label": "D"
           },

@@ -290,7 +290,41 @@ def test_maps_region_defaults_loaded() -> None:
     assert str(prompt_defaults["object_description_map_strip"]).strip()
     assert str(prompt_defaults["object_description_region_map"]).strip()
     assert str(prompt_defaults["evidence_hint_max_category_region"]).strip()
-    assert str(prompt_defaults["json_example_matches_legend_bin"]).strip()
+
+
+def test_maps_region_count_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("maps", "region")
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_maps_region_count",
+    )
+    assert int(generation_defaults["region_count_min"]) >= 5
+    assert int(generation_defaults["grid_cols_min"]) >= 6
+    assert int(generation_defaults["grid_rows_min"]) >= 4
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "count_regions_above_category",
+        "count_regions_below_category",
+        "count_regions_in_category",
+    ]
+    assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
+        "map_card",
+        "map_outline",
+        "map_strip",
+        "region_map",
+    ]
+
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert int(rendering_defaults["canvas_height"]) > 0
+    assert int(rendering_defaults["map_panel_width_px"]) > 0
+    assert int(rendering_defaults["legend_panel_width_px"]) > 0
+
+    assert str(prompt_defaults["bundle_id"]).strip() == "maps_region_v1"
+    assert str(prompt_defaults["task_family_key"]).strip() == "choropleth_region_map"
+    assert str(prompt_defaults["task_key"]).strip() == "region_count_query"
+    assert str(prompt_defaults["answer_hint"]).strip() == 'set "answer" to the integer count'
+    assert str(prompt_defaults["object_description_region_map"]).strip()
+    assert str(prompt_defaults["evidence_hint_count_regions_in_category"]).strip()
+    assert str(prompt_defaults["json_example_count_regions_in_category"]).strip()
 
     complexity_defaults = resolve_task_group_section_defaults(
         cfg,

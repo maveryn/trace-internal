@@ -70,9 +70,9 @@
           "category_index": 0,
           "category_label": "Low",
           "fill_rgb": [
-            158,
             74,
-            142
+            142,
+            78
           ],
           "legend_entry_id": "legend_entry_0"
         },
@@ -80,9 +80,9 @@
           "category_index": 1,
           "category_label": "Moderate",
           "fill_rgb": [
-            87,
             187,
-            74
+            74,
+            170
           ],
           "legend_entry_id": "legend_entry_1"
         },
@@ -90,9 +90,9 @@
           "category_index": 2,
           "category_label": "High",
           "fill_rgb": [
-            224,
-            121,
-            80
+            214,
+            133,
+            77
           ],
           "legend_entry_id": "legend_entry_2"
         },
@@ -100,9 +100,9 @@
           "category_index": 3,
           "category_label": "Very high",
           "fill_rgb": [
-            81,
-            105,
-            85
+            70,
+            129,
+            199
           ],
           "legend_entry_id": "legend_entry_3"
         }
@@ -117,8 +117,8 @@
       ],
       "region_specs": [
         {
-          "category_index": 2,
-          "category_label": "High",
+          "category_index": 1,
+          "category_label": "Moderate",
           "cells": [
             [
               0,
@@ -138,9 +138,9 @@
             ]
           ],
           "fill_rgb": [
-            224,
-            121,
-            80
+            187,
+            74,
+            170
           ],
           "region_bbox_id": "region_bbox_A",
           "region_id": "region_A",
@@ -168,9 +168,9 @@
             ]
           ],
           "fill_rgb": [
-            81,
-            105,
-            85
+            70,
+            129,
+            199
           ],
           "region_bbox_id": "region_bbox_B",
           "region_id": "region_B",
@@ -202,17 +202,17 @@
             ]
           ],
           "fill_rgb": [
-            158,
             74,
-            142
+            142,
+            78
           ],
           "region_bbox_id": "region_bbox_C",
           "region_id": "region_C",
           "region_label": "C"
         },
         {
-          "category_index": 2,
-          "category_label": "High",
+          "category_index": 1,
+          "category_label": "Moderate",
           "cells": [
             [
               4,
@@ -232,17 +232,17 @@
             ]
           ],
           "fill_rgb": [
-            224,
-            121,
-            80
+            187,
+            74,
+            170
           ],
           "region_bbox_id": "region_bbox_D",
           "region_id": "region_D",
           "region_label": "D"
         },
         {
-          "category_index": 1,
-          "category_label": "Moderate",
+          "category_index": 2,
+          "category_label": "High",
           "cells": [
             [
               5,
@@ -270,17 +270,17 @@
             ]
           ],
           "fill_rgb": [
-            87,
-            187,
-            74
+            214,
+            133,
+            77
           ],
           "region_bbox_id": "region_bbox_E",
           "region_id": "region_E",
           "region_label": "E"
         },
         {
-          "category_index": 3,
-          "category_label": "Very high",
+          "category_index": 1,
+          "category_label": "Moderate",
           "cells": [
             [
               0,
@@ -292,9 +292,9 @@
             ]
           ],
           "fill_rgb": [
-            81,
-            105,
-            85
+            187,
+            74,
+            170
           ],
           "region_bbox_id": "region_bbox_F",
           "region_id": "region_F",
@@ -318,9 +318,9 @@
             ]
           ],
           "fill_rgb": [
-            81,
-            105,
-            85
+            70,
+            129,
+            199
           ],
           "region_bbox_id": "region_bbox_G",
           "region_id": "region_G",
@@ -658,12 +658,12 @@
         },
         {
           "attrs": {
-            "category_index": 2,
-            "category_label": "High",
+            "category_index": 1,
+            "category_label": "Moderate",
             "fill_rgb": [
-              224,
-              121,
-              80
+              187,
+              74,
+              170
             ],
             "region_label": "A"
           },
@@ -747,9 +747,9 @@
             "category_index": 3,
             "category_label": "Very high",
             "fill_rgb": [
-              81,
-              105,
-              85
+              70,
+              129,
+              199
             ],
             "region_label": "B"
           },
@@ -833,9 +833,9 @@
             "category_index": 0,
             "category_label": "Low",
             "fill_rgb": [
-              158,
               74,
-              142
+              142,
+              78
             ],
             "region_label": "C"
           },
@@ -929,12 +929,12 @@
         },
         {
           "attrs": {
-            "category_index": 2,
-            "category_label": "High",
+            "category_index": 1,
+            "category_label": "Moderate",
             "fill_rgb": [
-              224,
-              121,
-              80
+              187,
+              74,
+              170
             ],
             "region_label": "D"
           },
@@ -1015,12 +1015,12 @@
         },
         {
           "attrs": {
-            "category_index": 1,
-            "category_label": "Moderate",
+            "category_index": 2,
+            "category_label": "High",
             "fill_rgb": [
-              87,
-              187,
-              74
+              214,
+              133,
+              77
             ],
             "region_label": "E"
           },
@@ -1127,12 +1127,12 @@
         },
         {
           "attrs": {
-            "category_index": 3,
-            "category_label": "Very high",
+            "category_index": 1,
+            "category_label": "Moderate",
             "fill_rgb": [
-              81,
-              105,
-              85
+              187,
+              74,
+              170
             ],
             "region_label": "F"
           },
@@ -1190,9 +1190,9 @@
             "category_index": 3,
             "category_label": "Very high",
             "fill_rgb": [
-              81,
-              105,
-              85
+              70,
+              129,
+              199
             ],
             "region_label": "G"
           },
@@ -1263,9 +1263,9 @@
             "category_index": 0,
             "category_label": "Low",
             "fill_rgb": [
-              158,
               74,
-              142
+              142,
+              78
             ]
           },
           "bbox_px": [
@@ -1282,9 +1282,9 @@
             "category_index": 1,
             "category_label": "Moderate",
             "fill_rgb": [
-              87,
               187,
-              74
+              74,
+              170
             ]
           },
           "bbox_px": [
@@ -1301,9 +1301,9 @@
             "category_index": 2,
             "category_label": "High",
             "fill_rgb": [
-              224,
-              121,
-              80
+              214,
+              133,
+              77
             ]
           },
           "bbox_px": [
@@ -1320,9 +1320,9 @@
             "category_index": 3,
             "category_label": "Very high",
             "fill_rgb": [
-              81,
-              105,
-              85
+              70,
+              129,
+              199
             ]
           },
           "bbox_px": [

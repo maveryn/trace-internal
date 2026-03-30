@@ -151,4 +151,4 @@ Active task-to-bundle mapping:
    - `task_puzzles_spatial_fold_result_label|task_puzzles_spatial_cube_removal_count|task_puzzles_spatial_assembly_label|task_puzzles_spatial_overlay_result_label` -> `puzzles_spatial_v1`
    - `task_puzzles_topology_bead_equivalence_count` -> `puzzles_topology_v1`
 11. Maps:
-   - `task_maps_region_association_label` -> `maps_region_v1`
+   - `task_maps_region_association_label|task_maps_region_count` -> `maps_region_v1`

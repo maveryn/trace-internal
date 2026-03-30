@@ -161,6 +161,7 @@ Use this checklist during implementation and refactor reviews.
 143. For explicit-rule logic adjacency puzzles, make the prompt name the full touch scope (edge-only vs edge-and-corner) and verify the visible neighborhood plus option pool leave exactly one valid candidate; do not assume a local non-touch rule is unique unless the generator proves it.
 144. When an active task set changes inside an existing domain, update the core inventories (`docs/core/PROMPT_SYSTEM.md`, `docs/core/SYSTEM_ARCHITECTURE.md`) in the same patch as the task docs and status pages; do not leave core bundle/module maps trailing the live task surface.
 145. For early map-region tasks, reuse one synthetic contiguous region-partition plus legend scene contract instead of tying the domain to real country outlines or visible tile grids; keep prompt-facing evidence on region bboxes and make legend order explicit when category rank matters.
+146. For map-region count tasks, order prompt-facing `bbox_set` evidence by counted region reading order rather than legend order; the evidence should enumerate the matching regions on the map, not the legend bins that justify the threshold.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

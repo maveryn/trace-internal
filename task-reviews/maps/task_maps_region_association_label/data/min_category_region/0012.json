@@ -155,8 +155,8 @@
           "region_label": "A"
         },
         {
-          "category_index": 3,
-          "category_label": "Very high",
+          "category_index": 1,
+          "category_label": "Moderate",
           "cells": [
             [
               3,
@@ -184,9 +184,9 @@
             ]
           ],
           "fill_rgb": [
-            212,
-            100,
-            70
+            83,
+            167,
+            75
           ],
           "region_bbox_id": "region_bbox_B",
           "region_id": "region_B",
@@ -261,8 +261,8 @@
           "region_label": "D"
         },
         {
-          "category_index": 1,
-          "category_label": "Moderate",
+          "category_index": 2,
+          "category_label": "High",
           "cells": [
             [
               0,
@@ -286,9 +286,9 @@
             ]
           ],
           "fill_rgb": [
-            83,
-            167,
-            75
+            75,
+            93,
+            116
           ],
           "region_bbox_id": "region_bbox_E",
           "region_id": "region_E",
@@ -325,8 +325,8 @@
           "region_label": "F"
         },
         {
-          "category_index": 1,
-          "category_label": "Moderate",
+          "category_index": 2,
+          "category_label": "High",
           "cells": [
             [
               0,
@@ -346,9 +346,9 @@
             ]
           ],
           "fill_rgb": [
-            83,
-            167,
-            75
+            75,
+            93,
+            116
           ],
           "region_bbox_id": "region_bbox_G",
           "region_id": "region_G",
@@ -785,12 +785,12 @@
         },
         {
           "attrs": {
-            "category_index": 3,
-            "category_label": "Very high",
+            "category_index": 1,
+            "category_label": "Moderate",
             "fill_rgb": [
-              212,
-              100,
-              70
+              83,
+              167,
+              75
             ],
             "region_label": "B"
           },
@@ -1095,12 +1095,12 @@
         },
         {
           "attrs": {
-            "category_index": 1,
-            "category_label": "Moderate",
+            "category_index": 2,
+            "category_label": "High",
             "fill_rgb": [
-              83,
-              167,
-              75
+              75,
+              93,
+              116
             ],
             "region_label": "E"
           },
@@ -1280,12 +1280,12 @@
         },
         {
           "attrs": {
-            "category_index": 1,
-            "category_label": "Moderate",
+            "category_index": 2,
+            "category_label": "High",
             "fill_rgb": [
-              83,
-              167,
-              75
+              75,
+              93,
+              116
             ],
             "region_label": "G"
           },

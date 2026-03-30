@@ -29,6 +29,11 @@ SUPPORTED_MAP_REGION_TASK_VARIANTS: Tuple[str, ...] = (
     "min_category_region",
     "matches_legend_bin",
 )
+SUPPORTED_MAP_REGION_COUNT_TASK_VARIANTS: Tuple[str, ...] = (
+    "count_regions_in_category",
+    "count_regions_above_category",
+    "count_regions_below_category",
+)
 _CATEGORY_LABELS: Tuple[str, ...] = ("Low", "Moderate", "High", "Very high")
 
 
@@ -120,14 +125,15 @@ def resolve_region_task_variant(
     gen_defaults: Mapping[str, Any],
     instance_seed: int,
     task_id: str,
+    supported_variants: Sequence[str] | None = None,
 ) -> Tuple[str, Dict[str, float]]:
-    """Resolve the semantic region-association variant."""
+    """Resolve the semantic region-task variant for one region-map task."""
 
     return resolve_maps_axis_variant(
         params=params,
         gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_MAP_REGION_TASK_VARIANTS,
+        supported_variants=list(supported_variants or SUPPORTED_MAP_REGION_TASK_VARIANTS),
         task_id=str(task_id),
         explicit_key="task_variant",
         weights_key="task_variant_weights",
@@ -308,7 +314,7 @@ def _sample_category_colors(
     return [tuple(int(channel) for channel in color) for color in palette]
 
 
-def _build_category_assignment(
+def _build_association_category_assignment(
     *,
     task_variant: str,
     region_count: int,
@@ -344,32 +350,117 @@ def _build_category_assignment(
                 continue
             assignments[index] = int(remaining_categories[int(rng.randrange(len(remaining_categories)))])
         return assignments, int(target_category)
-    raise ValueError(f"unsupported region task variant: {task_variant}")
+    raise ValueError(f"unsupported region association task variant: {task_variant}")
 
 
-def build_region_dataset_for_variant(
+def _build_count_category_assignment(
     *,
     task_variant: str,
+    region_count: int,
+    query_category_index: int,
+    target_count: int,
+    rng,
+) -> List[int]:
+    """Construct region-category assignments with one exact count answer."""
+
+    region_indices = list(range(int(region_count)))
+    selected_indices = set(int(index) for index in rng.sample(region_indices, int(target_count)))
+    variant = str(task_variant)
+    assignments = [0] * int(region_count)
+
+    if variant == "count_regions_in_category":
+        matching_categories = [int(query_category_index)]
+        non_matching_categories = [
+            int(index) for index in range(len(_CATEGORY_LABELS)) if int(index) != int(query_category_index)
+        ]
+    elif variant == "count_regions_above_category":
+        matching_categories = [int(index) for index in range(len(_CATEGORY_LABELS)) if int(index) > int(query_category_index)]
+        non_matching_categories = [int(index) for index in range(len(_CATEGORY_LABELS)) if int(index) <= int(query_category_index)]
+    elif variant == "count_regions_below_category":
+        matching_categories = [int(index) for index in range(len(_CATEGORY_LABELS)) if int(index) < int(query_category_index)]
+        non_matching_categories = [int(index) for index in range(len(_CATEGORY_LABELS)) if int(index) >= int(query_category_index)]
+    else:
+        raise ValueError(f"unsupported region count task variant: {task_variant}")
+
+    if not matching_categories or not non_matching_categories:
+        raise ValueError(f"invalid query category for {task_variant}: {query_category_index}")
+
+    for index in region_indices:
+        if int(index) in selected_indices:
+            assignments[int(index)] = int(matching_categories[int(rng.randrange(len(matching_categories)))])
+        else:
+            assignments[int(index)] = int(non_matching_categories[int(rng.randrange(len(non_matching_categories)))])
+    return assignments
+
+
+def _materialize_region_specs(
+    *,
+    sorted_regions: Sequence[Sequence[Cell]],
+    region_labels: Sequence[str],
+    category_assignments: Sequence[int],
+    category_colors: Sequence[Tuple[int, int, int]],
+) -> List[Dict[str, Any]]:
+    """Attach labels and legend-category styling to one sorted region partition."""
+
+    region_specs: List[Dict[str, Any]] = []
+    for index, cells in enumerate(sorted_regions):
+        region_label = str(region_labels[int(index)])
+        category_index = int(category_assignments[int(index)])
+        region_specs.append(
+            {
+                "region_id": f"region_{region_label}",
+                "region_label": str(region_label),
+                "region_bbox_id": f"region_bbox_{region_label}",
+                "cells": [[int(cell_x), int(cell_y)] for cell_x, cell_y in cells],
+                "category_index": int(category_index),
+                "category_label": str(_CATEGORY_LABELS[int(category_index)]),
+                "fill_rgb": [int(channel) for channel in category_colors[int(category_index)]],
+            }
+        )
+    return region_specs
+
+
+def _build_region_scene_base(
+    *,
     params: Mapping[str, Any],
     instance_seed: int,
     gen_defaults: Mapping[str, Any],
     defaults: MapRegionDefaults,
     task_id: str,
+    region_count_override: int | None = None,
 ) -> Dict[str, Any]:
-    """Build one stylized choropleth region-map dataset instance."""
+    """Build one reusable region-map scene specification before task-specific querying."""
 
     rng = spawn_rng(int(instance_seed), f"{task_id}.dataset")
-    region_count, region_count_range = _resolve_choice(
+    region_count_lower, region_count_upper = resolve_required_int_bounds(
         params,
-        instance_seed=int(instance_seed),
-        gen_defaults=gen_defaults,
+        gen_defaults,
         min_key="region_count_min",
         max_key="region_count_max",
         fallback_min=int(defaults.region_count_min),
         fallback_max=int(defaults.region_count_max),
-        namespace=f"{task_id}.region_count",
         context=f"{task_id} region count",
     )
+    if region_count_override is None:
+        region_count, region_count_range = _resolve_choice(
+            params,
+            instance_seed=int(instance_seed),
+            gen_defaults=gen_defaults,
+            min_key="region_count_min",
+            max_key="region_count_max",
+            fallback_min=int(defaults.region_count_min),
+            fallback_max=int(defaults.region_count_max),
+            namespace=f"{task_id}.region_count",
+            context=f"{task_id} region count",
+        )
+    else:
+        region_count = int(region_count_override)
+        if not int(region_count_lower) <= int(region_count) <= int(region_count_upper):
+            raise ValueError(
+                f"{task_id} region_count_override={region_count} outside supported range "
+                f"[{region_count_lower}, {region_count_upper}]"
+            )
+        region_count_range = (int(region_count_lower), int(region_count_upper))
     grid_cols, grid_cols_range = _resolve_choice(
         params,
         instance_seed=int(instance_seed),
@@ -426,16 +517,6 @@ def build_region_dataset_for_variant(
     )
     sorted_regions = sorted(region_cells, key=_region_sort_key)
     region_labels = [chr(ord("A") + int(index)) for index in range(int(region_count))]
-
-    answer_index = int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{task_id}.answer_region")) % int(region_count)
-    query_category_index = int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{task_id}.query_category")) % len(_CATEGORY_LABELS)
-    category_assignments, effective_query_category = _build_category_assignment(
-        task_variant=str(task_variant),
-        region_count=int(region_count),
-        answer_index=int(answer_index),
-        query_category_index=int(query_category_index),
-        rng=rng,
-    )
     category_colors = _sample_category_colors(
         count=int(defaults.category_count),
         min_distance=float(color_min_distance),
@@ -443,23 +524,6 @@ def build_region_dataset_for_variant(
         channel_max=int(color_channel_max),
         rng=rng,
     )
-
-    region_specs: List[Dict[str, Any]] = []
-    for index, cells in enumerate(sorted_regions):
-        region_label = str(region_labels[int(index)])
-        category_index = int(category_assignments[int(index)])
-        region_specs.append(
-            {
-                "region_id": f"region_{region_label}",
-                "region_label": str(region_label),
-                "region_bbox_id": f"region_bbox_{region_label}",
-                "cells": [[int(cell_x), int(cell_y)] for cell_x, cell_y in cells],
-                "category_index": int(category_index),
-                "category_label": str(_CATEGORY_LABELS[int(category_index)]),
-                "fill_rgb": [int(channel) for channel in category_colors[int(category_index)]],
-            }
-        )
-
     legend_specs = [
         {
             "legend_entry_id": f"legend_entry_{int(index)}",
@@ -469,6 +533,64 @@ def build_region_dataset_for_variant(
         }
         for index in range(len(_CATEGORY_LABELS))
     ]
+
+    return {
+        "region_count": int(region_count),
+        "region_count_range": [int(region_count_range[0]), int(region_count_range[1])],
+        "grid_cols": int(grid_cols),
+        "grid_cols_range": [int(grid_cols_range[0]), int(grid_cols_range[1])],
+        "grid_rows": int(grid_rows),
+        "grid_rows_range": [int(grid_rows_range[0]), int(grid_rows_range[1])],
+        "category_count": len(_CATEGORY_LABELS),
+        "category_labels": [str(item) for item in _CATEGORY_LABELS],
+        "region_labels": [str(label) for label in region_labels],
+        "sorted_regions": [
+            [[int(cell_x), int(cell_y)] for cell_x, cell_y in cells]
+            for cells in sorted_regions
+        ],
+        "legend_specs": legend_specs,
+        "category_colors": [[int(channel) for channel in color] for color in category_colors],
+        "color_min_distance": float(color_min_distance),
+        "color_distance_space": DEFAULT_COLOR_DISTANCE_SPACE,
+        "rng": rng,
+    }
+
+
+def build_region_dataset_for_variant(
+    *,
+    task_variant: str,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    gen_defaults: Mapping[str, Any],
+    defaults: MapRegionDefaults,
+    task_id: str,
+) -> Dict[str, Any]:
+    """Build one stylized choropleth region-map dataset instance."""
+
+    base = _build_region_scene_base(
+        params=params,
+        instance_seed=int(instance_seed),
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        task_id=str(task_id),
+    )
+    rng = base["rng"]
+    region_count = int(base["region_count"])
+    answer_index = int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{task_id}.answer_region")) % int(region_count)
+    query_category_index = int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{task_id}.query_category")) % len(_CATEGORY_LABELS)
+    category_assignments, effective_query_category = _build_association_category_assignment(
+        task_variant=str(task_variant),
+        region_count=int(region_count),
+        answer_index=int(answer_index),
+        query_category_index=int(query_category_index),
+        rng=rng,
+    )
+    region_specs = _materialize_region_specs(
+        sorted_regions=[[(int(cell[0]), int(cell[1])) for cell in cells] for cells in base["sorted_regions"]],
+        region_labels=list(base["region_labels"]),
+        category_assignments=list(category_assignments),
+        category_colors=[tuple(int(channel) for channel in color) for color in base["category_colors"]],
+    )
     answer_region = region_specs[int(answer_index)]
 
     if str(task_variant) == "max_category_region":
@@ -483,15 +605,15 @@ def build_region_dataset_for_variant(
         raise ValueError(f"unsupported region task variant: {task_variant}")
 
     return {
-        "grid_cols": int(grid_cols),
-        "grid_rows": int(grid_rows),
-        "grid_cols_range": [int(grid_cols_range[0]), int(grid_cols_range[1])],
-        "grid_rows_range": [int(grid_rows_range[0]), int(grid_rows_range[1])],
-        "region_count": int(region_count),
-        "region_count_range": [int(region_count_range[0]), int(region_count_range[1])],
-        "category_count": len(_CATEGORY_LABELS),
-        "category_labels": [str(item) for item in _CATEGORY_LABELS],
-        "legend_specs": legend_specs,
+        "grid_cols": int(base["grid_cols"]),
+        "grid_rows": int(base["grid_rows"]),
+        "grid_cols_range": list(base["grid_cols_range"]),
+        "grid_rows_range": list(base["grid_rows_range"]),
+        "region_count": int(base["region_count"]),
+        "region_count_range": list(base["region_count_range"]),
+        "category_count": int(base["category_count"]),
+        "category_labels": list(base["category_labels"]),
+        "legend_specs": list(base["legend_specs"]),
         "region_specs": region_specs,
         "answer_region_label": str(answer_region["region_label"]),
         "answer_region_id": str(answer_region["region_id"]),
@@ -501,16 +623,143 @@ def build_region_dataset_for_variant(
         "query_category_index": int(effective_query_category),
         "view_family": "region_legend_map",
         "question_format": "region_association_label",
-        "color_min_distance": float(color_min_distance),
-        "color_distance_space": DEFAULT_COLOR_DISTANCE_SPACE,
+        "color_min_distance": float(base["color_min_distance"]),
+        "color_distance_space": str(base["color_distance_space"]),
+    }
+
+
+def build_region_count_dataset_for_variant(
+    *,
+    task_variant: str,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    gen_defaults: Mapping[str, Any],
+    defaults: MapRegionDefaults,
+    task_id: str,
+) -> Dict[str, Any]:
+    """Build one stylized choropleth region-count dataset instance."""
+    variant = str(task_variant)
+    region_count_min, region_count_max = resolve_required_int_bounds(
+        params,
+        gen_defaults,
+        min_key="region_count_min",
+        max_key="region_count_max",
+        fallback_min=int(defaults.region_count_min),
+        fallback_max=int(defaults.region_count_max),
+        context=f"{task_id} region count",
+    )
+
+    if variant == "count_regions_in_category":
+        category_indices = list(range(len(_CATEGORY_LABELS)))
+    elif variant == "count_regions_above_category":
+        category_indices = list(range(len(_CATEGORY_LABELS) - 1))
+    elif variant == "count_regions_below_category":
+        category_indices = list(range(1, len(_CATEGORY_LABELS)))
+    else:
+        raise ValueError(f"unsupported region count task variant: {task_variant}")
+
+    query_selection = int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{task_id}.query_category"))
+    query_category_index = int(category_indices[int(query_selection) % len(category_indices)])
+    count_min = 1
+    count_max = max(1, int(region_count_max) - 1)
+    count_selection = int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{task_id}.target_count"))
+    target_count = int(count_min + (count_selection % (count_max - count_min + 1)))
+    region_count_for_target_min = max(int(region_count_min), int(target_count) + 1)
+    if int(region_count_for_target_min) > int(region_count_max):
+        raise ValueError(
+            f"{task_id} cannot support target_count={target_count} within region_count range "
+            f"[{region_count_min}, {region_count_max}]"
+        )
+    region_count_selection = int(
+        resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}.region_count_for_target",
+        )
+    )
+    region_count = int(
+        region_count_for_target_min
+        + (region_count_selection % (int(region_count_max) - int(region_count_for_target_min) + 1))
+    )
+    base = _build_region_scene_base(
+        params=params,
+        instance_seed=int(instance_seed),
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        task_id=str(task_id),
+        region_count_override=int(region_count),
+    )
+    rng = base["rng"]
+
+    category_assignments = _build_count_category_assignment(
+        task_variant=str(task_variant),
+        region_count=int(region_count),
+        query_category_index=int(query_category_index),
+        target_count=int(target_count),
+        rng=rng,
+    )
+    region_specs = _materialize_region_specs(
+        sorted_regions=[[(int(cell[0]), int(cell[1])) for cell in cells] for cells in base["sorted_regions"]],
+        region_labels=list(base["region_labels"]),
+        category_assignments=list(category_assignments),
+        category_colors=[tuple(int(channel) for channel in color) for color in base["category_colors"]],
+    )
+
+    if variant == "count_regions_in_category":
+        matching_regions = [
+            spec for spec in region_specs if int(spec["category_index"]) == int(query_category_index)
+        ]
+        question_text = f"How many labeled regions are in the '{str(_CATEGORY_LABELS[int(query_category_index)])}' category on the legend?"
+    elif variant == "count_regions_above_category":
+        matching_regions = [
+            spec for spec in region_specs if int(spec["category_index"]) > int(query_category_index)
+        ]
+        question_text = f"How many labeled regions are above the '{str(_CATEGORY_LABELS[int(query_category_index)])}' category on the legend?"
+    else:
+        matching_regions = [
+            spec for spec in region_specs if int(spec["category_index"]) < int(query_category_index)
+        ]
+        question_text = f"How many labeled regions are below the '{str(_CATEGORY_LABELS[int(query_category_index)])}' category on the legend?"
+
+    supporting_region_bbox_ids = [str(spec["region_bbox_id"]) for spec in matching_regions]
+    supporting_region_ids = [str(spec["region_id"]) for spec in matching_regions]
+    if len(supporting_region_bbox_ids) != int(target_count):
+        raise RuntimeError(
+            f"{task_id} constructed {len(supporting_region_bbox_ids)} matching regions but expected {target_count}"
+        )
+
+    return {
+        "grid_cols": int(base["grid_cols"]),
+        "grid_rows": int(base["grid_rows"]),
+        "grid_cols_range": list(base["grid_cols_range"]),
+        "grid_rows_range": list(base["grid_rows_range"]),
+        "region_count": int(base["region_count"]),
+        "region_count_range": list(base["region_count_range"]),
+        "category_count": int(base["category_count"]),
+        "category_labels": list(base["category_labels"]),
+        "legend_specs": list(base["legend_specs"]),
+        "region_specs": region_specs,
+        "answer_count": int(target_count),
+        "question_text": str(question_text),
+        "query_category_label": str(_CATEGORY_LABELS[int(query_category_index)]),
+        "query_category_index": int(query_category_index),
+        "supporting_region_ids": list(supporting_region_ids),
+        "supporting_region_bbox_ids": list(supporting_region_bbox_ids),
+        "view_family": "region_legend_map",
+        "question_format": "region_count",
+        "color_min_distance": float(base["color_min_distance"]),
+        "color_distance_space": str(base["color_distance_space"]),
+        "count_range": [int(count_min), int(count_max)],
     }
 
 
 __all__ = [
     "MapRegionDefaults",
     "MapRegionRenderParams",
+    "SUPPORTED_MAP_REGION_COUNT_TASK_VARIANTS",
     "SUPPORTED_MAP_REGION_SCENE_VARIANTS",
     "SUPPORTED_MAP_REGION_TASK_VARIANTS",
+    "build_region_count_dataset_for_variant",
     "build_region_dataset_for_variant",
     "resolve_region_render_params",
     "resolve_region_scene_variant",

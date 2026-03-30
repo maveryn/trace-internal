@@ -36,6 +36,19 @@ Use this document for the active `games` domain contract.
    - explain connection, pip-sum, and double semantics directly in the prompt when the query depends on them,
    - keep the open-end cue visually strong when the query asks which loose tiles can extend the chain.
 
+### `reversi`
+1. Active tasks:
+   - `task_games_reversi_move_count`
+2. `task_games_reversi_move_count` scene/query surface:
+   - `scene_variant`: `compact_board|classic_board`
+   - `query_variant`: `legal_move_count|corner_move_count|flip_count_for_marked_move`
+3. `task_games_reversi_move_count` evidence contract:
+   - unordered board-square `bbox_set` evidence over either the legal destination squares or the discs that would flip for the marked move
+4. `task_games_reversi_move_count` prompt policy:
+   - explicitly name the current player,
+   - explain the legal-move bracketing rule directly in the prompt,
+   - keep the marked move visually obvious for flip-count queries without making it prompt-facing evidence.
+
 ## 3) V1 games-domain policy
 1. Prefer one stable visible game scaffold per task id; widen question diversity through `task_variant` before splitting into more task ids.
 2. Keep early tasks fully face-up and fully observable; do not require hidden cards or unstated game conventions.
@@ -47,11 +60,16 @@ Use this document for the active `games` domain contract.
    - `task_games_cards_hand_count`
 2. `dominoes`
    - `task_games_dominoes_chain_count`
+3. `reversi`
+   - `task_games_reversi_move_count`
 
 ## 5) Shared helper placement
 1. Cross-domain integer-support balancing now lives in `trace/tasks/shared/support_sampling.py`.
 2. Games-domain visual defaults belong in `trace/tasks/games/shared/visual_defaults.py`.
-3. Games-domain card/domino theming belongs in `trace/tasks/games/shared/style.py`.
-4. Games-domain card-hand rendering helpers belong in `trace/tasks/games/shared/card_scene.py`.
-5. Games-domain domino-chain rendering helpers belong in `trace/tasks/games/shared/domino_scene.py`.
-6. Games-domain normalized complexity helpers belong in `trace/tasks/games/shared/complexity.py`.
+3. Games-domain shared axis-sampling helpers belong in `trace/tasks/games/shared/sampling.py`.
+4. Games-domain card/domino/Reversi theming belongs in `trace/tasks/games/shared/style.py`.
+5. Games-domain card-hand rendering helpers belong in `trace/tasks/games/shared/card_scene.py`.
+6. Games-domain domino-chain rendering helpers belong in `trace/tasks/games/shared/domino_scene.py`.
+7. Games-domain Reversi rules helpers belong in `trace/tasks/games/shared/reversi_common.py`.
+8. Games-domain Reversi board rendering helpers belong in `trace/tasks/games/shared/reversi_scene.py`.
+9. Games-domain normalized complexity helpers belong in `trace/tasks/games/shared/complexity.py`.

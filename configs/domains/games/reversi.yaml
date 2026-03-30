@@ -1,0 +1,68 @@
+generation:
+  shared: {}
+  task_overrides:
+    task_games_reversi_move_count:
+      scene_variant_weights:
+        compact_board: 1.0
+        classic_board: 1.0
+      query_variant_weights:
+        legal_move_count: 1.0
+        corner_move_count: 1.0
+        flip_count_for_marked_move: 1.0
+      style_variant_weights:
+        classic: 1.0
+        soft: 1.0
+        outlined: 1.0
+      balanced_scene_variant_sampling: true
+      balanced_query_variant_sampling: true
+      balanced_style_variant_sampling: true
+      balanced_target_answer_sampling: true
+      legal_move_count_support: [0, 1, 2, 3, 4, 5, 6]
+      corner_move_count_support: [0, 1, 2, 3, 4]
+      flip_count_support: [1, 2, 3, 4, 5]
+
+rendering:
+  shared:
+    canvas_width: 900
+    canvas_height: 900
+    panel_margin_px: 48
+    player_badge_height_px: 52
+    player_badge_width_px: 190
+    header_gap_px: 18
+    max_board_size_px: 720
+    board_corner_radius_px: 24
+    board_frame_width_px: 14
+    cell_line_width_px: 3
+    marked_square_outline_width_px: 6
+    disc_inset_fraction: 0.14
+    player_badge_font_size_px: 22
+
+complexity:
+  shared: {}
+  task_overrides:
+    task_games_reversi_move_count:
+      criteria_weights:
+        visual_scan: 0.30
+        card_reasoning: 0.42
+        ambiguity: 0.16
+        output_burden: 0.12
+
+prompt:
+  shared:
+    bundle_id: games_reversi_v1
+  task_overrides:
+    task_games_reversi_move_count:
+      task_family_key: visible_reversi_board
+      task_key: reversi_move_query
+      object_description_compact_board: one face-up 6 by 6 Reversi board with black and white discs on a green table
+      object_description_classic_board: one face-up 8 by 8 Reversi board with black and white discs on a green table
+      legal_move_rule_text: A legal move is an empty square where placing your disc would bracket one or more opponent discs in a straight line between the new disc and another one of your discs.
+      corner_rule_text: The corner squares are the four outermost board corners.
+      marked_move_rule_text: The red outlined empty square is the marked move.
+      flip_rule_text: If the marked move is legal, every bracketed opponent disc in every straight line flips to the current player's color.
+      evidence_hint_legal_move_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every legal move square for the current player
+      evidence_hint_corner_move_count: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every legal corner move square for the current player
+      evidence_hint_flip_count_for_marked_move: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for every board square containing a disc that would flip if the marked move is played
+      answer_hint_legal_move_count: set "answer" to the number of legal move squares for the current player
+      answer_hint_corner_move_count: set "answer" to the number of legal corner move squares for the current player
+      answer_hint_flip_count_for_marked_move: set "answer" to the number of discs that would flip if the marked move is played

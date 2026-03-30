@@ -1,6 +1,6 @@
 ---
 name: domain-games
-description: Use when designing, implementing, or reviewing TRACE games-domain tasks, especially visible card and domino state tasks with local piece-level evidence.
+description: Use when designing, implementing, or reviewing TRACE games-domain tasks, especially visible card, domino, and Reversi state tasks with local piece-level evidence.
 ---
 
 # Games Domain
@@ -26,6 +26,8 @@ Use this whenever the task lives under `domain=games`.
   - `task_games_cards_hand_count`
 - `dominoes`
   - `task_games_dominoes_chain_count`
+- `reversi`
+  - `task_games_reversi_move_count`
 
 ## Shared helpers to prefer
 - `trace/tasks/shared/support_sampling.py`
@@ -33,6 +35,9 @@ Use this whenever the task lives under `domain=games`.
 - `trace/tasks/shared/text_rendering.py`
 - `trace/tasks/games/shared/card_scene.py`
 - `trace/tasks/games/shared/domino_scene.py`
+- `trace/tasks/games/shared/reversi_common.py`
+- `trace/tasks/games/shared/reversi_scene.py`
+- `trace/tasks/games/shared/sampling.py`
 - `trace/tasks/games/shared/style.py`
 - `trace/tasks/games/shared/visual_defaults.py`
 - `trace/tasks/games/shared/complexity.py`

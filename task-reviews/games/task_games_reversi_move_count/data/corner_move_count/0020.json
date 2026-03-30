@@ -1,0 +1,1806 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 4
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        90.0,
+        125.0,
+        180.0,
+        215.0
+      ],
+      [
+        720.0,
+        125.0,
+        810.0,
+        215.0
+      ],
+      [
+        90.0,
+        755.0,
+        180.0,
+        845.0
+      ],
+      [
+        720.0,
+        755.0,
+        810.0,
+        845.0
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "games/task_games_reversi_move_count/images/corner_move_count/0020.png"
+  },
+  "instance_seed": 2271721103235605,
+  "prompt": "Work from the Reversi position shown in the image: one face-up 8 by 8 Reversi board with black and white discs on a green table. Answer the question using the visible board state. It is Black's turn. A legal move is an empty square where placing your disc would bracket one or more opponent discs in a straight line between the new disc and another one of your discs. The corner squares are the four outermost board corners. How many legal moves for Black are corners? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every legal corner move square for the current player.\nAnswer format: set \"answer\" to the number of legal corner move squares for the current player.\nExample JSON:\n{\"evidence\":[[112,184,176,248],[184,184,248,248]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the Reversi position shown in the image: one face-up 8 by 8 Reversi board with black and white discs on a green table. Answer the question using the visible board state. It is Black's turn. A legal move is an empty square where placing your disc would bracket one or more opponent discs in a straight line between the new disc and another one of your discs. The corner squares are the four outermost board corners. How many legal moves for Black are corners? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every legal corner move square for the current player.\nAnswer format: set \"answer\" to the number of legal corner move squares for the current player.\nExample JSON:\n{\"evidence\":[[112,184,176,248],[184,184,248,248]],\"answer\":2}",
+    "answer_only": "Work from the Reversi position shown in the image: one face-up 8 by 8 Reversi board with black and white discs on a green table. Answer the question using the visible board state. It is Black's turn. A legal move is an empty square where placing your disc would bracket one or more opponent discs in a straight line between the new disc and another one of your discs. The corner squares are the four outermost board corners. How many legal moves for Black are corners? Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of legal corner move squares for the current player.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_games_reversi_move_count",
+  "task_variant": "corner_move_count",
+  "trace_payload": {
+    "background": {
+      "available_styles": [
+        "felt_green"
+      ],
+      "enabled": true,
+      "selected_style": "felt_green",
+      "style_spec": {
+        "color": [
+          42,
+          92,
+          74
+        ],
+        "kind": "solid"
+      }
+    },
+    "execution_trace": {
+      "board_rows": [
+        [
+          0,
+          -1,
+          1,
+          0,
+          0,
+          1,
+          -1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          -1,
+          1,
+          0,
+          0,
+          1,
+          -1,
+          0
+        ]
+      ],
+      "board_size": 8,
+      "construction_mode": "corner_patterns",
+      "current_player": "Black",
+      "evidence_coords": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          7
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          7,
+          7
+        ]
+      ],
+      "evidence_entity_ids": [
+        "cell_r0_c0",
+        "cell_r0_c7",
+        "cell_r7_c0",
+        "cell_r7_c7"
+      ],
+      "legal_move_count": 4,
+      "legal_move_specs": [
+        {
+          "cell_id": "cell_r0_c0",
+          "coord": [
+            0,
+            0
+          ],
+          "flip_count": 1
+        },
+        {
+          "cell_id": "cell_r0_c7",
+          "coord": [
+            0,
+            7
+          ],
+          "flip_count": 1
+        },
+        {
+          "cell_id": "cell_r7_c0",
+          "coord": [
+            7,
+            0
+          ],
+          "flip_count": 1
+        },
+        {
+          "cell_id": "cell_r7_c7",
+          "coord": [
+            7,
+            7
+          ],
+          "flip_count": 1
+        }
+      ],
+      "marked_move": null,
+      "marked_move_cell_id": null,
+      "marked_move_flip_coords": [],
+      "query_variant": "corner_move_count",
+      "scene_variant": "classic_board",
+      "style_variant": "classic",
+      "target_answer": 4,
+      "target_answer_support": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "task_variant": "corner_move_count"
+    },
+    "post_image_noise": {
+      "applied": false,
+      "apply_prob": 0.0,
+      "edit_count_range": [
+        1,
+        2
+      ],
+      "edit_types": [
+        "blur",
+        "downsample",
+        "jpeg",
+        "noise"
+      ],
+      "edits": [],
+      "enabled": false
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          90.0,
+          125.0,
+          180.0,
+          215.0
+        ],
+        [
+          720.0,
+          125.0,
+          810.0,
+          215.0
+        ],
+        [
+          90.0,
+          755.0,
+          180.0,
+          845.0
+        ],
+        [
+          720.0,
+          755.0,
+          810.0,
+          845.0
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "board_size": 8,
+        "current_player": "Black",
+        "query_variant": "corner_move_count",
+        "query_variant_probabilities": {
+          "corner_move_count": 1.0,
+          "flip_count_for_marked_move": 0.0,
+          "legal_move_count": 0.0
+        },
+        "scene_variant": "classic_board",
+        "scene_variant_probabilities": {
+          "classic_board": 0.5,
+          "compact_board": 0.5
+        },
+        "style_variant": "classic",
+        "style_variant_probabilities": {
+          "classic": 0.3333333333333333,
+          "outlined": 0.3333333333333333,
+          "soft": 0.3333333333333333
+        },
+        "target_answer": 4,
+        "target_answer_probabilities": {
+          "0": 0.2,
+          "1": 0.2,
+          "2": 0.2,
+          "3": 0.2,
+          "4": 0.2
+        },
+        "target_answer_support": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "task_variant": "corner_move_count",
+        "task_variant_probabilities": {
+          "corner_move_count": 1.0,
+          "flip_count_for_marked_move": 0.0,
+          "legal_move_count": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "games_reversi_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the number of legal corner move squares for the current player",
+          "corner_rule_text": "The corner squares are the four outermost board corners.",
+          "current_player_name": "Black",
+          "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every legal corner move square for the current player",
+          "flip_rule_text": "If the marked move is legal, every bracketed opponent disc in every straight line flips to the current player's color.",
+          "json_example": "{\"evidence\":[[112,184,176,248],[184,184,248,248]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "legal_move_rule_text": "A legal move is an empty square where placing your disc would bracket one or more opponent discs in a straight line between the new disc and another one of your discs.",
+          "marked_move_rule_text": "The red outlined empty square is the marked move.",
+          "object_description": "one face-up 8 by 8 Reversi board with black and white discs on a green table"
+        },
+        "task_family_key": "visible_reversi_board",
+        "task_family_variant_index": 3,
+        "task_key": "reversi_move_query",
+        "task_variant_index": 0,
+        "task_variant_key": "corner_move_count",
+        "task_variant_template_index": 0,
+        "template_paths": [
+          "games/reversi/games_reversi_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:reversi_move_query": 5,
+          "task_family:visible_reversi_board": 5,
+          "task_variant:corner_move_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "games_reversi_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of legal corner move squares for the current player",
+              "corner_rule_text": "The corner squares are the four outermost board corners.",
+              "current_player_name": "Black",
+              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every legal corner move square for the current player",
+              "flip_rule_text": "If the marked move is legal, every bracketed opponent disc in every straight line flips to the current player's color.",
+              "json_example": "{\"evidence\":[[112,184,176,248],[184,184,248,248]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "legal_move_rule_text": "A legal move is an empty square where placing your disc would bracket one or more opponent discs in a straight line between the new disc and another one of your discs.",
+              "marked_move_rule_text": "The red outlined empty square is the marked move.",
+              "object_description": "one face-up 8 by 8 Reversi board with black and white discs on a green table"
+            },
+            "task_family_key": "visible_reversi_board",
+            "task_family_variant_index": 3,
+            "task_key": "reversi_move_query",
+            "task_variant_index": 0,
+            "task_variant_key": "corner_move_count",
+            "task_variant_template_index": 0,
+            "template_paths": [
+              "games/reversi/games_reversi_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:reversi_move_query": 5,
+              "task_family:visible_reversi_board": 5,
+              "task_variant:corner_move_count": 5
+            }
+          },
+          "prompt": "Work from the Reversi position shown in the image: one face-up 8 by 8 Reversi board with black and white discs on a green table. Answer the question using the visible board state. It is Black's turn. A legal move is an empty square where placing your disc would bracket one or more opponent discs in a straight line between the new disc and another one of your discs. The corner squares are the four outermost board corners. How many legal moves for Black are corners? Answer with an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every legal corner move square for the current player.\nAnswer format: set \"answer\" to the number of legal corner move squares for the current player.\nExample JSON:\n{\"evidence\":[[112,184,176,248],[184,184,248,248]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 0,
+            "prompt_bundle_id": "games_reversi_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the number of legal corner move squares for the current player",
+              "corner_rule_text": "The corner squares are the four outermost board corners.",
+              "current_player_name": "Black",
+              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every legal corner move square for the current player",
+              "flip_rule_text": "If the marked move is legal, every bracketed opponent disc in every straight line flips to the current player's color.",
+              "json_example": "{\"evidence\":[[112,184,176,248],[184,184,248,248]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "legal_move_rule_text": "A legal move is an empty square where placing your disc would bracket one or more opponent discs in a straight line between the new disc and another one of your discs.",
+              "marked_move_rule_text": "The red outlined empty square is the marked move.",
+              "object_description": "one face-up 8 by 8 Reversi board with black and white discs on a green table"
+            },
+            "task_family_key": "visible_reversi_board",
+            "task_family_variant_index": 3,
+            "task_key": "reversi_move_query",
+            "task_variant_index": 0,
+            "task_variant_key": "corner_move_count",
+            "task_variant_template_index": 0,
+            "template_paths": [
+              "games/reversi/games_reversi_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:reversi_move_query": 5,
+              "task_family:visible_reversi_board": 5,
+              "task_variant:corner_move_count": 5
+            }
+          },
+          "prompt": "Work from the Reversi position shown in the image: one face-up 8 by 8 Reversi board with black and white discs on a green table. Answer the question using the visible board state. It is Black's turn. A legal move is an empty square where placing your disc would bracket one or more opponent discs in a straight line between the new disc and another one of your discs. The corner squares are the four outermost board corners. How many legal moves for Black are corners? Answer with an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer: set \"answer\" to the number of legal corner move squares for the current player.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "corner_move_count",
+      "template_id": "games_reversi_v1"
+    },
+    "render_map": {
+      "board_bbox_px": [
+        90.0,
+        125.0,
+        810.0,
+        845.0
+      ],
+      "board_size": 8,
+      "cell_bboxes_px": {
+        "cell_r0_c0": [
+          90.0,
+          125.0,
+          180.0,
+          215.0
+        ],
+        "cell_r0_c1": [
+          180.0,
+          125.0,
+          270.0,
+          215.0
+        ],
+        "cell_r0_c2": [
+          270.0,
+          125.0,
+          360.0,
+          215.0
+        ],
+        "cell_r0_c3": [
+          360.0,
+          125.0,
+          450.0,
+          215.0
+        ],
+        "cell_r0_c4": [
+          450.0,
+          125.0,
+          540.0,
+          215.0
+        ],
+        "cell_r0_c5": [
+          540.0,
+          125.0,
+          630.0,
+          215.0
+        ],
+        "cell_r0_c6": [
+          630.0,
+          125.0,
+          720.0,
+          215.0
+        ],
+        "cell_r0_c7": [
+          720.0,
+          125.0,
+          810.0,
+          215.0
+        ],
+        "cell_r1_c0": [
+          90.0,
+          215.0,
+          180.0,
+          305.0
+        ],
+        "cell_r1_c1": [
+          180.0,
+          215.0,
+          270.0,
+          305.0
+        ],
+        "cell_r1_c2": [
+          270.0,
+          215.0,
+          360.0,
+          305.0
+        ],
+        "cell_r1_c3": [
+          360.0,
+          215.0,
+          450.0,
+          305.0
+        ],
+        "cell_r1_c4": [
+          450.0,
+          215.0,
+          540.0,
+          305.0
+        ],
+        "cell_r1_c5": [
+          540.0,
+          215.0,
+          630.0,
+          305.0
+        ],
+        "cell_r1_c6": [
+          630.0,
+          215.0,
+          720.0,
+          305.0
+        ],
+        "cell_r1_c7": [
+          720.0,
+          215.0,
+          810.0,
+          305.0
+        ],
+        "cell_r2_c0": [
+          90.0,
+          305.0,
+          180.0,
+          395.0
+        ],
+        "cell_r2_c1": [
+          180.0,
+          305.0,
+          270.0,
+          395.0
+        ],
+        "cell_r2_c2": [
+          270.0,
+          305.0,
+          360.0,
+          395.0
+        ],
+        "cell_r2_c3": [
+          360.0,
+          305.0,
+          450.0,
+          395.0
+        ],
+        "cell_r2_c4": [
+          450.0,
+          305.0,
+          540.0,
+          395.0
+        ],
+        "cell_r2_c5": [
+          540.0,
+          305.0,
+          630.0,
+          395.0
+        ],
+        "cell_r2_c6": [
+          630.0,
+          305.0,
+          720.0,
+          395.0
+        ],
+        "cell_r2_c7": [
+          720.0,
+          305.0,
+          810.0,
+          395.0
+        ],
+        "cell_r3_c0": [
+          90.0,
+          395.0,
+          180.0,
+          485.0
+        ],
+        "cell_r3_c1": [
+          180.0,
+          395.0,
+          270.0,
+          485.0
+        ],
+        "cell_r3_c2": [
+          270.0,
+          395.0,
+          360.0,
+          485.0
+        ],
+        "cell_r3_c3": [
+          360.0,
+          395.0,
+          450.0,
+          485.0
+        ],
+        "cell_r3_c4": [
+          450.0,
+          395.0,
+          540.0,
+          485.0
+        ],
+        "cell_r3_c5": [
+          540.0,
+          395.0,
+          630.0,
+          485.0
+        ],
+        "cell_r3_c6": [
+          630.0,
+          395.0,
+          720.0,
+          485.0
+        ],
+        "cell_r3_c7": [
+          720.0,
+          395.0,
+          810.0,
+          485.0
+        ],
+        "cell_r4_c0": [
+          90.0,
+          485.0,
+          180.0,
+          575.0
+        ],
+        "cell_r4_c1": [
+          180.0,
+          485.0,
+          270.0,
+          575.0
+        ],
+        "cell_r4_c2": [
+          270.0,
+          485.0,
+          360.0,
+          575.0
+        ],
+        "cell_r4_c3": [
+          360.0,
+          485.0,
+          450.0,
+          575.0
+        ],
+        "cell_r4_c4": [
+          450.0,
+          485.0,
+          540.0,
+          575.0
+        ],
+        "cell_r4_c5": [
+          540.0,
+          485.0,
+          630.0,
+          575.0
+        ],
+        "cell_r4_c6": [
+          630.0,
+          485.0,
+          720.0,
+          575.0
+        ],
+        "cell_r4_c7": [
+          720.0,
+          485.0,
+          810.0,
+          575.0
+        ],
+        "cell_r5_c0": [
+          90.0,
+          575.0,
+          180.0,
+          665.0
+        ],
+        "cell_r5_c1": [
+          180.0,
+          575.0,
+          270.0,
+          665.0
+        ],
+        "cell_r5_c2": [
+          270.0,
+          575.0,
+          360.0,
+          665.0
+        ],
+        "cell_r5_c3": [
+          360.0,
+          575.0,
+          450.0,
+          665.0
+        ],
+        "cell_r5_c4": [
+          450.0,
+          575.0,
+          540.0,
+          665.0
+        ],
+        "cell_r5_c5": [
+          540.0,
+          575.0,
+          630.0,
+          665.0
+        ],
+        "cell_r5_c6": [
+          630.0,
+          575.0,
+          720.0,
+          665.0
+        ],
+        "cell_r5_c7": [
+          720.0,
+          575.0,
+          810.0,
+          665.0
+        ],
+        "cell_r6_c0": [
+          90.0,
+          665.0,
+          180.0,
+          755.0
+        ],
+        "cell_r6_c1": [
+          180.0,
+          665.0,
+          270.0,
+          755.0
+        ],
+        "cell_r6_c2": [
+          270.0,
+          665.0,
+          360.0,
+          755.0
+        ],
+        "cell_r6_c3": [
+          360.0,
+          665.0,
+          450.0,
+          755.0
+        ],
+        "cell_r6_c4": [
+          450.0,
+          665.0,
+          540.0,
+          755.0
+        ],
+        "cell_r6_c5": [
+          540.0,
+          665.0,
+          630.0,
+          755.0
+        ],
+        "cell_r6_c6": [
+          630.0,
+          665.0,
+          720.0,
+          755.0
+        ],
+        "cell_r6_c7": [
+          720.0,
+          665.0,
+          810.0,
+          755.0
+        ],
+        "cell_r7_c0": [
+          90.0,
+          755.0,
+          180.0,
+          845.0
+        ],
+        "cell_r7_c1": [
+          180.0,
+          755.0,
+          270.0,
+          845.0
+        ],
+        "cell_r7_c2": [
+          270.0,
+          755.0,
+          360.0,
+          845.0
+        ],
+        "cell_r7_c3": [
+          360.0,
+          755.0,
+          450.0,
+          845.0
+        ],
+        "cell_r7_c4": [
+          450.0,
+          755.0,
+          540.0,
+          845.0
+        ],
+        "cell_r7_c5": [
+          540.0,
+          755.0,
+          630.0,
+          845.0
+        ],
+        "cell_r7_c6": [
+          630.0,
+          755.0,
+          720.0,
+          845.0
+        ],
+        "cell_r7_c7": [
+          720.0,
+          755.0,
+          810.0,
+          845.0
+        ]
+      },
+      "disc_bboxes_px": {
+        "cell_r0_c1": [
+          192.6,
+          137.6,
+          257.4,
+          202.4
+        ],
+        "cell_r0_c2": [
+          282.6,
+          137.6,
+          347.4,
+          202.4
+        ],
+        "cell_r0_c5": [
+          552.6,
+          137.6,
+          617.4,
+          202.4
+        ],
+        "cell_r0_c6": [
+          642.6,
+          137.6,
+          707.4,
+          202.4
+        ],
+        "cell_r7_c1": [
+          192.6,
+          767.6,
+          257.4,
+          832.4
+        ],
+        "cell_r7_c2": [
+          282.6,
+          767.6,
+          347.4,
+          832.4
+        ],
+        "cell_r7_c5": [
+          552.6,
+          767.6,
+          617.4,
+          832.4
+        ],
+        "cell_r7_c6": [
+          642.6,
+          767.6,
+          707.4,
+          832.4
+        ]
+      },
+      "marked_square_bbox_px": null,
+      "player_badge_bbox_px": [
+        317.0,
+        48.0,
+        582.0,
+        100.0
+      ],
+      "scene_variant": "classic_board",
+      "style_variant": "classic"
+    },
+    "render_spec": {
+      "canvas_height": 900,
+      "canvas_width": 900,
+      "scene_variant": "classic_board",
+      "style_variant": "classic"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "bbox": [
+            90.0,
+            125.0,
+            180.0,
+            215.0
+          ],
+          "col": 0,
+          "entity_id": "cell_r0_c0",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 0
+        },
+        {
+          "bbox": [
+            180.0,
+            125.0,
+            270.0,
+            215.0
+          ],
+          "col": 1,
+          "disc_bbox": [
+            192.6,
+            137.6,
+            257.4,
+            202.4
+          ],
+          "entity_id": "cell_r0_c1",
+          "entity_type": "board_cell",
+          "occupant": "white",
+          "row": 0
+        },
+        {
+          "bbox": [
+            270.0,
+            125.0,
+            360.0,
+            215.0
+          ],
+          "col": 2,
+          "disc_bbox": [
+            282.6,
+            137.6,
+            347.4,
+            202.4
+          ],
+          "entity_id": "cell_r0_c2",
+          "entity_type": "board_cell",
+          "occupant": "black",
+          "row": 0
+        },
+        {
+          "bbox": [
+            360.0,
+            125.0,
+            450.0,
+            215.0
+          ],
+          "col": 3,
+          "entity_id": "cell_r0_c3",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 0
+        },
+        {
+          "bbox": [
+            450.0,
+            125.0,
+            540.0,
+            215.0
+          ],
+          "col": 4,
+          "entity_id": "cell_r0_c4",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 0
+        },
+        {
+          "bbox": [
+            540.0,
+            125.0,
+            630.0,
+            215.0
+          ],
+          "col": 5,
+          "disc_bbox": [
+            552.6,
+            137.6,
+            617.4,
+            202.4
+          ],
+          "entity_id": "cell_r0_c5",
+          "entity_type": "board_cell",
+          "occupant": "black",
+          "row": 0
+        },
+        {
+          "bbox": [
+            630.0,
+            125.0,
+            720.0,
+            215.0
+          ],
+          "col": 6,
+          "disc_bbox": [
+            642.6,
+            137.6,
+            707.4,
+            202.4
+          ],
+          "entity_id": "cell_r0_c6",
+          "entity_type": "board_cell",
+          "occupant": "white",
+          "row": 0
+        },
+        {
+          "bbox": [
+            720.0,
+            125.0,
+            810.0,
+            215.0
+          ],
+          "col": 7,
+          "entity_id": "cell_r0_c7",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 0
+        },
+        {
+          "bbox": [
+            90.0,
+            215.0,
+            180.0,
+            305.0
+          ],
+          "col": 0,
+          "entity_id": "cell_r1_c0",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 1
+        },
+        {
+          "bbox": [
+            180.0,
+            215.0,
+            270.0,
+            305.0
+          ],
+          "col": 1,
+          "entity_id": "cell_r1_c1",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 1
+        },
+        {
+          "bbox": [
+            270.0,
+            215.0,
+            360.0,
+            305.0
+          ],
+          "col": 2,
+          "entity_id": "cell_r1_c2",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 1
+        },
+        {
+          "bbox": [
+            360.0,
+            215.0,
+            450.0,
+            305.0
+          ],
+          "col": 3,
+          "entity_id": "cell_r1_c3",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 1
+        },
+        {
+          "bbox": [
+            450.0,
+            215.0,
+            540.0,
+            305.0
+          ],
+          "col": 4,
+          "entity_id": "cell_r1_c4",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 1
+        },
+        {
+          "bbox": [
+            540.0,
+            215.0,
+            630.0,
+            305.0
+          ],
+          "col": 5,
+          "entity_id": "cell_r1_c5",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 1
+        },
+        {
+          "bbox": [
+            630.0,
+            215.0,
+            720.0,
+            305.0
+          ],
+          "col": 6,
+          "entity_id": "cell_r1_c6",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 1
+        },
+        {
+          "bbox": [
+            720.0,
+            215.0,
+            810.0,
+            305.0
+          ],
+          "col": 7,
+          "entity_id": "cell_r1_c7",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 1
+        },
+        {
+          "bbox": [
+            90.0,
+            305.0,
+            180.0,
+            395.0
+          ],
+          "col": 0,
+          "entity_id": "cell_r2_c0",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 2
+        },
+        {
+          "bbox": [
+            180.0,
+            305.0,
+            270.0,
+            395.0
+          ],
+          "col": 1,
+          "entity_id": "cell_r2_c1",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 2
+        },
+        {
+          "bbox": [
+            270.0,
+            305.0,
+            360.0,
+            395.0
+          ],
+          "col": 2,
+          "entity_id": "cell_r2_c2",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 2
+        },
+        {
+          "bbox": [
+            360.0,
+            305.0,
+            450.0,
+            395.0
+          ],
+          "col": 3,
+          "entity_id": "cell_r2_c3",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 2
+        },
+        {
+          "bbox": [
+            450.0,
+            305.0,
+            540.0,
+            395.0
+          ],
+          "col": 4,
+          "entity_id": "cell_r2_c4",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 2
+        },
+        {
+          "bbox": [
+            540.0,
+            305.0,
+            630.0,
+            395.0
+          ],
+          "col": 5,
+          "entity_id": "cell_r2_c5",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 2
+        },
+        {
+          "bbox": [
+            630.0,
+            305.0,
+            720.0,
+            395.0
+          ],
+          "col": 6,
+          "entity_id": "cell_r2_c6",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 2
+        },
+        {
+          "bbox": [
+            720.0,
+            305.0,
+            810.0,
+            395.0
+          ],
+          "col": 7,
+          "entity_id": "cell_r2_c7",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 2
+        },
+        {
+          "bbox": [
+            90.0,
+            395.0,
+            180.0,
+            485.0
+          ],
+          "col": 0,
+          "entity_id": "cell_r3_c0",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 3
+        },
+        {
+          "bbox": [
+            180.0,
+            395.0,
+            270.0,
+            485.0
+          ],
+          "col": 1,
+          "entity_id": "cell_r3_c1",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 3
+        },
+        {
+          "bbox": [
+            270.0,
+            395.0,
+            360.0,
+            485.0
+          ],
+          "col": 2,
+          "entity_id": "cell_r3_c2",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 3
+        },
+        {
+          "bbox": [
+            360.0,
+            395.0,
+            450.0,
+            485.0
+          ],
+          "col": 3,
+          "entity_id": "cell_r3_c3",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 3
+        },
+        {
+          "bbox": [
+            450.0,
+            395.0,
+            540.0,
+            485.0
+          ],
+          "col": 4,
+          "entity_id": "cell_r3_c4",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 3
+        },
+        {
+          "bbox": [
+            540.0,
+            395.0,
+            630.0,
+            485.0
+          ],
+          "col": 5,
+          "entity_id": "cell_r3_c5",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 3
+        },
+        {
+          "bbox": [
+            630.0,
+            395.0,
+            720.0,
+            485.0
+          ],
+          "col": 6,
+          "entity_id": "cell_r3_c6",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 3
+        },
+        {
+          "bbox": [
+            720.0,
+            395.0,
+            810.0,
+            485.0
+          ],
+          "col": 7,
+          "entity_id": "cell_r3_c7",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 3
+        },
+        {
+          "bbox": [
+            90.0,
+            485.0,
+            180.0,
+            575.0
+          ],
+          "col": 0,
+          "entity_id": "cell_r4_c0",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 4
+        },
+        {
+          "bbox": [
+            180.0,
+            485.0,
+            270.0,
+            575.0
+          ],
+          "col": 1,
+          "entity_id": "cell_r4_c1",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 4
+        },
+        {
+          "bbox": [
+            270.0,
+            485.0,
+            360.0,
+            575.0
+          ],
+          "col": 2,
+          "entity_id": "cell_r4_c2",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 4
+        },
+        {
+          "bbox": [
+            360.0,
+            485.0,
+            450.0,
+            575.0
+          ],
+          "col": 3,
+          "entity_id": "cell_r4_c3",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 4
+        },
+        {
+          "bbox": [
+            450.0,
+            485.0,
+            540.0,
+            575.0
+          ],
+          "col": 4,
+          "entity_id": "cell_r4_c4",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 4
+        },
+        {
+          "bbox": [
+            540.0,
+            485.0,
+            630.0,
+            575.0
+          ],
+          "col": 5,
+          "entity_id": "cell_r4_c5",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 4
+        },
+        {
+          "bbox": [
+            630.0,
+            485.0,
+            720.0,
+            575.0
+          ],
+          "col": 6,
+          "entity_id": "cell_r4_c6",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 4
+        },
+        {
+          "bbox": [
+            720.0,
+            485.0,
+            810.0,
+            575.0
+          ],
+          "col": 7,
+          "entity_id": "cell_r4_c7",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 4
+        },
+        {
+          "bbox": [
+            90.0,
+            575.0,
+            180.0,
+            665.0
+          ],
+          "col": 0,
+          "entity_id": "cell_r5_c0",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 5
+        },
+        {
+          "bbox": [
+            180.0,
+            575.0,
+            270.0,
+            665.0
+          ],
+          "col": 1,
+          "entity_id": "cell_r5_c1",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 5
+        },
+        {
+          "bbox": [
+            270.0,
+            575.0,
+            360.0,
+            665.0
+          ],
+          "col": 2,
+          "entity_id": "cell_r5_c2",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 5
+        },
+        {
+          "bbox": [
+            360.0,
+            575.0,
+            450.0,
+            665.0
+          ],
+          "col": 3,
+          "entity_id": "cell_r5_c3",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 5
+        },
+        {
+          "bbox": [
+            450.0,
+            575.0,
+            540.0,
+            665.0
+          ],
+          "col": 4,
+          "entity_id": "cell_r5_c4",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 5
+        },
+        {
+          "bbox": [
+            540.0,
+            575.0,
+            630.0,
+            665.0
+          ],
+          "col": 5,
+          "entity_id": "cell_r5_c5",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 5
+        },
+        {
+          "bbox": [
+            630.0,
+            575.0,
+            720.0,
+            665.0
+          ],
+          "col": 6,
+          "entity_id": "cell_r5_c6",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 5
+        },
+        {
+          "bbox": [
+            720.0,
+            575.0,
+            810.0,
+            665.0
+          ],
+          "col": 7,
+          "entity_id": "cell_r5_c7",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 5
+        },
+        {
+          "bbox": [
+            90.0,
+            665.0,
+            180.0,
+            755.0
+          ],
+          "col": 0,
+          "entity_id": "cell_r6_c0",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 6
+        },
+        {
+          "bbox": [
+            180.0,
+            665.0,
+            270.0,
+            755.0
+          ],
+          "col": 1,
+          "entity_id": "cell_r6_c1",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 6
+        },
+        {
+          "bbox": [
+            270.0,
+            665.0,
+            360.0,
+            755.0
+          ],
+          "col": 2,
+          "entity_id": "cell_r6_c2",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 6
+        },
+        {
+          "bbox": [
+            360.0,
+            665.0,
+            450.0,
+            755.0
+          ],
+          "col": 3,
+          "entity_id": "cell_r6_c3",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 6
+        },
+        {
+          "bbox": [
+            450.0,
+            665.0,
+            540.0,
+            755.0
+          ],
+          "col": 4,
+          "entity_id": "cell_r6_c4",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 6
+        },
+        {
+          "bbox": [
+            540.0,
+            665.0,
+            630.0,
+            755.0
+          ],
+          "col": 5,
+          "entity_id": "cell_r6_c5",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 6
+        },
+        {
+          "bbox": [
+            630.0,
+            665.0,
+            720.0,
+            755.0
+          ],
+          "col": 6,
+          "entity_id": "cell_r6_c6",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 6
+        },
+        {
+          "bbox": [
+            720.0,
+            665.0,
+            810.0,
+            755.0
+          ],
+          "col": 7,
+          "entity_id": "cell_r6_c7",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 6
+        },
+        {
+          "bbox": [
+            90.0,
+            755.0,
+            180.0,
+            845.0
+          ],
+          "col": 0,
+          "entity_id": "cell_r7_c0",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 7
+        },
+        {
+          "bbox": [
+            180.0,
+            755.0,
+            270.0,
+            845.0
+          ],
+          "col": 1,
+          "disc_bbox": [
+            192.6,
+            767.6,
+            257.4,
+            832.4
+          ],
+          "entity_id": "cell_r7_c1",
+          "entity_type": "board_cell",
+          "occupant": "white",
+          "row": 7
+        },
+        {
+          "bbox": [
+            270.0,
+            755.0,
+            360.0,
+            845.0
+          ],
+          "col": 2,
+          "disc_bbox": [
+            282.6,
+            767.6,
+            347.4,
+            832.4
+          ],
+          "entity_id": "cell_r7_c2",
+          "entity_type": "board_cell",
+          "occupant": "black",
+          "row": 7
+        },
+        {
+          "bbox": [
+            360.0,
+            755.0,
+            450.0,
+            845.0
+          ],
+          "col": 3,
+          "entity_id": "cell_r7_c3",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 7
+        },
+        {
+          "bbox": [
+            450.0,
+            755.0,
+            540.0,
+            845.0
+          ],
+          "col": 4,
+          "entity_id": "cell_r7_c4",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 7
+        },
+        {
+          "bbox": [
+            540.0,
+            755.0,
+            630.0,
+            845.0
+          ],
+          "col": 5,
+          "disc_bbox": [
+            552.6,
+            767.6,
+            617.4,
+            832.4
+          ],
+          "entity_id": "cell_r7_c5",
+          "entity_type": "board_cell",
+          "occupant": "black",
+          "row": 7
+        },
+        {
+          "bbox": [
+            630.0,
+            755.0,
+            720.0,
+            845.0
+          ],
+          "col": 6,
+          "disc_bbox": [
+            642.6,
+            767.6,
+            707.4,
+            832.4
+          ],
+          "entity_id": "cell_r7_c6",
+          "entity_type": "board_cell",
+          "occupant": "white",
+          "row": 7
+        },
+        {
+          "bbox": [
+            720.0,
+            755.0,
+            810.0,
+            845.0
+          ],
+          "col": 7,
+          "entity_id": "cell_r7_c7",
+          "entity_type": "board_cell",
+          "occupant": "empty",
+          "row": 7
+        }
+      ],
+      "relations": {
+        "board_size": 8,
+        "current_player": "Black",
+        "evidence_entity_ids": [
+          "cell_r0_c0",
+          "cell_r0_c7",
+          "cell_r7_c0",
+          "cell_r7_c7"
+        ],
+        "marked_move_cell_id": null,
+        "query_variant": "corner_move_count",
+        "scene_variant": "classic_board",
+        "style_variant": "classic",
+        "target_answer": 4,
+        "task_variant": "corner_move_count"
+      },
+      "scene_kind": "games_reversi_board_classic_board"
+    },
+    "witness_symbolic": {
+      "ids": [
+        "cell_r0_c0",
+        "cell_r0_c7",
+        "cell_r7_c0",
+        "cell_r7_c7"
+      ],
+      "type": "id_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

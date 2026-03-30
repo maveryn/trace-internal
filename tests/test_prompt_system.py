@@ -153,6 +153,7 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
         ("documents", "selection", "documents_selection_v1"),
         ("games", "cards", "games_cards_v1"),
         ("games", "dominoes", "games_dominoes_v1"),
+        ("games", "reversi", "games_reversi_v1"),
         ("geometry", "comparison", "geometry_comparison_v1"),
         ("geometry", "counting", "geometry_counting_v1"),
         ("geometry", "graphing", "geometry_graphing_v1"),

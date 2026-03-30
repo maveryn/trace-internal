@@ -131,6 +131,7 @@ Active bundles:
 11. Games:
    - `prompts/games/cards/games_cards_v1.json`
    - `prompts/games/dominoes/games_dominoes_v1.json`
+   - `prompts/games/reversi/games_reversi_v1.json`
 12. Physics:
    - `prompts/physics/mechanics/physics_mechanics_v1.json`
    - `prompts/physics/circuits/physics_circuits_v1.json`
@@ -213,6 +214,7 @@ Active task-to-bundle mapping:
 18. Games:
    - `task_games_cards_hand_count` -> `games_cards_v1`
    - `task_games_dominoes_chain_count` -> `games_dominoes_v1`
+   - `task_games_reversi_move_count` -> `games_reversi_v1`
 19. Physics:
    - `task_physics_mechanics_force_diagram|task_physics_mechanics_lever_balance|task_physics_mechanics_spring_extension` -> `physics_mechanics_v1`
    - `task_physics_circuits_equivalent_resistance` -> `physics_circuits_v1`

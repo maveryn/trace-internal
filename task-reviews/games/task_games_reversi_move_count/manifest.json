@@ -1,0 +1,15 @@
+{
+  "inspection_count": 75,
+  "task_id": "task_games_reversi_move_count",
+  "variants": {
+    "corner_move_count": 25,
+    "flip_count_for_marked_move": 25,
+    "legal_move_count": 25
+  },
+  "workbook": "games/task_games_reversi_move_count/task_games_reversi_move_count.xlsx",
+  "workbook_sheets": {
+    "corner_move_count": "corner_move_count",
+    "flip_count_for_marked_move": "flip_count_for_marked_move",
+    "legal_move_count": "legal_move_count"
+  }
+}

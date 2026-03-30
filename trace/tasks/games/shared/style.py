@@ -49,6 +49,27 @@ class DominoTheme:
     reference_tag_text_rgb: Tuple[int, int, int]
 
 
+@dataclass(frozen=True)
+class ReversiTheme:
+    """Resolved Reversi-board palette for one style variant."""
+
+    board_frame_rgb: Tuple[int, int, int]
+    board_fill_rgb: Tuple[int, int, int]
+    grid_line_rgb: Tuple[int, int, int]
+    badge_fill_rgb: Tuple[int, int, int]
+    badge_outline_rgb: Tuple[int, int, int]
+    badge_text_rgb: Tuple[int, int, int]
+    black_disc_fill_rgb: Tuple[int, int, int]
+    black_disc_outline_rgb: Tuple[int, int, int]
+    black_disc_shine_rgb: Tuple[int, int, int]
+    white_disc_fill_rgb: Tuple[int, int, int]
+    white_disc_outline_rgb: Tuple[int, int, int]
+    white_disc_shine_rgb: Tuple[int, int, int]
+    disc_outline_width_px: int
+    marked_square_outline_rgb: Tuple[int, int, int]
+    marked_square_fill_rgba: Tuple[int, int, int, int]
+
+
 def build_games_card_theme(*, style_variant: str) -> CardTheme:
     """Return one resolved card-scene theme for the active style variant."""
 
@@ -149,6 +170,65 @@ def build_games_domino_theme(*, style_variant: str) -> DominoTheme:
     )
 
 
+def build_games_reversi_theme(*, style_variant: str) -> ReversiTheme:
+    """Return one resolved Reversi-board theme for the active style variant."""
+
+    variant = str(style_variant)
+    if variant == "soft":
+        return ReversiTheme(
+            board_frame_rgb=(76, 56, 38),
+            board_fill_rgb=(66, 126, 86),
+            grid_line_rgb=(29, 74, 46),
+            badge_fill_rgb=(241, 244, 247),
+            badge_outline_rgb=(102, 112, 122),
+            badge_text_rgb=(32, 38, 44),
+            black_disc_fill_rgb=(35, 39, 46),
+            black_disc_outline_rgb=(18, 22, 28),
+            black_disc_shine_rgb=(92, 100, 110),
+            white_disc_fill_rgb=(245, 247, 250),
+            white_disc_outline_rgb=(124, 132, 142),
+            white_disc_shine_rgb=(255, 255, 255),
+            disc_outline_width_px=3,
+            marked_square_outline_rgb=(199, 63, 59),
+            marked_square_fill_rgba=(199, 63, 59, 34),
+        )
+    if variant == "outlined":
+        return ReversiTheme(
+            board_frame_rgb=(58, 43, 31),
+            board_fill_rgb=(72, 135, 88),
+            grid_line_rgb=(24, 68, 41),
+            badge_fill_rgb=(255, 255, 255),
+            badge_outline_rgb=(72, 82, 92),
+            badge_text_rgb=(26, 30, 36),
+            black_disc_fill_rgb=(28, 31, 36),
+            black_disc_outline_rgb=(10, 12, 15),
+            black_disc_shine_rgb=(86, 94, 104),
+            white_disc_fill_rgb=(255, 255, 255),
+            white_disc_outline_rgb=(122, 130, 140),
+            white_disc_shine_rgb=(255, 255, 255),
+            disc_outline_width_px=4,
+            marked_square_outline_rgb=(208, 60, 58),
+            marked_square_fill_rgba=(208, 60, 58, 28),
+        )
+    return ReversiTheme(
+        board_frame_rgb=(70, 50, 34),
+        board_fill_rgb=(60, 121, 79),
+        grid_line_rgb=(26, 72, 43),
+        badge_fill_rgb=(248, 249, 251),
+        badge_outline_rgb=(94, 102, 110),
+        badge_text_rgb=(27, 32, 38),
+        black_disc_fill_rgb=(31, 34, 39),
+        black_disc_outline_rgb=(13, 15, 19),
+        black_disc_shine_rgb=(84, 92, 102),
+        white_disc_fill_rgb=(250, 251, 253),
+        white_disc_outline_rgb=(128, 136, 145),
+        white_disc_shine_rgb=(255, 255, 255),
+        disc_outline_width_px=3,
+        marked_square_outline_rgb=(203, 58, 57),
+        marked_square_fill_rgba=(203, 58, 57, 32),
+    )
+
+
 def suit_color(theme: CardTheme, *, suit_name: str) -> Tuple[int, int, int]:
     """Return the rendered suit/rank color for one suit under the active theme."""
 
@@ -169,9 +249,11 @@ def style_probability_map() -> Dict[str, float]:
 __all__ = [
     "CardTheme",
     "DominoTheme",
+    "ReversiTheme",
     "SUPPORTED_GAMES_STYLE_VARIANTS",
     "build_games_card_theme",
     "build_games_domino_theme",
+    "build_games_reversi_theme",
     "style_probability_map",
     "suit_color",
 ]

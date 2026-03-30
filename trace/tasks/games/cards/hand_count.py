@@ -21,9 +21,9 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ...shared.support_sampling import resolve_integer_choice, resolve_integer_support
-from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ..shared.card_scene import CardInstance, CardRenderParams, render_cards_hand_scene
 from ..shared.complexity import build_games_cards_hand_complexity
+from ..shared.sampling import resolve_games_named_axis, resolve_games_query_variant
 from ..shared.style import SUPPORTED_GAMES_STYLE_VARIANTS
 from ..shared.visual_defaults import load_games_background_defaults, load_games_noise_defaults
 
@@ -132,28 +132,13 @@ def _resolve_query_variant(
     alias_params = dict(params)
     if alias_params.get("query_variant") is None and alias_params.get("task_variant") is not None:
         alias_params["query_variant"] = alias_params["task_variant"]
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.query_variant")
-    selected, probabilities = resolve_variant(
-        rng,
-        params=alias_params,
-        gen_defaults=_GEN_DEFAULTS,
-        supported_variants=SUPPORTED_QUERY_VARIANTS,
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-    )
-    selected = apply_balanced_variant_sampling(
+    return resolve_games_query_variant(
+        task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=alias_params,
         gen_defaults=_GEN_DEFAULTS,
-        selected_variant=str(selected),
-        variant_probabilities=probabilities,
         supported_variants=SUPPORTED_QUERY_VARIANTS,
-        balance_flag_key="balanced_query_variant_sampling",
-        explicit_key="query_variant",
-        weights_key="query_variant_weights",
-        sampling_namespace=f"{TASK_ID}.query_variant",
     )
-    return str(selected), dict(probabilities)
 
 
 def _resolve_named_axis(
@@ -168,28 +153,17 @@ def _resolve_named_axis(
 ) -> Tuple[str, Dict[str, float]]:
     """Resolve one balanced named axis for the games cards task."""
 
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.{str(namespace)}")
-    selected, probabilities = resolve_variant(
-        rng,
-        params=params,
-        gen_defaults=_GEN_DEFAULTS,
-        supported_variants=[str(item) for item in supported],
-        explicit_key=str(explicit_key),
-        weights_key=str(weights_key),
-    )
-    selected = apply_balanced_variant_sampling(
+    return resolve_games_named_axis(
+        task_id=TASK_ID,
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=_GEN_DEFAULTS,
-        selected_variant=str(selected),
-        variant_probabilities=probabilities,
-        supported_variants=[str(item) for item in supported],
-        balance_flag_key=str(balance_flag_key),
+        namespace=str(namespace),
         explicit_key=str(explicit_key),
         weights_key=str(weights_key),
-        sampling_namespace=f"{TASK_ID}.{str(namespace)}",
+        balance_flag_key=str(balance_flag_key),
+        supported_variants=[str(item) for item in supported],
     )
-    return str(selected), dict(probabilities)
 
 
 def _target_support_key(query_variant: str) -> str:

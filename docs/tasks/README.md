@@ -105,3 +105,4 @@ Current task docs:
 95. [task_physics_optics_ray_trace.md](task_physics_optics_ray_trace.md)
 96. [task_games_cards_hand_count.md](task_games_cards_hand_count.md)
 97. [task_games_dominoes_chain_count.md](task_games_dominoes_chain_count.md)
+98. [task_games_reversi_move_count.md](task_games_reversi_move_count.md)

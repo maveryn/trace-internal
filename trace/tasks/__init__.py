@@ -58,6 +58,7 @@ from .documents.readout import field_value as _task_documents_readout_field_valu
 from .documents.selection import checkbox_count as _task_documents_selection_checkbox_count
 from .games.cards import hand_count as _task_games_cards_hand_count
 from .games.dominoes import chain_count as _task_games_dominoes_chain_count
+from .games.reversi import move_count as _task_games_reversi_move_count
 from .tables.counting import value_count as _task_tables_counting_value_count
 from .tables.ranking import label as _task_tables_ranking_label
 from .tables.relation import extremum_transfer_value as _task_tables_relation_extremum_transfer_value

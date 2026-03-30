@@ -52,3 +52,4 @@ Update this table after each review run.
 | task_physics_optics_ray_trace | task_physics_optics_ray_trace | alright_for_now | distribution pass (hidden-path optics with graph-point evidence over bounce points / hit targets) |
 | task_games_cards_hand_count | task_games_cards_hand_count | alright_for_now | distribution pass (single-row/two-row visible card hands with same-suit, higher-rank, exact-pair, and longest-run count variants) |
 | task_games_dominoes_chain_count | task_games_dominoes_chain_count | alright_for_now | distribution pass (top-chain plus loose-domino scenes with matching-end, higher-sum, target-sum, and double-count variants) |
+| task_games_reversi_move_count | task_games_reversi_move_count | alright_for_now | distribution pass (compact/classic visible Reversi boards with legal-move, corner-move, and marked flip-count queries) |

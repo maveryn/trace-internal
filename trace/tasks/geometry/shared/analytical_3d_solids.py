@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import ImageDraw
 
+from ...shared.isometric_projection import iso_project_point_3d
 from ...shared.config_defaults import group_default
 from ...shared.text_rendering import (
     draw_text_centered,
@@ -105,10 +106,7 @@ def _pi_expression(value: int) -> str:
 
 def iso_project_point_3d(point_3d: Point3) -> Point:
     """Project one 3D point to an isometric 2D plane."""
-    x_value, y_value, z_value = float(point_3d[0]), float(point_3d[1]), float(point_3d[2])
-    projected_x = (float(x_value) - float(y_value)) * 0.8660254
-    projected_y = ((float(x_value) + float(y_value)) * 0.5) - float(z_value)
-    return (float(projected_x), float(projected_y))
+    return tuple(float(value) for value in iso_project_point_3d(point_3d))
 
 
 def _iso_project(point_3d: Point3) -> Point:

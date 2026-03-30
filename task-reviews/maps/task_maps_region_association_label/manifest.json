@@ -1,0 +1,15 @@
+{
+  "inspection_count": 75,
+  "task_id": "task_maps_region_association_label",
+  "variants": {
+    "matches_legend_bin": 25,
+    "max_category_region": 25,
+    "min_category_region": 25
+  },
+  "workbook": "maps/task_maps_region_association_label/task_maps_region_association_label.xlsx",
+  "workbook_sheets": {
+    "matches_legend_bin": "matches_legend_bin",
+    "max_category_region": "max_category_region",
+    "min_category_region": "min_category_region"
+  }
+}

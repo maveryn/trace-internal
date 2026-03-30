@@ -1,0 +1,162 @@
+{
+  "domain": "puzzles",
+  "failed_variants": [],
+  "has_task_variants": false,
+  "incomplete_variants": [],
+  "mode": "single_sample",
+  "overall": {
+    "answer_type_counts": {
+      "option_letter": 100
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.22,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": null,
+        "pass": null,
+        "status": "not_applicable_non_numeric_answers"
+      },
+      "min_unique_answers": {
+        "observed": 6,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": null,
+    "max_answer_count": 22,
+    "max_answer_frequency": 0.22,
+    "pass": true,
+    "sample_count": 100,
+    "top_answers": [
+      {
+        "answer_label": "C",
+        "count": 22
+      },
+      {
+        "answer_label": "E",
+        "count": 22
+      },
+      {
+        "answer_label": "A",
+        "count": 17
+      },
+      {
+        "answer_label": "B",
+        "count": 16
+      },
+      {
+        "answer_label": "D",
+        "count": 16
+      },
+      {
+        "answer_label": "F",
+        "count": 7
+      }
+    ],
+    "unique_answers": 6
+  },
+  "pass": true,
+  "per_task_variant": {
+    "": {
+      "answer_type_counts": {
+        "option_letter": 100
+      },
+      "checks": {
+        "max_answer_frequency": {
+          "observed": 0.22,
+          "pass": true,
+          "threshold": 0.25
+        },
+        "max_five_bin_frequency": {
+          "observed": null,
+          "pass": null,
+          "status": "not_applicable_non_numeric_answers"
+        },
+        "min_unique_answers": {
+          "observed": 6,
+          "pass": true,
+          "threshold": 5
+        }
+      },
+      "five_bin_numeric": null,
+      "max_answer_count": 22,
+      "max_answer_frequency": 0.22,
+      "pass": true,
+      "sample_count": 100,
+      "top_answers": [
+        {
+          "answer_label": "C",
+          "count": 22
+        },
+        {
+          "answer_label": "E",
+          "count": 22
+        },
+        {
+          "answer_label": "A",
+          "count": 17
+        },
+        {
+          "answer_label": "B",
+          "count": 16
+        },
+        {
+          "answer_label": "D",
+          "count": 16
+        },
+        {
+          "answer_label": "F",
+          "count": 7
+        }
+      ],
+      "unique_answers": 6
+    }
+  },
+  "sampling_axes": {
+    "scene_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "assembly_card": 0.3333333333333333,
+        "assembly_outline": 0.3333333333333333,
+        "assembly_strip": 0.3333333333333333
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.38,
+      "observed_counts": {
+        "assembly_card": 33,
+        "assembly_outline": 29,
+        "assembly_strip": 38
+      },
+      "sample_count": 100
+    },
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "can_be_built": 1.0
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 1.0,
+      "observed_counts": {
+        "can_be_built": 100
+      },
+      "sample_count": 100
+    }
+  },
+  "task_group": "spatial",
+  "task_id": "task_puzzles_spatial_assembly_label",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {
+      "can_be_built": 1.0
+    },
+    "expected_source": "query_params",
+    "has_variants": false,
+    "observed_counts": {
+      "can_be_built": 100
+    },
+    "status": "skipped_no_variants"
+  }
+}

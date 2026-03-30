@@ -235,6 +235,246 @@ def _resolve_correct_option_index(
     return int((flat_index + symbol_offset) % int(option_count))
 
 
+def _king_neighbor_coords(board_size: int, row_index: int, col_index: int) -> List[Tuple[int, int]]:
+    """Return all in-bounds king-move neighbors for one board cell."""
+
+    neighbors: List[Tuple[int, int]] = []
+    for delta_row in (-1, 0, 1):
+        for delta_col in (-1, 0, 1):
+            if int(delta_row) == 0 and int(delta_col) == 0:
+                continue
+            nbr_row = int(row_index + delta_row)
+            nbr_col = int(col_index + delta_col)
+            if 0 <= nbr_row < int(board_size) and 0 <= nbr_col < int(board_size):
+                neighbors.append((int(nbr_row), int(nbr_col)))
+    return neighbors
+
+
+def _king_neighbor_symbol_set(
+    board_values: Sequence[Sequence[str | None]],
+    *,
+    row_index: int,
+    col_index: int,
+) -> set[str]:
+    """Return the set of already assigned neighboring symbols around one cell."""
+
+    board_size = int(len(board_values))
+    seen: set[str] = set()
+    for nbr_row, nbr_col in _king_neighbor_coords(int(board_size), int(row_index), int(col_index)):
+        value = board_values[int(nbr_row)][int(nbr_col)]
+        if value is not None:
+            seen.add(str(value))
+    return seen
+
+
+def _allowed_king_symbols(
+    board_values: Sequence[Sequence[str | None]],
+    *,
+    row_index: int,
+    col_index: int,
+    symbol_pool: Sequence[str],
+) -> List[str]:
+    """Return symbols that preserve the king-adjacency non-touch rule at one cell."""
+
+    blocked = _king_neighbor_symbol_set(board_values, row_index=int(row_index), col_index=int(col_index))
+    return [str(symbol) for symbol in symbol_pool if str(symbol) not in blocked]
+
+
+def _fill_board_with_king_non_touch(
+    board_values: List[List[str | None]],
+    *,
+    symbol_pool: Sequence[str],
+    rng,
+) -> bool:
+    """Backtrack-fill the remaining board cells under the king-adjacency non-touch rule."""
+
+    pending: List[Tuple[int, int, List[str]]] = []
+    for row_index, row in enumerate(board_values):
+        for col_index, value in enumerate(row):
+            if value is not None:
+                continue
+            allowed = _allowed_king_symbols(
+                board_values,
+                row_index=int(row_index),
+                col_index=int(col_index),
+                symbol_pool=symbol_pool,
+            )
+            if not allowed:
+                return False
+            pending.append((int(row_index), int(col_index), list(allowed)))
+    if not pending:
+        return True
+
+    row_index, col_index, allowed = min(pending, key=lambda item: (len(item[2]), item[0], item[1]))
+    rng.shuffle(allowed)
+    for symbol in allowed:
+        board_values[int(row_index)][int(col_index)] = str(symbol)
+        if _fill_board_with_king_non_touch(board_values, symbol_pool=symbol_pool, rng=rng):
+            return True
+        board_values[int(row_index)][int(col_index)] = None
+    return False
+
+
+def build_logic_adjacency_dataset_for_variant(
+    *,
+    task_variant: str,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    gen_defaults: Mapping[str, Any],
+    defaults: PuzzleLogicDefaults,
+    task_id: str,
+) -> Dict[str, Any]:
+    """Construct one deterministic explicit-rule adjacency logic puzzle dataset."""
+
+    selected_variant = str(task_variant)
+    supported = {"king_non_touch"}
+    if selected_variant not in supported:
+        raise ValueError(f"unsupported logic adjacency variant: {task_variant}")
+
+    rng = spawn_rng(int(instance_seed), f"{task_id}.dataset")
+    board_size_range = resolve_logic_board_size_bounds(
+        params,
+        gen_defaults=gen_defaults,
+        defaults=defaults,
+        task_id=task_id,
+    )
+    board_size = _resolve_board_size(
+        params,
+        instance_seed=int(instance_seed),
+        task_id=task_id,
+        board_size_range=board_size_range,
+    )
+    option_count = int(params.get("option_count", group_default(gen_defaults, "option_count", int(defaults.option_count))))
+    if int(option_count) != 6:
+        raise ValueError(f"{task_id} currently requires exactly 6 options for stable option-letter coverage")
+
+    symbol_pool = list(PUZZLE_OBJECT_TYPES)
+    if int(len(symbol_pool)) != int(option_count):
+        raise ValueError(f"{task_id} expects the global puzzle symbol pool to match option_count")
+    rng.shuffle(symbol_pool)
+    query_candidates = [
+        (int(row_index), int(col_index))
+        for row_index in range(int(board_size))
+        for col_index in range(int(board_size))
+        if len(_king_neighbor_coords(int(board_size), int(row_index), int(col_index))) >= 5
+    ]
+    if not query_candidates:
+        raise ValueError(f"{task_id} requires at least one cell with five neighbors")
+
+    query_selection = int(
+        resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{task_id}:query_cell",
+        )
+    )
+    query_row_index, query_col_index = query_candidates[int(query_selection % len(query_candidates))]
+    answer_object_type = str(symbol_pool[0])
+    forced_neighbor_symbols = [str(symbol) for symbol in symbol_pool[1:6]]
+    neighbor_coords = list(_king_neighbor_coords(int(board_size), int(query_row_index), int(query_col_index)))
+    rng.shuffle(neighbor_coords)
+    forced_neighbor_coords = list(neighbor_coords[:5])
+
+    board_values: List[List[str | None]] = [
+        [None for _ in range(int(board_size))]
+        for _ in range(int(board_size))
+    ]
+    board_values[int(query_row_index)][int(query_col_index)] = str(answer_object_type)
+    for (nbr_row, nbr_col), symbol in zip(forced_neighbor_coords, forced_neighbor_symbols, strict=True):
+        board_values[int(nbr_row)][int(nbr_col)] = str(symbol)
+    if not _fill_board_with_king_non_touch(board_values, symbol_pool=symbol_pool, rng=rng):
+        raise RuntimeError("failed to construct a valid king-non-touch logic board")
+
+    filled_board = [[str(value) for value in row] for row in board_values]
+    neighbor_symbol_set = _king_neighbor_symbol_set(
+        filled_board,
+        row_index=int(query_row_index),
+        col_index=int(query_col_index),
+    )
+    valid_symbols = [str(symbol) for symbol in symbol_pool if str(symbol) not in neighbor_symbol_set]
+    if valid_symbols != [str(answer_object_type)]:
+        raise ValueError("logic adjacency witness failed to make the answer unique")
+
+    query_cell_id = f"cell_{query_row_index}_{query_col_index}"
+    grid_rows: List[List[Dict[str, Any]]] = []
+    for row_index, row_values in enumerate(filled_board):
+        row_cells: List[Dict[str, Any]] = []
+        for col_index, object_type in enumerate(row_values):
+            cell_id = f"cell_{row_index}_{col_index}"
+            row_cells.append(
+                {
+                    "cell_id": str(cell_id),
+                    "row_index": int(row_index),
+                    "col_index": int(col_index),
+                    "is_unknown": bool(row_index == query_row_index and col_index == query_col_index),
+                    "object_type": None if row_index == query_row_index and col_index == query_col_index else str(object_type),
+                }
+            )
+        grid_rows.append(row_cells)
+
+    distractor_pool = [str(symbol) for symbol in symbol_pool if str(symbol) != str(answer_object_type)]
+    correct_option_index = _resolve_correct_option_index(
+        params,
+        query_row_index=int(query_row_index),
+        query_col_index=int(query_col_index),
+        board_size=int(board_size),
+        answer_object_type=str(answer_object_type),
+        option_count=int(option_count),
+    )
+    option_object_types = list(distractor_pool)
+    option_object_types.insert(int(correct_option_index), str(answer_object_type))
+    option_specs: List[Dict[str, Any]] = []
+    option_labels: List[str] = []
+    for option_index, option_object_type in enumerate(option_object_types):
+        option_label = str(option_label_for_index(int(option_index)))
+        option_labels.append(option_label)
+        option_specs.append(
+            {
+                "option_panel_id": f"option_{option_label}",
+                "option_index": int(option_index),
+                "option_label": str(option_label),
+                "object_type": str(option_object_type),
+                "is_correct": bool(option_index == correct_option_index),
+            }
+        )
+
+    return {
+        "grid_rows": grid_rows,
+        "board_values": [[str(value) for value in row] for row in filled_board],
+        "symbol_pool": [str(value) for value in symbol_pool],
+        "query_cell_id": str(query_cell_id),
+        "query_row_index": int(query_row_index),
+        "query_col_index": int(query_col_index),
+        "answer_object_type": str(answer_object_type),
+        "answer_option_label": str(option_label_for_index(correct_option_index)),
+        "correct_option_index": int(correct_option_index),
+        "correct_option_panel_id": str(option_specs[correct_option_index]["option_panel_id"]),
+        "option_specs": option_specs,
+        "option_labels": option_labels,
+        "option_count": int(option_count),
+        "board_size": int(board_size),
+        "board_size_range": [int(board_size_range[0]), int(board_size_range[1])],
+        "cell_count": int(board_size * board_size),
+        "cell_count_range": [int(board_size_range[0] ** 2), int(board_size_range[1] ** 2)],
+        "neighbor_coords": [[int(row), int(col)] for row, col in sorted(neighbor_coords)],
+        "forced_neighbor_coords": [[int(row), int(col)] for row, col in sorted(forced_neighbor_coords)],
+        "forced_neighbor_types": [str(value) for value in forced_neighbor_symbols],
+        "query_neighbor_object_types": [str(value) for value in sorted(neighbor_symbol_set)],
+        "valid_option_object_types": [str(value) for value in valid_symbols],
+        "solver_trace": {
+            "rule_type": str(selected_variant),
+            "touch_rule": "no_identical_symbols_touch_orthogonally_or_diagonally",
+            "symbol_pool": [str(value) for value in symbol_pool],
+            "query_neighbor_object_types": [str(value) for value in sorted(neighbor_symbol_set)],
+            "valid_option_object_types": [str(value) for value in valid_symbols],
+            "forced_neighbor_coords": [[int(row), int(col)] for row, col in sorted(forced_neighbor_coords)],
+            "correct_option_index": int(correct_option_index),
+            "correct_option_label": str(option_label_for_index(correct_option_index)),
+            "option_object_types": [str(value) for value in option_object_types],
+        },
+    }
+
+
 def build_logic_grid_dataset_for_variant(
     *,
     task_variant: str,
@@ -389,6 +629,7 @@ __all__ = [
     "PuzzleLogicDefaults",
     "PuzzleLogicRenderParams",
     "SUPPORTED_PUZZLE_LOGIC_SCENE_VARIANTS",
+    "build_logic_adjacency_dataset_for_variant",
     "build_logic_grid_dataset_for_variant",
     "resolve_logic_board_size_bounds",
     "resolve_logic_render_params",

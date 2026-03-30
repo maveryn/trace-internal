@@ -109,6 +109,8 @@ Use this as the implementation checklist for new or modified tasks.
 37. For 2D icon pattern-violation tasks, prefer a numbered single-panel grid over an option strip, keep the answer on the violating cell index, keep user-facing evidence on the violating cell bbox, and reject any instance where another supported rule hypothesis would make a different violating cell plausible.
 38. For 2D icon size-pattern tasks, define the clean rule over symbolic size levels first and only map those levels to pixel sizes after sampled cell geometry is known; this keeps uniqueness checks stable instead of making them depend on whichever raw pixel ladder happened to fit the cell.
 39. For scene-internal icon frequency tasks, define frequency over `icon_id` only and let color/rotation vary independently; otherwise the task silently turns into appearance matching instead of type-frequency reasoning.
+26. For map-region tasks whose query depends on category rank, make the legend order explicit in the prompt or ask directly about a named legend category; do not require solvers to infer an unstated darker-is-higher convention from the palette alone.
+27. For map-region count tasks, keep prompt-facing evidence as the ordered set of counted region bboxes in map reading order; do not switch evidence ordering to legend order just because the query references a legend category.
 
 ## 4) Config/defaults rules
 1. Precedence: `domain -> task_group -> task/params`.
@@ -175,6 +177,7 @@ PYTHONPATH=. pytest -q
 6. `docs/workflows/SHARED_UTILITIES.md` (if shared helpers moved/added)
 7. `docs/workflows/BUILD_VALIDATION.md` or `docs/workflows/VALIDATION_ERROR_CODES.md` (if validation behavior changed)
 8. `docs/workflows/CODE_REVIEW_GUIDELINES.md` for reusable findings.
+9. Treat existing-domain task additions/removals the same as first-domain activation for doc hygiene: update the active task docs, status pages, and the core prompt/module inventories together in one change.
 
 ## 8) Reuse anti-patterns
 Use `docs/workflows/CODE_REVIEW_GUIDELINES.md` Section 2 as the canonical anti-pattern list.

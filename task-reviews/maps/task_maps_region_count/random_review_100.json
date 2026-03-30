@@ -1,0 +1,143 @@
+{
+  "answer_distribution": {
+    "answer_type_counts": {
+      "integer": 100
+    },
+    "checks": {
+      "max_answer_frequency": {
+        "observed": 0.2,
+        "pass": true,
+        "threshold": 0.25
+      },
+      "max_five_bin_frequency": {
+        "observed": 0.35,
+        "pass": null,
+        "status": "reported_not_gated_numeric_answers"
+      },
+      "min_unique_answers": {
+        "observed": 6,
+        "pass": true,
+        "threshold": 5
+      }
+    },
+    "five_bin_numeric": {
+      "bin_count": 5,
+      "bins": [
+        {
+          "bin_id": 0,
+          "count": 12,
+          "label": "[1, 2)"
+        },
+        {
+          "bin_id": 1,
+          "count": 18,
+          "label": "[2, 3)"
+        },
+        {
+          "bin_id": 2,
+          "count": 17,
+          "label": "[3, 4)"
+        },
+        {
+          "bin_id": 3,
+          "count": 18,
+          "label": "[4, 5)"
+        },
+        {
+          "bin_id": 4,
+          "count": 35,
+          "label": "[5, 6]"
+        }
+      ],
+      "max_bin_count": 35,
+      "max_bin_frequency": 0.35,
+      "range_max": 6.0,
+      "range_min": 1.0
+    },
+    "max_answer_count": 20,
+    "max_answer_frequency": 0.2,
+    "pass": true,
+    "sample_count": 100,
+    "top_answers": [
+      {
+        "answer_label": "5",
+        "count": 20
+      },
+      {
+        "answer_label": "2",
+        "count": 18
+      },
+      {
+        "answer_label": "4",
+        "count": 18
+      },
+      {
+        "answer_label": "3",
+        "count": 17
+      },
+      {
+        "answer_label": "6",
+        "count": 15
+      },
+      {
+        "answer_label": "1",
+        "count": 12
+      }
+    ],
+    "unique_answers": 6
+  },
+  "sample_count": 100,
+  "sampling_axes": {
+    "scene_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "map_card": 0.25,
+        "map_outline": 0.25,
+        "map_strip": 0.25,
+        "region_map": 0.25
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.28,
+      "observed_counts": {
+        "map_card": 25,
+        "map_outline": 24,
+        "map_strip": 28,
+        "region_map": 23
+      },
+      "sample_count": 100
+    },
+    "task_variant": {
+      "expected_conflict": false,
+      "expected_probabilities": {
+        "count_regions_above_category": 0.3333333333333333,
+        "count_regions_below_category": 0.3333333333333333,
+        "count_regions_in_category": 0.3333333333333333
+      },
+      "expected_source": "query_params",
+      "max_observed_frequency": 0.42,
+      "observed_counts": {
+        "count_regions_above_category": 28,
+        "count_regions_below_category": 30,
+        "count_regions_in_category": 42
+      },
+      "sample_count": 100
+    }
+  },
+  "task_id": "task_maps_region_count",
+  "task_variant_distribution": {
+    "expected_conflict": false,
+    "expected_probabilities": {
+      "count_regions_above_category": 0.3333333333333333,
+      "count_regions_below_category": 0.3333333333333333,
+      "count_regions_in_category": 0.3333333333333333
+    },
+    "expected_source": "query_params",
+    "has_variants": true,
+    "observed_counts": {
+      "count_regions_above_category": 28,
+      "count_regions_below_category": 30,
+      "count_regions_in_category": 42
+    },
+    "status": "reported"
+  }
+}

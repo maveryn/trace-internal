@@ -1,0 +1,1648 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 4
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        108.0,
+        168.018,
+        552.0,
+        637.982
+      ],
+      [
+        648.0,
+        210.742,
+        1092.0,
+        595.258
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "puzzles/task_puzzles_spatial_cube_removal_count/images/default/0002.png"
+  },
+  "instance_seed": 7298388635199764,
+  "prompt": "Use the original block on the left and the remaining block on the right: a card-style block-comparison puzzle with the original block on the left and the remaining block on the right. Use the two shown block structures to determine how many cubes were removed from the original block. Give the exact removed cube count as an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2], first for the original block on the left and second for the remaining block on the right.\nAnswer format: set \"answer\" to the exact number of cubes removed as an integer.\nExample JSON:\n{\"evidence\":[[132,175,459,656],[750,207,1080,656]],\"answer\":4}",
+  "prompt_variants": {
+    "answer_and_evidence": "Use the original block on the left and the remaining block on the right: a card-style block-comparison puzzle with the original block on the left and the remaining block on the right. Use the two shown block structures to determine how many cubes were removed from the original block. Give the exact removed cube count as an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2], first for the original block on the left and second for the remaining block on the right.\nAnswer format: set \"answer\" to the exact number of cubes removed as an integer.\nExample JSON:\n{\"evidence\":[[132,175,459,656],[750,207,1080,656]],\"answer\":4}",
+    "answer_only": "Use the original block on the left and the remaining block on the right: a card-style block-comparison puzzle with the original block on the left and the remaining block on the right. Use the two shown block structures to determine how many cubes were removed from the original block. Give the exact removed cube count as an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact number of cubes removed as an integer.\nExample JSON:\n{\"answer\":4}"
+  },
+  "task": "task_puzzles_spatial_cube_removal_count",
+  "task_variant": "cube_removal_count",
+  "trace_payload": {
+    "answer_gt": {
+      "type": "integer",
+      "value": 4
+    },
+    "complexity": {
+      "complexity_components": {
+        "reasoning_load": 0.5650000000000001,
+        "scene_variant_load": 0.18,
+        "visual_scan": 0.8333333333333334
+      },
+      "complexity_score": 0.628
+    },
+    "evidence_gt": {
+      "type": "bbox_set",
+      "value": [
+        [
+          108.0,
+          168.018,
+          552.0,
+          637.982
+        ],
+        [
+          648.0,
+          210.742,
+          1092.0,
+          595.258
+        ]
+      ]
+    },
+    "execution_trace": {
+      "answer_value": 4,
+      "changed_column_count": 3,
+      "col_count": 3,
+      "col_count_range": [
+        2,
+        4
+      ],
+      "original_cube_records": [
+        {
+          "col_index": 0,
+          "cube_id": "cube_1",
+          "is_hidden": true,
+          "level_index": 0,
+          "row_index": 0,
+          "visible_faces": {
+            "front": false,
+            "right": false,
+            "top": false
+          }
+        },
+        {
+          "col_index": 0,
+          "cube_id": "cube_2",
+          "is_hidden": false,
+          "level_index": 1,
+          "row_index": 0,
+          "visible_faces": {
+            "front": true,
+            "right": false,
+            "top": true
+          }
+        },
+        {
+          "col_index": 1,
+          "cube_id": "cube_3",
+          "is_hidden": true,
+          "level_index": 0,
+          "row_index": 0,
+          "visible_faces": {
+            "front": false,
+            "right": false,
+            "top": false
+          }
+        },
+        {
+          "col_index": 1,
+          "cube_id": "cube_4",
+          "is_hidden": false,
+          "level_index": 1,
+          "row_index": 0,
+          "visible_faces": {
+            "front": false,
+            "right": true,
+            "top": false
+          }
+        },
+        {
+          "col_index": 1,
+          "cube_id": "cube_5",
+          "is_hidden": false,
+          "level_index": 2,
+          "row_index": 0,
+          "visible_faces": {
+            "front": false,
+            "right": true,
+            "top": true
+          }
+        },
+        {
+          "col_index": 2,
+          "cube_id": "cube_6",
+          "is_hidden": false,
+          "level_index": 0,
+          "row_index": 0,
+          "visible_faces": {
+            "front": false,
+            "right": true,
+            "top": true
+          }
+        },
+        {
+          "col_index": 0,
+          "cube_id": "cube_7",
+          "is_hidden": false,
+          "level_index": 0,
+          "row_index": 1,
+          "visible_faces": {
+            "front": false,
+            "right": false,
+            "top": true
+          }
+        },
+        {
+          "col_index": 1,
+          "cube_id": "cube_8",
+          "is_hidden": true,
+          "level_index": 0,
+          "row_index": 1,
+          "visible_faces": {
+            "front": false,
+            "right": false,
+            "top": false
+          }
+        },
+        {
+          "col_index": 1,
+          "cube_id": "cube_9",
+          "is_hidden": true,
+          "level_index": 1,
+          "row_index": 1,
+          "visible_faces": {
+            "front": false,
+            "right": false,
+            "top": false
+          }
+        },
+        {
+          "col_index": 1,
+          "cube_id": "cube_10",
+          "is_hidden": false,
+          "level_index": 2,
+          "row_index": 1,
+          "visible_faces": {
+            "front": true,
+            "right": false,
+            "top": true
+          }
+        },
+        {
+          "col_index": 2,
+          "cube_id": "cube_11",
+          "is_hidden": false,
+          "level_index": 0,
+          "row_index": 1,
+          "visible_faces": {
+            "front": false,
+            "right": true,
+            "top": false
+          }
+        },
+        {
+          "col_index": 2,
+          "cube_id": "cube_12",
+          "is_hidden": false,
+          "level_index": 1,
+          "row_index": 1,
+          "visible_faces": {
+            "front": false,
+            "right": true,
+            "top": false
+          }
+        },
+        {
+          "col_index": 2,
+          "cube_id": "cube_13",
+          "is_hidden": false,
+          "level_index": 2,
+          "row_index": 1,
+          "visible_faces": {
+            "front": false,
+            "right": true,
+            "top": true
+          }
+        },
+        {
+          "col_index": 0,
+          "cube_id": "cube_14",
+          "is_hidden": false,
+          "level_index": 0,
+          "row_index": 2,
+          "visible_faces": {
+            "front": true,
+            "right": false,
+            "top": true
+          }
+        },
+        {
+          "col_index": 1,
+          "cube_id": "cube_15",
+          "is_hidden": false,
+          "level_index": 0,
+          "row_index": 2,
+          "visible_faces": {
+            "front": true,
+            "right": false,
+            "top": false
+          }
+        },
+        {
+          "col_index": 1,
+          "cube_id": "cube_16",
+          "is_hidden": false,
+          "level_index": 1,
+          "row_index": 2,
+          "visible_faces": {
+            "front": true,
+            "right": false,
+            "top": true
+          }
+        },
+        {
+          "col_index": 2,
+          "cube_id": "cube_17",
+          "is_hidden": false,
+          "level_index": 0,
+          "row_index": 2,
+          "visible_faces": {
+            "front": true,
+            "right": true,
+            "top": false
+          }
+        },
+        {
+          "col_index": 2,
+          "cube_id": "cube_18",
+          "is_hidden": false,
+          "level_index": 1,
+          "row_index": 2,
+          "visible_faces": {
+            "front": true,
+            "right": true,
+            "top": false
+          }
+        },
+        {
+          "col_index": 2,
+          "cube_id": "cube_19",
+          "is_hidden": false,
+          "level_index": 2,
+          "row_index": 2,
+          "visible_faces": {
+            "front": true,
+            "right": true,
+            "top": true
+          }
+        }
+      ],
+      "original_height_rows": [
+        [
+          2,
+          3,
+          1
+        ],
+        [
+          1,
+          3,
+          3
+        ],
+        [
+          1,
+          2,
+          3
+        ]
+      ],
+      "original_max_height": 3,
+      "original_max_height_range": [
+        2,
+        5
+      ],
+      "original_structure_bbox_id": "original_structure",
+      "original_total_cubes": 19,
+      "question_format": "cube_removal_count",
+      "remaining_cube_records": [
+        {
+          "col_index": 0,
+          "cube_id": "cube_1",
+          "is_hidden": false,
+          "level_index": 0,
+          "row_index": 0,
+          "visible_faces": {
+            "front": false,
+            "right": false,
+            "top": true
+          }
+        },
+        {
+          "col_index": 1,
+          "cube_id": "cube_2",
+          "is_hidden": false,
+          "level_index": 0,
+          "row_index": 0,
+          "visible_faces": {
+            "front": false,
+            "right": false,
+            "top": true
+          }
+        },
+        {
+          "col_index": 2,
+          "cube_id": "cube_3",
+          "is_hidden": false,
+          "level_index": 0,
+          "row_index": 0,
+          "visible_faces": {
+            "front": false,
+            "right": true,
+            "top": true
+          }
+        },
+        {
+          "col_index": 0,
+          "cube_id": "cube_4",
+          "is_hidden": false,
+          "level_index": 0,
+          "row_index": 1,
+          "visible_faces": {
+            "front": false,
+            "right": false,
+            "top": true
+          }
+        },
+        {
+          "col_index": 1,
+          "cube_id": "cube_5",
+          "is_hidden": true,
+          "level_index": 0,
+          "row_index": 1,
+          "visible_faces": {
+            "front": false,
+            "right": false,
+            "top": false
+          }
+        },
+        {
+          "col_index": 1,
+          "cube_id": "cube_6",
+          "is_hidden": false,
+          "level_index": 1,
+          "row_index": 1,
+          "visible_faces": {
+            "front": false,
+            "right": false,
+            "top": true
+          }
+        },
+        {
+          "col_index": 2,
+          "cube_id": "cube_7",
+          "is_hidden": false,
+          "level_index": 0,
+          "row_index": 1,
+          "visible_faces": {
+            "front": false,
+            "right": true,
+            "top": false
+          }
+        },
+        {
+          "col_index": 2,
+          "cube_id": "cube_8",
+          "is_hidden": false,
+          "level_index": 1,
+          "row_index": 1,
+          "visible_faces": {
+            "front": false,
+            "right": true,
+            "top": false
+          }
+        },
+        {
+          "col_index": 2,
+          "cube_id": "cube_9",
+          "is_hidden": false,
+          "level_index": 2,
+          "row_index": 1,
+          "visible_faces": {
+            "front": false,
+            "right": true,
+            "top": true
+          }
+        },
+        {
+          "col_index": 0,
+          "cube_id": "cube_10",
+          "is_hidden": false,
+          "level_index": 0,
+          "row_index": 2,
+          "visible_faces": {
+            "front": true,
+            "right": false,
+            "top": true
+          }
+        },
+        {
+          "col_index": 1,
+          "cube_id": "cube_11",
+          "is_hidden": false,
+          "level_index": 0,
+          "row_index": 2,
+          "visible_faces": {
+            "front": true,
+            "right": false,
+            "top": false
+          }
+        },
+        {
+          "col_index": 1,
+          "cube_id": "cube_12",
+          "is_hidden": false,
+          "level_index": 1,
+          "row_index": 2,
+          "visible_faces": {
+            "front": true,
+            "right": false,
+            "top": true
+          }
+        },
+        {
+          "col_index": 2,
+          "cube_id": "cube_13",
+          "is_hidden": false,
+          "level_index": 0,
+          "row_index": 2,
+          "visible_faces": {
+            "front": true,
+            "right": true,
+            "top": false
+          }
+        },
+        {
+          "col_index": 2,
+          "cube_id": "cube_14",
+          "is_hidden": false,
+          "level_index": 1,
+          "row_index": 2,
+          "visible_faces": {
+            "front": true,
+            "right": true,
+            "top": false
+          }
+        },
+        {
+          "col_index": 2,
+          "cube_id": "cube_15",
+          "is_hidden": false,
+          "level_index": 2,
+          "row_index": 2,
+          "visible_faces": {
+            "front": true,
+            "right": true,
+            "top": true
+          }
+        }
+      ],
+      "remaining_height_rows": [
+        [
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          2,
+          3
+        ],
+        [
+          1,
+          2,
+          3
+        ]
+      ],
+      "remaining_structure_bbox_id": "remaining_structure",
+      "remaining_total_cubes": 15,
+      "removal_count": 4,
+      "removal_count_range": [
+        1,
+        5
+      ],
+      "removed_cube_records": [
+        {
+          "col_index": 0,
+          "level_index": 1,
+          "removed_cube_id": "removed_cube_1",
+          "row_index": 0
+        },
+        {
+          "col_index": 1,
+          "level_index": 1,
+          "removed_cube_id": "removed_cube_2",
+          "row_index": 0
+        },
+        {
+          "col_index": 1,
+          "level_index": 2,
+          "removed_cube_id": "removed_cube_3",
+          "row_index": 0
+        },
+        {
+          "col_index": 1,
+          "level_index": 2,
+          "removed_cube_id": "removed_cube_4",
+          "row_index": 1
+        }
+      ],
+      "row_count": 3,
+      "row_count_range": [
+        2,
+        4
+      ],
+      "scene_variant": "stack_card",
+      "scene_variant_probabilities": {
+        "stack_card": 0.3333333333333333,
+        "stack_outline": 0.3333333333333333,
+        "stack_strip": 0.3333333333333333
+      },
+      "solver_trace": {
+        "changed_column_count": 3,
+        "col_count": 3,
+        "original_max_height": 3,
+        "removal_rows": [
+          [
+            1,
+            2,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "row_count": 3,
+        "target_removal_count": 4
+      },
+      "supporting_structure_ids": [
+        "original_structure",
+        "remaining_structure"
+      ],
+      "task_variant": "cube_removal_count",
+      "task_variant_probabilities": {
+        "cube_removal_count": 1.0
+      },
+      "total_cubes_max": 22,
+      "view_family": "isometric_block_comparison"
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          108.0,
+          168.018,
+          552.0,
+          637.982
+        ],
+        [
+          648.0,
+          210.742,
+          1092.0,
+          595.258
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "col_count": 3,
+        "original_max_height": 3,
+        "original_total_cubes": 19,
+        "remaining_total_cubes": 15,
+        "removal_count": 4,
+        "row_count": 3,
+        "scene_variant": "stack_card",
+        "scene_variant_probabilities": {
+          "stack_card": 0.3333333333333333,
+          "stack_outline": 0.3333333333333333,
+          "stack_strip": 0.3333333333333333
+        },
+        "task_variant": "cube_removal_count",
+        "task_variant_probabilities": {
+          "cube_removal_count": 1.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 1,
+        "prompt_bundle_id": "puzzles_spatial_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the exact number of cubes removed as an integer",
+          "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2], first for the original block on the left and second for the remaining block on the right",
+          "json_example": "{\"evidence\":[[132,175,459,656],[750,207,1080,656]],\"answer\":4}",
+          "json_example_answer_only": "{\"answer\":4}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "a card-style block-comparison puzzle with the original block on the left and the remaining block on the right"
+        },
+        "task_family_key": "spatial_cube_removal_puzzle",
+        "task_family_variant_index": 4,
+        "task_key": "cube_removal_count_query",
+        "task_variant_index": 2,
+        "task_variant_key": "cube_removal_count",
+        "task_variant_template_index": 2,
+        "template_paths": [
+          "puzzles/spatial/puzzles_spatial_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:cube_removal_count_query": 5,
+          "task_family:spatial_cube_removal_puzzle": 5,
+          "task_variant:cube_removal_count": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 1,
+            "prompt_bundle_id": "puzzles_spatial_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact number of cubes removed as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2], first for the original block on the left and second for the remaining block on the right",
+              "json_example": "{\"evidence\":[[132,175,459,656],[750,207,1080,656]],\"answer\":4}",
+              "json_example_answer_only": "{\"answer\":4}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a card-style block-comparison puzzle with the original block on the left and the remaining block on the right"
+            },
+            "task_family_key": "spatial_cube_removal_puzzle",
+            "task_family_variant_index": 4,
+            "task_key": "cube_removal_count_query",
+            "task_variant_index": 2,
+            "task_variant_key": "cube_removal_count",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "puzzles/spatial/puzzles_spatial_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:cube_removal_count_query": 5,
+              "task_family:spatial_cube_removal_puzzle": 5,
+              "task_variant:cube_removal_count": 5
+            }
+          },
+          "prompt": "Use the original block on the left and the remaining block on the right: a card-style block-comparison puzzle with the original block on the left and the remaining block on the right. Use the two shown block structures to determine how many cubes were removed from the original block. Give the exact removed cube count as an integer.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2], first for the original block on the left and second for the remaining block on the right.\nAnswer format: set \"answer\" to the exact number of cubes removed as an integer.\nExample JSON:\n{\"evidence\":[[132,175,459,656],[750,207,1080,656]],\"answer\":4}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "puzzles_spatial_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact number of cubes removed as an integer",
+              "evidence_hint": "set \"evidence\" to an array containing exactly two bounding boxes [x1, y1, x2, y2], first for the original block on the left and second for the remaining block on the right",
+              "json_example": "{\"evidence\":[[132,175,459,656],[750,207,1080,656]],\"answer\":4}",
+              "json_example_answer_only": "{\"answer\":4}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "a card-style block-comparison puzzle with the original block on the left and the remaining block on the right"
+            },
+            "task_family_key": "spatial_cube_removal_puzzle",
+            "task_family_variant_index": 4,
+            "task_key": "cube_removal_count_query",
+            "task_variant_index": 2,
+            "task_variant_key": "cube_removal_count",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "puzzles/spatial/puzzles_spatial_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:cube_removal_count_query": 5,
+              "task_family:spatial_cube_removal_puzzle": 5,
+              "task_variant:cube_removal_count": 5
+            }
+          },
+          "prompt": "Use the original block on the left and the remaining block on the right: a card-style block-comparison puzzle with the original block on the left and the remaining block on the right. Use the two shown block structures to determine how many cubes were removed from the original block. Give the exact removed cube count as an integer.\nReturn a valid JSON object with key \"answer\".\nAnswer rule: set \"answer\" to the exact number of cubes removed as an integer.\nExample JSON:\n{\"answer\":4}"
+        }
+      },
+      "task_variant": "cube_removal_count",
+      "template_id": "puzzles_spatial_v1"
+    },
+    "render_map": {
+      "image_id": "img0",
+      "original_structure_bbox_px": [
+        108.0,
+        168.018,
+        552.0,
+        637.982
+      ],
+      "remaining_structure_bbox_px": [
+        648.0,
+        210.742,
+        1092.0,
+        595.258
+      ],
+      "scene_bbox_px": [
+        64.0,
+        56.0,
+        1136.0,
+        704.0
+      ],
+      "structure_bboxes_px": {
+        "original_structure": [
+          108.0,
+          168.018,
+          552.0,
+          637.982
+        ],
+        "remaining_structure": [
+          648.0,
+          210.742,
+          1092.0,
+          595.258
+        ]
+      }
+    },
+    "render_spec": {
+      "background_style": {
+        "available_styles": [
+          "solid_light"
+        ],
+        "enabled": true,
+        "selected_style": "solid_light",
+        "style_spec": {
+          "color": [
+            248,
+            248,
+            248
+          ],
+          "kind": "solid"
+        }
+      },
+      "canvas_height": 760,
+      "canvas_width": 1200,
+      "coord_space": "pixel",
+      "post_image_noise": {
+        "applied": false,
+        "apply_prob": 0.0,
+        "edit_count_range": [
+          1,
+          2
+        ],
+        "edit_types": [
+          "blur",
+          "downsample",
+          "jpeg",
+          "noise"
+        ],
+        "edits": [],
+        "enabled": false
+      },
+      "scene_bbox_px": [
+        64.0,
+        56.0,
+        1136.0,
+        704.0
+      ],
+      "scene_variant": "stack_card"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "col_count": 3,
+            "row_count": 3,
+            "structure_role": "original"
+          },
+          "bbox_px": [
+            108.0,
+            168.018,
+            552.0,
+            637.982
+          ],
+          "entity_id": "original_structure",
+          "entity_type": "puzzle_block_structure"
+        },
+        {
+          "attrs": {
+            "col_count": 3,
+            "row_count": 3,
+            "structure_role": "remaining"
+          },
+          "bbox_px": [
+            648.0,
+            210.742,
+            1092.0,
+            595.258
+          ],
+          "entity_id": "remaining_structure",
+          "entity_type": "puzzle_block_structure"
+        },
+        {
+          "attrs": {
+            "structure_role": "original",
+            "text": "Original"
+          },
+          "bbox_px": [
+            262.5,
+            99.5,
+            397.5,
+            130.5
+          ],
+          "entity_id": "original_caption",
+          "entity_type": "puzzle_block_caption"
+        },
+        {
+          "attrs": {
+            "structure_role": "remaining",
+            "text": "After"
+          },
+          "bbox_px": [
+            826.5,
+            102.5,
+            913.5,
+            127.5
+          ],
+          "entity_id": "remaining_caption",
+          "entity_type": "puzzle_block_caption"
+        },
+        {
+          "attrs": {},
+          "bbox_px": [
+            569.28,
+            385.0,
+            630.72,
+            421.0
+          ],
+          "entity_id": "block_transition_arrow",
+          "entity_type": "puzzle_block_arrow"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_2",
+            "face_type": "front",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            256.0,
+            253.466,
+            330.0,
+            381.638
+          ],
+          "entity_id": "original_structure_face_1",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_2",
+            "face_type": "top",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            256.0,
+            210.742,
+            404.0,
+            296.19
+          ],
+          "entity_id": "original_structure_face_2",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_7",
+            "face_type": "top",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            182.0,
+            338.914,
+            330.0,
+            424.362
+          ],
+          "entity_id": "original_structure_face_3",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_14",
+            "face_type": "front",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            108.0,
+            424.362,
+            182.0,
+            552.534
+          ],
+          "entity_id": "original_structure_face_4",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_4",
+            "face_type": "right",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            404.0,
+            296.19,
+            478.0,
+            424.362
+          ],
+          "entity_id": "original_structure_face_5",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_6",
+            "face_type": "right",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            478.0,
+            424.362,
+            552.0,
+            552.534
+          ],
+          "entity_id": "original_structure_face_6",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_6",
+            "face_type": "top",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            404.0,
+            381.638,
+            552.0,
+            467.086
+          ],
+          "entity_id": "original_structure_face_7",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_14",
+            "face_type": "top",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            108.0,
+            381.638,
+            256.0,
+            467.086
+          ],
+          "entity_id": "original_structure_face_8",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_15",
+            "face_type": "front",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            182.0,
+            467.086,
+            256.0,
+            595.258
+          ],
+          "entity_id": "original_structure_face_9",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_5",
+            "face_type": "right",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            404.0,
+            210.742,
+            478.0,
+            338.914
+          ],
+          "entity_id": "original_structure_face_10",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_11",
+            "face_type": "right",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            404.0,
+            467.086,
+            478.0,
+            595.258
+          ],
+          "entity_id": "original_structure_face_11",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_5",
+            "face_type": "top",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            330.0,
+            168.018,
+            478.0,
+            253.466
+          ],
+          "entity_id": "original_structure_face_12",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_10",
+            "face_type": "front",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            256.0,
+            253.466,
+            330.0,
+            381.638
+          ],
+          "entity_id": "original_structure_face_13",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_16",
+            "face_type": "front",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            182.0,
+            381.638,
+            256.0,
+            509.81
+          ],
+          "entity_id": "original_structure_face_14",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_17",
+            "face_type": "front",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            256.0,
+            509.81,
+            330.0,
+            637.982
+          ],
+          "entity_id": "original_structure_face_15",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_12",
+            "face_type": "right",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            404.0,
+            381.638,
+            478.0,
+            509.81
+          ],
+          "entity_id": "original_structure_face_16",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_17",
+            "face_type": "right",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            330.0,
+            509.81,
+            404.0,
+            637.982
+          ],
+          "entity_id": "original_structure_face_17",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_10",
+            "face_type": "top",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            256.0,
+            210.742,
+            404.0,
+            296.19
+          ],
+          "entity_id": "original_structure_face_18",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_16",
+            "face_type": "top",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            182.0,
+            338.914,
+            330.0,
+            424.362
+          ],
+          "entity_id": "original_structure_face_19",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_18",
+            "face_type": "front",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            256.0,
+            424.362,
+            330.0,
+            552.534
+          ],
+          "entity_id": "original_structure_face_20",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_13",
+            "face_type": "right",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            404.0,
+            296.19,
+            478.0,
+            424.362
+          ],
+          "entity_id": "original_structure_face_21",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_18",
+            "face_type": "right",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            330.0,
+            424.362,
+            404.0,
+            552.534
+          ],
+          "entity_id": "original_structure_face_22",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_13",
+            "face_type": "top",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            330.0,
+            253.466,
+            478.0,
+            338.914
+          ],
+          "entity_id": "original_structure_face_23",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_19",
+            "face_type": "front",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            256.0,
+            338.914,
+            330.0,
+            467.086
+          ],
+          "entity_id": "original_structure_face_24",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_19",
+            "face_type": "right",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            330.0,
+            338.914,
+            404.0,
+            467.086
+          ],
+          "entity_id": "original_structure_face_25",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_19",
+            "face_type": "top",
+            "structure_id": "original_structure"
+          },
+          "bbox_px": [
+            256.0,
+            296.19,
+            404.0,
+            381.638
+          ],
+          "entity_id": "original_structure_face_26",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_1",
+            "face_type": "top",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            796.0,
+            253.466,
+            944.0,
+            338.914
+          ],
+          "entity_id": "remaining_structure_face_1",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_2",
+            "face_type": "top",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            870.0,
+            296.19,
+            1018.0,
+            381.638
+          ],
+          "entity_id": "remaining_structure_face_2",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_4",
+            "face_type": "top",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            722.0,
+            296.19,
+            870.0,
+            381.638
+          ],
+          "entity_id": "remaining_structure_face_3",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_10",
+            "face_type": "front",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            648.0,
+            381.638,
+            722.0,
+            509.81
+          ],
+          "entity_id": "remaining_structure_face_4",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_3",
+            "face_type": "right",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            1018.0,
+            381.638,
+            1092.0,
+            509.81
+          ],
+          "entity_id": "remaining_structure_face_5",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_3",
+            "face_type": "top",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            944.0,
+            338.914,
+            1092.0,
+            424.362
+          ],
+          "entity_id": "remaining_structure_face_6",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_10",
+            "face_type": "top",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            648.0,
+            338.914,
+            796.0,
+            424.362
+          ],
+          "entity_id": "remaining_structure_face_7",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_11",
+            "face_type": "front",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            722.0,
+            424.362,
+            796.0,
+            552.534
+          ],
+          "entity_id": "remaining_structure_face_8",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_7",
+            "face_type": "right",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            944.0,
+            424.362,
+            1018.0,
+            552.534
+          ],
+          "entity_id": "remaining_structure_face_9",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_6",
+            "face_type": "top",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            796.0,
+            253.466,
+            944.0,
+            338.914
+          ],
+          "entity_id": "remaining_structure_face_10",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_12",
+            "face_type": "front",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            722.0,
+            338.914,
+            796.0,
+            467.086
+          ],
+          "entity_id": "remaining_structure_face_11",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_13",
+            "face_type": "front",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            796.0,
+            467.086,
+            870.0,
+            595.258
+          ],
+          "entity_id": "remaining_structure_face_12",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_8",
+            "face_type": "right",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            944.0,
+            338.914,
+            1018.0,
+            467.086
+          ],
+          "entity_id": "remaining_structure_face_13",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_13",
+            "face_type": "right",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            870.0,
+            467.086,
+            944.0,
+            595.258
+          ],
+          "entity_id": "remaining_structure_face_14",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_12",
+            "face_type": "top",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            722.0,
+            296.19,
+            870.0,
+            381.638
+          ],
+          "entity_id": "remaining_structure_face_15",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_14",
+            "face_type": "front",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            796.0,
+            381.638,
+            870.0,
+            509.81
+          ],
+          "entity_id": "remaining_structure_face_16",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_9",
+            "face_type": "right",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            944.0,
+            253.466,
+            1018.0,
+            381.638
+          ],
+          "entity_id": "remaining_structure_face_17",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_14",
+            "face_type": "right",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            870.0,
+            381.638,
+            944.0,
+            509.81
+          ],
+          "entity_id": "remaining_structure_face_18",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_9",
+            "face_type": "top",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            870.0,
+            210.742,
+            1018.0,
+            296.19
+          ],
+          "entity_id": "remaining_structure_face_19",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_15",
+            "face_type": "front",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            796.0,
+            296.19,
+            870.0,
+            424.362
+          ],
+          "entity_id": "remaining_structure_face_20",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_15",
+            "face_type": "right",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            870.0,
+            296.19,
+            944.0,
+            424.362
+          ],
+          "entity_id": "remaining_structure_face_21",
+          "entity_type": "puzzle_block_face"
+        },
+        {
+          "attrs": {
+            "cube_id": "cube_15",
+            "face_type": "top",
+            "structure_id": "remaining_structure"
+          },
+          "bbox_px": [
+            796.0,
+            253.466,
+            944.0,
+            338.914
+          ],
+          "entity_id": "remaining_structure_face_22",
+          "entity_type": "puzzle_block_face"
+        }
+      ],
+      "relations": {
+        "answer_value": 4,
+        "original_structure_bbox_id": "original_structure",
+        "remaining_structure_bbox_id": "remaining_structure",
+        "scene_variant": "stack_card",
+        "task_variant": "cube_removal_count",
+        "view_family": "isometric_block_comparison"
+      },
+      "scene_kind": "puzzle_spatial_stack_card"
+    },
+    "witness_symbolic": {
+      "type": "bbox_set",
+      "value": [
+        [
+          108.0,
+          168.018,
+          552.0,
+          637.982
+        ],
+        [
+          648.0,
+          210.742,
+          1092.0,
+          595.258
+        ]
+      ]
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

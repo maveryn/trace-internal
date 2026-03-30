@@ -1,0 +1,84 @@
+generation:
+  task_overrides:
+    task_puzzles_topology_bead_equivalence_count:
+      option_count_min: 6
+      option_count_max: 7
+      valid_option_count_min: 1
+      valid_option_count_max: 5
+      bead_count_min: 4
+      bead_count_max: 6
+      min_color_distance: 50.0
+      color_distance_space: lab
+      balanced_task_variant_sampling: true
+      balanced_scene_variant_sampling: true
+      task_variant_weights:
+        color_cycle_count: 1.0
+        shape_cycle_count: 1.0
+        mixed_cycle_count: 1.0
+      scene_variant_weights:
+        loop_strip: 1.0
+        loop_card: 1.0
+        loop_outline: 1.0
+
+rendering:
+  task_overrides:
+    task_puzzles_topology_bead_equivalence_count:
+      canvas_width: 1200
+      canvas_height: 920
+      scene_margin_left_px: 64
+      scene_margin_right_px: 64
+      scene_margin_top_px: 56
+      scene_margin_bottom_px: 56
+      reference_panel_height_px: 238
+      reference_panel_padding_px: 24
+      reference_loop_width_px: 356
+      reference_loop_height_px: 170
+      reference_label_font_size_px: 28
+      reference_to_options_gap_px: 54
+      option_image_width_px: 172
+      option_image_height_px: 154
+      option_gap_px: 28
+      option_row_gap_px: 38
+      option_label_gap_px: 16
+      option_label_font_size_px: 28
+      panel_corner_radius_px: 28
+      border_width_px: 3
+      loop_stroke_width_px: 5
+      bead_size_px: 30
+      shape_bead_inset_px: 2
+      panel_fill_rgb: [248, 249, 252]
+      instruction_fill_rgb: [240, 244, 250]
+      border_color_rgb: [86, 94, 108]
+      loop_color_rgb: [78, 87, 102]
+      text_color_rgb: [28, 32, 38]
+      text_stroke_rgb: [255, 255, 255]
+      shape_fill_rgb: [73, 110, 186]
+
+prompt:
+  shared:
+    bundle_id: puzzles_topology_v1
+    answer_hint: set "answer" to the exact number of valid option loops as an integer
+  task_overrides:
+    task_puzzles_topology_bead_equivalence_count:
+      task_family_key: topology_bead_equivalence_puzzle
+      task_key: bead_equivalence_count_query
+      object_description_loop_strip: a reference bead loop above several labeled option loops
+      object_description_loop_card: a card-style reference bead loop above several labeled option loops
+      object_description_loop_outline: an outline-style reference bead loop above several labeled option loops
+      evidence_hint_color_cycle_count: set "evidence" to an array containing one bounding box [x1, y1, x2, y2] for each valid option image, ordered from left to right and then top to bottom
+      evidence_hint_shape_cycle_count: set "evidence" to an array containing one bounding box [x1, y1, x2, y2] for each valid option image, ordered from left to right and then top to bottom
+      evidence_hint_mixed_cycle_count: set "evidence" to an array containing one bounding box [x1, y1, x2, y2] for each valid option image, ordered from left to right and then top to bottom
+      json_example_color_cycle_count: '{"evidence":[[174,463,346,617],[574,463,746,617]],"answer":2}'
+      json_example_shape_cycle_count: '{"evidence":[[374,463,546,617],[774,463,946,617],[174,671,346,825]],"answer":3}'
+      json_example_mixed_cycle_count: '{"evidence":[[574,671,746,825]],"answer":1}'
+      json_example_answer_only_color_cycle_count: '{"answer":2}'
+      json_example_answer_only_shape_cycle_count: '{"answer":3}'
+      json_example_answer_only_mixed_cycle_count: '{"answer":1}'
+
+complexity:
+  task_overrides:
+    task_puzzles_topology_bead_equivalence_count:
+      criteria_weights:
+        visual_scan: 0.36
+        reasoning_load: 0.40
+        scene_variant_load: 0.24

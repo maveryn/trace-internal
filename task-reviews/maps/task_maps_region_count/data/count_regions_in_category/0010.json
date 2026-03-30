@@ -1,0 +1,1416 @@
+{
+  "answer_gt": {
+    "type": "integer",
+    "value": 3
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        100.964,
+        97.947,
+        713.133,
+        302.144
+      ],
+      [
+        98.091,
+        185.058,
+        545.513,
+        478.399
+      ],
+      [
+        536.214,
+        189.065,
+        713.349,
+        478.978
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "maps/task_maps_region_count/images/count_regions_in_category/0010.png"
+  },
+  "instance_seed": 3298748031977790,
+  "prompt": "Work from the labeled regions and the legend: an atlas-style region map with colored administrative areas on the left and a category legend on the right. Using the legend, How many labeled regions are in the 'Low' category on the legend? Respond with the exact count.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every counted region, in reading order.\nAnswer rule: set \"answer\" to the integer count.\nExample JSON:\n{\"evidence\":[[142,176,316,322],[384,198,561,348]],\"answer\":2}",
+  "prompt_variants": {
+    "answer_and_evidence": "Work from the labeled regions and the legend: an atlas-style region map with colored administrative areas on the left and a category legend on the right. Using the legend, How many labeled regions are in the 'Low' category on the legend? Respond with the exact count.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every counted region, in reading order.\nAnswer rule: set \"answer\" to the integer count.\nExample JSON:\n{\"evidence\":[[142,176,316,322],[384,198,561,348]],\"answer\":2}",
+    "answer_only": "Work from the labeled regions and the legend: an atlas-style region map with colored administrative areas on the left and a category legend on the right. Using the legend, How many labeled regions are in the 'Low' category on the legend? Respond with the exact count.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the integer count.\nExample JSON:\n{\"answer\":2}"
+  },
+  "task": "task_maps_region_count",
+  "task_variant": "count_regions_in_category",
+  "trace_payload": {
+    "background": {
+      "available_styles": [
+        "solid_light"
+      ],
+      "enabled": true,
+      "selected_style": "solid_light",
+      "style_spec": {
+        "color": [
+          247,
+          248,
+          250
+        ],
+        "kind": "solid"
+      }
+    },
+    "execution_trace": {
+      "answer_count": 3,
+      "category_count": 4,
+      "category_labels": [
+        "Low",
+        "Moderate",
+        "High",
+        "Very high"
+      ],
+      "color_distance_space": "lab",
+      "color_min_distance": 60.0,
+      "count_range": [
+        1,
+        6
+      ],
+      "grid_cols": 7,
+      "grid_cols_range": [
+        6,
+        7
+      ],
+      "grid_rows": 5,
+      "grid_rows_range": [
+        4,
+        5
+      ],
+      "legend_specs": [
+        {
+          "category_index": 0,
+          "category_label": "Low",
+          "fill_rgb": [
+            169,
+            86,
+            121
+          ],
+          "legend_entry_id": "legend_entry_0"
+        },
+        {
+          "category_index": 1,
+          "category_label": "Moderate",
+          "fill_rgb": [
+            160,
+            200,
+            78
+          ],
+          "legend_entry_id": "legend_entry_1"
+        },
+        {
+          "category_index": 2,
+          "category_label": "High",
+          "fill_rgb": [
+            87,
+            80,
+            223
+          ],
+          "legend_entry_id": "legend_entry_2"
+        },
+        {
+          "category_index": 3,
+          "category_label": "Very high",
+          "fill_rgb": [
+            83,
+            107,
+            78
+          ],
+          "legend_entry_id": "legend_entry_3"
+        }
+      ],
+      "query_category_index": 0,
+      "query_category_label": "Low",
+      "question_format": "region_count",
+      "question_text": "How many labeled regions are in the 'Low' category on the legend?",
+      "region_count": 5,
+      "region_count_range": [
+        5,
+        7
+      ],
+      "region_specs": [
+        {
+          "category_index": 0,
+          "category_label": "Low",
+          "cells": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              3,
+              0
+            ],
+            [
+              4,
+              0
+            ],
+            [
+              5,
+              0
+            ],
+            [
+              6,
+              0
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              4,
+              1
+            ]
+          ],
+          "fill_rgb": [
+            169,
+            86,
+            121
+          ],
+          "region_bbox_id": "region_bbox_A",
+          "region_id": "region_A",
+          "region_label": "A"
+        },
+        {
+          "category_index": 0,
+          "category_label": "Low",
+          "cells": [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              3,
+              1
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              2,
+              2
+            ],
+            [
+              3,
+              2
+            ],
+            [
+              4,
+              2
+            ],
+            [
+              1,
+              3
+            ],
+            [
+              3,
+              3
+            ]
+          ],
+          "fill_rgb": [
+            169,
+            86,
+            121
+          ],
+          "region_bbox_id": "region_bbox_B",
+          "region_id": "region_B",
+          "region_label": "B"
+        },
+        {
+          "category_index": 0,
+          "category_label": "Low",
+          "cells": [
+            [
+              5,
+              1
+            ],
+            [
+              6,
+              1
+            ],
+            [
+              5,
+              2
+            ],
+            [
+              5,
+              3
+            ]
+          ],
+          "fill_rgb": [
+            169,
+            86,
+            121
+          ],
+          "region_bbox_id": "region_bbox_C",
+          "region_id": "region_C",
+          "region_label": "C"
+        },
+        {
+          "category_index": 1,
+          "category_label": "Moderate",
+          "cells": [
+            [
+              6,
+              2
+            ],
+            [
+              6,
+              3
+            ],
+            [
+              6,
+              4
+            ]
+          ],
+          "fill_rgb": [
+            160,
+            200,
+            78
+          ],
+          "region_bbox_id": "region_bbox_D",
+          "region_id": "region_D",
+          "region_label": "D"
+        },
+        {
+          "category_index": 3,
+          "category_label": "Very high",
+          "cells": [
+            [
+              0,
+              3
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              1,
+              4
+            ],
+            [
+              2,
+              4
+            ],
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              5,
+              4
+            ]
+          ],
+          "fill_rgb": [
+            83,
+            107,
+            78
+          ],
+          "region_bbox_id": "region_bbox_E",
+          "region_id": "region_E",
+          "region_label": "E"
+        }
+      ],
+      "scene_variant": "region_map",
+      "supporting_region_bbox_ids": [
+        "region_bbox_A",
+        "region_bbox_B",
+        "region_bbox_C"
+      ],
+      "supporting_region_ids": [
+        "region_A",
+        "region_B",
+        "region_C"
+      ],
+      "task_variant": "count_regions_in_category",
+      "view_family": "region_legend_map"
+    },
+    "post_image_noise": {
+      "applied": false,
+      "apply_prob": 0.0,
+      "edit_count_range": [
+        1,
+        2
+      ],
+      "edit_types": [
+        "blur",
+        "downsample",
+        "jpeg",
+        "noise"
+      ],
+      "edits": [],
+      "enabled": false
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          100.964,
+          97.947,
+          713.133,
+          302.144
+        ],
+        [
+          98.091,
+          185.058,
+          545.513,
+          478.399
+        ],
+        [
+          536.214,
+          189.065,
+          713.349,
+          478.978
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "category_count": 4,
+        "color_distance_space": "lab",
+        "color_min_distance": 60.0,
+        "count_range": [
+          1,
+          6
+        ],
+        "grid_cols": 7,
+        "grid_cols_range": [
+          6,
+          7
+        ],
+        "grid_rows": 5,
+        "grid_rows_range": [
+          4,
+          5
+        ],
+        "query_category_label": "Low",
+        "region_count": 5,
+        "region_count_range": [
+          5,
+          7
+        ],
+        "scene_variant": "region_map",
+        "scene_variant_probabilities": {
+          "map_card": 0.25,
+          "map_outline": 0.25,
+          "map_strip": 0.25,
+          "region_map": 0.25
+        },
+        "task_variant": "count_regions_in_category",
+        "task_variant_probabilities": {
+          "count_regions_above_category": 0.0,
+          "count_regions_below_category": 0.0,
+          "count_regions_in_category": 1.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 4,
+        "prompt_bundle_id": "maps_region_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the integer count",
+          "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every counted region, in reading order",
+          "json_example": "{\"evidence\":[[142,176,316,322],[384,198,561,348]],\"answer\":2}",
+          "json_example_answer_only": "{\"answer\":2}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "an atlas-style region map with colored administrative areas on the left and a category legend on the right",
+          "query_category_label": "Low",
+          "question_text": "How many labeled regions are in the 'Low' category on the legend?"
+        },
+        "task_family_key": "choropleth_region_map",
+        "task_family_variant_index": 3,
+        "task_key": "region_count_query",
+        "task_variant_index": 1,
+        "task_variant_key": "count_regions_in_category",
+        "task_variant_template_index": 2,
+        "template_paths": [
+          "maps/region/maps_region_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:region_count_query": 5,
+          "task_family:choropleth_region_map": 5,
+          "task_variant:count_regions_in_category": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 4,
+            "prompt_bundle_id": "maps_region_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the integer count",
+              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every counted region, in reading order",
+              "json_example": "{\"evidence\":[[142,176,316,322],[384,198,561,348]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an atlas-style region map with colored administrative areas on the left and a category legend on the right",
+              "query_category_label": "Low",
+              "question_text": "How many labeled regions are in the 'Low' category on the legend?"
+            },
+            "task_family_key": "choropleth_region_map",
+            "task_family_variant_index": 3,
+            "task_key": "region_count_query",
+            "task_variant_index": 1,
+            "task_variant_key": "count_regions_in_category",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "maps/region/maps_region_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:region_count_query": 5,
+              "task_family:choropleth_region_map": 5,
+              "task_variant:count_regions_in_category": 5
+            }
+          },
+          "prompt": "Work from the labeled regions and the legend: an atlas-style region map with colored administrative areas on the left and a category legend on the right. Using the legend, How many labeled regions are in the 'Low' category on the legend? Respond with the exact count.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence rule: set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every counted region, in reading order.\nAnswer rule: set \"answer\" to the integer count.\nExample JSON:\n{\"evidence\":[[142,176,316,322],[384,198,561,348]],\"answer\":2}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "maps_region_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the integer count",
+              "evidence_hint": "set \"evidence\" to an array of bounding boxes [x1, y1, x2, y2] for every counted region, in reading order",
+              "json_example": "{\"evidence\":[[142,176,316,322],[384,198,561,348]],\"answer\":2}",
+              "json_example_answer_only": "{\"answer\":2}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an atlas-style region map with colored administrative areas on the left and a category legend on the right",
+              "query_category_label": "Low",
+              "question_text": "How many labeled regions are in the 'Low' category on the legend?"
+            },
+            "task_family_key": "choropleth_region_map",
+            "task_family_variant_index": 3,
+            "task_key": "region_count_query",
+            "task_variant_index": 1,
+            "task_variant_key": "count_regions_in_category",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "maps/region/maps_region_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:region_count_query": 5,
+              "task_family:choropleth_region_map": 5,
+              "task_variant:count_regions_in_category": 5
+            }
+          },
+          "prompt": "Work from the labeled regions and the legend: an atlas-style region map with colored administrative areas on the left and a category legend on the right. Using the legend, How many labeled regions are in the 'Low' category on the legend? Respond with the exact count.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the integer count.\nExample JSON:\n{\"answer\":2}"
+        }
+      },
+      "task_variant": "count_regions_in_category",
+      "template_id": "maps_region_v1"
+    },
+    "render_map": {
+      "divider_bbox_px": [
+        778.0,
+        64.0,
+        780.0,
+        756.0
+      ],
+      "legend_bbox_px": [
+        798.0,
+        104.0,
+        1068.0,
+        384.0
+      ],
+      "legend_entry_bboxes_px": {
+        "legend_entry_0": [
+          828.0,
+          182.0,
+          1044.0,
+          210.0
+        ],
+        "legend_entry_1": [
+          828.0,
+          228.0,
+          1044.0,
+          256.0
+        ],
+        "legend_entry_2": [
+          828.0,
+          274.0,
+          1044.0,
+          302.0
+        ],
+        "legend_entry_3": [
+          828.0,
+          320.0,
+          1044.0,
+          348.0
+        ]
+      },
+      "map_bbox_px": [
+        104.0,
+        104.0,
+        710.0,
+        568.0
+      ],
+      "region_bboxes_px": {
+        "region_bbox_A": [
+          100.964,
+          97.947,
+          713.133,
+          302.144
+        ],
+        "region_bbox_B": [
+          98.091,
+          185.058,
+          545.513,
+          478.399
+        ],
+        "region_bbox_C": [
+          536.214,
+          189.065,
+          713.349,
+          478.978
+        ],
+        "region_bbox_D": [
+          609.775,
+          298.03,
+          716.096,
+          571.002
+        ],
+        "region_bbox_E": [
+          95.084,
+          374.013,
+          623.945,
+          574.919
+        ]
+      }
+    },
+    "render_spec": {
+      "canvas_height": 820,
+      "canvas_width": 1200,
+      "geometry_seed": 3298748031977790,
+      "legend_panel_height_px": 280,
+      "legend_panel_width_px": 270,
+      "map_panel_height_px": 560,
+      "map_panel_width_px": 702,
+      "outer_border_width_px": 3,
+      "panel_gap_px": 40,
+      "region_border_width_px": 3,
+      "scene_variant": "region_map"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "scene_variant": "region_map"
+          },
+          "bbox_px": [
+            56.0,
+            56.0,
+            758.0,
+            616.0
+          ],
+          "entity_id": "map_panel",
+          "entity_type": "map_panel"
+        },
+        {
+          "attrs": {},
+          "bbox_px": [
+            798.0,
+            104.0,
+            1068.0,
+            384.0
+          ],
+          "entity_id": "map_legend_panel",
+          "entity_type": "map_legend_panel"
+        },
+        {
+          "attrs": {},
+          "bbox_px": [
+            778.0,
+            64.0,
+            780.0,
+            756.0
+          ],
+          "entity_id": "map_divider",
+          "entity_type": "map_divider"
+        },
+        {
+          "attrs": {
+            "direction": "north"
+          },
+          "bbox_px": [
+            76.0,
+            74.56,
+            120.0,
+            124.72
+          ],
+          "entity_id": "map_compass",
+          "entity_type": "map_compass"
+        },
+        {
+          "attrs": {
+            "category_index": 0,
+            "category_label": "Low",
+            "fill_rgb": [
+              169,
+              86,
+              121
+            ],
+            "region_label": "A"
+          },
+          "bbox_px": [
+            100.964,
+            97.947,
+            713.133,
+            302.144
+          ],
+          "entity_id": "region_A",
+          "entity_type": "map_region"
+        },
+        {
+          "attrs": {
+            "region_id": "region_A"
+          },
+          "bbox_px": [
+            100.964,
+            97.947,
+            204.152,
+            206.584
+          ],
+          "entity_id": "region_A_cell_0",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_A"
+          },
+          "bbox_px": [
+            187.849,
+            97.947,
+            275.022,
+            203.159
+          ],
+          "entity_id": "region_A_cell_1",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_A"
+          },
+          "bbox_px": [
+            270.274,
+            98.099,
+            376.203,
+            185.646
+          ],
+          "entity_id": "region_A_cell_2",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_A"
+          },
+          "bbox_px": [
+            359.798,
+            98.099,
+            453.342,
+            200.005
+          ],
+          "entity_id": "region_A_cell_3",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_A"
+          },
+          "bbox_px": [
+            443.395,
+            105.591,
+            540.71,
+            200.005
+          ],
+          "entity_id": "region_A_cell_4",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_A"
+          },
+          "bbox_px": [
+            524.028,
+            99.915,
+            625.532,
+            192.979
+          ],
+          "entity_id": "region_A_cell_5",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_A"
+          },
+          "bbox_px": [
+            613.359,
+            99.915,
+            713.133,
+            191.155
+          ],
+          "entity_id": "region_A_cell_6",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_A"
+          },
+          "bbox_px": [
+            187.849,
+            185.646,
+            279.449,
+            300.322
+          ],
+          "entity_id": "region_A_cell_7",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_A"
+          },
+          "bbox_px": [
+            443.395,
+            192.979,
+            540.71,
+            302.144
+          ],
+          "entity_id": "region_A_cell_8",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_A",
+            "region_label": "A"
+          },
+          "bbox_px": [
+            395.048,
+            188.046,
+            419.048,
+            212.046
+          ],
+          "entity_id": "region_A_label",
+          "entity_type": "map_region_label"
+        },
+        {
+          "attrs": {
+            "category_index": 0,
+            "category_label": "Low",
+            "fill_rgb": [
+              169,
+              86,
+              121
+            ],
+            "region_label": "B"
+          },
+          "bbox_px": [
+            98.091,
+            185.058,
+            545.513,
+            478.399
+          ],
+          "entity_id": "region_B",
+          "entity_type": "map_region"
+        },
+        {
+          "attrs": {
+            "region_id": "region_B"
+          },
+          "bbox_px": [
+            100.964,
+            203.159,
+            203.334,
+            300.322
+          ],
+          "entity_id": "region_B_cell_0",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_B"
+          },
+          "bbox_px": [
+            275.022,
+            185.058,
+            376.203,
+            289.991
+          ],
+          "entity_id": "region_B_cell_1",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_B"
+          },
+          "bbox_px": [
+            365.62,
+            185.058,
+            456.862,
+            302.144
+          ],
+          "entity_id": "region_B_cell_2",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_B"
+          },
+          "bbox_px": [
+            98.091,
+            286.422,
+            203.334,
+            395.822
+          ],
+          "entity_id": "region_B_cell_3",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_B"
+          },
+          "bbox_px": [
+            196.294,
+            289.991,
+            279.449,
+            386.361
+          ],
+          "entity_id": "region_B_cell_4",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_B"
+          },
+          "bbox_px": [
+            268.639,
+            278.04,
+            370.48,
+            393.419
+          ],
+          "entity_id": "region_B_cell_5",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_B"
+          },
+          "bbox_px": [
+            365.62,
+            278.04,
+            456.862,
+            393.419
+          ],
+          "entity_id": "region_B_cell_6",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_B"
+          },
+          "bbox_px": [
+            443.121,
+            298.496,
+            545.513,
+            382.008
+          ],
+          "entity_id": "region_B_cell_7",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_B"
+          },
+          "bbox_px": [
+            190.656,
+            374.314,
+            273.234,
+            467.531
+          ],
+          "entity_id": "region_B_cell_8",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_B"
+          },
+          "bbox_px": [
+            365.791,
+            374.013,
+            449.026,
+            478.399
+          ],
+          "entity_id": "region_B_cell_9",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_B",
+            "region_label": "B"
+          },
+          "bbox_px": [
+            309.802,
+            319.729,
+            333.802,
+            343.729
+          ],
+          "entity_id": "region_B_label",
+          "entity_type": "map_region_label"
+        },
+        {
+          "attrs": {
+            "category_index": 0,
+            "category_label": "Low",
+            "fill_rgb": [
+              169,
+              86,
+              121
+            ],
+            "region_label": "C"
+          },
+          "bbox_px": [
+            536.214,
+            189.065,
+            713.349,
+            478.978
+          ],
+          "entity_id": "region_C",
+          "entity_type": "map_region"
+        },
+        {
+          "attrs": {
+            "region_id": "region_C"
+          },
+          "bbox_px": [
+            537.668,
+            189.065,
+            613.359,
+            298.496
+          ],
+          "entity_id": "region_C_cell_0",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_C"
+          },
+          "bbox_px": [
+            612.966,
+            189.065,
+            713.349,
+            299.021
+          ],
+          "entity_id": "region_C_cell_1",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_C"
+          },
+          "bbox_px": [
+            537.668,
+            298.03,
+            612.966,
+            384.501
+          ],
+          "entity_id": "region_C_cell_2",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_C"
+          },
+          "bbox_px": [
+            536.214,
+            382.008,
+            620.072,
+            478.978
+          ],
+          "entity_id": "region_C_cell_3",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_C",
+            "region_label": "C"
+          },
+          "bbox_px": [
+            612.782,
+            322.021,
+            636.782,
+            346.021
+          ],
+          "entity_id": "region_C_label",
+          "entity_type": "map_region_label"
+        },
+        {
+          "attrs": {
+            "category_index": 1,
+            "category_label": "Moderate",
+            "fill_rgb": [
+              160,
+              200,
+              78
+            ],
+            "region_label": "D"
+          },
+          "bbox_px": [
+            609.775,
+            298.03,
+            716.096,
+            571.002
+          ],
+          "entity_id": "region_D",
+          "entity_type": "map_region"
+        },
+        {
+          "attrs": {
+            "region_id": "region_D"
+          },
+          "bbox_px": [
+            609.775,
+            298.03,
+            716.096,
+            384.501
+          ],
+          "entity_id": "region_D_cell_0",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_D"
+          },
+          "bbox_px": [
+            609.775,
+            382.578,
+            716.096,
+            478.978
+          ],
+          "entity_id": "region_D_cell_1",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_D"
+          },
+          "bbox_px": [
+            620.072,
+            475.272,
+            712.191,
+            571.002
+          ],
+          "entity_id": "region_D_cell_2",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_D",
+            "region_label": "D"
+          },
+          "bbox_px": [
+            650.935,
+            422.516,
+            674.935,
+            446.516
+          ],
+          "entity_id": "region_D_label",
+          "entity_type": "map_region_label"
+        },
+        {
+          "attrs": {
+            "category_index": 3,
+            "category_label": "Very high",
+            "fill_rgb": [
+              83,
+              107,
+              78
+            ],
+            "region_label": "E"
+          },
+          "bbox_px": [
+            95.084,
+            374.013,
+            623.945,
+            574.919
+          ],
+          "entity_id": "region_E",
+          "entity_type": "map_region"
+        },
+        {
+          "attrs": {
+            "region_id": "region_E"
+          },
+          "bbox_px": [
+            95.084,
+            386.361,
+            196.294,
+            474.942
+          ],
+          "entity_id": "region_E_cell_0",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_E"
+          },
+          "bbox_px": [
+            268.639,
+            374.314,
+            370.48,
+            478.399
+          ],
+          "entity_id": "region_E_cell_1",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_E"
+          },
+          "bbox_px": [
+            443.121,
+            374.013,
+            545.513,
+            473.637
+          ],
+          "entity_id": "region_E_cell_2",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_E"
+          },
+          "bbox_px": [
+            95.084,
+            467.531,
+            190.656,
+            570.379
+          ],
+          "entity_id": "region_E_cell_3",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_E"
+          },
+          "bbox_px": [
+            179.151,
+            465.325,
+            282.879,
+            573.11
+          ],
+          "entity_id": "region_E_cell_4",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_E"
+          },
+          "bbox_px": [
+            273.234,
+            465.325,
+            366.159,
+            574.919
+          ],
+          "entity_id": "region_E_cell_5",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_E"
+          },
+          "bbox_px": [
+            365.791,
+            473.637,
+            449.026,
+            574.919
+          ],
+          "entity_id": "region_E_cell_6",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_E"
+          },
+          "bbox_px": [
+            445.167,
+            471.833,
+            536.214,
+            569.389
+          ],
+          "entity_id": "region_E_cell_7",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_E"
+          },
+          "bbox_px": [
+            533.452,
+            471.833,
+            623.945,
+            571.002
+          ],
+          "entity_id": "region_E_cell_8",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_E",
+            "region_label": "E"
+          },
+          "bbox_px": [
+            347.514,
+            462.466,
+            371.514,
+            486.466
+          ],
+          "entity_id": "region_E_label",
+          "entity_type": "map_region_label"
+        },
+        {
+          "attrs": {
+            "category_index": 0,
+            "category_label": "Low",
+            "fill_rgb": [
+              169,
+              86,
+              121
+            ]
+          },
+          "bbox_px": [
+            828.0,
+            182.0,
+            1044.0,
+            210.0
+          ],
+          "entity_id": "legend_entry_0",
+          "entity_type": "map_legend_entry"
+        },
+        {
+          "attrs": {
+            "category_index": 1,
+            "category_label": "Moderate",
+            "fill_rgb": [
+              160,
+              200,
+              78
+            ]
+          },
+          "bbox_px": [
+            828.0,
+            228.0,
+            1044.0,
+            256.0
+          ],
+          "entity_id": "legend_entry_1",
+          "entity_type": "map_legend_entry"
+        },
+        {
+          "attrs": {
+            "category_index": 2,
+            "category_label": "High",
+            "fill_rgb": [
+              87,
+              80,
+              223
+            ]
+          },
+          "bbox_px": [
+            828.0,
+            274.0,
+            1044.0,
+            302.0
+          ],
+          "entity_id": "legend_entry_2",
+          "entity_type": "map_legend_entry"
+        },
+        {
+          "attrs": {
+            "category_index": 3,
+            "category_label": "Very high",
+            "fill_rgb": [
+              83,
+              107,
+              78
+            ]
+          },
+          "bbox_px": [
+            828.0,
+            320.0,
+            1044.0,
+            348.0
+          ],
+          "entity_id": "legend_entry_3",
+          "entity_type": "map_legend_entry"
+        }
+      ],
+      "relations": {
+        "answer_count": 3,
+        "scene_variant": "region_map",
+        "supporting_region_bbox_ids": [
+          "region_bbox_A",
+          "region_bbox_B",
+          "region_bbox_C"
+        ],
+        "task_variant": "count_regions_in_category",
+        "view_family": "region_legend_map"
+      },
+      "scene_kind": "map_region_region_map"
+    },
+    "witness_symbolic": {
+      "ids": [
+        "region_A",
+        "region_B",
+        "region_C"
+      ],
+      "type": "id_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

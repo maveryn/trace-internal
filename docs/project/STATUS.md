@@ -66,15 +66,17 @@ Date: 2026-03-29
 58. Tables now includes `task_tables_statistics_summary_label`, the first `statistics` family task under `domain=tables`, with semantic `task_variant` values `argmax|argmin`, visual `scene_variant` values `spreadsheet|zebra|ledger|card_table`, `string` row-name answers, and `bbox_set` evidence over the decisive numeric value cell. Tables use one leftmost `Name` column, `3..5` numeric columns, `5..10` data rows, short visible human-style row names sourced from the shared short-name manifest, and a queried numeric column whose extremum row is unique by construction.
 59. Tables now also includes `task_tables_statistics_summary_value`, a companion `statistics` task under `domain=tables`, with semantic `task_variant` values `column_sum|column_mean|column_median`, visual `scene_variant` values `spreadsheet|zebra|ledger|card_table`, integer answers, and `bbox_set` evidence over the supporting queried-column region. `column_mean` is constructed to stay integral, `column_median` uses odd row counts and a unique median by construction, and all active table statistics tasks share the same short-name row-label pool plus styled light-background table renderers.
 60. Tables now also includes `task_tables_counting_value_count`, the first `counting` task under `domain=tables`, with semantic `task_variant` values `above_threshold|below_threshold|in_interval`, visual `scene_variant` values `spreadsheet|zebra|ledger|card_table`, integer answers, and `bbox_set` evidence over the matching queried-column value cells in top-to-bottom row order. The count answer is sampled from the feasible `0..row_count` support before the queried column is constructed, `above_threshold` and `below_threshold` use strict inequalities, and `in_interval` uses an inclusive interval.
-61. Tables now also includes `task_tables_readout_cell_value`, the first `readout` task under `domain=tables`, with semantic `task_variant` value `cell_lookup`, visual `scene_variant` values `spreadsheet|zebra|ledger|card_table`, integer answers, and `bbox_set` evidence over the exact queried row/column cell. The queried row label and queried numeric column are named explicitly in the prompt and recorded in trace, while the answer cell value is set explicitly to keep direct-cell readout answer diversity healthy.
+61. Tables now also includes `task_tables_readout_subset_value`, the first `readout` task under `domain=tables`, with semantic `task_variant` values `cell_lookup|cell_sum_two|cell_difference_two_abs`, visual `scene_variant` values `spreadsheet|zebra|ledger|card_table`, integer answers, and ordered `bbox_set` evidence over the queried supporting cell or cell pair. The queried row labels and numeric columns are named explicitly in the prompt and recorded in trace so the visible subset arithmetic stays grounded in the table itself.
 62. Icons pattern now includes `task_icons_pattern_grid_rotation_violation`, a single-panel numbered `3 x 3` grid task with integer index answers and one-box `bbox_set` evidence; every cell contains the same asymmetric icon type and tint, the clean grid follows one row/column rotation-offset rule over `{0, 90, 180, 270}`, and generation corrupts exactly one cell while rejecting any grid where another supported rule hypothesis would make a different violating index plausible.
 63. Icons pattern now also includes `task_icons_pattern_grid_size_violation`, a single-panel numbered `3 x 3` grid task with integer index answers and one-box `bbox_set` evidence; every cell contains the same icon type, tint, and rotation, the clean grid follows one row/column symbolic size-level rule over `{1,2,3,4,5}` with step support `{-1,0,1}`, and generation corrupts exactly one cell while rejecting any grid where another supported rule hypothesis would make a different violating index plausible. The rendered pixel sizes are derived only after sampled cell geometry is fixed, so the task reasons over stable symbolic size levels rather than whichever raw size ladder happened to fit that instance.
 64. Icons counting now also includes `task_icons_counting_singleton_type`, a single-panel scene-internal frequency task with integer answers and scene-only `bbox_set` evidence. It asks how many icons have a type that appears exactly once in the image, samples the answer support over `0..5`, caps total scene icons at `15`, and builds the remainder of the scene from repeated icon types with multiplicity `2..4` so at least one repeated type always remains. Colors and rotations vary per icon while grouping is defined only over `icon_id`, which makes the task genuinely about type-frequency reasoning rather than direct visual identity matching.
 65. Graph now includes `task_graph_counting_degree_count`, `task_graph_relation_same_component_count`, `task_graph_comparison_largest_component_size`, `task_graph_counting_articulation_point_count`, `task_graph_relation_unique_cycle_size`, `task_graph_path_shortest_path_length`, `task_graph_relation_reachable_count`, `task_graph_counting_bridge_count`, `task_graph_optimization_minimum_spanning_tree_weight`, and `task_graph_order_topological_position`, giving the graph domain counting, relation, comparison, path, optimization, and order coverage with `label_set`, `edge_set`, and ordered-sequence evidence contracts.
-66. Puzzles now also includes the first `arithmetic` family tasks under `domain=puzzles`: `task_puzzles_arithmetic_equation_value`, `task_puzzles_arithmetic_balance_value`, and `task_puzzles_arithmetic_grid_value`, all with local one-box `bbox_set` evidence.
-67. Puzzles now also includes the first `logic` family task under `domain=puzzles`: `task_puzzles_logic_grid_completion_label`, with `option_letter` answers and one winning-option witness box.
-68. Puzzles now also includes the first `spatial` family task under `domain=puzzles`: `task_puzzles_spatial_fold_hole_label`, with `option_letter` answers and one winning-option witness box.
-69. Temporal now includes `task_temporal_clock_readout`, `task_temporal_clock_compare`, `task_temporal_calendar_month_view`, `task_temporal_schedule_day_planner`, and `task_temporal_timeline_milestones`, covering analog clock readout/compare, month-view calendars, day-planner schedules, and milestone timelines with local `bbox_set` evidence on hands, clock faces, date cells, event blocks, and event cards.
+66. Puzzles now includes `task_puzzles_arithmetic_equation_value`, `task_puzzles_arithmetic_balance_value`, and `task_puzzles_arithmetic_grid_value`, all with local one-box `bbox_set` evidence over the queried unknown slot or query box.
+67. Puzzles logic now includes `task_puzzles_logic_grid_completion_label` and `task_puzzles_logic_adjacency_completion_label`, both with `option_letter` answers and one winning-option witness box.
+68. Puzzles spatial now includes `task_puzzles_spatial_fold_result_label`, `task_puzzles_spatial_cube_removal_count`, `task_puzzles_spatial_assembly_label`, and `task_puzzles_spatial_overlay_result_label`, keeping the family on visually local `bbox_set` evidence over either the winning option image or the ordered visible-structure pair.
+69. Puzzles topology now includes `task_puzzles_topology_bead_equivalence_count`, a count task with ordered option-image `bbox_set` evidence over the valid bead-loop matches.
+70. Maps now includes `task_maps_region_association_label` and `task_maps_region_count`, reusing one stylized region+legend scene contract with one-box or ordered-region `bbox_set` evidence on the map itself.
+71. Temporal now includes `task_temporal_clock_readout`, `task_temporal_clock_compare`, `task_temporal_calendar_month_view`, `task_temporal_schedule_day_planner`, and `task_temporal_timeline_milestones`, covering analog clock readout/compare, month-view calendars, day-planner schedules, and milestone timelines with local `bbox_set` evidence on hands, clock faces, date cells, event blocks, and event cards.
 
 ## Active tasks
 1. `task_charts_composition_subset_value` (`domain=charts`, `task_group=composition`)
@@ -97,72 +99,81 @@ Date: 2026-03-29
 18. `task_geometry_similarity_count` (`domain=geometry`, `task_group=similarity`)
 19. `task_geometry_transformation_match` (`domain=geometry`, `task_group=transformation`)
 20. `task_geometry_solid_view_count` (`domain=geometry`, `task_group=solid`)
-20. `task_graph_comparison_largest_component_size` (`domain=graph`, `task_group=comparison`)
-20. `task_graph_counting_articulation_point_count` (`domain=graph`, `task_group=counting`)
-21. `task_graph_counting_bridge_count` (`domain=graph`, `task_group=counting`)
-22. `task_graph_counting_degree_count` (`domain=graph`, `task_group=counting`)
-23. `task_graph_optimization_minimum_spanning_tree_weight` (`domain=graph`, `task_group=optimization`)
-24. `task_graph_order_topological_position` (`domain=graph`, `task_group=order`)
-25. `task_graph_path_shortest_path_length` (`domain=graph`, `task_group=path`)
-26. `task_graph_relation_reachable_count` (`domain=graph`, `task_group=relation`)
-27. `task_graph_relation_same_component_count` (`domain=graph`, `task_group=relation`)
-28. `task_graph_relation_unique_cycle_size` (`domain=graph`, `task_group=relation`)
-29. `task_icons_counting_attribute_binding` (`domain=icons`, `task_group=counting`)
-30. `task_icons_counting_color` (`domain=icons`, `task_group=counting`)
-31. `task_icons_counting_orientation` (`domain=icons`, `task_group=counting`)
-32. `task_icons_counting_singleton_type` (`domain=icons`, `task_group=counting`)
-33. `task_icons_counting_size_relation` (`domain=icons`, `task_group=counting`)
-34. `task_icons_counting_type` (`domain=icons`, `task_group=counting`)
-35. `task_icons_pattern_grid_rotation_violation` (`domain=icons`, `task_group=pattern`)
-36. `task_icons_pattern_grid_size_violation` (`domain=icons`, `task_group=pattern`)
-37. `task_icons_relation_between_two_anchors_count` (`domain=icons`, `task_group=relation`)
-38. `task_icons_relation_mirror_symmetry` (`domain=icons`, `task_group=relation`)
-39. `task_icons_relation_occlusion_order` (`domain=icons`, `task_group=relation`)
-40. `task_icons_relation_relative_position_type` (`domain=icons`, `task_group=relation`)
-41. `task_icons_sequence_missing_count` (`domain=icons`, `task_group=sequence`)
-42. `task_icons_sequence_rotation_violation` (`domain=icons`, `task_group=sequence`)
-43. `task_icons_transformation_pair_count` (`domain=icons`, `task_group=transformation`)
-44. `task_puzzles_arithmetic_balance_value` (`domain=puzzles`, `task_group=arithmetic`)
-45. `task_puzzles_arithmetic_equation_value` (`domain=puzzles`, `task_group=arithmetic`)
-46. `task_puzzles_arithmetic_grid_value` (`domain=puzzles`, `task_group=arithmetic`)
-47. `task_puzzles_logic_grid_completion_label` (`domain=puzzles`, `task_group=logic`)
-48. `task_puzzles_spatial_fold_hole_label` (`domain=puzzles`, `task_group=spatial`)
-49. `task_tables_counting_value_count` (`domain=tables`, `task_group=counting`)
-50. `task_tables_ranking_label` (`domain=tables`, `task_group=ranking`)
-51. `task_tables_readout_subset_value` (`domain=tables`, `task_group=readout`)
-52. `task_tables_relation_extremum_transfer_value` (`domain=tables`, `task_group=relation`)
-53. `task_tables_relation_row_compare_label` (`domain=tables`, `task_group=relation`)
-54. `task_tables_statistics_filtered_subset_label` (`domain=tables`, `task_group=statistics`)
-55. `task_tables_statistics_filtered_subset_value` (`domain=tables`, `task_group=statistics`)
-56. `task_tables_statistics_summary_label` (`domain=tables`, `task_group=statistics`)
-57. `task_tables_statistics_summary_value` (`domain=tables`, `task_group=statistics`)
-58. `task_tables_temporal_value` (`domain=tables`, `task_group=temporal`)
-59. `task_temporal_calendar_month_view` (`domain=temporal`, `task_group=calendar`)
-60. `task_temporal_clock_compare` (`domain=temporal`, `task_group=clock`)
-61. `task_temporal_clock_readout` (`domain=temporal`, `task_group=clock`)
-62. `task_temporal_schedule_day_planner` (`domain=temporal`, `task_group=schedule`)
-63. `task_temporal_timeline_milestones` (`domain=temporal`, `task_group=timeline`)
-64. `task_tile_count_color_components` (`domain=tile`, `task_group=count`)
-65. `task_tile_count_color_count` (`domain=tile`, `task_group=count`)
-66. `task_tile_count_largest_component_size` (`domain=tile`, `task_group=count`)
-67. `task_tile_path_reachable_target_count` (`domain=tile`, `task_group=path`)
-68. `task_tile_path_shortest_path` (`domain=tile`, `task_group=path`)
-69. `task_tile_pattern_match3_run_count` (`domain=tile`, `task_group=pattern`)
-70. `task_tile_reachability_region_size` (`domain=tile`, `task_group=reachability`)
-71. `task_tile_relation_min_distance` (`domain=tile`, `task_group=relation`)
-72. `task_tile_symmetry_violation_count` (`domain=tile`, `task_group=symmetry`)
-73. `task_tile_transition_gravity_max_drop` (`domain=tile`, `task_group=transition`)
+21. `task_graph_comparison_largest_component_size` (`domain=graph`, `task_group=comparison`)
+22. `task_graph_counting_articulation_point_count` (`domain=graph`, `task_group=counting`)
+23. `task_graph_counting_bridge_count` (`domain=graph`, `task_group=counting`)
+24. `task_graph_counting_degree_count` (`domain=graph`, `task_group=counting`)
+25. `task_graph_optimization_minimum_spanning_tree_weight` (`domain=graph`, `task_group=optimization`)
+26. `task_graph_order_topological_position` (`domain=graph`, `task_group=order`)
+27. `task_graph_path_shortest_path_length` (`domain=graph`, `task_group=path`)
+28. `task_graph_relation_reachable_count` (`domain=graph`, `task_group=relation`)
+29. `task_graph_relation_same_component_count` (`domain=graph`, `task_group=relation`)
+30. `task_graph_relation_unique_cycle_size` (`domain=graph`, `task_group=relation`)
+31. `task_icons_counting_attribute_binding` (`domain=icons`, `task_group=counting`)
+32. `task_icons_counting_color` (`domain=icons`, `task_group=counting`)
+33. `task_icons_counting_orientation` (`domain=icons`, `task_group=counting`)
+34. `task_icons_counting_singleton_type` (`domain=icons`, `task_group=counting`)
+35. `task_icons_counting_size_relation` (`domain=icons`, `task_group=counting`)
+36. `task_icons_counting_type` (`domain=icons`, `task_group=counting`)
+37. `task_icons_pattern_grid_rotation_violation` (`domain=icons`, `task_group=pattern`)
+38. `task_icons_pattern_grid_size_violation` (`domain=icons`, `task_group=pattern`)
+39. `task_icons_relation_between_two_anchors_count` (`domain=icons`, `task_group=relation`)
+40. `task_icons_relation_mirror_symmetry` (`domain=icons`, `task_group=relation`)
+41. `task_icons_relation_occlusion_order` (`domain=icons`, `task_group=relation`)
+42. `task_icons_relation_relative_position_type` (`domain=icons`, `task_group=relation`)
+43. `task_icons_sequence_missing_count` (`domain=icons`, `task_group=sequence`)
+44. `task_icons_sequence_rotation_violation` (`domain=icons`, `task_group=sequence`)
+45. `task_icons_transformation_pair_count` (`domain=icons`, `task_group=transformation`)
+46. `task_maps_region_association_label` (`domain=maps`, `task_group=region`)
+47. `task_maps_region_count` (`domain=maps`, `task_group=region`)
+48. `task_puzzles_arithmetic_balance_value` (`domain=puzzles`, `task_group=arithmetic`)
+49. `task_puzzles_arithmetic_equation_value` (`domain=puzzles`, `task_group=arithmetic`)
+50. `task_puzzles_arithmetic_grid_value` (`domain=puzzles`, `task_group=arithmetic`)
+51. `task_puzzles_logic_adjacency_completion_label` (`domain=puzzles`, `task_group=logic`)
+52. `task_puzzles_logic_grid_completion_label` (`domain=puzzles`, `task_group=logic`)
+53. `task_puzzles_spatial_assembly_label` (`domain=puzzles`, `task_group=spatial`)
+54. `task_puzzles_spatial_cube_removal_count` (`domain=puzzles`, `task_group=spatial`)
+55. `task_puzzles_spatial_fold_result_label` (`domain=puzzles`, `task_group=spatial`)
+56. `task_puzzles_spatial_overlay_result_label` (`domain=puzzles`, `task_group=spatial`)
+57. `task_puzzles_topology_bead_equivalence_count` (`domain=puzzles`, `task_group=topology`)
+58. `task_tables_counting_value_count` (`domain=tables`, `task_group=counting`)
+59. `task_tables_ranking_label` (`domain=tables`, `task_group=ranking`)
+60. `task_tables_readout_subset_value` (`domain=tables`, `task_group=readout`)
+61. `task_tables_relation_extremum_transfer_value` (`domain=tables`, `task_group=relation`)
+62. `task_tables_relation_row_compare_label` (`domain=tables`, `task_group=relation`)
+63. `task_tables_statistics_filtered_subset_label` (`domain=tables`, `task_group=statistics`)
+64. `task_tables_statistics_filtered_subset_value` (`domain=tables`, `task_group=statistics`)
+65. `task_tables_statistics_summary_label` (`domain=tables`, `task_group=statistics`)
+66. `task_tables_statistics_summary_value` (`domain=tables`, `task_group=statistics`)
+67. `task_tables_temporal_value` (`domain=tables`, `task_group=temporal`)
+68. `task_temporal_calendar_month_view` (`domain=temporal`, `task_group=calendar`)
+69. `task_temporal_clock_compare` (`domain=temporal`, `task_group=clock`)
+70. `task_temporal_clock_readout` (`domain=temporal`, `task_group=clock`)
+71. `task_temporal_schedule_day_planner` (`domain=temporal`, `task_group=schedule`)
+72. `task_temporal_timeline_milestones` (`domain=temporal`, `task_group=timeline`)
+73. `task_tile_count_color_components` (`domain=tile`, `task_group=count`)
+74. `task_tile_count_color_count` (`domain=tile`, `task_group=count`)
+75. `task_tile_count_largest_component_size` (`domain=tile`, `task_group=count`)
+76. `task_tile_path_reachable_target_count` (`domain=tile`, `task_group=path`)
+77. `task_tile_path_shortest_path` (`domain=tile`, `task_group=path`)
+78. `task_tile_pattern_match3_run_count` (`domain=tile`, `task_group=pattern`)
+79. `task_tile_reachability_region_size` (`domain=tile`, `task_group=reachability`)
+80. `task_tile_relation_min_distance` (`domain=tile`, `task_group=relation`)
+81. `task_tile_symmetry_violation_count` (`domain=tile`, `task_group=symmetry`)
+82. `task_tile_transition_gravity_max_drop` (`domain=tile`, `task_group=transition`)
 ## Current quality baseline
 1. Tests are required to pass before finalize.
 2. Distribution QA uses `scripts/check_task_answer_distribution.py` with per-variant answer-only checks (`unique_answers >= 5`, `max_answer_frequency < 25%`) and multithreaded sample generation (`--workers`); numeric 5-bin summaries remain reported for review but are not hard pass/fail gates.
 3. Task-review tooling writes per-task artifacts under `task-reviews/<domain>/<task_id>/`, including one inspection workbook named `<task_id>.xlsx` with one sheet per task variant.
-4. There are currently `75` active tasks total: `10` graph, `10` tile, `10` geometry, `15` icons, `10` charts, `10` tables, `5` puzzles, and `5` temporal. The refreshed consolidated geometry surface plus the newer transformation/similarity/coordinate/solid-view/graphing families now pass distribution review under the active gates, and `task_icons_relation_mirror_symmetry` remains the only active task still explicitly marked `needs_refresh` in `task-reviews/REVIEW_STATUS.md`.
+4. There are currently `82` active tasks total: `10` charts, `10` geometry, `10` graph, `15` icons, `2` maps, `10` puzzles, `10` tables, `5` temporal, and `10` tile. The active reviewed task set passes distribution review under the current gates, including the consolidated geometry surface, the graph and temporal domains, and the new maps/puzzles additions.
 
 ## Next priorities
 1. Extend the new temporal domain beyond the current clock + calendar + schedule + timeline tasks with additional time-structured visual artifacts while keeping each task tied to one stable visual scaffold and a local evidence contract.
-2. Extend the new puzzles domain beyond the current arithmetic + logic + first spatial set with additional spatial and topology families while keeping local evidence contracts clean.
+2. Extend the new puzzles domain beyond the current arithmetic + logic + spatial + topology set with additional spatial/topology families while keeping local evidence contracts clean.
 3. Extend the new graph domain beyond the current degree/component/reachability/path/cycle/cut-vertex baseline with richer topology reasoning while keeping the simple labeled node-link contract stable across both undirected and explicitly directed task variants where appropriate.
-4. Extend icons beyond the current counting/transformation/relation/sequence/pattern set using the curated Prism asset pipeline (`comparison` and richer pattern/transformation variants remain the next natural families).
-5. Expand the charts domain beyond the current `statistics` + `counting` + `readout` + `multiseries` + `distribution` + `trend` + `composition` set and formalize the next chart reasoning families.
-6. Introduce cross-domain `scene_variant` and role-binding schema in architecture docs/contracts.
-7. Add future polygon variants as deferred tasks (diameter, min-side, max-side) after current scope stabilizes.
+4. Expand the new maps domain beyond `task_maps_region_association_label|task_maps_region_count` using the same reusable region+legend scene contract first (`region_compare`, `region_lookup`) before adding transit-map families.
+5. Extend icons beyond the current counting/transformation/relation/sequence/pattern set using the curated Prism asset pipeline (`comparison` and richer pattern/transformation variants remain the next natural families).
+6. Expand the charts domain beyond the current `statistics` + `counting` + `readout` + `multiseries` + `distribution` + `trend` + `composition` set and formalize the next chart reasoning families.
+7. Expand the tables domain with richer row/column relation tasks while keeping `bbox_set` as the fixed table evidence contract.
+8. Introduce cross-domain `scene_variant` and role-binding schema in architecture docs/contracts.
+9. Add future polygon variants as deferred tasks (diameter, min-side, max-side) after current scope stabilizes.

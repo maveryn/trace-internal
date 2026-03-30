@@ -19,10 +19,10 @@
     "path": "puzzles/task_puzzles_arithmetic_equation_value/images/result_unknown/0017.png"
   },
   "instance_seed": 2991221942231003,
-  "prompt": "Use the boxed-number arithmetic puzzle in the image: a clean arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Read the boxed expression and infer the missing value. Solve the arithmetic puzzle. What is the missing result?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark result slot.\nAnswer format: set \"answer\" to the exact integer that belongs in the question-mark slot.\nExample JSON:\n{\"evidence\":[[680,180,800,276]],\"answer\":14}",
+  "prompt": "Use the boxed-number arithmetic puzzle in the image: a clean arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Read the boxed expression and infer the missing value. Solve the arithmetic puzzle. What is the missing result?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark result slot.\nAnswer format: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[680,180,800,276]],\"answer\":14}",
   "prompt_variants": {
-    "answer_and_evidence": "Use the boxed-number arithmetic puzzle in the image: a clean arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Read the boxed expression and infer the missing value. Solve the arithmetic puzzle. What is the missing result?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark result slot.\nAnswer format: set \"answer\" to the exact integer that belongs in the question-mark slot.\nExample JSON:\n{\"evidence\":[[680,180,800,276]],\"answer\":14}",
-    "answer_only": "Use the boxed-number arithmetic puzzle in the image: a clean arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Read the boxed expression and infer the missing value. Solve the arithmetic puzzle. What is the missing result?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact integer that belongs in the question-mark slot.\nExample JSON:\n{\"answer\":14}"
+    "answer_and_evidence": "Use the boxed-number arithmetic puzzle in the image: a clean arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Read the boxed expression and infer the missing value. Solve the arithmetic puzzle. What is the missing result?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark result slot.\nAnswer format: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[680,180,800,276]],\"answer\":14}",
+    "answer_only": "Use the boxed-number arithmetic puzzle in the image: a clean arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Read the boxed expression and infer the missing value. Solve the arithmetic puzzle. What is the missing result?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"answer\":14}"
   },
   "task": "task_puzzles_arithmetic_equation_value",
   "task_variant": "result_unknown",
@@ -167,7 +167,7 @@
         "prompt_bundle_id": "puzzles_arithmetic_v1",
         "schema_version": "v1",
         "slot_values": {
-          "answer_hint": "set \"answer\" to the exact integer that belongs in the question-mark slot",
+          "answer_hint": "set \"answer\" to the exact integer value requested by the puzzle",
           "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark result slot",
           "json_example": "{\"evidence\":[[680,180,800,276]],\"answer\":14}",
           "json_example_answer_only": "{\"answer\":14}",
@@ -200,7 +200,7 @@
             "prompt_bundle_id": "puzzles_arithmetic_v1",
             "schema_version": "v1",
             "slot_values": {
-              "answer_hint": "set \"answer\" to the exact integer that belongs in the question-mark slot",
+              "answer_hint": "set \"answer\" to the exact integer value requested by the puzzle",
               "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark result slot",
               "json_example": "{\"evidence\":[[680,180,800,276]],\"answer\":14}",
               "json_example_answer_only": "{\"answer\":14}",
@@ -224,7 +224,7 @@
               "task_variant:result_unknown": 5
             }
           },
-          "prompt": "Use the boxed-number arithmetic puzzle in the image: a clean arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Read the boxed expression and infer the missing value. Solve the arithmetic puzzle. What is the missing result?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark result slot.\nAnswer format: set \"answer\" to the exact integer that belongs in the question-mark slot.\nExample JSON:\n{\"evidence\":[[680,180,800,276]],\"answer\":14}"
+          "prompt": "Use the boxed-number arithmetic puzzle in the image: a clean arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Read the boxed expression and infer the missing value. Solve the arithmetic puzzle. What is the missing result?\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence requirement: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark result slot.\nAnswer format: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"evidence\":[[680,180,800,276]],\"answer\":14}"
         },
         "answer_only": {
           "metadata": {
@@ -233,7 +233,7 @@
             "prompt_bundle_id": "puzzles_arithmetic_v1",
             "schema_version": "v1",
             "slot_values": {
-              "answer_hint": "set \"answer\" to the exact integer that belongs in the question-mark slot",
+              "answer_hint": "set \"answer\" to the exact integer value requested by the puzzle",
               "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the question-mark result slot",
               "json_example": "{\"evidence\":[[680,180,800,276]],\"answer\":14}",
               "json_example_answer_only": "{\"answer\":14}",
@@ -257,7 +257,7 @@
               "task_variant:result_unknown": 5
             }
           },
-          "prompt": "Use the boxed-number arithmetic puzzle in the image: a clean arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Read the boxed expression and infer the missing value. Solve the arithmetic puzzle. What is the missing result?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact integer that belongs in the question-mark slot.\nExample JSON:\n{\"answer\":14}"
+          "prompt": "Use the boxed-number arithmetic puzzle in the image: a clean arithmetic puzzle with 2 to 5 boxed values on the left, arithmetic operators between them, an equals sign, and one boxed result on the right. Read the boxed expression and infer the missing value. Solve the arithmetic puzzle. What is the missing result?\nReturn a valid JSON object with key \"answer\".\nAnswer requirement: set \"answer\" to the exact integer value requested by the puzzle.\nExample JSON:\n{\"answer\":14}"
         }
       },
       "task_variant": "result_unknown",

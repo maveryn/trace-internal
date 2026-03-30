@@ -1,0 +1,1373 @@
+{
+  "answer_gt": {
+    "type": "option_letter",
+    "value": "C"
+  },
+  "evidence_gt": {
+    "type": "bbox_set",
+    "value": [
+      [
+        96.03,
+        280.74,
+        456.808,
+        480.94
+      ]
+    ]
+  },
+  "image": {
+    "format": "png",
+    "path": "maps/task_maps_region_association_label/images/max_category_region/0011.png"
+  },
+  "instance_seed": 5914915548656942,
+  "prompt": "Look at the thematic map in the image: an atlas-style region map with colored administrative areas on the left and a category legend on the right. Using the legend, Which labeled region is in the highest category on the legend? Respond with the correct region letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region.\nAnswer requirement: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"evidence\":[[174,129,412,333]],\"answer\":\"C\"}",
+  "prompt_variants": {
+    "answer_and_evidence": "Look at the thematic map in the image: an atlas-style region map with colored administrative areas on the left and a category legend on the right. Using the legend, Which labeled region is in the highest category on the legend? Respond with the correct region letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region.\nAnswer requirement: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"evidence\":[[174,129,412,333]],\"answer\":\"C\"}",
+    "answer_only": "Look at the thematic map in the image: an atlas-style region map with colored administrative areas on the left and a category legend on the right. Using the legend, Which labeled region is in the highest category on the legend? Respond with the correct region letter.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"answer\":\"C\"}"
+  },
+  "task": "task_maps_region_association_label",
+  "task_variant": "max_category_region",
+  "trace_payload": {
+    "background": {
+      "available_styles": [
+        "solid_light"
+      ],
+      "enabled": true,
+      "selected_style": "solid_light",
+      "style_spec": {
+        "color": [
+          247,
+          248,
+          250
+        ],
+        "kind": "solid"
+      }
+    },
+    "execution_trace": {
+      "answer_region_bbox_id": "region_bbox_C",
+      "answer_region_id": "region_C",
+      "answer_region_label": "C",
+      "category_count": 4,
+      "category_labels": [
+        "Low",
+        "Moderate",
+        "High",
+        "Very high"
+      ],
+      "color_distance_space": "lab",
+      "color_min_distance": 60.0,
+      "grid_cols": 7,
+      "grid_cols_range": [
+        6,
+        7
+      ],
+      "grid_rows": 5,
+      "grid_rows_range": [
+        4,
+        5
+      ],
+      "legend_specs": [
+        {
+          "category_index": 0,
+          "category_label": "Low",
+          "fill_rgb": [
+            102,
+            71,
+            188
+          ],
+          "legend_entry_id": "legend_entry_0"
+        },
+        {
+          "category_index": 1,
+          "category_label": "Moderate",
+          "fill_rgb": [
+            216,
+            70,
+            78
+          ],
+          "legend_entry_id": "legend_entry_1"
+        },
+        {
+          "category_index": 2,
+          "category_label": "High",
+          "fill_rgb": [
+            70,
+            176,
+            87
+          ],
+          "legend_entry_id": "legend_entry_2"
+        },
+        {
+          "category_index": 3,
+          "category_label": "Very high",
+          "fill_rgb": [
+            90,
+            80,
+            87
+          ],
+          "legend_entry_id": "legend_entry_3"
+        }
+      ],
+      "query_category_label": "Very high",
+      "question_format": "region_association_label",
+      "question_text": "Which labeled region is in the highest category on the legend?",
+      "region_count": 5,
+      "region_count_range": [
+        5,
+        7
+      ],
+      "region_specs": [
+        {
+          "category_index": 2,
+          "category_label": "High",
+          "cells": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              3,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              1
+            ]
+          ],
+          "fill_rgb": [
+            70,
+            176,
+            87
+          ],
+          "region_bbox_id": "region_bbox_A",
+          "region_id": "region_A",
+          "region_label": "A"
+        },
+        {
+          "category_index": 1,
+          "category_label": "Moderate",
+          "cells": [
+            [
+              4,
+              0
+            ],
+            [
+              5,
+              0
+            ],
+            [
+              6,
+              0
+            ],
+            [
+              3,
+              1
+            ],
+            [
+              4,
+              1
+            ],
+            [
+              5,
+              1
+            ],
+            [
+              6,
+              1
+            ]
+          ],
+          "fill_rgb": [
+            216,
+            70,
+            78
+          ],
+          "region_bbox_id": "region_bbox_B",
+          "region_id": "region_B",
+          "region_label": "B"
+        },
+        {
+          "category_index": 3,
+          "category_label": "Very high",
+          "cells": [
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              2,
+              2
+            ],
+            [
+              3,
+              2
+            ],
+            [
+              0,
+              3
+            ],
+            [
+              1,
+              3
+            ]
+          ],
+          "fill_rgb": [
+            90,
+            80,
+            87
+          ],
+          "region_bbox_id": "region_bbox_C",
+          "region_id": "region_C",
+          "region_label": "C"
+        },
+        {
+          "category_index": 0,
+          "category_label": "Low",
+          "cells": [
+            [
+              4,
+              2
+            ],
+            [
+              5,
+              2
+            ],
+            [
+              6,
+              2
+            ],
+            [
+              5,
+              3
+            ],
+            [
+              6,
+              3
+            ],
+            [
+              5,
+              4
+            ],
+            [
+              6,
+              4
+            ]
+          ],
+          "fill_rgb": [
+            102,
+            71,
+            188
+          ],
+          "region_bbox_id": "region_bbox_D",
+          "region_id": "region_D",
+          "region_label": "D"
+        },
+        {
+          "category_index": 1,
+          "category_label": "Moderate",
+          "cells": [
+            [
+              2,
+              3
+            ],
+            [
+              3,
+              3
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              1,
+              4
+            ],
+            [
+              2,
+              4
+            ],
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              4
+            ]
+          ],
+          "fill_rgb": [
+            216,
+            70,
+            78
+          ],
+          "region_bbox_id": "region_bbox_E",
+          "region_id": "region_E",
+          "region_label": "E"
+        }
+      ],
+      "scene_variant": "region_map",
+      "supporting_region_bbox_ids": [
+        "region_bbox_C"
+      ],
+      "task_variant": "max_category_region",
+      "view_family": "region_legend_map"
+    },
+    "post_image_noise": {
+      "applied": false,
+      "apply_prob": 0.0,
+      "edit_count_range": [
+        1,
+        2
+      ],
+      "edit_types": [
+        "blur",
+        "downsample",
+        "jpeg",
+        "noise"
+      ],
+      "edits": [],
+      "enabled": false
+    },
+    "projected_evidence": {
+      "bbox_set": [
+        [
+          96.03,
+          280.74,
+          456.808,
+          480.94
+        ]
+      ]
+    },
+    "query_spec": {
+      "params": {
+        "category_count": 4,
+        "color_distance_space": "lab",
+        "color_min_distance": 60.0,
+        "grid_cols": 7,
+        "grid_cols_range": [
+          6,
+          7
+        ],
+        "grid_rows": 5,
+        "grid_rows_range": [
+          4,
+          5
+        ],
+        "query_category_label": "Very high",
+        "region_count": 5,
+        "region_count_range": [
+          5,
+          7
+        ],
+        "scene_variant": "region_map",
+        "scene_variant_probabilities": {
+          "map_card": 0.25,
+          "map_outline": 0.25,
+          "map_strip": 0.25,
+          "region_map": 0.25
+        },
+        "task_variant": "max_category_region",
+        "task_variant_probabilities": {
+          "matches_legend_bin": 0.0,
+          "max_category_region": 1.0,
+          "min_category_region": 0.0
+        }
+      },
+      "prompt_variant": {
+        "answer_or_evidence_key": "answer_and_evidence",
+        "answer_or_evidence_variant_index": 2,
+        "prompt_bundle_id": "maps_region_v1",
+        "schema_version": "v1",
+        "slot_values": {
+          "answer_hint": "set \"answer\" to the exact labeled region letter",
+          "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region",
+          "json_example": "{\"evidence\":[[174,129,412,333]],\"answer\":\"C\"}",
+          "json_example_answer_only": "{\"answer\":\"C\"}",
+          "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+          "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+          "object_description": "an atlas-style region map with colored administrative areas on the left and a category legend on the right",
+          "query_category_label": "Very high",
+          "question_text": "Which labeled region is in the highest category on the legend?"
+        },
+        "task_family_key": "choropleth_region_map",
+        "task_family_variant_index": 1,
+        "task_key": "region_association_query",
+        "task_variant_index": 1,
+        "task_variant_key": "max_category_region",
+        "task_variant_template_index": 2,
+        "template_paths": [
+          "maps/region/maps_region_v1.json"
+        ],
+        "variant_count_by_key": {
+          "answer_or_evidence:answer_and_evidence": 5,
+          "task:region_association_query": 5,
+          "task_family:choropleth_region_map": 5,
+          "task_variant:max_category_region": 5
+        }
+      },
+      "prompt_variant_active_key": "answer_and_evidence",
+      "prompt_variants": {
+        "answer_and_evidence": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_and_evidence",
+            "answer_or_evidence_variant_index": 2,
+            "prompt_bundle_id": "maps_region_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact labeled region letter",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region",
+              "json_example": "{\"evidence\":[[174,129,412,333]],\"answer\":\"C\"}",
+              "json_example_answer_only": "{\"answer\":\"C\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an atlas-style region map with colored administrative areas on the left and a category legend on the right",
+              "query_category_label": "Very high",
+              "question_text": "Which labeled region is in the highest category on the legend?"
+            },
+            "task_family_key": "choropleth_region_map",
+            "task_family_variant_index": 1,
+            "task_key": "region_association_query",
+            "task_variant_index": 1,
+            "task_variant_key": "max_category_region",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "maps/region/maps_region_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_and_evidence": 5,
+              "task:region_association_query": 5,
+              "task_family:choropleth_region_map": 5,
+              "task_variant:max_category_region": 5
+            }
+          },
+          "prompt": "Look at the thematic map in the image: an atlas-style region map with colored administrative areas on the left and a category legend on the right. Using the legend, Which labeled region is in the highest category on the legend? Respond with the correct region letter.\nReturn a valid JSON object with keys \"evidence\" and \"answer\" in that order.\nEvidence format: set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region.\nAnswer requirement: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"evidence\":[[174,129,412,333]],\"answer\":\"C\"}"
+        },
+        "answer_only": {
+          "metadata": {
+            "answer_or_evidence_key": "answer_only",
+            "answer_or_evidence_variant_index": 3,
+            "prompt_bundle_id": "maps_region_v1",
+            "schema_version": "v1",
+            "slot_values": {
+              "answer_hint": "set \"answer\" to the exact labeled region letter",
+              "evidence_hint": "set \"evidence\" to an array containing exactly one bounding box [x1, y1, x2, y2] for the correct labeled region",
+              "json_example": "{\"evidence\":[[174,129,412,333]],\"answer\":\"C\"}",
+              "json_example_answer_only": "{\"answer\":\"C\"}",
+              "json_output_contract": "Return a valid JSON object with keys \"evidence\" and \"answer\" in that order.",
+              "json_output_contract_answer_only": "Return a valid JSON object with key \"answer\".",
+              "object_description": "an atlas-style region map with colored administrative areas on the left and a category legend on the right",
+              "query_category_label": "Very high",
+              "question_text": "Which labeled region is in the highest category on the legend?"
+            },
+            "task_family_key": "choropleth_region_map",
+            "task_family_variant_index": 1,
+            "task_key": "region_association_query",
+            "task_variant_index": 1,
+            "task_variant_key": "max_category_region",
+            "task_variant_template_index": 2,
+            "template_paths": [
+              "maps/region/maps_region_v1.json"
+            ],
+            "variant_count_by_key": {
+              "answer_or_evidence:answer_only": 5,
+              "task:region_association_query": 5,
+              "task_family:choropleth_region_map": 5,
+              "task_variant:max_category_region": 5
+            }
+          },
+          "prompt": "Look at the thematic map in the image: an atlas-style region map with colored administrative areas on the left and a category legend on the right. Using the legend, Which labeled region is in the highest category on the legend? Respond with the correct region letter.\nReturn a valid JSON object with key \"answer\".\nAnswer field: set \"answer\" to the exact labeled region letter.\nExample JSON:\n{\"answer\":\"C\"}"
+        }
+      },
+      "task_variant": "max_category_region",
+      "template_id": "maps_region_v1"
+    },
+    "render_map": {
+      "divider_bbox_px": [
+        778.0,
+        64.0,
+        780.0,
+        756.0
+      ],
+      "legend_bbox_px": [
+        798.0,
+        104.0,
+        1068.0,
+        384.0
+      ],
+      "legend_entry_bboxes_px": {
+        "legend_entry_0": [
+          828.0,
+          182.0,
+          1044.0,
+          210.0
+        ],
+        "legend_entry_1": [
+          828.0,
+          228.0,
+          1044.0,
+          256.0
+        ],
+        "legend_entry_2": [
+          828.0,
+          274.0,
+          1044.0,
+          302.0
+        ],
+        "legend_entry_3": [
+          828.0,
+          320.0,
+          1044.0,
+          348.0
+        ]
+      },
+      "map_bbox_px": [
+        104.0,
+        104.0,
+        710.0,
+        568.0
+      ],
+      "region_bboxes_px": {
+        "region_bbox_A": [
+          99.538,
+          98.096,
+          462.503,
+          302.259
+        ],
+        "region_bbox_B": [
+          366.132,
+          95.705,
+          715.213,
+          302.259
+        ],
+        "region_bbox_C": [
+          96.03,
+          280.74,
+          456.808,
+          480.94
+        ],
+        "region_bbox_D": [
+          441.178,
+          280.47,
+          713.91,
+          569.941
+        ],
+        "region_bbox_E": [
+          96.03,
+          383.564,
+          538.821,
+          577.229
+        ]
+      }
+    },
+    "render_spec": {
+      "canvas_height": 820,
+      "canvas_width": 1200,
+      "geometry_seed": 5914915548656942,
+      "legend_panel_height_px": 280,
+      "legend_panel_width_px": 270,
+      "map_panel_height_px": 560,
+      "map_panel_width_px": 702,
+      "outer_border_width_px": 3,
+      "panel_gap_px": 40,
+      "region_border_width_px": 3,
+      "scene_variant": "region_map"
+    },
+    "scene_ir": {
+      "entities": [
+        {
+          "attrs": {
+            "scene_variant": "region_map"
+          },
+          "bbox_px": [
+            56.0,
+            56.0,
+            758.0,
+            616.0
+          ],
+          "entity_id": "map_panel",
+          "entity_type": "map_panel"
+        },
+        {
+          "attrs": {},
+          "bbox_px": [
+            798.0,
+            104.0,
+            1068.0,
+            384.0
+          ],
+          "entity_id": "map_legend_panel",
+          "entity_type": "map_legend_panel"
+        },
+        {
+          "attrs": {},
+          "bbox_px": [
+            778.0,
+            64.0,
+            780.0,
+            756.0
+          ],
+          "entity_id": "map_divider",
+          "entity_type": "map_divider"
+        },
+        {
+          "attrs": {
+            "direction": "north"
+          },
+          "bbox_px": [
+            76.0,
+            74.56,
+            120.0,
+            124.72
+          ],
+          "entity_id": "map_compass",
+          "entity_type": "map_compass"
+        },
+        {
+          "attrs": {
+            "category_index": 2,
+            "category_label": "High",
+            "fill_rgb": [
+              70,
+              176,
+              87
+            ],
+            "region_label": "A"
+          },
+          "bbox_px": [
+            99.538,
+            98.096,
+            462.503,
+            302.259
+          ],
+          "entity_id": "region_A",
+          "entity_type": "map_region"
+        },
+        {
+          "attrs": {
+            "region_id": "region_A"
+          },
+          "bbox_px": [
+            101.235,
+            102.424,
+            199.575,
+            202.955
+          ],
+          "entity_id": "region_A_cell_0",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_A"
+          },
+          "bbox_px": [
+            189.441,
+            100.117,
+            279.338,
+            194.067
+          ],
+          "entity_id": "region_A_cell_1",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_A"
+          },
+          "bbox_px": [
+            271.491,
+            100.117,
+            366.132,
+            202.902
+          ],
+          "entity_id": "region_A_cell_2",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_A"
+          },
+          "bbox_px": [
+            359.91,
+            98.096,
+            462.503,
+            202.902
+          ],
+          "entity_id": "region_A_cell_3",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_A"
+          },
+          "bbox_px": [
+            99.538,
+            194.067,
+            199.575,
+            301.896
+          ],
+          "entity_id": "region_A_cell_4",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_A"
+          },
+          "bbox_px": [
+            181.146,
+            189.065,
+            271.491,
+            301.896
+          ],
+          "entity_id": "region_A_cell_5",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_A"
+          },
+          "bbox_px": [
+            266.554,
+            189.065,
+            366.194,
+            302.259
+          ],
+          "entity_id": "region_A_cell_6",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_A",
+            "region_label": "A"
+          },
+          "bbox_px": [
+            269.021,
+            188.178,
+            293.021,
+            212.178
+          ],
+          "entity_id": "region_A_label",
+          "entity_type": "map_region_label"
+        },
+        {
+          "attrs": {
+            "category_index": 1,
+            "category_label": "Moderate",
+            "fill_rgb": [
+              216,
+              70,
+              78
+            ],
+            "region_label": "B"
+          },
+          "bbox_px": [
+            366.132,
+            95.705,
+            715.213,
+            302.259
+          ],
+          "entity_id": "region_B",
+          "entity_type": "map_region"
+        },
+        {
+          "attrs": {
+            "region_id": "region_B"
+          },
+          "bbox_px": [
+            451.543,
+            95.705,
+            539.072,
+            204.857
+          ],
+          "entity_id": "region_B_cell_0",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_B"
+          },
+          "bbox_px": [
+            531.169,
+            95.705,
+            622.114,
+            205.75
+          ],
+          "entity_id": "region_B_cell_1",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_B"
+          },
+          "bbox_px": [
+            613.705,
+            98.318,
+            715.213,
+            205.75
+          ],
+          "entity_id": "region_B_cell_2",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_B"
+          },
+          "bbox_px": [
+            366.132,
+            196.383,
+            451.543,
+            302.259
+          ],
+          "entity_id": "region_B_cell_3",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_B"
+          },
+          "bbox_px": [
+            441.178,
+            196.383,
+            547.105,
+            282.052
+          ],
+          "entity_id": "region_B_cell_4",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_B"
+          },
+          "bbox_px": [
+            539.072,
+            204.857,
+            622.114,
+            301.072
+          ],
+          "entity_id": "region_B_cell_5",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_B"
+          },
+          "bbox_px": [
+            619.063,
+            185.023,
+            715.213,
+            301.072
+          ],
+          "entity_id": "region_B_cell_6",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_B",
+            "region_label": "B"
+          },
+          "bbox_px": [
+            528.672,
+            186.982,
+            552.672,
+            210.982
+          ],
+          "entity_id": "region_B_label",
+          "entity_type": "map_region_label"
+        },
+        {
+          "attrs": {
+            "category_index": 3,
+            "category_label": "Very high",
+            "fill_rgb": [
+              90,
+              80,
+              87
+            ],
+            "region_label": "C"
+          },
+          "bbox_px": [
+            96.03,
+            280.74,
+            456.808,
+            480.94
+          ],
+          "entity_id": "region_C",
+          "entity_type": "map_region"
+        },
+        {
+          "attrs": {
+            "region_id": "region_C"
+          },
+          "bbox_px": [
+            99.538,
+            300.46,
+            181.146,
+            388.953
+          ],
+          "entity_id": "region_C_cell_0",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_C"
+          },
+          "bbox_px": [
+            180.961,
+            292.307,
+            266.554,
+            388.953
+          ],
+          "entity_id": "region_C_cell_1",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_C"
+          },
+          "bbox_px": [
+            264.34,
+            292.307,
+            372.03,
+            395.181
+          ],
+          "entity_id": "region_C_cell_2",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_C"
+          },
+          "bbox_px": [
+            366.194,
+            280.74,
+            456.808,
+            395.181
+          ],
+          "entity_id": "region_C_cell_3",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_C"
+          },
+          "bbox_px": [
+            96.03,
+            385.117,
+            181.992,
+            467.625
+          ],
+          "entity_id": "region_C_cell_4",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_C"
+          },
+          "bbox_px": [
+            180.961,
+            385.603,
+            268.545,
+            480.94
+          ],
+          "entity_id": "region_C_cell_5",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_C",
+            "region_label": "C"
+          },
+          "bbox_px": [
+            264.419,
+            368.84,
+            288.419,
+            392.84
+          ],
+          "entity_id": "region_C_label",
+          "entity_type": "map_region_label"
+        },
+        {
+          "attrs": {
+            "category_index": 0,
+            "category_label": "Low",
+            "fill_rgb": [
+              102,
+              71,
+              188
+            ],
+            "region_label": "D"
+          },
+          "bbox_px": [
+            441.178,
+            280.47,
+            713.91,
+            569.941
+          ],
+          "entity_id": "region_D",
+          "entity_type": "map_region"
+        },
+        {
+          "attrs": {
+            "region_id": "region_D"
+          },
+          "bbox_px": [
+            441.178,
+            280.74,
+            547.105,
+            384.137
+          ],
+          "entity_id": "region_D_cell_0",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_D"
+          },
+          "bbox_px": [
+            524.741,
+            282.052,
+            619.063,
+            394.407
+          ],
+          "entity_id": "region_D_cell_1",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_D"
+          },
+          "bbox_px": [
+            613.251,
+            280.47,
+            712.805,
+            394.407
+          ],
+          "entity_id": "region_D_cell_2",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_D"
+          },
+          "bbox_px": [
+            524.741,
+            384.137,
+            629.492,
+            484.103
+          ],
+          "entity_id": "region_D_cell_3",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_D"
+          },
+          "bbox_px": [
+            613.251,
+            377.841,
+            713.91,
+            484.049
+          ],
+          "entity_id": "region_D_cell_4",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_D"
+          },
+          "bbox_px": [
+            530.44,
+            464.299,
+            629.492,
+            566.921
+          ],
+          "entity_id": "region_D_cell_5",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_D"
+          },
+          "bbox_px": [
+            625.678,
+            464.299,
+            713.91,
+            569.941
+          ],
+          "entity_id": "region_D_cell_6",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_D",
+            "region_label": "D"
+          },
+          "bbox_px": [
+            565.544,
+            413.206,
+            589.544,
+            437.206
+          ],
+          "entity_id": "region_D_label",
+          "entity_type": "map_region_label"
+        },
+        {
+          "attrs": {
+            "category_index": 1,
+            "category_label": "Moderate",
+            "fill_rgb": [
+              216,
+              70,
+              78
+            ],
+            "region_label": "E"
+          },
+          "bbox_px": [
+            96.03,
+            383.564,
+            538.821,
+            577.229
+          ],
+          "entity_id": "region_E",
+          "entity_type": "map_region"
+        },
+        {
+          "attrs": {
+            "region_id": "region_E"
+          },
+          "bbox_px": [
+            264.34,
+            385.603,
+            377.444,
+            487.705
+          ],
+          "entity_id": "region_E_cell_0",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_E"
+          },
+          "bbox_px": [
+            372.03,
+            383.564,
+            459.819,
+            487.705
+          ],
+          "entity_id": "region_E_cell_1",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_E"
+          },
+          "bbox_px": [
+            456.808,
+            383.564,
+            538.821,
+            484.103
+          ],
+          "entity_id": "region_E_cell_2",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_E"
+          },
+          "bbox_px": [
+            96.03,
+            466.944,
+            198.546,
+            569.451
+          ],
+          "entity_id": "region_E_cell_3",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_E"
+          },
+          "bbox_px": [
+            181.992,
+            466.944,
+            280.58,
+            574.99
+          ],
+          "entity_id": "region_E_cell_4",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_E"
+          },
+          "bbox_px": [
+            268.545,
+            480.94,
+            377.444,
+            577.229
+          ],
+          "entity_id": "region_E_cell_5",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_E"
+          },
+          "bbox_px": [
+            370.436,
+            467.382,
+            459.819,
+            577.229
+          ],
+          "entity_id": "region_E_cell_6",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_E"
+          },
+          "bbox_px": [
+            443.887,
+            467.382,
+            538.821,
+            576.261
+          ],
+          "entity_id": "region_E_cell_7",
+          "entity_type": "map_region_cell"
+        },
+        {
+          "attrs": {
+            "region_id": "region_E",
+            "region_label": "E"
+          },
+          "bbox_px": [
+            305.425,
+            468.396,
+            329.425,
+            492.396
+          ],
+          "entity_id": "region_E_label",
+          "entity_type": "map_region_label"
+        },
+        {
+          "attrs": {
+            "category_index": 0,
+            "category_label": "Low",
+            "fill_rgb": [
+              102,
+              71,
+              188
+            ]
+          },
+          "bbox_px": [
+            828.0,
+            182.0,
+            1044.0,
+            210.0
+          ],
+          "entity_id": "legend_entry_0",
+          "entity_type": "map_legend_entry"
+        },
+        {
+          "attrs": {
+            "category_index": 1,
+            "category_label": "Moderate",
+            "fill_rgb": [
+              216,
+              70,
+              78
+            ]
+          },
+          "bbox_px": [
+            828.0,
+            228.0,
+            1044.0,
+            256.0
+          ],
+          "entity_id": "legend_entry_1",
+          "entity_type": "map_legend_entry"
+        },
+        {
+          "attrs": {
+            "category_index": 2,
+            "category_label": "High",
+            "fill_rgb": [
+              70,
+              176,
+              87
+            ]
+          },
+          "bbox_px": [
+            828.0,
+            274.0,
+            1044.0,
+            302.0
+          ],
+          "entity_id": "legend_entry_2",
+          "entity_type": "map_legend_entry"
+        },
+        {
+          "attrs": {
+            "category_index": 3,
+            "category_label": "Very high",
+            "fill_rgb": [
+              90,
+              80,
+              87
+            ]
+          },
+          "bbox_px": [
+            828.0,
+            320.0,
+            1044.0,
+            348.0
+          ],
+          "entity_id": "legend_entry_3",
+          "entity_type": "map_legend_entry"
+        }
+      ],
+      "relations": {
+        "answer_region_bbox_id": "region_bbox_C",
+        "answer_region_id": "region_C",
+        "answer_region_label": "C",
+        "scene_variant": "region_map",
+        "task_variant": "max_category_region",
+        "view_family": "region_legend_map"
+      },
+      "scene_kind": "map_region_region_map"
+    },
+    "witness_symbolic": {
+      "ids": [
+        "region_C"
+      ],
+      "type": "id_set"
+    }
+  },
+  "versions": {
+    "domain_capability_version": "v1",
+    "dsl_spec_version": "v1",
+    "operator_bundle_version": "v1",
+    "renderer_version": "v1",
+    "template_version": "v1"
+  }
+}

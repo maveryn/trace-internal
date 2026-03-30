@@ -260,6 +260,91 @@ def test_charts_statistics_defaults_loaded() -> None:
     assert str(label_prompt["evidence_hint_argmax"]).strip()
     assert str(label_prompt["json_example_median_label"]).strip()
 
+
+def test_maps_region_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("maps", "region")
+    for section in ("generation", "rendering", "prompt", "complexity"):
+        assert isinstance(cfg.get(section), dict)
+
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_maps_region_association_label",
+    )
+    assert int(generation_defaults["region_count_min"]) >= 5
+    assert int(generation_defaults["region_count_max"]) >= int(generation_defaults["region_count_min"])
+    assert int(generation_defaults["grid_cols_min"]) >= 6
+    assert int(generation_defaults["grid_rows_min"]) >= 4
+    assert float(generation_defaults["color_min_distance"]) >= 50.0
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "matches_legend_bin",
+        "max_category_region",
+        "min_category_region",
+    ]
+    assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
+        "map_card",
+        "map_outline",
+        "map_strip",
+        "region_map",
+    ]
+
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert int(rendering_defaults["canvas_height"]) > 0
+    assert int(rendering_defaults["map_panel_width_px"]) > 0
+    assert int(rendering_defaults["legend_panel_width_px"]) > 0
+
+    assert str(prompt_defaults["bundle_id"]).strip() == "maps_region_v1"
+    assert str(prompt_defaults["task_family_key"]).strip() == "choropleth_region_map"
+    assert str(prompt_defaults["task_key"]).strip() == "region_association_query"
+    assert str(prompt_defaults["object_description_map_strip"]).strip()
+    assert str(prompt_defaults["object_description_region_map"]).strip()
+    assert str(prompt_defaults["evidence_hint_max_category_region"]).strip()
+
+
+def test_maps_region_count_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("maps", "region")
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_maps_region_count",
+    )
+    assert int(generation_defaults["region_count_min"]) >= 5
+    assert int(generation_defaults["grid_cols_min"]) >= 6
+    assert int(generation_defaults["grid_rows_min"]) >= 4
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "count_regions_above_category",
+        "count_regions_below_category",
+        "count_regions_in_category",
+    ]
+    assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
+        "map_card",
+        "map_outline",
+        "map_strip",
+        "region_map",
+    ]
+
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert int(rendering_defaults["canvas_height"]) > 0
+    assert int(rendering_defaults["map_panel_width_px"]) > 0
+    assert int(rendering_defaults["legend_panel_width_px"]) > 0
+
+    assert str(prompt_defaults["bundle_id"]).strip() == "maps_region_v1"
+    assert str(prompt_defaults["task_family_key"]).strip() == "choropleth_region_map"
+    assert str(prompt_defaults["task_key"]).strip() == "region_count_query"
+    assert str(prompt_defaults["answer_hint"]).strip() == 'set "answer" to the integer count'
+    assert str(prompt_defaults["object_description_region_map"]).strip()
+    assert str(prompt_defaults["evidence_hint_count_regions_in_category"]).strip()
+    assert str(prompt_defaults["json_example_count_regions_in_category"]).strip()
+
+    complexity_defaults = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_maps_region_association_label",
+    )
+    assert set(complexity_defaults["criteria_weights"].keys()) == {
+        "visual_scan",
+        "reasoning_load",
+        "scene_variant_load",
+    }
+
     value_complexity = resolve_task_group_section_defaults(
         cfg,
         "complexity",
@@ -908,15 +993,14 @@ def test_puzzles_spatial_defaults_loaded() -> None:
 
     generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_puzzles_spatial_fold_hole_label",
+        task_id="task_puzzles_spatial_fold_result_label",
     )
-    assert str(prompt_defaults["task_family_key"]).strip() == "spatial_fold_hole_puzzle"
-    assert str(prompt_defaults["task_key"]).strip() == "unfold_query"
+    assert str(prompt_defaults["task_family_key"]).strip() == "spatial_fold_result_puzzle"
+    assert str(prompt_defaults["task_key"]).strip() == "fold_result_query"
     assert str(prompt_defaults["object_description_fold_strip"]).strip()
     assert sorted(generation_defaults["task_variant_weights"].keys()) == [
-        "double_fold_single_hole",
-        "single_fold_single_hole",
-        "single_fold_two_holes",
+        "horizontal_fold_result",
+        "vertical_fold_result",
     ]
     assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
         "fold_card",
@@ -925,24 +1009,236 @@ def test_puzzles_spatial_defaults_loaded() -> None:
     ]
     assert int(generation_defaults["option_count_min"]) == 6
     assert int(generation_defaults["option_count_max"]) == 6
+    assert int(generation_defaults["mark_count_min"]) == 3
+    assert int(generation_defaults["mark_count_max"]) == 5
     assert int(rendering_defaults["canvas_width"]) > 0
     assert int(rendering_defaults["reference_panel_height_px"]) > 0
-    assert int(rendering_defaults["option_panel_width_px"]) > 0
-    assert str(prompt_defaults["evidence_hint_single_fold_single_hole"]).strip()
-    assert str(prompt_defaults["evidence_hint_single_fold_two_holes"]).strip()
-    assert str(prompt_defaults["evidence_hint_double_fold_single_hole"]).strip()
-    assert str(prompt_defaults["json_example_single_fold_single_hole"]).strip()
-    assert str(prompt_defaults["json_example_answer_only_double_fold_single_hole"]).strip()
+    assert int(rendering_defaults["option_gap_px"]) >= 0
+    assert int(rendering_defaults["option_row_gap_px"]) >= 0
+    assert str(prompt_defaults["evidence_hint_vertical_fold_result"]).strip()
+    assert str(prompt_defaults["evidence_hint_horizontal_fold_result"]).strip()
+    assert str(prompt_defaults["json_example_vertical_fold_result"]).strip()
+    assert str(prompt_defaults["json_example_answer_only_horizontal_fold_result"]).strip()
 
     spatial_complexity = resolve_task_group_section_defaults(
         cfg,
         "complexity",
-        task_id="task_puzzles_spatial_fold_hole_label",
+        task_id="task_puzzles_spatial_fold_result_label",
     )
     assert spatial_complexity["criteria_weights"] == {
         "reasoning_load": pytest.approx(0.35),
         "scene_variant_load": pytest.approx(0.25),
         "visual_scan": pytest.approx(0.4),
+    }
+
+
+def test_puzzles_spatial_assembly_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("puzzles", "spatial")
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_puzzles_spatial_assembly_label",
+    )
+    assert str(prompt_defaults["task_family_key"]).strip() == "spatial_assembly_puzzle"
+    assert str(prompt_defaults["task_key"]).strip() == "assembly_label_query"
+    assert str(prompt_defaults["object_description_assembly_strip"]).strip()
+    assert generation_defaults["task_variant_weights"] == {"can_be_built": 1.0}
+    assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
+        "assembly_card",
+        "assembly_outline",
+        "assembly_strip",
+    ]
+    assert int(generation_defaults["piece_count_min"]) == 2
+    assert int(generation_defaults["piece_count_max"]) == 4
+    assert int(generation_defaults["option_count_min"]) == 5
+    assert int(generation_defaults["option_count_max"]) == 6
+    assert int(generation_defaults["target_cell_count_min"]) == 8
+    assert int(generation_defaults["target_cell_count_max"]) == 11
+    assert int(generation_defaults["target_bbox_max_dim"]) == 5
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert int(rendering_defaults["piece_card_size_px"]) > 0
+    assert int(rendering_defaults["option_panel_width_px"]) > 0
+    assert int(rendering_defaults["option_shape_box_size_px"]) > 0
+    assert int(rendering_defaults["shape_cell_size_px"]) == 22
+    assert int(rendering_defaults["shape_cell_gap_px"]) == 4
+    assert list(rendering_defaults["shape_fill_rgb"]) == [66, 97, 148]
+    assert str(prompt_defaults["evidence_hint_can_be_built"]).strip()
+    assert str(prompt_defaults["json_example_can_be_built"]).strip()
+
+    spatial_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_puzzles_spatial_assembly_label",
+    )
+    assert spatial_complexity["criteria_weights"] == {
+        "reasoning_load": pytest.approx(0.42),
+        "scene_variant_load": pytest.approx(0.20),
+        "visual_scan": pytest.approx(0.38),
+    }
+
+
+def test_puzzles_spatial_overlay_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("puzzles", "spatial")
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_puzzles_spatial_overlay_result_label",
+    )
+    assert str(prompt_defaults["task_family_key"]).strip() == "spatial_overlay_puzzle"
+    assert str(prompt_defaults["task_key"]).strip() == "overlay_result_query"
+    assert str(prompt_defaults["object_description_overlay_strip"]).strip()
+    assert generation_defaults["task_variant_weights"] == {"overlay_union_same_grid": 1.0}
+    assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
+        "overlay_card",
+        "overlay_outline",
+        "overlay_strip",
+    ]
+    assert int(generation_defaults["option_count_min"]) == 5
+    assert int(generation_defaults["option_count_max"]) == 6
+    assert int(generation_defaults["grid_size_min"]) == 4
+    assert int(generation_defaults["grid_size_max"]) == 5
+    assert int(generation_defaults["sheet_mark_count_min"]) == 2
+    assert int(generation_defaults["sheet_mark_count_max"]) == 5
+    assert int(generation_defaults["overlap_count_min"]) == 1
+    assert int(generation_defaults["overlap_count_max"]) == 2
+    assert int(rendering_defaults["source_paper_size_px"]) > 0
+    assert int(rendering_defaults["option_paper_size_px"]) > 0
+    assert int(rendering_defaults["source_paper_size_px"]) == int(rendering_defaults["option_paper_size_px"])
+    assert int(rendering_defaults["combine_symbol_font_size_px"]) > 0
+    assert list(rendering_defaults["mark_fill_rgb"]) == [53, 96, 164]
+    assert str(prompt_defaults["evidence_hint_overlay_union_same_grid"]).strip()
+    assert str(prompt_defaults["json_example_overlay_union_same_grid"]).strip()
+
+    spatial_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_puzzles_spatial_overlay_result_label",
+    )
+    assert spatial_complexity["criteria_weights"] == {
+        "reasoning_load": pytest.approx(0.40),
+        "scene_variant_load": pytest.approx(0.20),
+        "visual_scan": pytest.approx(0.40),
+    }
+
+
+def test_puzzles_logic_adjacency_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("puzzles", "logic")
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_puzzles_logic_adjacency_completion_label",
+    )
+    assert str(prompt_defaults["task_family_key"]).strip() == "logic_option_completion_puzzle"
+    assert str(prompt_defaults["task_key"]).strip() == "adjacency_completion_query"
+    assert str(prompt_defaults["object_description_logic_strip"]).strip()
+    assert generation_defaults["task_variant_weights"] == {"king_non_touch": 1.0}
+    assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
+        "logic_card",
+        "logic_outline",
+        "logic_strip",
+    ]
+    assert int(generation_defaults["board_size_min"]) == 3
+    assert int(generation_defaults["board_size_max"]) == 5
+    assert int(generation_defaults["option_count"]) == 6
+    assert int(rendering_defaults["cell_size_px"]) > 0
+    assert int(rendering_defaults["option_panel_width_px"]) > 0
+    assert list(rendering_defaults["accent_color_rgb"]) == [54, 102, 180]
+    assert str(prompt_defaults["evidence_hint_king_non_touch"]).strip()
+    assert str(prompt_defaults["json_example_king_non_touch"]).strip()
+
+    logic_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_puzzles_logic_adjacency_completion_label",
+    )
+    assert logic_complexity["criteria_weights"] == {
+        "reasoning_load": pytest.approx(0.35),
+        "scene_variant_load": pytest.approx(0.33),
+        "visual_scan": pytest.approx(0.32),
+    }
+
+
+def test_puzzles_spatial_cube_removal_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("puzzles", "spatial")
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_puzzles_spatial_cube_removal_count",
+    )
+    assert str(prompt_defaults["task_family_key"]).strip() == "spatial_cube_removal_puzzle"
+    assert str(prompt_defaults["task_key"]).strip() == "cube_removal_count_query"
+    assert str(prompt_defaults["answer_hint"]).strip()
+    assert str(prompt_defaults["object_description_stack_strip"]).strip()
+    assert generation_defaults["task_variant_weights"] == {"cube_removal_count": 1.0}
+    assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
+        "stack_card",
+        "stack_outline",
+        "stack_strip",
+    ]
+    assert int(generation_defaults["width_min"]) == 2
+    assert int(generation_defaults["width_max"]) == 4
+    assert int(generation_defaults["original_max_height_min"]) == 2
+    assert int(generation_defaults["original_max_height_max"]) == 5
+    assert int(generation_defaults["removal_count_min"]) == 1
+    assert int(generation_defaults["removal_count_max"]) == 5
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert int(rendering_defaults["structure_padding_px"]) > 0
+    assert int(rendering_defaults["structure_pair_gap_px"]) > 0
+    assert int(rendering_defaults["caption_font_size_px"]) > 0
+    assert str(prompt_defaults["evidence_hint_cube_removal_count"]).strip()
+    assert str(prompt_defaults["json_example_cube_removal_count"]).strip()
+
+    spatial_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_puzzles_spatial_cube_removal_count",
+    )
+    assert spatial_complexity["criteria_weights"] == {
+        "reasoning_load": pytest.approx(0.4),
+        "scene_variant_load": pytest.approx(0.15),
+        "visual_scan": pytest.approx(0.45),
+    }
+
+
+def test_puzzles_topology_bead_equivalence_defaults_loaded() -> None:
+    cfg = get_task_group_defaults("puzzles", "topology")
+    generation_defaults, rendering_defaults, prompt_defaults = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_puzzles_topology_bead_equivalence_count",
+    )
+    assert str(prompt_defaults["task_family_key"]).strip() == "topology_bead_equivalence_puzzle"
+    assert str(prompt_defaults["task_key"]).strip() == "bead_equivalence_count_query"
+    assert str(prompt_defaults["object_description_loop_strip"]).strip()
+    assert sorted(generation_defaults["task_variant_weights"].keys()) == [
+        "color_cycle_count",
+        "mixed_cycle_count",
+        "shape_cycle_count",
+    ]
+    assert sorted(generation_defaults["scene_variant_weights"].keys()) == [
+        "loop_card",
+        "loop_outline",
+        "loop_strip",
+    ]
+    assert int(generation_defaults["option_count_min"]) == 6
+    assert int(generation_defaults["option_count_max"]) == 7
+    assert int(generation_defaults["valid_option_count_min"]) == 1
+    assert int(generation_defaults["valid_option_count_max"]) == 5
+    assert int(generation_defaults["bead_count_min"]) == 4
+    assert int(generation_defaults["bead_count_max"]) == 6
+    assert float(generation_defaults["min_color_distance"]) == 50.0
+    assert str(generation_defaults["color_distance_space"]) == "lab"
+    assert int(rendering_defaults["canvas_width"]) > 0
+    assert int(rendering_defaults["reference_panel_height_px"]) > 0
+    assert int(rendering_defaults["option_image_width_px"]) > 0
+    assert int(rendering_defaults["shape_bead_inset_px"]) == 2
+    assert str(prompt_defaults["evidence_hint_color_cycle_count"]).strip()
+    assert str(prompt_defaults["json_example_mixed_cycle_count"]).strip()
+
+    topology_complexity = resolve_task_group_section_defaults(
+        cfg,
+        "complexity",
+        task_id="task_puzzles_topology_bead_equivalence_count",
+    )
+    assert topology_complexity["criteria_weights"] == {
+        "reasoning_load": pytest.approx(0.4),
+        "scene_variant_load": pytest.approx(0.24),
+        "visual_scan": pytest.approx(0.36),
     }
 
 

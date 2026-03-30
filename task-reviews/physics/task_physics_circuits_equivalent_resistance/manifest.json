@@ -1,11 +1,13 @@
 {
-  "inspection_count": 25,
+  "inspection_count": 50,
   "task_id": "task_physics_circuits_equivalent_resistance",
   "variants": {
-    "": 25
+    "missing_resistor_value": 25,
+    "total_resistance": 25
   },
   "workbook": "physics/task_physics_circuits_equivalent_resistance/task_physics_circuits_equivalent_resistance.xlsx",
   "workbook_sheets": {
+    "missing_resistor_value": "missing_resistor_value",
     "total_resistance": "total_resistance"
   }
 }

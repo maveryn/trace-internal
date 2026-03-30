@@ -162,9 +162,9 @@ Define how we split tasks into reusable families so each dataset slice stays com
    - samples one non-semantic `accent_color_name` palette for the beam / fulcrum / shown weights while leaving the red `?` weight semantics unchanged
 6. `task_physics_circuits_equivalent_resistance`
    - uses scene variants `parallel|simple_series_parallel`
-   - uses query variants `total_resistance`
-   - keeps integer answers with unordered `bbox_set` evidence over the resistor boxes that belong to the asked network between terminals `A` and `B`
-   - requires every scene to contain at least one parallel bank, with `parallel` scenes using `3..4` resistor branches and `simple_series_parallel` scenes using `4..5` total resistors
+   - uses query variants `total_resistance|missing_resistor_value`
+   - keeps integer answers with unordered `bbox_set` evidence over either the full asked resistor set (`total_resistance`) or the marked red `?` resistor in the left circuit (`missing_resistor_value`)
+   - requires every scene to contain at least one parallel bank; the single-circuit readout uses `3..4` parallel branches or `4..5` total resistors, while the paired missing-resistor variant uses smaller side-by-side circuits with equal total resistance
    - samples one non-semantic `accent_color_name` palette for the wires, terminals, and resistor boxes
 7. Early physics tasks should prefer light arithmetic over heavy formula derivations, and prompt-facing evidence should stay on the visible witness objects rather than decorative scene chrome.
 

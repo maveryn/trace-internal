@@ -19,11 +19,13 @@ generation:
         simple_series_parallel: 1.0
       query_variant_weights:
         total_resistance: 1.0
+        missing_resistor_value: 1.0
       balanced_scene_variant_sampling: true
       balanced_query_variant_sampling: true
       balanced_target_answer_sampling: true
       parallel_target_answer_support: [1, 2, 3, 4, 5, 6]
       simple_series_parallel_target_answer_support: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+      missing_resistor_value_support: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
       resistor_value_min: 1
       resistor_value_max: 12
 
@@ -45,6 +47,17 @@ rendering:
       parallel_branch_top_y_px: 190
       parallel_branch_bottom_y_px: 430
       series_parallel_branch_left_x_px: 360
+      pair_scene_width_px: 400
+      pair_scene_height_px: 420
+      pair_origin_top_y_px: 70
+      pair_left_origin_x_px: 24
+      pair_right_origin_x_px: 516
+      pair_terminal_left_x_px: 54
+      pair_parallel_rail_left_x_px: 132
+      pair_parallel_branch_top_y_px: 146
+      pair_parallel_branch_bottom_y_px: 306
+      pair_series_parallel_branch_left_x_px: 152
+      pair_equals_font_size_px: 48
 
 complexity:
   shared: {}
@@ -63,7 +76,11 @@ prompt:
     task_physics_circuits_equivalent_resistance:
       task_family_key: resistor_network_diagram
       task_key: equivalent_resistance_query
-      object_description_parallel: one resistor network between terminals A and B with three or four parallel labeled resistor branches
-      object_description_simple_series_parallel: one resistor network between terminals A and B that combines a short series chain with a parallel resistor bank
+      object_description_parallel_total_resistance: one resistor network between terminals A and B with three or four parallel labeled resistor branches
+      object_description_simple_series_parallel_total_resistance: one resistor network between terminals A and B that combines a short series chain with a parallel resistor bank
+      object_description_parallel_missing_resistor_value: two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor inside a parallel branch
+      object_description_simple_series_parallel_missing_resistor_value: two side-by-side resistor networks between labeled terminals A and B that have the same total resistance, where the left circuit has one red `?` resistor in the series part of the network
       evidence_hint_total_resistance: set "evidence" to an array of bounding boxes [x1, y1, x2, y2] for all resistor boxes that belong to the network between terminals A and B
-      answer_hint: set "answer" to the total equivalent resistance between terminals A and B as an integer number of ohms
+      evidence_hint_missing_resistor_value: set "evidence" to an array with the single bounding box [x1, y1, x2, y2] of the red `?` resistor in the left circuit
+      answer_hint_total_resistance: set "answer" to the total equivalent resistance between terminals A and B as an integer number of ohms
+      answer_hint_missing_resistor_value: set "answer" to the integer resistor value that should replace the red `?` resistor

@@ -21,7 +21,10 @@ def test_physics_circuits_equivalent_resistance_defaults_expose_scene_query_and_
         "parallel",
         "simple_series_parallel",
     }
-    assert set(generation["query_variant_weights"].keys()) == {"total_resistance"}
+    assert set(generation["query_variant_weights"].keys()) == {
+        "total_resistance",
+        "missing_resistor_value",
+    }
     assert set(generation["accent_color_name_weights"].keys()) == {
         "red",
         "blue",
@@ -36,8 +39,11 @@ def test_physics_circuits_equivalent_resistance_defaults_expose_scene_query_and_
     }
     assert list(generation["parallel_target_answer_support"]) == [1, 2, 3, 4, 5, 6]
     assert list(generation["simple_series_parallel_target_answer_support"]) == list(range(2, 19))
+    assert list(generation["missing_resistor_value_support"]) == list(range(1, 13))
     assert int(rendering["resistor_box_width_px"]) > 0
     assert int(rendering["wire_width_px"]) > 0
+    assert int(rendering["pair_scene_width_px"]) > 0
     assert str(prompt["bundle_id"]) == "physics_circuits_v1"
-    assert "three or four parallel" in str(prompt["object_description_parallel"])
+    assert "three or four parallel" in str(prompt["object_description_parallel_total_resistance"])
     assert "resistor boxes" in str(prompt["evidence_hint_total_resistance"])
+    assert "red `?` resistor" in str(prompt["evidence_hint_missing_resistor_value"])

@@ -17,7 +17,8 @@ class CircuitResistorSpec:
     """One visible resistor box in a rendered circuit scene."""
 
     resistor_id: str
-    value: int
+    value: int | None
+    missing: bool
     bbox_px: List[float]
 
 
@@ -108,7 +109,8 @@ def _draw_resistor_box(
     draw: ImageDraw.ImageDraw,
     *,
     bbox_px: Sequence[float],
-    value: int,
+    value: int | None,
+    missing: bool,
     font,
     theme,
     stroke_width_px: int,
@@ -119,19 +121,28 @@ def _draw_resistor_box(
         draw,
         tuple(float(value_px) for value_px in bbox_px),
         radius=10,
-        fill=tuple(int(channel) for channel in theme.resistor_fill_rgb),
-        outline=tuple(int(channel) for channel in theme.resistor_outline_rgb),
+        fill=tuple(
+            int(channel)
+            for channel in (theme.missing_resistor_fill_rgb if bool(missing) else theme.resistor_fill_rgb)
+        ),
+        outline=tuple(
+            int(channel)
+            for channel in (theme.missing_resistor_outline_rgb if bool(missing) else theme.resistor_outline_rgb)
+        ),
         width=3,
     )
     return _draw_centered_text(
         draw,
-        text=str(int(value)),
+        text="?" if bool(missing) else str(int(value if value is not None else 0)),
         center_xy=(
             float(0.5 * (float(bbox_px[0]) + float(bbox_px[2]))),
             float(0.5 * (float(bbox_px[1]) + float(bbox_px[3]))),
         ),
         font=font,
-        fill=tuple(int(channel) for channel in theme.resistor_text_rgb),
+        fill=tuple(
+            int(channel)
+            for channel in (theme.missing_resistor_text_rgb if bool(missing) else theme.resistor_text_rgb)
+        ),
         stroke_width_px=int(stroke_width_px),
     )
 
@@ -145,6 +156,9 @@ def render_resistor_network_scene(
     render_defaults: Mapping[str, Any],
     accent_color_name: str,
     series_parallel_orientation: str = "series_then_parallel",
+    missing_resistor_indices: Sequence[int] = (),
+    origin_offset_px: Tuple[float, float] = (0.0, 0.0),
+    entity_id_prefix: str = "",
 ) -> RenderedCircuitScene:
     """Render one resistor network between labeled terminals `A` and `B`."""
 
@@ -161,9 +175,15 @@ def render_resistor_network_scene(
     terminal_label_font = load_font(int(render_defaults["terminal_font_size_px"]), bold=True)
     resistor_font = load_font(int(render_defaults["resistor_font_size_px"]), bold=True)
     label_stroke_width = int(render_defaults["label_stroke_width_px"])
+    origin_x = float(origin_offset_px[0])
+    origin_y = float(origin_offset_px[1])
+    missing_index_set = {int(index) for index in missing_resistor_indices}
 
-    terminal_left = (float(render_defaults["terminal_left_x_px"]), float(mid_y))
-    terminal_right = (float(canvas_width - int(render_defaults["terminal_left_x_px"])), float(mid_y))
+    terminal_left = (float(origin_x + float(render_defaults["terminal_left_x_px"])), float(origin_y + mid_y))
+    terminal_right = (
+        float(origin_x + float(canvas_width - int(render_defaults["terminal_left_x_px"]))),
+        float(origin_y + mid_y),
+    )
     left_circle_bbox, left_label_bbox = _draw_terminal(
         draw,
         center_xy=terminal_left,
@@ -186,13 +206,13 @@ def render_resistor_network_scene(
     resistor_specs: List[CircuitResistorSpec] = []
     scene_entities: List[Dict[str, Any]] = [
         {
-            "entity_id": "terminal_A",
+            "entity_id": f"{str(entity_id_prefix)}terminal_A",
             "entity_type": "physics_circuit_terminal",
             "bbox_px": list(left_circle_bbox),
             "meta": {"terminal_label": "A"},
         },
         {
-            "entity_id": "terminal_B",
+            "entity_id": f"{str(entity_id_prefix)}terminal_B",
             "entity_type": "physics_circuit_terminal",
             "bbox_px": list(right_circle_bbox),
             "meta": {"terminal_label": "B"},
@@ -214,10 +234,12 @@ def render_resistor_network_scene(
         )
 
     def add_resistor(resistor_id: str, value: int, bbox_px: Sequence[float]) -> None:
+        is_missing = int(next_resistor_index) in missing_index_set
         _draw_resistor_box(
             draw,
             bbox_px=bbox_px,
-            value=int(value),
+            value=None if bool(is_missing) else int(value),
+            missing=bool(is_missing),
             font=resistor_font,
             theme=theme,
             stroke_width_px=label_stroke_width,
@@ -226,7 +248,8 @@ def render_resistor_network_scene(
         resistor_specs.append(
             CircuitResistorSpec(
                 resistor_id=str(resistor_id),
-                value=int(value),
+                value=None if bool(is_missing) else int(value),
+                missing=bool(is_missing),
                 bbox_px=list(bbox),
             )
         )
@@ -235,7 +258,7 @@ def render_resistor_network_scene(
                 "entity_id": str(resistor_id),
                 "entity_type": "physics_resistor",
                 "bbox_px": list(bbox),
-                "meta": {"value": int(value)},
+                "meta": {"value": None if bool(is_missing) else int(value), "missing": bool(is_missing)},
             }
         )
 
@@ -244,7 +267,7 @@ def render_resistor_network_scene(
     def add_series_chain(start_x: float, end_x: float, values: Sequence[int]) -> None:
         nonlocal next_resistor_index
         if not values:
-            line((float(start_x), float(mid_y)), (float(end_x), float(mid_y)))
+            line((float(start_x), float(origin_y + mid_y)), (float(end_x), float(origin_y + mid_y)))
             return
         count = len(values)
         usable_width = float(end_x - start_x)
@@ -254,22 +277,22 @@ def render_resistor_network_scene(
             center_x = float(start_x + ((value_index + 0.5) * step))
             bbox = [
                 round(float(center_x - (0.5 * resistor_box_width)), 3),
-                round(float(mid_y - (0.5 * resistor_box_height)), 3),
+                round(float(origin_y + mid_y - (0.5 * resistor_box_height)), 3),
                 round(float(center_x + (0.5 * resistor_box_width)), 3),
-                round(float(mid_y + (0.5 * resistor_box_height)), 3),
+                round(float(origin_y + mid_y + (0.5 * resistor_box_height)), 3),
             ]
-            line((float(previous_x), float(mid_y)), (float(bbox[0]), float(mid_y)))
-            add_resistor(f"resistor_{int(next_resistor_index)}", int(value), bbox)
+            line((float(previous_x), float(origin_y + mid_y)), (float(bbox[0]), float(origin_y + mid_y)))
+            add_resistor(f"{str(entity_id_prefix)}resistor_{int(next_resistor_index)}", int(value), bbox)
             next_resistor_index += 1
             previous_x = float(bbox[2])
-        line((float(previous_x), float(mid_y)), (float(end_x), float(mid_y)))
+        line((float(previous_x), float(origin_y + mid_y)), (float(end_x), float(origin_y + mid_y)))
 
     def add_parallel_bank(left_x: float, right_x: float, values: Sequence[int]) -> None:
         nonlocal next_resistor_index
         if not values:
             return
-        branch_top_y = float(render_defaults["parallel_branch_top_y_px"])
-        branch_bottom_y = float(render_defaults["parallel_branch_bottom_y_px"])
+        branch_top_y = float(origin_y + float(render_defaults["parallel_branch_top_y_px"]))
+        branch_bottom_y = float(origin_y + float(render_defaults["parallel_branch_bottom_y_px"]))
         if len(values) == 1:
             branch_ys = [float(0.5 * (branch_top_y + branch_bottom_y))]
         else:
@@ -287,25 +310,25 @@ def render_resistor_network_scene(
             ]
             line((left_x, float(branch_y)), (float(bbox[0]), float(branch_y)))
             line((float(bbox[2]), float(branch_y)), (right_x, float(branch_y)))
-            add_resistor(f"resistor_{int(next_resistor_index)}", int(value), bbox)
+            add_resistor(f"{str(entity_id_prefix)}resistor_{int(next_resistor_index)}", int(value), bbox)
             next_resistor_index += 1
 
     if str(scene_variant) == "parallel":
-        rail_left_x = float(render_defaults["parallel_rail_left_x_px"])
-        rail_right_x = float(canvas_width - int(render_defaults["parallel_rail_left_x_px"]))
-        line((float(terminal_left[0] + terminal_radius), float(mid_y)), (rail_left_x, float(mid_y)))
-        line((rail_right_x, float(mid_y)), (float(terminal_right[0] - terminal_radius), float(mid_y)))
+        rail_left_x = float(origin_x + float(render_defaults["parallel_rail_left_x_px"]))
+        rail_right_x = float(origin_x + float(canvas_width - int(render_defaults["parallel_rail_left_x_px"])))
+        line((float(terminal_left[0] + terminal_radius), float(origin_y + mid_y)), (rail_left_x, float(origin_y + mid_y)))
+        line((rail_right_x, float(origin_y + mid_y)), (float(terminal_right[0] - terminal_radius), float(origin_y + mid_y)))
         add_parallel_bank(rail_left_x, rail_right_x, parallel_values)
     else:
-        branch_left_x = float(render_defaults["series_parallel_branch_left_x_px"])
-        branch_right_x = float(canvas_width - int(render_defaults["series_parallel_branch_left_x_px"]))
+        branch_left_x = float(origin_x + float(render_defaults["series_parallel_branch_left_x_px"]))
+        branch_right_x = float(origin_x + float(canvas_width - int(render_defaults["series_parallel_branch_left_x_px"])))
         left_anchor_x = float(terminal_left[0] + terminal_radius)
         right_anchor_x = float(terminal_right[0] - terminal_radius)
         if str(series_parallel_orientation) == "series_then_parallel":
             add_series_chain(left_anchor_x, branch_left_x, series_values)
-            line((branch_right_x, float(mid_y)), (right_anchor_x, float(mid_y)))
+            line((branch_right_x, float(origin_y + mid_y)), (right_anchor_x, float(origin_y + mid_y)))
         else:
-            line((left_anchor_x, float(mid_y)), (branch_left_x, float(mid_y)))
+            line((left_anchor_x, float(origin_y + mid_y)), (branch_left_x, float(origin_y + mid_y)))
             add_series_chain(branch_right_x, right_anchor_x, series_values)
         add_parallel_bank(branch_left_x, branch_right_x, parallel_values)
 
@@ -321,6 +344,7 @@ def render_resistor_network_scene(
             "A": list(left_label_bbox),
             "B": list(right_label_bbox),
         },
+        "missing_resistor_entity_ids": [str(spec.resistor_id) for spec in resistor_specs if bool(spec.missing)],
         "evidence_entity_ids": [str(spec.resistor_id) for spec in resistor_specs],
     }
     return RenderedCircuitScene(

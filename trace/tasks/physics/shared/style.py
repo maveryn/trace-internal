@@ -38,6 +38,9 @@ class PhysicsCircuitTheme:
     resistor_fill_rgb: Color
     resistor_outline_rgb: Color
     resistor_text_rgb: Color
+    missing_resistor_fill_rgb: Color
+    missing_resistor_outline_rgb: Color
+    missing_resistor_text_rgb: Color
     terminal_fill_rgb: Color
     terminal_outline_rgb: Color
     terminal_text_rgb: Color
@@ -89,12 +92,18 @@ def build_physics_circuit_theme(accent_color_name: str) -> PhysicsCircuitTheme:
     accent_deep_rgb = darken_color(accent_rgb, factor=0.40)
     resistor_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.18)
     terminal_fill_rgb = _blend_with_white(accent_rgb, color_weight=0.72)
+    missing_fill_rgb = (255, 231, 231)
+    missing_outline_rgb = (187, 56, 56)
+    missing_text_rgb = (167, 38, 38)
     return PhysicsCircuitTheme(
         accent_color_name=str(accent_color_name),
         wire_rgb=tuple(int(channel) for channel in accent_deep_rgb),
         resistor_fill_rgb=tuple(int(channel) for channel in resistor_fill_rgb),
         resistor_outline_rgb=tuple(int(channel) for channel in accent_dark_rgb),
         resistor_text_rgb=(39, 43, 49),
+        missing_resistor_fill_rgb=tuple(int(channel) for channel in missing_fill_rgb),
+        missing_resistor_outline_rgb=tuple(int(channel) for channel in missing_outline_rgb),
+        missing_resistor_text_rgb=tuple(int(channel) for channel in missing_text_rgb),
         terminal_fill_rgb=tuple(int(channel) for channel in terminal_fill_rgb),
         terminal_outline_rgb=tuple(int(channel) for channel in accent_deep_rgb),
         terminal_text_rgb=(39, 43, 49),

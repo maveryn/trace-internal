@@ -219,6 +219,7 @@ Use this checklist during implementation and refactor reviews.
 197. For physics lever-balance tasks, keep prompt-facing evidence on the operative weight blocks (or the marked `?` weight), not on the beam, fulcrum, or distance ticks; those structural elements should stay available in the scene and trace, but the evidence should ground the weights that the question is about.
 198. When adding non-semantic color variation to a physics task, resolve one named accent axis through a shared physics style helper and keep any semantically special marker color (for example a red `?` missing weight) fixed; do not let decorative palette randomization blur the object that the prompt is explicitly asking about.
 199. For equivalent-resistance circuit tasks, label the queried terminals directly in the scene and in the prompt text, keep prompt-facing evidence on the resistor components rather than on the wires, and when the task is meant to test parallel reasoning, reject pure-series layouts entirely; do not rely on unlabeled endpoints or simpler-than-advertised circuits to carry the difficulty.
+200. For paired circuit scenes with one missing component, keep the missing component visually unique (for example a red `?` resistor), and use that marked component as the prompt-facing witness instead of widening evidence to the whole circuit when the prompt already asserts a shared total/property across both panels.
 
 ## 3) Process rule
 When a new reusable issue is discovered:

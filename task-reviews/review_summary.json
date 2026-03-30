@@ -21,9 +21,10 @@
     {
       "distribution_pass": true,
       "domain": "physics",
-      "inspection_count": 25,
+      "inspection_count": 50,
       "inspection_workbook": "physics/task_physics_circuits_equivalent_resistance/task_physics_circuits_equivalent_resistance.xlsx",
       "inspection_workbook_sheets": {
+        "missing_resistor_value": "missing_resistor_value",
         "total_resistance": "total_resistance"
       },
       "reports": {

@@ -14,16 +14,29 @@ from tests.helpers import read_jsonl
 
 
 @pytest.mark.parametrize(
-    ("params", "expected_answer", "expected_resistor_count"),
+    ("params", "expected_answer", "expected_resistor_count", "expected_evidence_count"),
     (
-        ({"scene_variant": "parallel", "target_answer": 2}, 2, 3),
-        ({"scene_variant": "simple_series_parallel", "target_answer": 5}, 5, 4),
+        ({"scene_variant": "parallel", "query_variant": "total_resistance", "target_answer": 2}, 2, 3, 3),
+        (
+            {"scene_variant": "simple_series_parallel", "query_variant": "total_resistance", "target_answer": 5},
+            5,
+            4,
+            4,
+        ),
+        ({"scene_variant": "parallel", "query_variant": "missing_resistor_value", "target_answer": 4}, 4, 4, 1),
+        (
+            {"scene_variant": "simple_series_parallel", "query_variant": "missing_resistor_value", "target_answer": 6},
+            6,
+            6,
+            1,
+        ),
     ),
 )
 def test_physics_circuits_equivalent_resistance_emits_expected_contract(
     params: dict[str, int | str],
     expected_answer: int,
     expected_resistor_count: int,
+    expected_evidence_count: int,
 ) -> None:
     out = PhysicsCircuitsEquivalentResistanceTask().generate(26001, params=params, max_attempts=40)
     trace = out.trace_payload
@@ -34,22 +47,37 @@ def test_physics_circuits_equivalent_resistance_emits_expected_contract(
     assert out.evidence_gt.type == "bbox_set"
     assert trace["query_spec"]["params"]["task_variant"] == out.task_variant
     assert int(execution["target_answer"]) == int(expected_answer)
-    assert len(out.evidence_gt.value) >= int(expected_resistor_count)
+    if str(params.get("query_variant", "total_resistance")) == "missing_resistor_value":
+        assert len(out.evidence_gt.value) == int(expected_evidence_count)
+    else:
+        assert len(out.evidence_gt.value) >= int(expected_evidence_count)
     assert trace["projected_evidence"]["bbox_set"] == out.evidence_gt.value
     assert trace["query_spec"]["params"]["accent_color_name"] == execution["accent_color_name"]
     assert trace["render_map"]["accent_color_name"] == execution["accent_color_name"]
     assert len(execution["resistor_specs"]) >= int(expected_resistor_count)
-    assert len(execution["parallel_values"]) >= 2
-    if str(params["scene_variant"]) == "parallel":
-        assert execution["series_values"] == []
+    if str(params.get("query_variant", "total_resistance")) == "missing_resistor_value":
+        assert int(execution["paired_total_resistance"]) >= 1
+        assert len(execution["evidence_entity_ids"]) == 1
+        assert sum(1 for spec in execution["resistor_specs"] if bool(spec["missing"])) == 1
+        if str(params["scene_variant"]) == "parallel":
+            assert execution["left_series_values"] == []
+            assert len(execution["left_parallel_values"]) >= 2
+        else:
+            assert len(execution["left_series_values"]) == 1
+            assert len(execution["left_parallel_values"]) == 2
     else:
-        assert len(execution["series_values"]) >= 1
-    assert execution["evidence_entity_ids"] == [spec["resistor_id"] for spec in execution["resistor_specs"]]
+        assert len(execution["parallel_values"]) >= 2
+        if str(params["scene_variant"]) == "parallel":
+            assert execution["series_values"] == []
+        else:
+            assert len(execution["series_values"]) >= 1
+        assert execution["evidence_entity_ids"] == [spec["resistor_id"] for spec in execution["resistor_specs"]]
 
 
 def test_physics_circuits_equivalent_resistance_is_deterministic() -> None:
     params = {
         "scene_variant": "parallel",
+        "query_variant": "missing_resistor_value",
         "target_answer": 3,
         "accent_color_name": "cyan",
     }
@@ -76,6 +104,7 @@ def test_physics_circuits_equivalent_resistance_rejects_unknown_scene_variant() 
 def test_physics_circuits_equivalent_resistance_prompt_bundle_supports_variants() -> None:
     bundle = json.loads(Path("prompts/physics/circuits/physics_circuits_v1.json").read_text(encoding="utf-8"))
     assert len(bundle["task_variant_templates"]["total_resistance"]) == 5
+    assert len(bundle["task_variant_templates"]["missing_resistor_value"]) == 5
 
 
 def test_physics_circuits_equivalent_resistance_build_smoke(tmp_path: Path) -> None:

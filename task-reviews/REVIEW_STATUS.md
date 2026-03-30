@@ -47,4 +47,4 @@ Update this table after each review run.
 | task_temporal_timeline_milestones | task_temporal_timeline_milestones | alright_for_now | distribution pass |
 | task_physics_mechanics_force_diagram | task_physics_mechanics_force_diagram | alright_for_now | distribution pass (axis-aligned free-body/textured-block force-diagram net-force + balancing-force variants) |
 | task_physics_mechanics_lever_balance | task_physics_mechanics_lever_balance | alright_for_now | distribution pass (lever-balance left/right torque + missing-weight variants) |
-| task_physics_circuits_equivalent_resistance | task_physics_circuits_equivalent_resistance | alright_for_now | distribution pass (parallel-bank / series-plus-parallel equivalent-resistance scenes between labeled terminals A and B) |
+| task_physics_circuits_equivalent_resistance | task_physics_circuits_equivalent_resistance | alright_for_now | distribution pass (single-circuit total-resistance scenes plus paired missing-resistor scenes with equal resistance between labeled terminals A and B) |

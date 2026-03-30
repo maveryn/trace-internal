@@ -39,14 +39,16 @@ Use this document for the active `physics` domain contract.
    - `task_physics_circuits_equivalent_resistance`
 2. `task_physics_circuits_equivalent_resistance` scene/query surface:
    - `scene_variant`: `parallel|simple_series_parallel`
-   - `query_variant`: `total_resistance`
+   - `query_variant`: `total_resistance|missing_resistor_value`
 3. `task_physics_circuits_equivalent_resistance` evidence contract:
-   - unordered `bbox_set` over the resistor boxes that belong to the asked network between terminals `A` and `B`
+   - unordered resistor-box `bbox_set` over the asked network for `total_resistance`
+   - one-box `bbox_set` over the marked red `?` resistor for `missing_resistor_value`
 4. `task_physics_circuits_equivalent_resistance` prompt policy:
    - ask explicitly for equivalent resistance between labeled terminals `A` and `B`,
    - keep resistor labels as plain integers in the boxes and leave units to the prompt text,
    - keep prompt-facing evidence on the resistor boxes rather than on the wires,
-   - require every active scene to contain a real parallel section rather than a pure series chain.
+   - require every active scene to contain a real parallel section rather than a pure series chain,
+   - for `missing_resistor_value`, use two side-by-side circuits with an equality cue and keep the missing resistor visibly red in the left circuit.
 
 ## 3) V1 physics-domain policy
 1. Prefer one stable diagram scaffold per task id; widen scene/query variety inside that task before adding more ids.
